@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -50,6 +52,8 @@ import java.util.*;
  * 
  */
 public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends GenerateSQLDialog {
+
+    private static final Log log = Log.getLog(GenerateMultiSQLDialog.class);
 
     private static final String DIALOG_ID = "GenerateMultiSQLDialog";
 
@@ -164,14 +168,12 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             protected IStatus run(final DBRProgressMonitor monitor)
             {
                 final DataSourceJob curJob = this;
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        scriptListener.beginScriptProcessing(curJob, objects);
-                    }
-                });
+                UIUtils.asyncExec(() -> scriptListener.beginScriptProcessing(curJob, objects));
                 monitor.beginTask(jobName, objects.size());
                 try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
+                    if (isRunInSeparateTransaction()) {
+                        commitChanges(session);
+                    }
                     for (int i = 0; i < objects.size(); i++) {
                         if (monitor.isCanceled()) {
                             break;
@@ -180,12 +182,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         final T object = objects.get(i);
                         monitor.subTask("Process " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
                         objectProcessingError = null;
-                        UIUtils.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                scriptListener.beginObjectProcessing(object, objectNumber);
-                            }
-                        });
+                        UIUtils.asyncExec(() -> scriptListener.beginObjectProcessing(object, objectNumber));
                         try {
                             final List<String> lines = objectsSQL.get(object);
                             for (String line : lines) {
@@ -193,14 +190,11 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                     if (statement.executeStatement()) {
                                         try (DBCResultSet resultSet = statement.openResultSet()) {
                                             // Run in sync because we need result set
-                                            UIUtils.syncExec(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    try {
-                                                        scriptListener.processObjectResults(object, statement, resultSet);
-                                                    } catch (DBCException e) {
-                                                        objectProcessingError = e;
-                                                    }
+                                            UIUtils.syncExec(() -> {
+                                                try {
+                                                    scriptListener.processObjectResults(object, statement, resultSet);
+                                                } catch (DBCException e) {
+                                                    objectProcessingError = e;
                                                 }
                                             });
                                         }
@@ -208,14 +202,11 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                             break;
                                         }
                                     } else {
-                                        UIUtils.syncExec(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                try {
-                                                    scriptListener.processObjectResults(object, statement, null);
-                                                } catch (DBCException e) {
-                                                    objectProcessingError = e;
-                                                }
+                                        UIUtils.syncExec(() -> {
+                                            try {
+                                                scriptListener.processObjectResults(object, statement, null);
+                                            } catch (DBCException e) {
+                                                objectProcessingError = e;
                                             }
                                         });
                                     }
@@ -224,23 +215,17 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         } catch (Exception e) {
                             objectProcessingError = e;
                         } finally {
-                            UIUtils.asyncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    scriptListener.endObjectProcessing(object, objectProcessingError);
-                                }
-                            });
+                            UIUtils.asyncExec(() -> scriptListener.endObjectProcessing(object, objectProcessingError));
                         }
                         monitor.worked(1);
                     }
+                    if (isRunInSeparateTransaction()) {
+                        commitChanges(session);
+                    }
+
                 } finally {
                     monitor.done();
-                    UIUtils.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            scriptListener.endScriptProcessing();
-                        }
-                    });
+                    UIUtils.asyncExec(scriptListener::endScriptProcessing);
                 }
                 return Status.OK_STATUS;
             }
@@ -257,6 +242,10 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             }
         });
         job.schedule();
+    }
+
+    protected boolean isRunInSeparateTransaction() {
+        return false;
     }
 
     protected boolean needsRefreshOnFinish() {
@@ -276,4 +265,14 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
         return null;
     }
 
+    private void commitChanges(DBCSession session) {
+        try {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+            if (txnManager != null && !txnManager.isAutoCommit()) {
+                txnManager.commit(session);
+            }
+        } catch (Throwable e) {
+            log.error("Error commiting transactions", e);
+        }
+    }
 }

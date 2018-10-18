@@ -74,7 +74,7 @@ public class MySQLTable extends MySQLTableBase
         @Property(viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
         @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100) public String getDescription() { return description; }
 
-        @Property(category = CATEGORY_STATISTICS, viewable = true, order = 10) public long getRowCount() { return rowCount; }
+        @Property(category = CATEGORY_STATISTICS, viewable = false, order = 10) public long getRowCount() { return rowCount; }
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 11) public long getAvgRowLength() { return avgRowLength; }
         @Property(category = CATEGORY_STATISTICS, viewable = true, order = 12) public long getDataLength() { return dataLength; }
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 13) public long getMaxDataLength() { return maxDataLength; }

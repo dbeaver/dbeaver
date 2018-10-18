@@ -63,6 +63,53 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 200;
         driverTreeControl.setLayoutData(gd);
+
+/*
+        {
+            Gallery gallery = new Gallery(placeholder, SWT.V_SCROLL | SWT.MULTI);
+            gallery.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            gallery.addTraverseListener(new TraverseListener() {
+                @Override
+                public void keyTraversed(TraverseEvent e) {
+                    if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                        ((WizardDialog)getContainer()).close();
+                        //getWizard().performCancel();
+                    }
+                }
+            });
+
+            // Renderers
+            NoGroupRenderer gr = new NoGroupRenderer();
+            gr.setItemHeight(80);
+            gr.setItemWidth(140);
+            gr.setMinMargin(2);
+            gr.setAutoMargin(false);
+            gallery.setGroupRenderer(gr);
+
+
+            AbstractGalleryItemRenderer ir = new ListItemRenderer();
+            //ir.setDropShadows(false);
+            //ir.setShowLabels(false);
+            gallery.setItemRenderer(ir);
+
+            for (int g = 0; g < 1; g++) {
+                GalleryItem group = new GalleryItem(gallery, SWT.NONE);
+                group.setText("Group " + g); //$NON-NLS-1$
+                group.setExpanded(true);
+
+                for (int i = 0; i < 50; i++) {
+                    GalleryItem item = new GalleryItem(group, SWT.NONE);
+                    item.setImage(DBeaverIcons.getImage(UIIcon.DBEAVER_LOGO));
+//                    if (itemImage != null) {
+//                        item.setImage(itemImage);
+//                    }
+                    item.setText("Item " + i); //$NON-NLS-1$
+                }
+            }
+        }
+*/
+
         setControl(placeholder);
 
         Group projectGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_connection_driver_project, 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);

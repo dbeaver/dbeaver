@@ -126,10 +126,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     @Property(order = 4)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, database.roleCache, database, ownerId);
+        return database.getRoleById(monitor, ownerId);
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Nullable
     @Override
     public String getDescription() {
@@ -615,9 +615,14 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 Collection<PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
                 assert attributes != null && refAttributes != null;
                 int colCount = Array.getLength(keyNumbers);
+                int refColCount = Array.getLength(keyRefNumbers);
                 PostgreTableForeignKeyColumn[] fkCols = new PostgreTableForeignKeyColumn[colCount];
                 for (int i = 0; i < colCount; i++) {
                     Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
+                    if (i >= refColCount) {
+                        log.debug("Number of foreign columns is less than constraint columns (" + refColCount + " < " + colCount + ") in " + constraint.getFullyQualifiedName(DBPEvaluationContext.DDL));
+                        break;
+                    }
                     Number colRefNumber = (Number) Array.get(keyRefNumbers, i);
                     final PostgreTableColumn attr = PostgreUtils.getAttributeByNum(attributes, colNumber.intValue());
                     final PostgreTableColumn refAttr = PostgreUtils.getAttributeByNum(refAttributes, colRefNumber.intValue());

@@ -219,7 +219,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         }
 
         @Override
-        protected void fillCustomActions(IContributionManager contributionManager)
+        public void fillCustomActions(IContributionManager contributionManager)
         {
         }
 

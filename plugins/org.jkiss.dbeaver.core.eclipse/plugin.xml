@@ -50,7 +50,7 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.errorHandle" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle" name="%pref.page.name.errorHandle"/>
         <page category="org.jkiss.dbeaver.preferences.main.errorHandle" id="org.jkiss.dbeaver.preferences.main.errorLogs" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorLogs" name="%pref.page.name.errorLogs"/>
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetMain" name="%pref.page.name.resultset"/>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetMain" name="%pref.page.name.resultset"/>
         <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetEditors" name="%pref.page.name.resultset.editors">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.content"/>
         </page>
@@ -72,19 +72,20 @@
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.drivers.maven" class="org.jkiss.dbeaver.ui.preferences.PrefPageDriversMaven" name="%pref.page.name.drivers.maven"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.connectionTypes" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" name="%pref.page.name.connectionTypes"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.navigator" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator" name="%pref.page.name.navigator"/>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors" name="%pref.page.name.editors"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations"/>
 
-        <page category="org.eclipse.ui.preferencePages.Editors" id="org.jkiss.dbeaver.preferences.main.entityeditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageEntityEditor" name="%pref.page.name.entity.editor">
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.entityeditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageEntityEditor" name="%pref.page.name.entity.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.entity"/>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="%pref.page.name.sql.execute"/>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLFormat" name="%pref.page.name.sql.format"/>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" name="%pref.page.name.sql.templates"/>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLCompletion" name="%pref.page.name.sql.completion"/>
-        <page category="org.eclipse.ui.preferencePages.Editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
+        <page category="org.jkiss.dbeaver.preferences.main.resultset.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
         </page>
 

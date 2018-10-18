@@ -947,7 +947,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
-        protected void fillCustomActions(IContributionManager toolBarManager) {
+        public void fillCustomActions(IContributionManager toolBarManager) {
             fillDefaultEditorContributions(toolBarManager);
         }
 

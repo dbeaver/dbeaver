@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -40,6 +41,8 @@ import java.util.Map;
  * Session table
  */
 class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObjectListControl<SESSION_TYPE> {
+
+    private static final Log log = Log.getLog(SessionTable.class);
 
     private DBAServerSessionManager<SESSION_TYPE> sessionManager;
 
@@ -68,10 +71,10 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
             new ObjectsLoadVisualizer());
     }
 
-    LoadingJob<Void> createAlterService(SESSION_TYPE session, Map<String, Object> options)
+    LoadingJob<Void> createAlterService(List<SESSION_TYPE> sessions, Map<String, Object> options)
     {
         return LoadingJob.createService(
-            new KillSessionService(session, options),
+            new KillSessionsService(sessions, options),
             new ObjectActionVisualizer());
     }
 
@@ -129,14 +132,14 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
         }
     }
 
-    private class KillSessionService extends DatabaseLoadService<Void> {
-        private final SESSION_TYPE session;
+    private class KillSessionsService extends DatabaseLoadService<Void> {
+        private final List<SESSION_TYPE> sessions;
         private final Map<String, Object> options;
 
-        KillSessionService(SESSION_TYPE session, Map<String, Object> options)
+        KillSessionsService(List<SESSION_TYPE> sessions, Map<String, Object> options)
         {
             super("Kill session", sessionManager.getDataSource());
-            this.session = session;
+            this.sessions = sessions;
             this.options = options;
         }
 
@@ -147,7 +150,18 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
             try {
                 try (DBCExecutionContext isolatedContext = sessionManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View sessions")) {
                     try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Kill server session")) {
-                        sessionManager.alterSession(session, this.session, options);
+                        Throwable lastError = null;
+                        for (SESSION_TYPE dbaSession : this.sessions) {
+                            try {
+                                sessionManager.alterSession(session, dbaSession, options);
+                            } catch (Exception e) {
+                                log.error("Error killing session " + session, e);
+                                lastError = e;
+                            }
+                        }
+                        if (lastError != null) {
+                            throw new InvocationTargetException(lastError);
+                        }
                         return null;
                     }
                 }

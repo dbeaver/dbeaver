@@ -214,7 +214,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                     @Override
                     public void controlResized(ControlEvent e) {
                         control.removeControlListener(this);
-                        repackColumns();
+                        if (getRowCount() > 0) {
+                            repackColumns();
+                        }
                     }
                 });
             }
@@ -295,7 +297,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                     @Override
                     public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
-                        saveColumnConfig();
+                        if (getRowCount() > 0) {
+                            saveColumnConfig();
+                        }
                     }
 
                     @Override
@@ -321,7 +325,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                     @Override
                     public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
-                        saveColumnConfig();
+                        if (getRowCount() > 0) {
+                            saveColumnConfig();
+                        }
                     }
 
                     @Override
@@ -460,7 +466,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     private void saveColumnConfig()
     {
-        // Save settings
+        // Save settings only if we have at least one rows. Otherwise
         ViewerColumnRegistry.getInstance().updateConfig(configId, columns);
     }
 
@@ -468,6 +474,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         final Control control = viewer.getControl();
         return control instanceof Tree ?
             ((Tree) control).getColumnCount() : ((Table) control).getColumnCount();
+    }
+
+    public int getRowCount() {
+        final Control control = viewer.getControl();
+        return control instanceof Tree ?
+            ((Tree) control).getItemCount() : ((Table) control).getItemCount();
     }
 
     public int getEditableColumnIndex(Object element) {

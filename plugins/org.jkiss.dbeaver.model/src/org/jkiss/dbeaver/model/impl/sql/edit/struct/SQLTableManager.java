@@ -67,7 +67,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     @Override
-    protected final void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options)
+    protected final void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options)
     {
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -82,12 +83,12 @@ public class DB2ServerApplicationEditor extends AbstractSessionEditor {
         @Override
         public void run()
         {
-            final DBAServerSession session = getSessionsViewer().getSelectedSession();
+            final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
             final String action = DB2Messages.editors_db2_application_editor_action_force;
             if (UIUtils.confirmAction(getSite().getShell(), "Confirm force application",
-                NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action, action.toLowerCase(), session))) {
+                NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action, action.toLowerCase(), sessions))) {
                 Map<String, Object> options = new HashMap<>();
-                getSessionsViewer().alterSession(session, options);
+                getSessionsViewer().alterSessions(sessions, options);
             }
         }
     }

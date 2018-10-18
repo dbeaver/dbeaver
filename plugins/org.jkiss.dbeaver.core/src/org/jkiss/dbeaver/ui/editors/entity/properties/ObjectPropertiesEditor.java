@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -63,10 +65,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * ObjectPropertiesEditor
@@ -87,7 +86,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private boolean activated = false;
     private Composite propsPlaceholder;
     @Nullable
-    private TabbedFolderPageProperties propertiesPanel;
+    private TabbedFolderPageForm propertiesPanel;
 
     public ObjectPropertiesEditor()
     {
@@ -124,7 +123,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             createPropertiesPanel(container);
         } else {
             Composite foldersParent = container;
-            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+            if (hasPropertiesEditor() && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
                 sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
                 sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
                 foldersParent = sashForm;
@@ -137,8 +136,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void createPropertiesPanel(Composite container) {
         // Main panel
-        propsPlaceholder = UIUtils.createPlaceholder(container, 2, 0);
-        propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        propsPlaceholder = new Composite(container, SWT.NONE);
+        propsPlaceholder.setLayout(new FillLayout());
     }
 
     private Composite createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
@@ -204,26 +203,34 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             return;
         }
 
-        String sashStateStr = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.ENTITY_EDITOR_INFO_SASH_STATE);
-        int sashPanelHeight = !CommonUtils.isEmpty(sashStateStr) ? Integer.parseInt(sashStateStr) : 400;
-        if (sashPanelHeight < 0) sashPanelHeight = 0;
-        if (sashPanelHeight > 1000) sashPanelHeight = 1000;
+        if (propsPlaceholder != null) {
+            Point propsSize = propsPlaceholder.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            Point sashSize = sashForm.getParent().getSize();
+            float ratio = (float)propsSize.y / (float)sashSize.y;
+            int propsRatio = (int) (1000 * ratio) + 10;
+            sashForm.setWeights(new int[] { propsRatio, 1000 - propsRatio});
+            sashForm.layout();
 
-        sashForm.setWeights(new int[] { sashPanelHeight, 1000 - sashPanelHeight });
+        } else {
+            String sashStateStr = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.ENTITY_EDITOR_INFO_SASH_STATE);
+            int sashPanelHeight = !CommonUtils.isEmpty(sashStateStr) ? Integer.parseInt(sashStateStr) : 400;
+            if (sashPanelHeight < 0) sashPanelHeight = 0;
+            if (sashPanelHeight > 1000) sashPanelHeight = 1000;
 
-        sashForm.layout();
+            sashForm.setWeights(new int[] { sashPanelHeight, 1000 - sashPanelHeight });
+            sashForm.layout();
 
-        sashForm.getChildren()[0].addListener(SWT.Resize, event -> {
-            if (sashForm != null) {
-                int[] weights = sashForm.getWeights();
-                if (weights != null && weights.length > 0) {
-                    int topWeight = weights[0];
-                    if (topWeight == 0) topWeight = 1;
-                    DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.ENTITY_EDITOR_INFO_SASH_STATE, topWeight);
+            sashForm.getChildren()[0].addListener(SWT.Resize, event -> {
+                if (sashForm != null) {
+                    int[] weights = sashForm.getWeights();
+                    if (weights != null && weights.length > 0) {
+                        int topWeight = weights[0];
+                        if (topWeight == 0) topWeight = 1;
+                        DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.ENTITY_EDITOR_INFO_SASH_STATE, topWeight);
+                    }
                 }
-            }
-        });
-
+            });
+        }
     }
 
     @Override
@@ -234,9 +241,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
         activated = true;
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
-            propertiesPanel = new TabbedFolderPageProperties(this, getEditorInput());
+            if (hasPropertiesEditor()) {
+                propertiesPanel = new TabbedFolderPageForm(this, pageControl, getEditorInput());
 
-            propertiesPanel.createControl(propsPlaceholder);
+                propertiesPanel.createControl(propsPlaceholder);
+            }
         }
 
         pageControl.layout(true);
@@ -252,6 +261,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 UIUtils.asyncExec(sashUpdater);
             }
         }
+    }
+
+    private boolean hasPropertiesEditor() {
+        return !(getEditorInput().getDatabaseObject() instanceof DBNDatabaseFolder);
     }
 
     @Override
@@ -452,9 +465,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 PropertiesContributor.TAB_STANDARD,
                 CoreMessages.ui_properties_category_information,
                 DBIcon.TREE_INFO,
-                "General information",
+                CoreMessages.ui_properties_category_information_tip,
                 false,
-                new TabbedFolderPageProperties(this, getEditorInput())));
+                new TabbedFolderPageForm(this, pageControl, getEditorInput())));
         }
     }
 
@@ -468,12 +481,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         if (!node.getMeta().isStandaloneNode()) {
             // Collect tabs from navigator tree model
-            DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) {
-                    collectNavigatorTabs(monitor, part, node, tabList);
-                }
-            };
+            DBRRunnableWithProgress tabsCollector = monitor ->
+                collectNavigatorTabs(monitor, part, node, tabList);
             try {
                 if (node.needsInitialization()) {
                     UIUtils.runInProgressService(tabsCollector);
@@ -484,6 +493,21 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 log.error(e.getTargetException());
             } catch (InterruptedException e) {
                 // just go further
+            }
+        }
+
+        // Extra properties tab (show if we have extra properties only)
+        {
+            TabbedFolderPageProperties pageProperties = new TabbedFolderPageProperties(this, getEditorInput());
+            List<String> extraCategories = pageProperties.getExtraCategories();
+            if (!extraCategories.isEmpty()) {
+                tabList.add(new TabbedFolderInfo(
+                    PropertiesContributor.TAB_PROPERTIES,
+                    extraCategories.get(0) + (extraCategories.size() == 1 ? "" :" / ... "),
+                    DBIcon.TREE_INFO,
+                    String.join(", ", extraCategories),
+                    false,
+                    pageProperties));
             }
         }
 

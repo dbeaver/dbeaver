@@ -427,19 +427,21 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return IDialogConstants.IGNORE_ID;
         }
         StringBuilder script = new StringBuilder();
-        for (DBECommand command : commands) {
-            try {
-                command.validateCommand();
-            } catch (final DBException e) {
-                log.debug(e);
-                UIUtils.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
-                return IDialogConstants.CANCEL_ID;
-            }
-            Map<String, Object> options = new HashMap<>();
-            options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
 
-            try {
-                UIUtils.runInProgressService(monitor -> {
+        try {
+            saveInProgress = true;
+            UIUtils.runInProgressService(monitor -> {
+                monitor.beginTask("Generate SQL script", commands.size());
+                for (DBECommand command : commands) {
+                    monitor.subTask(command.getTitle());
+                    try {
+                        command.validateCommand();
+                    } catch (final DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                    Map<String, Object> options = new HashMap<>();
+                    options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
+
                     try {
                         DBEPersistAction[] persistActions = command.getPersistActions(monitor, options);
                         script.append(SQLUtils.generateScript(
@@ -449,14 +451,20 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
-                });
-            } catch (InvocationTargetException e) {
-                DBeaverUI.getInstance().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
-                return IDialogConstants.CANCEL_ID;
-            } catch (InterruptedException e) {
-                return IDialogConstants.CANCEL_ID;
-            }
+                    monitor.worked(1);
+                }
+                monitor.done();
+            });
+        } catch (InterruptedException e) {
+            return IDialogConstants.CANCEL_ID;
+        } catch (InvocationTargetException e) {
+            log.error(e);
+            //UIUtils.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
+            DBeaverUI.getInstance().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
+        } finally {
+            saveInProgress = false;
         }
+
         if (script.length() == 0) {
             return IDialogConstants.PROCEED_ID;
         }
@@ -776,13 +784,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public void refreshPart(final Object source, boolean force)
     {
-        if (getContainer() == null || getContainer().isDisposed()) {
+        if (getContainer() == null || getContainer().isDisposed() || isSaveInProgress()) {
             return;
         }
 
         if (source instanceof DBNEvent && ((DBNEvent) source).getNodeChange() == DBNEvent.NodeChange.REFRESH) {
             // This may happen if editor was refreshed indirectly (it is a child of refreshed node)
-            force = true;
+            //force = true;
         }
 
         if (force && getDatabaseObject().isPersisted()) {
@@ -791,7 +799,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             DBECommandContext commandContext = getCommandContext();
             if (commandContext != null) {
                 // Just clear command context. Do not undo because object state was already refreshed
-                commandContext.resetChanges(false);
+                commandContext.resetChanges(true);
             }
         }
 

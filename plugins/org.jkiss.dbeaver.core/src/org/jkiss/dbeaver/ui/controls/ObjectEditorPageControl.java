@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,56 +17,45 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.ISearchExecutor;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
 
-    //private Button saveChangesButton;
+    private static final Log log = Log.getLog(ObjectEditorPageControl.class);
+
     private IDatabaseEditor workbenchPart;
     private IPropertyListener propertyListener;
-    //private ToolBarManager objectEditToolbarManager;
+    private volatile LoadingJob curService = null;
 
     public ObjectEditorPageControl(Composite parent, int style, IDatabaseEditor workbenchPart)
     {
         super(parent, style);
         this.workbenchPart = workbenchPart;
-
-//        if (isObjectEditable()) {
-//            propertyListener = new IPropertyListener() {
-//                public void propertyChanged(Object source, int propId)
-//                {
-//                    if (propId == IEditorPart.PROP_DIRTY) {
-//                        boolean dirty = ((IEditorPart) source).isDirty();
-//                        saveChangesButton.setEnabled(dirty);
-//                        //viewChangesButton.setEnabled(dirty);
-//                        //resetChangesButton.setEnabled(dirty);
-//                    }
-//                }
-//            };
-//            getMainEditorPart().addPropertyListener(propertyListener);
-//        }
     }
 
     @Override
     public void disposeControl()
     {
-/*
-        if (objectEditToolbarManager != null) {
-            objectEditToolbarManager.dispose();
-            objectEditToolbarManager = null;
-        }
-*/
         if (propertyListener != null) {
             getMainEditorPart().removePropertyListener(propertyListener);
             propertyListener = null;
@@ -121,62 +110,70 @@ public class ObjectEditorPageControl extends ProgressPageControl {
         };
     }
 
-/*
     @Override
-    protected Composite createProgressPanel(Composite container) {
-        Composite panel = super.createProgressPanel(container);
-
-        DBECommandContext commandContext = getEditorPart().getEditorInput().getCommandContext();
-        if (commandContext == null || !isObjectEditable()) {
-            return panel;
-        }
-
-        final Composite toolsPanel = UIUtils.createPlaceholder(panel, 1);
-
-        ToolBar toolBar = new ToolBar(toolsPanel, SWT.FLAT | SWT.HORIZONTAL);
-
-        objectEditToolbarManager = new ToolBarManager(toolBar);
-        objectEditToolbarManager.add(ActionUtils.makeCommandContribution(
-            DBeaverCore.getInstance().getWorkbench(),
-            CoreCommands.CMD_OBJECT_CREATE));
-        objectEditToolbarManager.add(ActionUtils.makeCommandContribution(
-            DBeaverCore.getInstance().getWorkbench(),
-            CoreCommands.CMD_OBJECT_DELETE));
-        objectEditToolbarManager.add(ActionUtils.makeCommandContribution(
-            DBeaverCore.getInstance().getWorkbench(),
-            IWorkbenchCommandConstants.FILE_SAVE));
-        objectEditToolbarManager.update(true);
-        //objectEditToolbarManager.createControl(toolsPanel);
-
-//        saveChangesButton = new Button(toolsPanel, SWT.FLAT | SWT.PUSH);
-//        saveChangesButton.setText("Save / Preview");
-//        saveChangesButton.setImage(DBIcon.SAVE_TO_DATABASE.getImage());
-//        saveChangesButton.setToolTipText("Persist all changes");
-//        saveChangesButton.setEnabled(false);
-//        saveChangesButton.addSelectionListener(new SelectionAdapter() {
-//            @Override
-//            public void widgetSelected(SelectionEvent e) {
-//                try {
-//                    workbenchPart.getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
-//                        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-//                        {
-//                            getMainEditorPart().doSave(monitor);
-//                        }
-//                    });
-//                } catch (InvocationTargetException e1) {
-//                    UIUtils.showErrorDialog(null, "Save DB object", "Can't save database object", e1.getTargetException());
-//                } catch (InterruptedException e1) {
-//                    // do nothing
-//                }
-//            }
-//        });
-
-        return panel;
-    }
-*/
-
-    @Override
-    protected void fillCustomActions(IContributionManager contributionManager) {
+    public void fillCustomActions(IContributionManager contributionManager) {
         super.fillCustomActions(contributionManager);
     }
+
+    @Override
+    protected synchronized boolean cancelProgress() {
+        if (curService != null) {
+            curService.cancel();
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized <OBJECT_TYPE> void runService(LoadingJob<OBJECT_TYPE> service) {
+        curService = service;
+        service.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                synchronized(ObjectEditorPageControl.this) {
+                    curService = null;
+                }
+            }
+        });
+        service.schedule();
+    }
+
+    public <OBJECT_TYPE> ObjectsLoadVisualizer<OBJECT_TYPE>  createDefaultLoadVisualizer(DBRRunnableParametrized<OBJECT_TYPE> listener) {
+        ObjectsLoadVisualizer<OBJECT_TYPE> visualizer = new ObjectsLoadVisualizer<>();
+        if (listener != null) {
+            visualizer.addLoadListener(listener);
+        }
+        return visualizer;
+    }
+
+    public class ObjectsLoadVisualizer<OBJECT_TYPE> extends ProgressVisualizer<OBJECT_TYPE> {
+
+        private List<DBRRunnableParametrized<OBJECT_TYPE>> listeners = new ArrayList<>();
+
+        public ObjectsLoadVisualizer() {
+        }
+
+        public void addLoadListener(DBRRunnableParametrized<OBJECT_TYPE> listener) {
+            listeners.add(listener);
+        }
+
+        @Override
+        public void completeLoading(OBJECT_TYPE result) {
+            super.completeLoading(result);
+            if (!listeners.isEmpty()) {
+                for (DBRRunnableParametrized<OBJECT_TYPE> listener : listeners) {
+                    try {
+                        listener.run(result);
+                    } catch (InvocationTargetException e) {
+                        log.error(e.getTargetException());
+                    } catch (InterruptedException e) {
+                        // ignore
+                        break;
+                    }
+                }
+            }
+            listeners.clear();
+        }
+    }
+
+
 }

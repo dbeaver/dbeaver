@@ -61,6 +61,9 @@ public class PostgreMessages extends NLS {
 	public static String wizard_restore_page_setting_label_setting;
 	public static String wizard_restore_page_setting_title;	
 	public static String wizard_restore_page_setting_title_setting;
+
+	public static String tool_run_in_separate_transaction;
+	public static String tool_run_in_separate_transaction_tooltip;
 	
 	/* tool script */
 	public static String wizard_script_title_import_db;

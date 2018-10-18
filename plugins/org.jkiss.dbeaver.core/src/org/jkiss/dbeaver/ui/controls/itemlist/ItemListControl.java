@@ -81,7 +81,7 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    protected void fillCustomActions(IContributionManager contributionManager)
+    public void fillCustomActions(IContributionManager contributionManager)
     {
         super.fillCustomActions(contributionManager);
         final DBNNode rootNode = getRootNode();

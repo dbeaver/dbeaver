@@ -141,27 +141,12 @@ public class OracleDataSource extends JDBCDataSource
 */
 
         try {
-            Connection connection = super.openConnection(monitor, remoteInstance, purpose);
-
-            // Client name is set in connection properties
-/*
-            if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-                // Provide client info
-                try {
-                    connection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
-                } catch (Throwable e) {
-                    // just ignore
-                    log.debug(e);
-                }
-            }
-*/
-
-            return connection;
+            return super.openConnection(monitor, remoteInstance, purpose);
         } catch (DBCException e) {
             if (e.getErrorCode() == OracleConstants.EC_PASSWORD_EXPIRED) {
                 // Here we could try to ask for expired password change
                 // This is supported  for thin driver since Oracle 12.2
-                if (changeExpiredPassword(monitor)) {
+                if (changeExpiredPassword(monitor, purpose)) {
                     // Retry
                     return openConnection(monitor, remoteInstance, purpose);
                 }
@@ -170,7 +155,7 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
-    private boolean changeExpiredPassword(DBRProgressMonitor monitor) {
+    private boolean changeExpiredPassword(DBRProgressMonitor monitor, String purpose) {
         // Ref: https://stackoverflow.com/questions/21733300/oracle-password-expiry-and-grace-period-handling-using-java-oracle-jdbc
 
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
@@ -184,7 +169,7 @@ public class OracleDataSource extends JDBCDataSource
             if (passwordInfo.getNewPassword() == null) {
                 throw new DBException("You can't set empty password");
             }
-            Properties connectProps = getAllConnectionProperties(monitor, connectionInfo);
+            Properties connectProps = getAllConnectionProperties(monitor, purpose, connectionInfo);
             connectProps.setProperty("oracle.jdbc.newPassword", passwordInfo.getNewPassword());
 
             final String url = getConnectionURL(connectionInfo);

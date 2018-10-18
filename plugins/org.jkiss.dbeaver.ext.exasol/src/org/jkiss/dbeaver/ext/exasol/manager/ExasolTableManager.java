@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -133,7 +134,9 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // ------
     @Override
     public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
-        String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL), command.getNewName());
+        String sql = String.format(SQL_RENAME_TABLE,
+            DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()),
+            DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()));
         actions.add(
             new SQLDatabasePersistAction(CMD_RENAME, sql)
         );

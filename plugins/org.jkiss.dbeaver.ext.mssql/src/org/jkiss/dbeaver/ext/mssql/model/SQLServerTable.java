@@ -59,7 +59,7 @@ public class SQLServerTable extends GenericTable implements DBPOverloadedObject 
         // Query row count
         try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read table description")) {
             DBSObject defaultDatabase = getDataSource().getDefaultObject();
-            boolean switchSchema = defaultDatabase != null && defaultDatabase != getCatalog();
+            boolean switchSchema = getCatalog() != null && defaultDatabase != null && defaultDatabase != getCatalog();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 (switchSchema ? "USE " + DBUtils.getQuotedIdentifier(getCatalog()) + ";\n" : "") +
                 "SELECT cast(value as varchar(8000)) as value " +

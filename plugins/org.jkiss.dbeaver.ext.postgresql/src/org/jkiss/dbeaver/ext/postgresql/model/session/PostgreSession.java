@@ -142,6 +142,10 @@ public class PostgreSession implements DBAServerSession {
     @Override
     public String toString()
     {
-        return pid + "@" + db;
+        if (!CommonUtils.isEmpty(db)) {
+            return pid + "@" + db;
+        } else {
+            return String.valueOf(pid);
+        }
     }
 }

@@ -43,7 +43,7 @@ public class ERDPalettePreferences implements FlyoutPreferences
 		int location = ERDActivator.getDefault().getPreferenceStore().getInt(PALETTE_DOCK_LOCATION);
 		if (location == 0)
 		{
-			return PositionConstants.WEST;
+			return PositionConstants.EAST;
 		}
 		return location;
 	}

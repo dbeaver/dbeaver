@@ -36,6 +36,11 @@ public abstract class AbstractContent implements DBDContent {
         this.dataSource = dataSource;
     }
 
+    public AbstractContent(AbstractContent copyFrom) {
+        this.dataSource = copyFrom.dataSource;
+        this.modified = copyFrom.modified;
+    }
+
     @Override
     public DBPDataSource getDataSource() {
         return dataSource;
@@ -58,4 +63,5 @@ public abstract class AbstractContent implements DBDContent {
     public boolean isModified() {
         return modified;
     }
+
 }
