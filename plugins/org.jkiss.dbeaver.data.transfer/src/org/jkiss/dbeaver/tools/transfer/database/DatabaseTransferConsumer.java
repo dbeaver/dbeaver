@@ -137,18 +137,24 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (columnMapping.targetAttr.mappingType == DatabaseMappingType.skip) {
                 continue;
             }
-            if (columnMapping.targetAttr.target == null) {
-                throw new DBCException("Target attribute for [" + columnMapping.sourceAttr.getName() + "] wasn't resolved");
+            DBSEntityAttribute targetAttr = columnMapping.targetAttr.target;
+            if (targetAttr == null) {
+                if (columnMapping.targetAttr.source instanceof DBSEntityAttribute) {
+                    // Use source attr. Some datasource (e.g. document oriented do not have strict set of attributes)
+                    targetAttr = (DBSEntityAttribute)columnMapping.targetAttr.source;
+                } else {
+                    throw new DBCException("Target attribute for [" + columnMapping.sourceAttr.getName() + "] wasn't resolved");
+                }
             }
             if (session.getDataSource() != null) {
                 columnMapping.sourceValueHandler = DBUtils.findValueHandler(session.getDataSource(), columnMapping.sourceAttr);
             }
-            columnMapping.targetValueHandler = DBUtils.findValueHandler(columnMapping.targetAttr.target.getDataSource(), columnMapping.targetAttr.target);
+            columnMapping.targetValueHandler = DBUtils.findValueHandler(targetSession.getDataSource(), targetAttr);
             columnMapping.targetIndex = targetAttributes.size();
 
             columnMappings[i] = columnMapping;
 
-            targetAttributes.add(columnMapping.targetAttr.target);
+            targetAttributes.add(targetAttr);
         }
 
         executeBatch = targetObject.insertData(
@@ -174,9 +180,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 // No value handler - get raw value
                 attrValue = resultSet.getAttributeValue(i);
             }
+            DatabaseMappingAttribute targetAttr = column.targetAttr;
             rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
                 targetSession,
-                column.targetAttr.getTarget(),
+                targetAttr.getTarget() == null ? targetAttr.getSource() : targetAttr.getTarget(),
                 attrValue,
                 false);
         }
@@ -360,8 +367,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                                     if (attr.getMappingType() == DatabaseMappingType.create) {
                                         attr.updateMappingType(monitor);
                                         if (attr.getTarget() == null) {
-                                            throw new DBCException("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
-
+                                            log.debug("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
                                         }
                                     }
                                 }
