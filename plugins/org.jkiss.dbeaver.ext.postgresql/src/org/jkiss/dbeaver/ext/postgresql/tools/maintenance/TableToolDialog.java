@@ -17,12 +17,13 @@
 package org.jkiss.dbeaver.ext.postgresql.tools.maintenance;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptStatusDialog;
@@ -46,6 +48,8 @@ import java.util.List;
  */
 public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreObject>
 {
+    private Button separateTransactionCheck;
+    private boolean runInSeparateTransaction = false;
 
     public TableToolDialog(IWorkbenchPartSite partSite, String title, Collection<? extends PostgreTableBase> tables) {
         super(partSite, title, toObjects(tables), true);
@@ -112,5 +116,21 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreObje
                 }
             }
         };
+    }
+
+    protected void createTransactionCheck(Group optionsGroup) {
+        runInSeparateTransaction = true;
+        separateTransactionCheck = UIUtils.createCheckbox(optionsGroup,  PostgreMessages.tool_run_in_separate_transaction, PostgreMessages.tool_run_in_separate_transaction_tooltip, runInSeparateTransaction, 0);
+        separateTransactionCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                runInSeparateTransaction = separateTransactionCheck.getSelection();
+            }
+        });
+    }
+
+    @Override
+    protected boolean isRunInSeparateTransaction() {
+        return runInSeparateTransaction;
     }
 }
