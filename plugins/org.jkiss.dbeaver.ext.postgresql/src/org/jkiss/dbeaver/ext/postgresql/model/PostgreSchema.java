@@ -126,7 +126,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     @Property(order = 4)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, database.roleCache, database, ownerId);
+        return database.getRoleById(monitor, ownerId);
     }
 
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)

@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -67,7 +66,7 @@ public class PostgreTablespace extends PostgreInformation {
 
     @Property(order = 2)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
+        return getDatabase().getRoleById(monitor, ownerId);
     }
 
     @Property(order = 100)

@@ -136,7 +136,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
-        this.isLocal = JDBCUtils.safeGetBoolean(dbResult, "attislocal");
+        this.isLocal =
+            !getDataSource().getServerType().supportsInheritance() ||
+            JDBCUtils.safeGetBoolean(dbResult, "attislocal", true);
 
         if (getDataSource().isServerVersionAtLeast(10, 0)) {
             String identityStr = JDBCUtils.safeGetString(dbResult, "attidentity");

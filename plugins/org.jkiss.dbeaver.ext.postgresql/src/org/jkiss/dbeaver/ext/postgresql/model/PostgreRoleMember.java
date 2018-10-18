@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -87,17 +86,17 @@ public class PostgreRoleMember implements DBSObject {
 
     @Property(viewable = true, order = 1)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, owner.getDatabase().roleCache, owner.getDatabase(), role);
+        return owner.getDatabase().getRoleById(monitor, role);
     }
 
     @Property(viewable = true, order = 2)
     public PostgreRole getMember(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, owner.getDatabase().roleCache, owner.getDatabase(), member);
+        return owner.getDatabase().getRoleById(monitor, member);
     }
 
     @Property(viewable = true, order = 3)
     public PostgreRole getGrantor(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, owner.getDatabase().roleCache, owner.getDatabase(), grantor);
+        return owner.getDatabase().getRoleById(monitor, grantor);
     }
 
     @Property(viewable = true, order = 4)
