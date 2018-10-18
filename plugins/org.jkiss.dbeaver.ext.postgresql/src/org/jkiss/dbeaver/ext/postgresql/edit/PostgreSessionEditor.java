@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * PostgreSessionEditor
  */
@@ -60,7 +62,7 @@ public class PostgreSessionEditor extends AbstractSessionEditor
             protected void onSessionSelect(DBAServerSession session)
             {
                 super.onSessionSelect(session);
-                terminateQueryAction.setEnabled(session != null && !CommonUtils.isEmpty(session.getActiveQuery()));
+                terminateQueryAction.setEnabled(session != null);
             }
         };
     }
@@ -77,13 +79,14 @@ public class PostgreSessionEditor extends AbstractSessionEditor
         @Override
         public void run()
         {
-            final DBAServerSession session = getSessionsViewer().getSelectedSession();
-            if (session != null && UIUtils.confirmAction(getSite().getShell(),
+            final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
+            if (sessions != null && UIUtils.confirmAction(
+                getSite().getShell(),
                 this.getText(),
-                NLS.bind("Teminate session?", getText(), session)))
+                NLS.bind("Terminate session {0}?", sessions)))
             {
-                getSessionsViewer().alterSession(
-                    getSessionsViewer().getSelectedSession(),
+                getSessionsViewer().alterSessions(
+                    sessions,
                     null);
             }
         }

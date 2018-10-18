@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -133,14 +134,14 @@ public class MySQLSessionEditor extends AbstractSessionEditor
         @Override
         public void run()
         {
-            final DBAServerSession session = getSessionsViewer().getSelectedSession();
-            if (session != null && UIUtils.confirmAction(getSite().getShell(),
+            final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
+            if (sessions != null && UIUtils.confirmAction(getSite().getShell(),
                 this.getText(),
-                NLS.bind(MySQLMessages.editors_session_editor_confirm, getText(), session)))
+                NLS.bind(MySQLMessages.editors_session_editor_confirm, getText(), sessions)))
             {
-                getSessionsViewer().alterSession(
-                    getSessionsViewer().getSelectedSession(),
-                    Collections.singletonMap(MySQLSessionManager.PROP_KILL_QUERY, (Object) killQuery));
+                getSessionsViewer().alterSessions(
+                    sessions,
+                    Collections.singletonMap(MySQLSessionManager.PROP_KILL_QUERY, killQuery));
             }
         }
     }

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Karl
@@ -87,11 +88,11 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
 
         @Override
         public void run() {
-            final DBAServerSession session = getSessionsViewer().getSelectedSession();
+            final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
             final String action = ExasolMessages.editors_exasol_session_editor_action_kill;
             if (UIUtils.confirmAction(getSite().getShell(), "Confirm kill session",
-                NLS.bind(ExasolMessages.editors_exasol_session_editor_confirm_action, action.toLowerCase(), session))) {
-                getSessionsViewer().alterSession(getSessionsViewer().getSelectedSession(), Collections.singletonMap(ExasolServerSessionManager.PROP_KILL_QUERY, (Object) killQuery));
+                NLS.bind(ExasolMessages.editors_exasol_session_editor_confirm_action, action.toLowerCase(), sessions))) {
+                getSessionsViewer().alterSessions(sessions, Collections.singletonMap(ExasolServerSessionManager.PROP_KILL_QUERY, killQuery));
             }
         }
     }
