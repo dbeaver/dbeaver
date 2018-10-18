@@ -322,6 +322,22 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
     }
 
+    public List<DBAServerSession> getSelectedSessions()
+    {
+        ISelection selection = sessionTable.getSelectionProvider().getSelection();
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            List<DBAServerSession> sessions = new ArrayList<>();
+            for (Object item : ((IStructuredSelection) selection).toArray()) {
+                if (item instanceof DBAServerSession) {
+                    sessions.add((DBAServerSession) item);
+                }
+            }
+            return sessions;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     public void refreshSessions()
     {
         sessionTable.loadData();
@@ -330,8 +346,8 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         refreshControl.scheduleAutoRefresh(false);
     }
 
-    public void alterSession(final SESSION_TYPE session, Map<String, Object> options) {
-        sessionTable.createAlterService(session, options).schedule();
+    public void alterSessions(final List<SESSION_TYPE> sessions, Map<String, Object> options) {
+        sessionTable.createAlterService(sessions, options).schedule();
     }
 
     private void updateSQL() {

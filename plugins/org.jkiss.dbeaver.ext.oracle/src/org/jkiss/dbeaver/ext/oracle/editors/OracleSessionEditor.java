@@ -39,8 +39,8 @@ import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -150,13 +150,13 @@ public class OracleSessionEditor extends AbstractSessionEditor
         @Override
         public void run()
         {
-            final DBAServerSession session = getSessionsViewer().getSelectedSession();
+            final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
             final String action = (kill ? OracleMessages.editors_oracle_session_editor_action_kill : OracleMessages.editors_oracle_session_editor_action_disconnect) + OracleMessages.editors_oracle_session_editor_action__session;
             ConfirmationDialog dialog = new ConfirmationDialog(
                 getSite().getShell(),
                 action,
                 null,
-                NLS.bind(OracleMessages.editors_oracle_session_editor_confirm_action, action.toLowerCase(), session),
+                NLS.bind(OracleMessages.editors_oracle_session_editor_confirm_action, action.toLowerCase(), sessions),
                 MessageDialog.CONFIRM,
                 new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL },
                 0,
@@ -170,7 +170,7 @@ public class OracleSessionEditor extends AbstractSessionEditor
                 if (dialog.getToggleState()) {
                     options.put(OracleServerSessionManager.PROP_IMMEDIATE, true);
                 }
-                getSessionsViewer().alterSession(session, options);
+                getSessionsViewer().alterSessions(sessions, options);
             }
         }
     }
