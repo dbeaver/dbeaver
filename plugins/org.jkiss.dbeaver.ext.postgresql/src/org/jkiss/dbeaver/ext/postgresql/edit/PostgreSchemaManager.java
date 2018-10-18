@@ -74,7 +74,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final PostgreSchema schema = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));

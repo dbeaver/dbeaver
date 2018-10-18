@@ -76,8 +76,8 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
 
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
             additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
-            additionalInfo.setCharset(parent.getDefaultCharset());
-            additionalInfo.setCollation(parent.getDefaultCollation());
+            additionalInfo.setCharset(parent.getAdditionalInfo(monitor).getDefaultCharset());
+            additionalInfo.setCollation(parent.getAdditionalInfo(monitor).getDefaultCollation());
         } else {
             throw new DBException("Can't create MySQL table from '" + copyFrom + "'");
         }

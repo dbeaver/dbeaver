@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -32,9 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
-import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -69,26 +68,113 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
     private MySQLDataSource dataSource;
     private String name;
-    private MySQLCharset defaultCharset;
-    private MySQLCollation defaultCollation;
-    private String sqlPath;
     private Long databaseSize;
     private boolean persisted;
+
+    public static class AdditionalInfo {
+        private volatile boolean loaded = false;
+        private MySQLCharset defaultCharset;
+        private MySQLCollation defaultCollation;
+        private String sqlPath;
+
+        @Property(viewable = true, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 2)
+        public MySQLCharset getDefaultCharset()
+        {
+            return defaultCharset;
+        }
+
+        public void setDefaultCharset(MySQLCharset defaultCharset)
+        {
+            this.defaultCharset = defaultCharset;
+        }
+
+        @Property(viewable = true, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 3)
+        public MySQLCollation getDefaultCollation()
+        {
+            return defaultCollation;
+        }
+
+        public void setDefaultCollation(MySQLCollation defaultCollation)
+        {
+            this.defaultCollation = defaultCollation;
+        }
+
+        @Property(viewable = true, order = 4)
+        public String getSqlPath()
+        {
+            return sqlPath;
+        }
+
+        void setSqlPath(String sqlPath)
+        {
+            this.sqlPath = sqlPath;
+        }
+
+    }
+
+    public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLCatalog> {
+        @Override
+        public boolean isPropertyCached(MySQLCatalog object, Object propertyId)
+        {
+            return object.additionalInfo.loaded;
+        }
+    }
+
+    private final AdditionalInfo additionalInfo = new AdditionalInfo();
+
+    @PropertyGroup()
+    @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
+    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException {
+        synchronized (additionalInfo) {
+            if (!additionalInfo.loaded) {
+                loadAdditionalInfo(monitor);
+            }
+            return additionalInfo;
+        }
+    }
+
+    // for internal use only
+    public AdditionalInfo getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    {
+        if (!isPersisted()) {
+            additionalInfo.loaded = true;
+            return;
+        }
+        MySQLDataSource dataSource = getDataSource();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM " + MySQLConstants.INFO_SCHEMA_NAME + ".SCHEMATA WHERE SCHEMA_NAME=?")) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        additionalInfo.defaultCharset = dataSource.getCharset(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_CHARACTER_SET_NAME));
+                        additionalInfo.defaultCollation = dataSource.getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_COLLATION_NAME));
+                        additionalInfo.sqlPath = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SQL_PATH);
+                    }
+                    additionalInfo.loaded = true;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, dataSource);
+        }
+    }
 
     public MySQLCatalog(MySQLDataSource dataSource, ResultSet dbResult)
     {
         tableCache.setCaseSensitive(false);
         this.dataSource = dataSource;
         if (dbResult != null) {
-            this.name = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME);
-            defaultCharset = dataSource.getCharset(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_CHARACTER_SET_NAME));
-            defaultCollation = dataSource.getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_COLLATION_NAME));
-            sqlPath = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SQL_PATH);
+            this.name = JDBCUtils.safeGetString(dbResult, 1);
             persisted = true;
         } else {
-            defaultCharset = dataSource.getCharset("utf8");
-            defaultCollation = dataSource.getCollation("utf8_general_ci");
-            sqlPath = "";
+            this.additionalInfo.loaded = true;
+            this.additionalInfo.defaultCharset = dataSource.getCharset("utf8");
+            this.additionalInfo.defaultCollation = dataSource.getCollation("utf8_general_ci");
+            this.additionalInfo.sqlPath = "";
             persisted = false;
         }
     }
@@ -136,39 +222,6 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     public String getDescription()
     {
         return null;
-    }
-
-    @Property(viewable = true, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 2)
-    public MySQLCharset getDefaultCharset()
-    {
-        return defaultCharset;
-    }
-
-    public void setDefaultCharset(MySQLCharset defaultCharset)
-    {
-        this.defaultCharset = defaultCharset;
-    }
-
-    @Property(viewable = true, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 3)
-    public MySQLCollation getDefaultCollation()
-    {
-        return defaultCollation;
-    }
-
-    public void setDefaultCollation(MySQLCollation defaultCollation)
-    {
-        this.defaultCollation = defaultCollation;
-    }
-
-    @Property(viewable = true, order = 4)
-    public String getSqlPath()
-    {
-        return sqlPath;
-    }
-
-    void setSqlPath(String sqlPath)
-    {
-        this.sqlPath = sqlPath;
     }
 
     @Property(viewable = true, expensive = true, order = 20)
@@ -786,10 +839,10 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {
-            if (object.defaultCharset == null) {
+            if (object.additionalInfo.defaultCharset == null) {
                 return null;
             } else {
-                return object.defaultCharset.getCollations().toArray();
+                return object.additionalInfo.defaultCharset.getCollations().toArray();
             }
         }
     }
