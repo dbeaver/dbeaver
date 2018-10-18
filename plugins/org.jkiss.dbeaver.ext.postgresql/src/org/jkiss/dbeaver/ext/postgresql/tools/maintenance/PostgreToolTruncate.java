@@ -84,6 +84,7 @@ public class PostgreToolTruncate implements IExternalTool
         protected void createControls(Composite parent) {
             Group optionsGroup = UIUtils.createControlGroup(parent, PostgreMessages.tool_truncate_group_option, 1, 0, 0);
             optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            createTransactionCheck(optionsGroup);
             onlyCheck = UIUtils.createCheckbox(optionsGroup,  PostgreMessages.tool_truncate_checkbox_only, PostgreMessages.tool_truncate_checkbox_only_tooltip, false, 0);
             onlyCheck.addSelectionListener(SQL_CHANGE_LISTENER);
             restartIdentityCheck = UIUtils.createCheckbox(optionsGroup,  PostgreMessages.tool_truncate_checkbox_restart, PostgreMessages.tool_truncate_checkbox_restart_tooltip, false, 0);
