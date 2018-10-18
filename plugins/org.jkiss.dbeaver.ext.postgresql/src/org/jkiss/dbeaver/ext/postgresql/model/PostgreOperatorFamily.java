@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -75,7 +74,7 @@ public class PostgreOperatorFamily extends PostgreInformation {
 
     @Property(viewable = true, order = 4)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, accessMethod.getDatabase().roleCache, accessMethod.getDatabase(), ownerId);
+        return accessMethod.getDatabase().getRoleById(monitor, ownerId);
     }
 
 }

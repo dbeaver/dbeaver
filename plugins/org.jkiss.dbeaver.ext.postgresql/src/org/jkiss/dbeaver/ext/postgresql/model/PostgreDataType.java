@@ -40,10 +40,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * PostgreTypeType
@@ -336,7 +333,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     @Property(order = 15)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
+        return getDatabase().getRoleById(monitor, ownerId);
     }
 
     @Property(category = CAT_MISC)
@@ -565,7 +562,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
         int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
         PostgreTypeCategory typeCategory;
-        final String catString = JDBCUtils.safeGetString(dbResult, "typcategory");
+        final String catString =
+            PostgreUtils.supportsTypeCategory(session.getDataSource()) ? JDBCUtils.safeGetString(dbResult, "typcategory") : null;
         if (catString == null) {
             typeCategory = null;
         } else {
