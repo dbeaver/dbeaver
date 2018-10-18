@@ -86,7 +86,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         SQLDatabasePersistAction action = new SQLDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
             DBUtils.getQuotedIdentifier(command.getObject())));

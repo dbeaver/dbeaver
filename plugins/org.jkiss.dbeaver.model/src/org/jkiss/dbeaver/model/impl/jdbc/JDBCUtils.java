@@ -678,31 +678,41 @@ public class JDBCUtils {
             return;
         }
         if (filter.hasSingleMask()) {
-            firstClause = SQLUtils.appendFirstClause(sql, firstClause);
-            sql.append(columnAlias);
+            if (columnAlias != null) {
+                firstClause = SQLUtils.appendFirstClause(sql, firstClause);
+                sql.append(columnAlias);
+            }
             SQLUtils.appendLikeCondition(sql, filter.getSingleMask(), false);
             return;
         }
         List<String> include = filter.getInclude();
         if (!CommonUtils.isEmpty(include)) {
-            firstClause = SQLUtils.appendFirstClause(sql, firstClause);
+            if (columnAlias != null) {
+                firstClause = SQLUtils.appendFirstClause(sql, firstClause);
+            }
             sql.append("(");
             for (int i = 0, includeSize = include.size(); i < includeSize; i++) {
                 if (i > 0)
                     sql.append(" OR ");
-                sql.append(columnAlias);
+                if (columnAlias != null) {
+                    sql.append(columnAlias);
+                }
                 SQLUtils.appendLikeCondition(sql, include.get(i), false);
             }
             sql.append(")");
         }
         List<String> exclude = filter.getExclude();
         if (!CommonUtils.isEmpty(exclude)) {
-            SQLUtils.appendFirstClause(sql, firstClause);
+            if (columnAlias != null) {
+                SQLUtils.appendFirstClause(sql, firstClause);
+            }
             sql.append("NOT (");
             for (int i = 0, excludeSize = exclude.size(); i < excludeSize; i++) {
                 if (i > 0)
                     sql.append(" OR ");
-                sql.append(columnAlias);
+                if (columnAlias != null) {
+                    sql.append(columnAlias);
+                }
                 SQLUtils.appendLikeCondition(sql, exclude.get(i), false);
             }
             sql.append(")");

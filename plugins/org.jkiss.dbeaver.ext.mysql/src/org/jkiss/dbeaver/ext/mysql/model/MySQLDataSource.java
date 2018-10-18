@@ -667,10 +667,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException
         {
-            StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
+            StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_SCHEMA_NAME, true);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, null, true);
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {

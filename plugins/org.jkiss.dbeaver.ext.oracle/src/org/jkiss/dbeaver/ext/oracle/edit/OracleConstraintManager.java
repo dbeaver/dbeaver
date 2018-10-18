@@ -112,7 +112,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     }
     
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
     {
     	OracleTableConstraint constraint = (OracleTableConstraint) command.getObject();

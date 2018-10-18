@@ -72,7 +72,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final PostgreRole role = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE ROLE " + DBUtils.getQuotedIdentifier(role));
         addRoleOptions(script, role, true);

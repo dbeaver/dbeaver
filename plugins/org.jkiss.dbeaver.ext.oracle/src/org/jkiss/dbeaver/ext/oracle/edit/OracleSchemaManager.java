@@ -86,7 +86,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         OracleUser user = command.getObject().getUser();
         String sql = "CREATE USER " + DBUtils.getQuotedIdentifier(user);
