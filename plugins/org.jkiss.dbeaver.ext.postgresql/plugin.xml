@@ -46,7 +46,7 @@
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view &amp;&amp; !object.external">
                                         <items label="%tree.constraint.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                             <items label="%tree.constraint.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                             </items>
