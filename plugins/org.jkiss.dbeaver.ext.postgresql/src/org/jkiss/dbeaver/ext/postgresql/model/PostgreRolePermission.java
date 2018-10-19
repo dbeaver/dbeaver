@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -54,7 +55,8 @@ public class PostgreRolePermission extends PostgrePermission {
     {
         final PostgreSchema schema = owner.getDatabase().getSchema(monitor, schemaName);
         if (schema != null) {
-            return schema.getChild(monitor, objectName);
+            JDBCTable childTable = schema.getChild(monitor, objectName);
+            return childTable instanceof PostgreObject ? (PostgreObject) childTable : null;
         }
         return null;
     }
