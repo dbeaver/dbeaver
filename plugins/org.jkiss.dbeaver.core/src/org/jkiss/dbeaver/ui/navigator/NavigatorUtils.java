@@ -556,15 +556,6 @@ public class NavigatorUtils {
         return null;
     }
 
-    public static DBNDataSource getDataSourceNode(DBNNode node) {
-        for (DBNNode pn = node; pn != null; pn = pn.getParentNode()) {
-            if (pn instanceof DBNDataSource) {
-                return (DBNDataSource) pn;
-            }
-        }
-        return null;
-    }
-
     public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node, boolean forTree) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
         if (children != null && children.length > 0) {
