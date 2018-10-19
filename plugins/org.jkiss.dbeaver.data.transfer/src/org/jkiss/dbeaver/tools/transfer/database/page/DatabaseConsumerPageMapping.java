@@ -32,15 +32,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.database.*;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -102,7 +100,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             Composite containerPanel = new Composite(composite, SWT.NONE);
             containerPanel.setLayout(new GridLayout(4, false));
             containerPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createControlLabel(containerPanel, "Target container");
+            UIUtils.createControlLabel(containerPanel, DTMessages.data_transfer_db_consumer_target_container);
 
             containerIcon = new Label(containerPanel, SWT.NONE);
             containerIcon.setImage(DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN));
@@ -138,14 +136,15 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         }
                         DBNNode node = DBUserInterface.getInstance().selectObject(
                             getShell(),
-                            "Choose container",
+                            DTMessages.data_transfer_db_consumer_choose_container,
                             rootNode.getDatabases(),
                             selectedNode,
                             new Class[] {DBSObjectContainer.class},
                             null, new Class[] { DBSSchema.class });
                         if (node instanceof DBNDatabaseNode) {
                             settings.setContainerNode((DBNDatabaseNode) node);
-                            containerIcon.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
+                            DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(node);
+                            containerIcon.setImage(DBeaverIcons.getImage(dataSourceNode == null ? node.getNodeIconDefault() : dataSourceNode.getNodeIconDefault()));
                             containerName.setText(settings.getContainerFullName());
                             // Reset mappings
                             for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
@@ -175,7 +174,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
             final Button mapTableButton = new Button(buttonsPanel, SWT.PUSH);
             mapTableButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
-            mapTableButton.setText("Existing table ...");
+            mapTableButton.setText(DTMessages.data_transfer_db_consumer_existing_table);
             mapTableButton.setEnabled(false);
             mapTableButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -187,7 +186,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
             final Button createNewButton = new Button(buttonsPanel, SWT.PUSH);
             createNewButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_VIEW));
-            createNewButton.setText("New table...");
+            createNewButton.setText(DTMessages.data_transfer_db_consumer_new_table);
             createNewButton.setEnabled(false);
             createNewButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -199,7 +198,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
             final Button columnsButton = new Button(buttonsPanel, SWT.PUSH);
             columnsButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_COLUMNS));
-            columnsButton.setText("Columns' mappings ...");
+            columnsButton.setText(DTMessages.data_transfer_db_consumer_column_mappings);
             columnsButton.setEnabled(false);
             columnsButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -214,7 +213,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
             final Button ddlButton = new Button(buttonsPanel, SWT.PUSH);
             ddlButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
-            ddlButton.setText("DDL ...");
+            ddlButton.setText(DTMessages.data_transfer_db_consumer_ddl);
             ddlButton.setEnabled(false);
             ddlButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -695,7 +694,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         settings.loadNode(getContainer());
         DBNDatabaseNode containerNode = settings.getContainerNode();
         if (containerNode != null) {
-            containerIcon.setImage(DBeaverIcons.getImage(containerNode.getNodeIconDefault()));
+            DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(containerNode);
+            containerIcon.setImage(DBeaverIcons.getImage(dataSourceNode == null ? containerNode.getNodeIconDefault() : dataSourceNode.getNodeIcon()));
             containerName.setText(containerNode.getNodeFullName());
         }
 
