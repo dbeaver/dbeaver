@@ -17,14 +17,24 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * PostgreServerRedshift
@@ -141,6 +151,53 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
             }
         } catch (Exception e) {
             throw new DBException(e, table.getDataSource());
+        }
+    }
+
+    @Override
+    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+        return new RedshiftSchemaCache();
+    }
+
+    private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
+        private final Map<String, String> esSchemaMap = new HashMap<>();
+
+        @Override
+        public JDBCStatement prepareLookupStatement(JDBCSession session, PostgreDatabase database, PostgreSchema object, String objectName) throws SQLException {
+            // 1. Read all external schemas info
+            esSchemaMap.clear();
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM pg_catalog.svv_external_schemas WHERE databasename=?")) {
+                dbStat.setString(1, database.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String esSchemaName = dbResult.getString("schemaname");
+                        String esSchemaOptions = dbResult.getString("esoptions");
+                        esSchemaMap.put(esSchemaName, esSchemaOptions);
+                    }
+                }
+            }
+
+            // 2. Rad standard schemas
+            return super.prepareLookupStatement(session, database, object, objectName);
+        }
+
+        @Override
+        protected PostgreSchema fetchObject(JDBCSession session, PostgreDatabase owner, JDBCResultSet resultSet) throws SQLException, DBException {
+            String name = JDBCUtils.safeGetString(resultSet, "nspname");
+            String esOptions = esSchemaMap.get(name);
+            if (esOptions != null) {
+                // External schema
+                return new RedshiftExternalSchema(owner, name, esOptions, resultSet);
+            } else {
+                return super.fetchObject(session, owner, resultSet);
+            }
+        }
+
+        @Override
+        public void clearCache() {
+            super.clearCache();
+            esSchemaMap.clear();
         }
     }
 }

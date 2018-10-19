@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor; /**
  * PostgreServerExtension
  */
@@ -65,4 +67,6 @@ public interface PostgreServerExtension
     String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
 
     boolean supportsTemplates();
+
+    JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> createSchemaCache(PostgreDatabase database);
 }

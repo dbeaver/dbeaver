@@ -274,4 +274,14 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     public String toString() {
         return dataSource.toString();
     }
+
+    public static DBNDataSource getDataSourceNode(DBNNode node) {
+        for (DBNNode pn = node; pn != null; pn = pn.getParentNode()) {
+            if (pn instanceof DBNDataSource) {
+                return (DBNDataSource) pn;
+            }
+        }
+        return null;
+    }
+
 }
