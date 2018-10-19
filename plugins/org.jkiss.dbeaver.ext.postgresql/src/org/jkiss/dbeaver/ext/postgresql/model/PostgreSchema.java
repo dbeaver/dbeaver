@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -198,7 +199,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     }
 
     @Association
-    public Collection<PostgreTable> getTables(DBRProgressMonitor monitor)
+    public Collection<? extends JDBCTable> getTables(DBRProgressMonitor monitor)
         throws DBException {
         return tableCache.getTypedObjects(monitor, this, PostgreTable.class)
             .stream()
@@ -252,13 +253,13 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     }
 
     @Override
-    public Collection<PostgreTableReal> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends JDBCTable> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return tableCache.getTypedObjects(monitor, this, PostgreTableReal.class);
     }
 
     @Override
-    public PostgreTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+    public JDBCTable getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException {
         return tableCache.getObject(monitor, this, childName);
     }
