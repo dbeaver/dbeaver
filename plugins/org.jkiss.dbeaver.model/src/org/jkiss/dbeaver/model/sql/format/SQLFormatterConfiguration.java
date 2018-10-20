@@ -108,7 +108,7 @@ public class SQLFormatterConfiguration {
     }
 
     public boolean isFunction(String name) {
-        return syntaxManager.getDialect().getKeywordType(name) == DBPKeywordType.FUNCTION;
+        return syntaxManager.getDialect().getFunctions(dataSource).contains(name.toUpperCase(Locale.ENGLISH));
     }
 
     public Object getProperty(String name) {
