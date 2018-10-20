@@ -33,6 +33,6 @@
 	<tip>You can export data directly from SQL query without pre-executing it (use SQL editor context menu Execute->Export From Query).</tip>
 	<tip>You can assign your own shortcuts for almost any DBeaver operations. And you can change most of existing shortcuts.</tip>
 	<tip>You can debug PostgreSQL functions. Use debug tool (in the main toolbar) to initiate debug session.</tip>
-	<tip>Data editor supports copy/paste of multiple cells. USe <b>Ctrl+Shift+V</b> to paste multiple rows/columns (separated by tabs and line feeds)</tip>
+	<tip>Data editor supports copy/paste of multiple cells. Use <b>Ctrl+Shift+V</b> to paste multiple rows/columns (separated by tabs and line feeds)</tip>
 	<tip>DBeaver documentation can be found in our WIKI (<a href="https://github.com/dbeaver/dbeaver/wiki" target="_bank">https://github.com/dbeaver/dbeaver/wiki</a>)</tip>
 </tips>
