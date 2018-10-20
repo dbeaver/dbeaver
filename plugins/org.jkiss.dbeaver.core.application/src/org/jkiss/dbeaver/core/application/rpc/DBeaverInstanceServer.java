@@ -95,6 +95,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
         boolean makeConnect = true, openConsole = false, savePassword = true;
+        boolean showSystemObjects = false, showUtilityObjects = false;
         Boolean autoCommit = null;
         Map<String, String> conProperties = new HashMap<>();
         DBPDataSourceFolder folder = null;
@@ -119,6 +120,8 @@ public class DBeaverInstanceServer implements IInstanceController {
                 case "user": user = paramValue; break;
                 case "password": password = paramValue; break;
                 case "savePassword": savePassword = CommonUtils.toBoolean(paramValue); break;
+                case "showSystemObjects": showSystemObjects = CommonUtils.toBoolean(paramValue); break;
+                case "showUtilityObjects": showUtilityObjects = CommonUtils.toBoolean(paramValue); break;
                 case "connect": makeConnect = CommonUtils.toBoolean(paramValue); break;
                 case "openConsole": openConsole = CommonUtils.toBoolean(paramValue); break;
                 case "folder": folder = dsRegistry.getFolder(paramValue); break;
@@ -179,6 +182,8 @@ public class DBeaverInstanceServer implements IInstanceController {
             if (folder != null) {
                 ds.setFolder(folder);
             }
+            ds.setShowSystemObjects(showSystemObjects);
+            ds.setShowUtilityObjects(showUtilityObjects);
             //ds.set
             dsRegistry.addDataSource(ds);
         }
