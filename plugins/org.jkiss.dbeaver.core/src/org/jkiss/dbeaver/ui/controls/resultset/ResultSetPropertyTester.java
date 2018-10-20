@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -54,7 +55,10 @@ public class ResultSetPropertyTester extends PropertyTester
             ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet((IWorkbenchPart)receiver);
             return rsv != null && checkResultSetProperty(rsv, property, expectedValue);
         } catch (Throwable e) {
-            log.debug(e);
+            if (!DBeaverCore.isClosing()) {
+                // FIXME: bug in Eclipse. To remove in future.
+                log.debug(e);
+            }
             return false;
         }
     }
