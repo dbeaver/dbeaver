@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -114,7 +115,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart != null) {
             IWorkbenchPartSite site = activePart.getSite();
-            if (site != null) {
+            if (site != null && !DBeaverCore.isClosing()) {
                 Shell shell = site.getShell();
                 if (shell != null) {
                     for (Control focusControl = shell.getDisplay().getFocusControl(); focusControl != null; focusControl = focusControl.getParent()) {

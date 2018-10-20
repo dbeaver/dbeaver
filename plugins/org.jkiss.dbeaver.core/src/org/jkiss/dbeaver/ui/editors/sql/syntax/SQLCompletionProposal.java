@@ -161,7 +161,12 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             }
             replacementOffset = wordDetector.getStartOffset() + startOffset;
             // If we are at the begin of word (curOffset == 0) then do not replace the word to the right.
-            replacementLength = curOffset == 0 ? 0 : wordDetector.getEndOffset() - replacementOffset - endOffset;
+            boolean replaceWord = dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD);
+            if (replaceWord) {
+                replacementLength = wordDetector.getEndOffset() - replacementOffset - endOffset;
+            } else {
+                replacementLength = 0;
+            }
         } else {
             int startOffset = fullWord.indexOf(structSeparator);
             int endOffset = fullWord.indexOf(structSeparator, curOffset);
