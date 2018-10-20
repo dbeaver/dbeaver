@@ -1099,6 +1099,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_completion_label_auto_insert_proposal;
 	public static String pref_page_sql_completion_label_auto_insert_proposal_tip;
 	public static String pref_page_sql_completion_label_insert_case;
+
+	public static String pref_page_sql_completion_label_replace_word_after;
+	public static String pref_page_sql_completion_label_replace_word_after_tip;
 	public static String pref_page_sql_completion_label_hide_duplicate_names;
 	public static String pref_page_sql_completion_label_use_short_names;
 	public static String pref_page_sql_completion_label_use_long_names;
