@@ -36,6 +36,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.Log;
@@ -322,8 +323,12 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         {
             // Close editor only if it is simple disconnect
             // Workbench shutdown doesn't close editor
-            UIUtils.asyncExec(() ->
-                editor.getSite().getWorkbenchWindow().getActivePage().closeEditor(editor, false));
+            UIUtils.asyncExec(() -> {
+                IWorkbenchPartSite site = editor.getSite();
+                if (site != null) {
+                    site.getWorkbenchWindow().getActivePage().closeEditor(editor, false);
+                }
+            });
         }
     }
 

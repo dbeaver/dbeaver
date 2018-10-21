@@ -125,10 +125,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Property(viewable = true, editable = false, updatable = false, order = 10)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        if (!getDataSource().isServerVersionAtLeast(8, 1)) {
-            return null;
-        }
-        return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
+        return getDatabase().getRoleById(monitor, ownerId);
     }
 
     @NotNull

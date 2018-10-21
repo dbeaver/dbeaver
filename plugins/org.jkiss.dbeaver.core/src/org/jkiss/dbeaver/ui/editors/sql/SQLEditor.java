@@ -2306,7 +2306,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public boolean isReadyToRun()
         {
-            return queryProcessor.curJob == null || queryProcessor.curJobRunning.get() == 0;
+            return queryProcessor.curJob == null || queryProcessor.curJobRunning.get() <= 0;
         }
 
         @Override

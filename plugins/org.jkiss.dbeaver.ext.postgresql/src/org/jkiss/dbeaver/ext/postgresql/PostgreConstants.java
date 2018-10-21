@@ -56,6 +56,7 @@ public class PostgreConstants {
     public static final DBSEntityConstraintType CONSTRAINT_EXCLUSIVE = new DBSEntityConstraintType("exclusive", "EXCLUSIVE", "Exclusive constraint", false, false, false); //$NON-NLS-1$
 
     public static final String INFO_SCHEMA_NAME = "information_schema";
+    public static final String SYSTEM_SCHEMA_PREFIX = "pg_";
     public static final String CATALOG_SCHEMA_NAME = "pg_catalog";
     public static final String TEMP_SCHEMA_NAME = "pg_temp";
     public static final String TOAST_SCHEMA_PREFIX = "pg_toast";

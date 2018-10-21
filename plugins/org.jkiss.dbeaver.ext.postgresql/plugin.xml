@@ -38,7 +38,7 @@
                 <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
                         <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
-                            <icon if="object.utility" icon="#schema_util"/>
+                            <icon if="object.utility || object.external" icon="#schema_util"/>
                             <icon if="object.system" icon="#schema_system"/>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
                                 <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
@@ -46,7 +46,7 @@
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view &amp;&amp; !object.external">
                                         <items label="%tree.constraint.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                             <items label="%tree.constraint.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                             </items>

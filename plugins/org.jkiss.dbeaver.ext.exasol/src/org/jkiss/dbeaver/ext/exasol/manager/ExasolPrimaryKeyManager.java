@@ -105,7 +105,7 @@ public class ExasolPrimaryKeyManager
 	}
 	
 	@Override
-	protected void addObjectCreateActions(List<DBEPersistAction> actions,
+	protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
 	{
 		ExasolTableUniqueKey obj = (ExasolTableUniqueKey) command.getObject();

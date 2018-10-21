@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -126,6 +127,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsTemplates() {
         return true;
+    }
+
+    @Override
+    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+        return new PostgreDatabase.SchemaCache();
     }
 
     @Override

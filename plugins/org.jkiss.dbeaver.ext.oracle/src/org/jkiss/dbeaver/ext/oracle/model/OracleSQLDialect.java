@@ -311,8 +311,12 @@ class OracleSQLDialect extends JDBCSQLDialect {
                 "ITERATION_NUMBER",
                 "PRESENTNNV",
                 "PRESENTV",
-                "PREVIOUS"
+                "PREVIOUS",
 
+                // Other #4134
+                "EXTRACT",
+                "LISTAGG",
+                "OVER"
             ));
         removeSQLKeyword("SYSTEM");
 

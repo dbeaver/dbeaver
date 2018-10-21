@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.views.MySQLCreateDatabaseDialog;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
+import org.jkiss.dbeaver.ext.mysql.views.MySQLCreateDatabaseDialog;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -68,15 +68,15 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
                 String schemaName = dialog.getName();
                 MySQLCatalog newCatalog = new MySQLCatalog(parent, null);
                 newCatalog.setName(schemaName);
-                newCatalog.setDefaultCharset(dialog.getCharset());
-                newCatalog.setDefaultCollation(dialog.getCollation());
+                newCatalog.getAdditionalInfo().setDefaultCharset(dialog.getCharset());
+                newCatalog.getAdditionalInfo().setDefaultCollation(dialog.getCollation());
                 return newCatalog;
             }
         }.execute();
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
@@ -86,8 +86,7 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
         );
     }
 
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("ALTER DATABASE `" + catalog.getName() + "`");
         appendDatabaseModifiers(catalog, script);
@@ -97,11 +96,11 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
     }
 
     private void appendDatabaseModifiers(MySQLCatalog catalog, StringBuilder script) {
-        if (catalog.getDefaultCharset() != null) {
-            script.append("\nDEFAULT CHARACTER SET ").append(catalog.getDefaultCharset().getName());
+        if (catalog.getAdditionalInfo().getDefaultCharset() != null) {
+            script.append("\nDEFAULT CHARACTER SET ").append(catalog.getAdditionalInfo().getDefaultCharset().getName());
         }
-        if (catalog.getDefaultCollation() != null) {
-            script.append("\nDEFAULT COLLATE ").append(catalog.getDefaultCollation().getName());
+        if (catalog.getAdditionalInfo().getDefaultCollation() != null) {
+            script.append("\nDEFAULT COLLATE ").append(catalog.getAdditionalInfo().getDefaultCollation().getName());
         }
     }
 

@@ -210,7 +210,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_FILE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_TIMEOUT, 2000);
 
-        PrefUtils.setDefaultPreferenceValue(store, READ_EXPENSIVE_PROPERTIES, false);
+        PrefUtils.setDefaultPreferenceValue(store, READ_EXPENSIVE_PROPERTIES, true);
 
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_HOST, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PORT, 1080);

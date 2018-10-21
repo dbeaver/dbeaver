@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
@@ -360,7 +359,7 @@ public class SearchDataPage extends AbstractSearchPage {
             for (DBNNode node : checkedNodes) {
                 ((CheckboxTreeViewer) dataSourceTree.getViewer()).setChecked(node, true);
                 if (first) {
-                    DBNDataSource dsNode = NavigatorUtils.getDataSourceNode(node);
+                    DBNDataSource dsNode = DBNDataSource.getDataSourceNode(node);
                     if (dsNode != null) {
                         dataSourceTree.getViewer().reveal(dsNode);
                     }

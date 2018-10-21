@@ -48,13 +48,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button sortFoldersFirstCheck;
     private Button groupByDriverCheck;
     private Text longListFetchSizeText;
-    private Button syncEditorDataSourceWithNavigator;
     private Combo dsDoubleClickBehavior;
     private Combo objDoubleClickBehavior;
-    private Button showGeneralToolbarEverywhere;
-    private Button showEditToolbar;
-    private Spinner toolbarDatabaseSelectorWidth;
-    private Spinner toolbarSchemaSelectorWidth;
 
     public PrefPageDatabaseNavigator()
     {
@@ -89,8 +84,6 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             longListFetchSizeText.setToolTipText(CoreMessages.pref_page_database_general_label_long_list_fetch_size_tip);
             longListFetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
-            syncEditorDataSourceWithNavigator = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_sync_editor_connection_with_navigator, CoreMessages.pref_page_database_general_label_sync_editor_connection_with_navigator_tip, false, 2);
-
             objDoubleClickBehavior = UIUtils.createLabelCombo(navigatorGroup, CoreMessages.pref_page_database_general_label_double_click_node, SWT.DROP_DOWN | SWT.READ_ONLY);
             objDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_node_open_properties, 0);
             objDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_node_expand_collapse, 1);
@@ -103,16 +96,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_open_new_sqleditor, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR_NEW.ordinal());
         }
 
-        {
-            Group toolbarsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_toolbars, 2, SWT.NONE, 0);
-
-            showGeneralToolbarEverywhere = UIUtils.createCheckbox(toolbarsGroup, CoreMessages.pref_page_database_general_label_show_general_toolbar_everywhere, CoreMessages.pref_page_database_general_label_show_general_toolbar_everywhere_tip, false, 2);
-            showEditToolbar = UIUtils.createCheckbox(toolbarsGroup, CoreMessages.pref_page_database_general_label_show_edit_toolbar, CoreMessages.pref_page_database_general_label_show_edit_toolbar_tip, false, 2);
-            toolbarDatabaseSelectorWidth = UIUtils.createLabelSpinner(toolbarsGroup, CoreMessages.pref_page_database_general_label_database_selector_width, CoreMessages.pref_page_database_general_label_database_selector_width_tip, 20, 10, 200);
-            toolbarSchemaSelectorWidth = UIUtils.createLabelSpinner(toolbarsGroup, CoreMessages.pref_page_database_general_label_schema_selector_width, CoreMessages.pref_page_database_general_label_schema_selector_width_tip, 20, 10, 200);
-        }
-
-            performDefaults();
+        performDefaults();
 
         return composite;
     }
@@ -128,16 +112,10 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         sortFoldersFirstCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
         groupByDriverCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER));
         longListFetchSizeText.setText(store.getString(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
-        syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
         NavigatorViewBase.DoubleClickBehavior objDCB = NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
         objDoubleClickBehavior.select(objDCB == NavigatorViewBase.DoubleClickBehavior.EXPAND ? 1 : 0);
         dsDoubleClickBehavior.select(
             NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)).ordinal());
-
-        showGeneralToolbarEverywhere.setSelection(store.getBoolean(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS));
-        showEditToolbar.setSelection(store.getBoolean(DBeaverPreferences.TOOLBARS_SHOW_EDIT));
-        toolbarDatabaseSelectorWidth.setSelection(store.getInt(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH));
-        toolbarSchemaSelectorWidth.setSelection(store.getInt(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH));
     }
 
     @Override
@@ -151,7 +129,6 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE, longListFetchSizeText.getText());
-        store.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
         NavigatorViewBase.DoubleClickBehavior objDCB = NavigatorViewBase.DoubleClickBehavior.EXPAND;
         if (objDoubleClickBehavior.getSelectionIndex() == 0) {
             objDCB = NavigatorViewBase.DoubleClickBehavior.EDIT;
@@ -159,11 +136,6 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK, objDCB.name());
         store.setValue(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,
             CommonUtils.fromOrdinal(NavigatorViewBase.DoubleClickBehavior.class, dsDoubleClickBehavior.getSelectionIndex()).name());
-
-        store.setValue(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS, showGeneralToolbarEverywhere.getSelection());
-        store.setValue(DBeaverPreferences.TOOLBARS_SHOW_EDIT, showEditToolbar.getSelection());
-        store.setValue(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH, toolbarDatabaseSelectorWidth.getSelection());
-        store.setValue(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH, toolbarSchemaSelectorWidth.getSelection());
 
         PrefUtils.savePreferenceStore(store);
 
