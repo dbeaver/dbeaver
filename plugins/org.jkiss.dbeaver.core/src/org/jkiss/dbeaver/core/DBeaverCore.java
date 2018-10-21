@@ -179,6 +179,9 @@ public class DBeaverCore implements DBPPlatform {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
 
+        // Validate that UI was initialized
+        DBeaverUI.getInstance();
+
         DBPPreferenceStore prefsStore = getGlobalPreferenceStore();
         //' Global pref events forwarder
         prefsStore.addPropertyChangeListener(event -> {

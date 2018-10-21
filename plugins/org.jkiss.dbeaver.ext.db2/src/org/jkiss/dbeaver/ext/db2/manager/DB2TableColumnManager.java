@@ -124,8 +124,8 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-        super.addObjectCreateActions(actions, command, options);
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        super.addObjectCreateActions(monitor, actions, command, options);
         if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
             actions.add(buildCommentAction(command.getObject()));
         }

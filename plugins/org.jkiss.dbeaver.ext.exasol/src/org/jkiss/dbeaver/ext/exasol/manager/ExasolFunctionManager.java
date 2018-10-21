@@ -79,7 +79,7 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     }
     
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options) {
         createOrReplaceScriptQuery(actions, command.getObject(), false);
     }

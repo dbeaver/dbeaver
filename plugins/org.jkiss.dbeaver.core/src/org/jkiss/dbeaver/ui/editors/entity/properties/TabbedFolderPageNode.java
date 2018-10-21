@@ -155,6 +155,9 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
         if (!activated || itemControl == null || itemControl.isDisposed()) {
             return;
         }
+        if (!force) {
+            return;
+        }
         // Check - do we need to load new content in editor
         // If this is DBM event then check node change type
         // UNLOAD usually means that connection was closed on connection's node is not removed but

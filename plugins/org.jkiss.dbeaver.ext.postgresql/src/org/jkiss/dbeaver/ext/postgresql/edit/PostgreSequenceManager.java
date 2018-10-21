@@ -84,7 +84,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceSequenceQuery(actions, command.getObject());
     }

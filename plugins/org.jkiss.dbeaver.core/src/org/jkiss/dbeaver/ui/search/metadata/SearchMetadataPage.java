@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
@@ -281,7 +280,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         if (!sourceNodes.isEmpty()) {
             dataSourceTree.getViewer().setSelection(
                 new StructuredSelection(sourceNodes));
-            DBNDataSource node = NavigatorUtils.getDataSourceNode(sourceNodes.get(0));
+            DBNDataSource node = DBNDataSource.getDataSourceNode(sourceNodes.get(0));
             if (node != null) {
                 dataSourceTree.getViewer().reveal(node);
             }

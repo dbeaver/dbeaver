@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<?eclipse version="3.2"?>
-
-
-<!--
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
@@ -17,16 +13,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-  -->
-<tips>
-	<tip>
-		Fantastic!<br/> <i>DBeaver has now tip of the day functionality!</i>
-		Enjoy it!<br/>
-	</tip>
-	<tip>You can execute current query using <b>Ctrl+Enter</b> shortcut.<br/>
-		Queries are separated by delimiters or empty lines.
-	</tip>
-	<tip>You can just select any part of SQL script and run it with <b>Ctrl+Enter</b></tip>
-	<tip>You can run SQL script using <b>Alt+X</b> shortcut. Script queries are separated with delimiters (like ; or go).</tip>
-	<tip>You can filter table rows by column value or using any SQL expression</tip>
-</tips>
+ */
+
+package org.jkiss.dbeaver.ui;
+
+import org.eclipse.jface.action.IContributionManager;
+
+/**
+ * ICustomActionsProvider
+ */
+public interface ICustomActionsProvider
+{
+    void fillCustomActions(IContributionManager contributionManager);
+
+}

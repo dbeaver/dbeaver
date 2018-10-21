@@ -99,7 +99,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         databaseCache = new DatabaseCache();
 
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
+        final boolean showNDD = CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true);
         List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {
             PostgreDatabase defDatabase = new PostgreDatabase(monitor, this, activeDatabaseName);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.IFontProvider;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -39,7 +42,6 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -56,6 +58,9 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * TabbedFolderPageProperties
@@ -162,6 +167,19 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         }
     }
 
+    public List<String> getExtraCategories() {
+        List<String> extraCategories = new ArrayList<>();
+        for (DBPPropertyDescriptor prop : input.getPropertySource().getPropertyDescriptors2()) {
+            String category = prop.getCategory();
+            if (!CommonUtils.isEmpty(category)) {
+                if (!extraCategories.contains(category)) {
+                    extraCategories.add(category);
+                }
+            }
+        }
+        return extraCategories;
+    }
+
     private class PropertiesPageControl extends ProgressPageControl implements ILazyPropertyLoadListener, ISearchExecutor {
 
         PropertiesPageControl(Composite parent) {
@@ -171,6 +189,19 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
                 @Override
                 protected void contributeContextMenu(IMenuManager manager, Object node, String category, DBPPropertyDescriptor property) {
                     fillCustomActions(manager);
+                }
+
+                @Override
+                protected DBPPropertyDescriptor[] filterProperties(Object object, DBPPropertyDescriptor[] properties) {
+                    // Return only properties with categories
+                    List<DBPPropertyDescriptor> result = new ArrayList<>();
+                    for (DBPPropertyDescriptor prop : properties) {
+                        if (CommonUtils.isEmpty(prop.getCategory())) {
+                            continue;
+                        }
+                        result.add(prop);
+                    }
+                    return result.toArray(new DBPPropertyDescriptor[0]);
                 }
             };
             propertyTree.setExtraLabelProvider(new PropertyLabelProvider());
@@ -220,7 +251,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         }
 
         @Override
-        protected void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             {
                 contributionManager.add(new Action(isAttached() ? "Detach properties to top panel" : "Move properties to tab", DBeaverIcons.getImageDescriptor(UIIcon.ASTERISK)) {

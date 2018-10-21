@@ -92,7 +92,7 @@ public class ExasolConnectionManager
     }
     
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
     {
         final ExasolConnection con = command.getObject();

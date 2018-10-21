@@ -156,7 +156,7 @@ public class GenericDataSource extends JDBCDataSource
                 }
             }
         } catch (Throwable e) {
-            log.debug("Error reading and setting client application name", e);
+            log.debug("Error reading and setting client application name: " + e.getMessage());
         }
         if (!wasPopulated) {
             String appName = DBUtils.getClientApplicationName(getContainer(), purpose);

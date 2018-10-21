@@ -28,6 +28,7 @@ import java.util.List;
 public class PropertiesContributor {
 
     public static final String TAB_STANDARD = "standard"; //$NON-NLS-1$
+    public static final String TAB_PROPERTIES = "properties"; //$NON-NLS-1$
 
     public static final String SECTION_STANDARD = "standard"; //$NON-NLS-1$
     public static final String SECTION_ADDITIONAL = "additional"; //$NON-NLS-1$

@@ -78,7 +78,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
     
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options) {
         createOrReplaceScriptQuery(actions, command.getObject(), false);
     }

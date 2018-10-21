@@ -945,7 +945,10 @@ public class UIUtils {
 
     public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
     {
-        final IFocusService focusService = serviceLocator.getService(IFocusService.class);
+        IFocusService focusService = serviceLocator.getService(IFocusService.class);
+        if (focusService == null) {
+            focusService = UIUtils.getActiveWorkbenchWindow().getService(IFocusService.class);
+        }
         if (focusService != null) {
             focusService.addFocusTracker(control, controlID);
         } else {
@@ -959,7 +962,10 @@ public class UIUtils {
             // TODO: it is a bug in eclipse. During workbench shutdown disposed service returned.
             return;
         }
-        final IFocusService focusService = serviceLocator.getService(IFocusService.class);
+        IFocusService focusService = serviceLocator.getService(IFocusService.class);
+        if (focusService == null) {
+            focusService = UIUtils.getActiveWorkbenchWindow().getService(IFocusService.class);
+        }
         if (focusService != null) {
             focusService.removeFocusTracker(control);
         } else {

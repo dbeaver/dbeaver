@@ -948,6 +948,9 @@ public class CoreMessages extends NLS {
     public static String ui_actions_exit_emergency_question;
 	public static String ui_common_button_help;
 	public static String ui_properties_category_information;
+	public static String ui_properties_category_information_tip;
+	public static String ui_properties_category_properties;
+	public static String ui_properties_category_properties_tip;
 	public static String ui_properties_category_structure;
 	public static String ui_properties_name;
 	public static String ui_properties_task_add_folder;
@@ -1096,6 +1099,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_completion_label_auto_insert_proposal;
 	public static String pref_page_sql_completion_label_auto_insert_proposal_tip;
 	public static String pref_page_sql_completion_label_insert_case;
+
+	public static String pref_page_sql_completion_label_replace_word_after;
+	public static String pref_page_sql_completion_label_replace_word_after_tip;
 	public static String pref_page_sql_completion_label_hide_duplicate_names;
 	public static String pref_page_sql_completion_label_use_short_names;
 	public static String pref_page_sql_completion_label_use_long_names;
