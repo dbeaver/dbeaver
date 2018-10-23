@@ -287,9 +287,11 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     private void shutdown() {
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
         try {
+/*
             final IWorkbench workbench = PlatformUI.getWorkbench();
             if (workbench == null)
                 return;
+*/
 
             instanceServer = null;
             DBeaverInstanceServer.stopInstanceServer();
