@@ -95,7 +95,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                     true);
 
                 UIUtils.drawMessageOverControl(viewPlaceholder, e, "Select a cell to view/edit value", 0);
-                UIUtils.drawMessageOverControl(viewPlaceholder, e, "Press " + hidePanelCmd + " to hide this panel", 10);
+                UIUtils.drawMessageOverControl(viewPlaceholder, e, "Press " + hidePanelCmd + " to hide this panel", 20);
             }
         });
 
