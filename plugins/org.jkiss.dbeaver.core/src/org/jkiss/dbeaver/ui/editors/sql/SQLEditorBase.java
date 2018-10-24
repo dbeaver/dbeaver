@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
@@ -960,7 +961,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         if (token instanceof SQLControlToken) {
                             commandId = ((SQLControlToken) token).getCommandId();
                         }
-                        return new SQLControlCommand(
+                        SQLControlCommand command = new SQLControlCommand(
                                 getDataSource(),
                                 syntaxManager,
                                 controlText.trim(),
@@ -968,10 +969,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                                 tokenOffset,
                                 tokenLength,
                                 tokenType == SQLToken.T_SET_DELIMITER);
+                        if (command.isEmptyCommand() ||
+                                (command.getCommandId() != null &&
+                                SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId()) != null))
+                        {
+                            return command;
+                        }
+                        // This is not a valid command
+                        isControl = false;
                     } catch (BadLocationException e) {
                         log.warn("Can't extract control statement", e); //$NON-NLS-1$
                         return null;
-                    }
+                        }
                 }
                 if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
                     if (tokenOffset > endPos) {
