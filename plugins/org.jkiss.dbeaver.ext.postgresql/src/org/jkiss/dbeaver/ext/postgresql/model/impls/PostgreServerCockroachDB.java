@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -132,7 +133,10 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
                 try (JDBCResultSet resultSet = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (resultSet.next()) {
-                        String line = resultSet.getString("CreateTable");
+                        String line = JDBCUtils.safeGetString(resultSet, "CreateTable");
+                        if (line == null) {
+                            line = JDBCUtils.safeGetString(resultSet, 2);
+                        }
                         if (line == null) {
                             continue;
                         }
