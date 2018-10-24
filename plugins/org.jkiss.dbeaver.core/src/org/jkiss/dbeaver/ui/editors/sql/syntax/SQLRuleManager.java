@@ -196,7 +196,7 @@ public class SQLRuleManager extends RuleBasedScanner {
 
             // Control rules
             for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
-                rules.add(new EndOfLineRule(commandPrefix + controlCommand.getId(), controlToken)); //$NON-NLS-1$
+                rules.add(new SQLCommandRule(commandPrefix, controlCommand, controlToken)); //$NON-NLS-1$
             }
         }
         {
