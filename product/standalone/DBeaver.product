@@ -10,7 +10,7 @@
       <programArgs>-showsplash
       </programArgs>
       <!-- GTK 2 is legacy since Eclipse 2018-09 -->
-      <!-- <programArgsLin>--launcher.GTK_version 2</programArgsLin> -->
+      <!-- <programArgsLin> --launcher.GTK_version 2</programArgsLin> -->
       <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread
