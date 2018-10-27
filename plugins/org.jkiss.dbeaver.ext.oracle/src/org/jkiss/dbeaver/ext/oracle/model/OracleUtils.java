@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -261,12 +262,14 @@ public class OracleUtils {
 
     public static String getAdminAllViewPrefix(DBRProgressMonitor monitor, OracleDataSource dataSource, String viewName)
     {
-        String dbaView = "DBA_" + viewName;
-        if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
-            return OracleConstants.SCHEMA_SYS + "." + dbaView;
-        } else {
-            return OracleConstants.SCHEMA_SYS + ".ALL_" + viewName;
+        boolean useDBAView = CommonUtils.toBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_ALWAYS_SHOW_DBA));
+        if (useDBAView) {
+            String dbaView = "DBA_" + viewName;
+            if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
+                return OracleConstants.SCHEMA_SYS + "." + dbaView;
+            }
         }
+        return OracleConstants.SCHEMA_SYS + ".ALL_" + viewName;
     }
 
     public static String getSysCatalogHint(OracleDataSource dataSource)
