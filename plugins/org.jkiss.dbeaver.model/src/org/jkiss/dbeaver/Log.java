@@ -34,14 +34,19 @@ public class Log
 {
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
 
-    private static final ILog eclipseLog = ModelActivator.getInstance().getLog();
+    private static ILog eclipseLog;
     private static Listener[] listeners = new Listener[0];
 
-    private final String name;
-
-    public static ILog getEclipseLog() {
-        return eclipseLog;
+    static {
+        ModelActivator instance = ModelActivator.getInstance();
+        try {
+            eclipseLog = instance == null ? null : instance.getLog();
+        } catch (Throwable e) {
+            eclipseLog = null;
+        }
     }
+
+    private final String name;
 
     public static Log getLog(Class<?> forClass) {
         return new Log(forClass.getName());
@@ -160,7 +165,7 @@ public class Log
         }
         debugMessage(message, null, System.err);
         int severity = Status.INFO;
-        getEclipseLog().log(createStatus(severity, message));
+        writeEclipseLog(createStatus(severity, message));
     }
 
     public void info(Object message, Throwable t)
@@ -176,7 +181,7 @@ public class Log
         }
         debugMessage(message, null, System.err);
         int severity = Status.WARNING;
-        getEclipseLog().log(createStatus(severity, message));
+        writeEclipseLog(createStatus(severity, message));
     }
 
     public void warn(Object message, Throwable t)
@@ -192,7 +197,7 @@ public class Log
         }
         debugMessage(message, null, System.err);
         int severity = Status.ERROR;
-        getEclipseLog().log(createStatus(severity, message));
+        writeEclipseLog(createStatus(severity, message));
     }
 
     public void error(Object message, Throwable t)
@@ -213,14 +218,13 @@ public class Log
     private static void writeExceptionStatus(int severity, Object message, Throwable t)
     {
         debugMessage(message, t, System.err);
-        ILog log = getEclipseLog();
         if (t == null) {
-            log.log(createStatus(severity, message));
+            writeEclipseLog(createStatus(severity, message));
         } else {
             if (message == null) {
-                log.log(GeneralUtils.makeExceptionStatus(severity, t));
+                writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, t));
             } else {
-                log.log(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
+                writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
             }
         }
     }
@@ -245,7 +249,13 @@ public class Log
         }
     }
 
-    public static interface Listener {
+    public interface Listener {
         void loggedMessage(Object message, Throwable t);
+    }
+
+    private static void writeEclipseLog(IStatus status) {
+        if (eclipseLog != null) {
+            eclipseLog.log(status);
+        }
     }
 }
