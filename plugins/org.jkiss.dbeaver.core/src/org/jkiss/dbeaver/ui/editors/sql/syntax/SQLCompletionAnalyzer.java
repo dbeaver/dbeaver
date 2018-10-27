@@ -438,7 +438,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             }
         }
 
-        return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, !request.simpleMode, request.wordDetector);
+        return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, true, request.wordDetector);
     }
 
     private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart, boolean addFirst) throws DBException {
