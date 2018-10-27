@@ -262,7 +262,7 @@ public class OracleUtils {
 
     public static String getAdminAllViewPrefix(DBRProgressMonitor monitor, OracleDataSource dataSource, String viewName)
     {
-        boolean useDBAView = CommonUtils.toBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_ALWAYS_SHOW_DBA));
+        boolean useDBAView = CommonUtils.toBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS));
         if (useDBAView) {
             String dbaView = "DBA_" + viewName;
             if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
