@@ -112,8 +112,12 @@ public class SQLPreferenceConstants
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
     public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
 
-    public static final String SCRIPT_DELETE_EMPTY = "script.delete.empty"; //$NON-NLS-1$
-    public static final String SCRIPT_AUTO_FOLDERS = "script.auto.folders"; //$NON-NLS-1$
-    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS = "script.auto.connection.folders"; //$NON-NLS-1$
-    public static final String SCRIPT_TITLE_PATTERN = "script.title.pattern"; //$NON-NLS-1$
+    public static final String SCRIPT_BIND_FIRST_LINE                   = "SQLEditor.script.bind.firstLine"; //$NON-NLS-1$
+    public static final String SCRIPT_BIND_COMMENT_TYPE                 = "SQLEditor.script.bind.commentType"; //$NON-NLS-1$
+
+    public static final String SCRIPT_DELETE_EMPTY                      = "script.delete.empty"; //$NON-NLS-1$
+    public static final String SCRIPT_AUTO_FOLDERS                      = "script.auto.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS         = "script.auto.connection.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_TITLE_PATTERN                     = "script.title.pattern"; //$NON-NLS-1$
+
 }

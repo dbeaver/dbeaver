@@ -27,4 +27,5 @@ public class SQLEditorContributions {
 
     public static final String OCCURRENCES_UNDER_CURSOR_ANNOTATION_ID = "org.jkisss.dbeaver.ui.occurrences.underCursor";
     public static final String OCCURRENCES_FOR_SELECTION_ANNOTATION_ID = "org.jkisss.dbeaver.ui.occurrences.forSelection";
+
 }
