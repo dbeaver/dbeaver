@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -31,7 +29,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -53,11 +50,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button csFoldingEnabled;
     private Button csMarkOccurrencesUnderCursor;
     private Button csMarkOccurrencesForSelection;
-
-    private Combo deleteEmptyCombo;
-    private Button autoFoldersCheck;
-    private Button connectionFoldersCheck;
-    private Text scriptTitlePattern;
 
     private Button closeTabOnErrorCheck;
     private Combo resultsOrientationCombo;
@@ -81,9 +73,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             store.contains(SQLPreferenceConstants.FOLDING_ENABLED) ||
             store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR) ||
-
-            store.contains(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY) ||
-            store.contains(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS) ||
 
             store.contains(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR) ||
             store.contains(SQLPreferenceConstants.RESULT_SET_ORIENTATION)
@@ -123,32 +112,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csMarkOccurrencesUnderCursor = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences, CoreMessages.pref_page_sql_completion_label_mark_occurrences_tip, false, 2);
             csMarkOccurrencesForSelection = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences_for_selections, CoreMessages.pref_page_sql_completion_label_mark_occurrences_for_selections_tip, false, 2);
             csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_folding_enabled, CoreMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 2);
-        }
-
-        // Scripts
-        {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
-            ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
-
-            deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (SQLPreferenceConstants.EmptyScriptCloseBehavior escb : SQLPreferenceConstants.EmptyScriptCloseBehavior.values()) {
-                deleteEmptyCombo.add(escb.getTitle());
-            }
-            deleteEmptyCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            deleteEmptyCombo.select(0);
-            autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
-            connectionFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_create_script_folders, null, false, 2);
-            scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
-            UIUtils.installContentProposal(
-                    scriptTitlePattern,
-                    new TextContentAdapter(),
-                    new SimpleContentProposalProvider(new String[] {
-                        GeneralUtils.variablePattern(SQLEditor.VAR_CONNECTION_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_DRIVER_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)}));
-            UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
-                    SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT);
         }
 
         {
@@ -191,12 +154,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
             csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
 
-            deleteEmptyCombo.setText(SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
-                store.getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY)).getTitle());
-            autoFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
-            connectionFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
-            scriptTitlePattern.setText(store.getString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
-
             closeTabOnErrorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
             SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(store.getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
             resultsOrientationCombo.setText(orientation.getLabel());
@@ -219,12 +176,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
             store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, csMarkOccurrencesUnderCursor.getSelection());
             store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, csMarkOccurrencesForSelection.getSelection());
-
-            store.setValue(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY,
-                SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());
-            store.setValue(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
 
             store.setValue(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, closeTabOnErrorCheck.getSelection());
             String orientationLabel = resultsOrientationCombo.getText();
@@ -253,11 +204,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
         store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
         store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
-
-        store.setToDefault(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY);
-        store.setToDefault(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS);
-        store.setToDefault(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS);
-        store.setToDefault(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN);
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
