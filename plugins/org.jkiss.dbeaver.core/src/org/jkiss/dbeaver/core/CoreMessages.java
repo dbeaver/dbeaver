@@ -1133,6 +1133,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_keep_database_editors_tip;
 	public static String pref_page_ui_general_refresh_editor_on_open_tip;
 	public static String pref_page_ui_general_show_full_name_in_editor;
+	public static String pref_page_ui_general_show_table_grid;
 	public static String pref_page_ui_general_show_preview_on_save;
 	// Drivers
 	public static String pref_page_ui_general_group_settings;

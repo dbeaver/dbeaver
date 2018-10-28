@@ -38,8 +38,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -125,11 +127,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         };
 
 
+        boolean showTableGrid = DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID);
         if (contentProvider instanceof ITreeContentProvider) {
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
             tree.setHeaderVisible(true);
-            //tree.setLinesVisible(true);
+            if (showTableGrid) {
+                tree.setLinesVisible(true);
+            }
             itemsViewer = treeViewer;
             editorActivationStrategy = new EditorActivationStrategy(treeViewer);
             TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
@@ -146,7 +151,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
             table.setHeaderVisible(true);
-            //table.setLinesVisible(true);
+            if (showTableGrid) {
+                table.setLinesVisible(true);
+            }
             itemsViewer = tableViewer;
             //UIUtils.applyCustomTolTips(table);
             //itemsEditor = new TableEditor(table);

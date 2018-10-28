@@ -74,6 +74,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.EDIT.name());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.EXPAND.name());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, true);
