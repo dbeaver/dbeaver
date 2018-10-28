@@ -85,6 +85,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private boolean simpleMode;
 
     private DBPNamedObject object;
+    private int proposalScore;
 
     public SQLCompletionProposal(
         SQLCompletionAnalyzer.CompletionRequest request,
@@ -357,9 +358,13 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
                     (this.replacementLast != null && this.replacementLast.startsWith(wordLower));
             } else {
                 // For objects use fuzzy matching
-                matched = (TextUtils.fuzzyScore(replacementFull, wordLower) > 0 &&
+                int score = TextUtils.fuzzyScore(replacementFull, wordLower);
+                matched = (score > 0 &&
                     (CommonUtils.isEmpty(event.getText()) || TextUtils.fuzzyScore(replacementFull, event.getText()) > 0)) ||
                     (this.replacementLast != null && TextUtils.fuzzyScore(this.replacementLast, wordLower) > 0);
+                if (matched) {
+                    setProposalScore(score);
+                }
             }
 
             if (matched) {
@@ -390,13 +395,22 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         }
     }
 
+
+    public void setReplacementAfter(String replacementAfter) {
+        this.replacementAfter = replacementAfter;
+    }
+
+    public int getProposalScore() {
+        return proposalScore;
+    }
+
+    public void setProposalScore(int proposalScore) {
+        this.proposalScore = proposalScore;
+    }
+
     @Override
     public String toString() {
         return displayString;
     }
 
-
-    public void setReplacementAfter(String replacementAfter) {
-        this.replacementAfter = replacementAfter;
-    }
 }
