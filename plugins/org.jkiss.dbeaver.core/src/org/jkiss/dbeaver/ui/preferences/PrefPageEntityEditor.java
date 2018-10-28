@@ -44,6 +44,7 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
     private Button keepEditorsOnRestart;
     private Button refreshEditorOnOpen;
     private Button editorFullName;
+    private Button showTableGrid;
     private Button showPreviewOnSave;
 
     public PrefPageEntityEditor()
@@ -74,6 +75,7 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
             refreshEditorOnOpen.setToolTipText(CoreMessages.pref_page_ui_general_refresh_editor_on_open_tip);
 
             editorFullName = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_full_name_in_editor, false);
+            showTableGrid = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_table_grid, false);
             showPreviewOnSave = UIUtils.createCheckbox(groupEditors, CoreMessages.pref_page_ui_general_show_preview_on_save, false);
         }
 
@@ -90,6 +92,7 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
         keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
         refreshEditorOnOpen.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
         editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
+        showTableGrid.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
         showPreviewOnSave.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
     }
 
@@ -101,6 +104,7 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
         store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, showPreviewOnSave.getSelection());
 
         PrefUtils.savePreferenceStore(store);
