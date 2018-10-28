@@ -130,6 +130,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
             saveButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+                    namesCombo.add(namesCombo.getText());
                     saveConfigurations();
                 }
             });
@@ -138,6 +139,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     dsRegistry.removeSavedFilter(namesCombo.getText());
+                    namesCombo.remove(namesCombo.getText());
                     namesCombo.setText(NULL_FILTER_NAME);
                 }
             });
