@@ -366,6 +366,12 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
                 setPosition(wordDetector);
                 return true;
             }
+        } else if (divPos != -1) {
+            // Beginning of the last part of composite id.
+            // Most likely it is a column name after an alias - all columns are valid
+            if (object != null) {
+                return true;
+            }
         }
         return false;
     }
