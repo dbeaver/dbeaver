@@ -514,7 +514,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     DBPKeywordType.OTHER,
                     "All objects"));
             } else if (!matchedObjects.isEmpty()) {
-                if (simpleMode || startPart == null) {
+                if (startPart == null) {
                     matchedObjects.sort(DBUtils.nameComparatorIgnoreCase());
                 } else {
                     matchedObjects.sort((o1, o2) -> {
@@ -531,8 +531,13 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 }
                 List<SQLCompletionProposal> childProposals = new ArrayList<>(matchedObjects.size());
                 for (DBSObject child : matchedObjects) {
-                    childProposals.add(
-                        makeProposalsFromObject(child, !(parent instanceof DBPDataSource)));
+                    SQLCompletionProposal proposal = makeProposalsFromObject(child, !(parent instanceof DBPDataSource));
+                    if (!scoredMatches.isEmpty()) {
+                        int proposalScore = scoredMatches.get(child.getName());
+                        proposal.setProposalScore(proposalScore);
+                    }
+
+                    childProposals.add(proposal);
                 }
                 if (addFirst) {
                     // Add proposals in the beginning (because the most strict identifiers have to be first)

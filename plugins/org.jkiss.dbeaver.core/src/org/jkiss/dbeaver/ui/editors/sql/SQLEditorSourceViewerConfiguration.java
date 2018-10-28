@@ -36,11 +36,8 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -163,6 +160,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         assistant.enableAutoActivation(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
         assistant.setAutoActivationDelay(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+        assistant.setSorter(new SQLCompletionSorter());
 
         assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 
@@ -177,31 +175,22 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         assistant.enableAutoInsert(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
         assistant.setShowEmptyList(true);
 
-        final DBPPreferenceListener prefListener = new DBPPreferenceListener() {
-            @Override
-            public void preferenceChange(PreferenceChangeEvent event)
-            {
-                switch (event.getProperty()) {
-                    case SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION:
-                        assistant.enableAutoActivation(configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
-                        break;
-                    case SQLPreferenceConstants.AUTO_ACTIVATION_DELAY:
-                        assistant.setAutoActivationDelay(configStore.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
-                        break;
-                    case SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO:
-                        assistant.enableAutoInsert(configStore.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
-                        break;
-                }
+        final DBPPreferenceListener prefListener = event -> {
+            switch (event.getProperty()) {
+                case SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION:
+                    assistant.enableAutoActivation(configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+                    break;
+                case SQLPreferenceConstants.AUTO_ACTIVATION_DELAY:
+                    assistant.setAutoActivationDelay(configStore.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
+                    break;
+                case SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO:
+                    assistant.enableAutoInsert(configStore.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
+                    break;
             }
         };
         configStore.addPropertyChangeListener(prefListener);
-        editor.getTextViewer().getControl().addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                configStore.removePropertyChangeListener(prefListener);
-            }
-        });
+        editor.getTextViewer().getControl().addDisposeListener(
+            e -> configStore.removePropertyChangeListener(prefListener));
         return assistant;
 
     }
@@ -209,13 +198,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer)
     {
-        return new IInformationControlCreator() {
-            @Override
-            public IInformationControl createInformationControl(Shell parent)
-            {
-                return new DefaultInformationControl(parent, true);
-            }
-        };
+        return parent -> new DefaultInformationControl(parent, true);
     }
 
     /**
