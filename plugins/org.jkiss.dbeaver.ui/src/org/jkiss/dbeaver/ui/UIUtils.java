@@ -888,6 +888,17 @@ public class UIUtils {
         return button;
     }
 
+    @NotNull
+    public static Button createRadioButton(@NotNull Composite parent, @Nullable String label, @NotNull Object data, @Nullable SelectionListener selectionListener)
+    {
+        Button button = new Button(parent, SWT.RADIO);
+        button.setText(label);
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
+        button.setData(data);
+        return button;
+    }
 
     public static void setHelp(Control control, String pluginId, String helpContextID)
     {

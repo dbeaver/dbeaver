@@ -18,17 +18,21 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLScriptBindingType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -42,10 +46,16 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.resources"; //$NON-NLS-1$
 
+    private static final Log log = Log.getLog(PrefPageSQLResources.class);
+
     private Combo deleteEmptyCombo;
     private Button autoFoldersCheck;
     private Button connectionFoldersCheck;
     private Text scriptTitlePattern;
+    private Button bindConnectionFirstLineCheck;
+    private Composite commentTypeComposite;
+    private ControlEnableState commentTypeEnableBlock;
+    private SQLScriptBindingType curScriptBindingType;
 
     public PrefPageSQLResources()
     {
@@ -54,12 +64,28 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
     @Override
     protected Control createContents(Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
-        // Scripts
+        // Connection association
+        {
+            Composite connGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_connection_association, 2, GridData.FILL_HORIZONTAL, 0);
+
+            bindConnectionFirstLineCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_connection_first_line, CoreMessages.pref_page_sql_editor_checkbox_bind_connection_first_line_tip, false, 2);
+            bindConnectionFirstLineCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> enableCommentType()));
+
+            commentTypeComposite = UIUtils.createComposite(connGroup, 1);
+            for (SQLScriptBindingType bt : SQLScriptBindingType.values()) {
+                if (bt != SQLScriptBindingType.EXTERNAL) {
+                    UIUtils.createRadioButton(commentTypeComposite, bt.getDescription(), bt, SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                        curScriptBindingType = (SQLScriptBindingType)selectionEvent.widget.getData();
+                    }));
+                }
+            }
+        }
+
+        // Resources
         {
             Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
-            ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
 
             deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
             for (SQLPreferenceConstants.EmptyScriptCloseBehavior escb : SQLPreferenceConstants.EmptyScriptCloseBehavior.values()) {
@@ -92,6 +118,19 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
+        bindConnectionFirstLineCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_FIRST_LINE));
+        try {
+            SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
+            for (Control ch : commentTypeComposite.getChildren()) {
+                if (ch instanceof Button && ch.getData() == bindingType) {
+                    ((Button) ch).setSelection(true);
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            log.error(e);
+        }
+        enableCommentType();
+
         deleteEmptyCombo.setText(SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
             store.getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY)).getTitle());
         autoFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
@@ -101,10 +140,34 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         super.performDefaults();
     }
 
+    private void enableCommentType() {
+        if (bindConnectionFirstLineCheck.getSelection()) {
+            if (commentTypeEnableBlock != null) {
+                commentTypeEnableBlock.restore();
+                commentTypeEnableBlock = null;
+            }
+        } else {
+            if (commentTypeEnableBlock == null) {
+                commentTypeEnableBlock = ControlEnableState.disable(commentTypeComposite);
+            }
+        }
+    }
+
     @Override
     public boolean performOk()
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+
+        store.setValue(SQLPreferenceConstants.SCRIPT_BIND_FIRST_LINE, bindConnectionFirstLineCheck.getSelection());
+        try {
+            for (Control ch : commentTypeComposite.getChildren()) {
+                if (ch instanceof Button && ((Button) ch).getSelection()) {
+                    store.setValue(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE, ch.getData().toString());
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            log.error(e);
+        }
 
         store.setValue(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY,
             SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());

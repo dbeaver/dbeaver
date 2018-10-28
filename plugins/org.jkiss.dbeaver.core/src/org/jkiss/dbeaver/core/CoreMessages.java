@@ -865,8 +865,11 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_combo_item_stop_commit;
 	public static String pref_page_sql_editor_combo_item_stop_rollback;
 	public static String pref_page_sql_editor_group_common;
+	public static String pref_page_sql_editor_group_connection_association;
 	public static String pref_page_sql_editor_group_resources;
 	public static String pref_page_sql_editor_group_misc;
+	public static String pref_page_sql_editor_checkbox_bind_connection_first_line;
+	public static String pref_page_sql_editor_checkbox_bind_connection_first_line_tip;
 	public static String pref_page_results_group_advanced;
 	public static String pref_page_sql_editor_group_scripts;
 	public static String pref_page_sql_editor_group_parameters;
