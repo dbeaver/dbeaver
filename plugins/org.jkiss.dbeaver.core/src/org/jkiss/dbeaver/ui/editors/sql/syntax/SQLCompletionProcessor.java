@@ -148,7 +148,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
 
-        if (!CommonUtils.isEmpty(request.wordPart))  {
+        if (!request.searchFinished && !CommonUtils.isEmpty(request.wordPart))  {
             // Keyword assist
             List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(request.wordPart);
             if (!request.simpleMode) {
@@ -158,6 +158,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = editor.getSyntaxManager().getDialect().getKeywordType(keyWord);
                 if (keywordType != null) {
+                    if (keywordType == DBPKeywordType.TYPE) {
+                        continue;
+                    }
+                    if (request.queryType == QueryType.COLUMN && keywordType != DBPKeywordType.FUNCTION) {
+                        continue;
+                    }
                     request.proposals.add(
                         SQLCompletionAnalyzer.createCompletionProposal(
                             request,
@@ -172,7 +178,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
         filterProposals(request, dataSource);
-
 
         return ArrayUtils.toArray(ICompletionProposal.class, request.proposals);
     }

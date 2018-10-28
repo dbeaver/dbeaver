@@ -61,6 +61,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         SQLCompletionProcessor.QueryType queryType;
 
         final List<SQLCompletionProposal> proposals = new ArrayList<>();
+        boolean searchFinished = false;
 
         CompletionRequest(SQLEditorBase editor, int documentOffset, boolean simpleMode) {
             this.editor = editor;
@@ -140,6 +141,15 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     }
                     int divPos = request.wordPart.indexOf(request.editor.getSyntaxManager().getStructSeparator());
                     String tableAlias = divPos == -1 ? null : request.wordPart.substring(0, divPos);
+                    if (tableAlias == null && !CommonUtils.isEmpty(request.wordPart)) {
+                        // May be an incomplete table alias. Try to find such table
+                        rootObject = getTableFromAlias(sc, request.wordPart);
+                        if (rootObject != null) {
+                            // Found alias - no proposals
+                            request.searchFinished = true;
+                            return;
+                        }
+                    }
                     rootObject = getTableFromAlias(sc, tableAlias);
                 }
                 if (rootObject != null) {
