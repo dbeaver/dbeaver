@@ -17,21 +17,27 @@
       %license
     </license>
 
+<!--
+    <includes id="org.eclipse.rcp" version="0.0.0"/>
+
     <plugin id="com.ibm.icu.base" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.draw2d" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.eclipse.gef" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+-->
+
+    <requires>
+        <import plugin="org.eclipse.core.runtime" version="3.7" match="greaterOrEqual"/>
+    </requires>
+
+    <plugin id="com.ibm.icu.base" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
     <plugin id="javax.annotation" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="javax.inject" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="javax.xml" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <plugin id="org.w3c.css.sac" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <!-- Remove redundant W3C deps. -->
-<!--
-    <plugin id="org.w3c.dom.smil" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.w3c.dom.svg" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
--->
 
     <plugin id="org.apache.batik.css" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.apache.batik.util" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.batik.util.gui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <plugin id="org.eclipse.compare.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.core.commands" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -43,7 +49,6 @@
     <plugin id="org.eclipse.core.filesystem" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.core.jobs" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.core.resources" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.core.runtime" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.core.commands" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.core.contexts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.e4.core.di" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -85,7 +90,6 @@
     <plugin id="org.eclipse.osgi.compatibility.state" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.swt" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
-    <plugin id="org.eclipse.platform" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.text" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.eclipse.ui.forms" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -100,9 +104,6 @@
     <plugin id="org.eclipse.update.configurator" download-size="0" install-size="0" version="0.0.0"/>
 
     <!-- GEF -->
-
-    <plugin id="org.eclipse.draw2d" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.eclipse.gef" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- IDE plugin -->
 

@@ -38,20 +38,9 @@
     <includes id="org.eclipse.equinox.p2.extras.feature" version="0.0.0"/>
 
     <requires>
-        <import plugin="org.eclipse.core.runtime"/>
-        <import plugin="org.eclipse.core.resources"/>
-        <import plugin="org.eclipse.core.expressions"/>
-        <import plugin="org.eclipse.ui"/>
-        <import plugin="org.eclipse.ui.workbench"/>
-        <import plugin="org.eclipse.ui.workbench.texteditor"/>
-        <import plugin="org.eclipse.swt"/>
-        <import plugin="org.eclipse.jface"/>
-        <import plugin="org.eclipse.jface.text"/>
-        <import plugin="org.eclipse.ui.views"/>
-        <import plugin="org.eclipse.gef"/>
-        <import plugin="org.apache.commons.logging"/>
-        <import plugin="com.jcraft.jsch"/>
-        <import plugin="org.objectweb.asm"/>
+        <import plugin="org.apache.commons.logging" match="greaterOrEqual"/>
+        <import plugin="com.jcraft.jsch" match="greaterOrEqual"/>
+        <import plugin="org.objectweb.asm" match="greaterOrEqual"/>
     </requires>
 
     <plugin id="org.eclipse.ui.ide.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

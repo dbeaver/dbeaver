@@ -1,73 +1,172 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-        id="org.jkiss.dbeaver.core.feature"
-        label="%featureName"
-        version="5.2.3.qualifier"
-        provider-name="%providerName"
-        plugin="org.jkiss.dbeaver.core">
+      id="org.jkiss.dbeaver.core.feature"
+      label="%featureName"
+      version="5.2.3.qualifier"
+      provider-name="%providerName"
+      plugin="org.jkiss.dbeaver.core">
 
-    <description>
-        %description
-    </description>
+   <description>
+      %description
+   </description>
 
-    <copyright>
-        %copyright
-    </copyright>
+   <copyright>
+      %copyright
+   </copyright>
 
-    <license url="%licenseURL">
-        %license
-    </license>
+   <license url="%licenseURL">
+      %license
+   </license>
 
-    <requires>
-        <import plugin="org.eclipse.core.runtime"/>
-        <import plugin="org.eclipse.core.resources"/>
-        <import plugin="org.eclipse.core.expressions"/>
-        <import plugin="org.eclipse.ui"/>
-        <import plugin="org.eclipse.ui.workbench"/>
-        <import plugin="org.eclipse.ui.workbench.texteditor"/>
-        <import plugin="org.eclipse.swt"/>
-        <import plugin="org.eclipse.jface"/>
-        <import plugin="org.eclipse.jface.text"/>
-        <import plugin="org.eclipse.ui.views"/>
-        <import plugin="org.eclipse.search"/>
+   <requires>
+      <import plugin="org.eclipse.core.runtime" version="3.7" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.resources" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.expressions" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.workbench" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.swt" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jface" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jface.text" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.views" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.search" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.draw2d" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.gef" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.debug.core" version="0.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.debug.ui" version="0.0.0" match="greaterOrEqual"/>
+   </requires>
 
-        <!--
-            GEF/draw2d are needed by all custom renderers (ERD, Locks, etc)
-        -->
-        <import plugin="org.eclipse.draw2d"/>
-        <import plugin="org.eclipse.gef"/>
+   <plugin
+         id="com.github.jsqlparser"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
-        <!--
-            Debug plugins are required (implicitly) by many 3rd party extensions like Git.
-            And we need them anyway.
-        -->
-        <import plugin="org.eclipse.debug.core"/>
-        <import plugin="org.eclipse.debug.ui"/>
-    </requires>
+   <plugin
+         id="org.apache.commons.jexl"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
-    <!-- 3rd party -->
-    <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="net.sf.opencsv" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin
+         id="net.sf.opencsv"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
-    <!-- DBeaver -->
-    <plugin id="org.jkiss.dbeaver.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.net.ssh" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.net.ssh.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.net.ssh.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.erd" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.ui.colortheme" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.ui.locks" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.mockdata" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.data.transfer" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin
+         id="org.jkiss.dbeaver.model"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
-    <!-- GIS -->
-    <plugin id="com.vividsolutions.jts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.data.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin
+         id="org.jkiss.dbeaver.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.net.ssh"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.net.ssh.jsch"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.net.ssh.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.erd"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.ui.colortheme"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.ui.locks"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.utils"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.mockdata"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.data.transfer"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.import_config"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.ext.format.sqlworkbenchj"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.vividsolutions.jts"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.data.gis"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>

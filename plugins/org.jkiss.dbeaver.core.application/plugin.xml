@@ -45,9 +45,7 @@
             <property name="versionInfoCoord" value="125,265"/>
             <property name="versionInfoSize" value="12"/>
             <property name="versionInfoColor" value="0,0,0"/>
-            <property name="applicationXMI" value="org.eclipse.platform/LegacyIDE.e4xmi"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_classic"/>
-            <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
             <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/$nl$/tips.xml"/>
