@@ -143,8 +143,12 @@ public class EditorUtils {
     //////////////////////////////////////////////////////////
     // Datasource <-> resource manipulations
 
-    public static boolean isUseEmbeddedBinding() {
-        return DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED);
+    public static boolean isReadEmbeddedBinding() {
+        return DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ);
+    }
+
+    public static boolean isWriteEmbeddedBinding() {
+        return DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE);
     }
 
     public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput)

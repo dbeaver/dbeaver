@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLScriptBindingType;
+import org.jkiss.dbeaver.ui.editors.sql.SQLScriptBindingType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -52,7 +52,8 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     private Button autoFoldersCheck;
     private Button connectionFoldersCheck;
     private Text scriptTitlePattern;
-    private Button bindConnectionFirstLineCheck;
+    private Button bindEmbeddedReadCheck;
+    private Button bindEmbeddedWriteCheck;
     private Composite commentTypeComposite;
     private ControlEnableState commentTypeEnableBlock;
     private SQLScriptBindingType curScriptBindingType;
@@ -76,8 +77,10 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             gd.horizontalSpan = 2;
             tipLabel.setLayoutData(gd);
 
-            bindConnectionFirstLineCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_connection_first_line, CoreMessages.pref_page_sql_editor_checkbox_bind_connection_first_line_tip, false, 2);
-            bindConnectionFirstLineCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> enableCommentType()));
+            bindEmbeddedReadCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_read, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_read_tip, false, 2);
+
+            bindEmbeddedWriteCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_write, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_write_tip, false, 2);
+            bindEmbeddedWriteCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> enableCommentType()));
 
             commentTypeComposite = UIUtils.createComposite(connGroup, 1);
             for (SQLScriptBindingType bt : SQLScriptBindingType.values()) {
@@ -124,7 +127,8 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        bindConnectionFirstLineCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED));
+        bindEmbeddedReadCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ));
+        bindEmbeddedWriteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE));
         try {
             SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
             for (Control ch : commentTypeComposite.getChildren()) {
@@ -147,7 +151,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     }
 
     private void enableCommentType() {
-        if (bindConnectionFirstLineCheck.getSelection()) {
+        if (bindEmbeddedWriteCheck.getSelection()) {
             if (commentTypeEnableBlock != null) {
                 commentTypeEnableBlock.restore();
                 commentTypeEnableBlock = null;
@@ -164,7 +168,8 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED, bindConnectionFirstLineCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ, bindEmbeddedReadCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE, bindEmbeddedWriteCheck.getSelection());
         try {
             for (Control ch : commentTypeComposite.getChildren()) {
                 if (ch instanceof Button && ((Button) ch).getSelection()) {
