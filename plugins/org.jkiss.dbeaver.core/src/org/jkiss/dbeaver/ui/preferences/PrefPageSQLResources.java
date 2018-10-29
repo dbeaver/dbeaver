@@ -70,6 +70,12 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         {
             Composite connGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_connection_association, 2, GridData.FILL_HORIZONTAL, 0);
 
+            Label tipLabel = new Label(connGroup, SWT.WRAP);
+            tipLabel.setText(CoreMessages.pref_page_sql_editor_checkbox_bind_connection_hint);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            tipLabel.setLayoutData(gd);
+
             bindConnectionFirstLineCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_connection_first_line, CoreMessages.pref_page_sql_editor_checkbox_bind_connection_first_line_tip, false, 2);
             bindConnectionFirstLineCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> enableCommentType()));
 
@@ -118,7 +124,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        bindConnectionFirstLineCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_FIRST_LINE));
+        bindConnectionFirstLineCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED));
         try {
             SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
             for (Control ch : commentTypeComposite.getChildren()) {
@@ -158,7 +164,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        store.setValue(SQLPreferenceConstants.SCRIPT_BIND_FIRST_LINE, bindConnectionFirstLineCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED, bindConnectionFirstLineCheck.getSelection());
         try {
             for (Control ch : commentTypeComposite.getChildren()) {
                 if (ch instanceof Button && ((Button) ch).getSelection()) {
@@ -194,4 +200,5 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     public void setElement(IAdaptable element) {
 
     }
+
 }
