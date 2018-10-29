@@ -86,6 +86,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
@@ -125,6 +126,8 @@ import java.net.URI;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * SQL Executor
@@ -145,6 +148,8 @@ public class SQLEditor extends SQLEditorBase implements
     private static final int EXTRA_CONTROL_INDEX = 0;
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
+
+    private static final Pattern EMBEDDED_BINDING_PREFIX = Pattern.compile("--\\s*CONNECTION:\\s*(.+)");
 
     private static Image IMG_DATA_GRID = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID);
     private static Image IMG_DATA_GRID_LOCKED = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID_LOCKED);
@@ -225,7 +230,8 @@ public class SQLEditor extends SQLEditorBase implements
     public IProject getProject()
     {
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
-        return file == null ? null : file.getProject();
+        return file == null ?
+            DBeaverCore.getInstance().getProjectRegistry().getActiveProject() : file.getProject();
     }
 
     @Nullable
@@ -1151,7 +1157,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
         syntaxLoaded = false;
         dataSourceContainer = null;
-        DBPDataSourceContainer inputDataSource = EditorUtils.getInputDataSource(editorInput);
+        DBPDataSourceContainer inputDataSource = null;
+        if (EditorUtils.isUseEmbeddedBinding()){
+            // Try to get datasource from contents
+            inputDataSource = getDataSourceFromContent();
+        }
+        if (inputDataSource == null) {
+            inputDataSource = EditorUtils.getInputDataSource(editorInput);
+        }
         if (inputDataSource == null) {
             // No datasource. Try to get one from active part
             IWorkbenchPart activePart = getSite().getWorkbenchWindow().getActivePage().getActivePart();
@@ -1165,6 +1178,36 @@ public class SQLEditor extends SQLEditorBase implements
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
         }
         editorImage = getTitleImage();
+    }
+
+    private DBPDataSourceContainer getDataSourceFromContent() {
+
+        IProject project = getProject();
+        Document document = getDocument();
+
+        int totalLines = document.getNumberOfLines();
+        if (totalLines == 0) {
+            return null;
+        }
+        try {
+            IRegion region = document.getLineInformation(0);
+            String line = document.get(region.getOffset(), region.getLength());
+            Matcher matcher = EMBEDDED_BINDING_PREFIX.matcher(line);
+            if (matcher.matches()) {
+                String connSpec = matcher.group(1).trim();
+                if (!CommonUtils.isEmpty(connSpec)) {
+                    final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(project, connSpec, null);
+                    if (dataSource != null) {
+                        return dataSource;
+                    }
+                }
+            }
+
+        } catch (Throwable e) {
+            log.debug("Error extracting datasource info from script's content", e);
+        }
+
+        return null;
     }
 
     @Override

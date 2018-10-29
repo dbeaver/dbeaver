@@ -172,7 +172,7 @@ public class ResourceUtils {
             if (container != null) {
                 // Search in external files
                 for (Map.Entry<String, Map<String, Object>> fileEntry : DBeaverCore.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
-                    if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE))) {
+                    if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID))) {
                         File extFile = new File(fileEntry.getKey());
                         if (extFile.exists()) {
                             result.add(new ResourceInfo(extFile, container));
@@ -205,7 +205,7 @@ public class ResourceUtils {
             if (!ArrayUtils.isEmpty(containers)) {
                 // Search in external files
                 for (Map.Entry<String, Map<String, Object>> fileEntry : DBeaverCore.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
-                    final Object fileContainerId = fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE);
+                    final Object fileContainerId = fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
                     if (fileContainerId != null) {
                         File extFile = new File(fileEntry.getKey());
                         if (extFile.exists()) {

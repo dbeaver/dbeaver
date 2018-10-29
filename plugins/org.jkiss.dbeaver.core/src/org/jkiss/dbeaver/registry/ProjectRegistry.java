@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -271,6 +272,8 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         return project.getFolder(DefaultResourceHandlerImpl.DEFAULT_ROOT);
     }
 
+    @Override
+    @Nullable
     public DataSourceRegistry getDataSourceRegistry(IProject project)
     {
         if (project == null) {
