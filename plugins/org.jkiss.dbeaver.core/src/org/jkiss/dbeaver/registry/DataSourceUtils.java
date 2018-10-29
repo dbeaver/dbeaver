@@ -157,6 +157,15 @@ public class DataSourceUtils {
 
         if (searchByParameters) {
             // Try to find by parameters
+            if (url != null) {
+                for (DBPDataSourceContainer ds : dsRegistry.getDataSources()) {
+                    if (url.equals(ds.getConnectionConfiguration().getUrl())) {
+                        if (user == null || user.equals(ds.getConnectionConfiguration().getUserName())) {
+                            return ds;
+                        }
+                    }
+                }
+            }
         }
 
         if (!createNewDataSource) {
