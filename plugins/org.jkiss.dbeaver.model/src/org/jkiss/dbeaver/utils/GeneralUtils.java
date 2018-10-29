@@ -360,6 +360,10 @@ public class GeneralUtils {
         String get(String name);
     }
 
+    public interface IParameterHandler {
+        boolean setParameter(String name, String  value);
+    }
+
     public static class MapResolver implements IVariableResolver {
         private final Map<String, Object> variables;
 

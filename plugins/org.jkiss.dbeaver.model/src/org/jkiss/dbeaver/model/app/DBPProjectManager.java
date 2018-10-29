@@ -40,6 +40,7 @@ public interface DBPProjectManager
     void addProjectListener(DBPProjectListener listener);
     void removeProjectListener(DBPProjectListener listener);
 
+    @Nullable
     DBPDataSourceRegistry getDataSourceRegistry(IProject project);
 
 }

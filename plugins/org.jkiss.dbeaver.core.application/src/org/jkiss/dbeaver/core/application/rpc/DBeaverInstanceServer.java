@@ -22,12 +22,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,7 +42,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -90,112 +85,24 @@ public class DBeaverInstanceServer implements IInstanceController {
         // Do not log it (#3788)
         //log.debug("Open external database connection [" + connectionSpec + "]");
 
-        final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-        DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
+        InstanceConnectionParameters instanceConParameters = new InstanceConnectionParameters();
+        final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
+            DBeaverCore.getInstance().getProjectRegistry().getActiveProject(),
+            connectionSpec,
+            instanceConParameters);
 
-        String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
-        boolean makeConnect = true, openConsole = false, savePassword = true;
-        boolean showSystemObjects = false, showUtilityObjects = false;
-        Boolean autoCommit = null;
-        Map<String, String> conProperties = new HashMap<>();
-        DBPDataSourceFolder folder = null;
-        String dsName = null;
-
-        String[] conParams = connectionSpec.split("\\|");
-        for (String cp : conParams) {
-            int divPos = cp.indexOf('=');
-            if (divPos == -1) {
-                continue;
-            }
-            String paramName = cp.substring(0, divPos);
-            String paramValue = cp.substring(divPos + 1);
-            switch (paramName) {
-                case "driver": driverName = paramValue; break;
-                case "name": dsName = paramValue; break;
-                case "url": url = paramValue; break;
-                case "host": host = paramValue; break;
-                case "port": port = paramValue; break;
-                case "server": server = paramValue; break;
-                case "database": database = paramValue; break;
-                case "user": user = paramValue; break;
-                case "password": password = paramValue; break;
-                case "savePassword": savePassword = CommonUtils.toBoolean(paramValue); break;
-                case "showSystemObjects": showSystemObjects = CommonUtils.toBoolean(paramValue); break;
-                case "showUtilityObjects": showUtilityObjects = CommonUtils.toBoolean(paramValue); break;
-                case "connect": makeConnect = CommonUtils.toBoolean(paramValue); break;
-                case "openConsole": openConsole = CommonUtils.toBoolean(paramValue); break;
-                case "folder": folder = dsRegistry.getFolder(paramValue); break;
-                case "autoCommit": autoCommit = CommonUtils.toBoolean(paramValue); break;
-                default:
-                    if (paramName.length() > 5 && paramName.startsWith("prop.")) {
-                        paramName = paramName.substring(5);
-                        conProperties.put(paramName, paramValue);
-                    }
-            }
-        }
-        if (driverName == null) {
-            log.error("Driver name not specified");
+        if (dataSource == null) {
             return;
         }
-        DriverDescriptor driver = DataSourceProviderRegistry.getInstance().findDriver(driverName);
-        if (driver == null) {
-            log.error("Driver '" + driverName + "' not found");
-            return;
-        }
-        if (dsName == null) {
-            dsName = "Ext: " + driver.getName();
-            if (database != null) {
-                dsName += " - " + database;
-            } else if (server != null) {
-                dsName += " - " + server;
-            }
-        }
 
-        DBPConnectionConfiguration connConfig = new DBPConnectionConfiguration();
-        connConfig.setUrl(url);
-        connConfig.setHostName(host);
-        connConfig.setHostPort(port);
-        connConfig.setServerName(server);
-        connConfig.setDatabaseName(database);
-        connConfig.setUserName(user);
-        connConfig.setUserPassword(password);
-        connConfig.setProperties(conProperties);
-
-        if (autoCommit != null) {
-            connConfig.getBootstrap().setDefaultAutoCommit(autoCommit);
-        }
-
-        DataSourceDescriptor ds = dsRegistry.findDataSourceByName(dsName);
-        if (ds != null) {
-            if (!ds.isTemporary()) {
-                // Different one
-                ds = null;
-            }
-        }
-        if (ds == null) {
-            ds = new DataSourceDescriptor(dsRegistry, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
-            ds.setName(dsName);
-            ds.setTemporary(true);
-            if (savePassword) {
-                ds.setSavePassword(true);
-            }
-            if (folder != null) {
-                ds.setFolder(folder);
-            }
-            ds.setShowSystemObjects(showSystemObjects);
-            ds.setShowUtilityObjects(showUtilityObjects);
-            //ds.set
-            dsRegistry.addDataSource(ds);
-        }
-
-        if (openConsole) {
-            DataSourceDescriptor finalDs = ds;
+        if (instanceConParameters.openConsole) {
+            final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             UIUtils.syncExec(() -> {
-                OpenHandler.openSQLConsole(workbenchWindow, finalDs, finalDs.getName(), "");
+                OpenHandler.openSQLConsole(workbenchWindow, dataSource, dataSource.getName(), "");
                 workbenchWindow.getShell().forceActive();
             });
-        } else if (makeConnect) {
-            DataSourceHandler.connectToDataSource(null, ds, null);
+        } else if (instanceConParameters.makeConnect) {
+            DataSourceHandler.connectToDataSource(null, dataSource, null);
         }
     }
 
@@ -290,4 +197,21 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     }
 
+    private static class InstanceConnectionParameters implements GeneralUtils.IParameterHandler {
+        boolean makeConnect = true, openConsole = false;
+
+        @Override
+        public boolean setParameter(String name, String value) {
+            switch (name) {
+                case "connect":
+                    makeConnect = CommonUtils.toBoolean(value);
+                    return true;
+                case "openConsole":
+                    openConsole = CommonUtils.toBoolean(value);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
 }
