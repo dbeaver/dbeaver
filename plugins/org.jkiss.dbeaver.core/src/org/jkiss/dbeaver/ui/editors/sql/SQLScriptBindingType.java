@@ -47,13 +47,13 @@ public enum SQLScriptBindingType {
             spec.append(DataSourceUtils.PARAM_NAME).append("=").append(dataSource.getName());
         }
     },
-    URL("URL", "DataSource URL (jdbc:dbms://host:port/...)") {
+    URL("URL", "Connection URL (jdbc:dbms://host:port/...)") {
         @Override
         public void appendSpec(DBPDataSourceContainer dataSource, StringBuilder spec) {
             spec.append(DataSourceUtils.PARAM_URL).append("=").append(dataSource.getConnectionConfiguration().getUrl());
         }
     },
-    PARAMS("PARAMS", "DataSource parameters (name1=value1;name2=value2;...)") {
+    PARAMS("PARAMS", "Connection parameters (name1=value1;name2=value2;...)") {
         @Override
         public void appendSpec(DBPDataSourceContainer dataSource, StringBuilder spec) {
             DBPConnectionConfiguration cfg = dataSource.getConnectionConfiguration();
