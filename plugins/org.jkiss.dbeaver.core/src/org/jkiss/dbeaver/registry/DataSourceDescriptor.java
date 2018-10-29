@@ -230,6 +230,7 @@ public class DataSourceDescriptor
 
     @NotNull
     @Override
+    @Property(name = "ID", viewable = false, order = 0)
     public String getId() {
         return id;
     }
