@@ -125,7 +125,9 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
             for (AWSRegion region : AWSRegion.values()) {
                 awsRegionCombo.add(region.getId());
             }
-            awsRegionCombo.setText(connectionInfo.getServerName());
+            if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
+                awsRegionCombo.setText(connectionInfo.getServerName());
+            }
             if (awsRegionCombo.getText().isEmpty()) {
                 awsRegionCombo.setText(AWSRegion.us_west_1.getId());
             }
