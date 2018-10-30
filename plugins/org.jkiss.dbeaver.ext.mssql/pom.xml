@@ -4,9 +4,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jkiss.dbeaver</groupId>
-    <artifactId>dbeaver</artifactId>
+    <artifactId>plugins</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <relativePath>../../</relativePath>
+     <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.mssql</artifactId>
   <version>1.0.90-SNAPSHOT</version>

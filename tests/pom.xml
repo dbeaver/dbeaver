@@ -5,12 +5,17 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jkiss.dbeaver</groupId>
-        <artifactId>plugins</artifactId>
+        <artifactId>dbeaver</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-         <relativePath>../</relativePath>
+        <relativePath>../</relativePath>
     </parent>
-    <artifactId>org.jkiss.dbeaver.data.office</artifactId>
-    <version>1.1.33-SNAPSHOT</version>
-    <packaging>eclipse-plugin</packaging>
+    <artifactId>tests</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>org.jkiss.dbeaver.test</module>
+
+    </modules>
 
 </project>
