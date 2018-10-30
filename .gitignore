@@ -14,9 +14,6 @@ local.properties
 # External tool builders
 .externalToolBuilders/
 
-# Locally stored "Eclipse launch configurations"
-*.launch
-
 target/
 pom.xml.tag
 pom.xml.releaseBackup
