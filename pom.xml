@@ -74,6 +74,24 @@
     <build>
         <plugins>
 
+            <!-- Tycho target platform -->
+<!--
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <target>
+                        <artifact>
+                            <groupId>org.example</groupId>
+                            <artifactId>target-definition</artifactId>
+                            <version>1.0.0-SNAPSHOT</version>
+                        </artifact>
+                    </target>
+                </configuration>
+            </plugin>
+-->
+
             <!-- Tycho build -->
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
