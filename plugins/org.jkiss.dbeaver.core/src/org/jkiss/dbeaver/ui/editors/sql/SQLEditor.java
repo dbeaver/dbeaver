@@ -149,7 +149,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
 
-    private static final Pattern EMBEDDED_BINDING_PREFIX = Pattern.compile("--\\s*CONNECTION:\\s*(.+)");
+    private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
+    private static final Pattern EMBEDDED_BINDING_PREFIX_PATTERN = Pattern.compile("--\\s*CONNECTION:\\s*(.+)", Pattern.CASE_INSENSITIVE);
 
     private static Image IMG_DATA_GRID = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID);
     private static Image IMG_DATA_GRID_LOCKED = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID_LOCKED);
@@ -308,7 +309,31 @@ public class SQLEditor extends SQLEditorBase implements
             dataSourceContainer.acquire(this);
         }
 
+        if (EditorUtils.isWriteEmbeddedBinding()) {
+            // Patch connection reference
+            embedDataSourceAssociation();
+        }
+
         return true;
+    }
+
+    private void updateDataSourceContainer() {
+        DBPDataSourceContainer inputDataSource = null;
+        if (EditorUtils.isReadEmbeddedBinding()) {
+            // Try to get datasource from contents (always, no matter what )
+            inputDataSource = getDataSourceFromContent();
+        }
+        if (inputDataSource == null) {
+            inputDataSource = EditorUtils.getInputDataSource(getEditorInput());
+        }
+        if (inputDataSource == null) {
+            // No datasource. Try to get one from active part
+            IWorkbenchPart activePart = getSite().getWorkbenchWindow().getActivePage().getActivePart();
+            if (activePart instanceof IDataSourceContainerProvider) {
+                inputDataSource = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+            }
+        }
+        setDataSourceContainer(inputDataSource);
     }
 
     private void updateExecutionContext(Runnable onSuccess) {
@@ -371,6 +396,83 @@ public class SQLEditor extends SQLEditorBase implements
             dataSourceContainer.release(this);
             dataSourceContainer = null;
         }
+    }
+
+    private DBPDataSourceContainer getDataSourceFromContent() {
+
+        IProject project = getProject();
+        Document document = getDocument();
+
+        int totalLines = document.getNumberOfLines();
+        if (totalLines == 0) {
+            return null;
+        }
+        try {
+            IRegion region = document.getLineInformation(0);
+            String line = document.get(region.getOffset(), region.getLength());
+            Matcher matcher = EMBEDDED_BINDING_PREFIX_PATTERN.matcher(line);
+            if (matcher.matches()) {
+                String connSpec = matcher.group(1).trim();
+                if (!CommonUtils.isEmpty(connSpec)) {
+                    final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(project, connSpec, null, true, false);
+                    if (dataSource != null) {
+                        return dataSource;
+                    }
+                }
+            }
+
+        } catch (Throwable e) {
+            log.debug("Error extracting datasource info from script's content", e);
+        }
+
+        return null;
+    }
+
+    private void embedDataSourceAssociation() {
+        if (getDataSourceFromContent() == dataSourceContainer) {
+            return;
+        }
+        Document document = getDocument();
+
+        try {
+
+            int totalLines = document.getNumberOfLines();
+            IRegion region = null;
+            if (totalLines > 0) {
+                region = document.getLineInformation(0);
+                String line = document.get(region.getOffset(), region.getLength());
+                Matcher matcher = EMBEDDED_BINDING_PREFIX_PATTERN.matcher(line);
+                if (!matcher.matches()) {
+                    // Update existing association
+                    region = null;
+                }
+            }
+
+            if (dataSourceContainer == null) {
+                if (region == null) {
+                    return;
+                }
+                // Remove connection association
+                document.replace(region.getOffset(), region.getLength(), "");
+            } else {
+                SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
+
+                StringBuilder assocSpecLine = new StringBuilder(EMBEDDED_BINDING_PREFIX);
+                bindingType.appendSpec(dataSourceContainer, assocSpecLine);
+
+                if (region != null) {
+                    // Remove connection association
+                    document.replace(region.getOffset(), region.getLength(), assocSpecLine.toString());
+                } else {
+                    document.replace(0, 0, assocSpecLine.toString());
+                }
+            }
+
+        } catch (Throwable e) {
+            log.debug("Error extracting datasource info from script's content", e);
+        }
+
+        UIUtils.asyncExec(() -> getTextViewer().refresh());
     }
 
     public void addListener(SQLEditorListener listener) {
@@ -1157,57 +1259,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
         syntaxLoaded = false;
         dataSourceContainer = null;
-        DBPDataSourceContainer inputDataSource = null;
-        if (EditorUtils.isUseEmbeddedBinding()){
-            // Try to get datasource from contents
-            inputDataSource = getDataSourceFromContent();
-        }
-        if (inputDataSource == null) {
-            inputDataSource = EditorUtils.getInputDataSource(editorInput);
-        }
-        if (inputDataSource == null) {
-            // No datasource. Try to get one from active part
-            IWorkbenchPart activePart = getSite().getWorkbenchWindow().getActivePage().getActivePart();
-            if (activePart instanceof IDataSourceContainerProvider) {
-                inputDataSource = ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
-            }
-        }
-        setDataSourceContainer(inputDataSource);
+
+        updateDataSourceContainer();
+
         setPartName(getEditorName());
         if (isNonPersistentEditor()) {
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
         }
         editorImage = getTitleImage();
-    }
-
-    private DBPDataSourceContainer getDataSourceFromContent() {
-
-        IProject project = getProject();
-        Document document = getDocument();
-
-        int totalLines = document.getNumberOfLines();
-        if (totalLines == 0) {
-            return null;
-        }
-        try {
-            IRegion region = document.getLineInformation(0);
-            String line = document.get(region.getOffset(), region.getLength());
-            Matcher matcher = EMBEDDED_BINDING_PREFIX.matcher(line);
-            if (matcher.matches()) {
-                String connSpec = matcher.group(1).trim();
-                if (!CommonUtils.isEmpty(connSpec)) {
-                    final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(project, connSpec, null);
-                    if (dataSource != null) {
-                        return dataSource;
-                    }
-                }
-            }
-
-        } catch (Throwable e) {
-            log.debug("Error extracting datasource info from script's content", e);
-        }
-
-        return null;
     }
 
     @Override
@@ -1800,6 +1859,8 @@ public class SQLEditor extends SQLEditorBase implements
             ((ISaveablePart) extraPresentation).doSave(monitor);
         }
         super.doSave(monitor);
+
+        updateDataSourceContainer();
     }
 
     @Override

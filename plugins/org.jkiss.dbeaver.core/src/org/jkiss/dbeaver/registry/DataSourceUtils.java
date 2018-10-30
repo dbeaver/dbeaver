@@ -36,9 +36,31 @@ import java.util.Map;
  */
 public class DataSourceUtils {
 
+    public static final String PARAM_ID = "id";
+    public static final String PARAM_DRIVER = "driver";
+    public static final String PARAM_NAME = "name";
+    public static final String PARAM_URL = "url";
+    public static final String PARAM_HOST = "host";
+    public static final String PARAM_PORT = "port";
+    public static final String PARAM_SERVER = "server";
+    public static final String PARAM_DATABASE = "database";
+    public static final String PARAM_USER = "user";
+    public static final String PARAM_PASSWORD = "password";
+    public static final String PARAM_SAVE_PASSWORD = "savePassword";
+    public static final String PARAM_SHOW_SYSTEM_OBJECTS = "showSystemObjects";
+    public static final String PARAM_SHOW_UTILITY_OBJECTS = "showUtilityObjects";
+    public static final String PARAM_FOLDER = "folder";
+    public static final String PARAM_AUTO_COMMIT = "autoCommit";
+
     private static final Log log = Log.getLog(DataSourceUtils.class);
 
-    public static DBPDataSourceContainer getDataSourceBySpec(@NotNull IProject project, @NotNull String connectionSpec, @Nullable GeneralUtils.IParameterHandler parameterHandler) {
+    public static DBPDataSourceContainer getDataSourceBySpec(
+        @NotNull IProject project,
+        @NotNull String connectionSpec,
+        @Nullable GeneralUtils.IParameterHandler parameterHandler,
+        boolean searchByParameters,
+        boolean createNewDataSource)
+    {
         String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
         boolean showSystemObjects = false, showUtilityObjects = false, savePassword = true;
         Boolean autoCommit = null;
@@ -61,21 +83,51 @@ public class DataSourceUtils {
             String paramName = cp.substring(0, divPos);
             String paramValue = cp.substring(divPos + 1);
             switch (paramName) {
-                case "id": dsId = paramValue; break;
-                case "driver": driverName = paramValue; break;
-                case "name": dsName = paramValue; break;
-                case "url": url = paramValue; break;
-                case "host": host = paramValue; break;
-                case "port": port = paramValue; break;
-                case "server": server = paramValue; break;
-                case "database": database = paramValue; break;
-                case "user": user = paramValue; break;
-                case "password": password = paramValue; break;
-                case "savePassword": savePassword = CommonUtils.toBoolean(paramValue); break;
-                case "showSystemObjects": showSystemObjects = CommonUtils.toBoolean(paramValue); break;
-                case "showUtilityObjects": showUtilityObjects = CommonUtils.toBoolean(paramValue); break;
-                case "folder": folder = dsRegistry.getFolder(paramValue); break;
-                case "autoCommit": autoCommit = CommonUtils.toBoolean(paramValue); break;
+                case PARAM_ID:
+                    dsId = paramValue;
+                    break;
+                case PARAM_DRIVER:
+                    driverName = paramValue;
+                    break;
+                case PARAM_NAME:
+                    dsName = paramValue;
+                    break;
+                case PARAM_URL:
+                    url = paramValue;
+                    break;
+                case PARAM_HOST:
+                    host = paramValue;
+                    break;
+                case PARAM_PORT:
+                    port = paramValue;
+                    break;
+                case PARAM_SERVER:
+                    server = paramValue;
+                    break;
+                case PARAM_DATABASE:
+                    database = paramValue;
+                    break;
+                case PARAM_USER:
+                    user = paramValue;
+                    break;
+                case PARAM_PASSWORD:
+                    password = paramValue;
+                    break;
+                case PARAM_SAVE_PASSWORD:
+                    savePassword = CommonUtils.toBoolean(paramValue);
+                    break;
+                case PARAM_SHOW_SYSTEM_OBJECTS:
+                    showSystemObjects = CommonUtils.toBoolean(paramValue);
+                    break;
+                case PARAM_SHOW_UTILITY_OBJECTS:
+                    showUtilityObjects = CommonUtils.toBoolean(paramValue);
+                    break;
+                case PARAM_FOLDER:
+                    folder = dsRegistry.getFolder(paramValue);
+                    break;
+                case PARAM_AUTO_COMMIT:
+                    autoCommit = CommonUtils.toBoolean(paramValue);
+                    break;
                 default:
                     boolean handled = false;
                     if (paramName.length() > 5 && paramName.startsWith("prop.")) {
@@ -91,65 +143,101 @@ public class DataSourceUtils {
             }
         }
 
-        DBPDataSourceContainer dataSource = dsRegistry.getDataSource(dsId);
-        if (dataSource == null) {
-            if (driverName == null) {
-                log.error("Driver name not specified");
-                return null;
-            }
-            DriverDescriptor driver = DataSourceProviderRegistry.getInstance().findDriver(driverName);
-            if (driver == null) {
-                log.error("Driver '" + driverName + "' not found");
-                return null;
-            }
-            if (dsName == null) {
-                dsName = "Ext: " + driver.getName();
-                if (database != null) {
-                    dsName += " - " + database;
-                } else if (server != null) {
-                    dsName += " - " + server;
-                }
-            }
+        DBPDataSourceContainer dataSource = null;
 
-            dataSource = dsRegistry.findDataSourceByName(dsName);
-            if (dataSource != null) {
-                if (!dataSource.isTemporary()) {
-                    // Different one
-                    dataSource = null;
-                }
-            }
-            if (dataSource == null) {
-                DBPConnectionConfiguration connConfig = new DBPConnectionConfiguration();
-                connConfig.setUrl(url);
-                connConfig.setHostName(host);
-                connConfig.setHostPort(port);
-                connConfig.setServerName(server);
-                connConfig.setDatabaseName(database);
-                connConfig.setUserName(user);
-                connConfig.setUserPassword(password);
-                connConfig.setProperties(conProperties);
-
-                if (autoCommit != null) {
-                    connConfig.getBootstrap().setDefaultAutoCommit(autoCommit);
-                }
-
-                DataSourceDescriptor newDS = new DataSourceDescriptor(dsRegistry, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
-                newDS.setName(dsName);
-                newDS.setTemporary(true);
-                if (savePassword) {
-                    newDS.setSavePassword(true);
-                }
-                if (folder != null) {
-                    newDS.setFolder(folder);
-                }
-                newDS.setShowSystemObjects(showSystemObjects);
-                newDS.setShowUtilityObjects(showUtilityObjects);
-                //ds.set
-                dsRegistry.addDataSource(newDS);
-                dataSource = newDS;
+        if (dsId != null) {
+            dataSource = dsRegistry.getDataSource(dsId);
+            if (dataSource != null || !createNewDataSource) {
+                return dataSource;
             }
         }
-        return dataSource;
+
+        if (dsName != null) {
+            dataSource = dsRegistry.findDataSourceByName(dsName);
+            if (dataSource != null || !createNewDataSource) {
+                return dataSource;
+            }
+        }
+
+        if (searchByParameters) {
+            // Try to find by parameters
+            if (url != null) {
+                for (DBPDataSourceContainer ds : dsRegistry.getDataSources()) {
+                    if (url.equals(ds.getConnectionConfiguration().getUrl())) {
+                        if (user == null || user.equals(ds.getConnectionConfiguration().getUserName())) {
+                            return ds;
+                        }
+                    }
+                }
+            } else {
+                for (DBPDataSourceContainer ds : dsRegistry.getDataSources()) {
+                    DBPConnectionConfiguration cfg = ds.getConnectionConfiguration();
+                    if (server != null && !server.equals(cfg.getServerName()) ||
+                        host != null && !host.equals(cfg.getHostName()) ||
+                        port != null && !port.equals(cfg.getHostPort()) ||
+                        database != null && !database.equals(cfg.getDatabaseName()) ||
+                        user != null && !user.equals(cfg.getUserName()))
+                    {
+                        continue;
+                    }
+
+                    return ds;
+                }
+            }
+        }
+
+        if (!createNewDataSource) {
+            return null;
+        }
+
+        if (driverName == null) {
+            log.error("Driver name not specified - can't create new datasource");
+            return null;
+        }
+        DriverDescriptor driver = DataSourceProviderRegistry.getInstance().findDriver(driverName);
+        if (driver == null) {
+            log.error("Driver '" + driverName + "' not found");
+            return null;
+        }
+
+        // Create new datasource with specified parameters
+        if (dsName == null) {
+            dsName = "Ext: " + driver.getName();
+            if (database != null) {
+                dsName += " - " + database;
+            } else if (server != null) {
+                dsName += " - " + server;
+            }
+        }
+
+        DBPConnectionConfiguration connConfig = new DBPConnectionConfiguration();
+        connConfig.setUrl(url);
+        connConfig.setHostName(host);
+        connConfig.setHostPort(port);
+        connConfig.setServerName(server);
+        connConfig.setDatabaseName(database);
+        connConfig.setUserName(user);
+        connConfig.setUserPassword(password);
+        connConfig.setProperties(conProperties);
+
+        if (autoCommit != null) {
+            connConfig.getBootstrap().setDefaultAutoCommit(autoCommit);
+        }
+
+        DataSourceDescriptor newDS = new DataSourceDescriptor(dsRegistry, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
+        newDS.setName(dsName);
+        newDS.setTemporary(true);
+        if (savePassword) {
+            newDS.setSavePassword(true);
+        }
+        if (folder != null) {
+            newDS.setFolder(folder);
+        }
+        newDS.setShowSystemObjects(showSystemObjects);
+        newDS.setShowUtilityObjects(showUtilityObjects);
+        //ds.set
+        dsRegistry.addDataSource(newDS);
+        return newDS;
     }
 
 }

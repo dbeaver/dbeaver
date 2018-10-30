@@ -89,7 +89,9 @@ public class DBeaverInstanceServer implements IInstanceController {
         final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
             DBeaverCore.getInstance().getProjectRegistry().getActiveProject(),
             connectionSpec,
-            instanceConParameters);
+            instanceConParameters,
+            false,
+            true);
 
         if (dataSource == null) {
             return;
