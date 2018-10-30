@@ -22,6 +22,12 @@
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
     </url>
 
+    <requires>
+        <import plugin="org.apache.commons.logging" match="greaterOrEqual"/>
+        <import plugin="com.jcraft.jsch" match="greaterOrEqual"/>
+        <import plugin="org.objectweb.asm" match="greaterOrEqual"/>
+    </requires>
+
     <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.core.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.ext.generic.feature" version="0.0.0"/>
@@ -37,12 +43,6 @@
     <includes id="org.eclipse.equinox.p2.discovery.feature" version="0.0.0"/>
     <includes id="org.eclipse.equinox.p2.extras.feature" version="0.0.0"/>
 
-    <requires>
-        <import plugin="org.apache.commons.logging" match="greaterOrEqual"/>
-        <import plugin="com.jcraft.jsch" match="greaterOrEqual"/>
-        <import plugin="org.objectweb.asm" match="greaterOrEqual"/>
-    </requires>
-
     <plugin id="org.eclipse.ui.ide.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- EGit and other requirements -->
@@ -50,7 +50,7 @@
     <plugin id="org.eclipse.jsch.core" download-size="0" install-size="0" version="0.0.0"/>
     <plugin id="org.eclipse.jsch.ui" download-size="0" install-size="0" version="0.0.0"/>
     <plugin id="org.eclipse.core.variables" download-size="0" install-size="0" version="0.0.0"/>
-    <plugin id="org.eclipse.ui.cheatsheets" download-size="0" install-size="0" version="0.0.0"/>
+    <!--<plugin id="org.eclipse.ui.cheatsheets" download-size="0" install-size="0" version="0.0.0"/>-->
 
     <!-- Include org.eclipse.ui.themes because it was added only in 4.4 -->
     <plugin id="org.eclipse.ui.themes" download-size="0" install-size="0" version="0.0.0"/>
@@ -60,6 +60,8 @@
 
     <plugin id="org.jkiss.dbeaver.core.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.sample.database" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <plugin id="org.eclipse.nebula.widgets.opal.tipoftheday" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.ui.tipoftheday" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 
