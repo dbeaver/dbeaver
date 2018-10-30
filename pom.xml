@@ -38,8 +38,8 @@
         <module>product/standalone</module>
         <module>product/repositories</module>
 
-        <!-- Test -->
-        <module>plugins/org.jkiss.dbeaver.test</module>
+        <!-- Tests -->
+        <module>tests</module>
 
     </modules>
 
