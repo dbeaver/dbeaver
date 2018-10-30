@@ -143,14 +143,18 @@ public class DataSourceUtils {
             }
         }
 
-        DBPDataSourceContainer dataSource = dsRegistry.getDataSource(dsId);
-        if (dataSource != null) {
-            return dataSource;
+        DBPDataSourceContainer dataSource = null;
+
+        if (dsId != null) {
+            dataSource = dsRegistry.getDataSource(dsId);
+            if (dataSource != null || !createNewDataSource) {
+                return dataSource;
+            }
         }
 
         if (dsName != null) {
             dataSource = dsRegistry.findDataSourceByName(dsName);
-            if (dataSource != null) {
+            if (dataSource != null || !createNewDataSource) {
                 return dataSource;
             }
         }
@@ -164,6 +168,20 @@ public class DataSourceUtils {
                             return ds;
                         }
                     }
+                }
+            } else {
+                for (DBPDataSourceContainer ds : dsRegistry.getDataSources()) {
+                    DBPConnectionConfiguration cfg = ds.getConnectionConfiguration();
+                    if (server != null && !server.equals(cfg.getServerName()) ||
+                        host != null && !host.equals(cfg.getHostName()) ||
+                        port != null && !port.equals(cfg.getHostPort()) ||
+                        database != null && !database.equals(cfg.getDatabaseName()) ||
+                        user != null && !user.equals(cfg.getUserName()))
+                    {
+                        continue;
+                    }
+
+                    return ds;
                 }
             }
         }
