@@ -429,7 +429,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     public String getFullName() {
-        if (CommonUtils.isEmpty(category)) {
+        if (CommonUtils.isEmpty(category) || name.contains(category)) {
             return name;
         } else {
             return category + " / " + name;
