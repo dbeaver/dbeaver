@@ -190,6 +190,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         executeBatch.add(rowValues);
 
         rowsExported++;
+        // No need. mnitor is incremented in data reader
+        //session.getProgressMonitor().worked(1);
 
         insertBatch(false);
     }
