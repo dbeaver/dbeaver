@@ -75,7 +75,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         if (!CommonUtils.isEmpty(secondaryId)) {
             try {
                 DBNNode node = getNodeFromSecondaryId(secondaryId);
-                setPartName(node.getNodeFullName());
+                setPartName(node.getNodeName());
                 setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
             } catch (DBException e) {
                 // ignore
