@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,9 +73,7 @@ public class DriverGalleryViewer extends Viewer {
             groupRenderer.setItemWidth(150);
             gallery.setGroupRenderer(new NoGroupRenderer());
 
-            DefaultGalleryItemRenderer ir = new DefaultGalleryItemRenderer();
-            ir.setDropShadows(false);
-            ir.setShowLabels(true);
+            DriverGalleryItemRenderer ir = new DriverGalleryItemRenderer();
             gallery.setItemRenderer(ir);
 
             for (DataSourceProviderDescriptor dpd : providers) {
