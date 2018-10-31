@@ -210,7 +210,8 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         public boolean matchItem(Object item) {
             if (item instanceof DBPNamedObject) {
                 String objectName = ((DBPNamedObject) item).getName();
-                return TextUtils.fuzzyScore(objectName, getPattern()) > 0;
+                String pattern = getPattern().replaceAll("[\\*\\%\\?]", "");
+                return TextUtils.fuzzyScore(objectName, pattern) > 0;
 //                if (!getNamePattern().matcher(objectName).matches()) {
 //                    return false;
 //                }
