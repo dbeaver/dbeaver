@@ -172,7 +172,8 @@ public class SQLEditorContributor extends TextEditorActionContributor
     @Override
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
     {
-        if (!isNestedEditor()) {
+        // Contribute to status line always (#4355)
+        /*if (!isNestedEditor()) */{
             try {
                 super.contributeToStatusLine(statusLineManager);
             } catch (Exception e) {
