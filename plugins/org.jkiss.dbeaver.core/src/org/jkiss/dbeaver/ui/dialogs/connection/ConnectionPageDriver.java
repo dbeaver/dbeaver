@@ -63,7 +63,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
 
         {
-            if (false) {
+            if (true) {
                 DriverTreeControl driverTreeControl = new DriverTreeControl(placeholder, this, wizard.getAvailableProvides(), true);
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.heightHint = 200;

@@ -18,10 +18,7 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.viewers.*;
-import org.eclipse.nebula.widgets.gallery.DefaultGalleryGroupRenderer;
-import org.eclipse.nebula.widgets.gallery.DefaultGalleryItemRenderer;
-import org.eclipse.nebula.widgets.gallery.Gallery;
-import org.eclipse.nebula.widgets.gallery.GalleryItem;
+import org.eclipse.nebula.widgets.gallery.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -73,9 +70,9 @@ public class DriverGalleryViewer extends Viewer {
             DefaultGalleryGroupRenderer groupRenderer = new DefaultGalleryGroupRenderer();
             groupRenderer.setMaxImageHeight(16);
             groupRenderer.setMaxImageWidth(16);
-            groupRenderer.setItemHeight(64);
-            groupRenderer.setItemWidth(100);
-            gallery.setGroupRenderer(groupRenderer);
+            groupRenderer.setItemHeight(100);
+            groupRenderer.setItemWidth(150);
+            gallery.setGroupRenderer(new NoGroupRenderer());
 
             DefaultGalleryItemRenderer ir = new DefaultGalleryItemRenderer();
             ir.setDropShadows(false);
