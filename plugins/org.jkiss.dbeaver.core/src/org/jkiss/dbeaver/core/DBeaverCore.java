@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -186,7 +187,7 @@ public class DBeaverCore implements DBPPlatform {
         //' Global pref events forwarder
         prefsStore.addPropertyChangeListener(event -> {
             // Forward event to all data source preferences
-            for (DataSourceDescriptor ds : DataSourceRegistry.getAllDataSources()) {
+            for (DBPDataSourceContainer ds : DataSourceRegistry.getAllDataSources()) {
                 ds.getPreferenceStore().firePropertyChangeEvent(event.getProperty(), event.getOldValue(), event.getNewValue());
             }
         });

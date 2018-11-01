@@ -460,8 +460,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return result;
     }
 
-    public static List<DataSourceDescriptor> getAllDataSources() {
-        List<DataSourceDescriptor> result = new ArrayList<>();
+    public static List<DBPDataSourceContainer> getAllDataSources() {
+        List<DBPDataSourceContainer> result = new ArrayList<>();
         for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
             if (project.isOpen()) {
                 DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);

@@ -120,9 +120,6 @@ public interface DBPDriver extends DBPNamedObject
     ClassLoader getClassLoader();
 
     @NotNull
-    List<DBPDataSourceContainer> getUsedBy();
-
-    @NotNull
     List<? extends DBPDriverLibrary> getDriverLibraries();
 
     @NotNull

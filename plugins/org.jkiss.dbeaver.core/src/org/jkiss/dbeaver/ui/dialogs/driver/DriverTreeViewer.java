@@ -27,10 +27,14 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -209,20 +213,22 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
 
     private int getConnectionCount(Object obj)
     {
+        List<DBPDataSourceContainer> allDataSources = DataSourceRegistry.getAllDataSources();
+
         if (obj instanceof DataSourceProviderDescriptor) {
             int count = 0;
-            for (DriverDescriptor driver : ((DataSourceProviderDescriptor) obj).getEnabledDrivers()) {
-                count += driver.getUsedBy().size();
+            for (DBPDriver driver : ((DataSourceProviderDescriptor) obj).getEnabledDrivers()) {
+                count += DriverUtils.getUsedBy(driver, allDataSources).size();
             }
             return count;
         } else if (obj instanceof DriverCategory) {
             int count = 0;
             for (DriverDescriptor driver : ((DriverCategory) obj).drivers) {
-                count += driver.getUsedBy().size();
+                count += DriverUtils.getUsedBy(driver, allDataSources).size();
             }
             return count;
-        } else if (obj instanceof DriverDescriptor) {
-            return ((DriverDescriptor) obj).getUsedBy().size();
+        } else if (obj instanceof DBPDriver) {
+            return DriverUtils.getUsedBy((DBPDriver) obj, allDataSources).size();
         } else {
             return 0;
         }
@@ -300,11 +306,6 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
             DBPImage image = getImage(cell.getElement(), cell.getColumnIndex());
             if (image != null) {
                 cell.setImage(DBeaverIcons.getImage(image));
-            }
-            if (cell.getElement() instanceof DriverDescriptor && !((DriverDescriptor)cell.getElement()).getUsedBy().isEmpty()) {
-                //cell.setFont(boldFont);
-            } else {
-                cell.setFont(null);
             }
         }
 

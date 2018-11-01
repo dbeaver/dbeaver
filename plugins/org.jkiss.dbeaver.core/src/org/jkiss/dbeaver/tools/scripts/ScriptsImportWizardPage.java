@@ -56,7 +56,7 @@ class ScriptsImportWizardPage extends WizardPage {
 
     private Text directoryText;
     private Text extensionsText;
-    private CSmartCombo<DataSourceDescriptor> scriptsDataSources;
+    private CSmartCombo<DBPDataSourceContainer> scriptsDataSources;
     private Button overwriteCheck;
     private DBNNode importRoot = null;
 
@@ -131,7 +131,7 @@ class ScriptsImportWizardPage extends WizardPage {
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_default_connection);
             scriptsDataSources = new CSmartCombo<>(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionLabelProvider());
-            for (DataSourceDescriptor dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
+            for (DBPDataSourceContainer dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
                 scriptsDataSources.addItem(dataSourceDescriptor);
             }
 

@@ -20,6 +20,10 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -188,4 +192,15 @@ public class DriverUtils {
             copyZipStream(zipStream, os);
         }
     }
+
+    public static List<DBPDataSourceContainer> getUsedBy(DBPDriver driver, List<DBPDataSourceContainer> containers) {
+        List<DBPDataSourceContainer> usedBy = new ArrayList<>();
+        for (DBPDataSourceContainer ds : containers) {
+            if (ds.getDriver() == driver) {
+                usedBy.add(ds);
+            }
+        }
+        return usedBy;
+    }
+
 }
