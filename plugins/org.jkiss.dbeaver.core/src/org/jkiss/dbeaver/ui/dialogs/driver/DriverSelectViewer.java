@@ -239,8 +239,18 @@ public class DriverSelectViewer extends Viewer {
             viewType = viewType == SelectorViewType.tree ? SelectorViewType.browser : SelectorViewType.tree;
             setCurrentSelectorViewType(viewType);
 
+            ISelection curSelection = selectorViewer.getSelection();
+
             selectorViewer.getControl().dispose();
             createSelectorControl();
+
+            if (curSelection instanceof StructuredSelection && !curSelection.isEmpty()) {
+                Object element = ((StructuredSelection) curSelection).getFirstElement();
+                UIUtils.asyncExec(() -> {
+                    selectorViewer.setSelection(new StructuredSelection(element), true);
+                });
+            }
+
             selectorComposite.layout(true, true);
         } finally {
             selectorComposite.setRedraw(true);

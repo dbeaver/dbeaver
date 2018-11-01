@@ -355,8 +355,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return classLoader;
     }
 
-    public List<DataSourceDescriptor> getUsedBy() {
-        List<DataSourceDescriptor> usedBy = new ArrayList<>();
+    @Override
+    public List<DBPDataSourceContainer> getUsedBy() {
+        List<DBPDataSourceContainer> usedBy = new ArrayList<>();
         for (DataSourceDescriptor ds : DataSourceRegistry.getAllDataSources()) {
             if (ds.getDriver() == this) {
                 usedBy.add(ds);
@@ -397,6 +398,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return providerDescriptor.getId();
     }
 
+    @Override
     @Property(viewable = true, order = 2)
     public String getCategory() {
         return category;

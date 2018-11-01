@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -47,6 +48,9 @@ public interface DBPDriver extends DBPNamedObject
 
     @NotNull
     String getProviderId();
+
+    @Nullable
+    String getCategory();
 
     @NotNull
     String getFullName();
@@ -114,6 +118,9 @@ public interface DBPDriver extends DBPNamedObject
 
     @Nullable
     ClassLoader getClassLoader();
+
+    @NotNull
+    List<DBPDataSourceContainer> getUsedBy();
 
     @NotNull
     List<? extends DBPDriverLibrary> getDriverLibraries();
