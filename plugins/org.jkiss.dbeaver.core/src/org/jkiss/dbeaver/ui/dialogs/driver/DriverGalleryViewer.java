@@ -23,9 +23,7 @@ import org.eclipse.nebula.widgets.gallery.DefaultGalleryGroupRenderer;
 import org.eclipse.nebula.widgets.gallery.Gallery;
 import org.eclipse.nebula.widgets.gallery.GalleryItem;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -41,9 +39,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DriverGalleryViewer
@@ -52,6 +48,8 @@ import java.util.List;
  */
 public class DriverGalleryViewer extends GalleryTreeViewer {
 
+    public static final String GROUP_ALL = "all";
+    public static final String GROUP_RECENT = "recent";
     //private final Gallery gallery;
     private final List<DBPDriver> allDrivers = new ArrayList<>();;
 
@@ -76,6 +74,21 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
                 }
             }
         });
+        gallery.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                GalleryItem[] items = gallery.getSelection();
+                if (items.length == 0) {
+                    items = gallery.getItems();
+                }
+                if (items.length > 0) {
+                    if (items[0].getItemCount() > 0) {
+                        items[0] = items[0].getItem(0);
+                    }
+                    gallery.setSelection(new GalleryItem[]{ items[0] });
+                }
+            }
+        });
 
         // Renderers
         DefaultGalleryGroupRenderer groupRenderer = new DefaultGalleryGroupRenderer();
@@ -83,6 +96,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         groupRenderer.setMaxImageWidth(16);
         groupRenderer.setItemHeight(60);
         groupRenderer.setItemWidth(200);
+        groupRenderer.setTitleBackground(gallery.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
         gallery.setGroupRenderer(groupRenderer);
         //gallery.setGroupRenderer(new NoGroupRenderer());
 
@@ -103,20 +117,36 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         GalleryItem groupRecent = new GalleryItem(gallery, SWT.NONE);
         groupRecent.setText("Recent drivers"); //$NON-NLS-1$
         groupRecent.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-        groupRecent.setData("recent");
+        groupRecent.setData(GROUP_RECENT);
         groupRecent.setExpanded(true);
 
         GalleryItem groupAll = new GalleryItem(gallery, SWT.NONE);
         groupAll.setText("All drivers"); //$NON-NLS-1$
         groupAll.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
-        groupAll.setData("all");
+        groupAll.setData(GROUP_ALL);
         groupAll.setExpanded(true);
+
+        fillDriverGroup(groupRecent);
+        if (groupRecent.getItemCount() == 0) {
+            groupRecent.dispose();
+        }
+        fillDriverGroup(groupAll);
+    }
+
+    private void fillDriverGroup(GalleryItem group) {
+        List<DBPDataSourceContainer> allDataSources = DataSourceRegistry.getAllDataSources();
 
         ViewerFilter[] filters = getFilters();
 
-        List<DBPDataSourceContainer> allDataSources = DataSourceRegistry.getAllDataSources();
-
-        for (DBPDriver driver : allDrivers) {
+        List<DBPDriver> drivers;
+        if (GROUP_ALL.equals(group.getData())) {
+            drivers = this.allDrivers;
+        } else if (GROUP_RECENT.equals(group.getData())) {
+            drivers = getRecentDrivers(allDataSources, 6);
+        } else {
+            drivers = Collections.emptyList();
+        }
+        for (DBPDriver driver : drivers) {
 
             boolean isVisible = true;
             for (ViewerFilter filter : filters) {
@@ -129,7 +159,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
                 continue;
             }
 
-            GalleryItem item = new GalleryItem(groupAll, SWT.NONE);
+            GalleryItem item = new GalleryItem(group, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(driver.getIcon()));
             item.setText(driver.getName()); //$NON-NLS-1$
             item.setText(0, driver.getName()); //$NON-NLS-1$
@@ -142,6 +172,29 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             }
             item.setData(driver);
         }
+    }
+
+    private List<DBPDriver> getRecentDrivers(List<DBPDataSourceContainer> allDataSources, int total) {
+        Map<DBPDriver, Integer> connCountMap = new HashMap<>();
+        for (DBPDriver driver : allDrivers) {
+            connCountMap.put(driver, DriverUtils.getUsedBy(driver, allDataSources).size());
+        }
+        List<DBPDriver> recentDrivers = new ArrayList<>(allDrivers);
+        recentDrivers.sort((o1, o2) -> {
+            int ub1 = DriverUtils.getUsedBy(o1, allDataSources).size();
+            int ub2 = DriverUtils.getUsedBy(o2, allDataSources).size();
+            if (ub1 == ub2) {
+                if (o1.isPromoted()) return 1;
+                else if (o2.isPromoted()) return -1;
+                else return o1.getName().compareTo(o2.getName());
+            } else {
+                return ub2 - ub1;
+            }
+        });
+        if (recentDrivers.size() > total) {
+            return recentDrivers.subList(0, total);
+        }
+        return recentDrivers;
     }
 
     public Control getControl() {
