@@ -64,6 +64,7 @@ public class DriverSelectViewer extends Viewer {
     private static final String DISABLED_CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.DCLEAR_ICON"; //$NON-NLS-1$
 
     private static final String PROP_SELECTOR_VIEW_TYPE = "driver.selector.view.type"; //$NON-NLS-1$
+    private ToolItem switchItem;
 
     private enum SelectorViewType {
         tree,
@@ -181,8 +182,8 @@ public class DriverSelectViewer extends Viewer {
             activeImage.dispose();
         });
 
-        ToolItem switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
-        switchItem.setText("Tree view");
+        switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
+        switchItem.setText("Toggle view");
         switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
         switchItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
             switchSelectorControl();
@@ -207,7 +208,11 @@ public class DriverSelectViewer extends Viewer {
     }
 
     private void createSelectorControl() {
+
         if (getCurrentSelectorViewType() == SelectorViewType.tree) {
+            switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+            switchItem.setSelection(true);
+
             selectorViewer = new DriverTreeViewer(selectorComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
             selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.asyncExec(() -> {
@@ -216,6 +221,9 @@ public class DriverSelectViewer extends Viewer {
                 }
             });
         } else {
+            switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
+            switchItem.setSelection(false);
+
             selectorViewer = new DriverGalleryViewer(selectorComposite, site, providers, expandRecent);
             selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -269,17 +277,23 @@ public class DriverSelectViewer extends Viewer {
                     return Status.CANCEL_STATUS;
                 }
 
-                String text = getFilterString();
-                if (CommonUtils.isEmpty(text)) {
-                    selectorViewer.setFilters();
-                    return Status.OK_STATUS;
-                }
+                selectorViewer.getControl().setRedraw(false);
+                try {
+                    String text = getFilterString();
+                    if (CommonUtils.isEmpty(text)) {
+                        selectorViewer.setFilters();
+                        return Status.OK_STATUS;
+                    }
 
-                DriverFilter driverFilter = new DriverFilter();
-                driverFilter.setPattern(text);
-                selectorViewer.setFilters(driverFilter);
-                if (selectorViewer instanceof AbstractTreeViewer) {
-                    ((AbstractTreeViewer) selectorViewer).expandAll();
+                    DriverFilter driverFilter = new DriverFilter();
+                    driverFilter.setPattern(text);
+
+                    selectorViewer.setFilters(driverFilter);
+                    if (selectorViewer instanceof AbstractTreeViewer) {
+                        ((AbstractTreeViewer) selectorViewer).expandAll();
+                    }
+                } finally {
+                    selectorViewer.getControl().setRedraw(true);
                 }
 
                 return Status.OK_STATUS;

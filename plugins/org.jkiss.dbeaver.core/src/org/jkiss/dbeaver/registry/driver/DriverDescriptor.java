@@ -122,6 +122,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean custom;
     private boolean modified;
     private boolean disabled;
+    private boolean promoted;
     private final List<DBPNativeClientLocation> nativeClientHomes = new ArrayList<>();
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
@@ -163,6 +164,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.id = id;
         this.custom = true;
         this.useURLTemplate = true;
+        this.promoted = false;
 
         this.origName = null;
         this.origDescription = null;
@@ -192,6 +194,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.anonymousAccess = copyFrom.anonymousAccess;
             this.customDriverLoader = copyFrom.customDriverLoader;
             this.useURLTemplate = copyFrom.customDriverLoader;
+            this.promoted = copyFrom.promoted;
             this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
             for (DriverFileSource fs : copyFrom.fileSources) {
                 this.fileSources.add(new DriverFileSource(fs));
@@ -233,6 +236,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
         this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
         this.useURLTemplate = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
+        this.promoted = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_PROMOTED), false);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
         this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
@@ -594,6 +598,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public boolean isUseURL() {
         return useURLTemplate;
+    }
+
+    @Override
+    public boolean isPromoted() {
+        return promoted;
     }
 
     @Override
