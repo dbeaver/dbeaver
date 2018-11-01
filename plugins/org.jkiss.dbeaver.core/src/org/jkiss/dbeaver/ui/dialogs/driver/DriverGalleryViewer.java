@@ -34,9 +34,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
-import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -113,6 +114,8 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
 
         ViewerFilter[] filters = getFilters();
 
+        List<DBPDataSourceContainer> allDataSources = DataSourceRegistry.getAllDataSources();
+
         for (DBPDriver driver : allDrivers) {
 
             boolean isVisible = true;
@@ -130,7 +133,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             item.setImage(DBeaverIcons.getImage(driver.getIcon()));
             item.setText(driver.getName()); //$NON-NLS-1$
             item.setText(0, driver.getName()); //$NON-NLS-1$
-            List<DBPDataSourceContainer> usedBy = driver.getUsedBy();
+            List<DBPDataSourceContainer> usedBy = DriverUtils.getUsedBy(driver, allDataSources);
             if (!usedBy.isEmpty()) {
                 item.setText(1, "Connections: " + usedBy.size());
             }

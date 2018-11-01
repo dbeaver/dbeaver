@@ -355,17 +355,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return classLoader;
     }
 
-    @Override
-    public List<DBPDataSourceContainer> getUsedBy() {
-        List<DBPDataSourceContainer> usedBy = new ArrayList<>();
-        for (DataSourceDescriptor ds : DataSourceRegistry.getAllDataSources()) {
-            if (ds.getDriver() == this) {
-                usedBy.add(ds);
-            }
-        }
-        return usedBy;
-    }
-
     public DataSourceProviderDescriptor getProviderDescriptor() {
         return providerDescriptor;
     }
