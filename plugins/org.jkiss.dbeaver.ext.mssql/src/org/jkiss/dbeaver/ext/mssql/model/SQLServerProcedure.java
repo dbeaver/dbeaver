@@ -31,6 +31,7 @@ public class SQLServerProcedure extends GenericProcedure {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
     }
 
+
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return super.getFullyQualifiedName(context);
