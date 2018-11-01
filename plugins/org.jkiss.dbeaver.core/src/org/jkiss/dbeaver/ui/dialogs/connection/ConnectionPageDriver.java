@@ -60,33 +60,20 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     @Override
     public void createControl(Composite parent)
     {
-        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
+        Composite placeholder = UIUtils.createComposite(parent, 1);
 
         {
-            if (true) {
-                DriverSelectViewer driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true);
-                GridData gd = new GridData(GridData.FILL_BOTH);
-                gd.heightHint = 200;
-                driverSelectViewer.getControl().setLayoutData(gd);
-            } else {
-                DriverGalleryViewer driverGallery = new DriverGalleryViewer(placeholder, this, wizard.getAvailableProvides(), true);
-
-                GridData gd = new GridData(GridData.FILL_BOTH);
-                gd.heightHint = 200;
-                driverGallery.getControl().setLayoutData(gd);
-
-                driverGallery.addTraverseListener(e -> {
-                    if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                        ((WizardDialog)getContainer()).close();
-                    }
-                });
-
-            }
+            DriverSelectViewer driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 200;
+            driverSelectViewer.getControl().setLayoutData(gd);
         }
 
         setControl(placeholder);
 
-        Group projectGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_connection_driver_project, 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Composite projectGroup = UIUtils.createComposite(placeholder, 2);
+        projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createControlLabel(projectGroup, CoreMessages.dialog_connection_driver_project);
         final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -113,7 +100,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             });
 
             if (projects.size() < 2) {
-                projectCombo.setEnabled(false);
+                //projectCombo.setEnabled(false);
             }
         } else {
             setErrorMessage("You need to create a project first");

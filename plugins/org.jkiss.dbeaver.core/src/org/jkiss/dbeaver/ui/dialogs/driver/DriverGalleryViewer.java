@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.viewers.*;
-import org.eclipse.nebula.widgets.gallery.*;
+import org.eclipse.nebula.jface.galleryviewer.GalleryTreeViewer;
+import org.eclipse.nebula.widgets.gallery.DefaultGalleryGroupRenderer;
+import org.eclipse.nebula.widgets.gallery.Gallery;
+import org.eclipse.nebula.widgets.gallery.GalleryItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -30,6 +33,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,66 +44,66 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class DriverGalleryViewer extends Viewer {
+public class DriverGalleryViewer extends GalleryTreeViewer {
 
-    private final Gallery gallery;
+    //private final Gallery gallery;
     private final List<DBPDriver> allDrivers = new ArrayList<>();;
 
     public DriverGalleryViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
-        {
-            gallery = new Gallery(parent, SWT.V_SCROLL | SWT.MULTI);
-            gallery.setLayoutData(new GridData(GridData.FILL_BOTH));
+        super(new Gallery(parent, SWT.V_SCROLL | SWT.MULTI | SWT.BORDER));
+        gallery.setBackground(EditorUtils.getDefaultTextBackground());
+        gallery.setForeground(EditorUtils.getDefaultTextForeground());
+        gallery.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            gallery.addSelectionListener(new SelectionListener() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (site instanceof ISelectionChangedListener) {
-                        ((ISelectionChangedListener) site).selectionChanged(new SelectionChangedEvent(DriverGalleryViewer.this, getSelection()));
-                    }
+        gallery.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (site instanceof ISelectionChangedListener) {
+                    ((ISelectionChangedListener) site).selectionChanged(new SelectionChangedEvent(DriverGalleryViewer.this, getSelection()));
                 }
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e) {
-                    if (site instanceof IDoubleClickListener) {
-                        ((IDoubleClickListener) site).doubleClick(new DoubleClickEvent(DriverGalleryViewer.this, getSelection()));
-                    }
+            }
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                if (site instanceof IDoubleClickListener) {
+                    ((IDoubleClickListener) site).doubleClick(new DoubleClickEvent(DriverGalleryViewer.this, getSelection()));
                 }
-            });
-
-            // Renderers
-            DefaultGalleryGroupRenderer groupRenderer = new DefaultGalleryGroupRenderer();
-            groupRenderer.setMaxImageHeight(16);
-            groupRenderer.setMaxImageWidth(16);
-            groupRenderer.setItemHeight(100);
-            groupRenderer.setItemWidth(150);
-            gallery.setGroupRenderer(new NoGroupRenderer());
-
-            DriverGalleryItemRenderer ir = new DriverGalleryItemRenderer();
-            gallery.setItemRenderer(ir);
-
-            for (DataSourceProviderDescriptor dpd : providers) {
-                allDrivers.addAll(dpd.getEnabledDrivers());
             }
-            allDrivers.sort(Comparator.comparing(DBPNamedObject::getName));
+        });
 
-            GalleryItem groupRecent = new GalleryItem(gallery, SWT.NONE);
-            groupRecent.setText("Recent drivers"); //$NON-NLS-1$
-            groupRecent.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-            groupRecent.setExpanded(true);
+        // Renderers
+        DefaultGalleryGroupRenderer groupRenderer = new DefaultGalleryGroupRenderer();
+        groupRenderer.setMaxImageHeight(16);
+        groupRenderer.setMaxImageWidth(16);
+        groupRenderer.setItemHeight(100);
+        groupRenderer.setItemWidth(150);
+        //gallery.setGroupRenderer(new NoGroupRenderer());
 
-            GalleryItem groupAll = new GalleryItem(gallery, SWT.NONE);
-            groupAll.setText("All drivers"); //$NON-NLS-1$
-            groupAll.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
-            groupAll.setExpanded(true);
+        DriverGalleryItemRenderer ir = new DriverGalleryItemRenderer();
+        gallery.setItemRenderer(ir);
 
-            for (DBPDriver driver : allDrivers) {
+        for (DataSourceProviderDescriptor dpd : providers) {
+            allDrivers.addAll(dpd.getEnabledDrivers());
+        }
+        allDrivers.sort(Comparator.comparing(DBPNamedObject::getName));
 
-                GalleryItem item = new GalleryItem(groupAll, SWT.NONE);
-                item.setImage(DBeaverIcons.getImage(driver.getIcon()));
-                item.setText(driver.getName()); //$NON-NLS-1$
-                item.setText(0, driver.getFullName()); //$NON-NLS-1$
-                item.setText(1, driver.getDescription());
-                item.setData(driver);
-            }
+        GalleryItem groupRecent = new GalleryItem(gallery, SWT.NONE);
+        groupRecent.setText("Recent drivers"); //$NON-NLS-1$
+        groupRecent.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+        groupRecent.setExpanded(true);
+
+        GalleryItem groupAll = new GalleryItem(gallery, SWT.NONE);
+        groupAll.setText("All drivers"); //$NON-NLS-1$
+        groupAll.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
+        groupAll.setExpanded(true);
+
+        for (DBPDriver driver : allDrivers) {
+
+            GalleryItem item = new GalleryItem(groupAll, SWT.NONE);
+            item.setImage(DBeaverIcons.getImage(driver.getIcon()));
+            item.setText(driver.getName()); //$NON-NLS-1$
+            item.setText(0, driver.getFullName()); //$NON-NLS-1$
+            item.setText(1, driver.getDescription());
+            item.setData(driver);
         }
     }
 
@@ -123,11 +127,6 @@ public class DriverGalleryViewer extends Viewer {
     }
 
     @Override
-    public void addSelectionChangedListener(ISelectionChangedListener listener) {
-
-    }
-
-    @Override
     public ISelection getSelection() {
         GalleryItem[] itemSelection = gallery.getSelection();
         Object[] selectedDrivers = new Object[itemSelection.length];
@@ -135,31 +134,6 @@ public class DriverGalleryViewer extends Viewer {
             selectedDrivers[i] = itemSelection[i].getData();
         }
         return new StructuredSelection(selectedDrivers);
-    }
-
-    @Override
-    public void refresh() {
-
-    }
-
-    @Override
-    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-
-    }
-
-    @Override
-    public void setInput(Object input) {
-
-    }
-
-    @Override
-    public void setSelection(ISelection selection) {
-
-    }
-
-    @Override
-    public void setSelection(ISelection selection, boolean reveal) {
-
     }
 
 }
