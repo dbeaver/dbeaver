@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -147,6 +148,16 @@ public class GenericUtils {
     public static boolean isLegacySQLDialect(DBSObject owner) {
         SQLDialect dialect = SQLUtils.getDialectFromObject(owner);
         return dialect instanceof GenericSQLDialect && ((GenericSQLDialect)dialect).isLegacySQLDialect();
+    }
+
+    public static String normalizeProcedureName(String procedureName) {
+        int divPos = procedureName.lastIndexOf(';');
+        if (divPos != -1) {
+            // [JDBC: SQL Server native driver]
+            procedureName = procedureName.substring(0, divPos);
+        }
+        return procedureName;
+
     }
 
 }
