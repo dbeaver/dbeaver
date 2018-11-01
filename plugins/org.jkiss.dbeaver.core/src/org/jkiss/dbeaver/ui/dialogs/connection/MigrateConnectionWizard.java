@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 
 import java.util.*;
 
@@ -179,7 +179,7 @@ public class MigrateConnectionWizard extends Wizard
 
     class PageDriver extends WizardPage implements ISelectionChangedListener {
         private DriverDescriptor selectedDriver;
-        private DriverTreeControl driverTreeControl;
+        private DriverSelectViewer driverSelectViewer;
 
         PageDriver()
         {
@@ -192,14 +192,14 @@ public class MigrateConnectionWizard extends Wizard
         public void createControl(Composite parent)
         {
             Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-            driverTreeControl = new DriverTreeControl(
+            driverSelectViewer = new DriverSelectViewer(
                 placeholder,
                 this,
                 DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders(),
                 true);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;
-            driverTreeControl.setLayoutData(gd);
+            driverSelectViewer.getControl().setLayoutData(gd);
             setControl(placeholder);
         }
 
