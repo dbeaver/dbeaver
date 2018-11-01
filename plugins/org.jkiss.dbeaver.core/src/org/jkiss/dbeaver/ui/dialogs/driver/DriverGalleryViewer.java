@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.viewers.*;
+import org.eclipse.nebula.jface.galleryviewer.FlatTreeContentProvider;
 import org.eclipse.nebula.jface.galleryviewer.GalleryTreeViewer;
 import org.eclipse.nebula.widgets.gallery.DefaultGalleryGroupRenderer;
 import org.eclipse.nebula.widgets.gallery.Gallery;
@@ -34,6 +35,8 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 import java.util.ArrayList;
@@ -52,6 +55,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
 
     public DriverGalleryViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
         super(new Gallery(parent, SWT.V_SCROLL | SWT.MULTI | SWT.BORDER));
+        setContentProvider(new FlatTreeContentProvider(new ListContentProvider()));
         gallery.setBackground(EditorUtils.getDefaultTextBackground());
         gallery.setForeground(EditorUtils.getDefaultTextForeground());
         gallery.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -88,6 +92,12 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         }
         allDrivers.sort(Comparator.comparing(DBPNamedObject::getName));
 
+        createDriverGallery();
+    }
+
+    private void createDriverGallery() {
+        gallery.removeAll();
+
         GalleryItem groupRecent = new GalleryItem(gallery, SWT.NONE);
         groupRecent.setText("Recent drivers"); //$NON-NLS-1$
         groupRecent.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
@@ -100,7 +110,20 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         groupAll.setData("all");
         groupAll.setExpanded(true);
 
+        ViewerFilter[] filters = getFilters();
+
         for (DBPDriver driver : allDrivers) {
+
+            boolean isVisible = true;
+            for (ViewerFilter filter : filters) {
+                if (!filter.select(this, null, driver)) {
+                    isVisible = false;
+                    break;
+                }
+            }
+            if (!isVisible) {
+                continue;
+            }
 
             GalleryItem item = new GalleryItem(groupAll, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(driver.getIcon()));
@@ -146,4 +169,8 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
     }
 */
 
+    @Override
+    public void refresh(boolean updateLabels) {
+        createDriverGallery();
+    }
 }
