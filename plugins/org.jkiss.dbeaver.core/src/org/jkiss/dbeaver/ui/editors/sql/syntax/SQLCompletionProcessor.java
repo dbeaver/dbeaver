@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -60,7 +61,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     enum QueryType {
         TABLE,
         JOIN,
-        COLUMN
+        COLUMN,
+        EXEC
     }
 
     private static IContextInformationValidator VALIDATOR = new Validator();
@@ -134,6 +136,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         wordDetector.moveToDelimiter();
                         searchPrefix = ALL_COLUMNS_PATTERN;
                     }
+                } else if (SQLUtils.isExecQuery(editor.getSyntaxManager().getDialect(), prevKeyWord)) {
+                    request.queryType = QueryType.EXEC;
                 }
             }
         }

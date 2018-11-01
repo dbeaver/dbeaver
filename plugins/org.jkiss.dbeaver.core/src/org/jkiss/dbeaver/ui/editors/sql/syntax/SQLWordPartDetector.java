@@ -21,6 +21,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -129,7 +130,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
 
                 String prevWord = document.get(prevOffset, prevStartOffset - prevOffset);
                 SQLDialect dialect = syntaxManager.getDialect();
-                if (dialect.isEntityQueryWord(prevWord) || dialect.isAttributeQueryWord(prevWord)) {
+                if (dialect.isEntityQueryWord(prevWord) || dialect.isAttributeQueryWord(prevWord) || SQLUtils.isExecKeyword(dialect, prevWord)) {
                     if (CommonUtils.isEmpty(prevKeyWord)) {
                         this.prevKeyWord = prevWord.toUpperCase(Locale.ENGLISH);
                         if (prevWordsParse <= 1) {

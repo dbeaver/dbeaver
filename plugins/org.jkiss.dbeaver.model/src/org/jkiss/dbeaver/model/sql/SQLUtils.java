@@ -666,20 +666,6 @@ public final class SQLUtils {
         return dialect.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
-    public static boolean isExecQuery(@NotNull SQLDialect dialect, String query) {
-        // Check for EXEC query
-        final String[] executeKeywords = dialect.getExecuteKeywords();
-        if (executeKeywords != null && executeKeywords.length > 0) {
-            final String queryStart = getFirstKeyword(dialect, query);
-            for (String keyword : executeKeywords) {
-                if (keyword.equalsIgnoreCase(queryStart)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public static String getScriptDescripion(@NotNull String sql) {
         sql = stripComments(BasicSQLDialect.INSTANCE, sql);
         Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
@@ -1023,4 +1009,19 @@ public final class SQLUtils {
             }
         }
     }
+
+    public static boolean isExecQuery(@NotNull SQLDialect dialect, String query) {
+        // Check for EXEC query
+        final String[] executeKeywords = dialect.getExecuteKeywords();
+        if (executeKeywords != null && executeKeywords.length > 0) {
+            final String queryStart = getFirstKeyword(dialect, query);
+            return isExecKeyword(dialect, queryStart);
+        }
+        return false;
+    }
+
+    public static boolean isExecKeyword(SQLDialect dialect, String word) {
+        return ArrayUtils.containsIgnoreCase(dialect.getExecuteKeywords(), word);
+    }
+
 }
