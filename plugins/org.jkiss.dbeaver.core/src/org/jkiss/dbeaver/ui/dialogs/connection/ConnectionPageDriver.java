@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverGalleryViewer;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeViewer;
 
 import java.util.List;
@@ -64,10 +64,10 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
         {
             if (true) {
-                DriverTreeControl driverTreeControl = new DriverTreeControl(placeholder, this, wizard.getAvailableProvides(), true);
+                DriverSelectViewer driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true);
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.heightHint = 200;
-                driverTreeControl.setLayoutData(gd);
+                driverSelectViewer.getControl().setLayoutData(gd);
             } else {
                 DriverGalleryViewer driverGallery = new DriverGalleryViewer(placeholder, this, wizard.getAvailableProvides(), true);
 

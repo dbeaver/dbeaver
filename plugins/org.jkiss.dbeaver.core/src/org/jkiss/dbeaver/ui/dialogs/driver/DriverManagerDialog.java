@@ -59,7 +59,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button copyButton;
     private Button editButton;
     private Button deleteButton;
-    private DriverTreeControl treeControl;
+    private DriverSelectViewer treeControl;
     private ImageDescriptor dialogImage;
     //private Label driverDescription;
     //private ProgressMonitorPart monitorPart;
@@ -106,11 +106,11 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            treeControl = new DriverTreeControl(group, this, enabledProviders, false);
+            treeControl = new DriverSelectViewer(group, this, enabledProviders, false);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 300;
-            treeControl.setLayoutData(gd);
+            treeControl.getControl().setLayoutData(gd);
         }
 
         {
@@ -283,8 +283,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
             DriverEditDialog dialog = new DriverEditDialog(getShell(), provider, selectedCategory);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                treeControl.getViewer().refresh();
-                treeControl.getViewer().setSelection(new StructuredSelection(dialog.getDriver()));
+                treeControl.refresh();
+                treeControl.setSelection(new StructuredSelection(dialog.getDriver()));
             }
         }
     }
@@ -294,8 +294,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         if (selectedDriver != null) {
             DriverEditDialog dialog = new DriverEditDialog(getShell(), selectedDriver.getProviderDescriptor(), selectedDriver);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                treeControl.getViewer().refresh();
-                treeControl.getViewer().setSelection(new StructuredSelection(dialog.getDriver()));
+                treeControl.refresh();
+                treeControl.setSelection(new StructuredSelection(dialog.getDriver()));
             }
         }
     }
@@ -310,7 +310,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             if (dialog.open() == IDialogConstants.OK_ID) {
                 // Do nothing
             }
-            treeControl.getViewer().refresh(driver);
+            treeControl.refresh(driver);
         }
     }
 
@@ -332,7 +332,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
-            treeControl.getViewer().refresh();
+            treeControl.refresh();
         }
     }
 

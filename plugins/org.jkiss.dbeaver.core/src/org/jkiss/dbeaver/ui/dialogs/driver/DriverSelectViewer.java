@@ -17,12 +17,17 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -30,36 +35,57 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import java.util.List;
 
 /**
- * DriverTreeControl
+ * DriverSelectViewer
  *
  * @author Serge Rider
  */
-public class DriverTreeControl extends FilteredTree {
+public class DriverSelectViewer extends Viewer {
 
-    private static final String DRIVER_INIT_DATA = "driverInitData";
+    private FilteredTree driverTree;
 
-    public DriverTreeControl(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
-        super(
-            saveInitParameters(parent, site, providers, expandRecent),
-            SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER,
-            new DriverFilter(),
-            true);
-        setInitialText(CoreMessages.dialog_connection_driver_treecontrol_initialText);
+    public DriverSelectViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
+        driverTree = new FilteredTree(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER, new DriverFilter(), true) {
+            @Override
+            protected DriverTreeViewer doCreateTreeViewer(Composite parent, int style) {
+                DriverTreeViewer viewer = new DriverTreeViewer(parent, style);
+                UIUtils.asyncExec(() ->
+                    viewer.initDrivers(site, providers, expandRecent));
+                return viewer;
+            }
+        };
+        driverTree.setInitialText(CoreMessages.dialog_connection_driver_treecontrol_initialText);
     }
 
-    private static Composite saveInitParameters(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
-        parent.setData("driverInitData", new Object[] {site, providers, expandRecent} );
-        return parent;
+    public Control getControl() {
+        return driverTree;
     }
 
     @Override
-    protected DriverTreeViewer doCreateTreeViewer(Composite parent, int style) {
-        Object[] initData = (Object[]) getParent().getData(DRIVER_INIT_DATA);
-        parent.setData(DRIVER_INIT_DATA, null);
-        DriverTreeViewer viewer = new DriverTreeViewer(parent, style);
-        UIUtils.asyncExec(() ->
-            viewer.initDrivers(initData[0], (List<DataSourceProviderDescriptor>) initData[1], (Boolean) initData[2]));
-        return viewer;
+    public Object getInput() {
+        return driverTree.getViewer().getInput();
+    }
+
+    @Override
+    public ISelection getSelection() {
+        return driverTree.getViewer().getSelection();
+    }
+
+    @Override
+    public void refresh() {
+        driverTree.getViewer().refresh();
+    }
+
+    public void refresh(DBPDriver driver) {
+        driverTree.getViewer().refresh(driver);
+    }
+    @Override
+    public void setInput(Object input) {
+        driverTree.getViewer().setInput(input);
+    }
+
+    @Override
+    public void setSelection(ISelection selection, boolean reveal) {
+        driverTree.getViewer().setSelection(selection, reveal);
     }
 
     private static class DriverFilter extends PatternFilter {
@@ -86,4 +112,5 @@ public class DriverTreeControl extends FilteredTree {
         }
 
     }
+
 }
