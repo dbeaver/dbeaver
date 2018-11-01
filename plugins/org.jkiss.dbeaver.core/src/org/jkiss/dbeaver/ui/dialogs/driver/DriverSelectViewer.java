@@ -23,27 +23,29 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PatternFilter;
-import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,16 +60,25 @@ public class DriverSelectViewer extends Viewer {
 
     private static final int REFRESH_DELAY = 200;
 
-    private final Composite composite;
-    private DriverTreeViewer driverTree;
-    private Text filterText;
-    private Control clearButtonControl;
-    private String previousFilterText;
-    private boolean narrowingDown;
-    private Job refreshJob;
-
     private static final String CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.CLEAR_ICON"; //$NON-NLS-1$
     private static final String DISABLED_CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.DCLEAR_ICON"; //$NON-NLS-1$
+
+    private static final String PROP_SELECTOR_VIEW_TYPE = "driver.selector.view.type"; //$NON-NLS-1$
+
+    private enum SelectorViewType {
+        tree,
+        browser
+    }
+
+    private final Object site;
+    private final List<DataSourceProviderDescriptor> providers;
+    private final boolean expandRecent;
+
+    private final Composite composite;
+    private StructuredViewer selectorViewer;
+    private Text filterText;
+    private Job refreshJob;
+    private Composite selectorComposite;
 
     static {
         ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(PlatformUI.PLUGIN_ID, "$nl$/icons/full/etool16/clear_co.png"); //$NON-NLS-1$
@@ -80,7 +91,26 @@ public class DriverSelectViewer extends Viewer {
         }
     }
 
+    private static SelectorViewType getCurrentSelectorViewType() {
+        String viewTypeStr = DBeaverCore.getGlobalPreferenceStore().getString(PROP_SELECTOR_VIEW_TYPE);
+        if (viewTypeStr == null) {
+            return SelectorViewType.tree;
+        }
+        try {
+            return SelectorViewType.valueOf(viewTypeStr);
+        } catch (IllegalArgumentException e) {
+            return SelectorViewType.tree;
+        }
+    }
+
+    private static void setCurrentSelectorViewType(SelectorViewType viewType) {
+        DBeaverCore.getGlobalPreferenceStore().setValue(PROP_SELECTOR_VIEW_TYPE, viewType.name());
+    }
+
     public DriverSelectViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
+        this.site = site;
+        this.providers = providers;
+        this.expandRecent = expandRecent;
 
         composite = new Composite(parent, SWT.NONE);
         if (parent.getLayout() instanceof GridLayout) {
@@ -92,18 +122,23 @@ public class DriverSelectViewer extends Viewer {
         composite.setLayout(layout);
 
         createFilterControl();
-        createSelectorControl(site, providers, expandRecent);
+
+        selectorComposite = UIUtils.createComposite(composite, 1);
+        selectorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        selectorComposite.setForeground(filterText.getForeground());
+        selectorComposite.setBackground(filterText.getBackground());
+
+        createSelectorControl();
 
         refreshJob = createRefreshJob();
     }
 
     private Control getSelectorControl() {
-        return driverTree.getControl();
+        return selectorViewer.getControl();
     }
 
     private void createFilterControl() {
         Composite filterComposite = new Composite(composite, SWT.BORDER);
-        filterComposite.setBackground(composite.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
         GridLayout filterLayout = new GridLayout(2, false);
         filterLayout.marginHeight = 0;
@@ -120,96 +155,44 @@ public class DriverSelectViewer extends Viewer {
                 getSelectorControl().setFocus();
             }
         }));
-
-        createClearTextNew(filterComposite);
-
+        filterComposite.setBackground(filterText.getBackground());
         filterComposite.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
+        createFilterToolbar(filterComposite);
     }
 
-    private void createClearTextNew(Composite parent) {
+    private void createFilterToolbar(Composite parent) {
         // only create the button if the text widget doesn't support one
         // natively
-        if ((filterText.getStyle() & SWT.ICON_CANCEL) == 0) {
-            final Image inactiveImage = JFaceResources.getImageRegistry().getDescriptor(DISABLED_CLEAR_ICON).createImage();
-            final Image activeImage = JFaceResources.getImageRegistry().getDescriptor(CLEAR_ICON).createImage();
-            final Image pressedImage = new Image(composite.getDisplay(), activeImage, SWT.IMAGE_GRAY);
+        final Image inactiveImage = JFaceResources.getImageRegistry().getDescriptor(DISABLED_CLEAR_ICON).createImage();
+        final Image activeImage = JFaceResources.getImageRegistry().getDescriptor(CLEAR_ICON).createImage();
 
-            final Label clearButton = new Label(parent, SWT.NONE);
-            clearButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-            clearButton.setImage(inactiveImage);
-            clearButton.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-            clearButton.addMouseListener(new MouseAdapter() {
-                private MouseMoveListener fMoveListener;
-                @Override
-                public void mouseDown(MouseEvent e) {
-                    clearButton.setImage(pressedImage);
-                    fMoveListener = new MouseMoveListener() {
-                        private boolean fMouseInButton = true;
-                        @Override
-                        public void mouseMove(MouseEvent e) {
-                            boolean mouseInButton = isMouseInButton(e);
-                            if (mouseInButton != fMouseInButton) {
-                                fMouseInButton = mouseInButton;
-                                clearButton.setImage(mouseInButton ? pressedImage : inactiveImage);
-                            }
-                        }
-                    };
-                    clearButton.addMouseMoveListener(fMoveListener);
-                }
-                @Override
-                public void mouseUp(MouseEvent e) {
-                    if (fMoveListener != null) {
-                        clearButton.removeMouseMoveListener(fMoveListener);
-                        fMoveListener = null;
-                        boolean mouseInButton = isMouseInButton(e);
-                        clearButton.setImage(mouseInButton ? activeImage : inactiveImage);
-                        if (mouseInButton) {
-                            clearText();
-                            filterText.setFocus();
-                        }
-                    }
-                }
-                private boolean isMouseInButton(MouseEvent e) {
-                    Point buttonSize = clearButton.getSize();
-                    return 0 <= e.x && e.x < buttonSize.x && 0 <= e.y && e.y < buttonSize.y;
-                }
-            });
-            clearButton.addMouseTrackListener(new MouseTrackAdapter() {
-                @Override
-                public void mouseEnter(MouseEvent e) {
-                    clearButton.setImage(activeImage);
-                }
-                @Override
-                public void mouseExit(MouseEvent e) {
-                    clearButton.setImage(inactiveImage);
-                }
-            });
-            clearButton.addDisposeListener(e -> {
-                inactiveImage.dispose();
-                activeImage.dispose();
-                pressedImage.dispose();
-            });
-            this.clearButtonControl = clearButton;
-        }
+        // Create browser control toggle
+        ToolBar switcherToolbar = new ToolBar(parent, SWT.RIGHT | SWT.HORIZONTAL);
+        ToolItem clearItem = new ToolItem(switcherToolbar, SWT.PUSH);
+        clearItem.setImage(activeImage);
+        clearItem.setDisabledImage(inactiveImage);
+        clearItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+            clearText();
+            filterText.setFocus();
+        }));
+        clearItem.addDisposeListener(e -> {
+            inactiveImage.dispose();
+            activeImage.dispose();
+        });
+
+        ToolItem switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
+        switchItem.setText("Tree view");
+        switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+        switchItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+            switchSelectorControl();
+        }));
+        switcherToolbar.setBackground(filterText.getBackground());
     }
 
     private void clearText() {
-        setFilterText(""); //$NON-NLS-1$
+        filterText.setText("");
         textChanged();
-    }
-
-    private void setFilterText(String string) {
-        if (filterText != null) {
-            filterText.setText(string);
-            selectAll();
-        }
-    }
-
-    protected void selectAll() {
-        if (filterText != null) {
-            filterText.selectAll();
-        }
     }
 
     @NotNull
@@ -218,31 +201,58 @@ public class DriverSelectViewer extends Viewer {
     }
 
     private void textChanged() {
-        narrowingDown = previousFilterText == null || previousFilterText.equals(WorkbenchMessages.FilteredTree_FilterMessage) || getFilterString().startsWith(previousFilterText);
-        previousFilterText = getFilterString();
         // cancel currently running job first, to prevent unnecessary redraw
         refreshJob.cancel();
         refreshJob.schedule(REFRESH_DELAY);
     }
 
-    private void createSelectorControl(Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
-        Composite treeComposite = new Composite(composite, SWT.NONE);
-        GridLayout treeCompositeLayout = new GridLayout();
-        treeCompositeLayout.marginHeight = 0;
-        treeCompositeLayout.marginWidth = 0;
-        treeComposite.setLayout(treeCompositeLayout);
-        GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-        treeComposite.setLayoutData(data);
+    private void createSelectorControl() {
+        if (getCurrentSelectorViewType() == SelectorViewType.tree) {
+            selectorViewer = new DriverTreeViewer(selectorComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+            selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.asyncExec(() -> {
+                if (selectorViewer instanceof DriverTreeViewer) {
+                    ((DriverTreeViewer) selectorViewer).initDrivers(site, providers, expandRecent);
+                }
+            });
+        } else {
+            selectorViewer = new DriverGalleryViewer(selectorComposite, site, providers, expandRecent);
+            selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        driverTree = new DriverTreeViewer(treeComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        driverTree.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
-        UIUtils.asyncExec(() -> {
-            driverTree.initDrivers(site, providers, expandRecent);
-        });
+            selectorViewer.getControl().addTraverseListener(e -> {
+                if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                    if (site instanceof IWizardPage) {
+                        IWizardContainer container = ((IWizardPage) site).getWizard().getContainer();
+                        if (container instanceof Window) {
+                            ((Window) container).close();
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private void switchSelectorControl() {
+        selectorComposite.setRedraw(false);
+        try {
+            SelectorViewType viewType = getCurrentSelectorViewType();
+            viewType = viewType == SelectorViewType.tree ? SelectorViewType.browser : SelectorViewType.tree;
+            setCurrentSelectorViewType(viewType);
+
+            selectorViewer.getControl().dispose();
+            createSelectorControl();
+            selectorComposite.layout(true, true);
+        } finally {
+            selectorComposite.setRedraw(true);
+        }
+
+        if (!CommonUtils.isEmpty(filterText.getText())) {
+            textChanged();
+        }
     }
 
     private WorkbenchJob createRefreshJob() {
-        return new WorkbenchJob("Refresh Filter") {//$NON-NLS-1$
+        return new WorkbenchJob("Refresh driver filter") {//$NON-NLS-1$
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor) {
                 if (getControl().isDisposed()) {
@@ -251,14 +261,16 @@ public class DriverSelectViewer extends Viewer {
 
                 String text = getFilterString();
                 if (CommonUtils.isEmpty(text)) {
-                    driverTree.setFilters();
+                    selectorViewer.setFilters();
                     return Status.OK_STATUS;
                 }
 
                 DriverFilter driverFilter = new DriverFilter();
                 driverFilter.setPattern(text);
-                driverTree.setFilters(driverFilter);
-                driverTree.expandAll();
+                selectorViewer.setFilters(driverFilter);
+                if (selectorViewer instanceof AbstractTreeViewer) {
+                    ((AbstractTreeViewer) selectorViewer).expandAll();
+                }
 
                 return Status.OK_STATUS;
             }
@@ -271,31 +283,31 @@ public class DriverSelectViewer extends Viewer {
 
     @Override
     public Object getInput() {
-        return driverTree.getInput();
+        return selectorViewer.getInput();
     }
 
     @Override
     public ISelection getSelection() {
-        return driverTree.getSelection();
+        return selectorViewer.getSelection();
     }
 
     @Override
     public void refresh() {
-        driverTree.refresh();
+        selectorViewer.refresh();
     }
 
     public void refresh(DBPDriver driver) {
-        driverTree.refresh(driver);
+        selectorViewer.refresh(driver);
     }
 
     @Override
     public void setInput(Object input) {
-        driverTree.setInput(input);
+        selectorViewer.setInput(input);
     }
 
     @Override
     public void setSelection(ISelection selection, boolean reveal) {
-        driverTree.setSelection(selection, reveal);
+        selectorViewer.setSelection(selection, reveal);
     }
 
     private static class DriverFilter extends PatternFilter {

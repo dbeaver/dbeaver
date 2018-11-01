@@ -736,6 +736,8 @@ public class UIUtils {
     {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
+        gl.marginWidth = 0;
+        gl.marginHeight = 0;
         ph.setLayout(gl);
         return ph;
     }

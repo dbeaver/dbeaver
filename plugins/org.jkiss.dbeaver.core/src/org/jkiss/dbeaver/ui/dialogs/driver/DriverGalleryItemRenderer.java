@@ -200,8 +200,7 @@ public class DriverGalleryItemRenderer extends AbstractGalleryItemRenderer {
         }
 
         // Draw label
-        if (item.getText() != null && !EMPTY_STRING.equals(item.getText())
-            && showLabels) {
+        if (item.getText() != null && !EMPTY_STRING.equals(item.getText()) && showLabels) {
             // Set colors
             if (selected) {
                 // Selected : use selection colors.
