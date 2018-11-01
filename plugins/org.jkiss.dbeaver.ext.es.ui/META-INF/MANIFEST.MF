@@ -10,5 +10,5 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: Rider Soft
+Bundle-Vendor: DBeaver Co
 Bundle-Localization: plugin

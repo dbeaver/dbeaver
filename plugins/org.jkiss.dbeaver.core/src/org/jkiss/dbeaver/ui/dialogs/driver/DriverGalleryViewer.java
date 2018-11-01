@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -133,7 +134,9 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             if (!usedBy.isEmpty()) {
                 item.setText(1, "Connections: " + usedBy.size());
             }
-            item.setText(2, driver.getCategory());
+            if (!CommonUtils.isEmpty(driver.getCategory())) {
+                item.setText(2, driver.getCategory());
+            }
             item.setData(driver);
         }
     }
