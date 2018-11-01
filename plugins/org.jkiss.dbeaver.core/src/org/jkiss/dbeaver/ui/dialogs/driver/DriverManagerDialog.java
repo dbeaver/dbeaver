@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -316,10 +317,10 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
     private void deleteDriver()
     {
-        List<DataSourceDescriptor> usedDS = selectedDriver.getUsedBy();
+        List<DBPDataSourceContainer> usedDS = selectedDriver.getUsedBy();
         if (!usedDS.isEmpty()) {
             StringBuilder message = new StringBuilder(NLS.bind(CoreMessages.dialog_driver_manager_message_cant_delete_text, selectedDriver.getName()));
-            for (DataSourceDescriptor ds : usedDS) {
+            for (DBPDataSourceContainer ds : usedDS) {
                 message.append("\n - ").append(ds.getName());
             }
             UIUtils.showMessageBox(getShell(), CoreMessages.dialog_driver_manager_message_cant_delete_title, message.toString(), SWT.ICON_ERROR);

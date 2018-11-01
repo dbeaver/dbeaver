@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -74,11 +75,12 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         DefaultGalleryGroupRenderer groupRenderer = new DefaultGalleryGroupRenderer();
         groupRenderer.setMaxImageHeight(16);
         groupRenderer.setMaxImageWidth(16);
-        groupRenderer.setItemHeight(100);
-        groupRenderer.setItemWidth(150);
+        groupRenderer.setItemHeight(60);
+        groupRenderer.setItemWidth(200);
+        gallery.setGroupRenderer(groupRenderer);
         //gallery.setGroupRenderer(new NoGroupRenderer());
 
-        DriverGalleryItemRenderer ir = new DriverGalleryItemRenderer();
+        DriverGalleryItemRenderer ir = new DriverGalleryItemRenderer(parent);
         gallery.setItemRenderer(ir);
 
         for (DataSourceProviderDescriptor dpd : providers) {
@@ -89,11 +91,13 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         GalleryItem groupRecent = new GalleryItem(gallery, SWT.NONE);
         groupRecent.setText("Recent drivers"); //$NON-NLS-1$
         groupRecent.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+        groupRecent.setData("recent");
         groupRecent.setExpanded(true);
 
         GalleryItem groupAll = new GalleryItem(gallery, SWT.NONE);
         groupAll.setText("All drivers"); //$NON-NLS-1$
         groupAll.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
+        groupAll.setData("all");
         groupAll.setExpanded(true);
 
         for (DBPDriver driver : allDrivers) {
@@ -101,8 +105,12 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             GalleryItem item = new GalleryItem(groupAll, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(driver.getIcon()));
             item.setText(driver.getName()); //$NON-NLS-1$
-            item.setText(0, driver.getFullName()); //$NON-NLS-1$
-            item.setText(1, driver.getDescription());
+            item.setText(0, driver.getName()); //$NON-NLS-1$
+            List<DBPDataSourceContainer> usedBy = driver.getUsedBy();
+            if (!usedBy.isEmpty()) {
+                item.setText(1, "Connections: " + usedBy.size());
+            }
+            item.setText(2, driver.getCategory());
             item.setData(driver);
         }
     }
@@ -126,6 +134,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         }
     }
 
+/*
     @Override
     public ISelection getSelection() {
         GalleryItem[] itemSelection = gallery.getSelection();
@@ -135,5 +144,6 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         }
         return new StructuredSelection(selectedDrivers);
     }
+*/
 
 }

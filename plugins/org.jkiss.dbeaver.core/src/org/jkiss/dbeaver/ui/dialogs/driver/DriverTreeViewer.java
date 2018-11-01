@@ -17,17 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -45,12 +35,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DriverTreeViewer
@@ -205,12 +190,12 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
                 }
             }
         }
-        Collections.sort(driverList, (o1, o2) -> {
+        driverList.sort((o1, o2) -> {
             int count1 = getConnectionCount(o1);
             int count2 = getConnectionCount(o2);
             if (sortByName || count1 == count2) {
-                String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory)o1).getName();
-                String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory)o2).getName();
+                String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory) o1).getName();
+                String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory) o2).getName();
                 return name1.compareToIgnoreCase(name2);
             } else {
                 return count2 - count1;
@@ -222,7 +207,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         return driverList;
     }
 
-    public int getConnectionCount(Object obj)
+    private int getConnectionCount(Object obj)
     {
         if (obj instanceof DataSourceProviderDescriptor) {
             int count = 0;
@@ -401,6 +386,11 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
                 }
             }
         }
+    }
+
+    @Override
+    public void setSelection(ISelection selection, boolean reveal) {
+        super.setSelection(selection, reveal);
     }
 
     private class DriversSortListener implements Listener {

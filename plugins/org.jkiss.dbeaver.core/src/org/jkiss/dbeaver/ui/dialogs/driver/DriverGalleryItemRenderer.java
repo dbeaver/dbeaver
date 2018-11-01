@@ -16,191 +16,114 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.nebula.widgets.gallery.*;
+import org.eclipse.nebula.widgets.gallery.AbstractGalleryItemRenderer;
+import org.eclipse.nebula.widgets.gallery.Gallery;
+import org.eclipse.nebula.widgets.gallery.GalleryItem;
+import org.eclipse.nebula.widgets.gallery.RendererHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-
-import java.util.ArrayList;
-import java.util.Iterator;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DriverGalleryItemRenderer
  */
 public class DriverGalleryItemRenderer extends AbstractGalleryItemRenderer {
 
-    /**
-     * Stores colors used in drop shadows
-     */
-    protected ArrayList dropShadowsColors = new ArrayList();
-
-    // Renderer parameters
-    private boolean dropShadows = false;
-
-    private int dropShadowsSize = 0;
-
-    private int dropShadowsAlphaStep = 20;
-
+    public static final int IMAGE_DRAW_WIDTH = 50;
+    public static final int ITEM_MARGIN = 5;
     private Color selectionForegroundColor;
     private Color selectionBackgroundColor;
     private Color foregroundColor, backgroundColor;
 
-    private boolean showLabels = true;
     private boolean showRoundedSelectionCorners = true;
 
-    private int selectionRadius = 5;
+    private int selectionRadius = 10;
 
     // Vars used during drawing (optimization)
-    private boolean _drawBackground = false;
-    private Color _drawBackgroundColor = null;
-    private Image _drawImage = null;
-    private Color _drawForegroundColor = null;
+    private boolean drawBackground = false;
+    private Color drawBackgroundColor = null;
+    private Color drawForegroundColor = null;
 
-    public DriverGalleryItemRenderer() {
+    private Font normalFont, boldFont;
+
+    public DriverGalleryItemRenderer(Composite panel) {
         // Set defaults
-        foregroundColor = Display.getDefault().getSystemColor(
-            SWT.COLOR_LIST_FOREGROUND);
-        backgroundColor = Display.getDefault().getSystemColor(
-            SWT.COLOR_LIST_BACKGROUND);
+        foregroundColor = Display.getDefault().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
+        backgroundColor = Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 
-        selectionForegroundColor = Display.getDefault().getSystemColor(
-            SWT.COLOR_LIST_SELECTION_TEXT);
-        selectionBackgroundColor = Display.getDefault().getSystemColor(
-            SWT.COLOR_LIST_SELECTION);
+        selectionForegroundColor = Display.getDefault().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+        selectionBackgroundColor = Display.getDefault().getSystemColor(SWT.COLOR_LIST_SELECTION);
 
-        // Create drop shadows
-        createColors();
+        normalFont = panel.getFont();
+        boldFont = UIUtils.makeBoldFont(normalFont);
     }
 
-    /**
-     * Returns current label state : enabled or disabled
-     *
-     * @return true if labels are enabled.
-     * @see DefaultGalleryItemRenderer#setShowLabels(boolean)
-     */
-    public boolean isShowLabels() {
-        return showLabels;
-    }
-
-    /**
-     * Enables / disables labels at the bottom of each item.
-     *
-     * @param showLabels
-     * @see DefaultGalleryItemRenderer#isShowLabels()
-     */
-    public void setShowLabels(boolean showLabels) {
-        this.showLabels = showLabels;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.eclipse.nebula.widgets.gallery.AbstractGalleryItemRenderer#draw(org
-     * .eclipse.swt.graphics.GC, org.eclipse.nebula.widgets.gallery.GalleryItem,
-     * int, int, int, int, int)
-     */
-    public void draw(GC gc, GalleryItem item, int index, int x, int y,
-                     int width, int height) {
-        _drawImage = item.getImage();
-        _drawForegroundColor = getForeground(item);
+    public void draw(GC gc, GalleryItem item, int index, int x, int y, int width, int height) {
+        final Image itemImage = item.getImage();
+        drawForegroundColor = getForeground(item);
 
         // Set up the GC
         gc.setFont(getFont(item));
 
         // Create some room for the label.
         int useableHeight = height;
-        int fontHeight = 0;
-        if (item.getText() != null && !EMPTY_STRING.equals(item.getText())
-            && this.showLabels) {
-            fontHeight = gc.getFontMetrics().getHeight();
-            useableHeight -= fontHeight + 2;
-        }
-
-        int imageWidth = 0;
-        int imageHeight = 0;
-        int xShift = 0;
-        int yShift = 0;
-        Point size = null;
-
-        if (_drawImage != null) {
-            Rectangle itemImageBounds = _drawImage.getBounds();
-            imageWidth = itemImageBounds.width;
-            imageHeight = itemImageBounds.height;
-
-            size = RendererHelper.getBestSize(imageWidth, imageHeight, width
-                - 8 - 2 * this.dropShadowsSize, useableHeight - 8 - 2
-                * this.dropShadowsSize);
-
-            xShift = RendererHelper.getShift(width, size.x);
-            yShift = RendererHelper.getShift(useableHeight, size.y);
-
-            if (dropShadows) {
-                Color c = null;
-                for (int i = this.dropShadowsSize - 1; i >= 0; i--) {
-                    c = (Color) dropShadowsColors.get(i);
-                    gc.setForeground(c);
-
-                    gc.drawLine(x + width + i - xShift - 1, y + dropShadowsSize
-                        + yShift, x + width + i - xShift - 1, y
-                        + useableHeight + i - yShift);
-                    gc.drawLine(x + xShift + dropShadowsSize, y + useableHeight
-                        + i - yShift - 1, x + width + i - xShift, y - 1
-                        + useableHeight + i - yShift);
-                }
-            }
-        }
+        String itemText = item.getText();
+        String itemDescription = item.getText(1);
+        String itemCategory = item.getText(2);
 
         // Draw background (rounded rectangles)
 
         // Checks if background has to be drawn
-        _drawBackground = selected;
-        _drawBackgroundColor = null;
-        if (!_drawBackground && item.getBackground(true) != null) {
-            _drawBackgroundColor = getBackground(item);
+        drawBackground = selected;
+        drawBackgroundColor = null;
+        if (!drawBackground && item.getBackground(true) != null) {
+            drawBackgroundColor = getBackground(item);
 
-            if (!RendererHelper.isColorsEquals(_drawBackgroundColor,
+            if (!RendererHelper.isColorsEquals(drawBackgroundColor,
                 gallery.getBackground())) {
-                _drawBackground = true;
+                drawBackground = true;
             }
         }
 
-        if (_drawBackground) {
+        if (drawBackground) {
             // Set colors
             if (selected) {
                 gc.setBackground(selectionBackgroundColor);
                 gc.setForeground(selectionBackgroundColor);
-            } else if (_drawBackgroundColor != null) {
-                gc.setBackground(_drawBackgroundColor);
+            } else if (drawBackgroundColor != null) {
+                gc.setBackground(drawBackgroundColor);
             }
 
             // Draw
             if (showRoundedSelectionCorners) {
-                gc.fillRoundRectangle(x, y, width, useableHeight,
-                    selectionRadius, selectionRadius);
+                gc.fillRoundRectangle(x, y, width, useableHeight, selectionRadius, selectionRadius);
             } else {
                 gc.fillRectangle(x, y, width, height);
             }
-
-            if (item.getText() != null && !EMPTY_STRING.equals(item.getText())
-                && showLabels) {
-                gc.fillRoundRectangle(x, y + height - fontHeight, width,
-                    fontHeight, selectionRadius, selectionRadius);
-            }
+        }
+        if (false) {
+            // Draw rectangle
+            gc.setForeground(drawForegroundColor);
+            gc.drawRoundRectangle(x + 1, y + 1, width - 2, useableHeight - 2, selectionRadius, selectionRadius);
         }
 
         // Draw image
-        if (_drawImage != null && size != null) {
-            if (size.x > 0 && size.y > 0) {
-                gc.drawImage(_drawImage, 0, 0, imageWidth, imageHeight, x
-                    + xShift, y + yShift, size.x, size.y);
-                drawAllOverlays(gc, item, x, y, size, xShift, yShift);
-            }
+        if (itemImage != null) {
+            Rectangle itemImageBounds = itemImage.getBounds();
+            int imageWidth = itemImageBounds.width;
+            int imageHeight = itemImageBounds.height;
 
+            int imageDrawWidth = IMAGE_DRAW_WIDTH;
+            int imageDrawHeight = IMAGE_DRAW_WIDTH;
+
+            gc.drawImage(itemImage, 0, 0, imageWidth, imageHeight, x + ITEM_MARGIN, y + ITEM_MARGIN, imageDrawWidth, imageDrawHeight);
         }
 
         // Draw label
-        if (item.getText() != null && !EMPTY_STRING.equals(item.getText()) && showLabels) {
+        if (itemText != null && !EMPTY_STRING.equals(itemText)) {
             // Set colors
             if (selected) {
                 // Selected : use selection colors.
@@ -210,64 +133,43 @@ public class DriverGalleryItemRenderer extends AbstractGalleryItemRenderer {
                 // Not selected, use item values or defaults.
 
                 // Background
-                if (_drawBackgroundColor != null) {
-                    gc.setBackground(_drawBackgroundColor);
+                if (drawBackgroundColor != null) {
+                    gc.setBackground(drawBackgroundColor);
                 } else {
                     gc.setBackground(backgroundColor);
                 }
 
                 // Foreground
-                if (_drawForegroundColor != null) {
-                    gc.setForeground(_drawForegroundColor);
+                if (drawForegroundColor != null) {
+                    gc.setForeground(drawForegroundColor);
                 } else {
                     gc.setForeground(foregroundColor);
                 }
             }
 
             // Create label
-            String text = RendererHelper.createLabel(item.getText(), gc,
-                width - 10);
+            String text = RendererHelper.createLabel(itemText, gc, width - IMAGE_DRAW_WIDTH - ITEM_MARGIN);
 
             // Center text
-            int textWidth = gc.textExtent(text).x;
-            int textxShift = RendererHelper.getShift(width, textWidth);
+            //int textWidth = gc.textExtent(text).x;
+            //int textxShift = RendererHelper.getShift(width, textWidth);
 
             // Draw
-            gc.drawText(text, x + textxShift, y + height - fontHeight, true);
-        }
-    }
+            int textY = y + ITEM_MARGIN;
+            int textX = x + IMAGE_DRAW_WIDTH + ITEM_MARGIN * 2;
 
-    public void setDropShadowsSize(int dropShadowsSize) {
-        this.dropShadowsSize = dropShadowsSize;
-        this.dropShadowsAlphaStep = (dropShadowsSize == 0) ? 0
-            : (200 / dropShadowsSize);
+            gc.setFont(boldFont);
+            gc.drawText(text, textX, textY, true);
 
-        freeDropShadowsColors();
-        createColors();
-        // TODO: force redraw
-
-    }
-
-    private void createColors() {
-        if (dropShadowsSize > 0) {
-            int step = 125 / dropShadowsSize;
-            // Create new colors
-            for (int i = dropShadowsSize - 1; i >= 0; i--) {
-                int value = 255 - i * step;
-                Color c = new Color(Display.getDefault(), value, value, value);
-                dropShadowsColors.add(c);
+            gc.setFont(normalFont);
+            textY += gc.getFontMetrics().getHeight() + ITEM_MARGIN;
+            if (!CommonUtils.isEmpty(itemCategory)) {
+                gc.drawText(itemCategory, textX, textY, true);
             }
-        }
-    }
 
-    private void freeDropShadowsColors() {
-        // Free colors :
-        {
-            Iterator i = this.dropShadowsColors.iterator();
-            while (i.hasNext()) {
-                Color c = (Color) i.next();
-                if (c != null && !c.isDisposed())
-                    c.dispose();
+            textY += gc.getFontMetrics().getHeight();
+            if (!CommonUtils.isEmpty(itemDescription)) {
+                gc.drawText(itemDescription, textX, textY, true);
             }
         }
     }
@@ -302,48 +204,10 @@ public class DriverGalleryItemRenderer extends AbstractGalleryItemRenderer {
     }
 
     public void dispose() {
-        freeDropShadowsColors();
-    }
-
-    public Color getForegroundColor() {
-        return foregroundColor;
-    }
-
-    public void setForegroundColor(Color foregroundColor) {
-        this.foregroundColor = foregroundColor;
-    }
-
-    public Color getSelectionForegroundColor() {
-        return selectionForegroundColor;
-    }
-
-    public void setSelectionForegroundColor(Color selectionForegroundColor) {
-        this.selectionForegroundColor = selectionForegroundColor;
-    }
-
-    public Color getSelectionBackgroundColor() {
-        return selectionBackgroundColor;
-    }
-
-    public void setSelectionBackgroundColor(Color selectionBackgroundColor) {
-        this.selectionBackgroundColor = selectionBackgroundColor;
-    }
-
-    public Color getBackgroundColor() {
-        return backgroundColor;
-    }
-
-    public void setBackgroundColor(Color backgroundColor) {
-        this.backgroundColor = backgroundColor;
-    }
-
-    public boolean isShowRoundedSelectionCorners() {
-        return this.showRoundedSelectionCorners;
-    }
-
-    public void setShowRoundedSelectionCorners(
-        boolean showRoundedSelectionCorners) {
-        this.showRoundedSelectionCorners = showRoundedSelectionCorners;
+        if (boldFont != null) {
+            UIUtils.dispose(boldFont);
+            boldFont = null;
+        }
     }
 
 }
