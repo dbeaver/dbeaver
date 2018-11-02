@@ -149,6 +149,11 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
     }
 
     @Override
+    protected boolean useBracketsForExec() {
+        return true;
+    }
+
+    @Override
     public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.CONTROL) {
             final SQLControlToken sourceToken = new SQLControlToken(
