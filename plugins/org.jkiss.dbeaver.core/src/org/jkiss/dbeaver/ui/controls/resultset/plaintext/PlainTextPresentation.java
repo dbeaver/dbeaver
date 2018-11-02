@@ -90,6 +90,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         text.setBlockSelection(true);
         text.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_IBEAM));
         text.setMargins(4, 4, 4, 4);
+        text.setTabs(controller.getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_TAB_SIZE));
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         text.addCaretListener(event -> onCursorChange(event.caretOffset));
@@ -261,11 +262,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 }
                 for (ResultSetRow row : allRows) {
                     String displayString = getCellString(model, attr, row, displayFormat);
-                    colWidths[i] = Math.max(colWidths[i], displayString.length());
+                    colWidths[i] = Math.max(colWidths[i], getStringWidth(displayString));
                 }
             }
             for (int i = 0; i < colWidths.length; i++) {
-                colWidths[i]++;
+                //colWidths[i]++;
                 if (colWidths[i] > maxColumnSize) {
                     colWidths[i] = maxColumnSize;
                 }
@@ -316,7 +317,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                     displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
                 }
                 grid.append(displayString);
-                for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
+                int stringWidth = getStringWidth(displayString);
+                for (int j = colWidths[k] - stringWidth; j > 0; j--) {
                     grid.append(" ");
                 }
             }
@@ -332,6 +334,21 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
 
         totalRows = allRows.size();
+    }
+
+    private int getStringWidth(String str) {
+        int width = 0;
+        if (str != null && str.length() > 0) {
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (c == '\t') {
+                    width += controller.getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_TAB_SIZE);
+                } else {
+                    width++;
+                }
+            }
+        }
+        return width;
     }
 
     private static String getAttributeName(DBDAttributeBinding attr) {
@@ -355,7 +372,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         {
             displayString = DBConstants.NULL_VALUE_LABEL;
         }
-        return TextUtils.getSingleLineString(displayString);
+        return displayString
+            .replace('\n', TextUtils.PARAGRAPH_CHAR)
+            .replace("\r", "")
+            .replace((char)0, ' ');
     }
 
     private void printRecord() {

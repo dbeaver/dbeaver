@@ -217,7 +217,11 @@ public class TextUtils {
     }
 
     public static String getSingleLineString(String displayString) {
-        return displayString.replace('\n', PARAGRAPH_CHAR).replace("\r", "").replace((char)0, ' ');
+        return displayString
+            .replace('\n', PARAGRAPH_CHAR)
+            .replace("\r", "")
+            .replace("\t", " ")
+            .replace((char)0, ' ');
     }
 
     /**
