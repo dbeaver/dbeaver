@@ -592,6 +592,10 @@ public class BasicSQLDialect implements SQLDialect {
         return maxParamLength;
     }
 
+    protected boolean useBracketsForExec() {
+        return false;
+    }
+
     // first line of the call stored procedure SQL (to be overridden)
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
         String[] executeKeywords = getExecuteKeywords();
@@ -606,6 +610,8 @@ public class BasicSQLDialect implements SQLDialect {
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         getMaxParameterLength(parameters, inParameters);
+        boolean useBrackets = useBracketsForExec();
+        if (useBrackets) sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
             sql.append("\n");
@@ -622,7 +628,13 @@ public class BasicSQLDialect implements SQLDialect {
                     .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")\n");
             }
         }
-        sql.append(");\n\n");
+        sql.append(")");
+        if (!useBrackets) {
+            sql.append(";");
+        } else {
+            sql.append(" }");
+        }
+        sql.append("\n\n");
     }
 
     @Override

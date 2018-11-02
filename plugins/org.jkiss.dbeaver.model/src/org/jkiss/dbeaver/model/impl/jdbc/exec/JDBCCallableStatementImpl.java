@@ -110,7 +110,10 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
                 if (!CommonUtils.isEmpty(params)) {
                     for (DBSProcedureParameter param : params) {
-                        if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
+                        if (param.getParameterKind() == DBSProcedureParameterKind.OUT ||
+                            param.getParameterKind() == DBSProcedureParameterKind.INOUT ||
+                            param.getParameterKind() == DBSProcedureParameterKind.RETURN)
+                        {
                             procResults.addColumn(param.getName(), param.getParameterType());
                         }
                     }
