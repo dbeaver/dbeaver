@@ -317,9 +317,9 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     @Override
-    public void refreshData(boolean refreshColumns, boolean keepState) {
+    public void refreshData(boolean refreshColumns, boolean keepState, boolean fitValue) {
         cancelInlineEditor();
-        super.refreshData(refreshColumns, keepState);
+        super.refreshData(refreshColumns, keepState, fitValue);
         super.redraw();
     }
 
@@ -402,6 +402,11 @@ public class Spreadsheet extends LightGrid implements Listener {
 */
         GridPos pos = getFocusPos();
         tableEditor.setEditor(editor, pos.col, pos.row);
+    }
+
+
+    public void packColumns(boolean fitValue) {
+        refreshData(true, false, fitValue);
     }
 
     ////////////////////////////////////////////////////////////

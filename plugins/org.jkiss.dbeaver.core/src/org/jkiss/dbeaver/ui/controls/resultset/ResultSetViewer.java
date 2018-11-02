@@ -1930,7 +1930,7 @@ public class ResultSetViewer extends Viewer
             MenuManager layoutMenu = new MenuManager(
                 CoreMessages.controls_resultset_viewer_action_layout,
                 null,
-                "layout"); //$NON-NLS-1$
+                MENU_ID_LAYOUT); //$NON-NLS-1$
             layoutMenu.add(new ToggleModeAction());
             layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PANELS));
             layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_LAYOUT));
@@ -1945,7 +1945,7 @@ public class ResultSetViewer extends Viewer
                     panelsMenu.add(item);
                 }
             }
-
+            layoutMenu.add(new GroupMarker(MENU_GROUP_ADDITIONS));
             layoutMenu.add(new Separator());
             for (ResultSetPresentationDescriptor pd : getAvailablePresentations()) {
                 Action psAction = new Action(pd.getLabel(), Action.AS_CHECK_BOX) {

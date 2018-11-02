@@ -46,6 +46,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -695,7 +696,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         spreadsheet.setRedraw(false);
         try {
-            spreadsheet.refreshData(refreshMetadata, keepState);
+            spreadsheet.refreshData(refreshMetadata, keepState, false);
         } finally {
             spreadsheet.setRedraw(true);
         }
@@ -703,7 +704,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void formatData(boolean refreshData) {
-        spreadsheet.refreshData(false, true);
+        spreadsheet.refreshData(false, true, false);
     }
 
     @Override
@@ -768,25 +769,29 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         final ResultSetRow row = (ResultSetRow)(controller.isRecordMode() ? colObject : rowObject);
         controller.fillContextMenu(manager, attr, row);
 
+        IMenuManager layoutMenu = (IMenuManager) manager.find(ResultSetViewer.MENU_ID_LAYOUT);
+
         if (attr != null && row != null) {
             final List<Object> selectedColumns = spreadsheet.getColumnSelection();
             if (!controller.isRecordMode() && !selectedColumns.isEmpty()) {
-                IMenuManager viewMenu = (IMenuManager) manager.find(ResultSetViewer.MENU_ID_VIEW);
-                if (viewMenu != null) {
+                if (layoutMenu != null) {
                     String hideTitle;
                     if (selectedColumns.size() == 1) {
                         DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
-                        hideTitle = "Hide column '" + columnToHide.getName() + "'";
+                        hideTitle = NLS.bind(CoreMessages.controls_resultset_viewer_hide_column_x, columnToHide.getName());
                     } else {
-                        hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
+                        hideTitle = NLS.bind(CoreMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
                     }
-                    viewMenu.add(new Separator());
-                    viewMenu.add(new Action(hideTitle) {
+                    layoutMenu.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());
+                    layoutMenu.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(hideTitle) {
                         @Override
                         public void run() {
                             ResultSetModel model = controller.getModel();
                             if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
-                                UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
+                                UIUtils.showMessageBox(
+                                    getControl().getShell(),
+                                    CoreMessages.controls_resultset_viewer_hide_columns_error_title,
+                                    CoreMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ERROR);
                             } else {
                                 for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
                                     model.setAttributeVisibility((DBDAttributeBinding) selectedColumns.get(i), false);
@@ -796,6 +801,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         }
                     });
                 }
+            }
+        }
+        if (layoutMenu != null) {
+            if (!controller.getModel().getVisibleAttributes().isEmpty()) {
+                layoutMenu.insertAfter(
+                    IResultSetController.MENU_GROUP_ADDITIONS,
+                    ActionUtils.makeCommandContribution(
+                        controller.getSite(),
+                        SpreadsheetCommandHandler.CMD_COLUMNS_FIT_VALUE));
+                layoutMenu.insertAfter(
+                    IResultSetController.MENU_GROUP_ADDITIONS,
+                    ActionUtils.makeCommandContribution(
+                        controller.getSite(),
+                        SpreadsheetCommandHandler.CMD_COLUMNS_FIT_SCREEN));
             }
         }
     }
@@ -1072,7 +1091,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     {
         if (columnElement == null) {
             columnOrder = columnOrder == SWT.DEFAULT ? SWT.UP : (columnOrder == SWT.UP ? SWT.DOWN : SWT.DEFAULT);
-            spreadsheet.refreshData(false, true);
+            spreadsheet.refreshData(false, true, false);
             spreadsheet.redrawGrid();
             return;
         }
@@ -1238,7 +1257,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             controller.setDataFilter(dataFilter, false);
             spreadsheet.setFocusColumn(targetPosition);
-            spreadsheet.refreshData(false, true);
+            spreadsheet.refreshData(false, true, false);
         }
 
     }

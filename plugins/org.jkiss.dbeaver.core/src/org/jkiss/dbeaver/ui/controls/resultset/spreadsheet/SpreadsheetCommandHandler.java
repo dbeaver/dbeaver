@@ -18,34 +18,55 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
  * Spreadsheet command handler.
  * Active when focus is in spreadsheet control
  */
-public abstract class SpreadsheetCommandHandler extends AbstractHandler {
+public class SpreadsheetCommandHandler extends AbstractHandler {
 
-    public static Spreadsheet getActiveSpreadsheet(ExecutionEvent event)
+    public static final String CMD_COLUMNS_FIT_VALUE = "org.jkiss.dbeaver.core.resultset.grid.columnsFitValue";
+    public static final String CMD_COLUMNS_FIT_SCREEN = "org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen";
+
+    public static SpreadsheetPresentation getActiveSpreadsheet(ExecutionEvent event)
     {
-        Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
-        if (control instanceof Spreadsheet) {
-            return (Spreadsheet)control;
-        }
-
-        IResultSetController rsv = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
-        if (rsv != null) {
-            IResultSetPresentation activePresentation = rsv.getActivePresentation();
-            if (activePresentation instanceof SpreadsheetPresentation) {
-                return ((SpreadsheetPresentation) activePresentation).getSpreadsheet();
+        IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        if (resultSet != null) {
+            IResultSetPresentation presentation = resultSet.getActivePresentation();
+            if (presentation instanceof SpreadsheetPresentation) {
+                return (SpreadsheetPresentation) presentation;
             }
         }
 
         return null;
     }
 
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+
+        SpreadsheetPresentation spreadsheet = getActiveSpreadsheet(event);
+        if (spreadsheet == null) {
+            return null;
+        }
+
+        String actionId = event.getCommand().getId();
+        switch (actionId) {
+            case CMD_COLUMNS_FIT_VALUE:
+                spreadsheet.getSpreadsheet().packColumns(true);
+                break;
+            case CMD_COLUMNS_FIT_SCREEN:
+                spreadsheet.getSpreadsheet().packColumns(false);
+                break;
+        }
+
+        return null;
+    }
 }
