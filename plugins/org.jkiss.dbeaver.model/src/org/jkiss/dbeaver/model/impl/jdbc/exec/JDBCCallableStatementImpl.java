@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl implements JDBCCallableStatement {
 
     private static final Log log = Log.getLog(JDBCCallableStatementImpl.class);
-    private static final Pattern EXEC_PATTERN = Pattern.compile("[a-z]+\\s+([^(]+)\\s*\\(");
+    private static final Pattern EXEC_PATTERN = Pattern.compile("[\\w_\\.]+\\s+([^(]+)\\s*\\(");
 
     private DBSProcedure procedure;
     private JDBCResultSetCallable procResults;
@@ -84,7 +84,14 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         try {
             ParameterMetaData paramsMeta = original.getParameterMetaData();
             if (paramsMeta != null) {
-                bindProcedureFromJDBC(paramsMeta);
+                int paramsCount = bindProcedureFromJDBC(paramsMeta);
+                if (procedure != null && paramsCount == 0 && hasOutputParameters()) {
+                    try {
+                        bindProcedureFromMeta();
+                    } catch (Throwable e) {
+                        log.debug("Error binding procedure output parameters", e);
+                    }
+                }
             }
         } catch (Throwable e) {
             log.debug(e.getMessage());
@@ -94,7 +101,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                     bindProcedureFromMeta();
                 }
             } catch (Throwable e1) {
-                log.debug(e1);
+                log.debug("Error binding procedure output parameters", e1);
             }
         }
 
@@ -149,7 +156,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                     divChar = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
                 }
                 if (procName.indexOf(divChar) != -1) {
-                    return findProcedureByNames(session, procName.split(String.valueOf(divChar)));
+                    return findProcedureByNames(session, procName.split("\\" + divChar));
                 } else {
                     return findProcedureByNames(session, procName);
                 }
@@ -188,23 +195,42 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     // Procedure bindings
     ////////////////////////////////////////////////////////////////////
 
-    void bindProcedureFromJDBC(@NotNull ParameterMetaData paramsMeta) throws DBException {
+    private int bindProcedureFromJDBC(@NotNull ParameterMetaData paramsMeta) throws DBException {
         try {
             int parameterCount = paramsMeta.getParameterCount();
             if (parameterCount > 0) {
+                int outParameters = 0;
                 for (int index = 0; index < parameterCount; index++) {
                     int parameterMode = paramsMeta.getParameterMode(index + 1);
                     if (parameterMode == ParameterMetaData.parameterModeOut || parameterMode == ParameterMetaData.parameterModeInOut) {
                         registerOutParameter(index + 1, paramsMeta.getParameterType(index + 1));
+                        outParameters++;
                     }
                 }
+                return outParameters;
             }
+            return parameterCount;
         } catch (SQLException e) {
             throw new DBException("Error binding callable statement parameters from metadata: " + e.getMessage(), e);
         }
     }
 
-    void bindProcedureFromMeta() throws DBException {
+    private boolean hasOutputParameters() throws DBException {
+        if (procedure == null) {
+            return false;
+        }
+        Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
+        if (!CommonUtils.isEmpty(params)) {
+            for (DBSProcedureParameter param : params) {
+                if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void bindProcedureFromMeta() throws DBException {
         if (procedure == null) {
             return;
         }
