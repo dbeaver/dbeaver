@@ -120,8 +120,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 UIUtils.asyncExec(() -> {
                     updateEditButtonsState();
                     if (command instanceof DBECommandProperty) {
-                        //Object propId = ((DBECommandProperty) command).getHandler().getId();
-                        updateOtherPropertyValues(null);
+                        // We need to exclude current prop from update
+                        // Simple value compare on update is not enough because value can be transformed (e.g. uppercased)
+                        // and it will differ from the value in edit control
+                        Object propId = ((DBECommandProperty) command).getHandler().getId();
+                        updateOtherPropertyValues(propId);
                     }
                 });
             }
