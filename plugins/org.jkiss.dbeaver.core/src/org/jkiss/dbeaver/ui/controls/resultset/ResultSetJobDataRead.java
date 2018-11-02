@@ -88,7 +88,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
             purpose,
             NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
-            DBUtils.tryExecuteRecover(monitor, getDataContainer().getDataSource(), monitor1 -> {
+            DBUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
                 try {
                     statistics = dataContainer.readData(
                         ResultSetJobDataRead.this,
