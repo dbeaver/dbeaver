@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -593,25 +594,33 @@ public class BasicSQLDialect implements SQLDialect {
 
     // first line of the call stored procedure SQL (to be overridden)
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
-        return "select " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        String[] executeKeywords = getExecuteKeywords();
+        if (proc.getProcedureType() == DBSProcedureType.FUNCTION || ArrayUtils.isEmpty(executeKeywords)) {
+            return SQLConstants.KEYWORD_SELECT + " " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        } else {
+            return executeKeywords[0] + " " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        }
     }
 
     @Override
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         getMaxParameterLength(parameters, inParameters);
-        sql.append(getStoredProcedureCallInitialClause(proc)).append("(\n");
-        for (int i = 0; i < inParameters.size(); i++) {
-            DBSProcedureParameter parameter = inParameters.get(i);
-            sql.append("\t:").append(CommonUtils.escapeIdentifier(parameter.getName()));
-            if (i < (inParameters.size() - 1)) {
-                sql.append(",");
-            } else {
-                sql.append(" ");
+        sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
+        if (!inParameters.isEmpty()) {
+            sql.append("\n");
+            for (int i = 0; i < inParameters.size(); i++) {
+                DBSProcedureParameter parameter = inParameters.get(i);
+                sql.append("\t:").append(CommonUtils.escapeIdentifier(parameter.getName()));
+                if (i < (inParameters.size() - 1)) {
+                    sql.append(",");
+                } else {
+                    sql.append(" ");
+                }
+                String typeName = parameter.getParameterType().getFullTypeName();
+                sql.append("\t-- put the ").append(parameter.getName())
+                    .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")\n");
             }
-            String typeName = parameter.getParameterType().getFullTypeName();
-            sql.append("\t-- put the ").append(parameter.getName())
-                .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")\n");
         }
         sql.append(");\n\n");
     }
