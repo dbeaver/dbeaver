@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -47,7 +48,9 @@ public interface IResultSetController extends DBPContextProvider {
     String MENU_ID_EDIT = "edit";
     String MENU_ID_VIEW = "view";
     String MENU_ID_FILTERS = "filters";
+    String MENU_ID_LAYOUT = "layout";
     String MENU_GROUP_EDIT = "edit";
+    String MENU_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
 
     @NotNull
     IWorkbenchPartSite getSite();

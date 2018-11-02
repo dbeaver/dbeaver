@@ -302,6 +302,10 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_viewer_status_rows_size;
 	public static String controls_resultset_viewer_value;
 	public static String controls_resultset_viewer_calculate_row_count;
+	public static String controls_resultset_viewer_hide_column_x;
+	public static String controls_resultset_viewer_hide_columns_x;
+	public static String controls_resultset_viewer_hide_columns_error_title;
+	public static String controls_resultset_viewer_hide_columnss_error_text;
 
 	public static String controls_resultset_ref_menu_no_references;
 	public static String controls_resultset_ref_menu_references;

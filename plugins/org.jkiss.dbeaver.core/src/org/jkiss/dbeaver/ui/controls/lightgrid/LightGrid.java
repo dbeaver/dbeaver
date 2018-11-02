@@ -481,7 +481,7 @@ public abstract class LightGrid extends Canvas {
     /**
      * Refresh grid data
      */
-    public void refreshData(boolean refreshColumns, boolean keepState)
+    public void refreshData(boolean refreshColumns, boolean keepState, boolean fitValue)
     {
         GridPos savedFocus = keepState ? getFocusPos() : null;
         int savedHSB = keepState ? hScroll.getSelection() : -1;
@@ -541,7 +541,7 @@ public abstract class LightGrid extends Canvas {
 
             scrollValuesObsolete = true;
 
-            if (getColumnCount() == 1 && MAXIMIZE_SINGLE_COLUMN) {
+            if (getColumnCount() == 1 && (fitValue || MAXIMIZE_SINGLE_COLUMN)) {
                 // Here we going to maximize single column to entire grid's width
                 // Sometimes (when new grid created and filled with data very fast our client area size is zero
                 // So let's add a workaround for it and use column's width in this case
@@ -558,25 +558,27 @@ public abstract class LightGrid extends Canvas {
                     curColumn.pack(false);
                     totalWidth += curColumn.getWidth();
                 }
-                // If grid width more than screen - lets narrow too long columns
-                int clientWidth = getCurrentOrLastClientArea().width;
-                if (totalWidth > clientWidth) {
-                    int normalWidth = 0;
-                    List<GridColumn> fatColumns = new ArrayList<>();
-                    for (GridColumn curColumn : columns) {
-                        if (curColumn.getWidth() > maxColumnDefWidth) {
-                            fatColumns.add(curColumn);
-                        } else {
-                            normalWidth += curColumn.getWidth();
+                if (!fitValue) {
+                    // If grid width more than screen - lets narrow too long columns
+                    int clientWidth = getCurrentOrLastClientArea().width;
+                    if (totalWidth > clientWidth) {
+                        int normalWidth = 0;
+                        List<GridColumn> fatColumns = new ArrayList<>();
+                        for (GridColumn curColumn : columns) {
+                            if (curColumn.getWidth() > maxColumnDefWidth) {
+                                fatColumns.add(curColumn);
+                            } else {
+                                normalWidth += curColumn.getWidth();
+                            }
                         }
-                    }
-                    if (!fatColumns.isEmpty()) {
-                        // Narrow fat columns on decWidth
-                        int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - vScroll.getWidth())
-                            / fatColumns.size();
-                        int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
-                        for (GridColumn curColumn : fatColumns) {
-                            curColumn.setWidth(newFatWidth);
+                        if (!fatColumns.isEmpty()) {
+                            // Narrow fat columns on decWidth
+                            int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - vScroll.getWidth())
+                                / fatColumns.size();
+                            int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
+                            for (GridColumn curColumn : fatColumns) {
+                                curColumn.setWidth(newFatWidth);
+                            }
                         }
                     }
                 }
