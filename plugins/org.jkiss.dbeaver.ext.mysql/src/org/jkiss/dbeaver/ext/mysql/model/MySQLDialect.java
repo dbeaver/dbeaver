@@ -60,6 +60,8 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
             {"\"", "\""},
     };
 
+    private static String[] EXEC_KEYWORDS =  { "CALL" };
+
     public MySQLDialect() {
         super("MySQL");
     }
@@ -80,6 +82,11 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
     @Override
     public String[][] getIdentifierQuoteStrings() {
         return MYSQL_QUOTE_STRINGS;
+    }
+
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
     }
 
     @Override
