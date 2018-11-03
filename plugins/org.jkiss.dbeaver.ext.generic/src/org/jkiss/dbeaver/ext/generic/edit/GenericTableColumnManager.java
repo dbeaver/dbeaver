@@ -88,9 +88,9 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(GenericTable owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTable owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
     {
-        StringBuilder decl = super.getNestedDeclaration(owner, command, options);
+        StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         final GenericTableColumn column = command.getObject();
         if (column.isAutoIncrement()) {
             final String autoIncrementClause = column.getDataSource().getMetaModel().getAutoIncrementClause(column);

@@ -17,10 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
@@ -36,12 +32,15 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class ExasolPrimaryKeyManager
 		extends SQLConstraintManager<ExasolTableUniqueKey, ExasolTable> 
@@ -110,7 +109,7 @@ public class ExasolPrimaryKeyManager
 	{
 		ExasolTableUniqueKey obj = (ExasolTableUniqueKey) command.getObject();
 		try {
-			actions.add(new SQLDatabasePersistAction("Create PK", ExasolUtils.getPKDdl(obj, new VoidProgressMonitor())));
+			actions.add(new SQLDatabasePersistAction("Create PK", ExasolUtils.getPKDdl(obj, monitor)));
 		} catch (DBException e) {
 			log.error("Could not generated DDL for PK");
 		}
@@ -144,7 +143,7 @@ public class ExasolPrimaryKeyManager
 	
 	
 	@Override
-	protected void addObjectRenameActions(List<DBEPersistAction> actions,
+	protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectRenameCommand command, Map<String, Object> options)
 	{
 		final ExasolTableUniqueKey key = command.getObject();

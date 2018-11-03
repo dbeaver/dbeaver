@@ -58,7 +58,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_constraint,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command, options)));
+                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options)));
     }
 
     @Override
@@ -74,7 +74,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
     {
         OBJECT_TYPE constraint = command.getObject();
 

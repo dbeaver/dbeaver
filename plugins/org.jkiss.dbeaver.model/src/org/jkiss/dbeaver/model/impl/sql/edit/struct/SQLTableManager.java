@@ -96,7 +96,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             if (excludeFromDDL(nestedCommand, orderedCommands)) {
                 continue;
             }
-            final String nestedDeclaration = nestedCommand.getNestedDeclaration(table, options);
+            final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
@@ -127,7 +127,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         }
 
         createQuery.append(lineSeparator).append(")"); //$NON-NLS-1$
-        appendTableModifiers(table, tableProps, createQuery, false);
+        appendTableModifiers(monitor, table, tableProps, createQuery, false);
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
     }
@@ -154,7 +154,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         );
     }
 
-    protected void appendTableModifiers(OBJECT_TYPE table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
+    protected void appendTableModifiers(DBRProgressMonitor monitor, OBJECT_TYPE table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
 
     }

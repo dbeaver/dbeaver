@@ -53,16 +53,16 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     implements DBEObjectRenamer<MySQLTableColumn>, DBEObjectReorderer<MySQLTableColumn>
 {
 
-    private final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = (column, sql, command) ->
+    private final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = (monitor, column, sql, command) ->
         sql.append(' ').append(column.getFullTypeName());
 
-    private final ColumnModifier<MySQLTableColumn> CharsetModifier = (column, sql, command) -> {
+    private final ColumnModifier<MySQLTableColumn> CharsetModifier = (monitor, column, sql, command) -> {
         if (column.getDataKind() == DBPDataKind.STRING && column.getCharset() != null) {
             sql.append(" CHARACTER SET ").append(column.getCharset().getName());
         }
     };
 
-    private final ColumnModifier<MySQLTableColumn> CollationModifier = (column, sql, command) -> {
+    private final ColumnModifier<MySQLTableColumn> CollationModifier = (monitor, column, sql, command) -> {
         if (column.getDataKind() == DBPDataKind.STRING && column.getCollation() != null) {
             sql.append(" COLLATE ").append(column.getCollation().getName());
         }
@@ -81,9 +81,9 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command, Map<String, Object> options)
     {
-        StringBuilder decl = super.getNestedDeclaration(owner, command, options);
+        StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         final MySQLTableColumn column = command.getObject();
         if (!CommonUtils.isEmpty(column.getExtraInfo())) {
             decl.append(" ").append(column.getExtraInfo()); //$NON-NLS-1$
@@ -132,7 +132,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         actionList.add(
             new SQLDatabasePersistAction(
                 "Modify column",
-                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command, options))); //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY COLUMN " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -141,7 +141,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         final MySQLTableColumn column = command.getObject();
 
@@ -150,7 +150,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
                 "Rename column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CHANGE " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " " +
-                    getNestedDeclaration(column.getTable(), command, options)));
+                    getNestedDeclaration(monitor, column.getTable(), command, options)));
     }
 
     @Override
@@ -170,7 +170,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
                 "Reorder column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CHANGE " +
                     DBUtils.getQuotedIdentifier(command.getObject()) + " " +
-                    getNestedDeclaration(column.getTable(), command, options) + " " + order));
+                    getNestedDeclaration(monitor, column.getTable(), command, options) + " " + order));
     }
 
     ///////////////////////////////////////////////

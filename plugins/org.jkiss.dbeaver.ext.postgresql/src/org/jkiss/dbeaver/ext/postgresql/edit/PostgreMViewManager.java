@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -25,7 +28,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.util.List;
 import java.util.Map;
@@ -70,17 +72,16 @@ public class PostgreMViewManager extends PostgreViewManager {
     {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             try {
-                generateAlterActions(actionList, command);
+                generateAlterActions(monitor, actionList, command);
             } catch (DBException e) {
                 log.error(e);
             }
         }
     }
 
-    private void generateAlterActions(List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
+    private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
         final PostgreMaterializedView mView = (PostgreMaterializedView) command.getObject();
         final String alterPrefix = "ALTER " + mView.getViewType() + " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
-        final VoidProgressMonitor monitor = new VoidProgressMonitor();
         if (command.hasProperty("tablespace")) {
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + mView.getTablespace(monitor).getName()));
         }

@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -49,7 +48,7 @@ import java.util.Map;
  */
 public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTableColumn, PostgreTableBase> implements DBEObjectRenamer<PostgreTableColumn>  {
 
-    protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (column, sql, command) -> {
+    protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (monitor, column, sql, command) -> {
         sql.append(' ');
         final PostgreDataType dataType = column.getDataType();
         String defValue = column.getDefaultValue();
@@ -67,7 +66,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     return;
             }
         }
-        final PostgreDataType rawType = dataType.getElementType(new VoidProgressMonitor());
+        final PostgreDataType rawType = dataType.getElementType(monitor);
         if (rawType != null) {
             sql.append(rawType.getFullyQualifiedName(DBPEvaluationContext.DDL));
         } else {
@@ -105,7 +104,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
     };
 
-    protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (column, sql, command) -> {
+    protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = column.getDefaultValue();
         if (!CommonUtils.isEmpty(defaultValue) && defaultValue.contains("nextval")) {
             // Use serial type name
@@ -116,17 +115,17 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     return;
             }
         }
-        DefaultModifier.appendModifier(column, sql, command);
+        DefaultModifier.appendModifier(monitor, column, sql, command);
     };
 
-    protected final ColumnModifier<PostgreTableColumn> PostgreIdentityModifier = (column, sql, command) -> {
+    protected final ColumnModifier<PostgreTableColumn> PostgreIdentityModifier = (monitor, column, sql, command) -> {
         PostgreAttributeIdentity identity = column.getIdentity();
         if (identity != null) {
             sql.append(" ").append(identity.getDefinitionClause());
         }
     };
 
-    protected final ColumnModifier<PostgreTableColumn> PostgreCommentModifier = (column, sql, command) -> {
+    protected final ColumnModifier<PostgreTableColumn> PostgreCommentModifier = (monitor, column, sql, command) -> {
         String comment = column.getDescription();
         if (!CommonUtils.isEmpty(comment)) {
             sql.append(" -- ").append(TextUtils.getSingleLineString(comment));
@@ -150,9 +149,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(PostgreTableBase owner, DBECommandAbstract<PostgreTableColumn> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableColumn> command, Map<String, Object> options)
     {
-        StringBuilder decl = super.getNestedDeclaration(owner, command, options);
+        StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         final PostgreAttribute column = command.getObject();
         return decl;
     }
@@ -245,7 +244,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         final PostgreAttribute column = command.getObject();
 

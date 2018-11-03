@@ -99,7 +99,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
 	}
 	
 	@Override
-	protected void addObjectRenameActions(List<DBEPersistAction> actions,
+	protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectRenameCommand command, Map<String, Object> options)
 	{
 		ExasolRole obj = command.getObject();

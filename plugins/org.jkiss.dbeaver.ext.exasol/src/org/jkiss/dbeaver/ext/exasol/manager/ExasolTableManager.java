@@ -90,7 +90,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(ExasolTable exasolTable, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+    public void appendTableModifiers(DBRProgressMonitor monitor, ExasolTable exasolTable, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
 
     }
 
@@ -118,7 +118,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
             sb.append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sb.append(" ");
 
-            appendTableModifiers(command.getObject(), command, sb, true);
+            appendTableModifiers(monitor, command.getObject(), command, sb, true);
 
             actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
         }
@@ -133,7 +133,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // Rename
     // ------
     @Override
-    public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    public void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         String sql = String.format(SQL_RENAME_TABLE,
             DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()),
             DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()));

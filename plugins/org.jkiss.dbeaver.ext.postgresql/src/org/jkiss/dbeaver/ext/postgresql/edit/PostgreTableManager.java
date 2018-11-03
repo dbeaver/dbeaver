@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -100,7 +99,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             if (command.getObject() instanceof PostgreTableRegular) {
                 try {
-                    generateAlterActions(actionList, command);
+                    generateAlterActions(monitor, actionList, command);
                 } catch (DBException e) {
                     log.error(e);
                 }
@@ -108,10 +107,10 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         }
     }
 
-    private void generateAlterActions(List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
+    private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
         final PostgreTableRegular table = (PostgreTableRegular) command.getObject();
         final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
-        final VoidProgressMonitor monitor = new VoidProgressMonitor();
+
         if (command.hasProperty("hasOids")) {
             actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));
         }
@@ -121,9 +120,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected void appendTableModifiers(PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
-        final VoidProgressMonitor monitor = new VoidProgressMonitor();
-
+    protected void appendTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
         if (tableBase instanceof PostgreTable) {
             PostgreTable table = (PostgreTable) tableBase;
             if (!alter) {
@@ -185,7 +182,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(

@@ -38,21 +38,21 @@ import java.util.Map;
  */
 public class VerticaTableColumnManager extends GenericTableColumnManager {
 
-    protected final ColumnModifier<GenericTableColumn> VerticaDataTypeModifier = (column, sql, command) -> {
+    protected final ColumnModifier<GenericTableColumn> VerticaDataTypeModifier = (monitor, column, sql, command) -> {
         sql.append(" SET DATA TYPE ");
-        DataTypeModifier.appendModifier(column, sql, command);
+        DataTypeModifier.appendModifier(monitor, column, sql, command);
     };
 
-    protected final ColumnModifier<GenericTableColumn> VerticaDefaultModifier = (column, sql, command) -> {
+    protected final ColumnModifier<GenericTableColumn> VerticaDefaultModifier = (monitor, column, sql, command) -> {
         if (CommonUtils.isEmpty(command.getObject().getDefaultValue())) {
             sql.append(" DROP DEFAULT");
         } else {
             sql.append(" SET DEFAULT ");
-            DefaultModifier.appendModifier(column, sql, command);
+            DefaultModifier.appendModifier(monitor, column, sql, command);
         }
     };
 
-    protected final ColumnModifier<GenericTableColumn> VerticaNotNullModifier = (column, sql, command) -> {
+    protected final ColumnModifier<GenericTableColumn> VerticaNotNullModifier = (monitor, column, sql, command) -> {
         if (command.getObject().isRequired()) {
             sql.append(" SET NOT NULL");
         } else {
@@ -61,9 +61,9 @@ public class VerticaTableColumnManager extends GenericTableColumnManager {
     };
 
     @Override
-    public StringBuilder getNestedDeclaration(GenericTable owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTable owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
     {
-        StringBuilder decl = super.getNestedDeclaration(owner, command, options);
+        StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         final GenericTableColumn column = command.getObject();
         if (column.isAutoIncrement()) {
             final String autoIncrementClause = column.getDataSource().getMetaModel().getAutoIncrementClause(column);

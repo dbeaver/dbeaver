@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolScript;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ExasolScriptGrant extends ExasolBaseObjectGrant {
 	
@@ -31,9 +31,9 @@ public class ExasolScriptGrant extends ExasolBaseObjectGrant {
 	}
 	
 	@Property(viewable = true, order = 10)
-	public ExasolScript getProcedure() throws DBException
+	public ExasolScript getProcedure(DBRProgressMonitor monitor) throws DBException
 	{
-		return super.getSchema().getProcedure(new VoidProgressMonitor(), super.getObjectName());
+		return super.getSchema().getProcedure(monitor, super.getObjectName());
 	}
 	
 	@Override

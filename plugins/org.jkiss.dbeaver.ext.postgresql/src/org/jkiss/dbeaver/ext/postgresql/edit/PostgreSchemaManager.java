@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -79,7 +78,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         final PostgreSchema schema = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
         try {
-            final PostgreRole owner = schema.getOwner(new VoidProgressMonitor());
+            final PostgreRole owner = schema.getOwner(monitor);
             if (owner != null) {
                 script.append("\nAUTHORIZATION ").append(DBUtils.getQuotedIdentifier(owner));
             }
@@ -101,7 +100,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(

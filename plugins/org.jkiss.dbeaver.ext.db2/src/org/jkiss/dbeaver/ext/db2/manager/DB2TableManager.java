@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -101,25 +100,25 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
+    public void appendTableModifiers(DBRProgressMonitor monitor, DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
 
         try {
             // Add Tablespaces infos
-            if (db2Table.getTablespace(new VoidProgressMonitor()) != null) {
+            if (db2Table.getTablespace(monitor) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS);
-                ddl.append(getTablespaceName(db2Table.getTablespace(new VoidProgressMonitor())));
+                ddl.append(getTablespaceName(db2Table.getTablespace(monitor)));
             }
-            if (db2Table.getIndexTablespace(new VoidProgressMonitor()) != null) {
+            if (db2Table.getIndexTablespace(monitor) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS_IX);
-                ddl.append(getTablespaceName(db2Table.getIndexTablespace(new VoidProgressMonitor())));
+                ddl.append(getTablespaceName(db2Table.getIndexTablespace(monitor)));
             }
-            if (db2Table.getLongTablespace(new VoidProgressMonitor()) != null) {
+            if (db2Table.getLongTablespace(monitor) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS_LONG);
-                ddl.append(getTablespaceName(db2Table.getLongTablespace(new VoidProgressMonitor())));
+                ddl.append(getTablespaceName(db2Table.getLongTablespace(monitor)));
             }
         } catch (DBException e) {
             // Never be here
@@ -163,7 +162,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
             sb.append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sb.append(" ");
 
-            appendTableModifiers(command.getObject(), command, sb, true);
+            appendTableModifiers(monitor, command.getObject(), command, sb, true);
 
             actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
         }
@@ -178,7 +177,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // Rename
     // ------
     @Override
-    public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    public void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         String sql = String.format(SQL_RENAME_TABLE,
             DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()),
