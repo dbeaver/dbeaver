@@ -135,6 +135,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public void appendTableModifiers(DBRProgressMonitor monitor, PostgreTableBase table, StringBuilder sql) {
+        // Nothing
+    }
+
+    @Override
     public boolean supportsRelationSizeCalc() {
         return true;
     }
