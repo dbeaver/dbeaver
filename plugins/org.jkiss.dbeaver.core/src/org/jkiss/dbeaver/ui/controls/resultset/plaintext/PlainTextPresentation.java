@@ -91,6 +91,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         text.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_IBEAM));
         text.setMargins(4, 4, 4, 4);
         text.setTabs(controller.getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_TAB_SIZE));
+        text.setTabStops(null);
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         text.addCaretListener(event -> onCursorChange(event.caretOffset));
