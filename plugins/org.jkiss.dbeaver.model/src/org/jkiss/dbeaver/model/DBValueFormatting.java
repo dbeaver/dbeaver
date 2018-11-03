@@ -31,11 +31,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.Locale;
 
 /**
@@ -263,11 +265,11 @@ public final class DBValueFormatting {
             } else {
                 return "";
             }
-        }
-        if (value instanceof CharSequence) {
+        } else if (value instanceof CharSequence) {
             return value.toString();
-        }
-        if (value.getClass().isArray()) {
+        } else if (value instanceof DBPNamedObject) {
+            return ((DBPNamedObject) value).getName();
+        } else if (value.getClass().isArray()) {
             if (value.getClass().getComponentType() == Byte.TYPE) {
                 byte[] bytes = (byte[]) value;
                 int length = bytes.length;
@@ -275,9 +277,27 @@ public final class DBValueFormatting {
                 String string = CommonUtils.toHexString(bytes, 0, length);
                 return bytes.length > 2000 ? string + "..." : string;
             } else {
-                return GeneralUtils.makeDisplayString(value).toString();
+                StringBuilder str = new StringBuilder("[");
+                int length = Array.getLength(value);
+                for (int i = 0; i < length; i++) {
+                    if (i > 0) str.append(",");
+                    str.append(getDefaultValueDisplayString(Array.get(value, i), format));
+                }
+                str.append("]");
+                return str.toString();
             }
+        } else if (value instanceof Collection) {
+            StringBuilder str = new StringBuilder("[");
+            boolean first = true;
+            for (Object item : (Collection)value) {
+                if (!first) str.append(",");
+                first = false;
+                str.append(getDefaultValueDisplayString(item, format));
+            }
+            str.append("]");
+            return str.toString();
         }
+
         String className = value.getClass().getName();
         if (className.startsWith("java.lang") || className.startsWith("java.util")) {
             // Standard types just use toString
