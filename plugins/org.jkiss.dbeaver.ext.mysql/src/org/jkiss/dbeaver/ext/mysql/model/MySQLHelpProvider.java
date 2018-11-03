@@ -65,7 +65,7 @@ public class MySQLHelpProvider implements SQLHelpProvider
     }
 
     private void loadTopics(DBRProgressMonitor monitor) {
-        try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read MySQL help topicc")) {
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read MySQL help topics")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT name, description, example, url FROM mysql.help_topic")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
