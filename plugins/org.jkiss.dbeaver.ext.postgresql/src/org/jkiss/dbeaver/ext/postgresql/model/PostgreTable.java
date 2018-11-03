@@ -177,7 +177,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     }
 
     @Nullable
-    @Property(viewable = false, order = 30)
+    @Property(viewable = false, optional = true, order = 30)
     public List<PostgreTableBase> getSuperTables(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSuperInheritance(monitor);
         if (CommonUtils.isEmpty(si)) {
@@ -194,7 +194,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
      * Sub tables = child tables
      */
     @Nullable
-    @Property(viewable = false, order = 31)
+    @Property(viewable = false, optional = true, order = 31)
     public List<PostgreTableBase> getSubTables(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSubInheritance(monitor);
         if (CommonUtils.isEmpty(si)) {

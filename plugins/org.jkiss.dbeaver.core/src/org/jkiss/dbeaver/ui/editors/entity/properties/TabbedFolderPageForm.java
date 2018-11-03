@@ -387,6 +387,10 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename());
             Class<?> propType = prop.getDataType();
             Object propertyValue = curPropertySource.getPropertyValue(null, prop.getId());
+            if (propertyValue == null && prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isOptional()) {
+                // Do not create editor for null optional properties
+                return;
+            }
             Control editControl = createEditorControl(
                 group,
                 curPropertySource.getEditableValue(),
