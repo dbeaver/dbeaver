@@ -406,6 +406,26 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // Create columns from classes' annotations
                 for (ObjectPropertyDescriptor prop : allProps) {
                     if (!getListPropertySource().hasProperty(prop)) {
+                        if (prop.isOptional()) {
+                            // Check whether at least one itme has this property
+                            boolean propHasValue = false;
+                            if (!CommonUtils.isEmpty(items)) {
+                                for (OBJECT_TYPE item : items) {
+                                    try {
+                                        Object propValue = prop.readValue(getObjectValue(item), null);
+                                        if (propValue != null) {
+                                            propHasValue = true;
+                                            break;
+                                        }
+                                    } catch (Throwable e) {
+                                        // Just ignore this
+                                    }
+                                }
+                            }
+                            if (!propHasValue) {
+                                continue;
+                            }
+                        }
                         getListPropertySource().addProperty(prop);
                         createColumn(prop);
                     }
