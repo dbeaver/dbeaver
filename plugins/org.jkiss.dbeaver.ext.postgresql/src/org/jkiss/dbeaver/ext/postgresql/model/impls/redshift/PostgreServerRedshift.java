@@ -200,5 +200,6 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
             esSchemaMap.clear();
         }
     }
+
 }
 

@@ -143,7 +143,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "typowner");
         this.isByValue = JDBCUtils.safeGetBoolean(dbResult, "typbyval");
-        this.isPreferred = JDBCUtils.safeGetBoolean(dbResult, "typispreferred");
+        if (getDataSource().isServerVersionAtLeast(8, 4)) {
+            this.isPreferred = JDBCUtils.safeGetBoolean(dbResult, "typispreferred");
+        }
         this.arrayDelimiter = JDBCUtils.safeGetString(dbResult, "typdelim");
         this.classId = JDBCUtils.safeGetLong(dbResult, "typrelid");
         this.elementTypeId = JDBCUtils.safeGetLong(dbResult, "typelem");
@@ -175,7 +177,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype");
         this.typeMod = JDBCUtils.safeGetInt(dbResult, "typtypmod");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "typndims");
-        this.collationId = JDBCUtils.safeGetLong(dbResult, "typcollation");
+        if (getDataSource().getServerType().supportsCollations()) {
+            this.collationId = JDBCUtils.safeGetLong(dbResult, "typcollation");
+        }
         this.defaultValue = JDBCUtils.safeGetString(dbResult, "typdefault");
 
         this.attributeCache = hasAttributes() ? new AttributeCache() : null;

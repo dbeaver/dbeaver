@@ -155,6 +155,15 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return getContainer().tableCache.getChildren(monitor, getContainer(), this);
     }
 
+    public PostgreTableColumn getAttributeByPos(DBRProgressMonitor monitor, int position) throws DBException {
+        for (PostgreTableColumn attr : getAttributes(monitor)) {
+            if (attr.getOrdinalPosition() == position) {
+                return attr;
+            }
+        }
+        return null;
+    }
+
     public List<PostgreTableColumn> getCachedAttributes()
     {
         final DBSObjectCache<PostgreTableBase, PostgreTableColumn> childrenCache = getContainer().tableCache.getChildrenCache(this);
@@ -229,6 +238,13 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 	public boolean isPartition() {
 		return isPartition;
 	}
+
+    /**
+     * Extra table DDL modifiers
+     */
+    public void appendTableModifiers(DBRProgressMonitor monitor, StringBuilder ddl) {
+        // Nothing
+    }
 
 
     public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTableBase> {

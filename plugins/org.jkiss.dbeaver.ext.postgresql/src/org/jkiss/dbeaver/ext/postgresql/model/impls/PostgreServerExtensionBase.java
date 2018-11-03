@@ -17,16 +17,17 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * PostgreServerExtensionBase
  */
 public abstract class PostgreServerExtensionBase implements PostgreServerExtension {
+
+    private static final Log log = Log.getLog(PostgreServerExtensionBase.class);
 
     protected final PostgreDataSource dataSource;
 
@@ -135,8 +136,25 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public void appendTableModifiers(DBRProgressMonitor monitor, PostgreTableBase table, StringBuilder sql) {
-        // Nothing
+    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+        if (kind == PostgreClass.RelKind.r) {
+            return new PostgreTableRegular(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.v) {
+            return new PostgreView(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.m) {
+            return new PostgreMaterializedView(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.f) {
+            return new PostgreTableForeign(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.S) {
+            return new PostgreSequence(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.t) {
+            return new PostgreTableRegular(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.p) {
+            return new PostgreTableRegular(schema, dbResult);
+        } else {
+            log.warn("Unsupported PostgreClass '" + kind + "'");
+            return null;
+        }
     }
 
     @Override

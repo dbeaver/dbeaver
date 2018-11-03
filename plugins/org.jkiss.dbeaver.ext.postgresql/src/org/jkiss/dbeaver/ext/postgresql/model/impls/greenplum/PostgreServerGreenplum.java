@@ -14,9 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.impls;
+package org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum;
 
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreClass;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 /**
  * PostgreServerGreenplum
@@ -42,5 +47,17 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return true;
     }
 
+    @Override
+    public boolean supportsClientInfo() {
+        return false;
+    }
+
+    @Override
+    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+        if (kind == PostgreClass.RelKind.r) {
+            return new GreenplumTable(schema, dbResult);
+        }
+        return super.createRelationOfClass(schema, kind, dbResult);
+    }
 }
 

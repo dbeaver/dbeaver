@@ -424,34 +424,11 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
         @Override
         protected PostgreTableBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException {
+            throws SQLException, DBException
+        {
             final String kindString = JDBCUtils.safeGetString(dbResult, "relkind");
-            PostgreClass.RelKind kind;
-            try {
-                kind = PostgreClass.RelKind.valueOf(kindString);
-            } catch (Throwable e) {
-                log.warn("Unexpected class '" + kindString + "'", e);
-                return null;
-            }
-            switch (kind) {
-                case r:
-                    return new PostgreTableRegular(PostgreSchema.this, dbResult);
-                case v:
-                    return new PostgreView(PostgreSchema.this, dbResult);
-                case m:
-                    return new PostgreMaterializedView(PostgreSchema.this, dbResult);
-                case f:
-                    return new PostgreTableForeign(PostgreSchema.this, dbResult);
-                case S:
-                    return new PostgreSequence(PostgreSchema.this, dbResult);
-                case t:
-                    return new PostgreTableRegular(PostgreSchema.this, dbResult);
-                case p:
-                    return new PostgreTableRegular(PostgreSchema.this, dbResult);
-                default:
-                    log.warn("Unsupported PostgreClass '" + kind + "'");
-                    return null;
-            }
+            PostgreClass.RelKind kind = PostgreClass.RelKind.valueOf(kindString);
+            return owner.getDataSource().getServerType().createRelationOfClass(PostgreSchema.this, kind, dbResult);
         }
 
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)

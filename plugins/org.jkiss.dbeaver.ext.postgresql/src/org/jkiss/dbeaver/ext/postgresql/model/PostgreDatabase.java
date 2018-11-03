@@ -183,8 +183,10 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         this.name = JDBCUtils.safeGetString(dbResult, "datname");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "datdba");
         this.encodingId = JDBCUtils.safeGetLong(dbResult, "encoding");
-        this.collate = JDBCUtils.safeGetString(dbResult, "datcollate");
-        this.ctype = JDBCUtils.safeGetString(dbResult, "datctype");
+        if (dataSource.isServerVersionAtLeast(8, 4)) {
+            this.collate = JDBCUtils.safeGetString(dbResult, "datcollate");
+            this.ctype = JDBCUtils.safeGetString(dbResult, "datctype");
+        }
         this.isTemplate = JDBCUtils.safeGetBoolean(dbResult, "datistemplate");
         this.allowConnect = JDBCUtils.safeGetBoolean(dbResult, "datallowconn");
         this.connectionLimit = JDBCUtils.safeGetInt(dbResult, "datconnlimit");
