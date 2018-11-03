@@ -53,9 +53,19 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private static final String CAT_STATS = "Statistics";
 
     public enum ProcedureVolatile {
-        i,
-        s,
-        v,
+        i("IMMUTABLE"),
+        s("STABLE"),
+        v("VOLATILE");
+
+        private final String createClause;
+
+        ProcedureVolatile(String createClause) {
+            this.createClause = createClause;
+        }
+
+        public String getCreateClause() {
+            return createClause;
+        }
     }
 
     public enum ArgumentMode {
@@ -301,7 +311,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         String procDDL;
-        if (!getDataSource().getServerType().supportFunctionDefRead() || CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE)) {
+        boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
+        if (!getDataSource().getServerType().supportFunctionDefRead() || omitHeader) {
             if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                     procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
@@ -309,14 +320,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     throw new DBException("Error reading procedure body", e);
                 }
             }
-            procDDL = procSrc;
+            PostgreDataType returnType = getReturnType();
+            String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
+            procDDL = omitHeader ? procSrc : generateFunctionDeclaration(monitor, getLanguage(monitor), returnTypeName, procSrc);
         } else {
             if (body == null) {
                 if (!isPersisted()) {
-                    body = "CREATE OR REPLACE FUNCTION " + getFullQualifiedSignature() + GeneralUtils.getDefaultLineSeparator() +
-                        "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() +
-                        "LANGUAGE " + getLanguage(monitor).getName() + GeneralUtils.getDefaultLineSeparator() +
-                        "AS $function$ " + GeneralUtils.getDefaultLineSeparator() + " $function$";
+                    PostgreDataType returnType = getReturnType();
+                    String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
+                    body = generateFunctionDeclaration(monitor, getLanguage(monitor), returnTypeName, "-- Enter function body here");
                 } else if (oid == 0 || isAggregate) {
                     // No OID so let's use old (bad) way
                     body = this.procSrc;
@@ -336,12 +348,51 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
             procDDL = body;
         }
-        if (this.isPersisted() && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+        if (this.isPersisted() && !omitHeader && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             List<DBEPersistAction> actions = new ArrayList<>();
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
             procDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false);
         }
         return procDDL;
+    }
+
+    private String generateFunctionDeclaration(DBRProgressMonitor monitor, PostgreLanguage language, String returnType, String functionBody) throws DBException {
+        String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+
+        StringBuilder decl = new StringBuilder();
+        decl.append("CREATE OR REPLACE FUNCTION ").append(getFullQualifiedSignature()).append(lineSeparator);
+        if (!CommonUtils.isEmpty(returnType)) {
+            decl.append("\tRETURNS ");
+            if (isReturnsSet()) {
+                decl.append("SETOF ");
+            }
+            decl.append(returnType).append(lineSeparator);
+        }
+        if (language != null) {
+            decl.append("\tLANGUAGE ").append(language).append(lineSeparator);
+        }
+        if (isWindow()) {
+            decl.append("\tWINDOW").append(lineSeparator);
+        }
+        if (procVolatile != null) {
+            decl.append("\t").append(procVolatile.getCreateClause()).append(lineSeparator);
+        }
+        if (execCost > 0) {
+            decl.append("\tCOST ").append(execCost).append(lineSeparator);
+        }
+        if (estRows > 0) {
+            decl.append("\tROWS ").append(estRows).append(lineSeparator);
+        }
+        if (!ArrayUtils.isEmpty(config)) {
+            // ?
+        }
+        decl.append("AS $function$").append(lineSeparator);
+        if (!CommonUtils.isEmpty(functionBody)) {
+            decl.append("\t").append(functionBody).append(lineSeparator);
+        }
+        decl.append("$function$");
+
+        return decl.toString();
     }
 
     @Override
@@ -374,6 +425,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Property(category = CAT_PROPS, viewable = true, order = 12)
     public PostgreDataType getReturnType() {
         return returnType;
+    }
+
+    public void setReturnType(PostgreDataType returnType) {
+        this.returnType = returnType;
     }
 
     @Property(category = CAT_PROPS, viewable = false, order = 13)

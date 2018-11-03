@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
@@ -84,6 +85,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
                 PostgreProcedure newProcedure = new PostgreProcedure(parent);
                 newProcedure.setName(editPage.getProcedureName());
                 newProcedure.setLanguage(editPage.getLanguage());
+                newProcedure.setReturnType(editPage.getReturnType());
                 return newProcedure;
             }
         }.execute();
@@ -140,7 +142,8 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     private static class CreateFunctionPage extends CreateProcedurePage {
         private final PostgreSchema parent;
         private final DBRProgressMonitor monitor;
-        PostgreLanguage language;
+        private PostgreLanguage language;
+        private PostgreDataType returnType;
 
         public CreateFunctionPage(PostgreSchema parent, DBRProgressMonitor monitor) {
             super(parent);
@@ -155,25 +158,49 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
 
         @Override
         protected void createExtraControls(Composite group) {
-            List<PostgreLanguage> languages = new ArrayList<>();
-            try {
-                languages.addAll(parent.getDatabase().getLanguages(monitor));
-            } catch (DBException e) {
-                log.error(e);
-            }
-            final Combo languageCombo = UIUtils.createLabelCombo(group, "Language", SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (PostgreLanguage lang : languages) {
-                languageCombo.add(lang.getName());
-            }
+            {
+                List<PostgreLanguage> languages = new ArrayList<>();
+                try {
+                    languages.addAll(parent.getDatabase().getLanguages(monitor));
+                } catch (DBException e) {
+                    log.error(e);
+                }
+                final Combo languageCombo = UIUtils.createLabelCombo(group, "Language", SWT.DROP_DOWN | SWT.READ_ONLY);
+                for (PostgreLanguage lang : languages) {
+                    languageCombo.add(lang.getName());
+                }
 
-            languageCombo.addModifyListener(e -> {
-                language = languages.get(languageCombo.getSelectionIndex());
-            });
-            languageCombo.setText("sql");
+                languageCombo.addModifyListener(e -> {
+                    language = languages.get(languageCombo.getSelectionIndex());
+                });
+                languageCombo.setText("sql");
+            }
+            {
+                List<PostgreDataType> dataTypes = new ArrayList<>(parent.getDatabase().getDataSource().getLocalDataTypes());
+                final Combo dataTypeCombo = UIUtils.createLabelCombo(group, "Return type", SWT.DROP_DOWN);
+                for (PostgreDataType dt : dataTypes) {
+                    dataTypeCombo.add(dt.getName());
+                }
+
+                dataTypeCombo.addModifyListener(e -> {
+                    String dtName = dataTypeCombo.getText();
+                    if (!CommonUtils.isEmpty(dtName)) {
+                        returnType = parent.getDatabase().getDataSource().getLocalDataType(dtName);
+                    } else {
+                        returnType = null;
+                    }
+                });
+                dataTypeCombo.setText("int4");
+            }
+            
         }
 
         public PostgreLanguage getLanguage() {
             return language;
+        }
+
+        public PostgreDataType getReturnType() {
+            return returnType;
         }
     }
 }
