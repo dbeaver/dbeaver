@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.eclipse.equinox.http.servlet.internal.util.Throw;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
