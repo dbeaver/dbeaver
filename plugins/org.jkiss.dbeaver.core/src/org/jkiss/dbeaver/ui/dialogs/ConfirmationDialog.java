@@ -176,6 +176,33 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             prefKey);
     }
 
+    /**
+     * Confirmation with disabled NEVER answer.
+     */
+    public static int showConfirmDialogNoToggle(Shell shell, String id, int type, int imageType, Object... args)
+    {
+        ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();
+        String titleKey = getResourceKey(id, RES_KEY_TITLE);
+        String messageKey = getResourceKey(id, RES_KEY_MESSAGE);
+        String toggleKey = getResourceKey(id, RES_KEY_TOGGLE_MESSAGE);
+        String prefKey = PREF_KEY_PREFIX + id;
+
+        DBPPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
+        if (ConfirmationDialog.NEVER.equals(prefStore.getString(prefKey))) {
+            prefStore.setToDefault(prefKey);
+        }
+
+        return open(
+            type,
+            imageType,
+            shell,
+            UIUtils.formatMessage(bundle.getString(titleKey), args),
+            UIUtils.formatMessage(bundle.getString(messageKey), args),
+            UIUtils.formatMessage(bundle.getString(toggleKey), args),
+            false,
+            prefKey);
+    }
+
     public static String getResourceKey(String id, String key)
     {
         return RES_CONFIRM_PREFIX + id + "_" + key;  //$NON-NLS-1$
