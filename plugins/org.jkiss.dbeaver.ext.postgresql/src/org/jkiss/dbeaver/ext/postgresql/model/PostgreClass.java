@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.eclipse.equinox.http.servlet.internal.util.Throw;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -25,19 +26,37 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
  */
 public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableObject
 {
-    enum RelKind {
-        r,  // ordinary table
-        i,  // index
-        S,  // sequence
-        v,  // view
-        m,  // materialized view
-        c,  // composite type
-        t,  // TOAST table
-        f,  // = foreign table
-        p,  // partitionedtable
+    class RelKind {
+        public static final RelKind r = new RelKind("r");  // ordinary table
+        public static final RelKind i = new RelKind("i");  // index
+        public static final RelKind S = new RelKind("S");  // sequence
+        public static final RelKind v = new RelKind("v");  // view
+        public static final RelKind m = new RelKind("m");  // materialized view
+        public static final RelKind c = new RelKind("c");  // composite type
+        public static final RelKind t = new RelKind("t");  // TOAST table
+        public static final RelKind f = new RelKind("f");  // = foreign table
+        public static final RelKind p = new RelKind("p");  // partitionedtable
         // Redshift
-        e,
-        s,
+        public static final RelKind e = new RelKind("e");
+        public static final RelKind s = new RelKind("s");;
+
+        private final String code;
+
+        public RelKind(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        static RelKind valueOf(String code) {
+            try {
+                return (RelKind) RelKind.class.getField(code).get(null);
+            } catch (Throwable e1) {
+                return new RelKind(code);
+            }
+        }
     }
 
     @NotNull

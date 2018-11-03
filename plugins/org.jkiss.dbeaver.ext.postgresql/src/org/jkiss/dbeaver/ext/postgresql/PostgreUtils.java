@@ -200,7 +200,27 @@ public class PostgreUtils {
             }
             return result;
         } else if (pgVector instanceof Number) {
-            return new int[] {((Number) pgVector).intValue()};
+            return new int[]{((Number) pgVector).intValue()};
+        } else if (pgVector instanceof java.sql.Array) {
+            try {
+                Object array = ((java.sql.Array) pgVector).getArray();
+                if (array == null) {
+                    return null;
+                }
+                int length = Array.getLength(array);
+                int[] result = new int[length];
+                for (int i = 0; i < length; i++) {
+                    Object item = Array.get(array, i);
+                    if (item instanceof Number) {
+                        result[i] = ((Number) item).intValue();
+                    } else if (item != null) {
+                        throw new IllegalArgumentException("Bad array item type: " + item.getClass().getName());
+                    }
+                }
+                return result;
+            } catch (SQLException e) {
+                throw new IllegalArgumentException("Error reading array value: " + pgVector);
+            }
         } else {
             throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }

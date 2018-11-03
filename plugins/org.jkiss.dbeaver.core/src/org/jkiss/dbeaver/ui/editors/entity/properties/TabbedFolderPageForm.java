@@ -393,6 +393,10 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 prop,
                 propertyValue,
                 !editable);
+            String propDescription = prop.getDescription();
+            if (!CommonUtils.isEmpty(propDescription)) {
+                editControl.setToolTipText(propDescription);
+            }
             //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
             GridData gd = (GridData) editControl.getLayoutData();
             if (gd == null ) {

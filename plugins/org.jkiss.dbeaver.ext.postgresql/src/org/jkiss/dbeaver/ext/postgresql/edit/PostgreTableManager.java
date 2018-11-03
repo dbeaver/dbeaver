@@ -178,7 +178,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
                 log.error(e);
             }
         }
-        tableBase.getDataSource().getServerType().appendTableModifiers(monitor, tableBase, ddl);
+        tableBase.appendTableModifiers(monitor, ddl);
     }
 
     @Override

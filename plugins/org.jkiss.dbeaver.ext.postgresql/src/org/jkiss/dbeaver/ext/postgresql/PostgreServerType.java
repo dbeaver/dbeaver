@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.*;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum.PostgreServerGreenplum;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick;
 
