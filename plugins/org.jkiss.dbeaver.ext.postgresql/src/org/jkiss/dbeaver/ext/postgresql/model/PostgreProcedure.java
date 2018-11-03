@@ -390,7 +390,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (!CommonUtils.isEmpty(functionBody)) {
             decl.append("\t").append(functionBody).append(lineSeparator);
         }
-        decl.append("$function$");
+        decl.append("$function$").append(lineSeparator);
 
         return decl.toString();
     }
