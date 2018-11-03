@@ -1480,7 +1480,7 @@ public class ResultSetViewer extends Viewer
         //int newSort;
         if (constraint.getOrderPosition() == 0) {
             if (ResultSetUtils.isServerSideFiltering(this) && supportsDataFilter()) {
-                if (ConfirmationDialog.showConfirmDialogEx(
+                if (ConfirmationDialog.showConfirmDialogNoToggle(
                     viewerPanel.getShell(),
                     DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
