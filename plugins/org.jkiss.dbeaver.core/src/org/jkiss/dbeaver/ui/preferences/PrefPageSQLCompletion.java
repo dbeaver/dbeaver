@@ -48,6 +48,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Button csMatchContains;
     private Button csUseGlobalSearch;
     private Button csShowColumnProcedures;
+    private Button csShowServerHelpTopics;
 
     // Auto-close
     private Button acSingleQuotesCheck;
@@ -80,6 +81,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS) ||
             store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT) ||
             store.contains(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES) ||
+            store.contains(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS) ||
 
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
@@ -140,6 +142,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csMatchContains = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_match_contains, CoreMessages.pref_page_sql_completion_label_match_contains_tip, false, 2);
             csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_global_search, CoreMessages.pref_page_sql_completion_label_use_global_search_tip, false, 2);
             csShowColumnProcedures = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_show_column_procedures, CoreMessages.pref_page_sql_completion_label_show_column_procedures_tip, false, 2);
+            csShowServerHelpTopics = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_show_server_help_topics, CoreMessages.pref_page_sql_completion_label_show_server_help_topics_tip, false, 2);
         }
 
         Composite autoFormatPanel = new Composite(composite, SWT.NONE);
@@ -190,6 +193,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csMatchContains.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS));
             csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
             csShowColumnProcedures.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES));
+            csShowServerHelpTopics.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
 
             acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
             acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
@@ -219,6 +223,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS, csMatchContains.getSelection());
             store.setValue(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, csUseGlobalSearch.getSelection());
             store.setValue(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES, csShowColumnProcedures.getSelection());
+            store.setValue(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS, csShowServerHelpTopics.getSelection());
 
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
@@ -249,6 +254,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
         store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
         store.setToDefault(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES);
+        store.setToDefault(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS);
 
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);

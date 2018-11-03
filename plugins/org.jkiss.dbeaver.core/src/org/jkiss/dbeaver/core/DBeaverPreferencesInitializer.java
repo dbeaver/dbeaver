@@ -144,6 +144,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS, false);
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, true);

@@ -1123,6 +1123,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_completion_label_use_global_search_tip;
 	public static String pref_page_sql_completion_label_show_column_procedures;
 	public static String pref_page_sql_completion_label_show_column_procedures_tip;
+	public static String pref_page_sql_completion_label_show_server_help_topics;
+	public static String pref_page_sql_completion_label_show_server_help_topics_tip;
 	public static String pref_page_sql_completion_group_folding;
 	public static String pref_page_sql_completion_group_misc;
 	public static String pref_page_sql_completion_label_folding_enabled;
