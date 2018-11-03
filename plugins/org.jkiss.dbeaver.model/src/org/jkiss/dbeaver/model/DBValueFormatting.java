@@ -277,24 +277,24 @@ public final class DBValueFormatting {
                 String string = CommonUtils.toHexString(bytes, 0, length);
                 return bytes.length > 2000 ? string + "..." : string;
             } else {
-                StringBuilder str = new StringBuilder("[");
+                StringBuilder str = new StringBuilder("{");
                 int length = Array.getLength(value);
                 for (int i = 0; i < length; i++) {
-                    if (i > 0) str.append(",");
+                    if (i > 0) str.append(", ");
                     str.append(getDefaultValueDisplayString(Array.get(value, i), format));
                 }
-                str.append("]");
+                str.append("}");
                 return str.toString();
             }
         } else if (value instanceof Collection) {
-            StringBuilder str = new StringBuilder("[");
+            StringBuilder str = new StringBuilder("{");
             boolean first = true;
             for (Object item : (Collection)value) {
-                if (!first) str.append(",");
+                if (!first) str.append(", ");
                 first = false;
                 str.append(getDefaultValueDisplayString(item, format));
             }
-            str.append("]");
+            str.append("}");
             return str.toString();
         }
 
