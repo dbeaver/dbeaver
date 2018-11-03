@@ -311,7 +311,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         if (EditorUtils.isWriteEmbeddedBinding()) {
             // Patch connection reference
-            embedDataSourceAssociation();
+            UIUtils.syncExec(this::embedDataSourceAssociation);
         }
 
         return true;
