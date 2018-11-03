@@ -158,7 +158,7 @@ public class UIUtils {
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
         Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+        label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
         new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
     }
 
@@ -785,6 +785,15 @@ public class UIUtils {
         gd.horizontalSpan = hSpan;
         gd.verticalIndent = vIndent;
         horizontalLine.setLayoutData(gd);
+        return horizontalLine;
+    }
+
+    public static Label createVerticalLine(Composite parent) {
+        Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.VERTICAL);
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gd = new GridData(GridData.FILL, GridData.FILL, false, true, 1, 1);
+            horizontalLine.setLayoutData(gd);
+        }
         return horizontalLine;
     }
 

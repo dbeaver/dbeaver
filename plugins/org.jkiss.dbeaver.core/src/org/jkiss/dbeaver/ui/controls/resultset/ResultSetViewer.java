@@ -72,6 +72,7 @@ import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
@@ -1146,7 +1147,7 @@ public class ResultSetViewer extends Viewer
         }
         {
             ToolBarManager navToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            navToolbar.add(new Separator());
+            navToolbar.add(new ToolbarSeparatorContribution(true));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
@@ -1160,7 +1161,7 @@ public class ResultSetViewer extends Viewer
         }
         {
             ToolBarManager configToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            configToolbar.add(new Separator());
+            configToolbar.add(new ToolbarSeparatorContribution(true));
             {
                 //configToolbar.add(new ToggleModeAction());
                 ActionContributionItem item = new ActionContributionItem(new ToggleModeAction());
@@ -1178,9 +1179,8 @@ public class ResultSetViewer extends Viewer
                 ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
                 configToolbar.add(new CommandContributionItem(ciParam));
             }
-            configToolbar.add(new Separator());
-            configToolbar.add(new ConfigAction());
-            configToolbar.add(new Separator());
+            configToolbar.add(new ToolbarSeparatorContribution(true));
+
             configToolbar.createControl(statusBar);
             toolbarList.add(configToolbar);
         }
@@ -1195,16 +1195,24 @@ public class ResultSetViewer extends Viewer
         {
             ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             addToolbar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
-            addToolbar.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
+            addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
                 menuService.populateContributionManager(addToolbar, TOOLBAR_CONTRIBUTION_ID);
             }
-            addToolbar.update(true);
             addToolbar.createControl(statusBar);
             toolbarList.add(addToolbar);
         }
 
+        {
+            // Config toolbar
+            ToolBarManager configToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            configToolbar.add(new ToolbarSeparatorContribution(true));
+            configToolbar.add(new ConfigAction());
+            configToolbar.update(true);
+            configToolbar.createControl(statusBar);
+            toolbarList.add(configToolbar);
+        }
         {
             final int fontHeight = UIUtils.getFontHeight(statusBar);
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
