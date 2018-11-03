@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -52,6 +53,9 @@ public class DataSourceUtils {
     public static final String PARAM_FOLDER = "folder";
     public static final String PARAM_AUTO_COMMIT = "autoCommit";
 
+    public static final String PREFIX_HANDLER = "handler.";
+    public static final String PREFIX_PROP = "prop.";
+
     private static final Log log = Log.getLog(DataSourceUtils.class);
 
     public static DBPDataSourceContainer getDataSourceBySpec(
@@ -65,6 +69,7 @@ public class DataSourceUtils {
         boolean showSystemObjects = false, showUtilityObjects = false, savePassword = true;
         Boolean autoCommit = null;
         Map<String, String> conProperties = new HashMap<>();
+        Map<String, Map<String, String>> handlerProps = new HashMap<>();
         DBPDataSourceFolder folder = null;
         String dsId = null, dsName = null;
 
@@ -130,9 +135,22 @@ public class DataSourceUtils {
                     break;
                 default:
                     boolean handled = false;
-                    if (paramName.length() > 5 && paramName.startsWith("prop.")) {
-                        paramName = paramName.substring(5);
+                    if (paramName.length() > PREFIX_PROP.length() && paramName.startsWith(PREFIX_PROP)) {
+                        paramName = paramName.substring(PREFIX_PROP.length());
                         conProperties.put(paramName, paramValue);
+                        handled = true;
+                    } else if (paramName.length() > PREFIX_HANDLER.length() && paramName.startsWith(PREFIX_HANDLER)) {
+                        // network handler prop
+                        paramName = paramName.substring(PREFIX_HANDLER.length());
+                        divPos = paramName.indexOf('.');
+                        if (divPos == -1) {
+                            log.debug("Wrong handler parameter: '" + paramName + "'");
+                            continue;
+                        }
+                        String handlerId = paramName.substring(0, divPos);
+                        paramName = paramName.substring(divPos + 1);
+                        Map<String, String> handlerPopMap = handlerProps.computeIfAbsent(handlerId, k -> new HashMap<>());
+                        handlerPopMap.put(paramName, paramValue);
                         handled = true;
                     } else if (parameterHandler != null) {
                         handled = parameterHandler.setParameter(paramName, paramValue);
@@ -160,7 +178,7 @@ public class DataSourceUtils {
         }
 
         if (searchByParameters) {
-            // Try to find by parameters
+            // Try to find by parameters / handler props
             if (url != null) {
                 for (DBPDataSourceContainer ds : dsRegistry.getDataSources()) {
                     if (url.equals(ds.getConnectionConfiguration().getUrl())) {
@@ -180,7 +198,40 @@ public class DataSourceUtils {
                     {
                         continue;
                     }
+                    boolean matched = true;
+                    if (!conProperties.isEmpty()) {
+                        for (Map.Entry<String, String> prop : conProperties.entrySet()) {
+                            if (!CommonUtils.equalObjects(cfg.getProperty(prop.getKey()), prop.getValue())) {
+                                matched = false;
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            continue;
+                        }
+                    }
+                    if (!handlerProps.isEmpty()) {
+                        for (Map.Entry<String, Map<String, String>> handlerProp : handlerProps.entrySet()) {
+                            DBWHandlerConfiguration handler = cfg.getDeclaredHandler(handlerProp.getKey());
+                            if (handler == null) {
+                                matched = false;
+                                break;
+                            }
+                            for (Map.Entry<String, String> prop : handlerProp.getValue().entrySet()) {
+                                if (!CommonUtils.equalObjects(handler.getProperties().get(prop.getKey()), prop.getValue())) {
+                                    matched = false;
+                                    break;
+                                }
 
+                            }
+                            if (!matched) {
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            continue;
+                        }
+                    }
                     return ds;
                 }
             }

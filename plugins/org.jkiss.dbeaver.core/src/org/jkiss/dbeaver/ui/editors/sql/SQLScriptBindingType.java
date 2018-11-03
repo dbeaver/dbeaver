@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -57,7 +60,7 @@ public enum SQLScriptBindingType {
         @Override
         public void appendSpec(DBPDataSourceContainer dataSource, StringBuilder spec) {
             DBPConnectionConfiguration cfg = dataSource.getConnectionConfiguration();
-            Map<String,String> params = new HashMap<>();
+            Map<String,String> params = new LinkedHashMap<>();
             if (!CommonUtils.isEmpty(cfg.getServerName())) {
                 params.put(DataSourceUtils.PARAM_SERVER, cfg.getServerName());
             }
@@ -72,6 +75,17 @@ public enum SQLScriptBindingType {
             }
             if (!CommonUtils.isEmpty(cfg.getUserName())) {
                 params.put(DataSourceUtils.PARAM_USER, cfg.getUserName());
+            }
+            for (DBWHandlerConfiguration handler : cfg.getDeclaredHandlers()) {
+                if (!handler.isEnabled()) {
+                    continue;
+                }
+                for (Map.Entry<String, String> prop : handler.getProperties().entrySet()) {
+                    String propName = prop.getKey();
+                    if (propName.contains(DataSourceUtils.PARAM_SERVER) || propName.contains(DataSourceUtils.PARAM_HOST) || propName.contains(DataSourceUtils.PARAM_PORT)) {
+                        params.put("handler." + handler.getId() + "." + propName, prop.getValue());
+                    }
+                }
             }
             boolean first = true;
             for (Map.Entry<String, String> param : params.entrySet()) {
