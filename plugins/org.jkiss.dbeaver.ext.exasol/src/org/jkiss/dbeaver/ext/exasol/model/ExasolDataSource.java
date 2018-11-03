@@ -595,7 +595,7 @@ public class ExasolDataSource extends JDBCDataSource
 		{
 			//only add tables
 			if (grant.getType() == ExasolTableObjectType.TABLE)
-				grants.add(new ExasolTableGrant(monitor, grant));
+				grants.add(new ExasolTableGrant(grant));
 		}
 		return grants;
 	}

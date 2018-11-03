@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -93,12 +92,12 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(PostgreTableBase owner, DBECommandAbstract<PostgreTableForeignKey> command, Map<String, Object> options) {
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableForeignKey> command, Map<String, Object> options) {
         PostgreTableForeignKey fk = command.getObject();
         if (fk.isPersisted()) {
             try {
                 String constrDDL = fk.getObjectDefinitionText(
-                    new VoidProgressMonitor(),
+                    monitor,
                     Collections.singletonMap(DBPScriptObject.OPTION_EMBEDDED_SOURCE, true));
                 if (!CommonUtils.isEmpty(constrDDL)) {
                     return new StringBuilder(constrDDL);
@@ -107,7 +106,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
                 log.warn("Can't extract FK DDL", e);
             }
         }
-        return super.getNestedDeclaration(owner, command, options);
+        return super.getNestedDeclaration(monitor, owner, command, options);
     }
 
     @Override

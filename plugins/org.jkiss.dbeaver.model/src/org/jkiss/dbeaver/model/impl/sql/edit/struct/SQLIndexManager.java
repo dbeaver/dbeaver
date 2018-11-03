@@ -76,7 +76,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
                 decl.append(DBUtils.getQuotedIdentifier(indexColumn));
-                appendIndexColumnModifiers(decl, indexColumn);
+                appendIndexColumnModifiers(monitor, decl, indexColumn);
             }
         } catch (DBException e) {
             log.error(e);
@@ -98,7 +98,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         }
     }
 
-    protected void appendIndexColumnModifiers(StringBuilder decl, DBSTableIndexColumn indexColumn) {
+    protected void appendIndexColumnModifiers(DBRProgressMonitor monitor, StringBuilder decl, DBSTableIndexColumn indexColumn) {
         if (!indexColumn.isAscending()) {
             decl.append(" DESC"); //$NON-NLS-1$
         }

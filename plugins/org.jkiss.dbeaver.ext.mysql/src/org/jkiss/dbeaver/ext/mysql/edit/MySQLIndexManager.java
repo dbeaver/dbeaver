@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * MySQL index manager
@@ -117,7 +116,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
         }
     }
 
-    protected void appendIndexColumnModifiers(StringBuilder decl, DBSTableIndexColumn indexColumn) {
+    protected void appendIndexColumnModifiers(DBRProgressMonitor monitor, StringBuilder decl, DBSTableIndexColumn indexColumn) {
         final String subPart = ((MySQLTableIndexColumn) indexColumn).getSubPart();
         if (!CommonUtils.isEmpty(subPart)) {
             decl.append(" (").append(subPart).append(")");

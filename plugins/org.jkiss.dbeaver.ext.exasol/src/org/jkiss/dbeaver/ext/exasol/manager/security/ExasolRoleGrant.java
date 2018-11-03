@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
@@ -44,9 +44,9 @@ public class ExasolRoleGrant implements DBAPrivilege  {
 	}
 	
 	@Property(viewable = true, order = 10)
-	public ExasolRole getRole() throws DBException
+	public ExasolRole getRole(DBRProgressMonitor monitor) throws DBException
 	{
-		return dataSource.getRole(new VoidProgressMonitor(), role);
+		return dataSource.getRole(monitor, role);
 	}
 	
 	@Property(viewable = true, order = 20)

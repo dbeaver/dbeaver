@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -96,12 +95,12 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(PostgreTableBase owner, DBECommandAbstract<PostgreTableConstraintBase> command, Map<String, Object> options) {
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableConstraintBase> command, Map<String, Object> options) {
         PostgreTableConstraintBase constr = command.getObject();
         if (constr.isPersisted()) {
             try {
                 String constrDDL = constr.getObjectDefinitionText(
-                    new VoidProgressMonitor(),
+                    monitor,
                     Collections.singletonMap(DBPScriptObject.OPTION_EMBEDDED_SOURCE, true));
                 if (!CommonUtils.isEmpty(constrDDL)) {
                     return new StringBuilder(constrDDL);
@@ -110,7 +109,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
                 log.warn("Can't extract constraint DDL", e);
             }
         }
-        return super.getNestedDeclaration(owner, command, options);
+        return super.getNestedDeclaration(monitor, owner, command, options);
     }
 
     @NotNull

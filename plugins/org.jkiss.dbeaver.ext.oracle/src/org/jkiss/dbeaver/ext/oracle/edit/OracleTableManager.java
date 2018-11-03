@@ -75,7 +75,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
-            appendTableModifiers(command.getObject(), command, query, true);
+            appendTableModifiers(monitor, command.getObject(), command, query, true);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
     }
@@ -91,7 +91,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void appendTableModifiers(OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
+    protected void appendTableModifiers(DBRProgressMonitor monitor, OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
         // ALTER
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
@@ -107,7 +107,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(

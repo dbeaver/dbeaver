@@ -1,9 +1,5 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
@@ -21,9 +17,12 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class ExasolForeignKeyManager
     extends SQLForeignKeyManager<ExasolTableForeignKey, ExasolTable> implements DBEObjectRenamer<ExasolTableForeignKey> {
@@ -84,7 +83,7 @@ public class ExasolForeignKeyManager
         final ExasolTableForeignKey key = command.getObject();
 
         try {
-            actions.add(new SQLDatabasePersistAction("Create Foreign Key", ExasolUtils.getFKDdl(key, new VoidProgressMonitor())));
+            actions.add(new SQLDatabasePersistAction("Create Foreign Key", ExasolUtils.getFKDdl(key, monitor)));
         } catch (DBException e) {
             log.error("Could not created DDL for Exasol FK: " + key.getFullyQualifiedName(DBPEvaluationContext.DDL));
             log.error(e.getMessage());
@@ -95,7 +94,7 @@ public class ExasolForeignKeyManager
 
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions,
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectRenameCommand command, Map<String, Object> options) {
         final ExasolTableForeignKey key = command.getObject();
 

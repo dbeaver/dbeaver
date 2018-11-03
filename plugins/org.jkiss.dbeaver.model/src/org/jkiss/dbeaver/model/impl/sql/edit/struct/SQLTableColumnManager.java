@@ -46,10 +46,10 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     public static final String QUOTE = "'";
 
     protected interface ColumnModifier<OBJECT_TYPE extends DBPObject> {
-        void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command);
+        void appendModifier(DBRProgressMonitor monitor, OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command);
     }
 
-    protected final ColumnModifier<OBJECT_TYPE> DataTypeModifier = (column, sql, command) -> {
+    protected final ColumnModifier<OBJECT_TYPE> DataTypeModifier = (monitor, column, sql, command) -> {
         final String typeName = column.getTypeName();
         DBPDataKind dataKind = column.getDataKind();
         final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
@@ -65,26 +65,26 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         }
     };
 
-    protected final ColumnModifier<OBJECT_TYPE> NotNullModifier = (column, sql, command) -> {
+    protected final ColumnModifier<OBJECT_TYPE> NotNullModifier = (monitor, column, sql, command) -> {
         if (column.isRequired()) {
             sql.append(" NOT NULL"); //$NON-NLS-1$
         }
     };
 
-    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifier = (column, sql, command) ->
+    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifier = (monitor, column, sql, command) ->
         sql.append(column.isRequired() ? " NOT NULL" : " NULL");
 
-    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = (column, sql, command) -> {
+    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = (monitor, column, sql, command) -> {
         if (command instanceof DBECommandComposite) {
             if (((DBECommandComposite) command).getProperty("required") == null) {
                 // Do not set NULL/NOT NULL if it wasn't chaged
                 return;
             }
         }
-        NullNotNullModifier.appendModifier(column, sql, command);
+        NullNotNullModifier.appendModifier(monitor, column, sql, command);
     };
 
-    protected final ColumnModifier<OBJECT_TYPE> DefaultModifier = (column, sql, command) -> {
+    protected final ColumnModifier<OBJECT_TYPE> DefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = CommonUtils.toString(column.getDefaultValue());
         if (!CommonUtils.isEmpty(defaultValue)) {
             DBPDataKind dataKind = column.getDataKind();
@@ -155,7 +155,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD "  + getNestedDeclaration(table, command, options)) );
+                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD "  + getNestedDeclaration(monitor, table, command, options)) );
     }
 
     @Override
@@ -196,7 +196,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     }
 
     @Override
-    protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
+    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
     {
         OBJECT_TYPE column = command.getObject();
 
@@ -210,7 +210,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName);
         for (ColumnModifier<OBJECT_TYPE> modifier : getSupportedModifiers(column, options)) {
-            modifier.appendModifier(column, decl, command);
+            modifier.appendModifier(monitor, column, decl, command);
         }
 
         return decl;

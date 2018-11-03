@@ -45,19 +45,19 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     implements DBEObjectRenamer<GenericTableColumn>, DBEObjectReorderer<GenericTableColumn>
 {
 
-    protected final ColumnModifier<GenericTableColumn> FBDefaultModifier = (column, sql, command) -> {
+    protected final ColumnModifier<GenericTableColumn> FBDefaultModifier = (monitor, column, sql, command) -> {
         if (CommonUtils.isEmpty(command.getObject().getDefaultValue())) {
             sql.append(" DROP DEFAULT");
         } else {
             sql.append(" SET DEFAULT ");
-            DefaultModifier.appendModifier(column, sql, command);
+            DefaultModifier.appendModifier(monitor, column, sql, command);
         }
     };
 
     @Override
-    public StringBuilder getNestedDeclaration(GenericTable owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTable owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
     {
-        StringBuilder decl = super.getNestedDeclaration(owner, command, options);
+        StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         final GenericTableColumn column = command.getObject();
         if (column.isAutoIncrement()) {
             final String autoIncrementClause = column.getDataSource().getMetaModel().getAutoIncrementClause(column);
@@ -102,7 +102,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         final GenericTableColumn column = command.getObject();
 

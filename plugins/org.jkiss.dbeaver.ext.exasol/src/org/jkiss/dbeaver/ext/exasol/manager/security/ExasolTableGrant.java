@@ -21,20 +21,19 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public class ExasolTableGrant extends ExasolBaseObjectGrant {
 
-	public ExasolTableGrant(DBRProgressMonitor monitor,ExasolBaseObjectGrant grant) throws DBException
+	public ExasolTableGrant(ExasolBaseObjectGrant grant) throws DBException
 	{
 		super(grant);
 	}
 	
 	
     @Property(viewable = true, order = 10)
-	public ExasolTable getTable() throws DBException
+	public ExasolTable getTable(DBRProgressMonitor monitor) throws DBException
 	{
-		return super.getSchema().getTable(new VoidProgressMonitor(), super.getObjectName());
+		return super.getSchema().getTable(monitor, super.getObjectName());
 	}
 
 
