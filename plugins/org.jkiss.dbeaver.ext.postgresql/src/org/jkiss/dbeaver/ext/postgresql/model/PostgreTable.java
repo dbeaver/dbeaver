@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -175,11 +176,12 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
     }
 
+    @Nullable
     @Property(viewable = false, order = 30)
     public List<PostgreTableBase> getSuperTables(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSuperInheritance(monitor);
         if (CommonUtils.isEmpty(si)) {
-            return Collections.emptyList();
+            return null;
         }
         List<PostgreTableBase> result = new ArrayList<>(si.size());
         for (int i1 = 0; i1 < si.size(); i1++) {
@@ -191,11 +193,12 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     /**
      * Sub tables = child tables
      */
+    @Nullable
     @Property(viewable = false, order = 31)
     public List<PostgreTableBase> getSubTables(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSubInheritance(monitor);
         if (CommonUtils.isEmpty(si)) {
-            return Collections.emptyList();
+            return null;
         }
         List<PostgreTableBase> result = new ArrayList<>(si.size());
         for (int i1 = 0; i1 < si.size(); i1++) {
@@ -250,7 +253,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
                 superTables = Collections.emptyList();
             }
         }
-        return superTables;
+        return superTables == null || superTables.isEmpty() ? null : superTables;
     }
 
     public boolean hasSubClasses() {
@@ -303,14 +306,15 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
             }
             DBUtils.orderObjects(subTables);
         }
-        return subTables;
+        return subTables == null || subTables.isEmpty() ? null : subTables;
     }
 
+    @Nullable
     @Association
     public Collection<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSubInheritance(monitor);
         if (CommonUtils.isEmpty(si)) {
-            return Collections.emptyList();
+            return null;
         }
         List<PostgreTableBase> result = new ArrayList<>(si.size());
         for (int i1 = 0; i1 < si.size(); i1++) {
