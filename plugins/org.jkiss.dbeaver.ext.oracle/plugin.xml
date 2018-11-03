@@ -278,7 +278,8 @@
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
-                    description="Oracle thin driver. Doesn't require Oracle client.">
+                    description="Oracle thin driver. Doesn't require Oracle client."
+                    promoted="true">
                     <replace provider="generic" driver="oracle"/>
                     <replace provider="oracle" driver="oracle"/>
                     <replace provider="oracle" driver="oracle_oci"/>

@@ -450,7 +450,8 @@
                     class="sun.jdbc.odbc.JdbcOdbcDriver"
                     sampleURL="jdbc:odbc:{database}"
                     webURL="http://sun.com"
-                    description="ODBC bridge driver">
+                    description="ODBC bridge driver"
+                    promoted="true">
                     <os name="win32"/>
                     <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar" bundle="!drivers.odbc"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/odbc/x86/JdbcOdbc.dll" bundle="!drivers.odbc"/>
@@ -653,7 +654,8 @@
                     propertiesURL="https://www.sqlite.org/pragma.html"
                     embedded="true"
                     anonymous="true"
-                    description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
+                    description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)"
+                    promoted="true">
                     <replace provider="generic" driver="sqlite_zentus"/>
                     <replace provider="generic" driver="sqlite_xerial"/>
                     <replace provider="generic" driver="sqlite_ch_werner"/>
