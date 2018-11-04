@@ -555,4 +555,12 @@ public class CommonUtils {
     public static String fixedLengthString(String string, int length) {
         return String.format("%1$"+length+ "s", string);
     }
+
+    public static boolean startsWithIgnoreCase(@NotNull String str, @NotNull String startPart) {
+        if (isEmpty(str) || isEmpty(startPart)) {
+            return false;
+        }
+        return str.regionMatches(true, 0, startPart, 0, startPart.length());
+    }
+
 }

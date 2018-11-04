@@ -497,10 +497,18 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     }
                     combinedMatch.append(DBUtils.getQuotedIdentifier(child));
                 } else {
-                    int score = CommonUtils.isEmpty(startPart) ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
-                    if (score > 0) {
-                        matchedObjects.add(child);
-                        scoredMatches.put(child.getName(), score);
+                    if (dataSource != null && !dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS)) {
+                        // startsWith
+                        if (CommonUtils.isEmpty(startPart) || CommonUtils.startsWithIgnoreCase(child.getName(), startPart)) {
+                            matchedObjects.add(child);
+                        }
+                    } else {
+                        // Use fuzzy search for contains
+                        int score = CommonUtils.isEmpty(startPart) ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
+                        if (score > 0) {
+                            matchedObjects.add(child);
+                            scoredMatches.put(child.getName(), score);
+                        }
                     }
                 }
             }
@@ -514,7 +522,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     DBPKeywordType.OTHER,
                     "All objects"));
             } else if (!matchedObjects.isEmpty()) {
-                if (startPart == null) {
+                if (startPart == null || scoredMatches.isEmpty()) {
                     matchedObjects.sort(DBUtils.nameComparatorIgnoreCase());
                 } else {
                     matchedObjects.sort((o1, o2) -> {
