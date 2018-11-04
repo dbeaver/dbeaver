@@ -82,4 +82,6 @@ public class MockDataMessages extends NLS {
     public static String tools_mockdata_wizard_log_error_inserting;
     public static String tools_mockdata_wizard_log_error_generating;
 
+    public static String tools_mockdata_attribute_generator_skip;
+
 }
