@@ -57,6 +57,7 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
     private List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private List<Preset> presets = new ArrayList<>();
     private List<String> tags = new ArrayList<>();
+    private String[] replaces;
 
     public MockGeneratorDescriptor(IConfigurationElement config)
     {
@@ -66,6 +67,10 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         this.link = config.getAttribute(RegistryConstants.ATTR_LINK);
         this.url = config.getAttribute(RegistryConstants.ATTR_URL);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        String replacesAttr = config.getAttribute("replaces");
+        if (!CommonUtils.isEmpty(replacesAttr)) {
+            this.replaces = replacesAttr.split("\\.");
+        }
 
         if (!ZERO_GENERATOR_ID.equals(this.getId())) {
             properties.add(new PropertyDescriptor(
@@ -101,6 +106,10 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         if (tags != null) {
             this.tags = tags;
         }
+    }
+
+    public String[] getReplaces() {
+        return replaces;
     }
 
     public MockGeneratorDescriptor(IConfigurationElement config, Preset preset) {

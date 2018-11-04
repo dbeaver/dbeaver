@@ -25,8 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MockGeneratorRegistry
 {
@@ -55,6 +54,8 @@ public class MockGeneratorRegistry
 
     private void loadExtensions(IExtensionRegistry registry)
     {
+        Set<String> replacedSet = new HashSet<>();
+
         IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(MockGeneratorDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extConfigs) {
             // Load functions
@@ -62,11 +63,23 @@ public class MockGeneratorRegistry
                 MockGeneratorDescriptor generatorDescriptor = new MockGeneratorDescriptor(ext);
                 this.generators.add(generatorDescriptor);
 
+                String[] replaces = generatorDescriptor.getReplaces();
+                if (replaces != null) {
+                    replacedSet.addAll(Arrays.asList(replaces));
+                }
+
                 if (!CommonUtils.isEmpty(generatorDescriptor.getPresets())) {
                     for (MockGeneratorDescriptor.Preset preset : generatorDescriptor.getPresets()) {
                         this.generators.add(new MockGeneratorDescriptor(ext, preset));
                     }
                 }
+            }
+        }
+
+        for (String replaced : replacedSet) {
+            MockGeneratorDescriptor generator = getGenerator(replaced);
+            if (generator != null) {
+                this.generators.remove(generator);
             }
         }
     }

@@ -34,7 +34,7 @@ public class NumericRandomGenerator extends AbstractMockValueGenerator {
             Integer scale = attribute.getScale();
             Integer precision = attribute.getPrecision();
 
-            return MockDataUtils.generateNumeric(precision, scale, null, null);
+            return MockDataUtils.generateNumeric(precision, scale, 0.0, (double) Short.MAX_VALUE);
         }
     }
 }
