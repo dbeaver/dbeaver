@@ -138,7 +138,7 @@
             <type kind="DATETIME"/>
 
             <propertyGroup label="General">
-                <property id="value" label="%generator.date.constant.property.value.label" type="string"  description="%generator.date.constant.property.value.description"/>
+                <property id="value" label="%generator.date.constant.property.value.label" type="string" defaultValue="01-01-2000"  description="%generator.date.constant.property.value.description"/>
             </propertyGroup>
         </generator>
 
@@ -150,8 +150,8 @@
             <type kind="DATETIME"/>
 
             <propertyGroup label="General">
-                <property id="startDate" label="%generator.date.random.property.start.label" type="string" description="%generator.date.random.property.start.description"/>
-                <property id="endDate" label="%generator.date.random.property.end.label" type="string" description="%generator.date.random.property.end.description"/>
+                <property id="startDate" label="%generator.date.random.property.start.label" type="string" defaultValue="01-01-1980" description="%generator.date.random.property.start.description"/>
+                <property id="endDate" label="%generator.date.random.property.end.label" type="string" defaultValue="01-01-2020" description="%generator.date.random.property.end.description"/>
             </propertyGroup>
         </generator>
 

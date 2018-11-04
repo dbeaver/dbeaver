@@ -79,14 +79,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     @Override
     public boolean canFinish() {
-        try {
-            Collection<? extends DBSEntityAttribute> attributes =
-                    mockDataSettings.getEntity().getAttributes(mockDataSettings.getMonitor());
-            return super.canFinish() && !CommonUtils.isEmpty(DBUtils.getRealAttributes(attributes));
-        } catch (DBException ex) {
-            log.error("Error accessing DB entity " + mockDataSettings.getEntity().getName(), ex);
-            return false;
-        }
+        return super.canFinish() && !CommonUtils.isEmpty(mockDataSettings.getAttributeGenerators());
     }
 
     @Override
@@ -205,19 +198,20 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 // build and init the generators
                 generators.clear();
                 DBSEntity dbsEntity = (DBSEntity) dataManipulator;
-                Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
-                for (DBSAttributeBase attribute : attributes) {
-                    MockGeneratorDescriptor attrGenerator = mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGenerator();
+                List<DBSAttributeBase> attributes = new ArrayList<>();
+                for (MockDataSettings.AttributeGeneratorProperties attributeProps : mockDataSettings.getAttributeGenerators().values()) {
+                    MockGeneratorDescriptor attrGenerator = attributeProps.getSelectedGenerator();
                     if (attrGenerator != null) {
-                        MockValueGenerator generator = attrGenerator.createGenerator();
-
+                        MockValueGenerator generatorInstance = attrGenerator.createGenerator();
+                        DBSAttributeBase attribute = attributeProps.getAttribute();
                         MockDataSettings.AttributeGeneratorProperties generatorPropertySource = this.mockDataSettings.getAttributeGeneratorProperties(attribute);
                         PropertySourceCustom generatorProperties = generatorPropertySource.getGeneratorProperties();
                         if (generatorProperties != null) {
                             Map<Object, Object> propValues = generatorProperties.getPropertiesWithDefaults();
-                            generator.init(dataManipulator, attribute, propValues);
-                            generators.put(attribute.getName(), generator);
+                            generatorInstance.init(dataManipulator, attribute, propValues);
+                            generators.put(attribute.getName(), generatorInstance);
                         }
+                        attributes.add(attribute);
                     }
                 }
 

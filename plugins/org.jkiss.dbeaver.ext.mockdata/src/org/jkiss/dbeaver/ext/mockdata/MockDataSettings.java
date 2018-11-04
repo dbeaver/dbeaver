@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -204,14 +205,13 @@ public class MockDataSettings {
                 PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorProperties();
                 IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
                 if (generatorPropertySource != null) {
-                    Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
-                    for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
-                        String key = (String) propEntry.getKey();
+                    for (DBPPropertyDescriptor prop : generatorPropertySource.getPropertyDescriptors2()) {
+                        String key = (String) prop.getId();
                         Object savedValue = UIUtils.getSectionValueWithType(generatorSection, key);
                         if (key.equals("nulls") && savedValue instanceof Boolean) {
                             continue; // skip incorrect type TODO can be removed in the future
                         }
-                        generatorPropertySource.setPropertyValue(voidProgressMonitor, propEntry.getKey(), savedValue);
+                        generatorPropertySource.setPropertyValue(voidProgressMonitor, key, savedValue);
                     }
                 }
             } else {
