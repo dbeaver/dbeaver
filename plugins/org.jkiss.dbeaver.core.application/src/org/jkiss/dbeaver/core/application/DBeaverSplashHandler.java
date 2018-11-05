@@ -44,7 +44,12 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
         if (instance == null) {
             return null;
         } else {
-            return instance.getBundleProgressMonitor();
+            try {
+                return instance.getBundleProgressMonitor();
+            } catch (Exception e) {
+                e.printStackTrace(System.err);
+                return null;
+            }
         }
     }
 
