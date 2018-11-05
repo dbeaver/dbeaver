@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ext.ui.tipoftheday.TipOfTheDayInitializer"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup" name="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.name" description="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup" class="org.jkiss.dbeaver.ext.ui.tipoftheday.ShowTipOfTheDayHandler"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- Edit menu -->
+        <menuContribution allPopups="false" locationURI="menu:help?after=additions">
+            <command commandId="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup" label="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.name"/>
+        </menuContribution>
+    </extension>
+
+</plugin>

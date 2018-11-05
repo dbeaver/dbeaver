@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -61,7 +62,8 @@ public class EditConnectionWizard extends ConnectionWizard
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
-    private EditShellCommandsDialogPage pageEvents;
+    private ConnectionPageInitialization pageInit;
+    private ConnectionPageShellCommands pageEvents;
     private List<WizardPrefPage> prefPages = new ArrayList<>();
     private PrefPageConnections pageClientSettings;
 
@@ -115,7 +117,9 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public void addPages()
     {
-        DataSourceViewDescriptor view = dataSource.getDriver().getProviderDescriptor().getView(IActionConstants.EDIT_CONNECTION_POINT);
+        DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(
+            dataSource.getDriver().getProviderDescriptor(),
+            IActionConstants.EDIT_CONNECTION_POINT);
         if (view != null) {
             pageSettings = new ConnectionPageSettings(this, view, dataSource);
             addPage(pageSettings);
@@ -127,13 +131,15 @@ public class EditConnectionWizard extends ConnectionWizard
         if (!embedded) {
             pageNetwork = new ConnectionPageNetwork(this);
         }
-        pageEvents = new EditShellCommandsDialogPage(dataSource);
+        pageInit = new ConnectionPageInitialization(dataSource);
+        pageEvents = new ConnectionPageShellCommands(dataSource);
 
         addPage(pageGeneral);
         if (pageSettings != null) {
             if (!embedded) {
                 pageSettings.addSubPage(pageNetwork);
             }
+            pageSettings.addSubPage(pageInit);
             pageSettings.addSubPage(pageEvents);
         }
 
@@ -241,7 +247,7 @@ public class EditConnectionWizard extends ConnectionWizard
     }
 
     private boolean checkLockPassword() {
-        BaseAuthDialog dialog = new BaseAuthDialog(getShell(), CoreMessages.dialog_connection_edit_wizard_lock_pwd_title, true);
+        BaseAuthDialog dialog = new BaseAuthDialog(getShell(), CoreMessages.dialog_connection_edit_wizard_lock_pwd_title, true, false);
         if (dialog.open() == IDialogConstants.OK_ID) {
             final String userPassword = dialog.getUserPassword();
             if (!CommonUtils.isEmpty(userPassword)) {
@@ -287,9 +293,10 @@ public class EditConnectionWizard extends ConnectionWizard
         }
         pageGeneral.saveSettings(dataSource);
         if (isPageActive(pageNetwork)) {
-            pageNetwork.saveConfigurations(dataSource);
+            pageNetwork.saveSettings(dataSource);
         }
-        pageEvents.saveConfigurations(dataSource);
+        pageInit.saveSettings(dataSource);
+        pageEvents.saveSettings(dataSource);
         for (WizardPrefPage prefPage : prefPages) {
             savePageSettings(prefPage);
         }

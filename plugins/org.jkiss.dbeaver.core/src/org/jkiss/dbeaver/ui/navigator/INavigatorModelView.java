@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
  */
 public interface INavigatorModelView
 {
+    String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
+
     DBNNode getRootNode();
     
     @Nullable

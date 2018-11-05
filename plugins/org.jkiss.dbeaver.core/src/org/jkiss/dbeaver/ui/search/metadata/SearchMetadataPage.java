@@ -41,9 +41,8 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -59,6 +58,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_MATCH_INDEX = "search.metadata.match-index"; //$NON-NLS-1$
     private static final String PROP_HISTORY = "search.metadata.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
+    private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
 
     private Table typesTable;
     private Combo searchText;
@@ -128,7 +128,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 @Override
                 public boolean select(Viewer viewer, Object parentElement, Object element)
                 {
-                    if (element instanceof TreeLoadNode) {
+                    if (element instanceof TreeNodeSpecial) {
                         return true;
                     }
                     if (element instanceof DBNNode) {
@@ -266,7 +266,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 monitor.beginTask("Load database nodes", 1);
                 try {
                     monitor.subTask("Load tree state");
-                    sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor));
+                    sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor), DBeaverCore.getGlobalPreferenceStore().getString(PROP_SOURCES));
                 } finally {
                     monitor.done();
                 }
@@ -280,7 +280,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         if (!sourceNodes.isEmpty()) {
             dataSourceTree.getViewer().setSelection(
                 new StructuredSelection(sourceNodes));
-            DBNDataSource node = NavigatorUtils.getDataSourceNode(sourceNodes.get(0));
+            DBNDataSource node = DBNDataSource.getDataSourceNode(sourceNodes.get(0));
             if (node != null) {
                 dataSourceTree.getViewer().reveal(node);
             }
@@ -430,7 +430,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
-        saveTreeState(dataSourceTree);
+        saveTreeState(store, PROP_SOURCES, dataSourceTree);
 
         {
             // Search history
@@ -467,6 +467,21 @@ public class SearchMetadataPage extends AbstractSearchPage {
         }
 
         container.setPerformActionEnabled(enabled);
+    }
+
+    protected static void saveTreeState(DBPPreferenceStore store, String propName, DatabaseNavigatorTree tree)
+    {
+        // Object sources
+        StringBuilder sourcesString = new StringBuilder();
+        Object[] nodes = ((IStructuredSelection)tree.getViewer().getSelection()).toArray();
+        for (Object obj : nodes) {
+            DBNNode node = (DBNNode) obj;
+            if (sourcesString.length() > 0) {
+                sourcesString.append("|"); //$NON-NLS-1$
+            }
+            sourcesString.append(node.getNodeItemPath());
+        }
+        store.setValue(propName, sourcesString.toString());
     }
 
 }

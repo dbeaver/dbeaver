@@ -141,6 +141,9 @@ class ViewerColumnRegistry {
                         try (final XMLBuilder.Element e2 = xml.startElement("item")) {
                             xml.addAttribute("id", entry.getKey());
                             for (ColumnState column : entry.getValue()) {
+                                if (column.width == 0) {
+                                    continue;
+                                }
                                 try (final XMLBuilder.Element e3 = xml.startElement("column")) {
                                     xml.addAttribute("name", column.name);
                                     xml.addAttribute("visible", column.visible);
@@ -182,7 +185,9 @@ class ViewerColumnRegistry {
                         col.visible = CommonUtils.getBoolean(atts.getValue("visible"), true);
                         col.order = CommonUtils.toInt(atts.getValue("order"), 0);
                         col.width = CommonUtils.toInt(atts.getValue("width"), 0);
-                        curColumnState.add(col);
+                        if (col.width > 0) {
+                            curColumnState.add(col);
+                        }
                     }
                     break;
             }

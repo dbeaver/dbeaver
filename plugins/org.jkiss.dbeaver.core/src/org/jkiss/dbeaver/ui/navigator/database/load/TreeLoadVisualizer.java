@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -34,10 +33,10 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
     public static final Object[] EMPTY_ELEMENT_ARRAY = new Object[0];
 
     private DBNNode parent;
-    private TreeLoadNode placeHolder;
+    private TreeNodeSpecial placeHolder;
     private AbstractTreeViewer viewer;
 
-    public TreeLoadVisualizer(AbstractTreeViewer viewer, TreeLoadNode placeHolder, DBNNode parent)
+    public TreeLoadVisualizer(AbstractTreeViewer viewer, TreeNodeSpecial placeHolder, DBNNode parent)
     {
         this.viewer = viewer;
         this.placeHolder = placeHolder;
@@ -73,13 +72,13 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
             viewerControl.setRedraw(false);
 
             {
-                TreeItem item = (TreeItem) viewer.testFindItem(placeHolder);
                 if (children == null) {
                     // Some error occurred. In good case children must be at least an empty array
                     viewer.collapseToLevel(parent, -1);
                 } else if (children.length != 0) {
-                    viewer.add(parent, children);
+                    viewer.refresh(parent);
                 }
+                TreeItem item = (TreeItem) viewer.testFindItem(placeHolder);
                 if (item != null && !item.isDisposed()) {
                     if ((item.getParentItem() == null || !item.getParentItem().isDisposed()) || this.parent instanceof IWorkspaceRoot) {
                         viewer.remove(placeHolder);
@@ -98,8 +97,8 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
     public static Object[] expandChildren(AbstractTreeViewer viewer, TreeLoadService service)
     {
         DBNNode parent = service.getParentNode();
-        TreeLoadNode placeHolder = TreeLoadNode.createPlaceHolder(parent);
-        if (placeHolder != null && TreeLoadNode.canBeginLoading(parent)) {
+        TreeNodeSpecial placeHolder = TreeNodeChildrenLoading.createLoadingPlaceHolder(parent);
+        if (placeHolder != null && TreeNodeChildrenLoading.canBeginLoading(parent)) {
             TreeLoadVisualizer visualizer = new TreeLoadVisualizer(viewer, placeHolder, parent);
             LoadingJob.createService(service, visualizer).schedule();
             return new Object[]{placeHolder};

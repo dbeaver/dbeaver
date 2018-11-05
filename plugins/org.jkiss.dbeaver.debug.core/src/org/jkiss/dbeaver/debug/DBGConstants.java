@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.debug;
 
-import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
+import org.jkiss.dbeaver.runtime.DBMarkers;
 
 public class DBGConstants {
 
@@ -28,8 +28,8 @@ public class DBGConstants {
     public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + ".datasourceSourceContainerType"; //$NON-NLS-1$
     public static final String BREAKPOINT_ID_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + ".databaseLineBreakpointMarker"; //$NON-NLS-1$
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + ".database"; //$NON-NLS-1$
-    public static final String BREAKPOINT_ATTRIBUTE_DATASOURCE_ID = DBeaverIDECore.MARKER_ATTRIBUTE_DATASOURCE_ID;
-    public static final String BREAKPOINT_ATTRIBUTE_NODE_PATH = DBeaverIDECore.MARKER_ATTRIBUTE_NODE_PATH;
+    public static final String BREAKPOINT_ATTRIBUTE_DATASOURCE_ID = DBMarkers.MARKER_ATTRIBUTE_DATASOURCE_ID;
+    public static final String BREAKPOINT_ATTRIBUTE_NODE_PATH = DBMarkers.MARKER_ATTRIBUTE_NODE_PATH;
     public static final String BREAKPOINT_ATTRIBUTE_OBJECT_NAME = BUNDLE_SYMBOLIC_NAME + ".objectName"; //$NON-NLS-1$
 
 }

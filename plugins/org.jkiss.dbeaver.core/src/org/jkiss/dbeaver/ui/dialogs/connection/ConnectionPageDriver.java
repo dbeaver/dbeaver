@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,7 +34,8 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverGalleryViewer;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeViewer;
 
 import java.util.List;
@@ -58,14 +60,20 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     @Override
     public void createControl(Composite parent)
     {
-        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        DriverTreeControl driverTreeControl = new DriverTreeControl(placeholder, this, wizard.getAvailableProvides(), true);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 200;
-        driverTreeControl.setLayoutData(gd);
+        Composite placeholder = UIUtils.createComposite(parent, 1);
+
+        {
+            DriverSelectViewer driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 200;
+            driverSelectViewer.getControl().setLayoutData(gd);
+        }
+
         setControl(placeholder);
 
-        Group projectGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_connection_driver_project, 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Composite projectGroup = UIUtils.createComposite(placeholder, 2);
+        projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createControlLabel(projectGroup, CoreMessages.dialog_connection_driver_project);
         final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -92,7 +100,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             });
 
             if (projects.size() < 2) {
-                projectCombo.setEnabled(false);
+                //projectCombo.setEnabled(false);
             }
         } else {
             setErrorMessage("You need to create a project first");
@@ -161,4 +169,5 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     {
 
     }
+
 }

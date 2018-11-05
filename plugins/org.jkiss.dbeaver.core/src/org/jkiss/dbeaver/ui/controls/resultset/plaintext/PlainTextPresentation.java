@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -78,6 +79,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     private int totalRows = 0;
     private String curSelection;
     private Font monoFont;
+    private boolean showNulls;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -88,6 +90,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         text.setBlockSelection(true);
         text.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_IBEAM));
         text.setMargins(4, 4, 4, 4);
+        text.setTabs(controller.getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_TAB_SIZE));
+        text.setTabStops(null);
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         text.addCaretListener(event -> onCursorChange(event.caretOffset));
@@ -202,7 +206,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                         horOffsetEnd - horOffsetBegin - 1,
                         null,
                         curLineColor);
-                    UIUtils.asyncExec(() -> text.setStyleRanges(new StyleRange[]{curLineRange}));
+                    UIUtils.asyncExec(() -> {
+                        text.setStyleRanges(new StyleRange[]{curLineRange});
+                        text.redraw();
+                    });
                 }
             }
 
@@ -233,9 +240,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     private void printGrid(boolean append) {
         DBPPreferenceStore prefs = getController().getPreferenceStore();
         int maxColumnSize = prefs.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
-        boolean showNulls = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS);
         boolean delimLeading = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING);
         boolean delimTrailing = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        this.showNulls = getController().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS);
+
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
 
         StringBuilder grid = new StringBuilder(512);
@@ -250,13 +258,16 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
                 colWidths[i] = getAttributeName(attr).length();
+                if (showNulls && !attr.isRequired()) {
+                    colWidths[i] = Math.max(colWidths[i], DBConstants.NULL_VALUE_LABEL.length());
+                }
                 for (ResultSetRow row : allRows) {
                     String displayString = getCellString(model, attr, row, displayFormat);
-                    colWidths[i] = Math.max(colWidths[i], displayString.length());
+                    colWidths[i] = Math.max(colWidths[i], getStringWidth(displayString));
                 }
             }
             for (int i = 0; i < colWidths.length; i++) {
-                colWidths[i]++;
+                //colWidths[i]++;
                 if (colWidths[i] > maxColumnSize) {
                     colWidths[i] = maxColumnSize;
                 }
@@ -305,11 +316,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 String displayString = getCellString(model, attr, row, displayFormat);
                 if (displayString.length() >= colWidths[k] - 1) {
                     displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
-                } else if (showNulls && displayString.isEmpty() && DBUtils.isNullValue(model.getCellValue(attr, row))) {
-                    displayString = DBConstants.NULL_VALUE_LABEL;
                 }
                 grid.append(displayString);
-                for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
+                int stringWidth = getStringWidth(displayString);
+                for (int j = colWidths[k] - stringWidth; j > 0; j--) {
                     grid.append(" ");
                 }
             }
@@ -327,6 +337,21 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         totalRows = allRows.size();
     }
 
+    private int getStringWidth(String str) {
+        int width = 0;
+        if (str != null && str.length() > 0) {
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (c == '\t') {
+                    width += controller.getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_TAB_SIZE);
+                } else {
+                    width++;
+                }
+            }
+        }
+        return width;
+    }
+
     private static String getAttributeName(DBDAttributeBinding attr) {
         if (CommonUtils.isEmpty(attr.getLabel())) {
             return attr.getName();
@@ -336,8 +361,22 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     }
 
     private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row, DBDDisplayFormat displayFormat) {
-        String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), displayFormat);
-        return TextUtils.getSingleLineString(displayString);
+        Object cellValue = model.getCellValue(attr, row);
+        if (cellValue instanceof DBDValueError) {
+            return ((DBDValueError) cellValue).getErrorTitle();
+        }
+        String displayString = attr.getValueHandler().getValueDisplayString(attr, cellValue, displayFormat);
+
+        if (displayString.isEmpty() &&
+            showNulls &&
+            DBUtils.isNullValue(cellValue))
+        {
+            displayString = DBConstants.NULL_VALUE_LABEL;
+        }
+        return displayString
+            .replace('\n', TextUtils.PARAGRAPH_CHAR)
+            .replace("\r", "")
+            .replace((char)0, ' ');
     }
 
     private void printRecord() {

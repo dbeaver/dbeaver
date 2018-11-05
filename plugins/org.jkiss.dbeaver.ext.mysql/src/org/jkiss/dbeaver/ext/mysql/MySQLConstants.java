@@ -37,6 +37,7 @@ public class MySQLConstants {
 
     public static final String PROP_SERVER_TIMEZONE = DBConstants.INTERNAL_PROP_PREFIX + "serverTimezone@";
 
+    public static final String PROP_ZERO_DATETIME_BEHAVIOR = "zeroDateTimeBehavior";
     public static final String PROP_REQUIRE_SSL = "ssl.require";
     public static final String PROP_VERIFY_SERVER_SERT = "ssl.verify.server";
     public static final String PROP_SSL_CIPHER_SUITES = "ssl.cipher.suites";
@@ -81,7 +82,8 @@ public class MySQLConstants {
     public static final String COL_TABLE_TYPE = "TABLE_TYPE";
     public static final String COL_ENGINE = "ENGINE";
     public static final String COL_VERSION = "VERSION";
-    public static final String COL_TABLE_ROWS = "ROWS";
+    public static final String COL_ROWS = "ROWS";
+    public static final String COL_TABLE_ROWS = "TABLE_ROWS";
     public static final String COL_AUTO_INCREMENT = "AUTO_INCREMENT";
     public static final String COL_TABLE_COMMENT = "COMMENT";
     public static final String COL_COLUMNS_NAME = "COLUMNS_NAME";
@@ -196,6 +198,7 @@ public class MySQLConstants {
     public static final String TYPE_VARCHAR = "varchar";
     public static final String TYPE_JSON = "json";
     public static final String TYPE_GEOMETRY = "geometry";
+    public static final String TYPE_YEAR = "year";
 
     public static final String BIN_FOLDER = "bin";
     public static final String ENV_VARIABLE_MYSQL_PWD = "MYSQL_PWD";

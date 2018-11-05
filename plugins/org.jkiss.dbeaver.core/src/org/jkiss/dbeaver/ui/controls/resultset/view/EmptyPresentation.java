@@ -64,12 +64,14 @@ public class EmptyPresentation extends AbstractPresentation {
                 return;
             }
             e.gc.setFont(largeFont);
-            int fontSize = largeFont.getFontData()[0].getHeight();
-            UIUtils.drawMessageOverControl(placeholder, e, controller.getDecorator().getEmptyDataMessage(), -(fontSize / 2));
+            //int fontSize = largeFont.getFontData()[0].getHeight();
+            String emptyDataMessage = controller.getDecorator().getEmptyDataMessage();
+            Point emSize = e.gc.textExtent(emptyDataMessage);
+            UIUtils.drawMessageOverControl(placeholder, e, emptyDataMessage, -emSize.y);
             e.gc.setFont(normalFont);
             String emptyDataDescription = controller.getDecorator().getEmptyDataDescription();
             if (!CommonUtils.isEmpty(emptyDataDescription)) {
-                UIUtils.drawMessageOverControl(placeholder, e, emptyDataDescription, fontSize + fontSize / 3);
+                UIUtils.drawMessageOverControl(placeholder, e, emptyDataDescription, 10);
             }
         });
 

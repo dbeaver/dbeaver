@@ -57,6 +57,7 @@ public class MockDataMessages extends NLS {
     public static String tools_mockdata_wizard_page_settings_checkbox_remove_old_data;
     public static String tools_mockdata_wizard_page_settings_confirm_delete_old_data_message;
     public static String tools_mockdata_wizard_page_settings_combo_rows;
+    public static String tools_mockdata_wizard_page_settings_batch_size;
     public static String tools_mockdata_wizard_page_settings_text_entity;
 
     public static String tools_mockdata_wizard_page_settings_group_generators;
@@ -80,5 +81,7 @@ public class MockDataMessages extends NLS {
     public static String tools_mockdata_wizard_log_inserted_rows;
     public static String tools_mockdata_wizard_log_error_inserting;
     public static String tools_mockdata_wizard_log_error_generating;
+
+    public static String tools_mockdata_attribute_generator_skip;
 
 }

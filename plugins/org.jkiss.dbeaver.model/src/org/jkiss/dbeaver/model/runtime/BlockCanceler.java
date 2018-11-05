@@ -16,26 +16,28 @@
  */
 package org.jkiss.dbeaver.model.runtime;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 
 /**
  * Abstract Database Job
  */
 public class BlockCanceler
 {
-    public static void cancelBlock(DBRProgressMonitor monitor, Thread blockActiveThread) throws DBException {
-        DBRBlockingObject block = monitor.getActiveBlock();
-        if (block != null) {
-            final Thread thread = Thread.currentThread();
-            final String threadOldName = thread.getName();
-            thread.setName("Operation cancel [" + block + "]");
-            try {
-                block.cancelBlock(monitor, blockActiveThread);
-            } catch (Throwable e) {
-                throw new DBException("Cancel error", e);
-            } finally {
-                thread.setName(threadOldName);
-            }
+    private static final Log log = Log.getLog(BlockCanceler.class);
+
+    public static void cancelBlock(@NotNull DBRProgressMonitor monitor, @NotNull DBRBlockingObject block, @Nullable Thread blockActiveThread) throws DBException {
+        final Thread thread = Thread.currentThread();
+        final String threadOldName = thread.getName();
+        thread.setName("Operation cancel [" + block + "]");
+        try {
+            block.cancelBlock(monitor, blockActiveThread);
+        } catch (Throwable e) {
+            throw new DBException("Cancel error", e);
+        } finally {
+            thread.setName(threadOldName);
         }
     }
 

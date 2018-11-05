@@ -16,9 +16,13 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.net.*;
+import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.Authenticator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,46 +34,71 @@ public class DBExecUtils {
     /**
      * Current execution context. Used by global authenticators and network handlers
      */
-    private static final ThreadLocal<DBCExecutionContext> ACTIVE_CONTEXT = new ThreadLocal<>();
-    private static final List<DBCExecutionContext> ACTIVE_CONTEXTS = new ArrayList<>();
+    private static final ThreadLocal<DBPDataSourceContainer> ACTIVE_CONTEXT = new ThreadLocal<>();
+    private static final List<DBPDataSourceContainer> ACTIVE_CONTEXTS = new ArrayList<>();
 
-    public static DBCExecutionContext getCurrentThreadContext() {
+    public static DBPDataSourceContainer getCurrentThreadContext() {
         return ACTIVE_CONTEXT.get();
     }
 
-    public static List<DBCExecutionContext> getActiveContexts() {
+    public static List<DBPDataSourceContainer> getActiveContexts() {
         synchronized (ACTIVE_CONTEXTS) {
             return new ArrayList<>(ACTIVE_CONTEXTS);
         }
     }
 
-    public static void startContextInitiation(DBCExecutionContext context) {
+    public static void startContextInitiation(DBPDataSourceContainer context) {
         ACTIVE_CONTEXT.set(context);
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.add(context);
         }
+        // Set proxy auth (if required)
+        // Note: authenticator may be changed by Eclipse frameword on startup or later.
+        // That's why we set new default authenticator on connection initiation
+        boolean hasProxy = false;
+        for (DBWHandlerConfiguration handler : context.getConnectionConfiguration().getDeclaredHandlers()) {
+            if (handler.isEnabled() && handler.getType() == DBWHandlerType.PROXY) {
+                hasProxy = true;
+                break;
+            }
+        }
+        if (hasProxy) {
+            Authenticator.setDefault(new GlobalProxyAuthenticator());
+        }
     }
 
-    public static void finishContextInitiation(DBCExecutionContext context) {
+    public static void finishContextInitiation(DBPDataSourceContainer context) {
         ACTIVE_CONTEXT.remove();
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.remove(context);
         }
     }
 
-    public static DBCExecutionContext findConnectionContext(String host, int port, String path) {
-        DBCExecutionContext curContext = getCurrentThreadContext();
+    public static DBPDataSourceContainer findConnectionContext(String host, int port, String path) {
+        DBPDataSourceContainer curContext = getCurrentThreadContext();
         if (curContext != null) {
-            return curContext;
+            return contextMatches(host, port, curContext) ? curContext : null;
         }
         synchronized (ACTIVE_CONTEXTS) {
-            for (DBCExecutionContext ctx : ACTIVE_CONTEXTS) {
-                DBPConnectionConfiguration cfg = ctx.getDataSource().getContainer().getConnectionConfiguration();
-                if (CommonUtils.equalObjects(cfg.getHostName(), host) && String.valueOf(port).equals(cfg.getHostPort())) {
+            for (DBPDataSourceContainer ctx : ACTIVE_CONTEXTS) {
+                if (contextMatches(host, port, ctx)) {
                     return ctx;
                 }
             }
         }
         return null;
+    }
+
+    private static boolean contextMatches(String host, int port, DBPDataSourceContainer ctx) {
+        DBPConnectionConfiguration cfg = ctx.getConnectionConfiguration();
+        if (CommonUtils.equalObjects(cfg.getHostName(), host) && String.valueOf(port).equals(cfg.getHostPort())) {
+            return true;
+        }
+        for (DBWNetworkHandler networkHandler : ctx.getActiveNetworkHandlers()) {
+            if (networkHandler instanceof DBWForwarder && ((DBWForwarder) networkHandler).matchesParameters(host, port)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

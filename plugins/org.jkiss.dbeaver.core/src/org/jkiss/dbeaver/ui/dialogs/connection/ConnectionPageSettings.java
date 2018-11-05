@@ -55,6 +55,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
+    public static final String PAGE_NAME = ConnectionPageSettings.class.getSimpleName();
+
     @NotNull
     private final ConnectionWizard wizard;
     @NotNull
@@ -74,7 +76,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         @NotNull ConnectionWizard wizard,
         @NotNull DataSourceViewDescriptor viewDescriptor)
     {
-        super("newConnectionSettings");
+        super(PAGE_NAME + "." + viewDescriptor.getId());
         this.wizard = wizard;
         this.viewDescriptor = viewDescriptor;
 
@@ -92,6 +94,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     {
         this(wizard, viewDescriptor);
         this.dataSource = dataSource;
+    }
+
+    IDataSourceConnectionEditor getConnectionEditor() {
+        return connectionEditor;
     }
 
     @Override
@@ -149,15 +155,17 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionEditor != null) {
-            connectionEditor.saveSettings(dataSource);
-        }
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (page.getControl() != null && page instanceof IDataSourceConnectionEditor) {
                     ((IDataSourceConnectionEditor) page).saveSettings(dataSource);
                 }
             }
+        }
+        // Save connection settings AFTER extra pages.
+        // Because it may contain some driver properties save which will be overwrited by driver props page otherwise
+        if (connectionEditor != null) {
+            connectionEditor.saveSettings(dataSource);
         }
     }
 
@@ -241,7 +249,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public boolean canFlipToNextPage()
     {
-        return true;
+        return false;
     }
 
     @Override
@@ -298,11 +306,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public boolean openSettingsPage(String pageId) {
-        final IWizardPage page = wizard.getPage(pageId);
-        if (page != null) {
-            wizard.getContainer().showPage(page);
-        }
-        return false;
+        return wizard.openSettingsPage(pageId);
     }
 
     @Override
@@ -356,6 +360,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         } else {
             extraPages = ArrayUtils.concatArrays(extraPages, new IDialogPage[] { page });
         }
+        if (page instanceof IWizardPage) {
+            ((IWizardPage) page).setWizard(getWizard());
+        }
     }
 
     @Override
@@ -363,5 +370,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (connectionEditor instanceof IDataSourceConnectionTester) {
             ((IDataSourceConnectionTester) connectionEditor).testConnection(session);
         }
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

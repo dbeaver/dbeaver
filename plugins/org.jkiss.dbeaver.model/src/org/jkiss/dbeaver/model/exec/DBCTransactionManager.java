@@ -47,4 +47,5 @@ public interface DBCTransactionManager
 
     void rollback(@NotNull DBCSession session, @Nullable DBCSavepoint savepoint) throws DBCException;
 
+    boolean isEnabled();
 }

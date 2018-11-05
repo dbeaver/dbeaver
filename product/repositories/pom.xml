@@ -6,10 +6,10 @@
     <parent>
         <groupId>org.jkiss.dbeaver</groupId>
         <artifactId>dbeaver</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <artifactId>dbeaver-p2-repos</artifactId>
     <packaging>pom</packaging>
     <name>DBeaver P2 Repositories</name>
@@ -17,7 +17,6 @@
     <modules>
         <module>org.jkiss.dbeaver.ce.repository</module>
         <module>org.jkiss.dbeaver.debug.repository</module>
-        <module>org.jkiss.dbeaver.nls.repository</module>
         <module>org.jkiss.dbeaver.office.repository</module>
         <module>org.jkiss.dbeaver.svg.repository</module>
         <module>org.jkiss.dbeaver.net.sshj.repository</module>

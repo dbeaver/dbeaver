@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+
+import java.util.Arrays;
 
 public class HANASQLDialect extends GenericSQLDialect {
 
@@ -36,6 +36,10 @@ public class HANASQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+
+        addSQLKeywords(
+                Arrays.asList(
+                        "REPLACE_REGEXPR"));
     }
 
     @Override

@@ -158,7 +158,7 @@ public class UIUtils {
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
         Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+        label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
         new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
     }
 
@@ -203,23 +203,24 @@ public class UIUtils {
                         totalWidth += column.getWidth();
                     }
                 }
-                int extraSpace = totalWidth - clientArea.width;
+                if (totalWidth < clientArea.width) {
+                    int extraSpace = totalWidth - clientArea.width;
 
-                GC gc = new GC(table);
-                try {
-                    for (TableColumn tc : columns) {
-                        double ratio = (double) tc.getWidth() / totalWidth;
-                        int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
-                        int minWidth = gc.stringExtent(tc.getText()).x;
-                        minWidth += 5;
-                        if (newWidth < minWidth) {
-                            newWidth = minWidth;
+                    GC gc = new GC(table);
+                    try {
+                        for (TableColumn tc : columns) {
+                            double ratio = (double) tc.getWidth() / totalWidth;
+                            int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
+                            int minWidth = gc.stringExtent(tc.getText()).x;
+                            minWidth += 5;
+                            if (newWidth < minWidth) {
+                                newWidth = minWidth;
+                            }
+                            tc.setWidth(newWidth);
                         }
-                        tc.setWidth(newWidth);
+                    } finally {
+                        gc.dispose();
                     }
-                }
-                finally {
-                    gc.dispose();
                 }
             }
             if (fit && totalWidth < clientArea.width) {
@@ -472,11 +473,13 @@ public class UIUtils {
         Group group = new Group(parent, SWT.NONE);
         group.setText(label);
 
-        GridData gd = new GridData(layoutStyle);
-        if (widthHint > 0) {
-            gd.widthHint = widthHint;
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gd = new GridData(layoutStyle);
+            if (widthHint > 0) {
+                gd.widthHint = widthHint;
+            }
+            group.setLayoutData(gd);
         }
-        group.setLayoutData(gd);
 
         GridLayout gl = new GridLayout(columns, false);
         group.setLayout(gl);
@@ -729,6 +732,16 @@ public class UIUtils {
         return createPlaceholder(parent, columns, 0);
     }
 
+    public static Composite createComposite(Composite parent, int columns)
+    {
+        Composite ph = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(columns, false);
+        gl.marginWidth = 0;
+        gl.marginHeight = 0;
+        ph.setLayout(gl);
+        return ph;
+    }
+
     public static Composite createPlaceholder(Composite parent, int columns, int spacing)
     {
         Composite ph = new Composite(parent, SWT.NONE);
@@ -772,6 +785,15 @@ public class UIUtils {
         gd.horizontalSpan = hSpan;
         gd.verticalIndent = vIndent;
         horizontalLine.setLayoutData(gd);
+        return horizontalLine;
+    }
+
+    public static Label createVerticalLine(Composite parent) {
+        Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.VERTICAL);
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gd = new GridData(GridData.FILL, GridData.FILL, false, true, 1, 1);
+            horizontalLine.setLayoutData(gd);
+        }
         return horizontalLine;
     }
 
@@ -877,10 +899,23 @@ public class UIUtils {
         return button;
     }
 
+    @NotNull
+    public static Button createRadioButton(@NotNull Composite parent, @Nullable String label, @NotNull Object data, @Nullable SelectionListener selectionListener)
+    {
+        Button button = new Button(parent, SWT.RADIO);
+        button.setText(label);
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
+        button.setData(data);
+        return button;
+    }
 
     public static void setHelp(Control control, String pluginId, String helpContextID)
     {
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, pluginId + "." + helpContextID); //$NON-NLS-1$
+        if (control != null && !control.isDisposed()) {
+            PlatformUI.getWorkbench().getHelpSystem().setHelp(control, pluginId + "." + helpContextID); //$NON-NLS-1$
+        }
     }
 
     public static void setHelp(Control control, String helpContextID)
@@ -940,7 +975,10 @@ public class UIUtils {
 
     public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
     {
-        final IFocusService focusService = serviceLocator.getService(IFocusService.class);
+        IFocusService focusService = serviceLocator.getService(IFocusService.class);
+        if (focusService == null) {
+            focusService = UIUtils.getActiveWorkbenchWindow().getService(IFocusService.class);
+        }
         if (focusService != null) {
             focusService.addFocusTracker(control, controlID);
         } else {
@@ -954,7 +992,10 @@ public class UIUtils {
             // TODO: it is a bug in eclipse. During workbench shutdown disposed service returned.
             return;
         }
-        final IFocusService focusService = serviceLocator.getService(IFocusService.class);
+        IFocusService focusService = serviceLocator.getService(IFocusService.class);
+        if (focusService == null) {
+            focusService = UIUtils.getActiveWorkbenchWindow().getService(IFocusService.class);
+        }
         if (focusService != null) {
             focusService.removeFocusTracker(control);
         } else {
@@ -1248,6 +1289,15 @@ public class UIUtils {
         return false;
     }
 
+    public static boolean isInDialog() {
+        try {
+            return isInDialog(Display.getCurrent().getActiveShell());
+        } catch (Exception e) {
+            // IF we are in wrong thread
+            return false;
+        }
+    }
+
     public static boolean isInDialog(Control control) {
         return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
     }
@@ -1330,8 +1380,11 @@ public class UIUtils {
     public static void drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
         Rectangle bounds = control.getBounds();
         for (String line : message.split("\n")) {
+            line = line.trim();
             Point ext = e.gc.textExtent(line);
-            e.gc.drawText(line, (bounds.width - ext.x) / 2, bounds.height / 3 + offset);
+            e.gc.drawText(line,
+                    (bounds.width - ext.x) / 2,
+                    bounds.height / 2 + offset);
             offset += ext.y;
         }
     }
@@ -1649,9 +1702,12 @@ public class UIUtils {
 
     public static void resizeShell(Shell shell) {
         Point shellSize = shell.getSize();
-        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        compSize.y += 20;
-        if (shellSize.y < compSize.y) {
+        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        //compSize.y += 20;
+        //compSize.x += 20;
+        if (shellSize.y < compSize.y || shellSize.x < compSize.x) {
+            compSize.x = Math.max(shellSize.x, compSize.x);
+            compSize.y = Math.max(shellSize.y, compSize.y);
             shell.setSize(compSize);
             shell.layout(true);
         }
@@ -1685,4 +1741,14 @@ public class UIUtils {
         return getColorRegistry().get(colorName);
     }
 
+    public static Control createEmptyLabel(Composite parent, int horizontalSpan, int verticalSpan)
+    {
+        Label emptyLabel = new Label(parent, SWT.NONE);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        gd.horizontalSpan = horizontalSpan;
+        gd.verticalSpan = verticalSpan;
+        gd.widthHint = 0;
+        emptyLabel.setLayoutData(gd);
+        return emptyLabel;
+    }
 }

@@ -47,10 +47,12 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Label passwordLabel;
     private Text passwordText;
     private Button windowsAuthenticationButton;
+    private Button adpAuthenticationButton;
     private Button showAllSchemas;
 
     private boolean activated;
 
+    private static ImageDescriptor AZURE_LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/azure_logo.png");
     private static ImageDescriptor MSSQL_LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/mssql_logo.png");
     private static ImageDescriptor SYBASE_LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/sybase_logo.png");
 
@@ -63,6 +65,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     @Override
     public void createControl(Composite composite)
     {
+        boolean isSqlServer = SQLServerUtils.isDriverSqlServer(getSite().getDriver());
+        boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(getSite().getDriver());
+
         Composite settingsGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 10;
@@ -81,14 +86,19 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
 
-            Label portLabel = new Label(settingsGroup, SWT.NONE);
-            portLabel.setText(SQLServerMessages.dialog_connection_port_label);
-            portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            if (isDriverAzure) {
+                // no port number for Azure
+                gd.horizontalSpan = 3;
+            } else {
+                Label portLabel = new Label(settingsGroup, SWT.NONE);
+                portLabel.setText(SQLServerMessages.dialog_connection_port_label);
+                portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            portText = new Text(settingsGroup, SWT.BORDER);
-            gd = new GridData(GridData.CENTER);
-            gd.widthHint = 60;
-            portText.setLayoutData(gd);
+                portText = new Text(settingsGroup, SWT.BORDER);
+                gd = new GridData(GridData.CENTER);
+                gd.widthHint = 60;
+                portText.setLayoutData(gd);
+            }
         }
 
         {
@@ -106,14 +116,19 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
         {
             if (SQLServerUtils.isDriverSqlServer(getSite().getDriver())) {
-                windowsAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_windows_authentication_button, false);
-                windowsAuthenticationButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        enableTexts();
-                    }
-                });
-                createEmptyLabel(settingsGroup, 1);
+                if (!isDriverAzure) {
+                    windowsAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_windows_authentication_button, false);
+                    windowsAuthenticationButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            enableTexts();
+                        }
+                    });
+                    UIUtils.createEmptyLabel(settingsGroup, 2, 1);
+                } else {
+                    adpAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_adp_authentication_button, false);
+                    UIUtils.createEmptyLabel(settingsGroup, 2, 1);
+                }
             }
 
             userNameLabel = new Label(settingsGroup, SWT.NONE);
@@ -125,7 +140,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             userNameText.setLayoutData(gd);
 
-            createEmptyLabel(settingsGroup, 1);
+            UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             passwordLabel = new Label(settingsGroup, SWT.NONE);
             passwordLabel.setText(SQLServerMessages.dialog_connection_password_label);
@@ -136,7 +151,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             passwordText.setLayoutData(gd);
 
-            createEmptyLabel(settingsGroup, 1);
+            UIUtils.createEmptyLabel(settingsGroup, 2, 1);
         }
 
         {
@@ -145,8 +160,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
             secureGroup.setLayoutData(gd);
-            secureGroup.setLayout(new GridLayout(2, false));
+            secureGroup.setLayout(new GridLayout(1, false));
 
+            createSavePasswordButton(secureGroup);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerMessages.dialog_setting_show_all_schemas, SQLServerMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }
 
@@ -160,16 +176,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         userNameText.setEnabled(!isWindowsAuth);
         passwordLabel.setEnabled(!isWindowsAuth);
         passwordText.setEnabled(!isWindowsAuth);
-    }
-
-    private void createEmptyLabel(Composite parent, int verticalSpan)
-    {
-        Label emptyLabel = new Label(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 2;
-        gd.verticalSpan = verticalSpan;
-        gd.widthHint = 0;
-        emptyLabel.setLayoutData(gd);
+        savePasswordCheck.setEnabled(!isWindowsAuth);
     }
 
     @Override
@@ -184,9 +191,12 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         super.loadSettings();
 
         boolean isSqlServer = SQLServerUtils.isDriverSqlServer(getSite().getDriver());
+        boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(getSite().getDriver());
 
         if (!activated) {
-            setImageDescriptor(isSqlServer ? MSSQL_LOGO_IMG : SYBASE_LOGO_IMG);
+            setImageDescriptor(isSqlServer ?
+                (isDriverAzure ? AZURE_LOGO_IMG : MSSQL_LOGO_IMG) :
+                SYBASE_LOGO_IMG);
         }
 
         // Load values from new connection info
@@ -195,7 +205,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
             } else {
-                hostText.setText(SQLServerConstants.DEFAULT_HOST);
+                hostText.setText(isDriverAzure ? SQLServerConstants.DEFAULT_HOST_AZURE : SQLServerConstants.DEFAULT_HOST);
             }
         }
         if (portText != null) {
@@ -210,7 +220,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (dbText != null) {
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
-                databaseName = getSite().isNew() ? SQLServerConstants.DEFAULT_DATABASE : "";
+                databaseName = getSite().isNew() ?
+                    (isDriverAzure ? SQLServerConstants.DEFAULT_DATABASE_AZURE : SQLServerConstants.DEFAULT_DATABASE) :
+                    "";
             }
             dbText.setText(databaseName);
         }
@@ -223,6 +235,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (windowsAuthenticationButton != null) {
             windowsAuthenticationButton.setSelection(SQLServerUtils.isWindowsAuth(connectionInfo));
             enableTexts();
+        }
+        if (adpAuthenticationButton != null) {
+            adpAuthenticationButton.setSelection(SQLServerUtils.isActiveDirectoryAuth(connectionInfo));
         }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
@@ -251,6 +266,13 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (windowsAuthenticationButton != null) {
             connectionInfo.getProperties().put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY,
                     String.valueOf(windowsAuthenticationButton.getSelection()));
+        }
+        if (adpAuthenticationButton != null) {
+            if (adpAuthenticationButton.getSelection()) {
+                connectionInfo.getProperties().put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_PASSWORD);
+            } else {
+                connectionInfo.getProperties().remove(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION);
+            }
         }
         if (showAllSchemas != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,

@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
@@ -26,6 +25,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 
 public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
@@ -37,7 +37,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     @Override
-    protected IFilter getNavigatorFilter() {
+    protected INavigatorFilter getNavigatorFilter() {
         return new DatabaseNavigatorTreeFilter();
     }
 

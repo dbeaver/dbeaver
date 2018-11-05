@@ -217,7 +217,11 @@ public class TextUtils {
     }
 
     public static String getSingleLineString(String displayString) {
-        return displayString.replace('\n', PARAGRAPH_CHAR).replace("\r", "").replace((char)0, ' ');
+        return displayString
+            .replace('\n', PARAGRAPH_CHAR)
+            .replace("\r", "")
+            .replace("\t", " ")
+            .replace((char)0, ' ');
     }
 
     /**
@@ -250,6 +254,7 @@ public class TextUtils {
 
         // index of the previously matched character in the term
         int previousMatchingCharacterIndex = Integer.MIN_VALUE;
+        int sequenceScore = 0;
 
         for (int queryIndex = 0; queryIndex < queryLowerCase.length(); queryIndex++) {
             final char queryChar = queryLowerCase.charAt(queryIndex);
@@ -272,7 +277,14 @@ public class TextUtils {
                     // subsequent character matches further improve
                     // the score.
                     if (previousMatchingCharacterIndex + 1 == termIndex) {
-                        score += 4;
+                        if (sequenceScore == 0) {
+                            sequenceScore = 4;
+                        } else {
+                            sequenceScore *= 2;
+                        }
+                        score += sequenceScore;
+                    } else {
+                        sequenceScore = 0;
                     }
 
                     previousMatchingCharacterIndex = termIndex;

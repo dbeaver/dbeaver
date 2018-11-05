@@ -164,6 +164,18 @@ public class SecurityUtils {
         return (pass.toString());
     }
 
+    public static long generateRandomLong() {
+        SecureRandom random = new SecureRandom();
+        return random.nextLong();
+    }
+
+    public static byte[] generateRandomBytes(int length) {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[length];
+        random.nextBytes(bytes);
+        return bytes;
+    }
+
     /**
      * Generate a random password of the default length (8).
      */

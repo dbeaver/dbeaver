@@ -91,7 +91,7 @@ public class ContentUtils {
         name = CommonUtils.escapeFileName(name);
         File tempFile = new File(folder, name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
         if (!tempFile.createNewFile()){
-            throw new IOException(MessageFormat.format(ModelMessages.DBeaverCore_error_can_create_temp_file, tempFile.getAbsolutePath(), folder.getAbsoluteFile()));
+            throw new IOException(MessageFormat.format(ModelMessages.error_can_create_temp_file, tempFile.getAbsolutePath(), folder.getAbsoluteFile()));
         }
         return tempFile;
     }

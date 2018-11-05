@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.registry.encode.EncryptionException;
-import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.runtime.encode.EncryptionException;
+import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
@@ -81,7 +81,7 @@ public abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard>
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false);
+                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false, true);
                     authDialog.setUserName(wizard.getToolUserName());
                     authDialog.setUserPassword(wizard.getToolUserPassword());
                     authDialog.setSavePassword(savePassword);

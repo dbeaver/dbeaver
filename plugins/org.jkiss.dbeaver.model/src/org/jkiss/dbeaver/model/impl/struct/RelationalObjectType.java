@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBIcon;
  * Relational database object type.
  * Used by structure assistants
  */
-public class RelationalObjectType implements DBSObjectType {
+public class RelationalObjectType extends AbstractObjectType {
 
     public static final DBSObjectType TYPE_TABLE = new RelationalObjectType("Table", "Table or View", DBIcon.TREE_TABLE, DBSTable.class);
     public static final DBSObjectType TYPE_TABLE_COLUMN = new RelationalObjectType("Table column", "Table column", DBIcon.TREE_COLUMN, DBSTableColumn.class);
@@ -37,41 +37,7 @@ public class RelationalObjectType implements DBSObjectType {
     public static final DBSObjectType TYPE_TRIGGER = new RelationalObjectType("Trigger", "Trigger", DBIcon.TREE_TRIGGER, DBSTrigger.class);
     public static final DBSObjectType TYPE_DATA_TYPE = new RelationalObjectType("Data type", "Data type", DBIcon.TREE_DATA_TYPE, DBSDataType.class);
 
-    private final String typeName;
-    private final String description;
-    private final DBPImage image;
-    private final Class<? extends DBSObject> objectClass;
-
-    RelationalObjectType(String typeName, String description, DBPImage image, Class<? extends DBSObject> objectClass)
-    {
-        this.typeName = typeName;
-        this.description = description;
-        this.image = image;
-        this.objectClass = objectClass;
+    private RelationalObjectType(String typeName, String description, DBPImage image, Class<? extends DBSObject> objectClass) {
+        super(typeName, description, image, objectClass);
     }
-
-    @Override
-    public String getTypeName()
-    {
-        return typeName;
-    }
-
-    @Override
-    public String getDescription()
-    {
-        return description;
-    }
-
-    @Override
-    public DBPImage getImage()
-    {
-        return image;
-    }
-
-    @Override
-    public Class<? extends DBSObject> getTypeClass()
-    {
-        return objectClass;
-    }
-
 }

@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 
 public class ConfigImportWizardPageNavicatDriver extends WizardPage
         implements ISelectionChangedListener, IDoubleClickListener {
@@ -46,11 +46,11 @@ public class ConfigImportWizardPageNavicatDriver extends WizardPage
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
 
-        DriverTreeControl driverTreeControl = new DriverTreeControl(placeholder, this,
+        DriverSelectViewer driverSelectViewer = new DriverSelectViewer(placeholder, this,
                 DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders(), true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 200;
-        driverTreeControl.setLayoutData(gd);
+        driverSelectViewer.getControl().setLayoutData(gd);
 
         setControl(placeholder);
     }

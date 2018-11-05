@@ -17,6 +17,7 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -46,7 +47,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         {
             MenuItem menuItemOpenFolder = new MenuItem(menu, SWT.NONE);
-            menuItemOpenFolder.setText("Open Folder in Explorer");
+            menuItemOpenFolder.setText(CoreMessages.editor_file_open_in_explorer);
             menuItemOpenFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -58,7 +59,7 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
         {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
-            menuItemOthers.setText("Copy File Path");
+            menuItemOthers.setText(CoreMessages.editor_file_copy_path);
             menuItemOthers.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -70,7 +71,7 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         if (inputFile != null) {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
-            String renameText = "Rename File";
+            String renameText = CoreMessages.editor_file_rename;
             if (workbenchPart instanceof SQLEditor) {
                 renameText += "\t" + ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true);
             }

@@ -68,7 +68,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             return DBValueFormatting.getDefaultValueDisplayString(null, format);
         } else if (value instanceof String) {
             // Binary string
-            return "b'" + value + "'";
+            return (String)value;
         } else if (value instanceof Double) {
             double dbl = ((Double) value).doubleValue();
             if (dbl != dbl) {
@@ -158,10 +158,15 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     log.debug(e);
                 }
                 if (value == null && !gotValue) {
-                    if (CommonUtils.toInt(type.getScale()) > 0) {
-                        value = resultSet.getDouble(index);
-                    } else {
-                        value = resultSet.getLong(index);
+                    try {
+                        if (CommonUtils.toInt(type.getScale()) > 0) {
+                            value = resultSet.getDouble(index);
+                        } else {
+                            value = resultSet.getLong(index);
+                        }
+                    } catch (SQLException e) {
+                        // Last chance - get it as string. Sometimes columns marked as numbers are actually not numbers
+                        return resultSet.getString(index);
                     }
                 }
 
@@ -179,16 +184,19 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                                  int paramIndex, Object value) throws SQLException
     {
         if (value instanceof String) {
-            if (paramType.getTypeID() == Types.BIT) {
-                // Bit string
-                try {
-                    value = Long.parseLong((String) value, 2);
-                } catch (NumberFormatException e) {
-                    throw new SQLException("Can't convert value '" + value + "' into bit string", e);
-                }
+            String strValue = (String) value;
+            // Some number. Actually we shouldn't be here
+            Number number = DBValueFormatting.convertStringToNumber(strValue, getNumberType(paramType), formatter);
+            if (number != null) {
+                value = number;
+            } else if (!strValue.isEmpty()) {
+                // String was't empty but it can't be p[arsed as number
+                // Let's save as string then
+                statement.setString(paramIndex, strValue);
+                return;
             } else {
-                // Some number. Actually we shouldn't be here
-                value = DBValueFormatting.convertStringToNumber((String) value, getNumberType(paramType), formatter);
+                statement.setNull(paramIndex, paramType.getTypeID());
+                return;
             }
         }
         if (value == null) {

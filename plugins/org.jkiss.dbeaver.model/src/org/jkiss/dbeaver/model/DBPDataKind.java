@@ -47,4 +47,11 @@ public enum DBPDataKind
         return complex;
     }
 
+    public static boolean canConsume(DBPDataKind sourceKind, DBPDataKind targetKind) {
+        if (targetKind == CONTENT) {
+            return sourceKind == STRING || sourceKind == BINARY || sourceKind == CONTENT;
+        } else {
+            return sourceKind == targetKind;
+        }
+    }
 }

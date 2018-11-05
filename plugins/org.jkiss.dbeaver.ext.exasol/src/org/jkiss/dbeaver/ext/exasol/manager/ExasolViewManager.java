@@ -78,7 +78,7 @@ public class ExasolViewManager
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, command.getObject(), false);
@@ -124,7 +124,7 @@ public class ExasolViewManager
     }
     
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions,
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectRenameCommand command, Map<String, Object> options)
     {
         ExasolView obj = command.getObject();

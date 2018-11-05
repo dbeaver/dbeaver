@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.sql.ResultSet;
@@ -92,7 +93,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
 
         // Query row count
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read row count")) {
-            rowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
+            rowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null, DBSDataContainer.FLAG_NONE);
         } catch (DBException e) {
             log.debug("Can't fetch row count", e);
         }
@@ -109,12 +110,15 @@ public abstract class PostgreTableReal extends PostgreTableBase
         if (diskSpace != null) {
             return diskSpace;
         }
-        if (!isPersisted() || this instanceof PostgreView) {
+        if (!isPersisted() || this instanceof PostgreView || !getDataSource().isServerVersionAtLeast(8, 1)) {
             // Do not count rows for views
             return null;
         }
+        if (!getDataSource().getServerType().supportsRelationSizeCalc()) {
+            return null;
+        }
 
-        // Query row count
+        // Query disk size
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement("select pg_total_relation_size(?)")) {
                 dbStat.setLong(1, getObjectId());

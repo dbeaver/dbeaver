@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
@@ -95,7 +96,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public DBSObject getParentObject()
+    public GenericStructContainer getParentObject()
     {
         return getContainer().getObject();
     }
@@ -136,13 +137,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return tableType;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, optional = true, order = 3)
     public GenericCatalog getCatalog()
     {
         return getContainer().getCatalog();
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, optional = true, order = 4)
     public GenericSchema getSchema()
     {
         return getContainer().getSchema();
@@ -150,7 +151,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @Nullable
     @Override
-    public synchronized Collection<GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public synchronized Collection<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -167,18 +168,24 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public synchronized Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        // Read indexes using cache
-        return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+        if (getDataSource().getInfo().supportsIndexes()) {
+            // Read indexes using cache
+            return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+        }
+        return null;
     }
 
     @Nullable
     @Override
-    public synchronized Collection<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public synchronized List<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        // ensure all columns are already cached
-        getAttributes(monitor);
-        return getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
+        if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
+            // ensure all columns are already cached
+            getAttributes(monitor);
+            return getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
+        }
+        return null;
     }
 
     synchronized void addUniqueKey(GenericPrimaryKey constraint) {
@@ -189,7 +196,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public Collection<GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return loadReferences(monitor);
+        if (getDataSource().getInfo().supportsReferentialIntegrity()) {
+            return loadReferences(monitor);
+        }
+        return null;
     }
 
     @Override
@@ -202,6 +212,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return null;
     }
 
+    @Association
     @Nullable
     public Collection<GenericTable> getSubTables()
     {
@@ -231,7 +242,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Nullable
-    @Property(viewable = true, expensive = true, order = 5, category = "Statistics")
+    @Property(viewable = false, expensive = true, order = 5, category = "Statistics")
     public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
@@ -249,7 +260,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             // Query row count
             try (DBCSession session = DBUtils.openUtilSession(monitor, this, "Read row count")) {
                 rowCount = countData(
-                    new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
+                    new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null, DBSDataContainer.FLAG_NONE);
             } catch (DBException e) {
                 // do not throw this error - row count is optional info and some providers may fail
                 log.debug("Can't fetch row count: " + e.getMessage());

@@ -124,6 +124,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TYPE_UUID = new DBIcon("uuid", "types/uuid.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TYPE_UNKNOWN = new DBIcon("unknown", "types/unknown.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon OVER_ADD = new DBIcon("over_add", "over/add_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_SUCCESS = new DBIcon("over_success", "over/success_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_FAILED = new DBIcon("over_failed", "over/failed_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_ERROR = new DBIcon("over_error", "over/error_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$

@@ -37,16 +37,16 @@ public class MockDataUtils {
         // Integers
         if ((scale == null || scale == 0) && (precision != null && precision != 0)) {
             if (precision <= BYTE_PRECISION) {
-                return new Byte((byte) randomInteger(degree(precision), min, max));
+                return (byte) randomInteger(degree(precision), min, max);
             }
             if (precision <= SHORT_PRECISION) {
-                return new Short((short) randomInteger(degree(precision), min, max));
+                return (short) randomInteger(degree(precision), min, max);
             }
             if (precision <= INTEGER_PRECISION) {
                 return randomInteger(degree(precision), min, max);
             }
             if (precision <= LONG_PRECISION) {
-                return new Long(getRandomLong(min, max, random));
+                return getRandomLong(min, max, random);
             }
 
             // Default integer number

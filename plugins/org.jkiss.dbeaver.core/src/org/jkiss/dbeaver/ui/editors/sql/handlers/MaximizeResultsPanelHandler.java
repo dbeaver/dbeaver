@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -54,9 +55,9 @@ public class MaximizeResultsPanelHandler extends AbstractHandler implements IEle
         SQLEditor editor = RuntimeUtils.getObjectAdapter(activeEditor, SQLEditor.class);
         if (editor != null) {
             if (editor.hasMaximizedControl()) {
-                element.setText("Restore results panel");
+                element.setText(CoreMessages.action_menu_sqleditor_restoreResultsPanel);
             } else {
-                element.setText("Maximize results panel");
+                element.setText(CoreMessages.action_menu_sqleditor_maximizeResultsPanel);
             }
 
         }

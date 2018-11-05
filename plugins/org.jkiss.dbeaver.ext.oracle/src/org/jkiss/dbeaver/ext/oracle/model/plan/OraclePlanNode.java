@@ -185,7 +185,7 @@ public class OraclePlanNode implements DBCPlanNode {
             return objectName == null ? "" : objectName;
         }
         String objectTypeName = objectType;
-        final int divPos = objectTypeName == null ? -1 : objectTypeName.indexOf('(');
+        int divPos = objectTypeName == null ? -1 : objectTypeName.indexOf('(');
         if (divPos != -1) {
             objectTypeName = objectTypeName.substring(0, divPos).trim();
         }
@@ -202,13 +202,20 @@ public class OraclePlanNode implements DBCPlanNode {
             objectTypeName = OracleObjectType.TABLE.name();
         }
 
+        if (objectName.startsWith("X$")) {
+            // Some internal stuff
+            return objectName;
+        }
+        divPos = objectName.indexOf("(");
+        String name = divPos == -1 ? objectName : objectName.substring(0, divPos);
+
         return OracleObjectType.resolveObject(
             monitor,
             dataSource,
             objectNode,
             objectTypeName,
             objectOwner,
-            objectName);
+            name.trim());
     }
 
     //@Property(name = "Alias", order = 6, viewable = true, description = "Object alias")
@@ -239,6 +246,66 @@ public class OraclePlanNode implements DBCPlanNode {
     public long getBytes()
     {
         return bytes;
+    }
+
+    @Property(order = 20)
+    public String getPartitionStart() {
+        return partitionStart;
+    }
+
+    @Property(order = 21)
+    public String getPartitionStop() {
+        return partitionStop;
+    }
+
+    @Property(order = 22)
+    public long getPartitionId() {
+        return partitionId;
+    }
+
+    @Property(order = 23)
+    public String getDistribution() {
+        return distribution;
+    }
+
+    @Property(order = 24)
+    public long getCpuCost() {
+        return cpuCost;
+    }
+
+    @Property(order = 25)
+    public long getIoCost() {
+        return ioCost;
+    }
+
+    @Property(order = 26)
+    public long getTempSpace() {
+        return tempSpace;
+    }
+
+    @Property(order = 27)
+    public String getAccessPredicates() {
+        return accessPredicates;
+    }
+
+    @Property(order = 28)
+    public String getFilterPredicates() {
+        return filterPredicates;
+    }
+
+    @Property(order = 29)
+    public String getProjection() {
+        return projection;
+    }
+
+    @Property(order = 30)
+    public long getTime() {
+        return time;
+    }
+
+    @Property(order = 31)
+    public String getQblockName() {
+        return qblockName;
     }
 
     @Override

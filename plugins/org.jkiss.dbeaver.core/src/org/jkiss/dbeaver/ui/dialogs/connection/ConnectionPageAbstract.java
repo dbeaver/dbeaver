@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,6 +46,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected IDataSourceConnectionEditorSite site;
     // Driver name
     protected Text driverText;
+    protected Button savePasswordCheck;
 
     public IDataSourceConnectionEditorSite getSite() {
         return site;
@@ -72,12 +74,29 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         if (driver != null && driverText != null) {
             driverText.setText(CommonUtils.toString(driver.getFullName()));
         }
+
+        if (savePasswordCheck != null) {
+            DataSourceDescriptor dataSource = (DataSourceDescriptor) getSite().getActiveDataSource();
+            if (dataSource != null) {
+                savePasswordCheck.setSelection(dataSource.isSavePassword());
+            } else {
+                savePasswordCheck.setSelection(true);
+            }
+        }
     }
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         saveConnectionURL(dataSource.getConnectionConfiguration());
+        if (savePasswordCheck != null) {
+            DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
+            descriptor.setSavePassword(savePasswordCheck.getSelection());
+
+            if (!descriptor.isSavePassword()) {
+                descriptor.resetPassword();
+            }
+        }
     }
 
     protected void saveConnectionURL(DBPConnectionConfiguration connectionInfo)
@@ -108,15 +127,22 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
             if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
                 CLabel infoLabel = UIUtils.createInfoLabel(placeholder, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
-                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
                 gd.grabExcessHorizontalSpace = true;
                 infoLabel.setLayoutData(gd);
                 infoLabel.setToolTipText("You can use OS environment variables in connection parameters.\nUse ${variable} patterns.");
+            } else {
+                Control label = UIUtils.createEmptyLabel(placeholder, 1, 1);
+                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
+                gd.grabExcessHorizontalSpace = true;
+                label.setLayoutData(gd);
             }
 
-            if (!site.isNew() && !site.getDriver().isEmbedded()) {
+            Composite linksComposite = UIUtils.createPlaceholder(placeholder, 1, 2);
+            linksComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-                Link netConfigLink = new Link(placeholder, SWT.NONE);
+            if (!site.getDriver().isEmbedded()) {
+                Link netConfigLink = new Link(linksComposite, SWT.NONE);
                 netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link + "</a>");
                 netConfigLink.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -126,6 +152,18 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 });
                 netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
+            {
+                Link netConfigLink = new Link(linksComposite, SWT.NONE);
+                netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_general_link + "</a>");
+                netConfigLink.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        site.openSettingsPage(ConnectionPageGeneral.PAGE_NAME);
+                    }
+                });
+                netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            }
+
         }
 
         Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
@@ -168,6 +206,22 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected void updateDriverInfo(DBPDriver driver) {
 
+    }
+
+    protected void createSavePasswordButton(Composite parent) {
+        createSavePasswordButton(parent, 1);
+    }
+
+    protected void createSavePasswordButton(Composite parent, int hSpan) {
+        DataSourceDescriptor dataSource = (DataSourceDescriptor)getSite().getActiveDataSource();
+        savePasswordCheck = UIUtils.createCheckbox(parent,
+            CoreMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
+            dataSource == null || dataSource.isSavePassword());
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        if (hSpan > 1) {
+            gd.horizontalSpan = hSpan;
+        }
+        savePasswordCheck.setLayoutData(gd);
     }
 
 }

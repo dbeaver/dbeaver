@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -299,7 +300,12 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean validUnquotedCharacter(char c)
+    public boolean validIdentifierStart(char c) {
+        return Character.isLetter(c);
+    }
+
+    @Override
+    public boolean validIdentifierPart(char c)
     {
         return Character.isLetter(c) || Character.isDigit(c) || c == '_';
     }
@@ -381,6 +387,11 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public boolean supportsTableDropCascade() {
         return false;
+    }
+
+    @Override
+    public boolean supportsOrderByIndex() {
+        return true;
     }
 
     @Override
@@ -484,6 +495,9 @@ public class BasicSQLDialect implements SQLDialect {
         for (String executeKeyword : ArrayUtils.safeArray(getExecuteKeywords())) {
             addSQLKeyword(executeKeyword);
         }
+        for (String ddlKeyword : ArrayUtils.safeArray(getDDLKeywords())) {
+            addSQLKeyword(ddlKeyword);
+        }
 
         if (isStandardSQL()) {
             // Add default types
@@ -496,7 +510,7 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         typeName = CommonUtils.notEmpty(typeName).toUpperCase(Locale.ENGLISH);
         if (column instanceof DBSObject) {
             // If type is UDT (i.e. we can find it in type list) and type precision == column precision
@@ -511,8 +525,17 @@ public class BasicSQLDialect implements SQLDialect {
         }
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
-                final long maxLength = column.getMaxLength();
+                long maxLength = column.getMaxLength();
                 if (maxLength > 0) {
+                    Object maxStringLength = dataSource.getDataSourceFeature(DBConstants.FEATURE_MAX_STRING_LENGTH);
+                    if (maxStringLength instanceof Number) {
+                        int lengthLimit = ((Number) maxStringLength).intValue();
+                        if (lengthLimit < 0) {
+                            return null;
+                        } else if (lengthLimit < maxLength) {
+                            maxLength = lengthLimit;
+                        }
+                    }
                     return "(" + maxLength + ")";
                 }
             }
@@ -548,6 +571,11 @@ public class BasicSQLDialect implements SQLDialect {
         return null;
     }
 
+    @Override
+    public String formatStoredProcedureCall(DBPDataSource dataSource, String sqlText) {
+        return sqlText;
+    }
+
     /**
      * @param inParameters empty list to collect IN parameters
      */
@@ -564,28 +592,53 @@ public class BasicSQLDialect implements SQLDialect {
         return maxParamLength;
     }
 
+    protected boolean useBracketsForExec() {
+        return false;
+    }
+
     // first line of the call stored procedure SQL (to be overridden)
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
-        return "select " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        String[] executeKeywords = getExecuteKeywords();
+        if (proc.getProcedureType() == DBSProcedureType.FUNCTION || ArrayUtils.isEmpty(executeKeywords)) {
+            return SQLConstants.KEYWORD_SELECT + " " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        } else {
+            return executeKeywords[0] + " " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        }
     }
 
     @Override
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         getMaxParameterLength(parameters, inParameters);
-        sql.append(getStoredProcedureCallInitialClause(proc)).append("(\n");
-        for (int i = 0; i < inParameters.size(); i++) {
-            DBSProcedureParameter parameter = inParameters.get(i);
-            sql.append("\t:").append(CommonUtils.escapeIdentifier(parameter.getName()));
-            if (i < (inParameters.size() - 1)) {
-                sql.append(",");
-            } else {
-                sql.append(" ");
+        boolean useBrackets = useBracketsForExec();
+        if (useBrackets) sql.append("{ ");
+        sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
+        if (!inParameters.isEmpty()) {
+            sql.append("\n");
+            for (int i = 0; i < inParameters.size(); i++) {
+                DBSProcedureParameter parameter = inParameters.get(i);
+                sql.append("\t:").append(CommonUtils.escapeIdentifier(parameter.getName()));
+                if (i < (inParameters.size() - 1)) {
+                    sql.append(",");
+                } else {
+                    sql.append(" ");
+                }
+                String typeName = parameter.getParameterType().getFullTypeName();
+                sql.append("\t-- put the ").append(parameter.getName())
+                    .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")\n");
             }
-            String typeName = parameter.getParameterType().getFullTypeName();
-            sql.append("\t-- put the ").append(parameter.getName())
-                .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")\n");
         }
-        sql.append(");\n\n");
+        sql.append(")");
+        if (!useBrackets) {
+            sql.append(";");
+        } else {
+            sql.append(" }");
+        }
+        sql.append("\n\n");
+    }
+
+    @Override
+    public boolean isDisableScriptEscapeProcessing() {
+        return false;
     }
 }

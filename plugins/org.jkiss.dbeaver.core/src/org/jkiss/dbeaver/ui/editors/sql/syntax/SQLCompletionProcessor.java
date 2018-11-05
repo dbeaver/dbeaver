@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,17 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
@@ -60,7 +61,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     enum QueryType {
         TABLE,
         JOIN,
-        COLUMN
+        COLUMN,
+        EXEC
     }
 
     private static IContextInformationValidator VALIDATOR = new Validator();
@@ -134,6 +136,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         wordDetector.moveToDelimiter();
                         searchPrefix = ALL_COLUMNS_PATTERN;
                     }
+                } else if (SQLUtils.isExecQuery(editor.getSyntaxManager().getDialect(), prevKeyWord)) {
+                    request.queryType = QueryType.EXEC;
                 }
             }
         }
@@ -148,7 +152,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
 
-        if (!CommonUtils.isEmpty(request.wordPart))  {
+        if (!request.searchFinished && !CommonUtils.isEmpty(request.wordPart))  {
             // Keyword assist
             List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(request.wordPart);
             if (!request.simpleMode) {
@@ -158,6 +162,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = editor.getSyntaxManager().getDialect().getKeywordType(keyWord);
                 if (keywordType != null) {
+                    if (keywordType == DBPKeywordType.TYPE) {
+                        continue;
+                    }
+                    if (request.queryType == QueryType.COLUMN && keywordType != DBPKeywordType.FUNCTION) {
+                        continue;
+                    }
                     request.proposals.add(
                         SQLCompletionAnalyzer.createCompletionProposal(
                             request,
@@ -172,7 +182,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
         filterProposals(request, dataSource);
-
 
         return ArrayUtils.toArray(ICompletionProposal.class, request.proposals);
     }
@@ -350,11 +359,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                monitor.beginTask("Seeking for completion proposals", 1);
+                monitor.beginTask("Seeking for SQL completion proposals", 1);
                 try {
-                    monitor.subTask("Make structure proposals");
-                    SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(monitor, request);
-                    analyzer.runAnalyzer();
+                    monitor.subTask("Find proposals");
+                    SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
+                    DBUtils.tryExecuteRecover(monitor, editor.getDataSource(), analyzer);
                 } finally {
                     monitor.done();
                 }

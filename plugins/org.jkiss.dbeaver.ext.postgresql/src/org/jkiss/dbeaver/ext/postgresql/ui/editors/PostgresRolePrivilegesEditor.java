@@ -36,7 +36,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -53,7 +52,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -115,9 +113,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 return null;
             }
         });
-        treeViewer.addSelectionChangedListener(event -> {
-            handleSelectionChange();
-        });
+        treeViewer.addSelectionChangedListener(event -> handleSelectionChange());
         treeViewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -126,7 +122,11 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 }
                 if (element instanceof DBNDatabaseFolder) {
                     try {
-                        Class<?> childType = Class.forName(((DBNDatabaseFolder) element).getMeta().getType());
+                        String elementTypeName = ((DBNDatabaseFolder) element).getMeta().getType();
+                        if (elementTypeName == null) {
+                            return false;
+                        }
+                        Class<?> childType = Class.forName(elementTypeName);
                         return PostgreTableReal.class.isAssignableFrom(childType) ||
                             PostgreSequence.class.isAssignableFrom(childType) ||
                             PostgreProcedure.class.isAssignableFrom(childType);
@@ -331,6 +331,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     privItem.setData(pt);
                 }
                 permissionTable.getParent().layout(true);
+                UIUtils.packColumns(permissionTable, false);
             }
         }
 
@@ -356,7 +357,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         } else {
             objectDescriptionText.setText(objectNames.toString());
 
-            this.currentObjects = objects.toArray(new DBSObject[objects.size()]);
+            this.currentObjects = objects.toArray(new DBSObject[0]);
             this.currentPermissions = new PostgrePermission[this.currentObjects.length];
             for (int i = 0; i < currentObjects.length; i++) {
                 this.currentPermissions[i] = getObjectPermissions(currentObjects[i]);
@@ -424,14 +425,12 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
         isLoaded = true;
 
-        UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(permissionTable, false);
-        });
+        UIUtils.asyncExec(() -> UIUtils.packColumns(permissionTable, false));
 
         LoadingJob.createService(
             new DatabaseLoadService<Collection<PostgrePermission>>("Load permissions", getExecutionContext()) {
                 @Override
-                public Collection<PostgrePermission> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public Collection<PostgrePermission> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
@@ -450,9 +449,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     public void refreshPart(Object source, boolean force)
     {
         isLoaded = false;
-        UIUtils.syncExec(() -> {
-                updateObjectPermissions(null);
-        });
+        UIUtils.syncExec(() -> updateObjectPermissions(null));
         activatePart();
     }
 
@@ -466,6 +463,9 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 @Override
                 public void completeLoading(Collection<PostgrePermission> privs) {
                     super.completeLoading(privs);
+                    if (privs == null) {
+                        return;
+                    }
                     permissionMap.clear();
                     for (PostgrePermission perm : privs) {
                         permissionMap.put(perm.getName(), perm);
@@ -491,7 +491,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
 
         @Override
-        protected void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
 
             contributionManager.add(new Separator());
@@ -499,7 +499,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             IWorkbenchSite workbenchSite = getSite();
             if (workbenchSite != null) {
                 DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
-                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
             }
         }
     }

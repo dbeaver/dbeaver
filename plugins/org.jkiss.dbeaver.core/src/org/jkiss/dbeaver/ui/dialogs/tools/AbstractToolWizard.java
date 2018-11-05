@@ -25,19 +25,21 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -62,13 +64,13 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
 
     private final List<BASE_OBJECT> databaseObjects;
-    private DBPClientHome clientHome;
+    private DBPNativeClientLocation clientHome;
     private DBPDataSourceContainer dataSourceContainer;
     private DBPConnectionConfiguration connectionInfo;
     private String toolUserName;
     private String toolUserPassword;
     private String extraCommandArgs;
-    protected boolean clientHomeRequired = true;
+    protected boolean nativeClientHomeRequired = true;
 
     protected String task;
     protected final DatabaseWizardPageLog logPage;
@@ -127,7 +129,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         return connectionInfo;
     }
 
-    public DBPClientHome getClientHome()
+    public DBPNativeClientLocation getClientHome()
     {
         return clientHome;
     }
@@ -166,7 +168,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         }
     }
 
-    public abstract DBPClientHome findServerHome(String clientHomeId);
+    public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
+        return null;
+    }
 
     public abstract Collection<PROCESS_ARG> getRunInfo();
 
@@ -177,19 +181,46 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
         WizardPage currentPage = (WizardPage) getStartingPage();
 
-        if (clientHomeRequired) {
+        if (nativeClientHomeRequired) {
             String clientHomeId = connectionInfo.getClientHomeId();
             if (clientHomeId == null) {
                 currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
                 getContainer().updateMessage();
                 return;
             }
-            clientHome = findServerHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
+            clientHome = DBUtils.findObject(dataSourceContainer.getDriver().getNativeClientLocations(), clientHomeId);
+            if (clientHome == null) {
+                clientHome = findNativeClientHome(clientHomeId);
+            }
             if (clientHome == null) {
                 currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
                 getContainer().updateMessage();
             }
         }
+    }
+
+    private boolean validateClientFiles() {
+        if (!nativeClientHomeRequired || clientHome == null) {
+            return true;
+        }
+        try {
+            UIUtils.run(getContainer(), true, true, monitor -> {
+                try {
+                    clientHome.validateFilesPresence(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBUserInterface.getInstance().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
+            ((WizardPage)getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
+            getContainer().updateMessage();
+            return false;
+        } catch (InterruptedException e) {
+            // ignore
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -201,6 +232,11 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
         }
+
+        if (!validateClientFiles()) {
+            return false;
+        }
+
         long startTime = System.currentTimeMillis();
         try {
             UIUtils.run(getContainer(), true, true, this);
@@ -230,8 +266,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         // Make a sound
         Display.getCurrent().beep();
         // Notify agent
-        if (workTime > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
-            DBeaverUI.notifyAgent(toolName, IStatus.INFO);
+        if (workTime > DBWorkbench.getPlatformUI().getLongOperationTimeout() * 1000) {
+            DBWorkbench.getPlatformUI().notifyAgent(toolName, IStatus.INFO);
         }
     }
 
@@ -437,6 +473,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             try {
                 try (InputStream scriptStream = new ProgressStreamReader(
                     monitor,
+                    task,
                     new FileInputStream(inputFile),
                     inputFile.length()))
                 {
@@ -483,6 +520,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         {
             try (InputStream scriptStream = new ProgressStreamReader(
                 monitor,
+                task,
                 new FileInputStream(inputFile),
                 inputFile.length()))
             {
@@ -509,77 +547,6 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 monitor.done();
                 transferFinished = true;
             }
-        }
-    }
-
-    private class ProgressStreamReader extends InputStream {
-
-        static final int BUFFER_SIZE = 10000;
-
-        private final DBRProgressMonitor monitor;
-        private final InputStream original;
-        private final long streamLength;
-        private long totalRead;
-
-        private ProgressStreamReader(DBRProgressMonitor monitor, InputStream original, long streamLength)
-        {
-            this.monitor = monitor;
-            this.original = original;
-            this.streamLength = streamLength;
-            this.totalRead = 0;
-
-            monitor.beginTask(task, (int)streamLength);
-        }
-
-        @Override
-        public int read() throws IOException
-        {
-            int res = original.read();
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException
-        {
-            int res = original.read(b);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException
-        {
-            int res = original.read(b, off, len);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public long skip(long n) throws IOException
-        {
-            long res = original.skip(n);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int available() throws IOException
-        {
-            return original.available();
-        }
-
-        @Override
-        public void close() throws IOException
-        {
-            monitor.done();
-            original.close();
-        }
-
-        private void showProgress(long length)
-        {
-            totalRead += length;
-            monitor.worked((int)length);
         }
     }
 

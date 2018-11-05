@@ -44,6 +44,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Text nlsDateFormat;
     private Button hideEmptySchemasCheckbox;
     private Button showDBAAlwaysCheckbox;
+    private Button useDBAViewsCheckbox;
     private Button useRuleHint;
 
     public OracleConnectionExtraPage()
@@ -99,9 +100,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 "Check existence of objects within schema and do not show empty schemas in tree. " + GeneralUtils.getDefaultLineSeparator() +
                 "Enabled by default but it may cause performance problems on databases with very big number of objects.");
 
-            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, "Always show DBA objects", false);
-            showDBAAlwaysCheckbox.setToolTipText(
-                "Always shows DBA-related metadata objects in tree even if user do not has DBA role.");
+            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, "Always show DBA objects", "Always shows DBA-related metadata objects in tree even if user do not has DBA role.", false, 1);
+            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, "Always use DBA_* views", "Use DBA_* views instead of ALL_* views wherever it is possible", false, 1);
         }
 
         {
@@ -155,6 +155,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
+        useDBAViewsCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS), false));
         useRuleHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
     }
 
@@ -190,6 +191,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                 OracleConstants.PROP_ALWAYS_SHOW_DBA,
                 String.valueOf(showDBAAlwaysCheckbox.getSelection()));
+            providerProperties.put(
+                OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS,
+                String.valueOf(useDBAViewsCheckbox.getSelection()));
+
             providerProperties.put(
                 OracleConstants.PROP_USE_RULE_HINT,
                 String.valueOf(useRuleHint.getSelection()));

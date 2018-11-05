@@ -173,7 +173,9 @@ public class SQLQueryJob extends DataSourceJob
             DBCExecutionPurpose purpose = queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER;
             try (DBCSession session = context.openSession(monitor, purpose, "SQL Query")) {
                 // Set transaction settings (only if autocommit is off)
-                QMUtils.getDefaultHandler().handleScriptBegin(session);
+                if (session.isLoggingEnabled()) {
+                    QMUtils.getDefaultHandler().handleScriptBegin(session);
+                }
 
                 boolean oldAutoCommit = txnManager == null || txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
@@ -268,8 +270,9 @@ public class SQLQueryJob extends DataSourceJob
                 if (txnManager != null && !oldAutoCommit && newAutoCommit) {
                     txnManager.setAutoCommit(monitor, false);
                 }
-
-                QMUtils.getDefaultHandler().handleScriptEnd(session);
+                if (session.isLoggingEnabled()) {
+                    QMUtils.getDefaultHandler().handleScriptEnd(session);
+                }
 
                 // Return success
                 return new Status(
@@ -459,7 +462,7 @@ public class SQLQueryJob extends DataSourceJob
                         } else {
                             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
                             if (dataReceiver != null) {
-                                hasResultSet = fetchQueryData(session, resultSet, curResult, dataReceiver, true);
+                                hasResultSet = fetchQueryData(session, resultSet, curResult, curResult.addExecuteResult(true), dataReceiver, true);
                             }
                         }
                     }
@@ -468,7 +471,7 @@ public class SQLQueryJob extends DataSourceJob
                     try {
                         updateCount = dbcStatement.getUpdateRowCount();
                         if (updateCount >= 0) {
-                            curResult.setUpdateCount(updateCount);
+                            curResult.addExecuteResult(false).setUpdateCount(updateCount);
                             statistics.addRowsUpdated(updateCount);
                         }
                     } catch (DBCException e) {
@@ -549,6 +552,8 @@ public class SQLQueryJob extends DataSourceJob
         // Fetch fake result set
         StatResultSet fakeResultSet = new StatResultSet(session, curStatement);
         SQLQueryResult resultInfo = new SQLQueryResult(query);
+        SQLQueryResult.ExecuteResult executeResult = resultInfo.addExecuteResult(true);
+
         if (statistics.getStatementsCount() > 1) {
             // Multiple statements - show script statistics
             fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
@@ -564,7 +569,7 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.getFetchTime(),
                 statistics.getTotalTime(),
                 new Date());
-            resultInfo.setResultSetName("Statistics");
+            executeResult.setResultSetName("Statistics");
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
@@ -576,9 +581,9 @@ public class SQLQueryJob extends DataSourceJob
             } else {
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
-            resultInfo.setResultSetName("Result");
+            executeResult.setResultSetName("Result");
         }
-        fetchQueryData(session, fakeResultSet, resultInfo, dataReceiver, false);
+        fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
 
     private boolean prepareStatementParameters(SQLQuery sqlStatement) {
@@ -609,36 +614,37 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
     {
-        boolean allSet = true;
         for (SQLQueryParameter param : parameters) {
-            if (param.getValue() == null) {
-                allSet = false;
-            }
             String paramName = param.getTitle();
             if (scriptContext.hasVariable(paramName)) {
                 Object varValue = scriptContext.getVariable(paramName);
-                String strValue;
-                /*if (varValue instanceof String) {
-                    strValue = SQLUtils.quoteString(getExecutionContext().getDataSource(), (String) varValue);
-                } else */{
-                    strValue = varValue == null ? null : varValue.toString();
-                }
+                String strValue = varValue == null ? null : varValue.toString();
                 param.setValue(strValue);
+                param.setVariableSet(true);
+            } else {
+                param.setVariableSet(false);
+            }
+        }
+        boolean allSet = true;
+        for (SQLQueryParameter param : parameters) {
+            if (!param.isVariableSet()) {
+                allSet = false;
             }
         }
         if (allSet) {
             return true;
         }
-        boolean okPressed = true;
-        okPressed = new UIConfirmation() {
-            @Override
-            public Boolean runTask() {
+
+        boolean okPressed = new UIConfirmation() {
+                @Override
+                public Boolean runTask() {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                        partSite.getShell(),
-                        parameters);
+                    partSite.getShell(),
+                    parameters);
                 return (dialog.open() == IDialogConstants.OK_ID);
             }
         }.execute();
+
         if (okPressed) {
             // Save values back to script context
             for (SQLQueryParameter param : parameters) {
@@ -651,7 +657,7 @@ public class SQLQueryJob extends DataSourceJob
         return okPressed;
     }
 
-    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, DBDDataReceiver dataReceiver, boolean updateStatistics)
+    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, SQLQueryResult.ExecuteResult executeResult, DBDDataReceiver dataReceiver, boolean updateStatistics)
         throws DBCException
     {
         if (dataReceiver == null) {
@@ -693,20 +699,18 @@ public class SQLQueryJob extends DataSourceJob
                             }
                         }
                     }
-    /*
                     if (CommonUtils.isEmpty(sourceName)) {
                         try {
                             sourceName = resultSet.getResultSetName();
-                        } catch (DBCException e) {
-                            log.debug(e);
+                        } catch (Exception e) {
+                            // This will happen quite often, do not log it
                         }
                     }
-    */
                 }
                 if (CommonUtils.isEmpty(sourceName)) {
                     sourceName = "Result";
                 }
-                result.setResultSetName(sourceName);
+                executeResult.setResultSetName(sourceName);
             }
             long fetchStartTime = System.currentTimeMillis();
 
@@ -745,7 +749,7 @@ public class SQLQueryJob extends DataSourceJob
         }
 
         if (result != null) {
-            result.setRowCount(rowCount);
+            executeResult.setRowCount(rowCount);
         }
         if (updateStatistics) {
             statistics.setRowsFetched(rowCount);

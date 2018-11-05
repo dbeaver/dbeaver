@@ -34,7 +34,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBeaverUIConstants;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -232,7 +232,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     }
 
     private boolean closeActiveTransactions() {
-        for (DataSourceDescriptor dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
+        for (DBPDataSourceContainer dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
             if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor)) {
                 return false;
             }

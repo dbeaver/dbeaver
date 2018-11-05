@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -35,11 +36,16 @@ public class MockDataSettings {
 
     public static final String PROP_REMOVE_OLD_DATA = "removeOldData"; //$NON-NLS-1$
     public static final String PROP_ROWS_NUMBER = "rowsNumber"; //$NON-NLS-1$
+    public static final String PROP_BATCH_SIZE = "batchSize"; //$NON-NLS-1$
 
     public static final String KEY_SELECTED_ATTRIBUTE = "selectedAttribute"; //$NON-NLS-1$
     public static final String KEY_SELECTED_GENERATOR = "selectedGenerator"; //$NON-NLS-1$
     public static final String KEY_PRESET_ID = "presetId"; //$NON-NLS-1$
     public static final String KEY_GENERATOR_SECTION = "GENERATOR_SECTION"; //$NON-NLS-1$
+
+    static final String NO_GENERATOR_ID = "<no generator>";
+
+    static final String NO_GENERATOR_LABEL = MockDataMessages.tools_mockdata_attribute_generator_skip;
 
     private DBSEntity entity;
     private Collection<DBSAttributeBase> attributes;
@@ -47,6 +53,7 @@ public class MockDataSettings {
 
     private boolean removeOldData;
     private long rowsNumber = 1000;
+    private int batchSize = 200;
 
     private String selectedAttribute; // attribute.name
     private Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
@@ -61,7 +68,12 @@ public class MockDataSettings {
         entity = (DBSEntity) dataManipulator;
         attributes = new ArrayList<>();
 
-        attributes.addAll(DBUtils.getRealAttributes(entity.getAttributes(monitor)));
+        for (DBSAttributeBase attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
+            if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
+                continue;
+            }
+            attributes.add(attr);
+        }
 
         MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
         for (DBSAttributeBase attribute : attributes) {
@@ -100,7 +112,7 @@ public class MockDataSettings {
 
     private void putGenerator(AttributeGeneratorProperties generatorProperties, MockGeneratorDescriptor generator) {
         generatorDescriptors.put(generator.getId(), generator);
-        generatorProperties.putGeneratorPropertySource(generator.getId(), new PropertySourceCustom(generator.getProperties(), null));
+        generatorProperties.putGeneratorProperties(generator.getId(), new PropertySourceCustom(generator.getProperties(), null));
     }
 
     public MockGeneratorDescriptor getGeneratorDescriptor(String generatorId) {
@@ -134,6 +146,14 @@ public class MockDataSettings {
         this.rowsNumber = rowsNumber;
     }
 
+    public int getBatchSize() {
+        return batchSize;
+    }
+
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
+
     public Map<String, AttributeGeneratorProperties> getAttributeGenerators() {
         return attributeGenerators;
     }
@@ -153,6 +173,11 @@ public class MockDataSettings {
         } catch (NumberFormatException e) {
             // do nothing
         }
+        try {
+            batchSize = dialogSettings.getInt(PROP_BATCH_SIZE);
+        } catch (NumberFormatException e) {
+            // do nothing
+        }
 
         // load selected generators
         selectedAttribute = dialogSettings.get(KEY_SELECTED_ATTRIBUTE);
@@ -167,21 +192,26 @@ public class MockDataSettings {
             AttributeGeneratorProperties attrGeneratorProperties = entry.getValue();
 
             // set the saved generator
-            if (savedGeneratorId != null) {
-                attrGeneratorProperties.setSelectedGeneratorId(savedGeneratorId);
-                attrGeneratorProperties.setPresetId(attributeSection.get(KEY_PRESET_ID));
+            if (NO_GENERATOR_ID.equals(savedGeneratorId)) {
+                attrGeneratorProperties.setSelectedGenerator(null);
+                attrGeneratorProperties.setPresetId(null);
+            } else if (!CommonUtils.isEmpty(savedGeneratorId)) {
+                MockGeneratorDescriptor generatorDescriptor = attrGeneratorProperties.getGenerator(savedGeneratorId);
+                if (generatorDescriptor != null) {
+                    attrGeneratorProperties.setSelectedGenerator(generatorDescriptor);
+                    attrGeneratorProperties.setPresetId(attributeSection.get(KEY_PRESET_ID));
+                }
 
-                PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(savedGeneratorId);
+                PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorProperties();
                 IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
                 if (generatorPropertySource != null) {
-                    Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
-                    for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
-                        String key = (String) propEntry.getKey();
+                    for (DBPPropertyDescriptor prop : generatorPropertySource.getPropertyDescriptors2()) {
+                        String key = (String) prop.getId();
                         Object savedValue = UIUtils.getSectionValueWithType(generatorSection, key);
                         if (key.equals("nulls") && savedValue instanceof Boolean) {
                             continue; // skip incorrect type TODO can be removed in the future
                         }
-                        generatorPropertySource.setPropertyValue(voidProgressMonitor, propEntry.getKey(), savedValue);
+                        generatorPropertySource.setPropertyValue(voidProgressMonitor, key, savedValue);
                     }
                 }
             } else {
@@ -193,6 +223,11 @@ public class MockDataSettings {
 
     public void autoAssignGenerator(AttributeGeneratorProperties attrGeneratorProperties) {
         DBSAttributeBase attribute = attrGeneratorProperties.getAttribute();
+        if (attribute.isAutoGenerated()) {
+            // Do not generate it by default
+            attrGeneratorProperties.setSelectedGenerator(null);
+            return;
+        }
         String attributeName = attribute.getName().toLowerCase();
         Set<String> attrGeneratorIds = attrGeneratorProperties.getGenerators();
         boolean found = false;
@@ -201,12 +236,14 @@ public class MockDataSettings {
             for (String tag : generatorDescriptor.getTags()) {
                 // find & set the appropriate generator
                 if (attributeName.contains(tag)) {
-                    attrGeneratorProperties.setSelectedGeneratorId(generatorId);
+                    attrGeneratorProperties.setSelectedGenerator(generatorDescriptor);
                     found = true;
                     break;
                 }
             }
-            if (found) break;
+            if (found) {
+                break;
+            }
         }
         if (!found) {
             // set the default generator
@@ -229,14 +266,17 @@ public class MockDataSettings {
 
     // prevents set non-acceptable generator
     private void setSelectedGenerator(AttributeGeneratorProperties attrGeneratorProperties, String generatorId) {
-        if (attrGeneratorProperties.getGenerators().contains(generatorId)) {
-            attrGeneratorProperties.setSelectedGeneratorId(generatorId);
+        if (generatorId == null) {
+            attrGeneratorProperties.setSelectedGenerator(null);
+        } else {
+            attrGeneratorProperties.setSelectedGenerator(attrGeneratorProperties.getGenerator(generatorId));
         }
     }
 
     void saveTo(IDialogSettings dialogSettings) {
         dialogSettings.put(PROP_REMOVE_OLD_DATA, removeOldData);
         dialogSettings.put(PROP_ROWS_NUMBER, rowsNumber);
+        dialogSettings.put(PROP_BATCH_SIZE, batchSize);
 
         // save selected generators
         dialogSettings.put(KEY_SELECTED_ATTRIBUTE, selectedAttribute);
@@ -246,13 +286,16 @@ public class MockDataSettings {
 
             AttributeGeneratorProperties attrGeneratorProperties = attrEntry.getValue();
             IDialogSettings attributeSection = UIUtils.getSettingsSection(tableSection, attributeName);
-            String selectedGeneratorId = attrGeneratorProperties.getSelectedGeneratorId();
-            attributeSection.put(KEY_SELECTED_GENERATOR, selectedGeneratorId);
-            attributeSection.put(KEY_PRESET_ID, attrGeneratorProperties.getPresetId());
+            MockGeneratorDescriptor selectedGenerator = attrGeneratorProperties.getSelectedGenerator();
+            if (selectedGenerator == null) {
+                attributeSection.put(KEY_SELECTED_GENERATOR, NO_GENERATOR_ID);
+                attributeSection.put(KEY_PRESET_ID, (String)null);
+            } else {
+                attributeSection.put(KEY_SELECTED_GENERATOR, selectedGenerator.getId());
+                attributeSection.put(KEY_PRESET_ID, attrGeneratorProperties.getPresetId());
 
-            IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
-            if (selectedGeneratorId != null) {
-                PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
+                IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
+                PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorProperties();
                 if (generatorPropertySource != null) {
                     Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
                     for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
@@ -265,7 +308,7 @@ public class MockDataSettings {
 
     public class AttributeGeneratorProperties {
         private final DBSAttributeBase attribute;
-        private String selectedGeneratorId = null;
+        private MockGeneratorDescriptor selectedGenerator = null;
         private String presetId = null;
         private Map<String, PropertySourceCustom> generators = new TreeMap<>(); // generatorId -> PropertySourceCustom
 
@@ -277,37 +320,34 @@ public class MockDataSettings {
             return attribute;
         }
 
-        public String getSelectedGeneratorId() {
-            if (selectedGeneratorId == null && !CommonUtils.isEmpty(getGenerators())) {
-                selectedGeneratorId = getGenerators().iterator().next();
-            }
-            return selectedGeneratorId;
+        public MockGeneratorDescriptor getSelectedGenerator() {
+            return selectedGenerator;
         }
 
         public Set<String> getGenerators() {
             return generators.keySet();
         }
 
-        public String setSelectedGeneratorId(String selectedGeneratorId) {
-            if ((selectedGeneratorId == null || !generatorDescriptors.keySet().contains(selectedGeneratorId)) && !CommonUtils.isEmpty(getGenerators())) {
-                selectedGeneratorId = getGenerators().iterator().next();
-            }
-            if (this.selectedGeneratorId != selectedGeneratorId) {
-                this.selectedGeneratorId = selectedGeneratorId;
-                presetId = null;
-            }
-            return selectedGeneratorId;
+        public void setSelectedGenerator(MockGeneratorDescriptor generator) {
+            this.selectedGenerator = generator;
         }
 
-        public void putGeneratorPropertySource(String generatorId, PropertySourceCustom propertySource) {
+        public MockGeneratorDescriptor autoDetectGenerator() {
+            if (!CommonUtils.isEmpty(getGenerators())) {
+                String genId = getGenerators().iterator().next();
+                selectedGenerator = generatorDescriptors.get(genId);
+            }
+            this.presetId = null;
+
+            return selectedGenerator;
+        }
+
+        public void putGeneratorProperties(String generatorId, PropertySourceCustom propertySource) {
             generators.put(generatorId, propertySource);
         }
 
-        public PropertySourceCustom getGeneratorPropertySource(String generatorId) {
-            if (generatorId == null) {
-                generatorId = getSelectedGeneratorId();
-            }
-            return generators.get(generatorId);
+        public PropertySourceCustom getGeneratorProperties() {
+            return selectedGenerator == null ? null : generators.get(selectedGenerator.getId());
         }
 
         public String getPresetId() {
@@ -320,6 +360,14 @@ public class MockDataSettings {
 
         public boolean isEmpty() {
             return generators.isEmpty();
+        }
+
+        public boolean isSkip() {
+            return selectedGenerator == null;
+        }
+
+        public MockGeneratorDescriptor getGenerator(String generatorId) {
+            return generatorDescriptors.get(generatorId);
         }
     }
 }

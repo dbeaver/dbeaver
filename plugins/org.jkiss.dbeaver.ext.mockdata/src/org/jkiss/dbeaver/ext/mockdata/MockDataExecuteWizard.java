@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IImportWizard;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.utils.CommonUtils;
@@ -47,7 +48,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 {
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
-    private static final int BATCH_SIZE = 1000;
     public static final boolean JUST_GENERATE_SCRIPT = false;
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
@@ -57,7 +57,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
         super(dbObjects, task);
-        this.clientHomeRequired = false;
+        this.nativeClientHomeRequired = false;
         this.mockDataSettings = mockDataSettings;
     }
 
@@ -79,14 +79,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     @Override
     public boolean canFinish() {
-        try {
-            Collection<? extends DBSEntityAttribute> attributes =
-                    mockDataSettings.getEntity().getAttributes(mockDataSettings.getMonitor());
-            return super.canFinish() && !CommonUtils.isEmpty(DBUtils.getRealAttributes(attributes));
-        } catch (DBException ex) {
-            log.error("Error accessing DB entity " + mockDataSettings.getEntity().getName(), ex);
-            return false;
-        }
+        return super.canFinish() && !CommonUtils.isEmpty(mockDataSettings.getAttributeGenerators());
     }
 
     @Override
@@ -121,10 +114,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 CommonUtils.truncateString(NLS.bind(MockDataMessages.tools_mockdata_wizard_message_process_completed, getObjectsName()), 255),
                 SWT.ICON_INFORMATION);
 */
-    }
-
-    public DBPClientHome findServerHome(String clientHomeId) {
-        return null;
     }
 
     @Override
@@ -179,7 +168,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     }
                 } catch (Exception e) {
                     success = false;
-                    String message = NLS.bind(MockDataMessages.tools_mockdata_wizard_log_removing_error, e.getMessage());
+                    String message = MockDataMessages.tools_mockdata_wizard_log_removing_error + "\n" + e.getMessage();
                     log.error(message, e);
                     logPage.appendLog(message + "\n\n", true);
                 }
@@ -205,31 +194,36 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
                 logPage.appendLog(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_inserting_into, dataManipulator.getName()));
                 DBCStatistics insertStats = new DBCStatistics();
-                persistActions = new ArrayList<>();
 
                 // build and init the generators
                 generators.clear();
                 DBSEntity dbsEntity = (DBSEntity) dataManipulator;
-                Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
-                for (DBSAttributeBase attribute : attributes) {
-                    MockGeneratorDescriptor generatorDescriptor = mockDataSettings.getGeneratorDescriptor(mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGeneratorId());
-                    if (generatorDescriptor != null) {
-                        MockValueGenerator generator = generatorDescriptor.createGenerator();
-
+                List<DBSAttributeBase> attributes = new ArrayList<>();
+                for (MockDataSettings.AttributeGeneratorProperties attributeProps : mockDataSettings.getAttributeGenerators().values()) {
+                    MockGeneratorDescriptor attrGenerator = attributeProps.getSelectedGenerator();
+                    if (attrGenerator != null) {
+                        MockValueGenerator generatorInstance = attrGenerator.createGenerator();
+                        DBSAttributeBase attribute = attributeProps.getAttribute();
                         MockDataSettings.AttributeGeneratorProperties generatorPropertySource = this.mockDataSettings.getAttributeGeneratorProperties(attribute);
-                        String selectedGenerator = generatorPropertySource.getSelectedGeneratorId();
-                        Map<Object, Object> generatorProperties =
-                                generatorPropertySource.getGeneratorPropertySource(selectedGenerator).getPropertiesWithDefaults();
-                        generator.init(dataManipulator, attribute, generatorProperties);
-                        generators.put(attribute.getName(), generator);
+                        PropertySourceCustom generatorProperties = generatorPropertySource.getGeneratorProperties();
+                        if (generatorProperties != null) {
+                            Map<Object, Object> propValues = generatorProperties.getPropertiesWithDefaults();
+                            generatorInstance.init(dataManipulator, attribute, propValues);
+                            generators.put(attribute.getName(), generatorInstance);
+                        }
+                        attributes.add(attribute);
                     }
                 }
 
                 monitor.done();
 
                 long rowsNumber = mockDataSettings.getRowsNumber();
-                long quotient = rowsNumber / BATCH_SIZE;
-                long modulo = rowsNumber % BATCH_SIZE;
+                int batchSize = mockDataSettings.getBatchSize();
+                if (batchSize <= 0) {
+                    batchSize = 1;
+                }
+                long quotient = rowsNumber / batchSize;
+                long modulo = rowsNumber % batchSize;
                 if (modulo > 0) {
                     quotient++;
                 }
@@ -265,11 +259,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         }
 
                         monitor.subTask(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_inserted_rows, String.valueOf(counter)));
-                        monitor.worked(BATCH_SIZE);
+                        //monitor.worked(batchSize);
                     }
 
                     try {
-                        for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
+                        for (int i = 0; (i < batchSize && counter < rowsNumber); i++) {
                             if (monitor.isCanceled()) {
                                 break;
                             }
@@ -323,6 +317,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             if (counter++ < rowsNumber) {
                                 batch.add(DBDAttributeValue.getValues(attributeValues));
                             }
+                            monitor.worked(1);
                         }
                         if (batch != null) {
                             if (JUST_GENERATE_SCRIPT) {
@@ -377,5 +372,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         String message = NLS.bind(MockDataMessages.tools_mockdata_wizard_log_error_generating, e.getMessage());
         log.error(message, e);
         logPage.appendLog(message + "\n\n", true);
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        // We have only one page
+        return null;
     }
 }

@@ -157,7 +157,7 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
             }
 
             @Override
-            protected void fillCustomActions(IContributionManager contributionManager) {
+            public void fillCustomActions(IContributionManager contributionManager) {
                 super.fillCustomActions(contributionManager);
                 addColumnConfigAction(contributionManager);
             }

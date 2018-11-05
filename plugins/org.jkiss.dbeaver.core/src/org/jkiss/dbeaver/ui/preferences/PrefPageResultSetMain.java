@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Locale;
 
 /**
  * PrefPageResultSetMain
@@ -38,12 +41,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset"; //$NON-NLS-1$
 
     private Button autoFetchNextSegmentCheck;
-    private Spinner resultSetSize;
+    private Text resultSetSize;
     private Button resultSetUseSQLCheck;
     private Button serverSideOrderingCheck;
     private Button readQueryMetadata;
     private Button readQueryReferences;
-    private Spinner queryCancelTimeout;
+    private Text queryCancelTimeout;
     private Button filterForceSubselect;
 
     private Button keepStatementOpenCheck;
@@ -95,7 +98,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             Group queriesGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
             queriesGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            resultSetSize = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size, "", 0, 0, 1024 * 1024);
+            resultSetSize = UIUtils.createLabelText(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size, "0", SWT.BORDER);
+            resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, null, true, 2);
             resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, null, false, 2);
             serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, null, false, 2);
@@ -103,7 +107,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
                CoreMessages.pref_page_database_resultsets_label_read_metadata_tip, false, 2);
             readQueryReferences = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_references,
                 CoreMessages.pref_page_database_resultsets_label_read_references_tip, false, 2);
-            queryCancelTimeout = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip, 0, 0, Integer.MAX_VALUE);
+            queryCancelTimeout = UIUtils.createLabelText(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, "0");
+            queryCancelTimeout.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            queryCancelTimeout.setToolTipText(CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip);
             queryCancelTimeout.setEnabled(false);
 
             filterForceSubselect = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_filter_force_subselect,
@@ -146,12 +152,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         try {
             autoFetchNextSegmentCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
-            resultSetSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS));
+            resultSetSize.setText(store.getString(DBeaverPreferences.RESULT_SET_MAX_ROWS));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
             readQueryMetadata.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA));
             readQueryReferences.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_REFERENCES));
-            queryCancelTimeout.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT));
+            queryCancelTimeout.setText(store.getString(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT));
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
@@ -173,12 +179,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         try {
             store.setValue(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
 
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());

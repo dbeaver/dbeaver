@@ -49,7 +49,7 @@
     <!-- Breakpoints -->
 
     <extension id="databaseBreakpointMarker" name="%databaseBreakpoint.name" point="org.eclipse.core.resources.markers">
-        <super type="org.jkiss.dbeaver.runtime.ide.core.datasourceMarker"/>
+        <super type="org.jkiss.dbeaver.runtime.marker.datasourceId"/>
         <super type="org.eclipse.debug.core.breakpointMarker"/>
         <persistent value="true"/>
         <attribute name="org.jkiss.dbeaver.debug.core.procedureOid"/>
@@ -59,12 +59,8 @@
             id="databaseLineBreakpointMarker"
             name="%databaseLineBreakpoint.name"
             point="org.eclipse.core.resources.markers">
-        <super
-                type="org.eclipse.debug.core.lineBreakpointMarker">
-        </super>
-        <super
-                type="org.jkiss.dbeaver.debug.core.databaseBreakpointMarker">
-        </super>
+        <super type="org.eclipse.debug.core.lineBreakpointMarker"/>
+        <super type="org.jkiss.dbeaver.debug.core.databaseBreakpointMarker"/>
         <persistent
                 value="true">
         </persistent>

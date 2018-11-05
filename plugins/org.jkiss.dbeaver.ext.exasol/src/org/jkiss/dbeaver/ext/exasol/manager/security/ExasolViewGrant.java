@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ExasolViewGrant extends ExasolBaseObjectGrant {
 
@@ -30,9 +30,9 @@ public class ExasolViewGrant extends ExasolBaseObjectGrant {
 	}
 	
 	@Property(viewable = true, order = 10)
-	public ExasolView getView() throws DBException
+	public ExasolView getView(DBRProgressMonitor monitor) throws DBException
 	{
-		return super.getSchema().getView(new VoidProgressMonitor(), super.getObjectName());
+		return super.getSchema().getView(monitor, super.getObjectName());
 	}
 		
 

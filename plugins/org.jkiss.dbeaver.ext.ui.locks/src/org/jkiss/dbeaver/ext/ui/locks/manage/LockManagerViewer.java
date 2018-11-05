@@ -231,7 +231,7 @@ public class LockManagerViewer {
         }
 
         @Override
-        protected void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(IContributionManager contributionManager) {
             contributeToToolbar(getLockManager(), contributionManager);
             contributionManager.add(killAction);
             contributionManager.add(new Separator());

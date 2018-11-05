@@ -134,8 +134,9 @@ public class SQLSemanticProcessor {
                 select.setOrderByElements(orderByElements);
             }
             for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
-                Expression orderExpr = getOrderConstraintExpression(dataSource, select, co,
-                        filter.hasNameDuplicates(co.getAttribute().getName()));
+                String columnName = co.getAttribute().getName();
+                boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
+                Expression orderExpr = getOrderConstraintExpression(dataSource, select, co, forceNumeric);
                 OrderByElement element = new OrderByElement();
                 element.setExpression(orderExpr);
                 if (co.isOrderDescending()) {

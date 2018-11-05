@@ -447,7 +447,7 @@ public class HexManager {
         }
         content = new BinaryContent(aFile);  // throws IOException
         hexEditControl.setCharset(charset);
-        hexEditControl.setContentProvider(content);
+        hexEditControl.setContentProvider(content, true);
     }
 
     /**

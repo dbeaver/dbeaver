@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -75,6 +77,16 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
         try {
             if (resultSet instanceof JDBCResultSet) {
                 JDBCResultSet dbResults = (JDBCResultSet) resultSet;
+
+                // check for native format
+                if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
+                    try {
+                        return dbResults.getString(index + 1);
+                    } catch (SQLException e) {
+                        log.debug("Can't read date/time value as string: " + e.getMessage());
+                    }
+                }
+
                 // It seems that some drivers doesn't support reading date/time values with explicit calendar
                 // So let's use simple version
                 switch (type.getTypeID()) {
@@ -84,16 +96,19 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                     case Types.DATE:
                         return dbResults.getDate(index + 1);
                     default:
-                        return dbResults.getTimestamp(index + 1);
+                        Object value = dbResults.getObject(index + 1);
+                        return getValueFromObject(session, type, value, false);
                 }
             } else {
                 return resultSet.getAttributeValue(index);
             }
         }
         catch (SQLException e) {
-            if (e.getCause() instanceof ParseException || e.getCause() instanceof UnsupportedOperationException) {
-                // [SQLite] workaround.
-                try {
+            try {
+                if (e.getCause() instanceof ParseException ||
+                    e.getCause() instanceof UnsupportedOperationException)
+                {
+                    // [SQLite] workaround.
                     Object objectValue = ((JDBCResultSet) resultSet).getObject(index + 1);
                     if (objectValue instanceof Date) {
                         return objectValue;
@@ -107,11 +122,17 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                     } else {
                         return null;
                     }
-
-                } catch (SQLException e1) {
-                    // Ignore
-                    log.debug("Can't retrieve datetime object");
+                } else if (
+                    SQLState.SQL_42000.getCode().equals(e.getSQLState()) ||
+                    SQLState.SQL_S1009.getCode().equals(e.getSQLState()))
+                {
+                    // [MySQL] workaround. Time value may be interval (should be read as string)
+                    return ((JDBCResultSet) resultSet).getString(index + 1);
                 }
+            } catch (SQLException e1) {
+                // Ignore
+                log.debug("Can't retrieve datetime object", e1);
+                return null;
             }
             throw new DBCException(e, session.getDataSource());
         }
@@ -124,6 +145,9 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             // JDBC uses 1-based indexes
             if (value == null) {
                 dbStat.setNull(index + 1, type.getTypeID());
+            } else if (value instanceof String) {
+                // Some custom value format.
+                dbStat.setString(index + 1, (String) value);
             } else {
                 switch (type.getTypeID()) {
                     case Types.TIME:
@@ -148,14 +172,18 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value != null && format == DBDDisplayFormat.NATIVE) {
-            Format nativeFormat = getNativeValueFormat(column);
-            if (nativeFormat != null) {
-                try {
-                    return nativeFormat.format(value);
-                } catch (Exception e) {
-                    log.error("Error formatting date", e);
+        if (format == DBDDisplayFormat.NATIVE) {
+            if (value instanceof Date) {
+                Format nativeFormat = getNativeValueFormat(column);
+                if (nativeFormat != null) {
+                    try {
+                        return nativeFormat.format(value);
+                    } catch (Exception e) {
+                        log.error("Error formatting date", e);
+                    }
                 }
+            } else if (value instanceof String) {
+                return "'" + super.getValueDisplayString(column, value, format) + "'";
             }
         }
         return super.getValueDisplayString(column, value, format);

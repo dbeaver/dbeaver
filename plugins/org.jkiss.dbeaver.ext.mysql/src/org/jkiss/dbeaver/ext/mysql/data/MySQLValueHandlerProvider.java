@@ -38,6 +38,8 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
     {
         if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
+        } else if (typedObject.getDataKind() == DBPDataKind.NUMERIC) {
+            return new MySQLNumberValueHandler(typedObject, preferences.getDataFormatterProfile());
         } else if (typedObject.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return JDBCContentValueHandler.INSTANCE;
         } else if (typedObject.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_GEOMETRY)) {

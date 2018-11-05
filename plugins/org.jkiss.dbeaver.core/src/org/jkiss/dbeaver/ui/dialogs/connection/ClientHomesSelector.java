@@ -26,12 +26,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -43,8 +43,6 @@ import java.util.Set;
  */
 public class ClientHomesSelector
 {
-    private static final Log log = Log.getLog(ClientHomesSelector.class);
-
     private Composite selectorPanel;
     private Combo homesCombo;
     //private Label versionLabel;
@@ -98,10 +96,10 @@ public class ClientHomesSelector
         if (newHomeId != null) {
             currentHomeId = newHomeId;
         }
-        populateHomes(driver, currentHomeId);
+        populateHomes(driver, currentHomeId, false);
     }
 
-    public void populateHomes(DBPDriver driver, String currentHome)
+    public void populateHomes(DBPDriver driver, String currentHome, boolean selectDefault)
     {
         this.driver = driver;
         this.currentHomeId = currentHome;
@@ -109,31 +107,40 @@ public class ClientHomesSelector
         this.homesCombo.removeAll();
         this.homeIds.clear();
 
-        DBPClientManager clientManager = driver.getClientManager();
-        if (clientManager != null) {
-            Set<String> homes = new LinkedHashSet<>(
-                clientManager.findClientHomeIds());
-            homes.addAll(driver.getClientHomeIds());
+        Set<DBPNativeClientLocation> homes = new LinkedHashSet<>();
+        homes.addAll(driver.getNativeClientLocations());
 
-            for (String homeId : homes) {
-                DBPClientHome home = driver.getClientHome(homeId);
-                if (home != null) {
-                    homesCombo.add(home.getDisplayName());
-                    homeIds.add(home.getHomeId());
-                    if (currentHomeId != null && home.getHomeId().equals(currentHomeId)) {
-                        homesCombo.select(homesCombo.getItemCount() - 1);
-                    }
+        DBPNativeClientLocationManager clientManager = driver.getNativeClientManager();
+        if (clientManager != null) {
+            for (DBPNativeClientLocation location : clientManager.findLocalClientLocations()) {
+                if (!homes.contains(location)) {
+                    homes.add(location);
                 }
             }
-            this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
         }
+
+        this.homesCombo.add("");
+        this.homeIds.add(null);
+        for (DBPNativeClientLocation location : homes) {
+            homesCombo.add(location.getDisplayName());
+            homeIds.add(location.getName());
+            if (currentHomeId != null && location.getName().equals(currentHomeId)) {
+                homesCombo.select(homesCombo.getItemCount() - 1);
+            }
+        }
+        if (selectDefault && homesCombo.getItemCount() > 1 && homesCombo.getSelectionIndex() == -1) {
+            // Select first
+            homesCombo.select(1);
+        }
+        this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
+
         displayClientVersion();
     }
 
     private void displayClientVersion()
     {
 /*
-        DBPClientHome clientHome = currentHomeId == null ? null : driver.getClientHome(currentHomeId);
+        DBPNativeClientLocation clientHome = currentHomeId == null ? null : driver.getNativeClientHome(currentHomeId);
         if (clientHome != null) {
             try {
                 // display client version
@@ -158,6 +165,7 @@ public class ClientHomesSelector
 
     public String getSelectedHome()
     {
-        return currentHomeId;
+        return CommonUtils.isEmpty(currentHomeId) ? null : currentHomeId;
     }
+
 }

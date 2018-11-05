@@ -177,7 +177,7 @@ public class MetaDataPanel implements IResultSetPanel {
         }
 
         @Override
-        protected void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(IContributionManager contributionManager) {
             contributionManager.add(new Action("Copy column names") {
                 @Override
                 public void run() {

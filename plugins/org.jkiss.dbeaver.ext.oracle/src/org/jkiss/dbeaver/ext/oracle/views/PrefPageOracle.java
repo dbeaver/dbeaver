@@ -40,6 +40,7 @@ public class PrefPageOracle extends TargetPrefPage
     private Button rowidSupportCheck;
     private Button enableDbmsOuputCheck;
     private Button readAllSynonymsCheck;
+    private Button disableScriptEscapeProcessingCheck;
 
     public PrefPageOracle()
     {
@@ -55,7 +56,8 @@ public class PrefPageOracle extends TargetPrefPage
             store.contains(OracleConstants.PREF_EXPLAIN_TABLE_NAME) ||
             store.contains(OracleConstants.PREF_SUPPORT_ROWID) ||
             store.contains(OracleConstants.PREF_DBMS_OUTPUT) ||
-            store.contains(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS)
+            store.contains(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS) ||
+            store.contains(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING)
             ;
     }
 
@@ -83,10 +85,11 @@ public class PrefPageOracle extends TargetPrefPage
         }
 
         {
-            Group planGroup = UIUtils.createControlGroup(composite, "Misc", 2, GridData.FILL_HORIZONTAL, 0);
-            rowidSupportCheck = UIUtils.createLabelCheckbox(planGroup, "Use ROWID to identify rows", true);
-            enableDbmsOuputCheck = UIUtils.createLabelCheckbox(planGroup, "Enable DBMS Output", true);
-            readAllSynonymsCheck = UIUtils.createLabelCheckbox(planGroup, "Read all synonyms", "If unchecked Java classes and package bodies will be skipped", true);
+            Group miscGroup = UIUtils.createControlGroup(composite, "Misc", 1, GridData.FILL_HORIZONTAL, 0);
+            rowidSupportCheck = UIUtils.createCheckbox(miscGroup, "Use ROWID to identify rows", true);
+            enableDbmsOuputCheck = UIUtils.createCheckbox(miscGroup, "Enable DBMS Output", true);
+            readAllSynonymsCheck = UIUtils.createCheckbox(miscGroup, "Read all synonyms", "If unchecked Java classes and package bodies will be skipped", true, 1);
+            disableScriptEscapeProcessingCheck = UIUtils.createCheckbox(miscGroup, "Disable escape processing in SQL scripts", "Disable client-side parser of driver instruction in brackets { } ", true, 1);
         }
 
         return composite;
@@ -99,6 +102,7 @@ public class PrefPageOracle extends TargetPrefPage
         rowidSupportCheck.setSelection(store.getBoolean(OracleConstants.PREF_SUPPORT_ROWID));
         enableDbmsOuputCheck.setSelection(store.getBoolean(OracleConstants.PREF_DBMS_OUTPUT));
         readAllSynonymsCheck.setSelection(store.getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS));
+        disableScriptEscapeProcessingCheck.setSelection(store.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING));
     }
 
     @Override
@@ -108,6 +112,7 @@ public class PrefPageOracle extends TargetPrefPage
         store.setValue(OracleConstants.PREF_SUPPORT_ROWID, rowidSupportCheck.getSelection());
         store.setValue(OracleConstants.PREF_DBMS_OUTPUT, enableDbmsOuputCheck.getSelection());
         store.setValue(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS, readAllSynonymsCheck.getSelection());
+        store.setValue(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING, disableScriptEscapeProcessingCheck.getSelection());
         PrefUtils.savePreferenceStore(store);
     }
 
@@ -118,6 +123,7 @@ public class PrefPageOracle extends TargetPrefPage
         store.setToDefault(OracleConstants.PREF_SUPPORT_ROWID);
         store.setToDefault(OracleConstants.PREF_DBMS_OUTPUT);
         store.setToDefault(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS);
+        store.setToDefault(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,35 +30,30 @@ import java.util.List;
 /**
  * LocalResultSet
  */
-public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResultSet
-{
+public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResultSet {
     protected final DBCSession session;
     protected final SOURCE_STMT statement;
     private final List<DBCAttributeMetaData> metaColumns = new ArrayList<>();
     protected final List<Object[]> rows = new ArrayList<>();
     protected int curPosition = -1;
 
-    public LocalResultSet(DBCSession session, SOURCE_STMT statement)
-    {
+    public LocalResultSet(DBCSession session, SOURCE_STMT statement) {
         this.session = session;
         this.statement = statement;
     }
 
     @Override
-    public DBCSession getSession()
-    {
+    public DBCSession getSession() {
         return session;
     }
 
     @Override
-    public SOURCE_STMT getSourceStatement()
-    {
+    public SOURCE_STMT getSourceStatement() {
         return statement;
     }
 
     @Override
-    public Object getAttributeValue(int index) throws DBCException
-    {
+    public Object getAttributeValue(int index) throws DBCException {
         Object[] row = rows.get(curPosition);
         if (index >= row.length) {
             throw new DBCException("Attribute index out of range (" + index + "/" + row.length + ")");
@@ -78,20 +73,17 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
     }
 
     @Override
-    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException
-    {
+    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException {
         return null;
     }
 
     @Override
-    public DBDValueMeta getRowMeta() throws DBCException
-    {
+    public DBDValueMeta getRowMeta() throws DBCException {
         return null;
     }
 
     @Override
-    public boolean nextRow()
-    {
+    public boolean nextRow() {
         if (curPosition + 1 >= rows.size()) {
             return false;
         }
@@ -100,8 +92,7 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
     }
 
     @Override
-    public boolean moveTo(int position) throws DBCException
-    {
+    public boolean moveTo(int position) throws DBCException {
         if (position < 0 || position >= rows.size()) {
             return false;
         }
@@ -111,15 +102,8 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
 
     @NotNull
     @Override
-    public DBCResultSetMetaData getMeta() throws DBCException
-    {
-        return new DBCResultSetMetaData() {
-            @Override
-            public List<DBCAttributeMetaData> getAttributes()
-            {
-                return metaColumns;
-            }
-        };
+    public DBCResultSetMetaData getMeta() throws DBCException {
+        return new LocalResultSetMeta(metaColumns);
     }
 
     @Override
@@ -128,8 +112,7 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         curPosition = -1;
         rows.clear();
         metaColumns.clear();
@@ -139,22 +122,19 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
         return metaColumns.size();
     }
 
-    public DBCAttributeMetaData addColumn(String label, DBPDataKind dataKind)
-    {
+    public DBCAttributeMetaData addColumn(String label, DBPDataKind dataKind) {
         LocalResultSetColumn column = new LocalResultSetColumn(this, metaColumns.size(), label, dataKind);
         metaColumns.add(column);
         return column;
     }
 
-    public DBCAttributeMetaData addColumn(String label, DBSTypedObject typedObject)
-    {
+    public DBCAttributeMetaData addColumn(String label, DBSTypedObject typedObject) {
         LocalResultSetColumn column = new LocalResultSetColumn(this, metaColumns.size(), label, typedObject);
         metaColumns.add(column);
         return column;
     }
 
-    public void addRow(Object ... values)
-    {
+    public void addRow(Object... values) {
         rows.add(values);
     }
 

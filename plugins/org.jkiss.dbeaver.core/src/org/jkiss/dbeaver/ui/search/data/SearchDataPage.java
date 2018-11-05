@@ -29,23 +29,21 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 public class SearchDataPage extends AbstractSearchPage {
 
@@ -64,6 +62,8 @@ public class SearchDataPage extends AbstractSearchPage {
     private SearchDataParams params = new SearchDataParams();
     private Set<String> searchHistory = new LinkedHashSet<>();
     private DatabaseObjectsTreeManager checkboxTreeManager;
+
+    private static final Map<Class<? extends AbstractSearchPage>, String> searchStateCache = new IdentityHashMap<>();
 
     public SearchDataPage() {
 		super("Database objects search");
@@ -118,7 +118,7 @@ public class SearchDataPage extends AbstractSearchPage {
             viewer.addFilter(new ViewerFilter() {
                 @Override
                 public boolean select(Viewer viewer, Object parentElement, Object element) {
-                    if (element instanceof TreeLoadNode) {
+                    if (element instanceof TreeNodeSpecial) {
                         return true;
                     }
                     if (element instanceof DBNNode) {
@@ -313,6 +313,28 @@ public class SearchDataPage extends AbstractSearchPage {
         container.setPerformActionEnabled(enabled);
     }
 
+    protected void saveTreeState(DatabaseNavigatorTree tree)
+    {
+        // Object sources
+        StringBuilder sourcesString = new StringBuilder();
+        for (Object obj : ((CheckboxTreeViewer) tree.getViewer()).getCheckedElements()) {
+            DBNNode node = (DBNNode) obj;
+            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSDataContainer) {
+                if (sourcesString.length() > 0) {
+                    sourcesString.append("|"); //$NON-NLS-1$
+                }
+                sourcesString.append(node.getNodeItemPath());
+            }
+        }
+        searchStateCache.put(getClass(), sourcesString.toString());
+    }
+
+    protected List<DBNNode> loadTreeState(DBRProgressMonitor monitor)
+    {
+        final String sources = searchStateCache.get(getClass());
+        return loadTreeState(monitor, sources);
+    }
+
     private void restoreCheckedNodes() {
         final List<DBNNode> checkedNodes = new ArrayList<>();
         try {
@@ -337,7 +359,7 @@ public class SearchDataPage extends AbstractSearchPage {
             for (DBNNode node : checkedNodes) {
                 ((CheckboxTreeViewer) dataSourceTree.getViewer()).setChecked(node, true);
                 if (first) {
-                    DBNDataSource dsNode = NavigatorUtils.getDataSourceNode(node);
+                    DBNDataSource dsNode = DBNDataSource.getDataSourceNode(node);
                     if (dsNode != null) {
                         dataSourceTree.getViewer().reveal(dsNode);
                     }

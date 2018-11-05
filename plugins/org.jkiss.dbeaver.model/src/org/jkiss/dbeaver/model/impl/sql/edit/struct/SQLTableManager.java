@@ -67,7 +67,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     @Override
-    protected final void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options)
+    protected final void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand, Map<String, Object> options)
     {
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
@@ -96,7 +96,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             if (excludeFromDDL(nestedCommand, orderedCommands)) {
                 continue;
             }
-            final String nestedDeclaration = nestedCommand.getNestedDeclaration(table, options);
+            final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
@@ -127,7 +127,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         }
 
         createQuery.append(lineSeparator).append(")"); //$NON-NLS-1$
-        appendTableModifiers(table, tableProps, createQuery, false);
+        appendTableModifiers(monitor, table, tableProps, createQuery, false);
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
     }
@@ -154,7 +154,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         );
     }
 
-    protected void appendTableModifiers(OBJECT_TYPE table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
+    protected void appendTableModifiers(DBRProgressMonitor monitor, OBJECT_TYPE table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
 
     }
@@ -240,7 +240,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (im != null) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-                    if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index)) {
+                    if (!isIncludeIndexInDDL(index)) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index));
@@ -253,6 +253,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         Collections.addAll(actions, command.getPersistActions(monitor, options));
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
+    }
+
+    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
+        return !DBUtils.isHiddenObject(index) && !DBUtils.isInheritedObject(index);
     }
 
     protected boolean isIncludeDropInDDL() {

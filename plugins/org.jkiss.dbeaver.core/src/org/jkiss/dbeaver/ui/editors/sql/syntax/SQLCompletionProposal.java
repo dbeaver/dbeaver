@@ -85,6 +85,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private boolean simpleMode;
 
     private DBPNamedObject object;
+    private int proposalScore;
 
     public SQLCompletionProposal(
         SQLCompletionAnalyzer.CompletionRequest request,
@@ -128,37 +129,76 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
 
     private void setPosition(SQLWordPartDetector wordDetector)
     {
-        String fullWord = wordDetector.getFullWord();
-        int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
-        char structSeparator = syntaxManager.getStructSeparator();
-        int startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
-        int endOffset = fullWord.indexOf(structSeparator, curOffset);
-        if (endOffset == startOffset) {
-            startOffset = -1;
-        }
-        if (startOffset != -1) {
-            startOffset += wordDetector.getStartOffset() + 1;
+        final String fullWord = wordDetector.getFullWord();
+        final int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
+        final char structSeparator = syntaxManager.getStructSeparator();
+
+        boolean useFQName = dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ) &&
+            replacementString.indexOf(structSeparator) != -1;
+        if (useFQName) {
+            replacementOffset = wordDetector.getStartOffset();
+            replacementLength = wordDetector.getLength();
+        } else if (!fullWord.equals(replacementString) && !replacementString.contains(String.valueOf(structSeparator))) {
+            // Replace only last part
+            int startOffset = fullWord.lastIndexOf(structSeparator, curOffset - 1);
+            if (startOffset == -1) {
+                startOffset = 0;
+            } else if (startOffset > curOffset) {
+                startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
+                if (startOffset == -1) {
+                    startOffset = curOffset;
+                } else {
+                    startOffset++;
+                }
+            } else {
+                startOffset++;
+            }
+            // End offset - number of character which to the right from replacement which we don't touch (e.g. in complex identifiers like xxx.zzz.yyy)
+            int endOffset = fullWord.indexOf(structSeparator, curOffset);
+            if (endOffset != -1) {
+                endOffset = fullWord.length() - endOffset;
+            } else {
+                endOffset = 0;
+            }
+            replacementOffset = wordDetector.getStartOffset() + startOffset;
+            // If we are at the begin of word (curOffset == 0) then do not replace the word to the right.
+            boolean replaceWord = dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD);
+            if (replaceWord) {
+                replacementLength = wordDetector.getEndOffset() - replacementOffset - endOffset;
+            } else {
+                replacementLength = curOffset - startOffset;
+            }
         } else {
-            startOffset = wordDetector.getStartOffset();
-        }
-        if (endOffset != -1) {
-            // Replace from identifier start till next struct separator
-            endOffset += wordDetector.getStartOffset();
-        } else {
-            // Replace from identifier start to the end of current identifier
-            if (wordDetector.getWordPart().isEmpty()) {
-                endOffset = wordDetector.getCursorOffset();
+            int startOffset = fullWord.indexOf(structSeparator);
+            int endOffset = fullWord.indexOf(structSeparator, curOffset);
+            if (endOffset == startOffset) {
+                startOffset = -1;
+            }
+            if (startOffset != -1) {
+                startOffset += wordDetector.getStartOffset() + 1;
+            } else {
+                startOffset = wordDetector.getStartOffset();
+            }
+            if (endOffset != -1) {
+                // Replace from identifier start till next struct separator
+                endOffset += wordDetector.getStartOffset();
             } else {
                 // Replace from identifier start to the end of current identifier
-                endOffset = wordDetector.getEndOffset();
+                if (wordDetector.getWordPart().isEmpty()) {
+                    endOffset = wordDetector.getCursorOffset();
+                } else {
+                    // Replace from identifier start to the end of current identifier
+                    endOffset = wordDetector.getEndOffset();
+                }
             }
-        }
-        replacementOffset = startOffset;
-        if (curOffset < fullWord.length() && Character.isLetterOrDigit(fullWord.charAt(curOffset))) {
-            // Do not replace full word if we are in the middle of word
-            replacementLength = curOffset;
-        } else {
-            replacementLength = endOffset - startOffset;
+            replacementOffset = startOffset;
+            /*if (curOffset < fullWord.length() && Character.isLetterOrDigit(fullWord.charAt(curOffset)) && false) {
+                // Do not replace full word if we are in the middle of word
+                replacementLength = curOffset;
+            } else */
+            {
+                replacementLength = endOffset - startOffset;
+            }
         }
     }
 
@@ -311,18 +351,30 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         if (!CommonUtils.isEmpty(wordPart)) {
             boolean matchContains = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
             boolean matched;
-            if (simpleMode) {
+            if (object == null) {
+                // For keywords use strict matching
                 matched = (matchContains ? replacementFull.contains(wordLower) : replacementFull.startsWith(wordLower)) &&
                     (CommonUtils.isEmpty(event.getText()) || replacementFull.contains(event.getText().toLowerCase(Locale.ENGLISH))) ||
                     (this.replacementLast != null && this.replacementLast.startsWith(wordLower));
             } else {
-                matched = (TextUtils.fuzzyScore(replacementFull, wordLower) > 0 &&
+                // For objects use fuzzy matching
+                int score = TextUtils.fuzzyScore(replacementFull, wordLower);
+                matched = (score > 0 &&
                     (CommonUtils.isEmpty(event.getText()) || TextUtils.fuzzyScore(replacementFull, event.getText()) > 0)) ||
                     (this.replacementLast != null && TextUtils.fuzzyScore(this.replacementLast, wordLower) > 0);
+                if (matched) {
+                    setProposalScore(score);
+                }
             }
 
             if (matched) {
                 setPosition(wordDetector);
+                return true;
+            }
+        } else if (divPos != -1) {
+            // Beginning of the last part of composite id.
+            // Most likely it is a column name after an alias - all columns are valid
+            if (object != null) {
                 return true;
             }
         }
@@ -343,13 +395,22 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         }
     }
 
+
+    public void setReplacementAfter(String replacementAfter) {
+        this.replacementAfter = replacementAfter;
+    }
+
+    public int getProposalScore() {
+        return proposalScore;
+    }
+
+    public void setProposalScore(int proposalScore) {
+        this.proposalScore = proposalScore;
+    }
+
     @Override
     public String toString() {
         return displayString;
     }
 
-
-    public void setReplacementAfter(String replacementAfter) {
-        this.replacementAfter = replacementAfter;
-    }
 }

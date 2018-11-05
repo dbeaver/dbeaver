@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.eclipse.jface.viewers.IFilter;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -25,11 +24,24 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+
+import java.util.Collections;
 
 /**
  * Default database navigator filter
  */
-public class DatabaseNavigatorTreeFilter implements IFilter {
+public class DatabaseNavigatorTreeFilter implements INavigatorFilter {
+    @Override
+    public boolean filterFolders() {
+        return false;
+    }
+
+    @Override
+    public boolean isLeafObject(Object object) {
+        return false;
+    }
+
     @Override
     public boolean select(Object element) {
         if (!(element instanceof DBNDatabaseItem)) {

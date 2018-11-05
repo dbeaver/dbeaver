@@ -329,14 +329,15 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             return null;
         }
 
-        IProject project = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(targetProjectName);
+        IWorkspace eclipseWorkspace = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace();
+        IProject project = eclipseWorkspace.getRoot().getProject(targetProjectName);
         if (project.exists()) {
             throw new DBException("Project '" + targetProjectName + "' already exists");
         }
 
         monitor.subTask(CoreMessages.dialog_project_import_wizard_monitor_import_project + targetProjectName);
 
-        final IProjectDescription description = DBeaverCore.getInstance().getWorkspace().newProjectDescription(project.getName());
+        final IProjectDescription description = eclipseWorkspace.newProjectDescription(project.getName());
         if (!CommonUtils.isEmpty(projectDescription)) {
             description.setComment(projectDescription);
         }

@@ -29,10 +29,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -59,7 +62,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button copyButton;
     private Button editButton;
     private Button deleteButton;
-    private DriverTreeControl treeControl;
+    private DriverSelectViewer treeControl;
     private ImageDescriptor dialogImage;
     //private Label driverDescription;
     //private ProgressMonitorPart monitorPart;
@@ -106,11 +109,11 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            treeControl = new DriverTreeControl(group, this, enabledProviders, false);
+            treeControl = new DriverSelectViewer(group, this, enabledProviders, false);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 300;
-            treeControl.setLayoutData(gd);
+            treeControl.getControl().setLayoutData(gd);
         }
 
         {
@@ -283,8 +286,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
             DriverEditDialog dialog = new DriverEditDialog(getShell(), provider, selectedCategory);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                treeControl.getViewer().refresh();
-                treeControl.getViewer().setSelection(new StructuredSelection(dialog.getDriver()));
+                treeControl.refresh();
+                treeControl.setSelection(new StructuredSelection(dialog.getDriver()));
             }
         }
     }
@@ -294,8 +297,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         if (selectedDriver != null) {
             DriverEditDialog dialog = new DriverEditDialog(getShell(), selectedDriver.getProviderDescriptor(), selectedDriver);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                treeControl.getViewer().refresh();
-                treeControl.getViewer().setSelection(new StructuredSelection(dialog.getDriver()));
+                treeControl.refresh();
+                treeControl.setSelection(new StructuredSelection(dialog.getDriver()));
             }
         }
     }
@@ -310,16 +313,16 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             if (dialog.open() == IDialogConstants.OK_ID) {
                 // Do nothing
             }
-            treeControl.getViewer().refresh(driver);
+            treeControl.refresh(driver);
         }
     }
 
     private void deleteDriver()
     {
-        List<DataSourceDescriptor> usedDS = selectedDriver.getUsedBy();
+        List<DBPDataSourceContainer> usedDS = DriverUtils.getUsedBy(selectedDriver, DataSourceRegistry.getAllDataSources());
         if (!usedDS.isEmpty()) {
             StringBuilder message = new StringBuilder(NLS.bind(CoreMessages.dialog_driver_manager_message_cant_delete_text, selectedDriver.getName()));
-            for (DataSourceDescriptor ds : usedDS) {
+            for (DBPDataSourceContainer ds : usedDS) {
                 message.append("\n - ").append(ds.getName());
             }
             UIUtils.showMessageBox(getShell(), CoreMessages.dialog_driver_manager_message_cant_delete_title, message.toString(), SWT.ICON_ERROR);
@@ -332,7 +335,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
-            treeControl.getViewer().refresh();
+            treeControl.refresh();
         }
     }
 

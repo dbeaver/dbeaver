@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -118,7 +119,7 @@ public abstract class JDBCDataSource
         }
 
         DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
-        Properties connectProps = getAllConnectionProperties(monitor, connectionInfo);
+        Properties connectProps = getAllConnectionProperties(monitor, purpose, connectionInfo);
 
         // Obtain connection
         try {
@@ -139,7 +140,7 @@ public abstract class JDBCDataSource
             int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
             final Driver driverInstanceFinal = driverInstance;
 
-            boolean openTaskFinished = RuntimeUtils.runTask(monitor1 -> {
+            DBRRunnableWithProgress connectTask = monitor1 -> {
                 try {
                     if (driverInstanceFinal == null) {
                         connection[0] = DriverManager.getConnection(url, connectProps);
@@ -149,7 +150,14 @@ public abstract class JDBCDataSource
                 } catch (Exception e) {
                     error[0] = e;
                 }
-            }, "Opening database connection", openTimeout + 2000);
+            };
+            boolean openTaskFinished;
+            if (openTimeout <= 0) {
+                openTaskFinished = true;
+                connectTask.run(monitor);
+            } else {
+                openTaskFinished = RuntimeUtils.runTask(connectTask, "Opening database connection", openTimeout + 2000);
+            }
             if (error[0] != null) {
                 throw error[0];
             }
@@ -178,13 +186,13 @@ public abstract class JDBCDataSource
         }
     }
 
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         // Set properties
         Properties connectProps = new Properties();
 
         {
             // Use properties defined by datasource itself
-            Map<String,String> internalProps = getInternalConnectionProperties(monitor, getContainer().getDriver(), "Get connection properties", connectionInfo);
+            Map<String,String> internalProps = getInternalConnectionProperties(monitor, getContainer().getDriver(), purpose, connectionInfo);
             if (internalProps != null) {
                 connectProps.putAll(internalProps);
             }

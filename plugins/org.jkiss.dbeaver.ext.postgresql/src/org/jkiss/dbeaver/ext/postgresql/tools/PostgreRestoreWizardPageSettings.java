@@ -50,12 +50,7 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Listener updateListener = new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                updateState();
-            }
-        };
+        Listener updateListener = event -> updateState();
 
         Group formatGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_restore_page_setting_label_setting, 2, GridData.FILL_HORIZONTAL, 0);
         formatCombo = UIUtils.createLabelCombo(formatGroup, PostgreMessages.wizard_restore_page_setting_label_format, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -68,7 +63,9 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
 
         cleanFirstButton = UIUtils.createCheckbox(formatGroup,
         	PostgreMessages.wizard_restore_page_setting_btn_clean_first,
-            false
+            null,
+            false,
+            2
         );
         cleanFirstButton.addListener(SWT.Selection, updateListener);
 
@@ -91,6 +88,8 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
         wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
         wizard.inputFile = inputFileText.getText();
         wizard.cleanFirst = cleanFirstButton.getSelection();
+
+        inputFileText.setOpenFolder(wizard.format == PostgreBackupRestoreWizard.ExportFormat.DIRECTORY);
 
         getContainer().updateButtons();
     }

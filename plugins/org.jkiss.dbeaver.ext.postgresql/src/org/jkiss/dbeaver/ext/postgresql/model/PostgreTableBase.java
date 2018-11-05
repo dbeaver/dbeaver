@@ -72,7 +72,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
         this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
-        this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
+        if (getDataSource().isServerVersionAtLeast(8, 2)) {
+            this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
+        }
         //this.reloptions = PostgreUtils.parseObjectString()
     }
 
@@ -123,7 +125,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Property(viewable = true, editable = false, updatable = false, order = 10)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
+        return getDatabase().getRoleById(monitor, ownerId);
     }
 
     @NotNull
@@ -151,6 +153,15 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         throws DBException
     {
         return getContainer().tableCache.getChildren(monitor, getContainer(), this);
+    }
+
+    public PostgreTableColumn getAttributeByPos(DBRProgressMonitor monitor, int position) throws DBException {
+        for (PostgreTableColumn attr : getAttributes(monitor)) {
+            if (attr.getOrdinalPosition() == position) {
+                return attr;
+            }
+        }
+        return null;
     }
 
     public List<PostgreTableColumn> getCachedAttributes()
@@ -215,14 +226,25 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         }
         tablePermissions = new ArrayList<>(tablePermissions);
         for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
+            if (column.getAcl() == null || column.isHidden()) {
+                continue;
+            }
             tablePermissions.addAll(column.getPermissions(monitor, true));
         }
+
         return tablePermissions;
     }
 
 	public boolean isPartition() {
 		return isPartition;
 	}
+
+    /**
+     * Extra table DDL modifiers
+     */
+    public void appendTableModifiers(DBRProgressMonitor monitor, StringBuilder ddl) {
+        // Nothing
+    }
 
 
     public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTableBase> {

@@ -99,9 +99,8 @@ public class SQLFormatterConfigurationRegistry implements SQLFormatterRegistry
         }
     }
 
-    @Override
     @Nullable
-    public SQLFormatter createAndConfigureFormatter(SQLFormatterConfiguration configuration) {
+    public SQLFormatterConfigurator createConfigurator(SQLFormatterConfiguration configuration) {
         final String formatterId = configuration.getFormatterId();
         SQLFormatterDescriptor formatterDesc = getFormatter(formatterId);
         if (formatterDesc == null) {
@@ -109,14 +108,7 @@ public class SQLFormatterConfigurationRegistry implements SQLFormatterRegistry
             return null;
         }
         try {
-            SQLFormatter formatter = formatterDesc.createFormatter();
-            SQLFormatterConfigurer configurer = formatterDesc.createConfigurer();
-            if (configurer != null) {
-                if (!configurer.configure(formatterDesc.getLabel(), formatter, configuration)) {
-                    return null;
-                }
-            }
-            return formatter;
+            return formatterDesc.createConfigurer();
         } catch (DBException e) {
             log.error("Error creating and configuring formatter", e);
             return null;

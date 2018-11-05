@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.EditorActionBarContributor;
+import org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor;
 
 /**
  * Folder Editor contributor
@@ -29,6 +30,6 @@ public class FolderEditorContributor extends EditorActionBarContributor
     @Override
     public void setActiveEditor(IEditorPart targetEditor)
     {
-        EntityEditorContributor.registerSearchActions(targetEditor);
+        EditorSearchActionsContributor.registerSearchActions(targetEditor);
     }
 }

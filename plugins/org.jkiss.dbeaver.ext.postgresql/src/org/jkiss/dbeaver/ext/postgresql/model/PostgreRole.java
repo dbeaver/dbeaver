@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -44,6 +45,8 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
     public static final String CAT_SETTINGS = "Settings";
     public static final String CAT_FLAGS = "Flags";
 
+    private static final Log log = Log.getLog(PostgreRole.class);
+
     private final PostgreDatabase database;
     private long oid;
     private String name;
@@ -63,7 +66,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
 
     static class MembersCache extends JDBCObjectCache<PostgreRole, PostgreRoleMember> {
         private final boolean members;
-        public MembersCache(boolean members) {
+        MembersCache(boolean members) {
             this.members = members;
         }
 
@@ -101,9 +104,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.loadInfo(dbResult);
     }
 
-    private void loadInfo(ResultSet dbResult)
-        throws SQLException
-    {
+    private void loadInfo(ResultSet dbResult) {
         this.persisted = true;
 
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
@@ -288,27 +289,27 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
     }
 
     @Override
-    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public List<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read role privileges")) {
             List<PostgrePermission> permissions = new ArrayList<>();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?"))
-            {
+                    "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?")) {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
                 permissions.addAll(getRolePermissions(this, PostgrePrivilege.Kind.TABLE, dbStat));
+            } catch (Throwable e) {
+                log.error("Error reading table privileges", e);
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM information_schema.routine_privileges WHERE specific_catalog=? AND grantee=?"))
-            {
+                    "SELECT * FROM information_schema.routine_privileges WHERE specific_catalog=? AND grantee=?")) {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
                 permissions.addAll(getRolePermissions(this, PostgrePrivilege.Kind.FUNCTION, dbStat));
+            } catch (Throwable e) {
+                log.error("Error reading routine privileges", e);
             }
             Collections.sort(permissions);
             return permissions;
-        } catch (SQLException e) {
-            throw new DBException(e, getDataSource());
         }
     }
 
@@ -331,7 +332,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(DBRProgressMonitor monitor) {
         membersCache.clearCache();
         belongsCache.clearCache();
         return this;

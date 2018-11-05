@@ -122,7 +122,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     //////////////////////////////////////////////////
     // Actions
 
-    protected abstract void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options);
+    protected abstract void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options);
 
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
 
@@ -132,13 +132,13 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     }
 
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         // Base SQL syntax do not support object properties change
         throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
-    protected void addObjectReorderActions(List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options)
+    protected void addObjectReorderActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options)
     {
         if (command.getObject().isPersisted()) {
             // Not supported by implementation
@@ -151,7 +151,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     //////////////////////////////////////////////////
     // Properties
 
-    protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
+    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, CONTAINER_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
     {
         return null;
     }
@@ -238,7 +238,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             super(object, title);
         }
 
-        public abstract String getNestedDeclaration(DBSObject owner, Map<String, Object> options);
+        public abstract String getNestedDeclaration(DBRProgressMonitor monitor, DBSObject owner, Map<String, Object> options);
 
     }
 
@@ -272,12 +272,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public String getNestedDeclaration(DBSObject owner, Map<String, Object> options)
+        public String getNestedDeclaration(DBRProgressMonitor monitor, DBSObject owner, Map<String, Object> options)
         {
             // It is a trick
             // This method may be invoked from another Editor with different OBJECT_TYPE and CONTAINER_TYPE
             // TODO: May be we should make ObjectChangeCommand static
-            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this, options);
+            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration(monitor, (CONTAINER_TYPE) owner, this, options);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
     }
@@ -292,7 +292,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectCreateActions(actions, this, options);
+            addObjectCreateActions(monitor, actions, this, options);
             addObjectExtraActions(monitor, actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
@@ -311,12 +311,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public String getNestedDeclaration(DBSObject owner, Map<String, Object> options)
+        public String getNestedDeclaration(DBRProgressMonitor monitor, DBSObject owner, Map<String, Object> options)
         {
             // It is a trick
             // This method may be invoked from another Editor with different OBJECT_TYPE and CONTAINER_TYPE
             // TODO: May be we should make ObjectChangeCommand static
-            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this, options);
+            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration(monitor, (CONTAINER_TYPE) owner, this, options);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
     }
@@ -371,7 +371,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectRenameActions(actions, this, options);
+            addObjectRenameActions(monitor, actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
@@ -442,7 +442,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectReorderActions(actions, this, options);
+            addObjectReorderActions(monitor, actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 

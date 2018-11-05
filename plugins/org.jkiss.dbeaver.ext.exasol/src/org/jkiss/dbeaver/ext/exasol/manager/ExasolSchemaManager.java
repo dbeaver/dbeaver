@@ -92,7 +92,7 @@ public class ExasolSchemaManager
     
     
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         final ExasolSchema schema = command.getObject();
         
@@ -137,7 +137,7 @@ public class ExasolSchemaManager
     }
     
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions,
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectRenameCommand command, Map<String, Object> options)
     {
         ExasolSchema obj = command.getObject();

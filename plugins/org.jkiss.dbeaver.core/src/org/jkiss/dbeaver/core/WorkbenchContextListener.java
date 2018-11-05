@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.DBeaverUIConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributions;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 
 /**
@@ -44,10 +45,8 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     //private static final Log log = Log.getLog(WorkbenchContextListener.class);
 
-    public static final String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
-    public static final String SQL_EDITOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.editors.sql";
-    public static final String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
-    public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
+    private static final String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
+    private static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
 
     private IContextActivation activationNavigator;
     private IContextActivation activationSQL;
@@ -180,14 +179,14 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                     //log.debug("Double activation of navigator context");
                     contextService.deactivateContext(activationNavigator);
                 }
-                activationNavigator = contextService.activateContext(NAVIGATOR_CONTEXT_ID);
+                activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
             }
             if (part.getAdapter(SQLEditorBase.class) != null) {
                 if (activationSQL != null) {
                     //log.debug("Double activation of SQL context");
                     contextService.deactivateContext(activationSQL);
                 }
-                activationSQL = contextService.activateContext(SQL_EDITOR_CONTEXT_ID);
+                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
             }
             if (part.getAdapter(ResultSetViewer.class) != null || (
                 part instanceof EntityEditor && ((EntityEditor) part).getDatabaseObject() instanceof DBSDataContainer))
@@ -222,7 +221,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 contextService.deactivateContext(activationNavigator);
                 activationNavigator = null;
             }
-            if (activationSQL != null && part instanceof SQLEditorBase) {
+            if (activationSQL != null) {
                 contextService.deactivateContext(activationSQL);
                 activationSQL = null;
             }

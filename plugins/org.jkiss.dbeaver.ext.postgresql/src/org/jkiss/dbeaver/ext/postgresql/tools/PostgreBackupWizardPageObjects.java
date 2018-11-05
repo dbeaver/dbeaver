@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -227,7 +228,11 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     final List<PostgreTableBase> objects = new ArrayList<>();
-                    objects.addAll(curSchema.getTables(monitor));
+                    for (JDBCTable table : curSchema.getTables(monitor)) {
+                        if (table instanceof PostgreTableBase) {
+                            objects.add((PostgreTableBase) table);
+                        }
+                    }
                     if (wizard.showViews) {
                         objects.addAll(curSchema.getViews(monitor));
                     }

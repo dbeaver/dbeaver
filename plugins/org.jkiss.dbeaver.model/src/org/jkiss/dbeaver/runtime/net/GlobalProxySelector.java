@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.runtime.net;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -37,6 +37,7 @@ import java.util.Map;
 public class GlobalProxySelector extends ProxySelector {
 
     private static final Log log = Log.getLog(GlobalProxySelector.class);
+    private static final String[] LOCAL_HOSTS = { "localhost", "127.0.0.1" };
 
     private final ProxySelector parent;
 
@@ -55,13 +56,24 @@ public class GlobalProxySelector extends ProxySelector {
             // 1. Check for drivers download proxy
         }
 
+        String host = uri.getHost();
+        if (CommonUtils.isEmpty(host)) {
+            return parent.select(uri);
+        }
+
+        // Skip localhosts. In fact it is a bad idea (see #3592)
+//        if (ArrayUtils.contains(LOCAL_HOSTS, host)) {
+//            return parent.select(uri);
+//        }
+        int port = uri.getPort();
+        String path = uri.getPath();
+
         if (SocksConstants.SOCKET_SCHEME.equals(scheme)) {
             // 2. Check for connections' proxy config
-            DBCExecutionContext activeContext = DBExecUtils.findConnectionContext(uri.getHost(), uri.getPort(), uri.getPath());
+            DBPDataSourceContainer activeContext = DBExecUtils.findConnectionContext(host, port, path);
             if (activeContext != null) {
                 List<Proxy> proxies = null;
-                DBPDataSourceContainer container = activeContext.getDataSource().getContainer();
-                for (DBWHandlerConfiguration networkHandler : container.getConnectionConfiguration().getDeclaredHandlers()) {
+                for (DBWHandlerConfiguration networkHandler : activeContext.getConnectionConfiguration().getDeclaredHandlers()) {
                     if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                         Map<String,String> proxyProps = networkHandler.getProperties();
                         String proxyHost = proxyProps.get(SocksConstants.PROP_HOST);

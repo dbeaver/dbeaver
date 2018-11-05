@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -127,6 +128,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     {
         addColumn(name, description, style, defaultVisible, required, false, null, new ColumnLabelProvider() {
             @Override
+            public String getText(Object element) {
+                return labelProvider.getText((ELEMENT) element);
+            }
+
+            @Override
             public void update(ViewerCell cell) {
                 if (cell.getColumnIndex() == 0) {
                     if (defaultIcon != null) {
@@ -208,13 +214,15 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                     @Override
                     public void controlResized(ControlEvent e) {
                         control.removeControlListener(this);
-                        repackColumns();
+                        if (getRowCount() > 0) {
+                            repackColumns();
+                        }
                     }
                 });
             }
             if (needRefresh && pack) {
                 viewer.refresh();
-                if (!isAllSized()) {
+                if (needRefresh || !isAllSized()) {
                     for (ColumnInfo columnInfo : getVisibleColumns()) {
                         if (columnInfo.column instanceof TreeColumn) {
                             ((TreeColumn) columnInfo.column).pack();
@@ -289,7 +297,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                     @Override
                     public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
-                        saveColumnConfig();
+                        if (getRowCount() > 0) {
+                            saveColumnConfig();
+                        }
                     }
 
                     @Override
@@ -315,7 +325,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                     @Override
                     public void controlResized(ControlEvent e) {
                         columnInfo.width = column.getWidth();
-                        saveColumnConfig();
+                        if (getRowCount() > 0) {
+                            saveColumnConfig();
+                        }
                     }
 
                     @Override
@@ -454,7 +466,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     private void saveColumnConfig()
     {
-        // Save settings
+        // Save settings only if we have at least one rows. Otherwise
         ViewerColumnRegistry.getInstance().updateConfig(configId, columns);
     }
 
@@ -464,6 +476,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             ((Tree) control).getColumnCount() : ((Table) control).getColumnCount();
     }
 
+    public int getRowCount() {
+        final Control control = viewer.getControl();
+        return control instanceof Tree ?
+            ((Tree) control).getItemCount() : ((Table) control).getItemCount();
+    }
+
     public int getEditableColumnIndex(Object element) {
         for (ColumnInfo info : getVisibleColumns()) {
             if (info.editingSupport != null) {
@@ -471,6 +489,14 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             }
         }
         return -1;
+    }
+
+    public ObjectListControl.ObjectColumn[] getAllColumns() {
+        ObjectListControl.ObjectColumn[] oc = new ObjectListControl.ObjectColumn[columns.size()];
+        for (int i = 0; i < columns.size(); i++) {
+            oc[i] = (ObjectListControl.ObjectColumn) columns.get(i).userData;
+        }
+        return oc;
     }
 
     private static class ColumnInfo extends ViewerColumnRegistry.ColumnState {

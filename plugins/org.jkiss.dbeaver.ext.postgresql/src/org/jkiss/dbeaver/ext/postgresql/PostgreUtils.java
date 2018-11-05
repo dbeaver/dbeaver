@@ -94,8 +94,6 @@ public class PostgreUtils {
         }
     }
 
-    private static Method getValueMethod;
-
     public static <T extends PostgreAttribute> T getAttributeByNum(Collection<T> attrs, int attNum) {
         for (T attr : attrs) {
             if (attr.getOrdinalPosition() == attNum) {
@@ -116,19 +114,10 @@ public class PostgreUtils {
         if (!pgObject.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             return pgObject;
         }
-        if (getValueMethod == null) {
-            try {
-                getValueMethod = pgObject.getClass().getMethod("getValue");
-            } catch (NoSuchMethodException e) {
-                log.debug(e);
-            }
-        }
-        if (getValueMethod != null) {
-            try {
-                return getValueMethod.invoke(pgObject);
-            } catch (Exception e) {
-                log.debug(e);
-            }
+        try {
+            return pgObject.getClass().getMethod("getValue").invoke(pgObject);
+        } catch (Exception e) {
+            log.debug("Can't extract value from PgObject", e);
         }
         return null;
     }
@@ -178,6 +167,8 @@ public class PostgreUtils {
                 result[i] = objVector[i];
             }
             return result;
+        } else if (pgVector instanceof Number) {
+            return new long[] {((Number) pgVector).longValue()};
         } else {
             throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }
@@ -208,6 +199,28 @@ public class PostgreUtils {
                 result[i] = objVector[i];
             }
             return result;
+        } else if (pgVector instanceof Number) {
+            return new int[]{((Number) pgVector).intValue()};
+        } else if (pgVector instanceof java.sql.Array) {
+            try {
+                Object array = ((java.sql.Array) pgVector).getArray();
+                if (array == null) {
+                    return null;
+                }
+                int length = Array.getLength(array);
+                int[] result = new int[length];
+                for (int i = 0; i < length; i++) {
+                    Object item = Array.get(array, i);
+                    if (item instanceof Number) {
+                        result[i] = ((Number) item).intValue();
+                    } else if (item != null) {
+                        throw new IllegalArgumentException("Bad array item type: " + item.getClass().getName());
+                    }
+                }
+                return result;
+            } catch (SQLException e) {
+                throw new IllegalArgumentException("Error reading array value: " + pgVector);
+            }
         } else {
             throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }
@@ -471,19 +484,18 @@ public class PostgreUtils {
         return sql.toString();
     }
 
-    public static boolean isGreenplumDriver(DBPDriver driver) {
-        return driver != null && CommonUtils.toBoolean(
-            driver.getDriverParameter(PostgreConstants.PROP_GREENPLUM_DRIVER));
-    }
-
-    public static boolean isTimescaleDriver(DBPDriver driver) {
-        return driver != null && CommonUtils.toBoolean(
-            driver.getDriverParameter(PostgreConstants.PROP_TIMESCALE_DRIVER));
-    }
-
-    public static boolean isYellowbrickDriver(DBPDriver driver) {
-        return driver != null && CommonUtils.toBoolean(
-            driver.getDriverParameter(PostgreConstants.PROP_YELLOWBRICK_DRIVER));
+    public static PostgreServerType getServerType(DBPDriver driver) {
+        if (driver != null) {
+            String serverTypeName = CommonUtils.toString(
+                driver.getDriverParameter(PostgreConstants.PROP_SERVER_TYPE))
+                    .toUpperCase();
+            try {
+                return PostgreServerType.valueOf(serverTypeName);
+            } catch (IllegalArgumentException e) {
+                log.debug("Bad PostgreSQL server type: " + serverTypeName);
+            }
+        }
+        return PostgreServerType.POSTGRESQL;
     }
 
     public static List<PostgrePermission> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePermissionsOwner owner, @Nullable Object acl) throws DBException {
@@ -494,20 +506,16 @@ public class PostgreUtils {
                 String granteeName = objectOwner == null ? null : objectOwner.getName();
 
                 List<PostgrePrivilege> privileges = new ArrayList<>();
-                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-                    if (pt.supportsType(owner.getClass())) {
-                        privileges.add(
-                            new PostgrePrivilege(
-                                granteeName,
-                                granteeName,
-                                owner.getDatabase().getName(),
-                                owner.getSchema().getName(),
-                                owner.getName(),
-                                pt,
-                                false,
-                                false));
-                    }
-                }
+                privileges.add(
+                    new PostgrePrivilege(
+                        granteeName,
+                        granteeName,
+                        owner.getDatabase().getName(),
+                        owner.getSchema().getName(),
+                        owner.getName(),
+                        PostgrePrivilegeType.ALL,
+                        false,
+                        false));
                 PostgreObjectPermission permission = new PostgreObjectPermission(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
                 return Collections.singletonList(permission);
             }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.*;
+import org.eclipse.jsch.ui.UserInfoPrompter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -36,19 +37,18 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     private static final Log log = Log.getLog(SSHImplementationJsch.class);
 
     private static transient JSch jsch;
-    private transient Session session;
+    private transient volatile Session session;
 
     @Override
     protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, String aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException {
-        UserInfo ui = new UIUserInfo(configuration);
         try {
             if (jsch == null) {
                 jsch = new JSch();
                 JSch.setLogger(new LoggerProxy());
             }
             if (privKeyFile != null) {
-                if (!CommonUtils.isEmpty(ui.getPassphrase())) {
-                    jsch.addIdentity(privKeyFile.getAbsolutePath(), ui.getPassphrase());
+                if (!CommonUtils.isEmpty(configuration.getPassword())) {
+                    jsch.addIdentity(privKeyFile.getAbsolutePath(), configuration.getPassword());
                 } else {
                     jsch.addIdentity(privKeyFile.getAbsolutePath());
                 }
@@ -59,8 +59,12 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             session.setConfig("StrictHostKeyChecking", "no");
             //session.setConfig("PreferredAuthentications", "password,publickey,keyboard-interactive");
             session.setConfig("PreferredAuthentications",
-                privKeyFile != null ? "publickey" : "password");
+                    privKeyFile != null ? "publickey" : "password,keyboard-interactive");
             session.setConfig("ConnectTimeout", String.valueOf(connectTimeout));
+
+            // Use Eclipse standard prompter
+            UserInfoCustom ui = new UserInfoCustom(configuration);
+
             session.setUserInfo(ui);
             if (!CommonUtils.isEmpty(aliveInterval)) {
                 session.setServerAliveInterval(Integer.parseInt(aliveInterval));
@@ -82,10 +86,12 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
         if (session != null) {
             RuntimeUtils.runTask(monitor1 -> {
-                try {
-                    session.disconnect();
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                if (session != null) {
+                    try {
+                        session.disconnect();
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
                 }
             }, "Close SSH session", 1000);
             session = null;
@@ -118,47 +124,47 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
     }
 
-    private class UIUserInfo implements UserInfo {
+    private class UIUserInfo implements UserInfo, UIKeyboardInteractive {
         DBWHandlerConfiguration configuration;
-        private UIUserInfo(DBWHandlerConfiguration configuration)
-        {
+
+        private UIUserInfo(DBWHandlerConfiguration configuration) {
             this.configuration = configuration;
         }
 
         @Override
-        public String getPassphrase()
-        {
+        public String getPassphrase() {
             return configuration.getPassword();
         }
 
         @Override
-        public String getPassword()
-        {
+        public String getPassword() {
             return configuration.getPassword();
         }
 
         @Override
-        public boolean promptPassword(String message)
-        {
+        public boolean promptPassword(String message) {
             return true;
         }
 
         @Override
-        public boolean promptPassphrase(String message)
-        {
+        public boolean promptPassphrase(String message) {
             return true;
         }
 
         @Override
-        public boolean promptYesNo(String message)
-        {
+        public boolean promptYesNo(String message) {
             return false;
         }
 
         @Override
-        public void showMessage(String message)
-        {
+        public void showMessage(String message) {
             log.info(message);
+        }
+
+        @Override
+        public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
+            System.out.printf("Keyboard interactive auth");
+            return new String[] { configuration.getPassword() } ;
         }
     }
 
@@ -172,10 +178,18 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         public void log(int level, String message) {
             String levelStr;
             switch (level) {
-                case INFO: levelStr = "INFO"; break;
-                case WARN: levelStr = "WARN"; break;
-                case ERROR: levelStr = "ERROR"; break;
-                case FATAL: levelStr = "FATAL"; break;
+                case INFO:
+                    levelStr = "INFO";
+                    break;
+                case WARN:
+                    levelStr = "WARN";
+                    break;
+                case ERROR:
+                    levelStr = "ERROR";
+                    break;
+                case FATAL:
+                    levelStr = "FATAL";
+                    break;
                 case DEBUG:
                 default:
                     levelStr = "DEBUG";
@@ -185,4 +199,39 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
         }
     }
+
+    private class UserInfoCustom extends UserInfoPrompter {
+        private final DBWHandlerConfiguration configuration;
+        UserInfoCustom(DBWHandlerConfiguration configuration) {
+            super(SSHImplementationJsch.this.session);
+            this.configuration = configuration;
+        }
+
+        @Override
+        public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
+            if (configuration.isSavePassword()) {
+                setPassword(configuration.getPassword());
+            }
+            return super.promptKeyboardInteractive(destination, name, instruction, prompt, echo);
+        }
+
+        @Override
+        public boolean promptPassword(String message) {
+            if (configuration.isSavePassword()) {
+                setPassword(configuration.getPassword());
+                return true;
+            }
+            return super.promptPassword(message);
+        }
+
+        @Override
+        public boolean promptPassphrase(String message) {
+            if (configuration.isSavePassword()) {
+                setPassphrase(configuration.getPassword());
+                return true;
+            }
+            return super.promptPassphrase(message);
+        }
+    }
+
 }

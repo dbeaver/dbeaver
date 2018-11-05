@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -234,10 +235,6 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
-        if (catalog == null) {
-            // Schemas MUST be in catalog
-            return null;
-        }
         boolean showAllSchemas = ((SQLServerDataSource) dataSource).isShowAllSchemas();
         final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
 
@@ -329,12 +326,48 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                             container,
                             name,
                             null,
-                            JDBCUtils.safeGetLong(dbResult, "current_value"),
-                            JDBCUtils.safeGetLong(dbResult, "minimum_value"),
-                            JDBCUtils.safeGetLong(dbResult, "maximum_value"),
-                            JDBCUtils.safeGetLong(dbResult, "increment")
+                            CommonUtils.toLong(JDBCUtils.safeGetObject(dbResult, "current_value")),
+                            CommonUtils.toLong(JDBCUtils.safeGetObject(dbResult, "minimum_value")),
+                            CommonUtils.toLong(JDBCUtils.safeGetObject(dbResult, "maximum_value")),
+                            CommonUtils.toLong(JDBCUtils.safeGetObject(dbResult, "increment"))
                         );
                         result.add(sequence);
+                    }
+                }
+                return result;
+
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
+        }
+    }
+
+    @Override
+    public boolean supportsSynonyms(GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
+    public List<? extends GenericSynonym> loadSynonyms(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system synonyms")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM " + getSystemSchemaFQN(container.getDataSource(), container.getCatalog()) + ".synonyms WHERE schema_name(schema_id)=?")) {
+                dbStat.setString(1, container.getSchema().getName());
+                List<GenericSynonym> result = new ArrayList<>();
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, "name");
+                        if (name == null) {
+                            continue;
+                        }
+                        name = name.trim();
+                        SQLServerSynonym synonym = new SQLServerSynonym(
+                            container,
+                            name,
+                            null,
+                            JDBCUtils.safeGetString(dbResult, "base_object_name"));
+                        result.add(synonym);
                     }
                 }
                 return result;
@@ -361,7 +394,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String getSystemSchemaFQN(GenericDataSource dataSource, GenericCatalog catalog) {
-        return dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
+        return catalog != null && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
             DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema() : getSystemSchema();
     }
 }

@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -114,7 +114,7 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     DBVModel getVirtualModel();
 
-    DBPClientHome getClientHome();
+    DBPNativeClientLocation getClientHome();
 
     DBWNetworkHandler[] getActiveNetworkHandlers();
 

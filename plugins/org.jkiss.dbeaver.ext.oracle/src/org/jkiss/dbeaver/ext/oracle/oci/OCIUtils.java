@@ -77,7 +77,7 @@ public class OCIUtils
         }
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
-            if (equalsFileName(home.getHomeId(), oraHome)) {
+            if (equalsFileName(home.getName(), oraHome)) {
                 return home;
             }
         }
@@ -116,7 +116,7 @@ public class OCIUtils
         boolean contains = false;
         for (OracleHomeDescriptor home : oraHomes) {
             // file name case insensitivity on Windows platform
-            if (equalsFileName(home.getHomeId(), oraHome)) {
+            if (equalsFileName(home.getName(), oraHome)) {
                 contains = true;
                 break;
             }

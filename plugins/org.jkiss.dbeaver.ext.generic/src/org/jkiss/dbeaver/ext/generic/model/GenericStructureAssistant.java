@@ -145,10 +145,14 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 if (CommonUtils.isEmpty(uniqueName)) {
                     uniqueName = procName;
                 }
+                // Some driver return specific name for regular name
+                procName = GenericUtils.normalizeProcedureName(procName);
+
                 objects.add(new ProcedureReference(
                     findContainer(session.getProgressMonitor(), catalog, schema, catalogName, schemaName),
                     catalogName,
-                    procName, uniqueName));
+                    procName,
+                    uniqueName));
                 if (objects.size() >= maxResults) {
                     break;
                 }

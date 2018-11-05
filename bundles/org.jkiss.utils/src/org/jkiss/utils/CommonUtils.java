@@ -237,6 +237,10 @@ public class CommonUtils {
         return o1.equals(o2);
     }
 
+    public static boolean equalOrEmptyStrings(@Nullable String s1, @Nullable String s2) {
+        return equalObjects(s1, s2) || (isEmpty(s1) && isEmpty(s2));
+    }
+
     @NotNull
     public static String toString(@Nullable Object object) {
         if (object == null) {
@@ -551,4 +555,12 @@ public class CommonUtils {
     public static String fixedLengthString(String string, int length) {
         return String.format("%1$"+length+ "s", string);
     }
+
+    public static boolean startsWithIgnoreCase(@NotNull String str, @NotNull String startPart) {
+        if (isEmpty(str) || isEmpty(startPart)) {
+            return false;
+        }
+        return str.regionMatches(true, 0, startPart, 0, startPart.length());
+    }
+
 }

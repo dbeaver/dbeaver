@@ -110,6 +110,8 @@ class PostgreDialect extends JDBCSQLDialect {
                 "SQLERROR"
             ));
 
+        addFunctions(Arrays.asList(PostgreConstants.POSTGIS_FUNCTIONS));
+
         removeSQLKeyword("LENGTH");
     }
 

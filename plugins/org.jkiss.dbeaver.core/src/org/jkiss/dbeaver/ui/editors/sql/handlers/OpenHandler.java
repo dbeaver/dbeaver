@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
 
 public class OpenHandler extends AbstractDataSourceHandler {
 
@@ -111,30 +112,48 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    private static boolean openNewEditor(ExecutionEvent event) throws CoreException {
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
-        IFolder scriptFolder = getCurrentFolder(event);
-
+    public static void openNewEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, ISelection selection) throws CoreException {
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         checkProjectIsOpen(project);
-        IFile scriptFile = ResourceUtils.createNewScript(project, scriptFolder, dataSourceContainer);
+        IFolder folder = getCurrentScriptFolder(selection);
+        IFile scriptFile = ResourceUtils.createNewScript(project, folder, dataSourceContainer);
 
         NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
-        return true;
     }
 
-    private static void openRecentEditor(ExecutionEvent event) throws ExecutionException, CoreException {
-        DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
-        if (dataSourceContainer == null) {
-            return;
+    public  static IFolder getCurrentScriptFolder(ISelection selection) {
+        IFolder folder = null;
+        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
+            final Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
+                folder = (IFolder) ((DBNResource)element).getResource();
+            }
         }
-        openRecentScript(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer, null);
+        return folder;
+    }
+
+    private static void openNewEditor(ExecutionEvent event) throws CoreException {
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        try {
+            DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+
+            openNewEditor(workbenchWindow, dataSourceContainer, HandlerUtil.getCurrentSelection(event));
+        } catch (InterruptedException e) {
+            // Canceled
+        }
+    }
+
+    private static void openRecentEditor(ExecutionEvent event) throws CoreException {
+        try {
+            DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+            openRecentScript(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer, null);
+        } catch (InterruptedException e) {
+            // Canceled
+        }
     }
 
     @Nullable
-    private static DBPDataSourceContainer getCurrentConnection(ExecutionEvent event)
-    {
+    private static DBPDataSourceContainer getCurrentConnection(ExecutionEvent event) throws InterruptedException {
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
         final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : projectRegistry.getActiveProject();
@@ -149,7 +168,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
             } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
                 SelectDataSourceDialog dialog = new SelectDataSourceDialog(HandlerUtil.getActiveShell(event), project, null);
                 if (dialog.open() == IDialogConstants.CANCEL_ID) {
-                    return null;
+                    throw new InterruptedException();
                 }
                 dataSourceContainer = dialog.getDataSource();
             }
@@ -161,12 +180,6 @@ public class OpenHandler extends AbstractDataSourceHandler {
     private static IFolder getCurrentFolder(ExecutionEvent event)
     {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
-            final Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
-                return (IFolder) ((DBNResource)element).getResource();
-            }
-        }
         return null;
     }
 
@@ -228,20 +241,17 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    private static void checkProjectIsOpen(final IProject project) throws CoreException {
+    public static void checkProjectIsOpen(final IProject project) throws CoreException {
         if (project == null) {
         	throw new CoreException(GeneralUtils.makeExceptionStatus(new IllegalStateException("No active project.")));
         }
         if (!project.isOpen()) {
             try {
-                UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        try {
-                            project.open(monitor.getNestedMonitor());
-                        } catch (CoreException e) {
-                            throw new InvocationTargetException(e);
-                        }
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        project.open(monitor.getNestedMonitor());
+                    } catch (CoreException e) {
+                        throw new InvocationTargetException(e);
                     }
                 });
             } catch (InvocationTargetException e) {

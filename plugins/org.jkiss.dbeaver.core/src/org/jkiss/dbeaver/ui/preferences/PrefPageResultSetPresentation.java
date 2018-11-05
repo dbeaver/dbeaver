@@ -46,6 +46,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
     private Button gridShowOddRows;
     private Button rightJustifyNumbers;
+    private Button rightJustifyDateTime;
     private Button colorizeDataTypes;
     private Button transformComplexTypes;
     private Spinner gridRowBatchSize;
@@ -55,6 +56,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     private Button gridShowAttrIcons;
     private Combo gridDoubleClickBehavior;
 
+    private Spinner textTabSize;
     private Spinner textMaxColumnSize;
     private ValueFormatSelector textValueFormat;
     private Button showNulls;
@@ -78,12 +80,14 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
             store.contains(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES) ||
             store.contains(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS) ||
+            store.contains(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME) ||
             store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
             store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS) ||
-
             store.contains(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
+
+            store.contains(DBeaverPreferences.RESULT_TEXT_TAB_SIZE) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS) ||
@@ -119,6 +123,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             gridShowOddRows = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
             colorizeDataTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
             rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 2);
+            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 2);
             gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_row_batch_size, 1, 1, Short.MAX_VALUE);
             gridRowBatchSize.setToolTipText(CoreMessages.pref_page_database_resultsets_label_row_batch_size_tip);
             gridShowCellIcons = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
@@ -134,6 +139,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         {
             Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_plain_text, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
+            textTabSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_tab_width, 0, 1, 100);
             textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
             textValueFormat = new ValueFormatSelector(uiGroup);
             showNulls = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
@@ -151,6 +157,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             gridShowOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
             colorizeDataTypes.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES));
             rightJustifyNumbers.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
+            rightJustifyDateTime.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME));
             transformComplexTypes.setSelection(store.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES));
 
             gridRowBatchSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE));
@@ -165,6 +172,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             columnWidthByValue.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES));
             showConnectionName.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
 
+            textTabSize.setSelection(store.getInt(DBeaverPreferences.RESULT_TEXT_TAB_SIZE));
             textMaxColumnSize.setSelection(store.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
             textValueFormat.select(DBDDisplayFormat.safeValueOf(store.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT)));
             showNulls.setSelection(store.getBoolean(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS));
@@ -182,6 +190,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, gridShowOddRows.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, colorizeDataTypes.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, rightJustifyNumbers.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME, rightJustifyDateTime.getSelection());
             store.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, transformComplexTypes.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, gridRowBatchSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
@@ -193,6 +202,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES, columnWidthByValue.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME, showConnectionName.getSelection());
+
+            store.setValue(DBeaverPreferences.RESULT_TEXT_TAB_SIZE, textTabSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, textMaxColumnSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT, textValueFormat.getSelection().name());
             store.setValue(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS, showNulls.getSelection());
@@ -210,6 +221,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         store.setToDefault(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
         store.setToDefault(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
 
         store.setToDefault(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE);
@@ -222,6 +234,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION);
         store.setToDefault(DBeaverPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
+
+        store.setToDefault(DBeaverPreferences.RESULT_TEXT_TAB_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS);

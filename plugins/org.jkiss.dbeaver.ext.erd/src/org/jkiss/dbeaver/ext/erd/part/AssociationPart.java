@@ -28,6 +28,7 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
@@ -86,6 +87,21 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND));
 
+        boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
+        if (showComments) {
+            ERDAssociation association = getAssociation();
+            if (association != null && association.getObject() != null && !CommonUtils.isEmpty(association.getObject().getDescription())) {
+                ConnectionLocator descLabelLocator = new ConnectionLocator(conn, ConnectionLocator.MIDDLE);
+                //descLabelLocator.setRelativePosition(50);
+                //descLabelLocator.setGap(50);
+                Label descLabel = new Label(association.getObject().getDescription());
+                descLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
+//                Border border = new MarginBorder(20, 0, 0, 0);
+//                descLabel.setBorder(border);
+                conn.add(descLabel, descLabelLocator);
+            }
+        }
+
         setConnectionStyles(conn);
         setConnectionRouting(conn);
         setConnectionToolTip(conn);
@@ -104,27 +120,33 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 connBends.add(new AbsoluteBendpoint(bend.x, bend.y));
             }
             conn.setRoutingConstraint(connBends);
-        } else if (association.getTargetEntity() == association.getSourceEntity()) {
-            // Self link
-            final IFigure entityFigure = ((GraphicalEditPart) getSource()).getFigure();
-            //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
-            //final Dimension entitySize = entity.getFigure().getSize();
-            final Dimension figureSize = entityFigure.getMinimumSize();
-            int entityWidth = figureSize.width;
-            int entityHeight = figureSize.height;
+        } else if (association.getTargetEntity() != null && association.getTargetEntity() == association.getSourceEntity()) {
+            EditPart entityPart = getSource();
+            if (entityPart == null) {
+                entityPart = getTarget();
+            }
+            if (entityPart instanceof GraphicalEditPart) {
+                // Self link
+                final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
+                //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
+                //final Dimension entitySize = entity.getFigure().getSize();
+                final Dimension figureSize = entityFigure.getMinimumSize();
+                int entityWidth = figureSize.width;
+                int entityHeight = figureSize.height;
 
-            List<RelativeBendpoint> bends = new ArrayList<>();
-            {
-                RelativeBendpoint bp1 = new RelativeBendpoint(conn);
-                bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
-                bends.add(bp1);
+                List<RelativeBendpoint> bends = new ArrayList<>();
+                {
+                    RelativeBendpoint bp1 = new RelativeBendpoint(conn);
+                    bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
+                    bends.add(bp1);
+                }
+                {
+                    RelativeBendpoint bp2 = new RelativeBendpoint(conn);
+                    bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
+                    bends.add(bp2);
+                }
+                conn.setRoutingConstraint(bends);
             }
-            {
-                RelativeBendpoint bp2 = new RelativeBendpoint(conn);
-                bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
-                bends.add(bp2);
-            }
-            conn.setRoutingConstraint(bends);
         }
     }
 
@@ -139,7 +161,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             srcDec.setFill(true);
             srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
             srcDec.setScale(10, 6);
-            conn.setSourceDecoration(srcDec);
+            conn.setTargetDecoration(srcDec);
         }
         if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
             final CircleDecoration targetDecor = new CircleDecoration();

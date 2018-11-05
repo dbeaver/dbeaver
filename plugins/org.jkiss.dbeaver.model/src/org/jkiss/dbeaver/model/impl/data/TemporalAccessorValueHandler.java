@@ -55,23 +55,23 @@ public abstract class TemporalAccessorValueHandler extends BaseValueHandler {
     }
 
     @Override
-    public TemporalAccessor getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             return null;
         } else if (object instanceof TemporalAccessor) {
-            return (TemporalAccessor) object;
+            return object;
         } else if (object instanceof String) {
             String strValue = (String)object;
             try {
-                return (TemporalAccessor) getFormatter(type).parseValue(strValue, isZonedType(type) ? ZonedDateTime.class : LocalDateTime.class);
+                return getFormatter(type).parseValue(strValue, isZonedType(type) ? ZonedDateTime.class : LocalDateTime.class);
             } catch (ParseException e) {
                 // Try to parse with standard date/time formats
                 try {
                     return ZonedDateTime.parse((CharSequence) object);
                 } catch (Exception e1) {
                     log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
-                    return null;
+                    return object;
                 }
             }
         } else {
@@ -82,7 +82,7 @@ public abstract class TemporalAccessorValueHandler extends BaseValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (value == null) {
+        if (value == null || value instanceof String) {
             return super.getValueDisplayString(column, null, format);
         }
         try {

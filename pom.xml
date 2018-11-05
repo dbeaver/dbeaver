@@ -5,33 +5,41 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jkiss.dbeaver</groupId>
     <artifactId>dbeaver</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>5.1.4</dbeaver-version>
+        <dbeaver-version>5.2.4</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.1.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
-        <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
+
+        <!-- SimRel 2018-09 -->
+        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2018-09/</eclipse-p2-repo.url>
+        <!-- Orbit. From Photon because we need com.ibm.icu.base -->
+        <orbit-p2-repo.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180330011457/repository</orbit-p2-repo.url>
+        <!-- Nebula -->
+        <nebula-p2-repo.url>http://download.eclipse.org/nebula/releases/latest</nebula-p2-repo.url>
+        <!-- DBeaver Maven dependencies -->
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
+
+        <key.storage.path>/etc/</key.storage.path>
+        <tsa/>
     </properties>
 
     <modules>
         <module>bundles</module>
         <module>plugins</module>
         <module>features</module>
-        <module>nls</module>
 
         <!-- Products -->
         <module>product/standalone</module>
         <module>product/repositories</module>
 
-        <!-- Test -->
-        <module>plugins/org.jkiss.dbeaver.test</module>
-        <module>tests/org.jkiss.dbeaver.runtime.ide.core.tests</module>
+        <!-- Tests -->
+        <module>tests</module>
 
     </modules>
 
@@ -42,14 +50,47 @@
             <layout>p2</layout>
         </repository>
         <repository>
+            <id>eclipse-orbit-repo</id>
+            <url>${orbit-p2-repo.url}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>nebula-repo</id>
+            <url>${nebula-p2-repo.url}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
             <id>local-contrib</id>
             <url>${local-p2-repo.url}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>eclipse-color-theme</id>
+            <url>http://eclipse-color-theme.github.com/update</url>
             <layout>p2</layout>
         </repository>
     </repositories>
 
     <build>
         <plugins>
+
+            <!-- Tycho target platform -->
+<!--
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <target>
+                        <artifact>
+                            <groupId>org.example</groupId>
+                            <artifactId>target-definition</artifactId>
+                            <version>1.0.0-SNAPSHOT</version>
+                        </artifact>
+                    </target>
+                </configuration>
+            </plugin>
+-->
 
             <!-- Tycho build -->
             <plugin>
@@ -146,28 +187,42 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
-            <!-- Signing -->
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jarsigner-plugin</artifactId>
-                <version>1.2</version>
-                <configuration>
-                    <keystore>file://C:\tmp\eclipse-signing.keystore </keystore>
-                    <storepass>dbeaver</storepass>
-                    <alias>dbeaver</alias>
-                    <keypass>dbeaver</keypass>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>sign</id>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin-->
-
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- Profile used to sign jars -->
+            <id>sign-code</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jarsigner-plugin</artifactId>
+                        <version>1.4</version>
+                        <configuration>
+                            <keystore>${key.storage.path}/jar-sign.keystore</keystore>
+                            <tsa>${tsa}</tsa>
+                            <tsacert>dbeaver</tsacert>
+                            <storepass>dbeaver</storepass>
+                            <alias>dbeaver</alias>
+                            <keypass>dbeaver</keypass>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

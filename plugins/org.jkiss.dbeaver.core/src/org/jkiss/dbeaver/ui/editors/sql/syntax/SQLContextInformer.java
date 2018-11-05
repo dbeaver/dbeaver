@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -259,7 +260,7 @@ public class SQLContextInformer
     public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, final DBPDataSource dataSource, DBPNamedObject object, final String[] keywords, final DBPKeywordType keywordType) {
         if (object != null) {
             return makeObjectDescription(monitor, object, true);
-        } else if (keywordType != null && dataSource != null) {
+        } else if (keywordType != null && dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS)) {
             HelpReader helpReader = new HelpReader(dataSource, keywordType, keywords);
             if (monitor == null) {
                 SystemJob searchJob = new SystemJob("Read help topic", helpReader);
@@ -335,7 +336,7 @@ public class SQLContextInformer
             collector.collectProperties();
 
             for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
-                Object propValue = collector.getPropertyValue(monitor, descriptor.getId());
+                Object propValue = collector.getPropertyValue(null, descriptor.getId());
                 if (propValue == null) {
                     continue;
                 }

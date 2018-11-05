@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
@@ -45,7 +47,8 @@ public class RunProcedureConsoleHandler extends OpenObjectConsoleHandler {
         DBPDataSourceContainer ds = null;
         String procName = null;
 
-        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(HandlerUtil.getCurrentSelection(event));
+        ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
+        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(currentSelection);
         List<DBSProcedure> entities = new ArrayList<>();
         for (DBSObject object : selectedObjects) {
             if (object instanceof DBSProcedure) {
@@ -63,7 +66,11 @@ public class RunProcedureConsoleHandler extends OpenObjectConsoleHandler {
             title = procName + " call";
         }
 
-        openConsole(workbenchWindow, generator, ds, title, false);
+        try {
+            openConsole(workbenchWindow, generator, ds, title, false, currentSelection);
+        } catch (Exception e) {
+            DBUserInterface.getInstance().showError("Open console", "Can open SQL editor", e);
+        }
         return null;
     }
 }

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener.PreferenceChang
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
@@ -47,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
 * ControlPanelEditor
@@ -91,7 +93,19 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
             } else {
                 charset = DBValueFormatting.getDefaultBinaryFileEncoding(value.getDataSource());
             }
-            control.setContent(buffer.toByteArray(), charset);
+            String finalCharset = charset;
+            byte[] byteData = buffer.toByteArray();
+            BinaryContent content = control.getContent();
+            if (content != null && content.length() == byteData.length) {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(byteData.length);
+                if (Arrays.equals(byteBuffer.array(), byteData)) {
+                    // Equals data
+                    return;
+                }
+            }
+            UIUtils.syncExec(() -> {
+                control.setContent(byteData, finalCharset, false);
+            });
         } catch (IOException e) {
             throw new DBException("Error reading stream value", e);
         } finally {

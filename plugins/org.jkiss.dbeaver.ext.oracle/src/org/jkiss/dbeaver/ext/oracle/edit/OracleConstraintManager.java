@@ -112,7 +112,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     }
     
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions,
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                           ObjectCreateCommand command, Map<String, Object> options)
     {
     	OracleTableConstraint constraint = (OracleTableConstraint) command.getObject();
@@ -120,7 +120,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
         actions.add(
                 new SQLDatabasePersistAction(
                     ModelMessages.model_jdbc_create_new_constraint,
-                    "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(table, command, options) +
+                    "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options) +
                     " "  + (constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" )
                 	));
     }

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.YellowbrickUtils;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -83,14 +82,11 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
         PostgreTableBase tableBase = command.getObject();
-        if (tableBase.getDataSource().isYellowbrick()) {
-            // Extract main portion from server
-            StringBuilder ddl = new StringBuilder();
 
-            String tableDDL = YellowbrickUtils.extractTableDDL(monitor, tableBase);
-            if (!CommonUtils.isEmpty(tableDDL)) {
-                ddl.append(tableDDL);
-                actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, ddl.toString()) );
+        if (tableBase.isPersisted()) {
+            String tableDDL = tableBase.getDataSource().getServerType().readTableDDL(monitor, tableBase);
+            if (tableDDL != null) {
+                actions.add(0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, tableDDL));
                 return;
             }
         }
@@ -103,7 +99,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             if (command.getObject() instanceof PostgreTableRegular) {
                 try {
-                    generateAlterActions(actionList, command);
+                    generateAlterActions(monitor, actionList, command);
                 } catch (DBException e) {
                     log.error(e);
                 }
@@ -111,10 +107,10 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         }
     }
 
-    private void generateAlterActions(List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
+    private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
         final PostgreTableRegular table = (PostgreTableRegular) command.getObject();
         final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
-        final VoidProgressMonitor monitor = new VoidProgressMonitor();
+
         if (command.hasProperty("hasOids")) {
             actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));
         }
@@ -124,9 +120,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected void appendTableModifiers(PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
-        final VoidProgressMonitor monitor = new VoidProgressMonitor();
-
+    protected void appendTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
         if (tableBase instanceof PostgreTable) {
             PostgreTable table = (PostgreTable) tableBase;
             if (!alter) {
@@ -150,8 +144,10 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
             PostgreTableRegular table = (PostgreTableRegular) tableBase;
             try {
                 if (!alter) {
-                    ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
-                    ddl.append("\n)");
+                    if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
+                        ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
+                        ddl.append("\n)");
+                    }
                 }
                 boolean hasOtherSpecs = false;
                 PostgreTablespace tablespace = table.getTablespace(monitor);
@@ -176,25 +172,22 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
                 }
                 String[] foreignOptions = table.getForeignOptions(monitor);
                 if (!ArrayUtils.isEmpty(foreignOptions)) {
-                    ddl.append("\nOPTIONS ");
-                    for (int i = 0; i < foreignOptions.length; i++) {
-                        if (i > 0) ddl.append(", ");
-                        ddl.append(foreignOptions[i]);
-                    }
+                    ddl.append("\nOPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
                 }
             } catch (DBException e) {
                 log.error(e);
             }
         }
+        tableBase.appendTableModifiers(monitor, ddl);
     }
 
     @Override
-    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
+                "ALTER TABLE " + DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + //$NON-NLS-1$
                     " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         );
     }

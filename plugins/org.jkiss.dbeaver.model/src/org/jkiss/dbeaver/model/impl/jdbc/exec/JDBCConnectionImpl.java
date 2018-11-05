@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -151,6 +154,9 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 if (statement instanceof JDBCStatementImpl) {
                     statement.setQueryString(sqlQuery);
                 }
+                if (context.getDataSource().getSQLDialect().isDisableScriptEscapeProcessing()) {
+                    disableStatementEscapeProcessing(statement);
+                }
                 return statement;
             } else if (returnGeneratedKeys) {
                 // Return keys
@@ -170,27 +176,40 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     }
                 }
             } else {
+                JDBCPreparedStatement dbStat;
                 try {
                     // Generic prepared statement
-                    return prepareStatement(
+                    dbStat = prepareStatement(
                         sqlQuery,
                         scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                         updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                 }
                 catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
-                    return prepareStatement(sqlQuery);
+                    dbStat =  prepareStatement(sqlQuery);
                 }
                 catch (SQLException e) {
                     if (DBUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
-                        return prepareStatement(sqlQuery);
+                        dbStat = prepareStatement(sqlQuery);
                     } else {
                         throw e;
                     }
                 }
+                return dbStat;
             }
         }
         catch (SQLException e) {
             throw new JDBCException(e, getDataSource());
+        }
+    }
+
+    // Disable escaping (#3512)
+    private void disableStatementEscapeProcessing(JDBCStatement statement) {
+        if (statement != null) {
+            try {
+                statement.setEscapeProcessing(false);
+            } catch (Throwable e) {
+                log.debug(e);
+            }
         }
     }
 
@@ -538,29 +557,28 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @Override
     public String getSchema() throws SQLException
     {
-        return JDBCUtils.callMethod17(getOriginal(), "getSchema", String.class, null);
+        return getOriginal().getSchema();
     }
 
     @Override
     public void setSchema(String schema) throws SQLException
     {
-        JDBCUtils.callMethod17(getOriginal(), "setSchema", null, new Class<?>[]{String.class}, schema);
+        getOriginal().setSchema(schema);
     }
 
     @Override
     public void abort(Executor executor) throws SQLException {
-        JDBCUtils.callMethod17(getOriginal(), "abort", null, new Class<?>[]{Executor.class}, executor);
+        getOriginal().abort(executor);
     }
 
     @Override
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        JDBCUtils.callMethod17(getOriginal(), "setNetworkTimeout", null, new Class<?>[]{Executor.class, Integer.TYPE}, executor, milliseconds);
+        getOriginal().setNetworkTimeout(executor, milliseconds);
     }
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-        Integer networkTimeout = JDBCUtils.callMethod17(getOriginal(), "getNetworkTimeout", Integer.class, null);
-        return networkTimeout == null ? 0 : networkTimeout;
+        return getOriginal().getNetworkTimeout();
     }
 
     @Override

@@ -53,7 +53,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
                                     <items label="%tree.reference_key.node.name" path="referenceKey" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
@@ -274,9 +274,12 @@
                     label="Oracle"
                     class="oracle.jdbc.OracleDriver"
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
+                    useURL="false"
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
-                    description="Oracle thin driver. Doesn't require Oracle client.">
+                    propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
+                    description="Oracle thin driver. Doesn't require Oracle client."
+                    promoted="true">
                     <replace provider="generic" driver="oracle"/>
                     <replace provider="oracle" driver="oracle"/>
                     <replace provider="oracle" driver="oracle_oci"/>
@@ -284,13 +287,15 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="useFetchSizeWithLongColumn" value="true"/>
 
-                    <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
-                        <file name="ojdbc6.jar" description="JDBC driver"/>
+                    <!--<file path="maven:/com.oracle.jdbc:ojdbc8:RELEASE" type="jar"/>-->
+
+                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12c drivers">
+                        <file name="ojdbc8.jar" description="JDBC driver"/>
                         <file name="orai18n.jar" optional="true" description="NLS classes"/>
                         <file name="xdb6.jar" optional="true" description="SQLXML support"/>
                     </fileSource>
-                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12c drivers">
-                        <file name="ojdbc8.jar" description="JDBC driver"/>
+                    <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
+                        <file name="ojdbc6.jar" description="JDBC driver"/>
                         <file name="orai18n.jar" optional="true" description="NLS classes"/>
                         <file name="xdb6.jar" optional="true" description="SQLXML support"/>
                     </fileSource>
@@ -306,25 +311,28 @@
 
                 </driver>
             </drivers>
-            <views>
-                <view
-                    id="org.jkiss.dbeaver.ext.oracle.dataSourceWizardView"
-                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage"
-                    icon="icons/oracle_icon.png">
-                </view>
-                <view
-                    id="org.jkiss.dbeaver.ext.oracle.dataSourceEditorView"
-                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage">
-                </view>
-            </views>
             <templates>
                 <resolver type="orauser" class="org.jkiss.dbeaver.ext.oracle.model.resolvers.OracleUserResolver" description="Current Oracle user"/>
             </templates>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.oracle.dataSourceWizardView"
+                dataSource="oracle"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage"
+                icon="icons/oracle_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.oracle.dataSourceEditorView"
+                dataSource="oracle"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage">
+        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
@@ -576,11 +584,14 @@
     <extension point="org.eclipse.ui.editors">
         <editor
             name="Session Manager"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
             class="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
-            id="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor">
+            id="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
         <editor
             name="Lock Manager"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png"
             class="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor"
             id="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor">
         </editor>
@@ -595,6 +606,16 @@
         </page>
     </extension>
 
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.oracle.main" class="org.jkiss.dbeaver.ext.oracle.views.PrefPageOracle" name="%page.org.jkiss.dbeaver.preferences.oracle.main.name">
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
+                    <test property="org.jkiss.dbeaver.core.datasourceContainer.driverId" value="oracle_thin"/>
+                </adapt>
+            </enabledWhen>
+        </page>
+    </extension>
+
     <extension point="org.eclipse.ui.importWizards">
         <wizard
             category="org.jkiss.dbeaver.import_config.third-party"
@@ -605,5 +626,13 @@
             <description>Oracle SQL Developer</description>
         </wizard>
     </extension>
+
+<!--
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="oracle-maven-repo" name="Oracle Repository" url="https://maven.oracle.com/" order="10">
+            <scope group="com.oracle.jdbc"/>
+        </repository>
+    </extension>
+-->
 
 </plugin>

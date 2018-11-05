@@ -10,7 +10,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.part.IColorizedPart;
-import org.jkiss.dbeaver.ext.erd.part.NodePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.HashMap;
@@ -31,7 +30,7 @@ public class SetPartColorAction extends SelectionAction {
 
     protected boolean calculateEnabled() {
         for (Object item : selection.toArray()) {
-            if (item instanceof NodePart) {
+            if (item instanceof IColorizedPart) {
                 return true;
             }
         }

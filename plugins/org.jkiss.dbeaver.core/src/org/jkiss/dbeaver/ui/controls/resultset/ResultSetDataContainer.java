@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -76,19 +77,19 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
 
     @Override
     public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException {
-        if (proceedSelectedRowsOnly() || proceedSelectedColumnsOnly()) {
+        if (proceedSelectedRowsOnly(flags) || proceedSelectedColumnsOnly(flags)) {
 
             long startTime = System.currentTimeMillis();
             DBCStatistics statistics = new DBCStatistics();
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
 
             //LocalSta
-            ModelResultSet resultSet = new ModelResultSet(session);
+            ModelResultSet resultSet = new ModelResultSet(session, flags);
             long resultCount = 0;
             try {
                 dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
                 while (resultSet.nextRow()) {
-                    if (!proceedSelectedRowsOnly() || options.getSelectedRows().contains(resultCount)) {
+                    if (!proceedSelectedRowsOnly(flags) || options.getSelectedRows().contains(resultCount)) {
                         dataReceiver.fetchRow(session, resultSet);
                     }
                     resultCount++;
@@ -110,22 +111,22 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
         }
     }
 
-    private boolean proceedSelectedColumnsOnly() {
-        return options.isExportSelectedColumns() && !CommonUtils.isEmpty(options.getSelectedColumns());
+    private boolean proceedSelectedColumnsOnly(long flags) {
+        return (flags & DBSDataContainer.FLAG_USE_SELECTED_COLUMNS) != 0 && !CommonUtils.isEmpty(options.getSelectedColumns());
     }
 
-    private boolean proceedSelectedRowsOnly() {
-        return options.isExportSelectedRows() && !CommonUtils.isEmpty(options.getSelectedRows());
+    private boolean proceedSelectedRowsOnly(long flags) {
+        return (flags & DBSDataContainer.FLAG_USE_SELECTED_ROWS) != 0 && !CommonUtils.isEmpty(options.getSelectedRows());
     }
 
     @Override
-    public long countData(DBCExecutionSource source, DBCSession session, DBDDataFilter dataFilter) throws DBCException {
-        if (proceedSelectedRowsOnly()) {
+    public long countData(DBCExecutionSource source, DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
+        if (proceedSelectedRowsOnly(flags)) {
             return options.getSelectedRows().size();
-        } else if (proceedSelectedColumnsOnly()) {
+        } else if (proceedSelectedColumnsOnly(flags)) {
             return model.getRowCount();
         } else {
-            return dataContainer.countData(source, session, dataFilter);
+            return dataContainer.countData(source, session, dataFilter, flags);
         }
     }
 
@@ -150,10 +151,12 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
     private class ModelResultSet implements DBCResultSet {
 
         private final DBCSession session;
+        private final long flags;
         private ResultSetRow curRow;
 
-        ModelResultSet(DBCSession session) {
+        ModelResultSet(DBCSession session, long flags) {
             this.session = session;
+            this.flags = flags;
         }
 
         @Override
@@ -217,18 +220,16 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
 
         @Override
         public DBCResultSetMetaData getMeta() throws DBCException {
-            return () -> {
-                List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
-                List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
-                boolean selectedColumnsOnly = proceedSelectedColumnsOnly();
-                for (DBDAttributeBinding attribute : attributes) {
-                    DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
-                    if (!selectedColumnsOnly || options.getSelectedColumns().contains(metaAttribute.getName())) {
-                        meta.add(metaAttribute);
-                    }
+            List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
+            List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
+            boolean selectedColumnsOnly = proceedSelectedColumnsOnly(flags);
+            for (DBDAttributeBinding attribute : attributes) {
+                DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
+                if (!selectedColumnsOnly || options.getSelectedColumns().contains(metaAttribute.getName())) {
+                    meta.add(metaAttribute);
                 }
-                return meta;
-            };
+            }
+            return new LocalResultSetMeta(meta);
         }
 
         @Override

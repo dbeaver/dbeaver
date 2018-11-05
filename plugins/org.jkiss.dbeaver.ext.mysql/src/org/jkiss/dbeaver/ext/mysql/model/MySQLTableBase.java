@@ -63,7 +63,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
             if (DBUtils.isHiddenObject(srcColumn)) {
                 continue;
             }
-            MySQLTableColumn column = new MySQLTableColumn(this, srcColumn);
+            MySQLTableColumn column = new MySQLTableColumn(monitor, this, srcColumn);
             colCache.cacheObject(column);
         }
     }
@@ -99,7 +99,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
             return Collections.emptyList();
         }
         List<MySQLTableColumn> columns = new ArrayList<>(childColumns);
-        Collections.sort(columns, DBUtils.orderComparator());
+        columns.sort(DBUtils.orderComparator());
         return columns;
     }
 

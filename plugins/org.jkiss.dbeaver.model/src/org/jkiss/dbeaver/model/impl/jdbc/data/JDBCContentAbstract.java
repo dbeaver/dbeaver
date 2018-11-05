@@ -37,6 +37,10 @@ public abstract class JDBCContentAbstract extends AbstractContent implements DBD
         super(dataSource);
     }
 
+    protected JDBCContentAbstract(JDBCContentAbstract copyFrom) {
+        super(copyFrom);
+    }
+
     protected String getDefaultEncoding() {
         return DBValueFormatting.getDefaultBinaryFileEncoding(dataSource);
     }

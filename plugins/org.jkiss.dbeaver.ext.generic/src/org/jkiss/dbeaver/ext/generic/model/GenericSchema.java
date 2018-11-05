@@ -43,7 +43,7 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema
     }
 
     @Override
-    @Property(order = 2)
+    @Property(optional = true, order = 2)
     public GenericCatalog getCatalog()
     {
         return catalog;

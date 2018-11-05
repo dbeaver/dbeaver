@@ -64,7 +64,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreData
     @Override
     public void fillProcessParameters(List<String> cmd, PostgreDatabase arg) throws IOException
     {
-        String dumpPath = RuntimeUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
+        String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         cmd.add("--echo-errors"); //$NON-NLS-1$
     }
@@ -78,7 +78,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreData
     }
 
     @Override
-    public PostgreServerHome findServerHome(String clientHomeId)
+    public PostgreServerHome findNativeClientHome(String clientHomeId)
     {
         return PostgreDataSourceProvider.getServerHome(clientHomeId);
     }

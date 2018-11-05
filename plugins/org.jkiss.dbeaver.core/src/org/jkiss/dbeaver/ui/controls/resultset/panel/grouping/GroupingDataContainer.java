@@ -128,7 +128,7 @@ public class GroupingDataContainer implements DBSDataContainer {
     }
 
     @Override
-    public long countData(DBCExecutionSource source, DBCSession session, DBDDataFilter dataFilter) throws DBCException {
+    public long countData(DBCExecutionSource source, DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
         return 0;
     }
 

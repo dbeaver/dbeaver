@@ -16,23 +16,26 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -756,13 +759,12 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     @Override
     public void closeOnCompletion() throws SQLException {
-        JDBCUtils.callMethod17(getOriginal(), "closeOnCompletion", null, null);
+        getOriginal().closeOnCompletion();
     }
 
     @Override
     public boolean isCloseOnCompletion() throws SQLException {
-        Boolean closeOnCompletion = JDBCUtils.callMethod17(getOriginal(), "isCloseOnCompletion", Boolean.TYPE, null);
-        return closeOnCompletion == null ? false : closeOnCompletion;
+        return getOriginal().isCloseOnCompletion();
     }
 
     @Override

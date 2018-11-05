@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -99,9 +98,9 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
         }.execute();
     }
 
-    protected void appendIndexColumnModifiers(StringBuilder decl, DBSTableIndexColumn indexColumn) {
+    protected void appendIndexColumnModifiers(DBRProgressMonitor monitor, StringBuilder decl, DBSTableIndexColumn indexColumn) {
         try {
-            final PostgreOperatorClass operatorClass = ((PostgreIndexColumn) indexColumn).getOperatorClass(new VoidProgressMonitor());
+            final PostgreOperatorClass operatorClass = ((PostgreIndexColumn) indexColumn).getOperatorClass(monitor);
             if (operatorClass != null) {
                 decl.append(" ").append(operatorClass.getName());
             }
@@ -120,12 +119,12 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         boolean hasDDL = false;
         PostgreIndex index = command.getObject();
         if (index.isPersisted()) {
             try {
-                String indexDDL = index.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS);
+                String indexDDL = index.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
                 if (!CommonUtils.isEmpty(indexDDL)) {
                     actions.add(
                         new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, indexDDL)
@@ -137,7 +136,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
             }
         }
         if (!hasDDL) {
-            super.addObjectCreateActions(actions, command, options);
+            super.addObjectCreateActions(monitor, actions, command, options);
         }
         if (!CommonUtils.isEmpty(index.getDescription())) {
             addIndexCommentAction(actions, index);

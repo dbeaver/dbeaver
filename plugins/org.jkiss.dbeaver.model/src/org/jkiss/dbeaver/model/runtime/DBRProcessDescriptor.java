@@ -87,7 +87,7 @@ public class DBRProcessDescriptor
         return process;
     }
 
-    public synchronized boolean isRunning()
+    public boolean isRunning()
     {
         return process != null;
     }
@@ -122,12 +122,18 @@ public class DBRProcessDescriptor
         }
     }
 
-    public synchronized void terminate()
+    public void terminate()
     {
         if (process != null) {
-            process.destroy();
+            synchronized (this) {
+                if (process != null) {
+                    process.destroy();
+                }
+            }
             try {
-                exitValue = process.waitFor();
+                if (process != null) {
+                    exitValue = process.waitFor();
+                }
             } catch (InterruptedException e) {
                 // Skip
             }

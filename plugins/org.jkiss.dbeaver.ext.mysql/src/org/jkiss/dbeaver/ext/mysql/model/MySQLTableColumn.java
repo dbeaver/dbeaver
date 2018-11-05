@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -91,7 +92,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     // Copy constructor
     public MySQLTableColumn(
-        MySQLTableBase table,
+        DBRProgressMonitor monitor, MySQLTableBase table,
         DBSEntityAttribute source)
         throws DBException
     {
@@ -108,7 +109,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
                 this.enumValues = new ArrayList<>(mySource.enumValues);
             }
         } else {
-            this.collation = table.getContainer().getDefaultCollation();
+            this.collation = table.getContainer().getAdditionalInfo(monitor).getDefaultCollation();
             this.fullTypeName = DBUtils.getFullTypeName(this);
         }
     }

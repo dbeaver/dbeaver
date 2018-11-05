@@ -180,6 +180,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
         store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
 
+
         store.setValue(ModelPreferences.NOTIFICATIONS_ENABLED, notificationsEnabled.getSelection());
         store.setValue(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, notificationsCloseDelay.getSelection());
 
@@ -200,12 +201,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
                         "Restart " + GeneralUtils.getProductName(),
                         "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?"))
                     {
-                        UIUtils.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                PlatformUI.getWorkbench().restart();
-                            }
-                        });
+                        UIUtils.asyncExec(() -> PlatformUI.getWorkbench().restart());
                     }
                 }
             } catch (DBException e) {

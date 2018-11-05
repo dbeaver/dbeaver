@@ -171,7 +171,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersText.addPaintListener(e -> {
                 /*if (viewer.getModel().hasData())*/ {
                     final boolean supportsDataFilter = viewer.supportsDataFilter();
-                    if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
+                    if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0 && !filtersText.isFocusControl())) {
                         e.gc.setForeground(shadowColor);
                         e.gc.setFont(hintFont);
                         e.gc.drawText(supportsDataFilter ?
@@ -180,6 +180,17 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             2, 0, true);
                         e.gc.setFont(null);
                     }
+                }
+            });
+            this.filtersText.addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    filtersText.redraw();
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    filtersText.redraw();
                 }
             });
             this.filtersText.addModifyListener(new ModifyListener() {
@@ -974,7 +985,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         EditFilterPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
-            setToolTipText("Expan filter panel");
+            setToolTipText("Expand filter panel");
             enabledImageExpand = DBeaverIcons.getImage(UIIcon.FIT_WINDOW);
             disabledImageExpand = new Image(enabledImageExpand.getDevice(), enabledImageExpand, SWT.IMAGE_GRAY);
             enabledImageCollapse = DBeaverIcons.getImage(UIIcon.ORIGINAL_SIZE);

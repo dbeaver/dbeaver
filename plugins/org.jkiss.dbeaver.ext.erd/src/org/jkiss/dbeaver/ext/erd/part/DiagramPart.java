@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -115,7 +114,7 @@ public class DiagramPart extends PropertyAwarePart {
     @Override
     protected IFigure createFigure()
     {
-        Figure figure = new EntityDiagramFigure();
+        EntityDiagramFigure figure = new EntityDiagramFigure(this);
         delegatingLayoutManager = new DelegatingLayoutManager(this);
         figure.setLayoutManager(delegatingLayoutManager);
 
@@ -137,7 +136,6 @@ public class DiagramPart extends PropertyAwarePart {
         //router.setNextRouter(new ManhattanConnectionRouter());
         //router.setNextRouter(new BendpointConnectionRouter());
         cLayer.setConnectionRouter(router);
-
 
         return figure;
     }
@@ -369,7 +367,7 @@ public class DiagramPart extends PropertyAwarePart {
     @Override
     public String toString()
     {
-        return ERDMessages.entity_diagram_ + getDiagram().getName();
+        return ERDMessages.entity_diagram_ + " " + getDiagram().getName();
     }
 
 

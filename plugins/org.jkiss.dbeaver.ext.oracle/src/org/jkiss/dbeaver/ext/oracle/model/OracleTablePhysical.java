@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
@@ -59,12 +60,12 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     private PartitionInfo partitionInfo;
     private PartitionCache partitionCache;
 
-    public OracleTablePhysical(OracleSchema schema, String name)
+    protected OracleTablePhysical(OracleSchema schema, String name)
     {
         super(schema, name, false);
     }
 
-    public OracleTablePhysical(
+    protected OracleTablePhysical(
         OracleSchema schema,
         ResultSet dbResult)
     {
@@ -96,7 +97,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
         // Query row count
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read row count")) {
-            realRowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
+            realRowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null, DBSDataContainer.FLAG_NONE);
         } catch (DBException e) {
             log.debug("Can't fetch row count", e);
         }

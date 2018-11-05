@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Data source information
@@ -269,13 +270,24 @@ public class QMMSessionInfo extends QMMObject {
         return transactional;
     }
 
+    public SQLDialect getSQLDialect() {
+        return sqlDialect;
+    }
+
     @Override
     public String toString()
     {
         return "SESSION " + containerName + " [" + contextName + "]";
     }
 
-    public SQLDialect getSQLDialect() {
-        return sqlDialect;
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof QMMSessionInfo)) {
+            return false;
+        }
+        QMMSessionInfo si = (QMMSessionInfo)obj;
+        return
+            CommonUtils.equalObjects(containerId, si.containerId) &&
+            CommonUtils.equalObjects(contextName, si.contextName);
     }
 }

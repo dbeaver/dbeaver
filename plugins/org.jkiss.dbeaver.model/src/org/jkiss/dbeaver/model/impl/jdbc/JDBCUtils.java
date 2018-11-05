@@ -257,11 +257,16 @@ public class JDBCUtils {
 
     public static boolean safeGetBoolean(ResultSet dbResult, String columnName)
     {
+        return safeGetBoolean(dbResult, columnName, false);
+    }
+
+    public static boolean safeGetBoolean(ResultSet dbResult, String columnName, boolean defValue)
+    {
         try {
             return dbResult.getBoolean(columnName);
         } catch (SQLException e) {
             debugColumnRead(dbResult, columnName, e);
-            return false;
+            return defValue;
         }
     }
 
@@ -673,31 +678,41 @@ public class JDBCUtils {
             return;
         }
         if (filter.hasSingleMask()) {
-            firstClause = SQLUtils.appendFirstClause(sql, firstClause);
-            sql.append(columnAlias);
+            if (columnAlias != null) {
+                firstClause = SQLUtils.appendFirstClause(sql, firstClause);
+                sql.append(columnAlias);
+            }
             SQLUtils.appendLikeCondition(sql, filter.getSingleMask(), false);
             return;
         }
         List<String> include = filter.getInclude();
         if (!CommonUtils.isEmpty(include)) {
-            firstClause = SQLUtils.appendFirstClause(sql, firstClause);
+            if (columnAlias != null) {
+                firstClause = SQLUtils.appendFirstClause(sql, firstClause);
+            }
             sql.append("(");
             for (int i = 0, includeSize = include.size(); i < includeSize; i++) {
                 if (i > 0)
                     sql.append(" OR ");
-                sql.append(columnAlias);
+                if (columnAlias != null) {
+                    sql.append(columnAlias);
+                }
                 SQLUtils.appendLikeCondition(sql, include.get(i), false);
             }
             sql.append(")");
         }
         List<String> exclude = filter.getExclude();
         if (!CommonUtils.isEmpty(exclude)) {
-            SQLUtils.appendFirstClause(sql, firstClause);
+            if (columnAlias != null) {
+                SQLUtils.appendFirstClause(sql, firstClause);
+            }
             sql.append("NOT (");
             for (int i = 0, excludeSize = exclude.size(); i < excludeSize; i++) {
                 if (i > 0)
                     sql.append(" OR ");
-                sql.append(columnAlias);
+                if (columnAlias != null) {
+                    sql.append(columnAlias);
+                }
                 SQLUtils.appendLikeCondition(sql, exclude.get(i), false);
             }
             sql.append(")");
@@ -738,45 +753,6 @@ public class JDBCUtils {
             return ((DBPDataTypeProvider) dataSource).resolveDataKind(typeName, typeID);
         } else {
             return DBPDataKind.UNKNOWN;
-        }
-    }
-
-    /**
-     * Invoke JDBC method from Java 1.7 API
-     * 
-     * @param object
-     *            object
-     * @param methodName
-     *            method name
-     * @param resultType
-     *            result type or null
-     * @param paramTypes
-     *            parameter type array or null
-     * @param paramValues
-     *            parameter value array or null
-     * @return result or null
-     * @throws SQLException
-     *             on error. Throws SQLFeatureNotSupportedException if specified method is not implemented
-     */
-    @Nullable
-    public static <T> T callMethod17(Object object, String methodName, @Nullable Class<T> resultType, @Nullable Class[] paramTypes,
-        Object... paramValues) throws SQLException
-    {
-        try {
-            Object result = object.getClass().getMethod(methodName, paramTypes).invoke(object, paramValues);
-            if (result == null || resultType == null) {
-                return null;
-            } else {
-                return resultType.cast(result);
-            }
-        } catch (InvocationTargetException e) {
-            if (e.getTargetException() instanceof SQLException) {
-                throw (SQLException) e.getTargetException();
-            } else {
-                throw new SQLException(e.getTargetException());
-            }
-        } catch (Throwable e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17, e);
         }
     }
 

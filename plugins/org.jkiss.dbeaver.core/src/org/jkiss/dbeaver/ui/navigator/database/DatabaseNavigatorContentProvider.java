@@ -19,16 +19,19 @@ package org.jkiss.dbeaver.ui.navigator.database;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadVisualizer;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeLazyExpander;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.ArrayUtils;
 
 /**
@@ -77,8 +80,8 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     {
         if (child instanceof DBNNode) {
             return ((DBNNode)child).getParentNode();
-        } else if (child instanceof TreeLoadNode) {
-            return ((TreeLoadNode)child).getParent();
+        } else if (child instanceof TreeNodeSpecial) {
+            return ((TreeNodeSpecial)child).getParent();
         } else {
             log.warn("Unknown node type: " + child);
             return null;
@@ -88,7 +91,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     @Override
     public Object[] getChildren(final Object parent)
     {
-        if (parent instanceof TreeLoadNode) {
+        if (parent instanceof TreeNodeSpecial) {
             return null;
         }
         if (!(parent instanceof DBNNode)) {
@@ -118,6 +121,13 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 if (ArrayUtils.isEmpty(children)) {
                     return EMPTY_CHILDREN;
                 } else {
+                    int longListFetchSize = DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
+                    if (children.length > longListFetchSize) {
+                        Object[] curChildren = new Object[longListFetchSize + 1];
+                        System.arraycopy(children, 0, curChildren, 0, longListFetchSize);
+                        curChildren[longListFetchSize] = new TreeNodeLazyExpander(parentNode, children, longListFetchSize);
+                        return curChildren;
+                    }
                     return children;
                 }
             }
@@ -127,12 +137,9 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                     ex.getMessage(),
                     ex);
                 // Collapse this item
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        navigatorTree.getViewer().collapseToLevel(parent, 1);
-                        navigatorTree.getViewer().refresh(parent);
-                    }
+                UIUtils.asyncExec(() -> {
+                    navigatorTree.getViewer().collapseToLevel(parent, 1);
+                    navigatorTree.getViewer().refresh(parent);
                 });
                 return EMPTY_CHILDREN;
             }
@@ -142,6 +149,11 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     @Override
     public boolean hasChildren(Object parent)
     {
+        if (parent instanceof DBNDatabaseNode) {
+            if (navigatorTree.getNavigatorFilter() != null && navigatorTree.getNavigatorFilter().isLeafObject(((DBNDatabaseNode) parent).getObject())) {
+                return false;
+            }
+        }
         return parent instanceof DBNNode && ((DBNNode) parent).hasChildren(true);
     }
 

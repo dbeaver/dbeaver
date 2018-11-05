@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -61,6 +61,12 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     public JDBCContentBytes(DBPDataSource dataSource, String data) {
         super(dataSource);
         this.data = this.originalData = DBValueFormatting.getBinaryPresentation(dataSource).toBytes(data);
+    }
+
+    private JDBCContentBytes(JDBCContentBytes copyFrom) {
+        super(copyFrom);
+        this.originalData = copyFrom.originalData;
+        this.data = copyFrom.data;
     }
 
     @Override
@@ -129,11 +135,15 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
             try {
                 InputStream is = storage.getContentStream();
                 try {
-                    data = new byte[(int)storage.getContentLength()];
-                    int count = is.read(data);
-                    if (count != data.length) {
-                        log.warn("Actual content length (" + count + ") is less than declared (" + data.length + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    byte[] newData = new byte[(int)storage.getContentLength()];
+                    int count = is.read(newData);
+                    if (count != newData.length) {
+                        log.warn("Actual content length (" + count + ") is less than declared (" + newData.length + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     }
+                    if (data != null && Arrays.equals(data, newData)) {
+                        return false;
+                    }
+                    data = newData;
                 }
                 finally {
                     ContentUtils.close(is);
@@ -204,7 +214,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     @Override
     public JDBCContentBytes cloneValue(DBRProgressMonitor monitor)
     {
-        return new JDBCContentBytes(dataSource, data);
+        return new JDBCContentBytes(this);
     }
 
     @Override
