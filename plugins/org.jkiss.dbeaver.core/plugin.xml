@@ -1788,9 +1788,9 @@
                 <!--<visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>-->
 
                 <separator name="driverGroup" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.driver.manager" label="%command.org.jkiss.dbeaver.core.driver.manager.name" tooltip="%command.org.jkiss.dbeaver.core.driver.manager.description"/>
                 <command commandId="org.jkiss.dbeaver.core.new.connection" label="%command.org.jkiss.dbeaver.core.new.connection.name" tooltip="%command.org.jkiss.dbeaver.core.new.connection.description"/>
                 <command commandId="org.jkiss.dbeaver.core.migrate.connection" label="%command.org.jkiss.dbeaver.core.migrate.connection.name" tooltip="%command.org.jkiss.dbeaver.core.migrate.connection.description"/>
+                <command commandId="org.jkiss.dbeaver.core.driver.manager" label="%command.org.jkiss.dbeaver.core.driver.manager.name" tooltip="%command.org.jkiss.dbeaver.core.driver.manager.description"/>
                 <separator name="connection" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect" label="%command.org.jkiss.dbeaver.core.connect.name" tooltip="%command.org.jkiss.dbeaver.core.connect.description"/>
                 <command commandId="org.jkiss.dbeaver.core.invalidate" label="%command.org.jkiss.dbeaver.core.invalidate.name" tooltip="%command.org.jkiss.dbeaver.core.invalidate.description"/>
@@ -1946,8 +1946,8 @@
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <separator name="projects" visible="true"/>
             <menu label="%menu.org.jkiss.dbeaver.core.project.select.label" commandId="org.jkiss.dbeaver.core.project.select">
                 <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
