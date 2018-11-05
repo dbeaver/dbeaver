@@ -515,7 +515,7 @@ public class DiagramLoader
                         xml.addAttribute(ATTR_Y, visualInfo.initBounds.y);
                     }
 
-                    for (DBSObject parent = table.getParentObject(); parent != null && parent != dsContainer; parent = parent.getParentObject()) {
+                    for (DBSObject parent = table.getParentObject(); parent != null && DBUtils.getPublicObjectContainer(parent) != dsContainer; parent = parent.getParentObject()) {
                         xml.startElement(TAG_PATH);
                         xml.addAttribute(ATTR_NAME, parent.getName());
                         xml.endElement();
