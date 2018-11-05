@@ -31,18 +31,24 @@
 
     <extension point="org.eclipse.core.runtime.products" id="product">
         <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver">
+            <property name="aboutText" value="%aboutText"/>
             <property name="copyright" value="%productCopyright"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
             <property name="versionUpdateURL" value="https://dbeaver.io/product/version.xml"/>
+            <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
+            <property name="startupForegroundColor" value="000000"/>
+            <property name="startupMessageRect" value="323,275,242,25"/>
+            <property name="startupProgressRect" value="323,260,242,10"/>
             <property name="versionInfoCoord" value="125,265"/>
             <property name="versionInfoSize" value="12"/>
             <property name="versionInfoColor" value="0,0,0"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
+            <property name="preferenceCustomization" value="plugin_customization.ini"/>
             <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/$nl$/tips.xml"/>
 
         </product>
