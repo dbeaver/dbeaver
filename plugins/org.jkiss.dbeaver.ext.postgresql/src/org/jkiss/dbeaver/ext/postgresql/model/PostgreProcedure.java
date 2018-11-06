@@ -40,7 +40,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreProcedure
@@ -348,11 +351,20 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
             procDDL = body;
         }
-        if (this.isPersisted() && !omitHeader && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
-            List<DBEPersistAction> actions = new ArrayList<>();
-            PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
-            procDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false);
+        if (this.isPersisted() && !omitHeader) {
+            procDDL += ";\n";
+
+            if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS) && !CommonUtils.isEmpty(getDescription())) {
+                procDDL += "\nCOMMENT ON FUNCTION " + getFullQualifiedSignature() + " IS " + SQLUtils.quoteString(this, getDescription()) + ";\n";
+            }
+
+            if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+                List<DBEPersistAction> actions = new ArrayList<>();
+                PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
+                procDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[0]), false);
+            }
         }
+
         return procDDL;
     }
 
