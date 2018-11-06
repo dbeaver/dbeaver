@@ -409,7 +409,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
             if (editControl instanceof Text || editControl instanceof Combo) {
                 gd.widthHint = Math.max(
-                    UIUtils.getFontHeight(group) * 10,
+                    UIUtils.getFontHeight(group) * 15,
                     editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
             }
 
