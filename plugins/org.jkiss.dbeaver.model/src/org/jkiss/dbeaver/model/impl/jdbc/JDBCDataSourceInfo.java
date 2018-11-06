@@ -87,6 +87,8 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
                 log.debug(e.getMessage());
                 this.readOnly = false;
             }
+        } else {
+            this.readOnly = false;
         }
         try {
             this.databaseProductName = metaData.getDatabaseProductName();

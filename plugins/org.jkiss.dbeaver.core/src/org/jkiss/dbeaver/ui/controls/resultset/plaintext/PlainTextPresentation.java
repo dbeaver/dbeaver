@@ -314,8 +314,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 if (k > 0) grid.append("|");
                 DBDAttributeBinding attr = attrs.get(k);
                 String displayString = getCellString(model, attr, row, displayFormat);
-                if (displayString.length() >= colWidths[k] - 1) {
-                    displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
+                if (displayString.length() >= colWidths[k]) {
+                    displayString = CommonUtils.truncateString(displayString, colWidths[k]);
                 }
                 grid.append(displayString);
                 int stringWidth = getStringWidth(displayString);
