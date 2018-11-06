@@ -72,6 +72,7 @@ public class MySQLConstants {
     public static final String COL_ENGINE_SUPPORT_SAVEPOINTS = "SAVEPOINTS";
 
     public static final String COL_CATALOG_NAME = "CATALOG_NAME";
+    public static final String COL_DATABASE_NAME = "`Database`";
     public static final String COL_SCHEMA_NAME = "SCHEMA_NAME";
     public static final String COL_DEFAULT_CHARACTER_SET_NAME = "DEFAULT_CHARACTER_SET_NAME";
     public static final String COL_DEFAULT_COLLATION_NAME = "DEFAULT_COLLATION_NAME";
