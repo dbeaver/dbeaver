@@ -136,7 +136,9 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     public void disposeControl()
     {
-        selectionProvider.dispose();
+        if (selectionProvider != null) {
+            selectionProvider.dispose();
+        }
         DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
         super.disposeControl();
     }
