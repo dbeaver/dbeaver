@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.ServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -122,7 +123,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
-            String schema = getSystemSchemaFQN(container.getDataSource(), container.getCatalog());
+            String schema = SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema());
             StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + schema + ".sysobjects triggers");
             GenericSchema tableSchema = table == null ? null : table.getSchema();
             long schemaId = tableSchema instanceof SQLServerGenericSchema ? ((SQLServerGenericSchema) tableSchema).getSchemaId() : 0;
@@ -188,7 +189,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, GenericCatalog catalog, String schema, String name) throws DBException {
         ServerType serverType = getServerType();
-        String systemSchema = getSystemSchemaFQN(dataSource, catalog);
+        String systemSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog.getName(), getSystemSchema());
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery = serverType == ServerType.SQL_SERVER ?
                 systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'"
@@ -236,10 +237,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
-        boolean showAllSchemas = ((SQLServerGenericDataSource) dataSource).isShowAllSchemas();
+        boolean showAllSchemas = SQLServerUtils.isShowAllSchemas(dataSource);
         final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
 
-        String sysSchema = getSystemSchemaFQN(dataSource, catalog);
+        String sysSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog.getName(), getSystemSchema());
         String sql;
         if (showAllSchemas) {
             if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
@@ -312,7 +313,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + getSystemSchemaFQN(container.getDataSource(), container.getCatalog()) + ".sequences WHERE schema_name(schema_id)=?")) {
+                "SELECT * FROM " + SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema()) + ".sequences WHERE schema_name(schema_id)=?")) {
                 dbStat.setString(1, container.getSchema().getName());
                 List<GenericSequence> result = new ArrayList<>();
 
@@ -352,7 +353,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public List<? extends GenericSynonym> loadSynonyms(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system synonyms")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + getSystemSchemaFQN(container.getDataSource(), container.getCatalog()) + ".synonyms WHERE schema_name(schema_id)=?")) {
+                "SELECT * FROM " + SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema()) + ".synonyms WHERE schema_name(schema_id)=?")) {
                 dbStat.setString(1, container.getSchema().getName());
                 List<GenericSynonym> result = new ArrayList<>();
 
@@ -391,11 +392,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @NotNull
     private String getSystemSchema() {
-        return sqlServer ? "sys" : "dbo";
+        return sqlServer ? SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA : SQLServerConstants.SYBASE_SYSTEM_SCHEMA;
     }
 
-    private String getSystemSchemaFQN(GenericDataSource dataSource, GenericCatalog catalog) {
-        return catalog != null && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
-            DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema() : getSystemSchema();
-    }
 }
