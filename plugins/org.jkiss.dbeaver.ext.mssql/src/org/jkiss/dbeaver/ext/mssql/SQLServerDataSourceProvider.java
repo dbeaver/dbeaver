@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericDataSource;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -126,7 +126,7 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
             @NotNull DBPDataSourceContainer container)
             throws DBException
     {
-        return new SQLServerGenericDataSource(monitor, container);
+        return new SQLServerDataSource(monitor, container);
     }
 
 }
