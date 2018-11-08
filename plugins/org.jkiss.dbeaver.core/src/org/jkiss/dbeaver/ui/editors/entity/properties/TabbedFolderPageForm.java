@@ -325,13 +325,14 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 new DatabaseLoadService<Map<DBPPropertyDescriptor, Object>>("Load main properties", input.getDatabaseObject().getDataSource()) {
                     @Override
                     public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(curPropertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
+                        DBPPropertySource propertySource = TabbedFolderPageForm.this.curPropertySource;
+                        monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(propertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
                         Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
                         for (DBPPropertyDescriptor prop : allProps) {
-                            if (monitor.isCanceled() || curPropertySource == null) {
+                            if (monitor.isCanceled()) {
                                 break;
                             }
-                            Object value = curPropertySource.getPropertyValue(monitor, prop.getId());
+                            Object value = propertySource.getPropertyValue(monitor, prop.getId());
                             propValues.put(prop, value);
                             monitor.worked(1);
                         }
