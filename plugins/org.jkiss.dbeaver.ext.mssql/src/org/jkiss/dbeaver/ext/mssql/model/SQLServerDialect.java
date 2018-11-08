@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
-import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericDataSource;
-import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerMetaModel;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -50,7 +49,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
             {"\"", "\""},
     };
 
-    private SQLServerGenericDataSource dataSource;
+    private JDBCDataSource dataSource;
 
     public SQLServerDialect() {
         super("SQLServer");
@@ -59,7 +58,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         addSQLKeyword("TOP");
-        this.dataSource = (SQLServerGenericDataSource) dataSource;
+        this.dataSource = dataSource;
     }
 
     public String[][] getIdentifierQuoteStrings() {
@@ -73,7 +72,7 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
 
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
-        if (((SQLServerMetaModel)dataSource.getMetaModel()).isSqlServer()) {
+        if (SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver())) {
             if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
                 return MultiValueInsertMode.GROUP_ROWS;
             }

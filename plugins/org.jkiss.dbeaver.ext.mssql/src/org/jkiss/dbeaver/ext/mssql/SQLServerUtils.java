@@ -18,9 +18,14 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
 
 /**
  * SQLServerUtils
@@ -32,6 +37,10 @@ public class SQLServerUtils {
 
     public static boolean isDriverSqlServer(DBPDriver driver) {
         return driver.getSampleURL().contains(":sqlserver");
+    }
+
+    public static boolean isDriverGeneric(DBPDriver driver) {
+        return driver.getId().contains("generic");
     }
 
     public static boolean isDriverAzure(DBPDriver driver) {
@@ -50,6 +59,17 @@ public class SQLServerUtils {
     public static boolean isActiveDirectoryAuth(DBPConnectionConfiguration connectionInfo) {
         return SQLServerConstants.AUTH_ACTIVE_DIRECTORY_PASSWORD.equals(
             connectionInfo.getProperty(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION));
+    }
+
+    public static void setCurrentDatabase(JDBCSession session, String schema) throws SQLException {
+        JDBCUtils.executeSQL(session,
+            "use " + DBUtils.getQuotedIdentifier(session.getDataSource(), schema));
+    }
+
+    public static String getCurrentDatabase(JDBCSession session) throws SQLException {
+        return JDBCUtils.queryString(
+            session,
+            "select db_name()");
     }
 
 }
