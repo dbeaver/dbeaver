@@ -202,15 +202,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             return InvalidateResult.CONNECTED;
         }
 
-/*
-        DBRRunnableWithResult<Boolean> checkTask = new DBRRunnableWithResult<Boolean>() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                result = JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
-            }
-        };
-*/
-        boolean checkOk = JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
+        // Do not test - just reopen the tunnel. Otherwise it may take too much time.
+        boolean checkOk = false;//JDBCUtils.isConnectionAlive(getDataSource(), getConnection());
+        closeOnFailure = true;
 
         if (!checkOk) {
             Boolean prevAutocommit = autoCommit;

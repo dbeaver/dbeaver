@@ -110,7 +110,8 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
     @Override
     public void invalidateTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
-        boolean isAlive = session != null && session.isConnected();
+        // Do not test - just reopen the tunnel. Otherwise it may take too much time.
+        boolean isAlive = false;//session != null && session.isConnected();
         if (isAlive) {
             try {
                 session.sendKeepAliveMsg();
