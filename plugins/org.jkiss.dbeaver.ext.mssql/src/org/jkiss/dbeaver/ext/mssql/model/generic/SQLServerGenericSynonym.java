@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -32,13 +32,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
 * SQL server synonym
 */
-public class SQLServerSynonym extends GenericSynonym implements DBPQualifiedObject {
+public class SQLServerGenericSynonym extends GenericSynonym implements DBPQualifiedObject {
 
-    private static final Log log = Log.getLog(SQLServerSynonym.class);
+    private static final Log log = Log.getLog(SQLServerGenericSynonym.class);
 
     private String targetObjectName;
 
-    public SQLServerSynonym(GenericStructContainer container, String name, String description, String targetObjectName) {
+    public SQLServerGenericSynonym(GenericStructContainer container, String name, String description, String targetObjectName) {
         super(container, name, description);
         this.targetObjectName = targetObjectName;
     }

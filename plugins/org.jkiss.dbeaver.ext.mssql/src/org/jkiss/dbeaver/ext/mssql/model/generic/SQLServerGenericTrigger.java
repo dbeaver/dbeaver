@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -26,15 +26,15 @@ import org.jkiss.dbeaver.model.DBUtils;
 /**
 * SQL server trigger
 */
-public class SQLServerTrigger extends GenericTrigger implements DBPQualifiedObject {
+public class SQLServerGenericTrigger extends GenericTrigger implements DBPQualifiedObject {
 
-    public SQLServerTrigger(GenericStructContainer container, GenericTable table, String name, String description) {
+    public SQLServerGenericTrigger(GenericStructContainer container, GenericTable table, String name, String description) {
         super(container, table, name, description);
     }
 
     @Override
-    public SQLServerTable getTable() {
-        return (SQLServerTable) super.getTable();
+    public SQLServerGenericTable getTable() {
+        return (SQLServerGenericTable) super.getTable();
     }
 
     @Override

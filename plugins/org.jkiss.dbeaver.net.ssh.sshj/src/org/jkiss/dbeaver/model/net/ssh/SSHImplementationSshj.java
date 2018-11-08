@@ -118,7 +118,8 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
     @Override
     public void invalidateTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
-        boolean isAlive = sshClient != null && sshClient.isConnected();
+        // Do not test - just reopen the tunnel. Otherwise it may take too much time.
+        boolean isAlive = false;//sshClient != null && sshClient.isConnected();
         if (isAlive) {
             try {
                 sshClient.isConnected();

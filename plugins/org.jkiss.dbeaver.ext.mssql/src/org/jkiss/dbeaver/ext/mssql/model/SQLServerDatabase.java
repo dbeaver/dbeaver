@@ -16,36 +16,98 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+
+import java.util.Collection;
 
 /**
 * SQL Server database
 */
-public class SQLServerDatabase extends GenericCatalog {
+public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject{
 
-    SQLServerDatabase(GenericDataSource dataSource, String catalogName) {
-        super(dataSource, catalogName);
+    private final SQLServerDataSource dataSource;
+    private boolean persisted;
+    private String name;
+
+    SQLServerDatabase(SQLServerDataSource dataSource, JDBCResultSet resultSet) {
+        this.dataSource = dataSource;
+        this.name = JDBCUtils.safeGetString(resultSet, "name");
+
+        this.persisted = true;
     }
-/*
+
     @Override
-    public Collection<GenericSchema> getSchemas(DBRProgressMonitor monitor) throws DBException {
-        // Do not read schemas
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, order = 1)
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getDescription() {
         return null;
     }
 
+    @Override
+    public DBSObject getParentObject() {
+        return dataSource;
+    }
 
     @Override
-    public Collection<GenericTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        // Read all tables from all schemas
-        List<GenericTable> allTables = new ArrayList<>();
-        for (GenericSchema schema : super.getSchemas(monitor)) {
-            Collection<GenericTable> tables = schema.getTables(monitor);
-            if (!CommonUtils.isEmpty(tables)) {
-                allTables.addAll(tables);
-            }
-        }
-        return allTables;
+    public boolean isPersisted() {
+        return this.persisted;
     }
-*/
+
+    @Override
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
+    }
+
+    @Override
+    public boolean isSystem() {
+        return name.equals("msdb");
+    }
+
+    @Override
+    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        return this;
+    }
+
+    //////////////////////////////////////////////////
+    // Schemas
+
+    @Override
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+
+    }
+
 }

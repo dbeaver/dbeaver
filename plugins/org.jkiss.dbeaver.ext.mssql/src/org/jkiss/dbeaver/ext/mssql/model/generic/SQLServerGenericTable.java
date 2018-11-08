@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -33,9 +33,9 @@ import java.sql.SQLException;
 /**
 * SQL Server table
 */
-public class SQLServerTable extends GenericTable implements DBPOverloadedObject {
+public class SQLServerGenericTable extends GenericTable implements DBPOverloadedObject {
 
-    public SQLServerTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+    public SQLServerGenericTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }
 
@@ -86,8 +86,8 @@ public class SQLServerTable extends GenericTable implements DBPOverloadedObject 
     }
 
     @Override
-    public SQLServerDataSource getDataSource() {
-        return (SQLServerDataSource)super.getDataSource();
+    public SQLServerGenericDataSource getDataSource() {
+        return (SQLServerGenericDataSource)super.getDataSource();
     }
 
     private boolean isSqlServer() {

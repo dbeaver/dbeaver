@@ -16,44 +16,61 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
 
-import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class SQLServerDataSource extends GenericDataSource {
+public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, /*DBCQueryPlanner, */IAdaptable {
+
+    private static final Log log = Log.getLog(SQLServerDataSource.class);
+
+    // Delegate data type reading to the driver
+    private final JDBCBasicDataTypeCache<SQLServerDataSource, JDBCDataType> dataTypeCache;
+    private final DatabaseCache databaseCache = new DatabaseCache();
+
+    private String activeDatabaseName;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
-        this(monitor, container,
-            new SQLServerMetaModel(
-                SQLServerUtils.isDriverSqlServer(container.getDriver())
-            ));
+        super(monitor, container, new SQLServerDialect());
+        dataTypeCache = new JDBCBasicDataTypeCache<>(this);
     }
 
-    SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SQLServerMetaModel metaModel)
-        throws DBException
-    {
-        super(monitor, container, metaModel, new SQLServerDialect());
+    @Override
+    public DBPDataSource getDataSource() {
+        return this;
     }
 
     @Override
@@ -80,6 +97,22 @@ public class SQLServerDataSource extends GenericDataSource {
     }
 
     @Override
+    public void initialize(DBRProgressMonitor monitor) throws DBException {
+        super.initialize(monitor);
+
+        this.dataTypeCache.getAllObjects(monitor, this);
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
+            this.activeDatabaseName = SQLServerUtils.getCurrentDatabase(session);
+        } catch (Throwable e) {
+            log.error("Error during connection initialization", e);
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////
+    // Data types
+
+    @Override
     public DBPDataKind resolveDataKind(String typeName, int valueType) {
         if (valueType == Types.VARCHAR) {
             // Workaround for jTDS driver (#3555)
@@ -92,6 +125,16 @@ public class SQLServerDataSource extends GenericDataSource {
             }
         }
         return super.resolveDataKind(typeName, valueType);
+    }
+
+    @Override
+    public Collection<? extends DBSDataType> getLocalDataTypes() {
+        return dataTypeCache.getCachedObjects();
+    }
+
+    @Override
+    public DBSDataType getLocalDataType(String typeName) {
+        return dataTypeCache.getCachedObject(typeName);
     }
 
     //////////////////////////////////////////////////////////
@@ -122,9 +165,123 @@ public class SQLServerDataSource extends GenericDataSource {
         }
     }
 
+    //////////////////////////////////////////////////////////////
+    // Databases
+
     @Override
-    protected boolean isPopulateClientAppName() {
-        return false;
+    public boolean supportsDefaultChange() {
+        return true;
     }
 
+    @Nullable
+    @Override
+    public SQLServerDatabase getDefaultObject() {
+        return activeDatabaseName == null ? null : databaseCache.getCachedObject(activeDatabaseName);
+    }
+
+    @Override
+    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
+        throws DBException
+    {
+        final SQLServerDatabase oldSelectedEntity = getDefaultObject();
+        if (!(object instanceof SQLServerDatabase)) {
+            throw new IllegalArgumentException("Invalid object type: " + object);
+        }
+        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
+            setCurrentDatabase(monitor, context, (SQLServerDatabase) object);
+        }
+        activeDatabaseName = object.getName();
+
+        // Send notifications
+        if (oldSelectedEntity != null) {
+            DBUtils.fireObjectSelect(oldSelectedEntity, false);
+        }
+        if (this.activeDatabaseName != null) {
+            DBUtils.fireObjectSelect(object, true);
+        }
+    }
+
+    @Override
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+        try {
+            final String currentSchema = SQLServerUtils.getCurrentDatabase((JDBCSession) session);
+            if (currentSchema != null && !CommonUtils.equalObjects(currentSchema, activeDatabaseName)) {
+                final SQLServerDatabase newDatabase = databaseCache.getCachedObject(currentSchema);
+                if (newDatabase != null) {
+                    setDefaultObject(session.getProgressMonitor(), newDatabase);
+                    return true;
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new DBException(e, this);
+        }
+    }
+
+    private void setCurrentDatabase(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, SQLServerDatabase object) throws DBCException {
+        if (object == null) {
+            log.debug("Null current schema");
+            return;
+        }
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) {
+            SQLServerUtils.setCurrentDatabase(session, object.getName());
+        } catch (SQLException e) {
+            throw new DBCException(e, this);
+        }
+    }
+
+    @Association
+    public Collection<SQLServerDatabase> getDatabases(DBRProgressMonitor monitor) throws DBException {
+        return databaseCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
+        return databaseCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+        return databaseCache.getObject(monitor, this, childName);
+    }
+
+    @Override
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
+        return SQLServerDatabase.class;
+    }
+
+    @Override
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+        databaseCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        databaseCache.clearCache();
+        return super.refreshObject(monitor);
+    }
+
+    static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
+        DatabaseCache() {
+            setListOrderComparator(DBUtils.nameComparator());
+        }
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner) throws SQLException {
+            StringBuilder sql = new StringBuilder("SELECT * FROM sys.databases");
+
+            DBSObjectFilter schemaFilters = owner.getContainer().getObjectFilter(SQLServerDatabase.class, null, false);
+            if (schemaFilters != null) {
+                JDBCUtils.appendFilterClause(sql, schemaFilters, "name", false);
+            }
+            sql.append(" order by name");
+            return session.prepareStatement(sql.toString());
+        }
+
+        @Override
+        protected SQLServerDatabase fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new SQLServerDatabase(owner, resultSet);
+        }
+
+    }
 }
