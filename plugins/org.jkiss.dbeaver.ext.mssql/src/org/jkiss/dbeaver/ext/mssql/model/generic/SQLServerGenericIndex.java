@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 /**
 * SEL Server index
 */
-public class SQLServerIndex extends GenericTableIndex {
+public class SQLServerGenericIndex extends GenericTableIndex {
 
-    public SQLServerIndex(GenericTable table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
+    public SQLServerGenericIndex(GenericTable table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
         super(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
     }
 

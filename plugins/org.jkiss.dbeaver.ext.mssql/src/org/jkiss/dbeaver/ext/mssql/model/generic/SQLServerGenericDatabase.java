@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 /**
 * SQL Server database
 */
-public class SQLServerDatabase extends GenericCatalog {
+public class SQLServerGenericDatabase extends GenericCatalog {
 
-    SQLServerDatabase(GenericDataSource dataSource, String catalogName) {
+    SQLServerGenericDatabase(GenericDataSource dataSource, String catalogName) {
         super(dataSource, catalogName);
     }
 /*

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -23,11 +23,11 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 /**
 * SQL Server schemas
 */
-public class SQLServerSchema extends GenericSchema {
+public class SQLServerGenericSchema extends GenericSchema {
 
     private long schemaId;
 
-    public SQLServerSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName, long schemaId) {
+    public SQLServerGenericSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName, long schemaId) {
         super(dataSource, catalog, schemaName);
 
         this.schemaId = schemaId;

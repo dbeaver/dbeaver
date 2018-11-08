@@ -18,12 +18,14 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericDataSource;
+import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerMetaModel;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -35,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvider {
+public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
         /*{
@@ -48,7 +50,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
             {"\"", "\""},
     };
 
-    private SQLServerDataSource dataSource;
+    private SQLServerGenericDataSource dataSource;
 
     public SQLServerDialect() {
         super("SQLServer");
@@ -57,7 +59,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         addSQLKeyword("TOP");
-        this.dataSource = (SQLServerDataSource) dataSource;
+        this.dataSource = (SQLServerGenericDataSource) dataSource;
     }
 
     public String[][] getIdentifierQuoteStrings() {
