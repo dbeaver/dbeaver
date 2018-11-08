@@ -32,6 +32,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -85,6 +86,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
+
+    public static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
     static {
         // SQL editor preferences. Do this here because it initializes display
@@ -171,6 +174,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
                 DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
+    }
+
+    @Override
+    protected void updateSelectionDependentActions() {
+        super.updateSelectionDependentActions();
+        updateStatusField(STATS_CATEGORY_SELECTION_STATE);
     }
 
     protected String[] getKeyBindingContexts() {
@@ -1306,6 +1315,34 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
     public boolean isFoldingEnabled() {
         return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+    }
+
+    /**
+     * Updates the status fields for the given category.
+     *
+     * @param category the category
+     * @since 2.0
+     */
+    protected void updateStatusField(String category) {
+        if (STATS_CATEGORY_SELECTION_STATE.equals(category)) {
+            IStatusField field= getStatusField(category);
+            if (field != null) {
+                StringBuilder txt = new StringBuilder("Sel: ");
+                ISelection selection = getSelectionProvider().getSelection();
+                if (selection instanceof ITextSelection) {
+                    ITextSelection textSelection = (ITextSelection) selection;
+                    txt.append(textSelection.getLength()).append(" | ");
+                    if (((ITextSelection) selection).getLength() <= 0) {
+                        txt.append(0);
+                    } else {
+                        txt.append(textSelection.getEndLine() - textSelection.getStartLine() + 1);
+                    }
+                }
+                field.setText(txt.toString());
+            }
+        } else {
+            super.updateStatusField(category);
+        }
     }
 
     /////////////////////////////////////////////////////////////////

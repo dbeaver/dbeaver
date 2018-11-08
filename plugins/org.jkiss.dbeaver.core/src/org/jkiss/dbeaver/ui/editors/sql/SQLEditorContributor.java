@@ -17,19 +17,30 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.ITextEditorExtension;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
+import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -43,6 +54,8 @@ public class SQLEditorContributor extends TextEditorActionContributor
     static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip"; //$NON-NLS-1$
     static final String ACTION_CONTENT_ASSIST_INFORMATION = "ContentAssistInfo"; //$NON-NLS-1$
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal"; //$NON-NLS-1$
+
+    public static final StatusLineContributionItem STATUS_FIELD_SELECTION_STATE = new StatusLineContributionItem("SelectionState", true, 12);
 
     private SQLEditorBase activeEditorPart;
 
@@ -112,6 +125,13 @@ public class SQLEditorContributor extends TextEditorActionContributor
             contentAssistTip.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
             contentAssistInformation.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_INFORMATION)); //$NON-NLS-1$
             contentFormatProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
+
+            {
+                if (activeEditorPart instanceof ITextEditorExtension) {
+                    activeEditorPart.setStatusField(STATUS_FIELD_SELECTION_STATE, SQLEditorBase.STATS_CATEGORY_SELECTION_STATE);
+                }
+            }
+
         }
     }
 
@@ -180,6 +200,8 @@ public class SQLEditorContributor extends TextEditorActionContributor
                 log.debug("Error contributing to base SQL status line", e);
             }
         }
+
+        statusLineManager.add(STATUS_FIELD_SELECTION_STATE);
     }
 
 }
