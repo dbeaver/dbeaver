@@ -16,19 +16,30 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericSchema;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
 * SQL Server database
@@ -38,6 +49,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     private final SQLServerDataSource dataSource;
     private boolean persisted;
     private String name;
+    private SchemaCache schemaCache = new SchemaCache();
 
     SQLServerDatabase(SQLServerDataSource dataSource, JDBCResultSet resultSet) {
         this.dataSource = dataSource;
@@ -47,7 +59,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     }
 
     @Override
-    public DBPDataSource getDataSource() {
+    public SQLServerDataSource getDataSource() {
         return dataSource;
     }
 
@@ -90,23 +102,67 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     //////////////////////////////////////////////////
     // Schemas
 
+    @Association
+    public Collection<SQLServerSchema> getSchemas(DBRProgressMonitor monitor) throws DBException {
+        return getChildren(monitor);
+    }
+
+
     @Override
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
-        return null;
+    public Collection<SQLServerSchema> getChildren(DBRProgressMonitor monitor) throws DBException {
+        return schemaCache.getAllObjects(monitor, this);
     }
 
     @Override
     public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
-        return null;
+        return schemaCache.getObject(monitor, this, childName);
     }
 
     @Override
     public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
-        return null;
+        return SQLServerSchema.class;
     }
 
     @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+        schemaCache.getAllObjects(monitor, this);
+    }
+
+
+    static class SchemaCache extends JDBCObjectCache<SQLServerDatabase, SQLServerSchema> {
+        SchemaCache() {
+            setListOrderComparator(DBUtils.nameComparator());
+        }
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase owner) throws SQLException {
+            SQLServerDataSource dataSource = owner.getDataSource();
+            boolean showAllSchemas = SQLServerUtils.isShowAllSchemas(dataSource);
+
+            String sysSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, owner.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+            StringBuilder sql = new StringBuilder();
+            if (showAllSchemas) {
+                if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
+                    sql.append("SELECT * FROM ").append(sysSchema).append(".schemas");
+                } else {
+                    sql.append("SELECT * FROM ").append(sysSchema).append(".sysusers");
+                }
+            } else {
+                sql.append("SELECT * FROM ").append(sysSchema).append(".schemas s WHERE EXISTS (SELECT 1 FROM ")
+                    .append(sysSchema).append(".sysobjects o ").append("WHERE s.schema_id=o.uid)");
+            }
+            final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
+            if (schemaFilters != null && schemaFilters.isEnabled()) {
+                JDBCUtils.appendFilterClause(sql, schemaFilters, "name", false);
+            }
+
+            return session.prepareStatement(sql.toString());
+        }
+
+        @Override
+        protected SQLServerSchema fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new SQLServerSchema(owner, resultSet);
+        }
 
     }
 

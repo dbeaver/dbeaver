@@ -18,10 +18,12 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -72,4 +74,12 @@ public class SQLServerUtils {
             "select db_name()");
     }
 
+    public static boolean isShowAllSchemas(DBPDataSource dataSource) {
+        return CommonUtils.toBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS));
+    }
+
+    public static String getSystemSchemaFQN(JDBCDataSource dataSource, String catalog, String systemSchema) {
+        return catalog != null && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
+            DBUtils.getQuotedIdentifier(dataSource, catalog) + "." + systemSchema : systemSchema;
+    }
 }

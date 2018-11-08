@@ -56,4 +56,6 @@ public class SQLServerConstants {
     public static final String APPNAME_CLIENT_PROPERTY = "APPNAME";
     public static final String APPLICATION_NAME_CLIENT_PROPERTY = JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY;
 
+    public static final String SQL_SERVER_SYSTEM_SCHEMA = "sys";
+    public static final String SYBASE_SYSTEM_SCHEMA = "dbo";
 }
