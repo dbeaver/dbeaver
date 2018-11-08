@@ -379,7 +379,6 @@ public class OracleDataSource extends JDBCDataSource
             }
         }
 
-
         this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {

@@ -21,6 +21,9 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * DataSourceViewDescriptor
  */
@@ -28,7 +31,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
 {
     private String id;
     private String targetID;
-    private String dataSourceId;
+    private List<String> dataSourceIds;
     private String label;
     private ObjectType viewType;
     private DBPImage icon;
@@ -38,7 +41,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         super(config.getContributor().getName());
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.targetID = config.getAttribute(RegistryConstants.ATTR_TARGET_ID);
-        this.dataSourceId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE);
+        this.dataSourceIds = Arrays.asList(config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE).split(","));
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.viewType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
@@ -54,8 +57,8 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         return targetID;
     }
 
-    public String getDataSourceId() {
-        return dataSourceId;
+    public List<String> getDataSources() {
+        return dataSourceIds;
     }
 
     public String getLabel()

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 /**
 * SQL Server procedure
 */
-public class SQLServerProcedure extends GenericProcedure {
+public class SQLServerGenericProcedure extends GenericProcedure {
 
-    public SQLServerProcedure(GenericStructContainer container, String procedureName, String specificName, String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
+    public SQLServerGenericProcedure(GenericStructContainer container, String procedureName, String specificName, String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
     }
 

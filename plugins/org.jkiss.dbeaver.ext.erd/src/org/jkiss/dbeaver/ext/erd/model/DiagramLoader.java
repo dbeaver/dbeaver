@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -163,7 +162,7 @@ public class DiagramLoader
                     String dsId = dsElem.getAttribute(ATTR_ID);
                     if (!CommonUtils.isEmpty(dsId)) {
                         // Get connected datasource
-                        final DataSourceDescriptor dataSourceContainer = dsRegistry.getDataSource(dsId);
+                        final DBPDataSourceContainer dataSourceContainer = dsRegistry.getDataSource(dsId);
                         if (dataSourceContainer != null) {
                             containers.add(dataSourceContainer);
                         }
@@ -216,7 +215,7 @@ public class DiagramLoader
                     continue;
                 }
                 // Get connected datasource
-                final DataSourceDescriptor dataSourceContainer = dsRegistry.getDataSource(dsId);
+                final DBPDataSourceContainer dataSourceContainer = dsRegistry.getDataSource(dsId);
                 if (dataSourceContainer == null) {
                     log.warn("Datasource '" + dsId + "' not found");
                     continue;
