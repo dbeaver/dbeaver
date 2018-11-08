@@ -328,7 +328,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                         monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(curPropertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
                         Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
                         for (DBPPropertyDescriptor prop : allProps) {
-                            if (monitor.isCanceled()) {
+                            if (monitor.isCanceled() || curPropertySource == null) {
                                 break;
                             }
                             Object value = curPropertySource.getPropertyValue(monitor, prop.getId());
