@@ -89,18 +89,29 @@ public class SQLFormatterTokenizedTest {
     }
 
     @Test
-    public void shouldRemoveSpacesAroundCommentSymbol() {
-/*
+    public void shouldRemoveSpacesBeforeCommentSymbol() {
         //given
-        String expectedString = "-- SELECT * FROM mytable;";
-        String inputString = " -- SELECT * FROM mytable;";
+        String expectedString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\ttable1;" + lineBreak + "-- SELECT * FROM mytable;";
+        String inputString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\ttable1;" + lineBreak +" -- SELECT * FROM mytable;";
 
         //when
         String formattedString = formatter.format(inputString, configuration);
 
         //then
         assertEquals(expectedString, formattedString);
-*/
+    }
+
+    @Test
+    public void shouldAddLineBreakIfScriptStartsWithComment() {
+        //given
+        String expectedString = lineBreak + "-- SELECT * FROM mytable;";
+        String inputString = "-- SELECT * FROM mytable;";
+
+        //when
+        String formattedString = formatter.format(inputString, configuration);
+
+        //then
+        assertEquals(expectedString, formattedString);
     }
 
 
