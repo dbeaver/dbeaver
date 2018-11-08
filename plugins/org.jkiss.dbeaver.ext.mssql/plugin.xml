@@ -20,7 +20,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="sqlserver" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerMetaModel"
+        <meta id="sqlserver" class="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerMetaModel"
               driverClass="net.sourceforge.jtds.jdbc.Driver,com.microsoft.sqlserver.jdbc.SQLServerDriver,com.sybase.jdbc4.jdbc.SybDriver"/>
     </extension>
 
@@ -262,10 +262,10 @@
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
                 class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerProcedureManager"
-                objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
+                objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
         <manager
                 class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTriggerManager"
-                objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTrigger"/>
+                objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
     </extension>
 
 </plugin>
