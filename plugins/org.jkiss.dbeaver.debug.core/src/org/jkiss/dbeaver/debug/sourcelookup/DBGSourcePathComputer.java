@@ -25,7 +25,7 @@ import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.core.sourcelookup.ISourcePathComputerDelegate;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 public class DBGSourcePathComputer implements ISourcePathComputerDelegate {
@@ -34,7 +34,7 @@ public class DBGSourcePathComputer implements ISourcePathComputerDelegate {
     public ISourceContainer[] computeSourceContainers(ILaunchConfiguration configuration, IProgressMonitor monitor)
             throws CoreException {
         String datasourceId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, "");
-        DataSourceDescriptor dataSource = DataSourceRegistry.findDataSource(datasourceId);
+        DBPDataSourceContainer dataSource = DataSourceRegistry.findDataSource(datasourceId);
         if (dataSource == null) {
             throw new CoreException(DebugUtils.newErrorStatus("Can't find datasource " + datasourceId));
         }

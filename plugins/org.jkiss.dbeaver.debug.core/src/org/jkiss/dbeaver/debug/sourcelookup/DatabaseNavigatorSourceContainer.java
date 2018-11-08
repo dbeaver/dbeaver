@@ -32,14 +32,13 @@ import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
 
     private final DBPDataSourceContainer datasource;
     private final IProject project;
 
-    public DatabaseNavigatorSourceContainer(DataSourceDescriptor descriptor) {
+    public DatabaseNavigatorSourceContainer(DBPDataSourceContainer descriptor) {
         this.datasource = descriptor;
         this.project = datasource.getRegistry().getProject();
     }
