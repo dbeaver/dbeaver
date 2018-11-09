@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerResources"; //$NON-NLS-1$
@@ -34,6 +35,11 @@ public class SQLServerMessages extends NLS {
     public static String dialog_connection_user_name_label;
     public static String dialog_setting_show_all_schemas;
     public static String dialog_setting_show_all_schemas_tip;
+
+    public static String index_type_Heap;
+    public static String index_type_NonClustered;
+    public static String index_type_XML;
+    public static String index_type_Spatial;
 
     static {
         // initialize resource bundle

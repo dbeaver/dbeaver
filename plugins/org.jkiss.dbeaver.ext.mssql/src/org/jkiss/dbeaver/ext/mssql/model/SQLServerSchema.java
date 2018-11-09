@@ -16,39 +16,73 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 
 /**
 * SQL Server schema
 */
-public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject {
+public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject {
 
     private final SQLServerDatabase database;
     private boolean persisted;
+    private final long schemaId;
     private String name;
+    private TableCache tableCache = new TableCache();
+    private IndexCache indexCache = new IndexCache(tableCache);
+    private ConstraintCache constraintCache = new ConstraintCache(tableCache);
 
     SQLServerSchema(SQLServerDatabase database, JDBCResultSet resultSet) {
         this.database = database;
         this.name = JDBCUtils.safeGetString(resultSet, "name");
+        if (getDataSource().isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
+            this.schemaId = JDBCUtils.safeGetLong(resultSet, "schema_id");
+        } else {
+            this.schemaId = JDBCUtils.safeGetLong(resultSet, "uid");
+        }
 
         this.persisted = true;
     }
 
+    TableCache getTableCache() {
+        return tableCache;
+    }
+
+    IndexCache getIndexCache() {
+        return indexCache;
+    }
+
+    ConstraintCache getConstraintCache() {
+        return constraintCache;
+    }
+
     @Override
-    public DBPDataSource getDataSource() {
+    public SQLServerDataSource getDataSource() {
         return database.getDataSource();
     }
 
@@ -61,6 +95,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
     @Property(viewable = true, editable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    @Property(viewable = false, editable = false, order = 5)
+    public long getObjectId() {
+        return schemaId;
     }
 
     @Override
@@ -94,26 +133,242 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
     }
 
     //////////////////////////////////////////////////
-    // Schemas
+    // Tables
 
-    @Override
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
-        return null;
+    public Collection<SQLServerTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
-        return null;
+    public Collection<SQLServerTable> getChildren(DBRProgressMonitor monitor) throws DBException {
+        return tableCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public SQLServerTable getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+        return tableCache.getObject(monitor, this, childName);
     }
 
     @Override
     public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
-        return null;
+        return SQLServerTable.class;
     }
 
     @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+        if ((scope & STRUCT_ENTITIES) == STRUCT_ENTITIES) {
+            tableCache.getAllObjects(monitor, this);
+        }
+        if ((scope & STRUCT_ATTRIBUTES) == STRUCT_ATTRIBUTES) {
+            tableCache.getChildren(monitor, this, null);
+        }
+    }
 
+
+    public static class TableCache extends JDBCStructLookupCache<SQLServerSchema, SQLServerTable, SQLServerTableColumn> {
+
+        TableCache()
+        {
+            super("name");
+            setListOrderComparator(DBUtils.nameComparator());
+        }
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTable object, @Nullable String objectName) throws SQLException {
+            StringBuilder sql = new StringBuilder();
+            SQLServerDataSource dataSource = owner.getDataSource();
+            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append("\n");
+            sql.append("WHERE schema_id = ").append(owner.getObjectId());
+            if (object != null || objectName != null) {
+                sql.append(" AND name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
+            } else {
+                DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(SQLServerTable.class, owner, false);
+                if (tableFilters != null && !tableFilters.isEmpty()) {
+                    sql.append(" AND (");
+                    boolean hasCond = false;
+                    for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
+                        if (hasCond) sql.append(" OR ");
+                        hasCond = true;
+                        sql.append(" name LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                    }
+                    hasCond = false;
+                    for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
+                        if (hasCond) sql.append(" OR ");
+                        hasCond = true;
+                        sql.append(" name NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                    }
+                    sql.append(")");
+                }
+            }
+
+            return session.prepareStatement(sql.toString());
+        }
+
+        @Override
+        protected SQLServerTable fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new SQLServerTable(owner, dbResult);
+        }
+
+        @Override
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTable forTable)
+            throws SQLException
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "columns")).append("\n");
+            sql.append("WHERE object_id = ?\n");
+            sql.append("ORDER BY column_id");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            dbStat.setLong(1, forTable.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected SQLServerTableColumn fetchChild(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull SQLServerTable table, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new SQLServerTableColumn(table, dbResult);
+        }
+
+    }
+
+    /**
+     * Index cache implementation
+     */
+    static class IndexCache extends JDBCCompositeCache<SQLServerSchema, SQLServerTable, SQLServerTableIndex, SQLServerTableIndexColumn> {
+        IndexCache(TableCache tableCache)
+        {
+            super(tableCache, SQLServerTable.class, "object_id", "name");
+        }
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema owner, SQLServerTable forTable)
+            throws SQLException
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "indexes")).append("\n");
+            sql.append("WHERE parent_object_id = ?\n");
+            sql.append("ORDER BY object_id");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            dbStat.setLong(1, forTable.getObjectId());
+            return dbStat;
+        }
+
+        @Nullable
+        @Override
+        protected SQLServerTableIndex fetchObject(JDBCSession session, SQLServerSchema owner, SQLServerTable parent, String indexName, JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            int indexTypeNum = JDBCUtils.safeGetInt(dbResult, "type");
+            DBSIndexType indexType;
+            switch (indexTypeNum) {
+                case 0: indexType = SQLServerConstants.INDEX_TYPE_HEAP; break;
+                case 1: indexType = DBSIndexType.CLUSTERED; break;
+                case 2: indexType = SQLServerConstants.INDEX_TYPE_NON_CLUSTERED; break;
+                default:
+                    indexType = DBSIndexType.OTHER;
+                    break;
+            }
+            return new SQLServerTableIndex(
+                parent,
+                indexName,
+                indexType,
+                dbResult);
+        }
+
+        @Nullable
+        @Override
+        protected SQLServerTableIndexColumn[] fetchObjectRow(
+            JDBCSession session,
+            SQLServerTable parent, SQLServerTableIndex object, JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            throw new DBException("Not implemented");
+        }
+
+        @Override
+        protected void cacheChildren(DBRProgressMonitor monitor, SQLServerTableIndex index, List<SQLServerTableIndexColumn> rows)
+        {
+            index.setColumns(rows);
+        }
+    }
+
+    /**
+     * Constraint cache implementation
+     */
+    static class ConstraintCache extends JDBCCompositeCache<SQLServerSchema, SQLServerTable, SQLServerTableConstraint, SQLServerTableConstraintColumn> {
+        ConstraintCache(TableCache tableCache)
+        {
+            super(tableCache, SQLServerTable.class, "parent_object_id", "name");
+        }
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema owner, SQLServerTable forTable)
+            throws SQLException
+        {
+            StringBuilder sql = new StringBuilder(500);
+            sql.append(
+                "SELECT kc.CONSTRAINT_NAME,kc.TABLE_NAME,kc.COLUMN_NAME,kc.ORDINAL_POSITION\n" +
+                    "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc WHERE kc.TABLE_SCHEMA=? AND kc.REFERENCED_TABLE_NAME IS NULL");
+            if (forTable != null) {
+                sql.append(" AND kc.TABLE_NAME=?");
+            }
+            sql.append("\nORDER BY kc.CONSTRAINT_NAME,kc.ORDINAL_POSITION");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            dbStat.setString(1, owner.getName());
+            if (forTable != null) {
+                dbStat.setString(2, forTable.getName());
+            }
+            return dbStat;
+        }
+
+        @Nullable
+        @Override
+        protected SQLServerTableConstraint fetchObject(JDBCSession session, SQLServerSchema owner, SQLServerTable parent, String constraintName, JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            if (constraintName.equals("PRIMARY")) {
+                return new SQLServerTableConstraint(
+                    parent, constraintName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+            } else {
+                return new SQLServerTableConstraint(
+                    parent, constraintName, null, DBSEntityConstraintType.UNIQUE_KEY, true);
+            }
+        }
+
+        @Nullable
+        @Override
+        protected SQLServerTableConstraintColumn[] fetchObjectRow(
+            JDBCSession session,
+            SQLServerTable parent, SQLServerTableConstraint object, JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            String columnName = JDBCUtils.safeGetString(dbResult, "xxx");
+            SQLServerTableColumn column = parent.getAttribute(session.getProgressMonitor(), columnName);
+            if (column == null) {
+                log.warn("Column '" + columnName + "' not found in table '" + parent.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
+                return null;
+            }
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, "position");
+
+            return new SQLServerTableConstraintColumn[] { new SQLServerTableConstraintColumn(
+                object,
+                column,
+                ordinalPosition) };
+        }
+
+        @Override
+        protected void cacheChildren(DBRProgressMonitor monitor, SQLServerTableConstraint constraint, List<SQLServerTableConstraintColumn> rows)
+        {
+            constraint.setColumns(rows);
+        }
     }
 
 }

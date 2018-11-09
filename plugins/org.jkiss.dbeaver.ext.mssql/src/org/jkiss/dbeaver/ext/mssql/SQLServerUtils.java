@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -82,4 +83,9 @@ public class SQLServerUtils {
         return catalog != null && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
             DBUtils.getQuotedIdentifier(dataSource, catalog) + "." + systemSchema : systemSchema;
     }
+
+    public static String getSystemTableName(SQLServerDatabase database, String tableName) {
+        return SQLServerUtils.getSystemSchemaFQN(database.getDataSource(), database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA) + "." + tableName;
+    }
+
 }
