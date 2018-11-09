@@ -84,7 +84,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
             indexName,
             indexType,
             true);
-        this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
+        this.objectId = JDBCUtils.safeGetLong(dbResult, "index_id");
 //        this.nonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;
 //        this.cardinality = JDBCUtils.safeGetLong(dbResult, "cardinality");
 //        this.indexComment = JDBCUtils.safeGetString(dbResult, "INDEX_COMMENT");

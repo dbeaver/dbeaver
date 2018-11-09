@@ -35,12 +35,13 @@ import java.sql.ResultSet;
 /**
  * SQLServerTableColumn
  */
-public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> implements DBSTableColumn, DBPNamedObject2, DBPOrderedObject
+public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> implements DBSTableColumn, DBPNamedObject2, DBPOrderedObject, SQLServerObject
 {
     private static final Log log = Log.getLog(SQLServerTableColumn.class);
 
     private String comment;
     private String fullTypeName;
+    private long objectId;
 
     public SQLServerTableColumn(SQLServerTableBase table)
     {
@@ -73,6 +74,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     private void loadInfo(ResultSet dbResult)
         throws DBException
     {
+        this.objectId = JDBCUtils.safeGetLong(dbResult, "column_id");
+
         setName(JDBCUtils.safeGetString(dbResult, "name"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "column_id"));
         String typeName = "?";//JDBCUtils.safeGetString(dbResult, SQLServerConstants.COL_DATA_TYPE);
@@ -203,6 +206,11 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     @Override
     public String getDescription() {
         return getComment();
+    }
+
+    @Override
+    public long getObjectId() {
+        return objectId;
     }
 
 }

@@ -1521,7 +1521,7 @@ public final class DBUtils {
         return Comparator.comparing(DBPNamedObject::getName);
     }
 
-    public static <TYPE extends DBPNamedObject> Comparator<DBPNamedObject> nameComparatorIgnoreCase() {
+    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparatorIgnoreCase() {
         return (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName());
     }
 

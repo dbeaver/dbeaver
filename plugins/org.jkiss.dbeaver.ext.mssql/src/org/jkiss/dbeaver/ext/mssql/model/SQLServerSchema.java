@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -135,6 +138,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
     //////////////////////////////////////////////////
     // Tables
 
+    @Association
     public Collection<SQLServerTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return tableCache.getAllObjects(monitor, this);
     }
@@ -163,7 +167,6 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
             tableCache.getChildren(monitor, this, null);
         }
     }
-
 
     public static class TableCache extends JDBCStructLookupCache<SQLServerSchema, SQLServerTable, SQLServerTableColumn> {
 
@@ -235,6 +238,18 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
 
     }
 
+    /////////////////////////////////////////////////////////
+    // Indexes
+
+    @Association
+    public List<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        List<SQLServerTableIndex> allIndexes = new ArrayList<>();
+        for (SQLServerTable table : getTables(monitor)) {
+            allIndexes.addAll(CommonUtils.safeCollection(table.getIndexes(monitor)));
+        }
+        return allIndexes;
+    }
+
     /**
      * Index cache implementation
      */
@@ -250,9 +265,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "indexes")).append("\n");
-            sql.append("WHERE parent_object_id = ?\n");
-            sql.append("ORDER BY object_id");
+            sql.append("SELECT i.*,ic.index_column_id,ic.column_id,ic.key_ordinal,ic.is_descending_key\n" +
+                "FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "indexes")).append(" i, ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "index_columns")).append(" ic").append("\n");
+            sql.append("WHERE i.object_id = ? AND ic.object_id=i.object_id AND ic.index_id=i.index_id\n");
+            sql.append("ORDER BY i.object_id,i.index_id,ic.index_column_id");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setLong(1, forTable.getObjectId());
@@ -288,7 +305,15 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
             SQLServerTable parent, SQLServerTableIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            throw new DBException("Not implemented");
+            long indexColumnId = JDBCUtils.safeGetInt(dbResult, "index_column_id");
+            long columnId = JDBCUtils.safeGetInt(dbResult, "column_id");
+            SQLServerTableColumn tableColumn = columnId == 0 ? null : parent.getAttribute(session.getProgressMonitor(), columnId);
+            int ordinal = JDBCUtils.safeGetInt(dbResult, "key_ordinal");
+            boolean ascending = JDBCUtils.safeGetInt(dbResult, "is_descending_key") == 0;
+
+            return new SQLServerTableIndexColumn[] {
+                new SQLServerTableIndexColumn(object, indexColumnId, tableColumn, ordinal, ascending, false, null)
+            };
         }
 
         @Override

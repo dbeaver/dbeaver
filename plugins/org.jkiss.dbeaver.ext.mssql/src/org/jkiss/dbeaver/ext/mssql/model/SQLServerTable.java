@@ -218,13 +218,23 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
         return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
+    public SQLServerTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull long columnId)
+        throws DBException
+    {
+        for (SQLServerTableColumn col : getAttributes(monitor)) {
+            if (col.getObjectId() == columnId) {
+                return col;
+            }
+        }
+        return null;
+    }
+
     @Override
     @Association
     public synchronized Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        // Read indexes using cache
-        return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+        return this.getContainer().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 
     @Nullable
