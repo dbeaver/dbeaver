@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerConstants {
 
@@ -58,4 +60,10 @@ public class SQLServerConstants {
 
     public static final String SQL_SERVER_SYSTEM_SCHEMA = "sys";
     public static final String SYBASE_SYSTEM_SCHEMA = "dbo";
+
+    public static final DBSIndexType INDEX_TYPE_HEAP = new DBSIndexType("HEAP", SQLServerMessages.index_type_Heap); //$NON-NLS-1$
+    public static final DBSIndexType INDEX_TYPE_NON_CLUSTERED = new DBSIndexType("NON_CLUSTERED", SQLServerMessages.index_type_NonClustered); //$NON-NLS-1$
+    public static final DBSIndexType INDEX_TYPE_XML = new DBSIndexType("XML", SQLServerMessages.index_type_XML); //$NON-NLS-1$
+    public static final DBSIndexType INDEX_TYPE_SPATIAL = new DBSIndexType("SPATIAL", SQLServerMessages.index_type_Spatial); //$NON-NLS-1$
+
 }

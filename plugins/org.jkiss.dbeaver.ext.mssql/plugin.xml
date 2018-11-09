@@ -39,7 +39,7 @@
                 <items label="#database" path="database" property="databases" icon="#database">
                     <items label="#schema" path="schema" property="schemas" icon="#schema">
                         <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
-                            <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
+                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
@@ -93,19 +93,14 @@
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
                                 <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
-                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
-                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
-                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
-                                </items>
-                            </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms" visibleIf="object.dataSource.metaModel.supportsSynonyms(object.dataSource)">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms">
                             <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers">
                             <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
