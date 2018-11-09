@@ -38,58 +38,58 @@
             <tree path="generic" label="Generic data source">
                 <items label="#database" path="database" property="databases" icon="#database">
                     <items label="#schema" path="schema" property="schemas" icon="#schema">
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="!object.view">
                                     <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
                                     <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+                                <folder label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view" virtual="true">
                                     <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers">
                                     <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                                 </folder>
                                 <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
                             <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
                                 <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
                                 <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
@@ -99,21 +99,13 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.functions.node.name" icon="#functions" description="Functions" visibleIf="object.dataSource.info.supportsStoredCode() &amp;&amp; object.dataSource.splitProceduresAndFunctions()">
-                            <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
-                                <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
-                            </items>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms" visibleIf="object.dataSource.metaModel.supportsSynonyms(object.dataSource)">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms" visibleIf="object.dataSource.metaModel.supportsSynonyms(object.dataSource)">
                             <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
-                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
