@@ -301,6 +301,7 @@
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="meta-model" value="indexed"/>
                     <parameter name="omit-type-cache" value="true"/>
+                    <parameter name="omit-catalog" value="true"/>
 
 <!--
                     <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866" name="DB2 JDBC drivers" instruction="Download JDBC (JCC) client driver. Also suply license jar file">
