@@ -114,6 +114,52 @@ public class SQLFormatterTokenizedTest {
         assertEquals(expectedString, formattedString);
     }
 
+    @Test
+    public void shouldAddLineBreakBeforeBraceBySpecialSetting() {
+        //given
+        String expectedString = getExpectedStringWithLineBreakBeforeBraces();
+        String inputString = "SELECT (SELECT thecol FROM thetable) FROM dual";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
+
+        //when
+        String formattedString = formatter.format(inputString, configuration);
+
+        //then
+        assertEquals(expectedString, formattedString);
+    }
+
+
+    @Test
+    public void shouldAddIndentForName() {
+        //given
+        String expectedString = "SELECT"+lineBreak + "\tmy_field" + lineBreak + "FROM" + lineBreak + "\tmy_table";
+        String inputString = "SELECT my_field FROM my_table";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
+
+        //when
+        String formattedString = formatter.format(inputString, configuration);
+
+        //then
+        assertEquals(expectedString, formattedString);
+    }
+
+    private String getExpectedStringWithLineBreakBeforeBraces() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT").append(lineBreak)
+                .append("\t(").append(lineBreak)
+                .append("\t\tSELECT").append(lineBreak)
+                .append("\t\t\tthecol").append(lineBreak)
+                .append("\t\tFROM").append(lineBreak)
+                .append("\t\t\tthetable").append(lineBreak)
+                .append("\t)").append(lineBreak)
+                .append("FROM").append(lineBreak).append("\tdual");
+        return sb.toString();
+    }
+
 
     private String getExpectedString() {
         StringBuilder sb = new StringBuilder();

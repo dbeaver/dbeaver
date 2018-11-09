@@ -48,17 +48,17 @@ class IndentFormatter {
                 bracketIndent.add(indent);
                 bracketsDepth++;
                 // Adding indent after ( makes result too verbose and too multiline
-//            if (!isCompact) {
-//                indent++;
-//                index += insertReturnAndIndent(argList, index + 1, indent);
-//            }
+                if (!isCompact && formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)) {
+                    indent++;
+                    index += insertReturnAndIndent(argList, index + 1, indent);
+                }
                 break;
             case ")":
                 if (!bracketIndent.isEmpty() && !functionBracket.isEmpty()) {
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
-//            if (!isCompact) {
-//                index += insertReturnAndIndent(argList, index, indent);
-//            }
+                    if (!isCompact && formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET)) {
+                        result += insertReturnAndIndent(argList, index, indent);
+                    }
                     functionBracket.remove(functionBracket.size() - 1);
                     bracketsDepth--;
                 }
