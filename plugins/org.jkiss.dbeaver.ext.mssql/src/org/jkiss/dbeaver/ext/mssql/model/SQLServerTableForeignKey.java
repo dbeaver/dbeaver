@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable, SQLServerTableConstraint>
+public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable, SQLServerTableUniqueKey>
 {
     private List<SQLServerTableForeignKeyColumn> columns;
 
@@ -42,7 +42,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
         SQLServerTable table,
         String name,
         String remarks,
-        SQLServerTableConstraint referencedKey,
+        SQLServerTableUniqueKey referencedKey,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
         boolean persisted)

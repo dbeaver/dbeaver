@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 /**
  * SQLServerTableForeignKeyColumn
  */
-public class SQLServerTableForeignKeyColumn extends SQLServerTableConstraintColumn implements DBSTableForeignKeyColumn
+public class SQLServerTableForeignKeyColumn extends SQLServerTableUniqueKeyColumn implements DBSTableForeignKeyColumn
 {
     private SQLServerTableColumn referencedColumn;
 
