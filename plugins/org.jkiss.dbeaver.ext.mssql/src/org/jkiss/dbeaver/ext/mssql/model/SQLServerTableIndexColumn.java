@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 /**
  * SQLServerTableIndexColumn
  */
-public class SQLServerTableIndexColumn extends AbstractTableIndexColumn
+public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implements SQLServerObject
 {
     private SQLServerTableIndex index;
     private SQLServerTableColumn tableColumn;
@@ -35,9 +35,11 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn
     private boolean ascending;
     private boolean nullable;
     private String subPart;
+    private long objectId;
 
     public SQLServerTableIndexColumn(
         SQLServerTableIndex index,
+        long objectId,
         SQLServerTableColumn tableColumn,
         int ordinalPosition,
         boolean ascending,
@@ -45,6 +47,7 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn
         String subPart)
     {
         this.index = index;
+        this.objectId = objectId;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
@@ -133,4 +136,8 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn
         return index.getDataSource();
     }
 
+    @Override
+    public long getObjectId() {
+        return objectId;
+    }
 }

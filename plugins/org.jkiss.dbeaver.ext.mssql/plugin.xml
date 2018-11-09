@@ -56,7 +56,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
                                     <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
                                         </items>
@@ -71,8 +71,6 @@
                                 <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers">
                                     <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                                 </folder>
-                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
-                                </items>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
@@ -194,7 +192,7 @@
                 label="MS SQL Server"
                 icon="icons/mssql_icon.png">
             <drivers managable="true">
-
+                <!-- Obsolete -->
                 <driver
                     id="mssql_jdbc_jtds"
                     label="jTDS driver"
@@ -206,30 +204,7 @@
                     defaultPort="1433"
                     webURL="http://jtds.sourceforge.net/"
                     description="jTDS SQL Server driver">
-
                     <replace provider="generic" driver="mssql"/>
-
-                    <property name="loginTimeout" value="20"/>
-
-                    <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
-                    <parameter name="script-delimiter" value="go"/>
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="supports-multiple-results" value="true"/>
-
-                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.fff'''}'"/>
-                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
-
-                    <parameter name="script-delimiter-after-query" value="true"/>
-
-                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll" bundle="!drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll" bundle="!drivers.jtds"/>
-
-                    <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
-                    <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" bundle="drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" bundle="drivers.jtds"/>
                 </driver>
 
                 <driver
@@ -243,7 +218,6 @@
                     defaultPort="1433"
                     webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
                     description="Microsoft JDBC Driver for SQL Server">
-
                     <replace provider="generic" driver="mssql_ms"/>
                 </driver>
 
@@ -258,9 +232,36 @@
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="Microsoft JDBC Driver for SQL Server">
-
                     <replace provider="generic" driver="mssql_ms"/>
                     <replace provider="mssql" driver="mssql_jdbc_ms"/>
+                </driver>
+
+                <driver
+                        id="mssql_jdbc_azure"
+                        label="Azure SQL Database"
+                        icon="icons/azure_sql_icon.png"
+                        category="Azure"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host};databaseName={database}"
+                        useURL="false"
+                        defaultPort="1433"
+                        webURL="https://github.com/Microsoft/mssql-jdbc"
+                        description="Microsoft JDBC Driver for SQL Server">
+                </driver>
+
+                <!-- SQL Server Legacy -->
+
+                <driver
+                        id="mssql_jdbc_legacy"
+                        label="Legacy driver"
+                        icon="icons/mssql_icon.png"
+                        category="MS SQL Server"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                        useURL="false"
+                        defaultPort="1433"
+                        webURL="https://github.com/Microsoft/mssql-jdbc"
+                        description="Legacy Microsoft JDBC Driver for SQL Server. Use it for SQL server older than 2005 or if standard drivers don't work.">
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
@@ -279,37 +280,6 @@
                     <file type="lib" os="win32" arch="x86" path="drivers/mssql/new/auth/x86/sqljdbc_auth.dll" bundle="drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64/sqljdbc_auth.dll" bundle="drivers.mssql.new"/>
                     <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
-                </driver>
-
-                <driver
-                        id="mssql_jdbc_azure"
-                        label="Azure SQL Database"
-                        icon="icons/azure_sql_icon.png"
-                        category="Azure"
-                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-                        sampleURL="jdbc:sqlserver://{host};databaseName={database}"
-                        useURL="false"
-                        defaultPort="1433"
-                        webURL="https://github.com/Microsoft/mssql-jdbc"
-                        description="Microsoft JDBC Driver for SQL Server">
-
-                    <parameter name="omit-catalog" value="true"/>
-
-                    <parameter name="script-delimiter" value="go"/>
-                    <parameter name="script-delimiter" value="go"/>
-                    <parameter name="supports-multiple-results" value="true"/>
-
-                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.fff'''}'"/>
-                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
-                    <parameter name="script-delimiter-after-query" value="true"/>
-
-                    <property name="loginTimeout" value="30"/>
-
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.0.0.jre8]" bundle="!drivers.mssql.new"/>
-                    <file type="jar" path="drivers/mssql/new/mssql-jdbc.jar" bundle="drivers.mssql.new"/>
-
-                    <!-- Active directory auth -->
-                    <file type="jar" path="maven:/com.microsoft.azure:adal4j:RELEASE" optional="true" />
                 </driver>
 
                 <!-- Sybase -->

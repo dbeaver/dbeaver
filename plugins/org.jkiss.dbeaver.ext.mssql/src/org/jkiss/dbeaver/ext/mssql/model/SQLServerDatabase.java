@@ -131,7 +131,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
     static class SchemaCache extends JDBCObjectCache<SQLServerDatabase, SQLServerSchema> {
         SchemaCache() {
-            setListOrderComparator(DBUtils.nameComparator());
+            setListOrderComparator(DBUtils.nameComparatorIgnoreCase());
         }
 
         @Override
