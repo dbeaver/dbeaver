@@ -38,6 +38,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
     private Button useSpacesCheck;
     private Combo keywordCaseCombo;
     private Button lineFeedBeforeCommaCheck;
+    private Button breakLineBeforeCloseBracket;
 
     @Override
     protected Composite createFormatSettings(Composite parent) {
@@ -53,6 +54,10 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
         this.indentSizeSpinner = UIUtils.createLabelSpinner(settings, "Indent size", "Insert spaces for tabs", 4, 0, 100);
         this.useSpacesCheck = UIUtils.createCheckbox(settings, "Insert spaces for tabs", "Insert spaces for tabs", true, 1);
         this.lineFeedBeforeCommaCheck = UIUtils.createCheckbox(settings, "Insert line feed before commas", "Insert line feeds before/after commas", true, 5);
+        this.breakLineBeforeCloseBracket = UIUtils.createCheckbox(settings,
+                CoreMessages.pref_page_sql_format_label_add_line_break_before_close_bracket,
+                CoreMessages.pref_page_sql_format_label_add_line_break_before_close_bracket,
+                true, 5);
 
         return parent;
     }
@@ -76,6 +81,8 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
                 DBPIdentifierCase.capitalizeCaseName(keywordCase.name()));
         }
         lineFeedBeforeCommaCheck.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA));
+        breakLineBeforeCloseBracket.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET));
+
 
         {
             // Text editor settings
@@ -96,6 +103,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
         }
         preferenceStore.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE, caseName);
         preferenceStore.setValue(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA, lineFeedBeforeCommaCheck.getSelection());
+        preferenceStore.setValue(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET, breakLineBeforeCloseBracket.getSelection());
 
         {
             // Text editor settings
