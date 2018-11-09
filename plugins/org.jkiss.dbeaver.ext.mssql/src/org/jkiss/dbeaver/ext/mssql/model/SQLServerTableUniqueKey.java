@@ -33,16 +33,18 @@ import java.util.List;
 /**
  * GenericPrimaryKey
  */
-public class SQLServerTableConstraint extends JDBCTableConstraint<SQLServerTable> {
-    private List<SQLServerTableConstraintColumn> columns;
+public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTable> {
+    private SQLServerTableIndex index;
+    private List<SQLServerTableUniqueKeyColumn> columns;
 
-    public SQLServerTableConstraint(SQLServerTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
+    public SQLServerTableUniqueKey(SQLServerTable table, String name, String remarks, DBSEntityConstraintType constraintType, SQLServerTableIndex index, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
+        this.index = index;
     }
 
     // Copy constructor
-    protected SQLServerTableConstraint(DBRProgressMonitor monitor, SQLServerTable table, DBSEntityConstraint source) throws DBException {
+    protected SQLServerTableUniqueKey(DBRProgressMonitor monitor, SQLServerTable table, DBSEntityConstraint source) throws DBException {
         super(table, source, false);
         if (source instanceof DBSEntityReferrer) {
             List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) source).getAttributeReferences(monitor);
@@ -51,7 +53,7 @@ public class SQLServerTableConstraint extends JDBCTableConstraint<SQLServerTable
                 for (DBSEntityAttributeRef col : columns) {
                     if (col.getAttribute() != null) {
                         SQLServerTableColumn ownCol = table.getAttribute(monitor, col.getAttribute().getName());
-                        this.columns.add(new SQLServerTableConstraintColumn(this, ownCol, col.getAttribute().getOrdinalPosition()));
+                        this.columns.add(new SQLServerTableUniqueKeyColumn(this, ownCol, col.getAttribute().getOrdinalPosition()));
                     }
                 }
             }
@@ -59,12 +61,12 @@ public class SQLServerTableConstraint extends JDBCTableConstraint<SQLServerTable
     }
 
     @Override
-    public List<SQLServerTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<SQLServerTableUniqueKeyColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public void addColumn(SQLServerTableConstraintColumn column)
+    public void addColumn(SQLServerTableUniqueKeyColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<>();
@@ -72,7 +74,7 @@ public class SQLServerTableConstraint extends JDBCTableConstraint<SQLServerTable
         this.columns.add(column);
     }
 
-    void setColumns(List<SQLServerTableConstraintColumn> columns)
+    void setColumns(List<SQLServerTableUniqueKeyColumn> columns)
     {
         this.columns = columns;
     }

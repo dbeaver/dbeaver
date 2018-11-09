@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -152,7 +153,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
 
         // Copy constraints
         for (DBSEntityConstraint srcConstr : CommonUtils.safeCollection(source.getConstraints(monitor))) {
-            SQLServerTableConstraint constr = new SQLServerTableConstraint(monitor, this, srcConstr);
+            SQLServerTableUniqueKey constr = new SQLServerTableUniqueKey(monitor, this, srcConstr);
             this.getContainer().constraintCache.cacheObject(constr);
         }
 
@@ -226,6 +227,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
                 return col;
             }
         }
+        log.error("Column '" + columnId + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DML) + "'");
         return null;
     }
 
@@ -237,19 +239,23 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
         return this.getContainer().getIndexCache().getObjects(monitor, getSchema(), this);
     }
 
+    public SQLServerTableIndex getIndex(DBRProgressMonitor monitor, long indexId) throws DBException {
+        for (SQLServerTableIndex index : getIndexes(monitor)) {
+            if (index.getObjectId() == indexId) {
+                return index;
+            }
+        }
+        log.error("Index '" + indexId + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DML) + "'");
+        return null;
+    }
+
     @Nullable
     @Override
     @Association
-    public synchronized Collection<SQLServerTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public synchronized Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().getConstraintCache().getObjects(monitor, getContainer(), this);
-    }
-
-    public SQLServerTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
-        throws DBException
-    {
-        return getContainer().getConstraintCache().getObject(monitor, getContainer(), this, ukName);
+        return getContainer().getUniqueConstraintCache().getAllObjects(monitor, this);
     }
 
     @Override
@@ -351,7 +357,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
             Map<String, SQLServerTableForeignKey> fkMap = new HashMap<>();
-            Map<String, SQLServerTableConstraint> pkMap = new HashMap<>();
+            Map<String, SQLServerTableUniqueKey> pkMap = new HashMap<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
@@ -413,7 +419,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
                     }
 
                     // Find PK
-                    SQLServerTableConstraint pk = null;
+                    SQLServerTableUniqueKey pk = null;
                     if (pkTable != null && pkName != null) {
                         pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
@@ -421,9 +427,9 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
                         }
                     }
                     if (pk == null && pkTable != null) {
-                        Collection<SQLServerTableConstraint> constraints = pkTable.getConstraints(monitor);
+                        Collection<SQLServerTableUniqueKey> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
-                            for (SQLServerTableConstraint pkConstraint : constraints) {
+                            for (SQLServerTableUniqueKey pkConstraint : constraints) {
                                 if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
                                     pk = pkConstraint;
                                     break;
@@ -437,8 +443,8 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
                         String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new SQLServerTableConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
-                            pk.addColumn(new SQLServerTableConstraintColumn(pk, pkColumn, keySeq));
+                            pk = new SQLServerTableUniqueKey(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                            pk.addColumn(new SQLServerTableUniqueKeyColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
                         }
                     }

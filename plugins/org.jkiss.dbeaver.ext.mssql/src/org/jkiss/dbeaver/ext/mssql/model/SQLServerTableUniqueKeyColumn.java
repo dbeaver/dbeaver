@@ -23,15 +23,15 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
 /**
- * SQLServerTableConstraintColumn
+ * SQLServerTableUniqueKeyColumn
  */
-public class SQLServerTableConstraintColumn extends AbstractTableConstraintColumn
+public class SQLServerTableUniqueKeyColumn extends AbstractTableConstraintColumn
 {
     private AbstractTableConstraint<SQLServerTable> constraint;
     private SQLServerTableColumn tableColumn;
     private int ordinalPosition;
 
-    public SQLServerTableConstraintColumn(AbstractTableConstraint<SQLServerTable> constraint, SQLServerTableColumn tableColumn, int ordinalPosition)
+    public SQLServerTableUniqueKeyColumn(AbstractTableConstraint<SQLServerTable> constraint, SQLServerTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;

@@ -44,7 +44,7 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
