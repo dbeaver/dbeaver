@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -38,10 +37,12 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,6 +62,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     private TableCache tableCache = new TableCache();
     private IndexCache indexCache = new IndexCache(tableCache);
     private UniqueConstraintCache uniqueConstraintCache = new UniqueConstraintCache(tableCache);
+    private ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
 
     SQLServerSchema(SQLServerDatabase database, JDBCResultSet resultSet) {
         this.database = database;
@@ -84,6 +86,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     UniqueConstraintCache getUniqueConstraintCache() {
         return uniqueConstraintCache;
+    }
+
+    ForeignKeyCache getForeignKeyCache() {
+        return foreignKeyCache;
     }
 
     @Override
@@ -167,6 +173,16 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return tableCache.getAllObjects(monitor, this);
     }
 
+    public SQLServerTable getTable(DBRProgressMonitor monitor, long tableId) throws DBException {
+        for (SQLServerTable table : tableCache.getAllObjects(monitor, this)) {
+            if (table.getObjectId() == tableId) {
+                return table;
+            }
+        }
+        log.debug("Table '" + tableId + "' not found in schema " + getName());
+        return null;
+    }
+
     @Override
     public Collection<SQLServerTable> getChildren(DBRProgressMonitor monitor) throws DBException {
         return tableCache.getAllObjects(monitor, this);
@@ -193,6 +209,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         if ((scope & STRUCT_ASSOCIATIONS) == STRUCT_ASSOCIATIONS) {
             indexCache.getAllObjects(monitor, this);
             uniqueConstraintCache.getAllObjects(monitor, this);
+            foreignKeyCache.getAllObjects(monitor, this);
         }
     }
 
@@ -428,5 +445,125 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         }
     }
+
+    class ForeignKeyCache extends JDBCCompositeCache<SQLServerSchema, SQLServerTable, SQLServerTableForeignKey, SQLServerTableForeignKeyColumn> {
+        ForeignKeyCache()
+        {
+            super(tableCache, SQLServerTable.class, "table_name", "name");
+        }
+
+        @Override
+        protected void loadObjects(DBRProgressMonitor monitor, SQLServerSchema schema, SQLServerTable forParent)
+            throws DBException
+        {
+            // Cache schema indexes if no table specified
+            if (forParent == null) {
+                indexCache.getAllObjects(monitor, schema);
+            }
+            super.loadObjects(monitor, schema, forParent);
+        }
+
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema owner, SQLServerTable forTable)
+            throws SQLException
+        {
+            StringBuilder sql = new StringBuilder(500);
+            sql.append("SELECT t.name as table_name,fk.name,fk.key_index_id,fk.is_disabled,fkc.*,tr.schema_id referenced_schema_id\nFROM ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t,")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "foreign_keys")).append(" fk,")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "foreign_key_columns")).append(" fkc, ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" tr")
+                .append("\nWHERE t.object_id = fk.parent_object_id AND fk.object_id=fkc.constraint_object_id AND tr.object_id=fk.referenced_object_id");
+            if (forTable != null) {
+                sql.append(" AND t.object_id=?");
+            } else {
+                sql.append(" AND t.schema_id=?");
+            }
+            sql.append("\nORDER BY fkc.constraint_object_id, fkc.constraint_column_id");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            if (forTable != null) {
+                dbStat.setLong(1, forTable.getObjectId());
+            } else {
+                dbStat.setLong(1, owner.getObjectId());
+            }
+            return dbStat;
+        }
+
+        @Nullable
+        @Override
+        protected SQLServerTableForeignKey fetchObject(JDBCSession session, SQLServerSchema owner, SQLServerTable parent, String indexName, JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            long refSchemaId = JDBCUtils.safeGetLong(dbResult, "referenced_schema_id");
+            DBRProgressMonitor monitor = session.getProgressMonitor();
+            SQLServerSchema refSchema = owner.getDatabase().getSchema(monitor, refSchemaId);
+            if (refSchema == null) {
+                log.debug("Ref schema " + refSchemaId + " not found");
+                return null;
+            }
+            long refTableId = JDBCUtils.safeGetLong(dbResult, "referenced_object_id");
+            SQLServerTable refTable = refSchema.getTable(monitor, refTableId);
+            if (refTable == null) {
+                log.debug("Ref table " + refTableId + " not found in schema " + refSchema.getName());
+                return null;
+            }
+            long refIndexId = JDBCUtils.safeGetLong(dbResult, "key_index_id");
+            SQLServerTableIndex index = refTable.getIndex(monitor, refIndexId);
+            if (index == null) {
+                log.debug("Ref index " + refIndexId + " not found in table " + refTable.getFullyQualifiedName(DBPEvaluationContext.UI));
+                return null;
+            }
+            String fkName = JDBCUtils.safeGetString(dbResult, "name");
+            DBSForeignKeyModifyRule deleteRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "delete_referential_action"));
+            DBSForeignKeyModifyRule updateRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "update_referential_action"));
+            return new SQLServerTableForeignKey(parent, fkName, null, index, deleteRule, updateRule, true);
+        }
+
+        @Nullable
+        @Override
+        protected SQLServerTableForeignKeyColumn[] fetchObjectRow(
+            JDBCSession session,
+            SQLServerTable parent,
+            SQLServerTableForeignKey object,
+            JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            DBRProgressMonitor monitor = session.getProgressMonitor();
+            int columnId = JDBCUtils.safeGetInt(dbResult, "constraint_column_id");
+
+            SQLServerTable fkTable = object.getParentObject();
+            SQLServerTable refTable = object.getReferencedTable();
+            SQLServerTableColumn fkColumn = fkTable.getAttribute(monitor, JDBCUtils.safeGetLong(dbResult, "parent_column_id"));
+            SQLServerTableColumn refColumn = refTable.getAttribute(monitor, JDBCUtils.safeGetLong(dbResult, "referenced_column_id"));
+            if (fkColumn == null || refColumn == null) {
+                return null;
+            }
+            return new SQLServerTableForeignKeyColumn[] { new SQLServerTableForeignKeyColumn(
+                object,
+                fkColumn,
+                columnId,
+                refColumn) };
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        protected void cacheChildren(DBRProgressMonitor monitor, SQLServerTableForeignKey foreignKey, List<SQLServerTableForeignKeyColumn> rows)
+        {
+            foreignKey.setColumns(rows);
+        }
+
+        private SQLServerTableColumn getTableColumn(JDBCSession session, SQLServerTable parent, ResultSet dbResult) throws DBException
+        {
+            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
+            SQLServerTableColumn tableColumn = columnName == null ? null : parent.getAttribute(session.getProgressMonitor(), columnName);
+            if (tableColumn == null) {
+                log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
+            }
+            return tableColumn;
+        }
+    }
+
 
 }

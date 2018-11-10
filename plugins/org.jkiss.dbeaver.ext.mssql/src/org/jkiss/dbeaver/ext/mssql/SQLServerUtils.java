@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -88,4 +89,14 @@ public class SQLServerUtils {
         return SQLServerUtils.getSystemSchemaFQN(database.getDataSource(), database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA) + "." + tableName;
     }
 
+    public static DBSForeignKeyModifyRule getForeignKeyModifyRule(int actionNum) {
+        switch (actionNum) {
+            case 0: return DBSForeignKeyModifyRule.NO_ACTION;
+            case 1: return DBSForeignKeyModifyRule.CASCADE;
+            case 2: return DBSForeignKeyModifyRule.SET_NULL;
+            case 3: return DBSForeignKeyModifyRule.SET_DEFAULT;
+            default:
+                return DBSForeignKeyModifyRule.NO_ACTION;
+        }
+    }
 }
