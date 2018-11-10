@@ -63,7 +63,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         this.name = JDBCUtils.safeGetString(dbResult, "name");
         this.systemTypeId = JDBCUtils.safeGetInt(dbResult, "system_type_id");
         this.userTypeId = JDBCUtils.safeGetInt(dbResult, "user_type_id");
-        this.schemaId = JDBCUtils.safeGetLong(dbResult, "user_type_id");
+        this.schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
         this.maxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
         this.scale = JDBCUtils.safeGetInt(dbResult, "scale");
         this.precision = JDBCUtils.safeGetInt(dbResult, "precision");
@@ -84,6 +84,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return (SQLServerDataSource) owner.getDataSource();
     }
 
+    @Property(viewable = false, order = 80)
     @Override
     public long getObjectId() {
         return userTypeId;
@@ -97,6 +98,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return schemaId;
     }
 
+    @Property(viewable = false, order = 5)
     @Nullable
     public SQLServerSchema getSchema(DBRProgressMonitor monitor) throws DBException {
         return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, schemaId) : null;
@@ -120,6 +122,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
+    @Property(viewable = false, order = 70)
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -135,16 +138,19 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return dataKind;
     }
 
+    @Property(viewable = false, order = 20)
     @Override
     public Integer getScale() {
         return scale == 0 ? null : scale;
     }
 
+    @Property(viewable = false, order = 21)
     @Override
     public Integer getPrecision() {
         return precision == 0 ? null : precision;
     }
 
+    @Property(viewable = false, order = 22)
     @Override
     public long getMaxLength() {
         return maxLength;
@@ -189,7 +195,6 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return userTypeId;
     }
 
-    @Property(viewable = true, order = 8)
     public SQLServerDataType getComponentType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {

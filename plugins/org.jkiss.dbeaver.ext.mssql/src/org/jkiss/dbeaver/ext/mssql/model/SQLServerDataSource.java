@@ -45,6 +45,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, /*DBCQueryPlanner, */IAdaptable {
@@ -113,7 +114,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    public Collection<? extends DBSDataType> getLocalDataTypes() {
+    public List<SQLServerDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
     }
 
