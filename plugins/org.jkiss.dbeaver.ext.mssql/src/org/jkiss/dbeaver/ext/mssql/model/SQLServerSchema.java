@@ -389,7 +389,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 "SELECT kc.*,t.name as table_name FROM \n")
                 .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "key_constraints")).append(" kc,")
                 .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "tables")).append(" t\n");
-            sql.append("WHERE kc.schema_id=?");
+            sql.append("WHERE kc.parent_object_id=t.object_id AND kc.schema_id=?");
             if (forParent != null) {
                 sql.append(" AND kc.parent_object_id=?");
             }
@@ -420,7 +420,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @Override
         protected SQLServerTableIndexColumn[] fetchObjectRow(JDBCSession session, SQLServerTable table, SQLServerTableUniqueKey forObject, JDBCResultSet resultSet) throws SQLException, DBException {
-            return forObject.getIndex().getAttributeReferences(session.getProgressMonitor()).toArray(new SQLServerTableIndexColumn[0]);
+            return new SQLServerTableIndexColumn[0];//forObject.getIndex().getAttributeReferences(session.getProgressMonitor()).toArray(new SQLServerTableIndexColumn[0]);
         }
 
         @Override
