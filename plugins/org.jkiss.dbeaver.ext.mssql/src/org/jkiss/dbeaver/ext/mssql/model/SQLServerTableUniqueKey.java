@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
@@ -31,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GenericPrimaryKey
+ * SQLServerTableUniqueKey
  */
 public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTable> {
     private SQLServerTableIndex index;
@@ -46,37 +47,18 @@ public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTable>
     // Copy constructor
     protected SQLServerTableUniqueKey(DBRProgressMonitor monitor, SQLServerTable table, DBSEntityConstraint source) throws DBException {
         super(table, source, false);
-        if (source instanceof DBSEntityReferrer) {
-            List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) source).getAttributeReferences(monitor);
-            if (columns != null) {
-                this.columns = new ArrayList<>(columns.size());
-                for (DBSEntityAttributeRef col : columns) {
-                    if (col.getAttribute() != null) {
-                        SQLServerTableColumn ownCol = table.getAttribute(monitor, col.getAttribute().getName());
-                        this.columns.add(new SQLServerTableUniqueKeyColumn(this, ownCol, col.getAttribute().getOrdinalPosition()));
-                    }
-                }
-            }
-        }
+        this.index = table.getIndex(monitor, source.getName());
+    }
+
+    @Property(viewable = true, order = 10)
+    public SQLServerTableIndex getIndex() {
+        return index;
     }
 
     @Override
-    public List<SQLServerTableUniqueKeyColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<SQLServerTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
-        return columns;
-    }
-
-    public void addColumn(SQLServerTableUniqueKeyColumn column)
-    {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
-        this.columns.add(column);
-    }
-
-    void setColumns(List<SQLServerTableUniqueKeyColumn> columns)
-    {
-        this.columns = columns;
+        return index.getAttributeReferences(monitor);
     }
 
     @NotNull
