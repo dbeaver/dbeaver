@@ -14,7 +14,6 @@ package org.jkiss.dbeaver.ext.import_config.wizards.navicat;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 
 public class NavicatEncrypt {
     private static final String NAVICAT_CODE = "3DC5CA39";
