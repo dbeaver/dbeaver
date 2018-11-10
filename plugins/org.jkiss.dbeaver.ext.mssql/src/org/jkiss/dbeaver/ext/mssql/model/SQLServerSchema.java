@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -60,7 +60,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     private String name;
     private TableCache tableCache = new TableCache();
     private IndexCache indexCache = new IndexCache(tableCache);
-    private UniqueConstraintCache uniqueConstraintCache = new UniqueConstraintCache();
+    private UniqueConstraintCache uniqueConstraintCache = new UniqueConstraintCache(tableCache);
 
     SQLServerSchema(SQLServerDatabase database, JDBCResultSet resultSet) {
         this.database = database;
@@ -192,7 +192,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
         if ((scope & STRUCT_ASSOCIATIONS) == STRUCT_ASSOCIATIONS) {
             indexCache.getAllObjects(monitor, this);
-            uniqueConstraintCache.getAllObjects(monitor, null);
+            uniqueConstraintCache.getAllObjects(monitor, this);
         }
     }
 
@@ -200,7 +200,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         TableCache()
         {
-            super("name");
+            super("table_name");
             setListOrderComparator(DBUtils.nameComparator());
         }
 
@@ -248,12 +248,23 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "columns")).append("\n");
-            sql.append("WHERE object_id = ?\n");
-            sql.append("ORDER BY column_id");
+            sql.append("SELECT c.*,t.name as table_name,t.schema_id\nFROM ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "columns")).append(" c, ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t");
+            sql.append("\nWHERE t.object_id=c.object_id");
+            if (forTable != null) {
+                sql.append(" AND t.object_id=?");
+            } else {
+                sql.append(" AND t.schema_id=?");
+            }
+            sql.append("\nORDER BY c.object_id,c.column_id");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setLong(1, forTable.getObjectId());
+            if (forTable != null) {
+                dbStat.setLong(1, forTable.getObjectId());
+            } else {
+                dbStat.setLong(1, owner.getObjectId());
+            }
             return dbStat;
         }
 
@@ -284,7 +295,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     static class IndexCache extends JDBCCompositeCache<SQLServerSchema, SQLServerTable, SQLServerTableIndex, SQLServerTableIndexColumn> {
         IndexCache(TableCache tableCache)
         {
-            super(tableCache, SQLServerTable.class, "object_id", "name");
+            super(tableCache, SQLServerTable.class, "table_name", "name");
         }
 
         @NotNull
@@ -293,14 +304,24 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT i.*,ic.index_column_id,ic.column_id,ic.key_ordinal,ic.is_descending_key\n" +
-                "FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "indexes")).append(" i, ")
-                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "index_columns")).append(" ic").append("\n");
-            sql.append("WHERE i.object_id = ? AND ic.object_id=i.object_id AND ic.index_id=i.index_id\n");
-            sql.append("ORDER BY i.object_id,i.index_id,ic.index_column_id");
+            sql.append("SELECT i.*,ic.index_column_id,ic.column_id,ic.key_ordinal,ic.is_descending_key,t.name as table_name\nFROM ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "indexes")).append(" i, ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "index_columns")).append(" ic, ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t").append("\n");
+            sql.append("WHERE t.object_id = i.object_id AND ic.object_id=i.object_id AND ic.index_id=i.index_id");
+            if (forTable != null) {
+                sql.append(" AND t.object_id = ?");
+            } else {
+                sql.append(" AND t.schema_id = ?");
+            }
+            sql.append("\nORDER BY i.object_id,i.index_id,ic.index_column_id");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setLong(1, forTable.getObjectId());
+            if (forTable != null) {
+                dbStat.setLong(1, forTable.getObjectId());
+            } else {
+                dbStat.setLong(1, owner.getObjectId());
+            }
             return dbStat;
         }
 
@@ -354,29 +375,36 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     /**
      * Constraint cache implementation
      */
-    class UniqueConstraintCache extends JDBCObjectCache<SQLServerTable, SQLServerTableUniqueKey> {
+    static class UniqueConstraintCache extends JDBCCompositeCache<SQLServerSchema, SQLServerTable, SQLServerTableUniqueKey, SQLServerTableIndexColumn> {
+
+        protected UniqueConstraintCache(TableCache tableCache) {
+            super(tableCache, SQLServerTable.class, "table_name", "name");
+        }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerTable table) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema schema, SQLServerTable forParent) throws SQLException {
+
             StringBuilder sql = new StringBuilder(500);
             sql.append(
-                "SELECT * FROM \n").append(SQLServerUtils.getSystemTableName(getDatabase(), "key_constraints")).append(" kc\n");
+                "SELECT kc.*,t.name as table_name FROM \n")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "key_constraints")).append(" kc,")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "tables")).append(" t\n");
             sql.append("WHERE kc.schema_id=?");
-            if (table != null) {
+            if (forParent != null) {
                 sql.append(" AND kc.parent_object_id=?");
             }
             sql.append("\nORDER BY name");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setLong(1, getObjectId());
-            if (table != null) {
-                dbStat.setLong(2, table.getObjectId());
+            dbStat.setLong(1, schema.getObjectId());
+            if (forParent != null) {
+                dbStat.setLong(2, forParent.getObjectId());
             }
             return dbStat;
         }
 
         @Override
-        protected SQLServerTableUniqueKey fetchObject(JDBCSession session, SQLServerTable table, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerTableUniqueKey fetchObject(JDBCSession session, SQLServerSchema schema, SQLServerTable table, String childName, JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "name");
             String type = JDBCUtils.safeGetString(resultSet, "type");
             long indexId = JDBCUtils.safeGetLong(resultSet, "unique_index_id");
@@ -388,6 +416,16 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 DBSEntityConstraintType cType = "PK".equals(type) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
                 return new SQLServerTableUniqueKey(table, name, null, cType, index, true);
             }
+        }
+
+        @Override
+        protected SQLServerTableIndexColumn[] fetchObjectRow(JDBCSession session, SQLServerTable table, SQLServerTableUniqueKey forObject, JDBCResultSet resultSet) throws SQLException, DBException {
+            return forObject.getIndex().getAttributeReferences(session.getProgressMonitor()).toArray(new SQLServerTableIndexColumn[0]);
+        }
+
+        @Override
+        protected void cacheChildren(DBRProgressMonitor monitor, SQLServerTableUniqueKey object, List<SQLServerTableIndexColumn> children) {
+
         }
     }
 
