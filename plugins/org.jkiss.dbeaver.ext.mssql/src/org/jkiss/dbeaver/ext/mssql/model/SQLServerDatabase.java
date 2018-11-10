@@ -18,12 +18,13 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericSchema;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -35,9 +36,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,9 +47,12 @@ import java.util.List;
 */
 public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject{
 
+    private static final Log log = Log.getLog(SQLServerDatabase.class);
+
     private final SQLServerDataSource dataSource;
     private boolean persisted;
     private String name;
+    private DataTypeCache typesCache = new DataTypeCache();
     private SchemaCache schemaCache = new SchemaCache();
 
     SQLServerDatabase(SQLServerDataSource dataSource, JDBCResultSet resultSet) {
@@ -96,7 +100,82 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
     @Override
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        typesCache.clearCache();
         return this;
+    }
+
+    //////////////////////////////////////////////////
+    // Data types
+
+    @Association
+    public Collection<SQLServerDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+        return typesCache.getAllObjects(monitor, this);
+    }
+
+    public SQLServerDataType getDataType(DBRProgressMonitor monitor, String typeName) throws DBException {
+        return typesCache.getObject(monitor, this, typeName);
+    }
+
+    public SQLServerDataType getDataType(DBRProgressMonitor monitor, int typeID) throws DBException {
+        typesCache.getAllObjects(monitor, this);
+
+        SQLServerDataType dataType = typesCache.getDataType(typeID);;
+        if (dataType != null) {
+            return dataType;
+        }
+        dataType = dataSource.getLocalDataType(typeID);
+        if (dataType != null) {
+            return dataType;
+        }
+        log.debug("Data type '" + typeID + "' not found in database " + getName());
+        return null;
+    }
+
+    private class DataTypeCache extends JDBCObjectCache<SQLServerDatabase, SQLServerDataType> {
+
+        private LongKeyMap<SQLServerDataType> dataTypeMap = new LongKeyMap<>();
+        
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerDatabase database) throws SQLException {
+            return session.prepareStatement(
+                "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "types") + " WHERE is_user_defined = 1 order by name");
+        }
+
+        @Override
+        protected SQLServerDataType fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new SQLServerDataType(database, resultSet);
+        }
+
+        public SQLServerDataType getDataType(long typeID) {
+            return dataTypeMap.get(typeID);
+        }
+
+        @Override
+        public void clearCache() {
+            super.clearCache();
+            dataTypeMap.clear();
+        }
+
+        @Override
+        public void removeObject(@NotNull SQLServerDataType object, boolean resetFullCache) {
+            super.removeObject(object, resetFullCache);
+            dataTypeMap.remove(object.getObjectId());
+        }
+
+        @Override
+        public void cacheObject(@NotNull SQLServerDataType object) {
+            super.cacheObject(object);
+            dataTypeMap.put(object.getObjectId(), object);
+        }
+
+        @Override
+        public void setCache(List<SQLServerDataType> cache) {
+            super.setCache(cache);
+            for (SQLServerDataType dt : cache) {
+                dataTypeMap.put(dt.getObjectId(), dt);
+            }
+        }
+
     }
 
     //////////////////////////////////////////////////
@@ -107,6 +186,15 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return getChildren(monitor);
     }
 
+    public SQLServerSchema getSchema(DBRProgressMonitor monitor, long schemaId) throws DBException {
+        for (SQLServerSchema schema : getSchemas(monitor)) {
+            if (schema.getObjectId() == schemaId) {
+                return schema;
+            }
+        }
+        log.debug("Schema '" + schemaId + "' not found");
+        return null;
+    }
 
     @Override
     public Collection<SQLServerSchema> getChildren(DBRProgressMonitor monitor) throws DBException {
@@ -127,7 +215,6 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
         schemaCache.getAllObjects(monitor, this);
     }
-
 
     static class SchemaCache extends JDBCObjectCache<SQLServerDatabase, SQLServerSchema> {
         SchemaCache() {

@@ -19,12 +19,10 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -52,7 +50,9 @@ import java.util.List;
 /**
 * SQL Server schema
 */
-public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject {
+public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifiedObject, DBPRefreshableObject, DBPSystemObject, SQLServerObject {
+
+    private static final Log log = Log.getLog(SQLServerSchema.class);
 
     private final SQLServerDatabase database;
     private boolean persisted;
@@ -133,8 +133,30 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
     }
 
     @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(), getDatabase(), this);
+    }
+
+    @Override
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        tableCache.clearCache();
+        indexCache.clearCache();
+        uniqueConstraintCache.clearCache();
         return this;
+    }
+
+    //////////////////////////////////////////////////
+    // Data types
+
+    @Association
+    public List<SQLServerDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+        List<SQLServerDataType> result = new ArrayList<>();
+        for (SQLServerDataType dt : database.getDataTypes(monitor)) {
+            if (dt.getSchemaId() == getObjectId()) {
+                result.add(dt);
+            }
+        }
+        return result;
     }
 
     //////////////////////////////////////////////////
@@ -239,7 +261,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPRefresh
         protected SQLServerTableColumn fetchChild(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull SQLServerTable table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new SQLServerTableColumn(table, dbResult);
+            return new SQLServerTableColumn(session.getProgressMonitor(), table, dbResult);
         }
 
     }
