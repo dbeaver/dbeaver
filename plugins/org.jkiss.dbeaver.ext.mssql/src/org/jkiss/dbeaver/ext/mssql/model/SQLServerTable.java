@@ -508,6 +508,8 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        getContainer().getIndexCache().clearObjectCache(this);
+        getContainer().getUniqueConstraintCache().clearObjectCache(this);
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 

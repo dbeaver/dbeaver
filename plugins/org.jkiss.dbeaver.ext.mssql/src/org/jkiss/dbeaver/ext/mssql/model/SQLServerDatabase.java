@@ -101,6 +101,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     @Override
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
         typesCache.clearCache();
+        schemaCache.clearCache();
         return this;
     }
 
