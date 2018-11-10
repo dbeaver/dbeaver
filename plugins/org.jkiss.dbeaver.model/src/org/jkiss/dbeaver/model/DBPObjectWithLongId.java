@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPObjectWithLongId;
+package org.jkiss.dbeaver.model;
 
 /**
- * SQLServerObject.
- * Represented in sys.objects
+ * Object with long unique ID
  */
-public interface SQLServerObject extends DBPNamedObject, DBPObjectWithLongId
+public interface DBPObjectWithLongId extends DBPObject
 {
+    /**
+     * Object unique ID.
+     * ID may be unique withn object parent or within whole database - it depends on particular object type.
+     * Usually uniqueness has the same rules as for DBPNamedObject
+     */
+    long getObjectId();
 
 }

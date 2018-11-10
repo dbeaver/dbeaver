@@ -20,10 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
@@ -34,7 +36,7 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable, SQLServerTableUniqueKey>
+public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable, DBSEntityConstraint>
 {
     private List<SQLServerTableForeignKeyColumn> columns;
 
@@ -42,7 +44,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
         SQLServerTable table,
         String name,
         String remarks,
-        SQLServerTableUniqueKey referencedKey,
+        DBSEntityConstraint referencedKey,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
         boolean persisted)
@@ -51,25 +53,23 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
     }
 
     // Copy constructor
-    public SQLServerTableForeignKey(DBRProgressMonitor monitor, SQLServerTable table, DBSEntityAssociation source) throws DBException {
+    public SQLServerTableForeignKey(DBRProgressMonitor monitor, SQLServerTable table, SQLServerTableForeignKey source) throws DBException {
         super(
             monitor,
             table,
             source,
             false);
-        if (source instanceof DBSEntityReferrer) {
-            List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) source).getAttributeReferences(monitor);
-            if (columns != null) {
-                this.columns = new ArrayList<>(columns.size());
-                for (DBSEntityAttributeRef srcCol : columns) {
-                    if (srcCol instanceof DBSTableForeignKeyColumn) {
-                        DBSTableForeignKeyColumn fkCol = (DBSTableForeignKeyColumn) srcCol;
-                        this.columns.add(new SQLServerTableForeignKeyColumn(
-                            this,
-                            table.getAttribute(monitor, fkCol.getName()),
-                            fkCol.getOrdinalPosition(),
-                            table.getAttribute(monitor, fkCol.getReferencedColumn().getName())));
-                    }
+        List<? extends DBSEntityAttributeRef> columns = source.getAttributeReferences(monitor);
+        if (columns != null) {
+            this.columns = new ArrayList<>(columns.size());
+            for (DBSEntityAttributeRef srcCol : columns) {
+                if (srcCol instanceof DBSTableForeignKeyColumn) {
+                    DBSTableForeignKeyColumn fkCol = (DBSTableForeignKeyColumn) srcCol;
+                    this.columns.add(new SQLServerTableForeignKeyColumn(
+                        this,
+                        table.getAttribute(monitor, fkCol.getName()),
+                        fkCol.getOrdinalPosition(),
+                        table.getAttribute(monitor, fkCol.getReferencedColumn().getName())));
                 }
             }
         }
@@ -87,6 +87,10 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
             columns = new ArrayList<>();
         }
         columns.add(column);
+    }
+
+    public void setColumns(List<SQLServerTableForeignKeyColumn> columns) {
+        this.columns = columns;
     }
 
     @NotNull

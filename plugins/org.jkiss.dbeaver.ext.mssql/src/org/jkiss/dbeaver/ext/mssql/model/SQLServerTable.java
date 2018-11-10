@@ -174,7 +174,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
     public synchronized Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return null;//foreignKeys.getCachedObjects();
+        return getSchema().getForeignKeyCache().getObjects(monitor, getSchema(), this);
     }
 
     @Override
@@ -199,6 +199,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         getContainer().getIndexCache().clearObjectCache(this);
         getContainer().getUniqueConstraintCache().clearObjectCache(this);
+        getContainer().getForeignKeyCache().clearObjectCache(this);
 
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
