@@ -265,7 +265,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
     public synchronized Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().getUniqueConstraintCache().getAllObjects(monitor, this);
+        return getContainer().getUniqueConstraintCache().getObjects(monitor, getSchema(), this);
     }
 
     @Override
