@@ -61,7 +61,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
     public SQLServerTable(DBRProgressMonitor monitor, SQLServerSchema schema, DBSEntity source) throws DBException {
         super(monitor, schema, source);
 
-        DBSObjectCache<SQLServerTable, SQLServerTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);
+        DBSObjectCache<SQLServerTableBase, SQLServerTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);
         // Copy columns
         for (DBSEntityAttribute srcColumn : CommonUtils.safeCollection(source.getAttributes(monitor))) {
             if (DBUtils.isHiddenObject(srcColumn)) {
@@ -83,66 +83,6 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
     public boolean isView()
     {
         return false;
-    }
-
-    @Override
-    public Collection<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
-        List<SQLServerTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);
-        if (childColumns == null) {
-            return Collections.emptyList();
-        }
-        List<SQLServerTableColumn> columns = new ArrayList<>(childColumns);
-        columns.sort(DBUtils.orderComparator());
-        return columns;
-    }
-
-    @Override
-    public SQLServerTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
-        throws DBException
-    {
-        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
-    }
-
-    public SQLServerTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull long columnId)
-        throws DBException
-    {
-        for (SQLServerTableColumn col : getAttributes(monitor)) {
-            if (col.getObjectId() == columnId) {
-                return col;
-            }
-        }
-        log.error("Column '" + columnId + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DML) + "'");
-        return null;
-    }
-
-    @Override
-    @Association
-    public synchronized Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return this.getContainer().getIndexCache().getObjects(monitor, getSchema(), this);
-    }
-
-    public SQLServerTableIndex getIndex(DBRProgressMonitor monitor, long indexId) throws DBException {
-        for (SQLServerTableIndex index : getIndexes(monitor)) {
-            if (index.getObjectId() == indexId) {
-                return index;
-            }
-        }
-        log.error("Index '" + indexId + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DML) + "'");
-        return null;
-    }
-
-    public SQLServerTableIndex getIndex(DBRProgressMonitor monitor, String name) throws DBException {
-        for (SQLServerTableIndex index : getIndexes(monitor)) {
-            if (CommonUtils.equalObjects(name, index.getName())) {
-                return index;
-            }
-        }
-        log.error("Index '" + name + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DML) + "'");
-        return null;
     }
 
     @Nullable

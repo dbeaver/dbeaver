@@ -369,12 +369,41 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
-        <manager
-                class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerProcedureManager"
-                objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTriggerManager"
-                objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
+        <editor
+                id="generic.table.ddl.view"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                main="false"
+                label="DDL"
+                description="DDL"
+                position="additions_end"
+                icon="#sql_text"
+                type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
+        </editor>
+        <editor
+                id="generic.view.source.view"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                main="false"
+                label="Definition"
+                description="View definition"
+                position="additions_end"
+                icon="#sql_text"
+                type="folder"
+                embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
+        </editor>
+        <editor id="generic.source.view" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
+        </editor>
+
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
     </extension>
 
 </plugin>

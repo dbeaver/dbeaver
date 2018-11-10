@@ -121,6 +121,10 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return dataType;
     }
 
+    public void setDataType(SQLServerDataType dataType) {
+        this.dataType = dataType;
+    }
+
     @Override
     public DBPDataKind getDataKind() {
         return dataType == null ? DBPDataKind.UNKNOWN : dataType.getDataKind();
