@@ -249,6 +249,16 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
         return null;
     }
 
+    public SQLServerTableIndex getIndex(DBRProgressMonitor monitor, String name) throws DBException {
+        for (SQLServerTableIndex index : getIndexes(monitor)) {
+            if (CommonUtils.equalObjects(name, index.getName())) {
+                return index;
+            }
+        }
+        log.error("Index '" + name + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DML) + "'");
+        return null;
+    }
+
     @Nullable
     @Override
     @Association

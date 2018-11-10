@@ -23,7 +23,8 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
 /**
- * SQLServerTableUniqueKeyColumn
+ * SQLServerTableUniqueKeyColumn.
+ * No needed? Unique keys use index columns
  */
 public class SQLServerTableUniqueKeyColumn extends AbstractTableConstraintColumn
 {
