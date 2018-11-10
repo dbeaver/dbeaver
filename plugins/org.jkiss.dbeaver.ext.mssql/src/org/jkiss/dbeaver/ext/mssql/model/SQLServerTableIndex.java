@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * SQLServerTableIndex
  */
-public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTable> implements SQLServerObject, DBPNamedObject2
+public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTableBase> implements SQLServerObject, DBPNamedObject2
 {
     private boolean nonUnique;
     private String additionalInfo;
@@ -47,7 +47,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     private long objectId;
 
     public SQLServerTableIndex(
-        SQLServerTable table,
+        SQLServerTableBase table,
         boolean nonUnique,
         String indexName,
         DBSIndexType indexType,
@@ -77,7 +77,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
         }
     }
 
-    public SQLServerTableIndex(SQLServerTable parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
+    public SQLServerTableIndex(SQLServerTableBase parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
         super(
             parent.getContainer(),
             parent,

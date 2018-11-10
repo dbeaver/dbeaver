@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.edit;
+package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * SQL Server procedure manager
  */
-public class SQLServerProcedureManager extends GenericProcedureManager {
+public class SQLServerGenericProcedureManager extends GenericProcedureManager {
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)

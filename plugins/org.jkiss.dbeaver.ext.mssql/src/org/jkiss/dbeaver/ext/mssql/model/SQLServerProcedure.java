@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mysql.model;
+package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -36,36 +30,28 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * MySQLProcedure
+ * SQLServerProcedure
  */
-public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject
+public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBPScriptObject
 {
-    private static final Log log = Log.getLog(MySQLProcedure.class);
+    private static final Log log = Log.getLog(SQLServerProcedure.class);
 
     private DBSProcedureType procedureType;
-    private String resultType;
-    private String bodyType;
-    private boolean deterministic;
-    private transient String clientBody;
-    private String charset;
+    private String body;
 
-    public MySQLProcedure(MySQLCatalog catalog)
+    public SQLServerProcedure(SQLServerSchema schema)
     {
-        super(catalog, false);
+        super(schema, false);
         this.procedureType = DBSProcedureType.PROCEDURE;
-        this.bodyType = "SQL";
-        this.resultType = "";
-        this.deterministic = false;
     }
 
-    public MySQLProcedure(
-        MySQLCatalog catalog,
+    public SQLServerProcedure(
+        SQLServerSchema catalog,
         ResultSet dbResult)
     {
         super(catalog, true);
@@ -74,20 +60,15 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
 
     private void loadInfo(ResultSet dbResult)
     {
-        setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME));
-        setDescription(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_COMMENT));
-        String procType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_TYPE);
+        setName(JDBCUtils.safeGetString(dbResult, "name"));
+        //setDescription(JDBCUtils.safeGetString(dbResult, SQLServerConstants.COL_ROUTINE_COMMENT));
+        String procType = JDBCUtils.safeGetString(dbResult, "type");
         try {
             this.procedureType = procType == null ? DBSProcedureType.PROCEDURE : DBSProcedureType.valueOf(procType.toUpperCase(Locale.ENGLISH));
         } catch (IllegalArgumentException e) {
             log.debug("Unsupported procedure type: " + procType);
             this.procedureType = DBSProcedureType.PROCEDURE;
         }
-        this.resultType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DTD_IDENTIFIER);
-        this.bodyType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_BODY);
-        this.charset = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARACTER_SET_CLIENT);
-        this.deterministic = JDBCUtils.safeGetBoolean(dbResult, MySQLConstants.COL_IS_DETERMINISTIC, "YES");
-        this.description = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_COMMENT);
     }
 
     @Override
@@ -102,56 +83,34 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         this.procedureType = procedureType;
     }
 
+/*
     @Property(order = 2)
     public String getResultType()
     {
         return resultType;
     }
-
-    @Property(order = 3)
-    public String getBodyType()
-    {
-        return bodyType;
-    }
+*/
 
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getDeclaration(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (clientBody == null) {
+        if (body == null) {
             if (!persisted) {
-                this.clientBody =
+                this.body =
                     "CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + "()" + GeneralUtils.getDefaultLineSeparator() +
                         (procedureType == DBSProcedureType.FUNCTION ? "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() : "") +
                     "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
                     "END";
             } else {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure declaration")) {
-                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
-                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                            if (dbResult.next()) {
-                                clientBody = JDBCUtils.safeGetString(dbResult, (getProcedureType() == DBSProcedureType.PROCEDURE ? "Create Procedure" : "Create Function"));
-                                if (clientBody == null) {
-                                    clientBody = "";
-                                } else {
-                                    clientBody = normalizeCreateStatement(clientBody);
-                                }
-                            } else {
-                                clientBody = "";
-                            }
-                        }
-                    }
-                } catch (SQLException e) {
-                    clientBody = e.getMessage();
-                    throw new DBException(e, getDataSource());
-                }
+                this.body = SQLServerUtils.extractSource(monitor, getContainer(), getName());
             }
 /*
             StringBuilder cb = new StringBuilder(getBody().length() + 100);
             cb.append("CREATE ").append(procedureType).append(' ').append(getFullyQualifiedName()).append(" (");
 
             int colIndex = 0;
-            for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
+            for (SQLServerProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
                 if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
                     continue;
                 }
@@ -166,7 +125,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                 colIndex++;
             }
             cb.append(")").append(GeneralUtils.getDefaultLineSeparator());
-            for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
+            for (SQLServerProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
                 if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
                     cb.append("RETURNS ");
                     appendParameterType(cb, column);
@@ -180,7 +139,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
             clientBody = cb.toString();
 */
         }
-        return clientBody;
+        return body;
     }
 
     private String normalizeCreateStatement(String createDDL) {
@@ -194,46 +153,11 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return createDDL;
     }
 
-    @Property(editable = true, updatable = true, order = 3)
-    public boolean isDeterministic()
-    {
-        return deterministic;
-    }
-
-    public void setDeterministic(boolean deterministic)
-    {
-        this.deterministic = deterministic;
-    }
-
-    private static void appendParameterType(StringBuilder cb, MySQLProcedureParameter column)
-    {
-        cb.append(column.getTypeName());
-        if (column.getDataKind() == DBPDataKind.STRING && column.getMaxLength() > 0) {
-            cb.append('(').append(column.getMaxLength()).append(')');
-        }
-    }
-
-    public String getDeclaration()
-    {
-        return clientBody;
-    }
-
-    public void setDeclaration(String clientBody)
-    {
-        this.clientBody = clientBody;
-    }
-
-    //@Property(name = "Client Charset", order = 4)
-    public String getCharset()
-    {
-        return charset;
-    }
-
     @Override
-    public Collection<MySQLProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<SQLServerProcedureParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().proceduresCache.getChildren(monitor, getContainer(), this);
+        return null;//getContainer().proceduresCache.getChildren(monitor, getContainer(), this);
     }
 
     @NotNull
@@ -252,19 +176,21 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return getDeclaration(monitor);
     }
 
-    @Override
+    //@Override
     public void setObjectDefinitionText(String sourceText) throws DBException
     {
-        setDeclaration(sourceText);
+        this.body = sourceText;
     }
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
+
+        return this;//getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
     }
 
     @Override
     public String toString() {
         return procedureType.name() + " " + getName();
     }
+
 }

@@ -17,78 +17,61 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
 /**
- * MySQLTable base
+ * SQLServerView
  */
-public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, SQLServerSchema>
-    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject
+public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
 {
-    private static final Log log = Log.getLog(SQLServerTableBase.class);
+    private static final Log log = Log.getLog(SQLServerView.class);
 
-    private long objectId;
+    private String ddl;
 
-    protected SQLServerTableBase(SQLServerSchema schema)
+    public SQLServerView(SQLServerSchema schema)
     {
-        super(schema, false);
+        super(schema);
     }
 
     // Copy constructor
-    protected SQLServerTableBase(DBRProgressMonitor monitor, SQLServerSchema catalog, DBSEntity source) throws DBException {
-        super(catalog, source, false);
+    public SQLServerView(DBRProgressMonitor monitor, SQLServerSchema schema, DBSEntity source) throws DBException {
+        super(monitor, schema, source);
     }
 
-    protected SQLServerTableBase(
+    public SQLServerView(
         SQLServerSchema catalog,
         ResultSet dbResult)
     {
-        super(catalog, JDBCUtils.safeGetString(dbResult, "name"), true);
-
-        this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
-    }
-
-    public SQLServerDatabase getDatabase() {
-        return getSchema().getDatabase();
-    }
-
-    public SQLServerSchema getSchema() {
-        return getContainer();
+        super(catalog, dbResult);
     }
 
     @Override
-    public JDBCStructCache<SQLServerSchema, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
+    public boolean isView()
     {
-        return getContainer().getTableCache();
-    }
-
-    @Override
-    @Property(viewable = false, editable = false, order = 5)
-    public long getObjectId() {
-        return objectId;
+        return true;
     }
 
     @Override
@@ -128,38 +111,55 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     public synchronized Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return this.getContainer().getIndexCache().getObjects(monitor, getSchema(), this);
-    }
-
-    public SQLServerTableIndex getIndex(DBRProgressMonitor monitor, long indexId) throws DBException {
-        for (SQLServerTableIndex index : getIndexes(monitor)) {
-            if (index.getObjectId() == indexId) {
-                return index;
-            }
-        }
-        log.error("Index '" + indexId + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DML) + "'");
         return null;
     }
 
-    public SQLServerTableIndex getIndex(DBRProgressMonitor monitor, String name) throws DBException {
-        for (SQLServerTableIndex index : getIndexes(monitor)) {
-            if (CommonUtils.equalObjects(name, index.getName())) {
-                return index;
-            }
-        }
-        log.error("Index '" + name + "' not found in table '" + getFullyQualifiedName(DBPEvaluationContext.DML) + "'");
-        return null;
-    }
-
-
-    @NotNull
+    @Nullable
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    @Association
+    public synchronized Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+        throws DBException
     {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getDatabase(),
-            getSchema(),
-            this);
+        return null;
+    }
+
+    @Override
+    @Association
+    public Collection<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return null;
+    }
+
+    @Override
+    public synchronized Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return null;
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
+            ddl = null;
+        }
+        if (ddl == null) {
+            ddl = SQLServerUtils.extractSource(monitor, getSchema(), getName());
+        }
+        return ddl;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription()
+    {
+        return null;/*additionalInfo.description;*/
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+
+        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
 }

@@ -78,11 +78,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         this.persisted = true;
     }
 
-    TableCache getTableCache() {
+    public TableCache getTableCache() {
         return tableCache;
     }
 
-    IndexCache getIndexCache() {
+    public IndexCache getIndexCache() {
         return indexCache;
     }
 
@@ -178,26 +178,31 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Association
     public Collection<SQLServerTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        return tableCache.getAllObjects(monitor, this);
+        return tableCache.getTypedObjects(monitor, this, SQLServerTable.class);
     }
 
     public SQLServerTable getTable(DBRProgressMonitor monitor, long tableId) throws DBException {
-        for (SQLServerTable table : tableCache.getAllObjects(monitor, this)) {
-            if (table.getObjectId() == tableId) {
-                return table;
+        for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
+            if (table.getObjectId() == tableId && table instanceof SQLServerTable) {
+                return (SQLServerTable) table;
             }
         }
         log.debug("Table '" + tableId + "' not found in schema " + getName());
         return null;
     }
 
+    @Association
+    public Collection<SQLServerView> getViews(DBRProgressMonitor monitor) throws DBException {
+        return tableCache.getTypedObjects(monitor, this, SQLServerView.class);
+    }
+
     @Override
-    public Collection<SQLServerTable> getChildren(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends SQLServerTableBase> getChildren(DBRProgressMonitor monitor) throws DBException {
         return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public SQLServerTable getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+    public SQLServerTableBase getChild(DBRProgressMonitor monitor, String childName) throws DBException {
         return tableCache.getObject(monitor, this, childName);
     }
 
@@ -221,7 +226,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
     }
 
-    public static class TableCache extends JDBCStructLookupCache<SQLServerSchema, SQLServerTable, SQLServerTableColumn> {
+    public static class TableCache extends JDBCStructLookupCache<SQLServerSchema, SQLServerTableBase, SQLServerTableColumn> {
 
         TableCache()
         {
@@ -231,15 +236,15 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTable object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             SQLServerDataSource dataSource = owner.getDataSource();
-            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append("\n");
-            sql.append("WHERE schema_id = ").append(owner.getObjectId());
+            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "objects")).append("\n");
+            sql.append("WHERE type IN ('U','S','V') AND schema_id = ").append(owner.getObjectId());
             if (object != null || objectName != null) {
                 sql.append(" AND name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
             } else {
-                DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(SQLServerTable.class, owner, false);
+                DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(SQLServerTableBase.class, owner, false);
                 if (tableFilters != null && !tableFilters.isEmpty()) {
                     sql.append(" AND (");
                     boolean hasCond = false;
@@ -262,20 +267,25 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected SQLServerTable fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull JDBCResultSet dbResult)
+        protected SQLServerTableBase fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new SQLServerTable(owner, dbResult);
+            String type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
+            if ("U".equals(type) || "S".equals(type)) {
+                return new SQLServerTable(owner, dbResult);
+            } else {
+                return new SQLServerView(owner, dbResult);
+            }
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTable forTable)
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.*,t.name as table_name,t.schema_id\nFROM ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "columns")).append(" c, ")
-                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t");
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "objects")).append(" t");
             sql.append("\nWHERE t.object_id=c.object_id");
             if (forTable != null) {
                 sql.append(" AND t.object_id=?");
@@ -294,7 +304,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected SQLServerTableColumn fetchChild(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull SQLServerTable table, @NotNull JDBCResultSet dbResult)
+        protected SQLServerTableColumn fetchChild(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull SQLServerTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new SQLServerTableColumn(session.getProgressMonitor(), table, dbResult);
@@ -308,7 +318,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     @Association
     public List<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         List<SQLServerTableIndex> allIndexes = new ArrayList<>();
-        for (SQLServerTable table : getTables(monitor)) {
+        for (SQLServerTableBase table : getTables(monitor)) {
             allIndexes.addAll(CommonUtils.safeCollection(table.getIndexes(monitor)));
         }
         return allIndexes;
@@ -317,15 +327,15 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     /**
      * Index cache implementation
      */
-    static class IndexCache extends JDBCCompositeCache<SQLServerSchema, SQLServerTable, SQLServerTableIndex, SQLServerTableIndexColumn> {
+    static class IndexCache extends JDBCCompositeCache<SQLServerSchema, SQLServerTableBase, SQLServerTableIndex, SQLServerTableIndexColumn> {
         IndexCache(TableCache tableCache)
         {
-            super(tableCache, SQLServerTable.class, "table_name", "name");
+            super(tableCache, SQLServerTableBase.class, "table_name", "name");
         }
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema owner, SQLServerTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema owner, SQLServerTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -352,7 +362,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @Nullable
         @Override
-        protected SQLServerTableIndex fetchObject(JDBCSession session, SQLServerSchema owner, SQLServerTable parent, String indexName, JDBCResultSet dbResult)
+        protected SQLServerTableIndex fetchObject(JDBCSession session, SQLServerSchema owner, SQLServerTableBase parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             int indexTypeNum = JDBCUtils.safeGetInt(dbResult, "type");
@@ -376,7 +386,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Override
         protected SQLServerTableIndexColumn[] fetchObjectRow(
             JDBCSession session,
-            SQLServerTable parent, SQLServerTableIndex object, JDBCResultSet dbResult)
+            SQLServerTableBase parent,
+            SQLServerTableIndex object,
+            JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             long indexColumnId = JDBCUtils.safeGetInt(dbResult, "index_column_id");
@@ -512,7 +524,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 return null;
             }
             long refTableId = JDBCUtils.safeGetLong(dbResult, "referenced_object_id");
-            SQLServerTable refTable = refSchema.getTable(monitor, refTableId);
+            SQLServerTableBase refTable = refSchema.getTable(monitor, refTableId);
             if (refTable == null) {
                 log.debug("Ref table " + refTableId + " not found in schema " + refSchema.getName());
                 return null;

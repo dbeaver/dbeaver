@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.mssql.edit;
+package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTable;
@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * SQLServerTableTriggerManager
  */
-public class SQLServerTriggerManager extends SQLTriggerManager<SQLServerGenericTrigger, SQLServerGenericTable> {
+public class SQLServerGenericTriggerManager extends SQLTriggerManager<SQLServerGenericTrigger, SQLServerGenericTable> {
     @Override
     public boolean canCreateObject(SQLServerGenericTable parent) {
         return false;

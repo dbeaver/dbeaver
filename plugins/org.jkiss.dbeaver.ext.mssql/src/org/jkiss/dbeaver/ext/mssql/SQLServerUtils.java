@@ -17,15 +17,24 @@
 
 package org.jkiss.dbeaver.ext.mssql;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
+import org.jkiss.dbeaver.ext.mssql.model.ServerType;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
@@ -99,4 +108,25 @@ public class SQLServerUtils {
                 return DBSForeignKeyModifyRule.NO_ACTION;
         }
     }
+
+    public static String extractSource(DBRProgressMonitor monitor, SQLServerSchema schema, String objectName) throws DBException {
+        SQLServerDataSource dataSource = schema.getDataSource();
+        String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
+            String mdQuery = systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema.getName()) +
+                "." + DBUtils.getQuotedIdentifier(dataSource, objectName) + "'";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(mdQuery)) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        sql.append(dbResult.getString(1));
+                    }
+                    return sql.toString();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
+    }
+
 }
