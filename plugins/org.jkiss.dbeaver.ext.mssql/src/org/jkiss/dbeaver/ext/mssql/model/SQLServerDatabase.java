@@ -197,6 +197,10 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return null;
     }
 
+    public SQLServerSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
+        return schemaCache.getObject(monitor, this, name);
+    }
+
     @Override
     public Collection<SQLServerSchema> getChildren(DBRProgressMonitor monitor) throws DBException {
         return schemaCache.getAllObjects(monitor, this);

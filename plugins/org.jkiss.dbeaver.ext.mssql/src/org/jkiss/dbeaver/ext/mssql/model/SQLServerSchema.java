@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -42,7 +43,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,6 +63,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     private IndexCache indexCache = new IndexCache(tableCache);
     private UniqueConstraintCache uniqueConstraintCache = new UniqueConstraintCache(tableCache);
     private ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
+    private SequenceCache sequenceCache = new SequenceCache();
+    private SynonymCache synonymCache = new SynonymCache();
 
     SQLServerSchema(SQLServerDatabase database, JDBCResultSet resultSet) {
         this.database = database;
@@ -148,6 +150,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         tableCache.clearCache();
         indexCache.clearCache();
         uniqueConstraintCache.clearCache();
+        foreignKeyCache.clearCache();
+        sequenceCache.clearCache();
+
         return this;
     }
 
@@ -156,6 +161,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Association
     public List<SQLServerDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+        if (SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA.equals(getName())) {
+            return getDataSource().getLocalDataTypes();
+        }
         List<SQLServerDataType> result = new ArrayList<>();
         for (SQLServerDataType dt : database.getDataTypes(monitor)) {
             if (dt.getSchemaId() == getObjectId()) {
@@ -554,16 +562,79 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             foreignKey.setColumns(rows);
         }
 
-        private SQLServerTableColumn getTableColumn(JDBCSession session, SQLServerTable parent, ResultSet dbResult) throws DBException
-        {
-            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
-            SQLServerTableColumn tableColumn = columnName == null ? null : parent.getAttribute(session.getProgressMonitor(), columnName);
-            if (tableColumn == null) {
-                log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
-            }
-            return tableColumn;
-        }
     }
 
+    //////////////////////////////////////////////////
+    // Sequences
+
+    @Association
+    public Collection<SQLServerSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+        return sequenceCache.getAllObjects(monitor, this);
+    }
+
+    static class SequenceCache extends JDBCObjectCache<SQLServerSchema, SQLServerSequence> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema schema) throws SQLException {
+            StringBuilder sql = new StringBuilder(500);
+            sql.append(
+                "SELECT * FROM \n")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "sequences")).append("\n");
+            sql.append("WHERE schema_id=?");
+            sql.append("\nORDER BY name");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            dbStat.setLong(1, schema.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected SQLServerSequence fetchObject(JDBCSession session, SQLServerSchema schema, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new SQLServerSequence(schema,
+                JDBCUtils.safeGetLong(resultSet, "object_id"),
+                JDBCUtils.safeGetString(resultSet, "name"),
+                CommonUtils.toLong(JDBCUtils.safeGetObject(resultSet, "current_value")),
+                CommonUtils.toLong(JDBCUtils.safeGetObject(resultSet, "minimum_value")),
+                CommonUtils.toLong(JDBCUtils.safeGetObject(resultSet, "maximum_value")),
+                CommonUtils.toLong(JDBCUtils.safeGetObject(resultSet, "increment")),
+                true);
+        }
+
+    }
+
+    //////////////////////////////////////////////////
+    // Synonyms
+
+    @Association
+    public Collection<SQLServerSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+        return synonymCache.getAllObjects(monitor, this);
+    }
+
+    static class SynonymCache extends JDBCObjectCache<SQLServerSchema, SQLServerSynonym> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema schema) throws SQLException {
+            StringBuilder sql = new StringBuilder(500);
+            sql.append(
+                "SELECT * FROM \n")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "synonyms")).append("\n");
+            sql.append("WHERE schema_id=?");
+            sql.append("\nORDER BY name");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            dbStat.setLong(1, schema.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected SQLServerSynonym fetchObject(JDBCSession session, SQLServerSchema schema, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new SQLServerSynonym(schema,
+                JDBCUtils.safeGetLong(resultSet, "object_id"),
+                JDBCUtils.safeGetString(resultSet, "name"),
+                JDBCUtils.safeGetString(resultSet, "base_object_name"),
+                true);
+        }
+
+    }
 
 }
