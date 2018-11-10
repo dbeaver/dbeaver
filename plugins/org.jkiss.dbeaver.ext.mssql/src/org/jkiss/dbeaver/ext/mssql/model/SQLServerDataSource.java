@@ -36,19 +36,15 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, /*DBCQueryPlanner, */IAdaptable {
@@ -56,7 +52,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     private static final Log log = Log.getLog(SQLServerDataSource.class);
 
     // Delegate data type reading to the driver
-    private final JDBCBasicDataTypeCache<SQLServerDataSource, JDBCDataType> dataTypeCache;
+    private final SystemDataTypeCache dataTypeCache = new SystemDataTypeCache();
     private final DatabaseCache databaseCache = new DatabaseCache();
 
     private String activeDatabaseName;
@@ -65,7 +61,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         throws DBException
     {
         super(monitor, container, new SQLServerDialect());
-        dataTypeCache = new JDBCBasicDataTypeCache<>(this);
     }
 
     @Override
@@ -114,17 +109,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
     @Override
     public DBPDataKind resolveDataKind(String typeName, int valueType) {
-        if (valueType == Types.VARCHAR) {
-            // Workaround for jTDS driver (#3555)
-            switch (typeName) {
-                case SQLServerConstants.TYPE_DATETIME:
-                case SQLServerConstants.TYPE_DATETIME2:
-                case SQLServerConstants.TYPE_SMALLDATETIME:
-                case SQLServerConstants.TYPE_DATETIMEOFFSET:
-                    return DBPDataKind.DATETIME;
-            }
-        }
-        return super.resolveDataKind(typeName, valueType);
+        return getLocalDataType(valueType).getDataKind();
     }
 
     @Override
@@ -133,8 +118,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName) {
+    public SQLServerDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
+    }
+
+    @Override
+    public SQLServerDataType getLocalDataType(int typeID) {
+        return (SQLServerDataType) super.getLocalDataType(typeID);
     }
 
     //////////////////////////////////////////////////////////
@@ -283,5 +273,17 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
             return new SQLServerDatabase(owner, resultSet);
         }
 
+    }
+
+    private class SystemDataTypeCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDataType> {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerDataSource sqlServerDataSource) throws SQLException {
+            return session.prepareStatement("SELECT * FROM sys.types WHERE is_user_defined = 0 order by name");
+        }
+
+        @Override
+        protected SQLServerDataType fetchObject(JDBCSession session, SQLServerDataSource dataSource, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new SQLServerDataType(dataSource, resultSet);
+        }
     }
 }
