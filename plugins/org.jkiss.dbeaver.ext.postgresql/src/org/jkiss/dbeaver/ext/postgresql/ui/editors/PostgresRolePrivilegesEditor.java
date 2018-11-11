@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -448,9 +449,14 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     @Override
     public void refreshPart(Object source, boolean force)
     {
-        isLoaded = false;
-        UIUtils.syncExec(() -> updateObjectPermissions(null));
-        activatePart();
+        if (force ||
+            (source instanceof DBNEvent && ((DBNEvent) source).getSource() == DBNEvent.UPDATE_ON_SAVE) ||
+            !isLoaded)
+        {
+            isLoaded = false;
+            UIUtils.syncExec(() -> updateObjectPermissions(null));
+            activatePart();
+        }
     }
 
     private class PageControl extends ProgressPageControl {
@@ -484,7 +490,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     } else {
                         roleOrObjectTable.reloadTree(rootNode);
                     }
-                    roleOrObjectTable.getViewer().getControl().setFocus();
+                    //roleOrObjectTable.getViewer().getControl().setFocus();
                     handleSelectionChange();
                 }
             };
