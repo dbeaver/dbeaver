@@ -174,6 +174,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (curPropertySource == null) {
             return;
         }
+        curPropertySource = input.getPropertySource();
         List<DBPPropertyDescriptor> allProps = filterProperties(curPropertySource.getPropertyDescriptors2());
 
         boolean firstInit = editorMap.isEmpty();
