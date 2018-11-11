@@ -74,7 +74,12 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
         this.collationName = JDBCUtils.safeGetString(dbResult, "collation_name");
 
-        this.dataKind = userType ? getSystemDataType().getDataKind() : getDataKindByName(this.name);
+        if (userType) {
+            SQLServerDataType systemDataType = getSystemDataType();
+            this.dataKind = systemDataType == null ? DBPDataKind.UNKNOWN : systemDataType.getDataKind();
+        } else {
+            this.dataKind = getDataKindByName(this.name);
+        }
 
         this.persisted = true;
     }
@@ -106,7 +111,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     public SQLServerDataType getSystemDataType() {
         if (userType) {
-            return (SQLServerDataType) getDataSource().getLocalDataType(systemTypeId);
+            return getDataSource().getLocalDataType(systemTypeId);
         }
         return this;
     }
