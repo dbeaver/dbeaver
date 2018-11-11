@@ -144,7 +144,7 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
             ddl = null;
         }
         if (ddl == null) {
-            ddl = SQLServerUtils.extractSource(monitor, getSchema(), getName());
+            ddl = SQLServerUtils.extractSource(monitor, getDatabase(), getSchema(), getName());
         }
         return ddl;
     }

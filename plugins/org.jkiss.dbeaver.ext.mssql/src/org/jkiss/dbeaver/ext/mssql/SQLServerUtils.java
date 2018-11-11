@@ -17,14 +17,13 @@
 
 package org.jkiss.dbeaver.ext.mssql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
-import org.jkiss.dbeaver.ext.mssql.model.ServerType;
+import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -109,13 +108,33 @@ public class SQLServerUtils {
         }
     }
 
-    public static String extractSource(DBRProgressMonitor monitor, SQLServerSchema schema, String objectName) throws DBException {
-        SQLServerDataSource dataSource = schema.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerDatabase database, @NotNull SQLServerObject object) throws DBException {
+        SQLServerDataSource dataSource = database.getDataSource();
+        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            String mdQuery = systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema.getName()) +
-                "." + DBUtils.getQuotedIdentifier(dataSource, objectName) + "'";
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(mdQuery)) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = ?")) {
+                dbStat.setLong(1, object.getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        sql.append(dbResult.getString(1));
+                    }
+                    return sql.toString();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
+    }
+
+    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerDatabase database, @Nullable SQLServerSchema schema, @NotNull  String objectName) throws DBException {
+        SQLServerDataSource dataSource = database.getDataSource();
+        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
+            String objectFQN = schema == null ?
+                DBUtils.getQuotedIdentifier(dataSource, objectName) :
+                DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(systemSchema + ".sp_helptext '" + objectFQN + "'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {

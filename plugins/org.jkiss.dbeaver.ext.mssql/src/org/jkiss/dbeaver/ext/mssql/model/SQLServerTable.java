@@ -41,6 +41,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * SQLServerTable
@@ -135,11 +136,21 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
         return null;/*additionalInfo.description;*/
     }
 
+    @Association
+    public Collection<SQLServerTableTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        Collection<SQLServerTableTrigger> allTriggers = getSchema().getTriggerCache().getAllObjects(monitor, getSchema());
+        return allTriggers
+            .stream()
+            .filter(p -> p.getTable() == this)
+            .collect(Collectors.toList());
+    }
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         getContainer().getIndexCache().clearObjectCache(this);
         getContainer().getUniqueConstraintCache().clearObjectCache(this);
         getContainer().getForeignKeyCache().clearObjectCache(this);
+        getContainer().getTriggerCache().clearChildrenOf(this);
 
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }

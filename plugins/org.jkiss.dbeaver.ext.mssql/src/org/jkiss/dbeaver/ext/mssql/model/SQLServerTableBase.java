@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -50,7 +53,10 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 
+    private static final String CAT_STATISTICS = "Statistics";
+
     private long objectId;
+    private Long rowCount;
 
     protected SQLServerTableBase(SQLServerSchema schema)
     {
@@ -151,6 +157,23 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         return null;
     }
 
+    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
+    public synchronized Long getRowCount(DBRProgressMonitor monitor)
+    {
+        if (rowCount != null || !isPersisted()) {
+            return rowCount;
+        }
+        // Query row count
+        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read row count")) {
+            rowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null, DBSDataContainer.FLAG_NONE);
+        } catch (DBException e) {
+            log.debug("Can't fetch row count", e);
+        }
+        if (rowCount == null) {
+            rowCount = -1L;
+        }
+        return rowCount;
+    }
 
     @NotNull
     @Override

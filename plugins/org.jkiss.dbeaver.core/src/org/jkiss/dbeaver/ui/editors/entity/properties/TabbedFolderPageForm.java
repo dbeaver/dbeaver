@@ -562,12 +562,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     private void loadEditorValues(Map<DBPPropertyDescriptor, Object> editorValues) {
         try {
             isLoading = true;
-
-            Object object = curPropertySource.getEditableValue();
-            for (Map.Entry<DBPPropertyDescriptor, Object> prop : editorValues.entrySet()) {
-                setEditorValue(object, prop.getKey(), prop.getValue());
+            if (curPropertySource != null) {
+                Object object = curPropertySource.getEditableValue();
+                for (Map.Entry<DBPPropertyDescriptor, Object> prop : editorValues.entrySet()) {
+                    setEditorValue(object, prop.getKey(), prop.getValue());
+                }
             }
-
         } finally {
             isLoading = false;
         }

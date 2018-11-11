@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -66,6 +67,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     private SequenceCache sequenceCache = new SequenceCache();
     private SynonymCache synonymCache = new SynonymCache();
     private ProcedureCache procedureCache = new ProcedureCache();
+    private TriggerCache triggerCache = new TriggerCache();
 
     SQLServerSchema(SQLServerDatabase database, JDBCResultSet resultSet) {
         this.database = database;
@@ -97,6 +99,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     ProcedureCache getProcedureCache() {
         return procedureCache;
+    }
+
+    TriggerCache getTriggerCache() {
+        return triggerCache;
     }
 
     @Override
@@ -713,6 +719,51 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         protected SQLServerProcedureParameter fetchChild(JDBCSession session, SQLServerSchema schema, SQLServerProcedure parent, JDBCResultSet dbResult) throws SQLException, DBException {
             return new SQLServerProcedureParameter(session.getProgressMonitor(), parent, dbResult);
         }
+    }
+
+    //////////////////////////////////////////////////
+    // Triggers
+
+    @Association
+    public Collection<SQLServerTableTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        return triggerCache.getAllObjects(monitor, this);
+    }
+
+    class TriggerCache extends JDBCObjectLookupCache<SQLServerSchema, SQLServerTableTrigger> {
+
+        @Override
+        public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerSchema schema, SQLServerTableTrigger object, String objectName) throws SQLException {
+            StringBuilder sql = new StringBuilder(500);
+            sql.append(
+                "SELECT t.* FROM \n")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "triggers")).append(" t,")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects")).append(" o")
+                .append("\n");
+            sql.append("WHERE o.object_id=t.object_id AND o.schema_id=?");
+            if (object != null || objectName != null) {
+                sql.append(" AND t.name=?");
+            }
+            sql.append("\nORDER BY t.name");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            dbStat.setLong(1, schema.getObjectId());
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected SQLServerTableTrigger fetchObject(JDBCSession session, SQLServerSchema schema, JDBCResultSet resultSet) throws SQLException, DBException {
+            long tableId = JDBCUtils.safeGetLong(resultSet, "parent_id");
+            SQLServerTable table = getTable(session.getProgressMonitor(), tableId);
+            if (table == null) {
+                log.debug("Trigger owner " + tableId + " not found");
+                return null;
+            }
+            return new SQLServerTableTrigger(table, resultSet);
+        }
+
     }
 
 }
