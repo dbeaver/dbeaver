@@ -125,7 +125,12 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
     @Override
     public SQLServerDataType getLocalDataType(int typeID) {
-        return (SQLServerDataType) super.getLocalDataType(typeID);
+        DBSDataType dt = super.getLocalDataType(typeID);
+        if (dt == null) {
+            log.debug("System data type " + typeID + " not found");
+            return null;
+        }
+        return (SQLServerDataType) dt;
     }
 
     //////////////////////////////////////////////////////////
