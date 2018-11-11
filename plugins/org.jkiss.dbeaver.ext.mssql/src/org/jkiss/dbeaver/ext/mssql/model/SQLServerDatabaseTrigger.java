@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -28,48 +27,47 @@ import java.sql.ResultSet;
 /**
  * SQLServerTableTrigger
  */
-public class SQLServerTableTrigger extends SQLServerTriggerBase<SQLServerTable>
+public class SQLServerDatabaseTrigger extends SQLServerTriggerBase<SQLServerDatabase>
 {
 
-    public SQLServerTableTrigger(
-        SQLServerTable table,
+    public SQLServerDatabaseTrigger(
+        SQLServerDatabase database,
         ResultSet dbResult)
     {
-        super(table, dbResult);
+        super(database, dbResult);
     }
 
-    public SQLServerTableTrigger(
-        SQLServerTable table,
+    public SQLServerDatabaseTrigger(
+        SQLServerDatabase database,
         String name)
     {
-        super(table, name);
+        super(database, name);
     }
 
-    public SQLServerTableTrigger(SQLServerTable table, SQLServerTableTrigger source) {
-        super(table, source);
+    public SQLServerDatabaseTrigger(SQLServerDatabase database, SQLServerDatabaseTrigger source) {
+        super(database, source);
     }
 
     @Override
-    @Property(viewable = true, order = 4)
     public SQLServerTable getTable()
     {
-        return getParentObject();
+        return null;
     }
 
-    public SQLServerSchema getSchema() {
-        return getParentObject().getSchema();
+    public SQLServerDatabase getDatabase() {
+        return getParentObject();
     }
 
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getSchema(),
+            getDatabase(),
             this);
     }
 
     @Override
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
-        return getTable().getSchema().getTriggerCache().refreshObject(monitor, getSchema(), this);
+        return getDatabase().getTriggerCache().refreshObject(monitor, getDatabase(), this);
     }
 
 }

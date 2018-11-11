@@ -104,7 +104,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
                     "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
                     "END";
             } else {
-                this.body = SQLServerUtils.extractSource(monitor, getContainer(), getName());
+                this.body = SQLServerUtils.extractSource(monitor, getContainer().getDatabase(), getContainer(), getName());
             }
 /*
             StringBuilder cb = new StringBuilder(getBody().length() + 100);

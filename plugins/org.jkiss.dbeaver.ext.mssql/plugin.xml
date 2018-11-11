@@ -37,78 +37,91 @@
 
             <tree path="generic" label="Generic data source">
                 <items label="#database" path="database" property="databases" icon="#database">
-                    <items label="#schema" path="schema" property="schemas" icon="#schema">
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
-                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
-                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
-                                    </items>
-                                </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys">
-                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
-                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
+                        <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                                <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
-                                    </items>
-                                </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint" label="%tree.check_constraints.node.name" icon="#constraints" description="Table check constraints">
-                                    <items label="%tree.check_constraint.node.name" path="checkConstraint" property="checkConstraints" icon="#constraint">
-                                    </items>
-                                </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
-                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
-                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys">
+                                        <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                            <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                            </items>
                                         </items>
-                                    </items>
-                                </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
-                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
-                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint" label="%tree.check_constraints.node.name" icon="#constraints" description="Table check constraints">
+                                        <items label="%tree.check_constraint.node.name" path="checkConstraint" property="checkConstraints" icon="#constraint">
                                         </items>
-                                    </items>
-                                </folder>
-                                <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
-                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
-                                        <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                        <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                            <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                            </items>
                                         </items>
-                                    </items>
-                                </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers">
-                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
-                                </folder>
-                            </items>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
-                            <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
-                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
-                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
-                                    </items>
-                                </folder>
-                            </items>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
-                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
-                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                        <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                            <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                        <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                            <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers">
+                                        <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                    </folder>
                                 </items>
-                            </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                                <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
+                                <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                    <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                                    </items>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
+                                <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms">
+                                <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers">
+                                <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
+                                <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger" label="%tree.databaseTriggers.node.name" icon="#triggers" description="All database triggers">
+                        <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                    </folder>
+                    <folder label="%tree.databaseInfo.node.name" icon="#folder_info" description="Database system information">
+<!--
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.session_status.node.name" icon="#info" description="Session status">
+                            <items label="%tree.variable.node.name" path="sessionStatus" property="sessionStatus" icon="#info" navigable="false" virtual="true"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
-                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
-                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
-                            </items>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
-                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms">
-                            <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers">
-                            <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger"/>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
-                            <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
-                        </folder>
-                    </items>
+-->
+                    </folder>
+
                 </items>
             </tree>
 

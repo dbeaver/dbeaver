@@ -25,11 +25,13 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,6 +56,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     private String name;
     private DataTypeCache typesCache = new DataTypeCache();
     private SchemaCache schemaCache = new SchemaCache();
+    private TriggerCache triggerCache = new TriggerCache();
 
     SQLServerDatabase(SQLServerDataSource dataSource, JDBCResultSet resultSet) {
         this.dataSource = dataSource;
@@ -102,6 +105,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
         typesCache.clearCache();
         schemaCache.clearCache();
+        triggerCache.clearCache();
         return this;
     }
 
@@ -254,6 +258,46 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         @Override
         protected SQLServerSchema fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new SQLServerSchema(owner, resultSet);
+        }
+
+    }
+
+    //////////////////////////////////////////////////
+    // Triggers
+
+    @Association
+    public Collection<SQLServerDatabaseTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        return triggerCache.getAllObjects(monitor, this);
+    }
+
+    public TriggerCache getTriggerCache() {
+        return triggerCache;
+    }
+
+    class TriggerCache extends JDBCObjectLookupCache<SQLServerDatabase, SQLServerDatabaseTrigger> {
+
+        @Override
+        public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerDatabase database, SQLServerDatabaseTrigger object, String objectName) throws SQLException {
+            StringBuilder sql = new StringBuilder(500);
+            sql.append(
+                "SELECT t.* FROM \n")
+                .append(SQLServerUtils.getSystemTableName(database, "triggers")).append(" t");
+            sql.append("\nWHERE t.parent_id=0");
+            if (object != null || objectName != null) {
+                sql.append(" AND t.name=?");
+            }
+            sql.append("\nORDER BY t.name");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            if (object != null || objectName != null) {
+                dbStat.setString(1, object != null ? object.getName() : objectName);
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected SQLServerDatabaseTrigger fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new SQLServerDatabaseTrigger(database, resultSet);
         }
 
     }
