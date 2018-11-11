@@ -129,13 +129,6 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
         return ddl;
     }
 
-    @Nullable
-    @Override
-    public String getDescription()
-    {
-        return null;/*additionalInfo.description;*/
-    }
-
     @Association
     public Collection<SQLServerTableTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
         Collection<SQLServerTableTrigger> allTriggers = getSchema().getTriggerCache().getAllObjects(monitor, getSchema());

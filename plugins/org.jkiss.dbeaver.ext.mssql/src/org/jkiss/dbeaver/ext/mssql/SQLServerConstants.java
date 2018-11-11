@@ -66,4 +66,6 @@ public class SQLServerConstants {
     public static final DBSIndexType INDEX_TYPE_XML = new DBSIndexType("XML", SQLServerMessages.index_type_XML); //$NON-NLS-1$
     public static final DBSIndexType INDEX_TYPE_SPATIAL = new DBSIndexType("SPATIAL", SQLServerMessages.index_type_Spatial); //$NON-NLS-1$
 
+    public static final String SYS_TABLE_EXTENDED_PROPERTIES = "extended_properties";
+    public static final String PROP_MS_DESCRIPTION = "MS_Description";
 }

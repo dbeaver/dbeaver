@@ -97,6 +97,10 @@ public class SQLServerUtils {
         return SQLServerUtils.getSystemSchemaFQN(database.getDataSource(), database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA) + "." + tableName;
     }
 
+    public static String getExtendedPropsTableName(SQLServerDatabase database) {
+        return getSystemTableName(database, SQLServerConstants.SYS_TABLE_EXTENDED_PROPERTIES);
+    }
+
     public static DBSForeignKeyModifyRule getForeignKeyModifyRule(int actionNum) {
         switch (actionNum) {
             case 0: return DBSForeignKeyModifyRule.NO_ACTION;

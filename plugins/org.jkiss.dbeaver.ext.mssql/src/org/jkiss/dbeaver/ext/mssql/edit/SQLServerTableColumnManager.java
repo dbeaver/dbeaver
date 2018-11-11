@@ -76,7 +76,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final SQLServerTableColumn column = command.getObject();
-        boolean hasComment = command.getProperty("comment") != null;
+        boolean hasComment = command.getProperty("description") != null;
         if (!hasComment || command.getProperties().size() > 1) {
             actionList.add(new SQLDatabasePersistAction(
                 "Modify column",
@@ -87,7 +87,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
             actionList.add(new SQLDatabasePersistAction(
                 "Comment column",
                 "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                    " IS '" + column.getComment() + "'"));
+                    " IS '" + column.getDescription() + "'"));
         }
     }
 

@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -31,7 +34,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -44,6 +46,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     private DBSProcedureType procedureType;
     private String body;
     private long objectId;
+    private SQLServerObjectType objectType;
 
     public SQLServerProcedure(SQLServerSchema schema)
     {
@@ -63,13 +66,34 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     {
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.name = JDBCUtils.safeGetString(dbResult, "name");
-        this.procedureType = DBSProcedureType.PROCEDURE;
+        this.objectType = SQLServerObjectType.P;
+        try {
+            objectType = SQLServerObjectType.valueOf(JDBCUtils.safeGetStringTrimmed(dbResult, "type"));
+        } catch (IllegalArgumentException e) {
+            log.debug("Bad procedure type", e);
+        }
+        switch (objectType) {
+            case P:
+            case PC:
+            case X:
+                this.procedureType = DBSProcedureType.PROCEDURE;
+                break;
+            default:
+                this.procedureType = DBSProcedureType.FUNCTION;
+                break;
+        }
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
     @Override
     @Property(viewable = false, order = 2)
     public long getObjectId() {
         return objectId;
+    }
+
+    @Property(viewable = false, order = 3)
+    public SQLServerObjectType getObjectType() {
+        return objectType;
     }
 
     @Override

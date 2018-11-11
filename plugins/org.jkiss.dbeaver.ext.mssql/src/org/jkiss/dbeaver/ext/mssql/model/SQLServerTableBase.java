@@ -24,9 +24,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -36,13 +34,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -56,6 +50,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     private static final String CAT_STATISTICS = "Statistics";
 
     private long objectId;
+    private String description;
     private Long rowCount;
 
     protected SQLServerTableBase(SQLServerSchema schema)
@@ -75,6 +70,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         super(catalog, JDBCUtils.safeGetString(dbResult, "name"), true);
 
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
     public SQLServerDatabase getDatabase() {
@@ -95,6 +91,16 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     @Property(viewable = false, editable = false, order = 5)
     public long getObjectId() {
         return objectId;
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
