@@ -60,6 +60,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     private boolean persisted;
     private final long schemaId;
     private String name;
+    private String description;
     private TableCache tableCache = new TableCache();
     private IndexCache indexCache = new IndexCache(tableCache);
     private UniqueConstraintCache uniqueConstraintCache = new UniqueConstraintCache(tableCache);
@@ -77,6 +78,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         } else {
             this.schemaId = JDBCUtils.safeGetLong(resultSet, "uid");
         }
+        this.description = JDBCUtils.safeGetString(resultSet, "description");
 
         this.persisted = true;
     }
@@ -110,7 +112,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return database.getDataSource();
     }
 
-    @Property(viewable = true, editable = true, order = 10)
+    @Property(viewable = false, editable = true, order = 10)
     public SQLServerDatabase getDatabase() {
         return database;
     }
@@ -127,8 +129,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Override
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription() {
-        return null;
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -252,8 +259,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             SQLServerDataSource dataSource = owner.getDataSource();
-            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append("\n");
-            sql.append("WHERE type IN ('U','S','V') AND schema_id = ").append(owner.getObjectId());
+            sql.append("SELECT o.*,ep.value as description FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" o");
+            sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=o.object_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
+            sql.append("\nWHERE o.type IN ('U','S','V') AND o.schema_id = ").append(owner.getObjectId());
             if (object != null || objectName != null) {
                 sql.append(" AND name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
             } else {
@@ -264,13 +272,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                     for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
                         if (hasCond) sql.append(" OR ");
                         hasCond = true;
-                        sql.append(" name LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                        sql.append(" o.name LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
                     }
                     hasCond = false;
                     for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
                         if (hasCond) sql.append(" OR ");
                         hasCond = true;
-                        sql.append(" name NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                        sql.append(" o.name NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
                     }
                     sql.append(")");
                 }
@@ -296,10 +304,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT c.*,t.name as table_name,t.schema_id, dc.definition as default_definition\nFROM ")
-                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c\n")
-                .append("JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t ON t.object_id=c.object_id\n")
-                .append("LEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id\n");
+            sql.append("SELECT c.*,t.name as table_name,t.schema_id, dc.definition as default_definition,ep.value as description\nFROM ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c")
+                .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t ON t.object_id=c.object_id")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id\n")
+                .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=t.object_id AND ep.minor_id=c.column_id AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
             sql.append("WHERE ");
             if (forTable != null) {
                 sql.append("t.object_id=?");
@@ -641,8 +650,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema schema) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
-            sql.append(
-                "SELECT * FROM \n")
+            sql.append("SELECT * FROM \n")
                 .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "synonyms")).append("\n");
             sql.append("WHERE schema_id=?");
             sql.append("\nORDER BY name");
@@ -679,9 +687,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @Override
         public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerSchema schema, SQLServerProcedure object, String objectName) throws SQLException {
-            String sql = "SELECT * FROM \n" +
-                SQLServerUtils.getSystemTableName(schema.getDatabase(), "procedures") + "\n" +
-                "WHERE schema_id=?" +
+            String sql = "SELECT p.*,ep.value as description" +
+                "\nFROM " + SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects") + " p" +
+                "\nLEFT OUTER JOIN " + SQLServerUtils.getExtendedPropsTableName(schema.getDatabase()) + " ep ON ep.class=" + SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId() + " AND ep.major_id=p.object_id AND ep.minor_id=0 AND ep.name='" + SQLServerConstants.PROP_MS_DESCRIPTION + "'" +
+                "\nWHERE p.type IN ('P','PC','X','TF','FN','IF') AND p.schema_id=?" +
                 "\nORDER BY name";
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql);
@@ -697,9 +706,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         protected JDBCStatement prepareChildrenStatement(JDBCSession session, SQLServerSchema schema, SQLServerProcedure forObject) throws SQLException {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT p.name as proc_name,pp.* FROM \n")
-                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "procedures")).append(" p, ")
-                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "parameters")).append(" pp\n")
-                .append("\nWHERE p.object_id = pp.object_id AND ");
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects")).append(" p, ")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_parameters")).append(" pp\n")
+                .append("\nWHERE p.type IN ('P','PC','X','TF','FN','IF') AND p.object_id = pp.object_id AND ");
             if (forObject == null) {
                 sql.append("p.schema_id = ?");
             } else {

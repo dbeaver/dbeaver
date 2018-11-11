@@ -264,13 +264,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
 
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner) throws SQLException {
-            StringBuilder sql = new StringBuilder("SELECT * FROM sys.databases");
+            StringBuilder sql = new StringBuilder("SELECT db.* FROM sys.databases db");
 
             DBSObjectFilter databaseFilters = owner.getContainer().getObjectFilter(SQLServerDatabase.class, null, false);
             if (databaseFilters != null && databaseFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", false);
+                JDBCUtils.appendFilterClause(sql, databaseFilters, "name", true);
             }
-            sql.append(" order by name");
+            sql.append("\nORDER BY db.name");
             return session.prepareStatement(sql.toString());
         }
 

@@ -54,6 +54,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     private final SQLServerDataSource dataSource;
     private boolean persisted;
     private String name;
+    private String description;
     private DataTypeCache typesCache = new DataTypeCache();
     private SchemaCache schemaCache = new SchemaCache();
     private TriggerCache triggerCache = new TriggerCache();
@@ -61,6 +62,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     SQLServerDatabase(SQLServerDataSource dataSource, JDBCResultSet resultSet) {
         this.dataSource = dataSource;
         this.name = JDBCUtils.safeGetString(resultSet, "name");
+        //this.description = JDBCUtils.safeGetString(resultSet, "description");
 
         this.persisted = true;
     }
@@ -77,8 +79,13 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     }
 
     @Override
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription() {
-        return null;
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -237,15 +244,14 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
             String sysSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, owner.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
             StringBuilder sql = new StringBuilder();
-            if (showAllSchemas) {
-                if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
-                    sql.append("SELECT * FROM ").append(sysSchema).append(".schemas");
-                } else {
-                    sql.append("SELECT * FROM ").append(sysSchema).append(".sysusers");
-                }
-            } else {
-                sql.append("SELECT * FROM ").append(sysSchema).append(".schemas s WHERE EXISTS (SELECT 1 FROM ")
+            sql.append("SELECT s.*,ep.value as description FROM ").append(sysSchema).append(".schemas s");
+            sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner)).append(" ep ON ep.class=").append(SQLServerObjectClass.SCHEMA.getClassId()).append(" AND ep.major_id=s.schema_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
+            sql.append("\nWHERE ");
+            if (!showAllSchemas) {
+                sql.append("EXISTS (SELECT 1 FROM ")
                     .append(sysSchema).append(".sysobjects o ").append("WHERE s.schema_id=o.uid)");
+            } else {
+                sql.append("1=1");
             }
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {

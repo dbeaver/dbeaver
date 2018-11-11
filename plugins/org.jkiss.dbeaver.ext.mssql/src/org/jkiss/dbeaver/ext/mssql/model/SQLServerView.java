@@ -149,13 +149,6 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
         return ddl;
     }
 
-    @Nullable
-    @Override
-    public String getDescription()
-    {
-        return null;/*additionalInfo.description;*/
-    }
-
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
 

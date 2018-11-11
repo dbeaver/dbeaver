@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -40,11 +43,11 @@ import java.sql.ResultSet;
 public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> implements DBSTableColumn, DBSTypedObjectEx, DBPNamedObject2, DBPOrderedObject, DBPHiddenObject, SQLServerObject {
     private static final Log log = Log.getLog(SQLServerTableColumn.class);
 
-    private String comment;
     private long objectId;
     private int userTypeId;
     private SQLServerDataType dataType;
     private String collationName;
+    private String description;
     private boolean hidden;
 
     public SQLServerTableColumn(SQLServerTableBase table) {
@@ -55,7 +58,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         DBRProgressMonitor monitor,
         SQLServerTableBase table,
         ResultSet dbResult)
-        throws DBException {
+        throws DBException
+    {
         super(table, true);
         loadInfo(monitor, dbResult);
     }
@@ -65,9 +69,10 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         DBRProgressMonitor monitor,
         SQLServerTableBase table,
         DBSEntityAttribute source)
-        throws DBException {
+        throws DBException
+    {
         super(table, source, false);
-        this.comment = source.getDescription();
+        this.description = source.getDescription();
         if (source instanceof SQLServerTableColumn) {
             SQLServerTableColumn mySource = (SQLServerTableColumn) source;
             // Copy
@@ -100,6 +105,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
             }
             this.setDefaultValue(dv);
         }
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
     @NotNull
@@ -193,19 +199,15 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return hidden;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     @Nullable
     @Override
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription() {
-        return getComment();
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
