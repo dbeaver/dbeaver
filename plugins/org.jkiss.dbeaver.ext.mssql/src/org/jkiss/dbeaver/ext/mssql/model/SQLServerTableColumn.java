@@ -92,6 +92,14 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
 
         this.hidden = JDBCUtils.safeGetInt(dbResult, "is_hidden") != 0;
         this.collationName = JDBCUtils.safeGetString(dbResult, "collation_name");
+        String dv = JDBCUtils.safeGetString(dbResult, "default_definition");
+        if (!CommonUtils.isEmpty(dv)) {
+            // Remove redundant brackets
+            while (dv.startsWith("(") && dv.endsWith(")")) {
+                dv = dv.substring(1, dv.length() - 1);
+            }
+            this.setDefaultValue(dv);
+        }
     }
 
     @NotNull
