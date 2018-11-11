@@ -37,12 +37,13 @@ import java.util.Map;
 /**
  * SQLServerProcedure
  */
-public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBPScriptObject
+public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBPScriptObject, SQLServerObject
 {
     private static final Log log = Log.getLog(SQLServerProcedure.class);
 
     private DBSProcedureType procedureType;
     private String body;
+    private long objectId;
 
     public SQLServerProcedure(SQLServerSchema schema)
     {
@@ -60,19 +61,19 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
 
     private void loadInfo(ResultSet dbResult)
     {
-        setName(JDBCUtils.safeGetString(dbResult, "name"));
-        //setDescription(JDBCUtils.safeGetString(dbResult, SQLServerConstants.COL_ROUTINE_COMMENT));
-        String procType = JDBCUtils.safeGetString(dbResult, "type");
-        try {
-            this.procedureType = procType == null ? DBSProcedureType.PROCEDURE : DBSProcedureType.valueOf(procType.toUpperCase(Locale.ENGLISH));
-        } catch (IllegalArgumentException e) {
-            log.debug("Unsupported procedure type: " + procType);
-            this.procedureType = DBSProcedureType.PROCEDURE;
-        }
+        this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
+        this.name = JDBCUtils.safeGetString(dbResult, "name");
+        this.procedureType = DBSProcedureType.PROCEDURE;
     }
 
     @Override
-    @Property(order = 2)
+    @Property(viewable = false, order = 2)
+    public long getObjectId() {
+        return objectId;
+    }
+
+    @Override
+    @Property(order = 5)
     public DBSProcedureType getProcedureType()
     {
         return procedureType ;
@@ -157,7 +158,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     public Collection<SQLServerProcedureParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
-        return null;//getContainer().proceduresCache.getChildren(monitor, getContainer(), this);
+        return getContainer().getProcedureCache().getChildren(monitor, getContainer(), this);
     }
 
     @NotNull

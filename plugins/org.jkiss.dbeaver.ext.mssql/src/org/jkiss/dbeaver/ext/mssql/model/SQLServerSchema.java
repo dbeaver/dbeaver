@@ -65,6 +65,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     private ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
     private SequenceCache sequenceCache = new SequenceCache();
     private SynonymCache synonymCache = new SynonymCache();
+    private ProcedureCache procedureCache = new ProcedureCache();
 
     SQLServerSchema(SQLServerDatabase database, JDBCResultSet resultSet) {
         this.database = database;
@@ -92,6 +93,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     ForeignKeyCache getForeignKeyCache() {
         return foreignKeyCache;
+    }
+
+    ProcedureCache getProcedureCache() {
+        return procedureCache;
     }
 
     @Override
@@ -152,6 +157,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         uniqueConstraintCache.clearCache();
         foreignKeyCache.clearCache();
         sequenceCache.clearCache();
+        synonymCache.clearCache();
+        procedureCache.clearCache();
 
         return this;
     }
@@ -239,7 +246,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             SQLServerDataSource dataSource = owner.getDataSource();
-            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "objects")).append("\n");
+            sql.append("SELECT * FROM ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append("\n");
             sql.append("WHERE type IN ('U','S','V') AND schema_id = ").append(owner.getObjectId());
             if (object != null || objectName != null) {
                 sql.append(" AND name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
@@ -284,8 +291,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.*,t.name as table_name,t.schema_id\nFROM ")
-                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "columns")).append(" c, ")
-                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "objects")).append(" t");
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c, ")
+                .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t");
             sql.append("\nWHERE t.object_id=c.object_id");
             if (forTable != null) {
                 sql.append(" AND t.object_id=?");
@@ -647,6 +654,65 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 true);
         }
 
+    }
+
+    //////////////////////////////////////////////////
+    // Procedures
+
+    @Association
+    public Collection<SQLServerProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException {
+        return procedureCache.getAllObjects(monitor, this);
+    }
+
+    static class ProcedureCache extends JDBCStructLookupCache<SQLServerSchema, SQLServerProcedure, SQLServerProcedureParameter> {
+
+        public ProcedureCache() {
+            super("proc_name");
+        }
+
+        @Override
+        public JDBCStatement prepareLookupStatement(JDBCSession session, SQLServerSchema schema, SQLServerProcedure object, String objectName) throws SQLException {
+            String sql = "SELECT * FROM \n" +
+                SQLServerUtils.getSystemTableName(schema.getDatabase(), "procedures") + "\n" +
+                "WHERE schema_id=?" +
+                "\nORDER BY name";
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+            dbStat.setLong(1, schema.getObjectId());
+            return dbStat;
+        }
+        @Override
+        protected SQLServerProcedure fetchObject(JDBCSession session, SQLServerSchema schema, JDBCResultSet resultSet) throws SQLException, DBException {
+            return new SQLServerProcedure(schema, resultSet);
+        }
+
+        @Override
+        protected JDBCStatement prepareChildrenStatement(JDBCSession session, SQLServerSchema schema, SQLServerProcedure forObject) throws SQLException {
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT p.name as proc_name,pp.* FROM \n")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "procedures")).append(" p, ")
+                .append(SQLServerUtils.getSystemTableName(schema.getDatabase(), "parameters")).append(" pp\n")
+                .append("\nWHERE p.object_id = pp.object_id AND ");
+            if (forObject == null) {
+                sql.append("p.schema_id = ?");
+            } else {
+                sql.append("p.object_id = ?");
+            }
+            sql.append("\nORDER BY pp.object_id, pp.parameter_id");
+
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            if (forObject == null) {
+                dbStat.setLong(1, schema.getObjectId());
+            } else {
+                dbStat.setLong(1, forObject.getObjectId());
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected SQLServerProcedureParameter fetchChild(JDBCSession session, SQLServerSchema schema, SQLServerProcedure parent, JDBCResultSet dbResult) throws SQLException, DBException {
+            return new SQLServerProcedureParameter(session.getProgressMonitor(), parent, dbResult);
+        }
     }
 
 }
