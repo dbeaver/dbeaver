@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
@@ -86,4 +87,10 @@ public enum SQLServerObjectType implements DBSObjectType {
     public String toString() {
         return type;
     }
+
+    public DBSObject findObject(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerSchema schema, String objectName) {
+        System.err.println("SQL Server object search: Not Implemented");
+        return null;
+    }
+
 }
