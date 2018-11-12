@@ -22,12 +22,11 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
-import org.eclipse.jface.text.contentassist.ICompletionProposalExtension5;
-import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.text.contentassist.*;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,7 +54,7 @@ import java.util.Locale;
 /**
  * SQL Completion proposal
  */
-public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2,ICompletionProposalExtension5 {
+public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2,ICompletionProposalExtension4,ICompletionProposalExtension5 {
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
 
@@ -345,6 +345,24 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         String wordPart = wordDetector.getWordPart();
         int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos != -1) {
+            if (divPos == wordPart.length() - 1) {
+                // It is valid only if full word matches (it should be the only proposal)
+                if (replacementString.equals(wordPart.substring(0, divPos))) {
+                    {
+                        // Call completion popup again
+                        UIUtils.asyncExec(() -> {
+                            IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                            if (activeEditor != null) {
+                                ITextViewer textViewer = activeEditor.getAdapter(ITextViewer.class);
+                                if (textViewer != null) {
+                                    textViewer.getTextOperationTarget().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+                                }
+                            }
+                        });
+                    }
+                }
+                return false;
+            }
             wordPart = wordPart.substring(divPos + 1);
         }
         String wordLower = wordPart.toLowerCase(Locale.ENGLISH);
@@ -413,4 +431,8 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         return displayString;
     }
 
+    @Override
+    public boolean isAutoInsertable() {
+        return true;
+    }
 }
