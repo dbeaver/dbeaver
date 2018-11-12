@@ -26,13 +26,12 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -42,6 +41,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SQLServerTableColumn
@@ -63,15 +64,23 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         private long lastValue;
         private boolean loaded;
 
-        public long getSeedValue() { return seedValue; }
-        public long getIncrementValue() { return incrementValue; }
-        @Property(viewable = false, order = 60) public long getLastValue() { return lastValue; }
+        public long getSeedValue() {
+            return seedValue;
+        }
+
+        public long getIncrementValue() {
+            return incrementValue;
+        }
+
+        @Property(viewable = false, order = 60)
+        public long getLastValue() {
+            return lastValue;
+        }
     }
 
     public static class IdentityInfoValidator implements IPropertyCacheValidator<SQLServerTableColumn> {
         @Override
-        public boolean isPropertyCached(SQLServerTableColumn object, Object propertyId)
-        {
+        public boolean isPropertyCached(SQLServerTableColumn object, Object propertyId) {
             return object.identityInfo.loaded;
         }
     }
@@ -84,8 +93,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         DBRProgressMonitor monitor,
         SQLServerTableBase table,
         ResultSet dbResult)
-        throws DBException
-    {
+        throws DBException {
         super(table, true);
         loadInfo(monitor, dbResult);
     }
@@ -95,8 +103,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         DBRProgressMonitor monitor,
         SQLServerTableBase table,
         DBSEntityAttribute source)
-        throws DBException
-    {
+        throws DBException {
         super(table, source, false);
         this.description = source.getDescription();
         if (source instanceof SQLServerTableColumn) {
@@ -140,7 +147,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return getTable().getDataSource();
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    //@Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     public String getFullTypeName() {
         if (dataType == null) {
             return String.valueOf(userTypeId);
@@ -157,6 +164,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     }
 
     @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 40, listProvider = DataTypeListProvider.class)
     public DBSDataType getDataType() {
         return dataType;
     }
@@ -164,6 +172,25 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     public void setDataType(SQLServerDataType dataType) {
         this.dataType = dataType;
     }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 41)
+    public long getMaxLength() {
+        return super.getMaxLength();
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
+    public Integer getScale() {
+        return super.getScale();
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 43)
+    public Integer getPrecision() {
+        return super.getPrecision();
+    }
+
 
     @Override
     public DBPDataKind getDataKind() {
@@ -200,8 +227,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
 
     @PropertyGroup()
     @LazyProperty(cacheValidator = IdentityInfoValidator.class)
-    public IdentityInfo getIdentityInfo(DBRProgressMonitor monitor) throws DBCException
-    {
+    public IdentityInfo getIdentityInfo(DBRProgressMonitor monitor) throws DBCException {
         if (!identityInfo.loaded) {
             if (!isAutoGenerated()) {
                 identityInfo.loaded = true;
@@ -232,4 +258,21 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         }
     }
 
+    public static class DataTypeListProvider implements IPropertyValueListProvider<SQLServerTableColumn> {
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(SQLServerTableColumn object) {
+            List<SQLServerDataType> allTypes = new ArrayList<>(object.getDataSource().getLocalDataTypes());
+            try {
+                allTypes.addAll(object.getTable().getSchema().getDataTypes(new VoidProgressMonitor()));
+            } catch (DBException e) {
+                log.debug("Error gtting schema data types", e);
+            }
+            return allTypes.toArray();
+        }
+    }
 }
