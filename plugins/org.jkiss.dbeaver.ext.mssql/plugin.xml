@@ -78,7 +78,7 @@
                                     </folder>
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerView" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
                                 <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                     <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
