@@ -257,6 +257,14 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         return super.refreshObject(monitor);
     }
 
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == DBSStructureAssistant.class) {
+            return adapter.cast(new SQLServerStructureAssistant(this));
+        }
+        return super.getAdapter(adapter);
+    }
+
     static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
         DatabaseCache() {
             setListOrderComparator(DBUtils.nameComparator());
