@@ -42,7 +42,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
 
     @Override
     protected Composite createFormatSettings(Composite parent) {
-        Group settings = UIUtils.createControlGroup(parent, "Settings", 5, GridData.FILL_HORIZONTAL, 0);
+        Group settings = UIUtils.createControlGroup(parent, CoreMessages.pref_page_sql_format_label_settings, 5, GridData.FILL_HORIZONTAL, 0);
 
         keywordCaseCombo = UIUtils.createLabelCombo(settings, CoreMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
         keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -51,12 +51,18 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
             keywordCaseCombo.add(DBPIdentifierCase.capitalizeCaseName(c.name()));
         }
 
-        this.indentSizeSpinner = UIUtils.createLabelSpinner(settings, "Indent size", "Insert spaces for tabs", 4, 0, 100);
-        this.useSpacesCheck = UIUtils.createCheckbox(settings, "Insert spaces for tabs", "Insert spaces for tabs", true, 1);
-        this.lineFeedBeforeCommaCheck = UIUtils.createCheckbox(settings, "Insert line feed before commas", "Insert line feeds before/after commas", true, 5);
+        this.indentSizeSpinner = UIUtils.createLabelSpinner(settings,
+                CoreMessages.pref_page_sql_format_label_indent_size,
+                CoreMessages.pref_page_sql_format_label_indent_size, 4, 0, 100);
+        this.useSpacesCheck = UIUtils.createCheckbox(settings,
+                CoreMessages.pref_page_sql_format_label_insert_spaces_for_tabs,
+                CoreMessages.pref_page_sql_format_label_insert_spaces_for_tabs, true, 1);
+        this.lineFeedBeforeCommaCheck = UIUtils.createCheckbox(settings,
+                CoreMessages.pref_page_sql_format_label_insert_line_feed_before_commas,
+                CoreMessages.pref_page_sql_format_label_insert_line_feed_before_commas, true, 5);
         this.breakLineBeforeCloseBracket = UIUtils.createCheckbox(settings,
-                CoreMessages.pref_page_sql_format_label_add_line_break_before_close_bracket,
-                CoreMessages.pref_page_sql_format_label_add_line_break_before_close_bracket,
+                CoreMessages.pref_page_sql_format_label_add_line_feed_before_close_bracket,
+                CoreMessages.pref_page_sql_format_label_add_line_feed_before_close_bracket,
                 true, 5);
 
         return parent;
