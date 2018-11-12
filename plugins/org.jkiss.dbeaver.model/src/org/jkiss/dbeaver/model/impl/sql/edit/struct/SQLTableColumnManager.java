@@ -77,7 +77,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = (monitor, column, sql, command) -> {
         if (command instanceof DBECommandComposite) {
             if (((DBECommandComposite) command).getProperty("required") == null) {
-                // Do not set NULL/NOT NULL if it wasn't chaged
+                // Do not set NULL/NOT NULL if it wasn't changed
                 return;
             }
         }
