@@ -89,7 +89,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
     @Nullable
     @Override
     @Association
-    public synchronized Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().getUniqueConstraintCache().getObjects(monitor, getSchema(), this);
@@ -112,7 +112,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
     }
 
     @Override
-    public synchronized Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getSchema().getForeignKeyCache().getObjects(monitor, getSchema(), this);

@@ -137,7 +137,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     @Override
     @Association
-    public synchronized Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getIndexCache().getObjects(monitor, getSchema(), this);
@@ -164,7 +164,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
-    public synchronized Long getRowCount(DBRProgressMonitor monitor)
+    public Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null || !isPersisted()) {
             return rowCount;
