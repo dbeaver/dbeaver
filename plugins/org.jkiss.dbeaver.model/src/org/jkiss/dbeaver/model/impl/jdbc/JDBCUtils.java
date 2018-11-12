@@ -506,7 +506,7 @@ public class JDBCUtils {
                     } catch (Throwable e) {
                         // isValid may be unsupported by driver
                         // Let's try to read table list
-                        connection.getMetaData().getTables(null, null, "DBEAVER_FAKE_TABLE_NAME_FOR_PING", null);
+                        connection.getMetaData().getTables(null, null, "DBEAVERFAKETABLENAMEFORPING", null);
                         isValid[0] = true;
                     }
                 }
