@@ -1291,7 +1291,8 @@ public class UIUtils {
 
     public static boolean isInDialog() {
         try {
-            return isInDialog(Display.getCurrent().getActiveShell());
+            Shell activeShell = Display.getCurrent().getActiveShell();
+            return activeShell != null && isInDialog(activeShell);
         } catch (Exception e) {
             // IF we are in wrong thread
             return false;
