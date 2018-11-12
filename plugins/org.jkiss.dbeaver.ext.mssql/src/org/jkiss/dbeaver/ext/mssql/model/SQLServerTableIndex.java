@@ -39,34 +39,35 @@ import java.util.List;
  */
 public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTableBase> implements SQLServerObject, DBPNamedObject2
 {
-    private boolean nonUnique;
-    private String additionalInfo;
+    private boolean unique;
+    private boolean primary;
     private String indexComment;
-    private long cardinality;
     private List<SQLServerTableIndexColumn> columns;
     private long objectId;
 
     public SQLServerTableIndex(
         SQLServerTableBase table,
-        boolean nonUnique,
+        boolean unique,
+        boolean primary,
         String indexName,
         DBSIndexType indexType,
         String comment,
         boolean persisted)
     {
         super(table.getContainer(), table, indexName, indexType, persisted);
-        this.nonUnique = nonUnique;
+        this.unique = unique;
+        this.primary = primary;
         this.indexComment = comment;
     }
 
     // Copy constructor
     SQLServerTableIndex(DBRProgressMonitor monitor, SQLServerTable table, DBSTableIndex source) throws DBException {
         super(table.getContainer(), table, source, false);
-        this.nonUnique = !source.isUnique();
+        this.unique = source.isUnique();
+        this.primary = source.isPrimary();
         this.indexComment = source.getDescription();
         if (source instanceof SQLServerTableIndex) {
-            this.cardinality = ((SQLServerTableIndex)source).cardinality;
-            this.additionalInfo = ((SQLServerTableIndex)source).additionalInfo;
+            //this.cardinality = ((SQLServerTableIndex)source).cardinality;
         }
         List<? extends DBSTableIndexColumn> columns = source.getAttributeReferences(monitor);
         if (columns != null) {
@@ -85,10 +86,8 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
             indexType,
             true);
         this.objectId = JDBCUtils.safeGetLong(dbResult, "index_id");
-//        this.nonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;
-//        this.cardinality = JDBCUtils.safeGetLong(dbResult, "cardinality");
-//        this.indexComment = JDBCUtils.safeGetString(dbResult, "INDEX_COMMENT");
-//        this.additionalInfo = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COMMENT);
+        this.unique = JDBCUtils.safeGetInt(dbResult, "is_unique") != 0;
+        this.primary = JDBCUtils.safeGetInt(dbResult, "is_primary_key") != 0;
     }
 
     @NotNull
@@ -99,10 +98,22 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     }
 
     @Override
+    @Property(viewable = false, order = 50)
+    public long getObjectId() {
+        return objectId;
+    }
+
+    @Override
     @Property(viewable = true, order = 5)
     public boolean isUnique()
     {
-        return !nonUnique;
+        return unique;
+    }
+
+    @Override
+    @Property(viewable = false, order = 6)
+    public boolean isPrimary() {
+        return primary;
     }
 
     @Nullable
@@ -111,16 +122,6 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     public String getDescription()
     {
         return indexComment;
-    }
-
-    @Property(viewable = true, order = 20)
-    public long getCardinality() {
-        return cardinality;
-    }
-
-    @Property(viewable = false, order = 30)
-    public String getAdditionalInfo() {
-        return additionalInfo;
     }
 
     @Override
@@ -156,13 +157,4 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
             this);
     }
 
-    @Override
-    public boolean isPrimary() {
-        return false;////MySQLConstants.INDEX_PRIMARY.equals(getName());
-    }
-
-    @Override
-    public long getObjectId() {
-        return objectId;
-    }
 }
