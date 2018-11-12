@@ -1092,6 +1092,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_format_label_bold_keywords_tip;
 	public static String pref_page_sql_format_group_formatter;
 	public static String pref_page_sql_format_label_formatter;
+	public static String pref_page_sql_format_label_add_line_break_before_close_bracket;
 	public static String pref_page_sql_format_label_keyword_case;
 	public static String pref_page_sql_format_label_external_command_line;
 	public static String pref_page_sql_format_label_external_set_content_tool_tip;
