@@ -103,6 +103,10 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
         return checkConstraintCache.getAllObjects(monitor, this);
     }
 
+    public CheckConstraintCache getCheckConstraintCache() {
+        return checkConstraintCache;
+    }
+
     @Override
     @Association
     public Collection<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)

@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
@@ -51,14 +50,13 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
     }
 
     @Override
-    public DBSEntity getParentObject() {
-        return null;
+    public SQLServerTable getParentObject() {
+        return table;
     }
 
-    @Property(viewable = true, editable = true, order = 5)
     @Override
     public DBSEntityConstraintType getConstraintType() {
-        return null;
+        return DBSEntityConstraintType.CHECK;
     }
 
     @Property(viewable = true, editable = true, order = 1)
@@ -67,7 +65,7 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
         return name;
     }
 
-    @Property(viewable = true, editable = true, order = 10)
+    @Property(viewable = false, editable = true, order = 10)
     public boolean isDisabled() {
         return disabled;
     }
@@ -95,9 +93,13 @@ public class SQLServerTableCheckConstraint implements DBSEntityConstraint, SQLSe
     }
 
     @Property(viewable = true, editable = true, multiline = true, order = 20)
+    public String getDefinition() {
+        return definition;
+    }
+
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        return definition;
+        return getDefinition();
     }
 
 }

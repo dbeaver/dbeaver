@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLScriptCommand;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -149,6 +152,25 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     @Override
     protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
         return !index.isPrimary() && super.isIncludeIndexInDDL(index);
+    }
+
+    protected void addExtraDDLCommands(DBRProgressMonitor monitor, SQLServerTable table, Map<String, Object> options, StructCreateCommand createCommand) {
+        SQLObjectEditor<SQLServerTableCheckConstraint, SQLServerTable> ccm = getObjectEditor(
+            table.getDataSource().getContainer().getPlatform().getEditorsRegistry(),
+            SQLServerTableCheckConstraint.class);
+        if (ccm != null) {
+            try {
+                Collection<SQLServerTableCheckConstraint> checkConstraints = CommonUtils.safeCollection(table.getCheckConstraints(monitor));
+                if (!CommonUtils.isEmpty(checkConstraints)) {
+                    for (SQLServerTableCheckConstraint checkConstraint : checkConstraints) {
+                        createCommand.aggregateCommand(ccm.makeCreateCommand(checkConstraint));
+                    }
+                }
+            } catch (DBException e) {
+                // Ignore indexes
+                log.debug(e);
+            }
+        }
     }
 
 }
