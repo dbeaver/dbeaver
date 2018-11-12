@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -143,6 +144,11 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     public void renameObject(DBECommandContext commandContext, SQLServerTable object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
+        return !index.isPrimary() && super.isIncludeIndexInDDL(index);
     }
 
 }

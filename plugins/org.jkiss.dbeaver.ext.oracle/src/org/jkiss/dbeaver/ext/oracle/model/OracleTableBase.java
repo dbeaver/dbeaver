@@ -143,7 +143,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @LazyProperty(cacheValidator = CommentsValidator.class)
-    public synchronized String getComment(DBRProgressMonitor monitor)
+    public String getComment(DBRProgressMonitor monitor)
         throws DBException
     {
         if (comment == null) {
@@ -240,7 +240,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @Nullable
     @Override
     @Association
-    public synchronized Collection<OracleTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public Collection<OracleTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().constraintCache.getObjects(monitor, getContainer(), this);

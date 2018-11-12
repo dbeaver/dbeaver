@@ -263,7 +263,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase())).append(" ep ON ep.class=").append(SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId()).append(" AND ep.major_id=o.object_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
             sql.append("\nWHERE o.type IN ('U','S','V') AND o.schema_id = ").append(owner.getObjectId());
             if (object != null || objectName != null) {
-                sql.append(" AND name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
+                sql.append(" AND o.name = ").append(SQLUtils.quoteString(session.getDataSource(), object != null ? object.getName() : objectName));
             } else {
                 DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(SQLServerTableBase.class, owner, false);
                 if (tableFilters != null && !tableFilters.isEmpty()) {

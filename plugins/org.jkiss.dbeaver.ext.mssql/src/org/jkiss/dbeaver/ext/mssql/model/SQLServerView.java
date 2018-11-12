@@ -108,7 +108,7 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
 
     @Override
     @Association
-    public synchronized Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -117,7 +117,7 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
     @Nullable
     @Override
     @Association
-    public synchronized Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -132,7 +132,7 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
     }
 
     @Override
-    public synchronized Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
+    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
