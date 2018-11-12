@@ -656,7 +656,12 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
     private SQLCompletionProposal makeProposalsFromObject(DBSObject object, boolean useShortName)
     {
         DBNNode node = NavigatorUtils.getNodeByObject(monitor, object, false);
-        return makeProposalsFromObject(object, useShortName, node == null ? null : node.getNodeIconDefault());
+
+        DBPImage objectIcon = node == null ? null : node.getNodeIconDefault();
+        if (objectIcon == null) {
+            objectIcon = DBValueFormatting.getObjectImage(object);
+        }
+        return makeProposalsFromObject(object, useShortName, objectIcon);
     }
 
     private SQLCompletionProposal makeProposalsFromObject(
