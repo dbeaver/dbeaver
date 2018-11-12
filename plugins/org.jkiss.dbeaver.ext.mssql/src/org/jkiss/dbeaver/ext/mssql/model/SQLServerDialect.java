@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -85,13 +84,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
     @Override
     public String getColumnTypeModifiers(DBPDataSource dataSource, DBSTypedObject column, String typeName, DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.DATETIME) {
-            Integer scale = column.getScale();
-            if (scale != null) {
-                if (column.getTypeID() == Types.VARCHAR && scale == 0) {
-                    // Bug in jTDS. Scale is always zero so just ignore it (#3555)
-                    return null;
+            if (SQLServerConstants.TYPE_DATETIME2.equalsIgnoreCase(typeName)) {
+                Integer scale = column.getScale();
+                if (scale != null && scale != 0) {
+                    return "(" + scale + ')';
                 }
-                return "(" + scale + ')';
             }
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
