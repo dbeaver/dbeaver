@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -61,9 +62,9 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     {
         try {
             return session.getMetaData().getIndexInfo(
-                    owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-                    owner.getSchema() == null ? null : owner.getSchema().getName(),
-                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName(),
+                    owner.getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, owner.getCatalog().getName()),
+                    owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
+                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : JDBCUtils.escapeWildCards(session, forParent.getName()),
                     false,
                     true).getSourceStatement();
         } catch (SQLException e) {

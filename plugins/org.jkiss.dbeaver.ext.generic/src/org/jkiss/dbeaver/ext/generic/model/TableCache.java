@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
@@ -123,10 +124,13 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         throws SQLException
     {
         return session.getMetaData().getColumns(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : owner.getSchema().getName(),
-            forTable == null ? owner.getDataSource().getAllObjectsPattern() : forTable.getName(),
-            owner.getDataSource().getAllObjectsPattern()).getSourceStatement();
+            owner.getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, owner.getCatalog().getName()),
+            owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
+            forTable == null ?
+                owner.getDataSource().getAllObjectsPattern() :
+                JDBCUtils.escapeWildCards(session, forTable.getName()),
+            owner.getDataSource().getAllObjectsPattern())
+            .getSourceStatement();
     }
 
     @Override

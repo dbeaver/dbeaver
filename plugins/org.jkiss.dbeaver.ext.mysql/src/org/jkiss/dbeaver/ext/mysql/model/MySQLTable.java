@@ -329,14 +329,14 @@ public class MySQLTable extends MySQLTableBase
             JDBCResultSet dbResult;
             if (references) {
                 dbResult = metaData.getExportedKeys(
-                    getContainer().getName(),
+                    JDBCUtils.escapeWildCards(session, getContainer().getName()),
                     null,
-                    getName());
+                    JDBCUtils.escapeWildCards(session, getName()));
             } else {
                 dbResult = metaData.getImportedKeys(
-                    getContainer().getName(),
+                    JDBCUtils.escapeWildCards(session, getContainer().getName()),
                     null,
-                    getName());
+                    JDBCUtils.escapeWildCards(session, getName()));
             }
             try {
                 while (dbResult.next()) {
