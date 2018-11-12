@@ -22,6 +22,8 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -80,7 +82,12 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             bindEmbeddedReadCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_read, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_read_tip, false, 2);
 
             bindEmbeddedWriteCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_write, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_write_tip, false, 2);
-            bindEmbeddedWriteCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> enableCommentType()));
+            bindEmbeddedWriteCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    enableCommentType();
+                }
+            });
 
             commentTypeComposite = UIUtils.createComposite(connGroup, 1);
             for (SQLScriptBindingType bt : SQLScriptBindingType.values()) {

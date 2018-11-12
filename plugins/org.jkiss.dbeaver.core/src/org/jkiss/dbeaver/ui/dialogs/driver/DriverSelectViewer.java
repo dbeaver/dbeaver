@@ -28,8 +28,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -151,11 +150,14 @@ public class DriverSelectViewer extends Viewer {
         filterText.setMessage(CoreMessages.dialog_connection_driver_treecontrol_initialText);
         filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filterText.addModifyListener(e -> textChanged());
-        filterText.addKeyListener(KeyListener.keyPressedAdapter(keyEvent -> {
-            if (keyEvent.keyCode == SWT.ARROW_DOWN || keyEvent.keyCode == SWT.CR) {
-                getSelectorControl().setFocus();
+        filterText.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent keyEvent) {
+                if (keyEvent.keyCode == SWT.ARROW_DOWN || keyEvent.keyCode == SWT.CR) {
+                    getSelectorControl().setFocus();
+                }
             }
-        }));
+        });
         filterComposite.setBackground(filterText.getBackground());
         filterComposite.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
@@ -173,10 +175,13 @@ public class DriverSelectViewer extends Viewer {
         ToolItem clearItem = new ToolItem(switcherToolbar, SWT.PUSH);
         clearItem.setImage(activeImage);
         clearItem.setDisabledImage(inactiveImage);
-        clearItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-            clearText();
-            filterText.setFocus();
-        }));
+        clearItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                clearText();
+                filterText.setFocus();
+            }
+        });
         clearItem.addDisposeListener(e -> {
             inactiveImage.dispose();
             activeImage.dispose();
@@ -185,9 +190,12 @@ public class DriverSelectViewer extends Viewer {
         switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
         switchItem.setText("Toggle view");
         switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-        switchItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-            switchSelectorControl();
-        }));
+        switchItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                switchSelectorControl();
+            }
+        });
         switcherToolbar.setBackground(filterText.getBackground());
     }
 
