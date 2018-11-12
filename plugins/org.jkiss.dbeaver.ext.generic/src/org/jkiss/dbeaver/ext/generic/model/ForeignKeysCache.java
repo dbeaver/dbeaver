@@ -72,9 +72,11 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         throws SQLException
     {
         return session.getMetaData().getImportedKeys(
-            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
-            owner.getSchema() == null ? null : owner.getSchema().getName(),
-            forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName())
+            owner.getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, owner.getCatalog().getName()),
+            owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
+            forParent == null ?
+                owner.getDataSource().getAllObjectsPattern() :
+                JDBCUtils.escapeWildCards(session, forParent.getName()))
             .getSourceStatement();
     }
 

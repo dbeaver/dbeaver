@@ -767,4 +767,20 @@ public class JDBCUtils {
         return SQLUtils.generateCommentLine(table.getDataSource(), "Can't generate DDL: table editor not found for " + table.getClass().getName());
     }
 
+    public static String escapeWildCards(JDBCSession session, String string) {
+        if (string == null || string.isEmpty() || (string.indexOf('%') == -1 && string.indexOf('_') == -1)) {
+            return string;
+        }
+        try {
+            String escapeStr = session.getMetaData().getSearchStringEscape();
+            if (CommonUtils.isEmpty(escapeStr) || escapeStr.equals(" ")) {
+                return string;
+            }
+            return string.replace("%", escapeStr + "%").replace("_", escapeStr + "_");
+        } catch (Throwable e) {
+            log.debug("Error escaping wildcard string", e);
+            return string;
+        }
+    }
+
 }

@@ -685,9 +685,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
             // Lets driver do it instead of me
             return session.getMetaData().getProcedureColumns(
-                owner.getName(),
+                JDBCUtils.escapeWildCards(session, owner.getName()),
                 null,
-                procedure == null ? null : procedure.getName(),
+                procedure == null ? null : JDBCUtils.escapeWildCards(session, procedure.getName()),
                 "%").getSourceStatement();
         }
 
