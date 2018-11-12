@@ -91,11 +91,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return indexCache;
     }
 
-    UniqueConstraintCache getUniqueConstraintCache() {
+    public UniqueConstraintCache getUniqueConstraintCache() {
         return uniqueConstraintCache;
     }
 
-    ForeignKeyCache getForeignKeyCache() {
+    public ForeignKeyCache getForeignKeyCache() {
         return foreignKeyCache;
     }
 
@@ -421,7 +421,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             boolean ascending = JDBCUtils.safeGetInt(dbResult, "is_descending_key") == 0;
 
             return new SQLServerTableIndexColumn[] {
-                new SQLServerTableIndexColumn(object, indexColumnId, tableColumn, ordinal, ascending, false, null)
+                new SQLServerTableIndexColumn(object, indexColumnId, tableColumn, ordinal, ascending)
             };
         }
 

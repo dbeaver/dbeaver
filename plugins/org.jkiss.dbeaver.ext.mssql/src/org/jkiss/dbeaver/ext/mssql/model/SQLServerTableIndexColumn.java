@@ -33,8 +33,7 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
     private SQLServerTableColumn tableColumn;
     private int ordinalPosition;
     private boolean ascending;
-    private boolean nullable;
-    private String subPart;
+    //private boolean nullable;
     private long objectId;
 
     public SQLServerTableIndexColumn(
@@ -42,17 +41,14 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
         long objectId,
         SQLServerTableColumn tableColumn,
         int ordinalPosition,
-        boolean ascending,
-        boolean nullable,
-        String subPart)
+        boolean ascending)
     {
         this.index = index;
         this.objectId = objectId;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
-        this.nullable = nullable;
-        this.subPart = subPart;
+        //this.nullable = nullable;
     }
 
     SQLServerTableIndexColumn(DBRProgressMonitor monitor, SQLServerTableIndex toIndex, DBSTableIndexColumn source) throws DBException {
@@ -63,8 +59,7 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
         this.ordinalPosition = source.getOrdinalPosition();
         this.ascending = source.isAscending();
         if (source instanceof SQLServerTableIndexColumn) {
-            this.nullable = ((SQLServerTableIndexColumn)source).nullable;
-            this.subPart = ((SQLServerTableIndexColumn)source).subPart;
+            //this.nullable = ((SQLServerTableIndexColumn)source).nullable;
         }
     }
 
@@ -105,16 +100,11 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
         return ascending;
     }
 
-    @Property(viewable = true, order = 4)
-    public boolean isNullable()
-    {
-        return nullable;
-    }
-
-    @Property(viewable = true, order = 5)
-    public String getSubPart() {
-        return subPart;
-    }
+//    @Property(viewable = true, order = 4)
+//    public boolean isNullable()
+//    {
+//        return nullable;
+//    }
 
     @Nullable
     @Override
