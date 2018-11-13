@@ -835,7 +835,7 @@ public class SQLEditor extends SQLEditorBase implements
         outputViewer = new SQLEditorOutputViewer(getSite(), resultTabs, SWT.NONE);
 
         // Create results tab
-        createQueryProcessor(true);
+        createQueryProcessor(true, true);
 
         {
             MenuManager menuMgr = new MenuManager();
@@ -853,16 +853,18 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 final CTabItem activeTab = resultTabs.getSelection();
                 if (activeTab != null && activeTab.getData() instanceof QueryResultsContainer) {
-                    if (resultTabs.indexOf(activeTab) > 0) {
+                    {
                         final QueryResultsContainer resultsContainer = (QueryResultsContainer) activeTab.getData();
-                        manager.add(new Separator());
-                        final boolean isPinned = resultsContainer.isPinned();
-                        manager.add(new Action(isPinned ? "Unpin tab" : "Pin tab") {
-                            @Override
-                            public void run() {
-                                resultsContainer.setPinned(!isPinned);
-                            }
-                        });
+                        if (resultsContainer.getResultSetController().hasData()) {
+                            manager.add(new Separator());
+                            final boolean isPinned = resultsContainer.isPinned();
+                            manager.add(new Action(isPinned ? "Unpin tab" : "Pin tab") {
+                                @Override
+                                public void run() {
+                                    resultsContainer.setPinned(!isPinned);
+                                }
+                            });
+                        }
                     }
                     manager.add(new Action("Set tab title") {
                         @Override
@@ -1590,7 +1592,7 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
                 SQLScriptElement query = queries.get(i);
-                QueryProcessor queryProcessor = (i == 0 && !isSingleQuery ? curQueryProcessor : createQueryProcessor(queries.size() == 1));
+                QueryProcessor queryProcessor = (i == 0 && !isSingleQuery ? curQueryProcessor : createQueryProcessor(queries.size() == 1, false));
                 queryProcessor.processQueries(
                         Collections.singletonList(query),
                         true,
@@ -1604,6 +1606,16 @@ public class SQLEditor extends SQLEditorBase implements
             if (firstResults.isPinned()) {
                 curQueryProcessor = queryProcessors.get(0);
                 firstResults = curQueryProcessor.getFirstResults();
+                if (firstResults.isPinned()) {
+                    // The very first tab is also pinned
+                    // Well, let's create a new tab
+                    curQueryProcessor = createQueryProcessor(true, true);
+                    // Make new tab the default
+                    firstResults = curQueryProcessor.getFirstResults();
+                    if (!firstResults.isPinned()) {
+                        firstResults.tabItem.setShowClose(false);
+                    }
+                }
             }
             closeExtraResultTabs(curQueryProcessor);
             if (firstResults.tabItem != null) {
@@ -1980,9 +1992,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private QueryProcessor createQueryProcessor(boolean setSelection)
+    private QueryProcessor createQueryProcessor(boolean setSelection, boolean makeDefault)
     {
-        final QueryProcessor queryProcessor = new QueryProcessor();
+        final QueryProcessor queryProcessor = new QueryProcessor(makeDefault);
         curQueryProcessor = queryProcessor;
         curResultsContainer = queryProcessor.getFirstResults();
         if (setSelection && curResultsContainer.tabItem != null) {
@@ -2085,14 +2097,18 @@ public class SQLEditor extends SQLEditorBase implements
         private final List<QueryResultsContainer> resultContainers = new ArrayList<>();
         private volatile DBDDataReceiver curDataReceiver = null;
 
-        QueryProcessor() {
+        QueryProcessor(boolean makeDefault) {
             // Create first (default) results provider
-            queryProcessors.add(this);
-            createResultsProvider(0);
+            if (makeDefault) {
+                queryProcessors.add(0, this);
+            } else {
+                queryProcessors.add(this);
+            }
+            createResultsProvider(0, makeDefault);
         }
 
-        private QueryResultsContainer createResultsProvider(int resultSetNumber) {
-            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber);
+        private QueryResultsContainer createResultsProvider(int resultSetNumber, boolean makeDefault) {
+            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber, makeDefault);
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
@@ -2269,7 +2285,7 @@ public class SQLEditor extends SQLEditorBase implements
 //            }
             if (resultSetNumber >= resultContainers.size() && !isDisposed()) {
                 // Open new results processor in UI thread
-                UIUtils.syncExec(() -> createResultsProvider(resultSetNumber));
+                UIUtils.syncExec(() -> createResultsProvider(resultSetNumber, false));
             }
             if (resultSetNumber >= resultContainers.size()) {
                 // Editor seems to be disposed - no data receiver
@@ -2301,6 +2317,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, IDataSourceContainerProvider, SQLQueryContainer {
 
+        private static final String DATA_PINNED = "results.tab.pinned";
+
         private final QueryProcessor queryProcessor;
         private final CTabItem tabItem;
         private final ResultSetViewer viewer;
@@ -2310,7 +2328,7 @@ public class SQLEditor extends SQLEditorBase implements
         // Data container and filter are non-null only in case of associations navigation
         private DBSDataContainer dataContainer;
 
-        private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber)
+        private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, boolean makeDefault)
         {
             this.queryProcessor = queryProcessor;
             this.resultSetNumber = resultSetNumber;
@@ -2337,10 +2355,12 @@ public class SQLEditor extends SQLEditorBase implements
 
                 int tabCount = resultTabs.getItemCount();
                 int tabIndex = 0;
-                for (int i = tabCount; i > 0; i--) {
-                    if (resultTabs.getItem(i - 1).getData() instanceof QueryResultsContainer) {
-                        tabIndex = i;
-                        break;
+                if (!makeDefault) {
+                    for (int i = tabCount; i > 0; i--) {
+                        if (resultTabs.getItem(i - 1).getData() instanceof QueryResultsContainer) {
+                            tabIndex = i;
+                            break;
+                        }
                     }
                 }
                 tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
@@ -2365,7 +2385,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber, DBSDataContainer dataContainer) {
-            this(queryProcessor, resultSetNumber);
+            this(queryProcessor, resultSetNumber, false);
             this.dataContainer = dataContainer;
             updateResultsName(getResultsTabName(resultSetNumber, 0, dataContainer.getName()), null);
         }
@@ -2380,12 +2400,13 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         boolean isPinned() {
-            return tabItem != null && resultTabs.indexOf(tabItem) > 0 && !tabItem.getShowClose();
+            return tabItem != null && CommonUtils.toBoolean(tabItem.getData(DATA_PINNED));
         }
 
         void setPinned(boolean pinned) {
-            tabItem.setShowClose(!pinned);
+            tabItem.setShowClose(!pinned && resultTabs.indexOf(tabItem) > 0);
             tabItem.setImage(pinned ? IMG_DATA_GRID_LOCKED : IMG_DATA_GRID);
+            tabItem.setData(DATA_PINNED, pinned);
         }
 
         @Override
