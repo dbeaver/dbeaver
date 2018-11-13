@@ -3370,6 +3370,9 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.sql.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.entity" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.entity.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.ui.general.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.dbeaver" label="dbeaver beaver"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.connection"/>
+
     </extension>
 
     <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature" name="%extension.org.jkiss.dbeaver.DBeaverNature.name">
