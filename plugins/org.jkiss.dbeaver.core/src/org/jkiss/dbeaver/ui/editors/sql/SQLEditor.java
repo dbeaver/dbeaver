@@ -37,10 +37,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -202,6 +199,18 @@ public class SQLEditor extends SQLEditorBase implements
     private SQLEditorPresentationPanel extraPresentationCurrentPanel;
 
     private final List<SQLEditorListener> listeners = new ArrayList<>();
+
+    private DisposeListener resultTabDisposeListener = new DisposeListener() {
+        @Override
+        public void widgetDisposed(DisposeEvent e) {
+            if (resultTabs.getItemCount() == 0) {
+                if (resultsSash.getMaximizedControl() == null) {
+                    // Hide results
+                    toggleResultPanel();
+                }
+            }
+        }
+    };
 
     public SQLEditor()
     {
@@ -929,6 +938,7 @@ public class SQLEditor extends SQLEditorBase implements
         // De-select tool item on tab close
         item.addDisposeListener(e -> {
             if (!viewItem.isDisposed()) viewItem.setSelection(false);
+            resultTabDisposeListener.widgetDisposed(e);
         });
         resultTabs.setSelection(item);
     }
@@ -1099,6 +1109,12 @@ public class SQLEditor extends SQLEditorBase implements
             resultsSash.setMaximizedControl(sqlEditorPanel);
             switchFocus(false);
         } else {
+            // Show both editor and results
+            // Check for existing query processors (maybe all result tabs were closed)
+            if (resultTabs.getItemCount() == 0) {
+                createQueryProcessor(true, true);
+            }
+
             resultsSash.setMaximizedControl(null);
             switchFocus(true);
         }
@@ -1203,6 +1219,7 @@ public class SQLEditor extends SQLEditorBase implements
                     panelControl.dispose();
                     extraPresentationPanels.remove(panel);
                     extraPresentationCurrentPanel = null;
+                    resultTabDisposeListener.widgetDisposed(e);
                 });
                 extraPresentationCurrentPanel = panelInstance;
                 resultTabs.setSelection(tabItem);
@@ -1393,6 +1410,7 @@ public class SQLEditor extends SQLEditorBase implements
             item.setToolTipText(CoreMessages.editors_sql_error_execution_plan_title);
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
+            item.addDisposeListener(resultTabDisposeListener);
             UIUtils.disposeControlOnItemDispose(item);
             resultTabs.setSelection(item);
         }
@@ -1588,6 +1606,11 @@ public class SQLEditor extends SQLEditorBase implements
             closeExtraResultTabs(null);
         }
 
+        if (resultTabs.getItemCount() == 0) {
+            // If all tabs were closed
+            createQueryProcessor(true, true);
+        }
+
         if (newTab) {
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
@@ -1612,7 +1635,7 @@ public class SQLEditor extends SQLEditorBase implements
                     curQueryProcessor = createQueryProcessor(true, true);
                     // Make new tab the default
                     firstResults = curQueryProcessor.getFirstResults();
-                    if (!firstResults.isPinned()) {
+                    if (firstResults.isPinned()) {
                         firstResults.tabItem.setShowClose(false);
                     }
                 }
@@ -2251,9 +2274,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         void removeResults(QueryResultsContainer resultsContainer) {
-            if (resultContainers.size() > 1) {
-                resultContainers.remove(resultsContainer);
-            } else {
+            resultContainers.remove(resultsContainer);
+            if (resultContainers.isEmpty()) {
                 queryProcessors.remove(this);
                 if (curQueryProcessor == this) {
                     if (queryProcessors.isEmpty()) {
@@ -2369,10 +2391,10 @@ public class SQLEditor extends SQLEditorBase implements
                 tabItem.setText(tabName);
                 tabItem.setImage(IMG_DATA_GRID);
                 tabItem.setData(this);
-                if (queryIndex > 0 || resultSetNumber > 0) {
-                    tabItem.setShowClose(true);
-                }
+                tabItem.setShowClose(true);
+
                 tabItem.setControl(viewer.getControl());
+                tabItem.addDisposeListener(resultTabDisposeListener);
                 UIUtils.disposeControlOnItemDispose(tabItem);
             }
 
@@ -2404,7 +2426,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         void setPinned(boolean pinned) {
-            tabItem.setShowClose(!pinned && resultTabs.indexOf(tabItem) > 0);
+            tabItem.setShowClose(!pinned);
             tabItem.setImage(pinned ? IMG_DATA_GRID_LOCKED : IMG_DATA_GRID);
             tabItem.setData(DATA_PINNED, pinned);
         }
