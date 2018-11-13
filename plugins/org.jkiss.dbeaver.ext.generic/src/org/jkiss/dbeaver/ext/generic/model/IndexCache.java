@@ -62,9 +62,9 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     {
         try {
             return session.getMetaData().getIndexInfo(
-                    owner.getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, owner.getCatalog().getName()),
-                    owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
-                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : JDBCUtils.escapeWildCards(session, forParent.getName()),
+                    owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+                    owner.getSchema() == null ? null : owner.getSchema().getName(),
+                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName(),
                     false,
                     true).getSourceStatement();
         } catch (SQLException e) {

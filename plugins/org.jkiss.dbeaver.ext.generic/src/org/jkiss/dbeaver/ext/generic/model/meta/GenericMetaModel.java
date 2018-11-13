@@ -114,7 +114,7 @@ public class GenericMetaModel {
             if (catalog != null) {
                 try {
                     dbResult = session.getMetaData().getSchemas(
-                        JDBCUtils.escapeWildCards(session, catalog.getName()),
+                        catalog.getName(),
                         schemaFilters != null && schemaFilters.hasSingleMask() ?
                             schemaFilters.getSingleMask() :
                             dataSource.getAllObjectsPattern());
@@ -211,7 +211,7 @@ public class GenericMetaModel {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
             // Read procedures
             JDBCResultSet dbResult = session.getMetaData().getProcedures(
-                container.getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, container.getCatalog().getName()),
+                container.getCatalog() == null ? null : container.getCatalog().getName(),
                 container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
                 dataSource.getAllObjectsPattern());
             try {
@@ -277,7 +277,7 @@ public class GenericMetaModel {
                 // Try to read functions (note: this function appeared only in Java 1.6 so it maybe not implemented by many drivers)
                 // Read procedures
                 dbResult = session.getMetaData().getFunctions(
-                    container.getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, container.getCatalog().getName()),
+                    container.getCatalog() == null ? null : container.getCatalog().getName(),
                     container.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, container.getSchema().getName()),
                     dataSource.getAllObjectsPattern());
                 try {
@@ -390,7 +390,7 @@ public class GenericMetaModel {
         throws SQLException
     {
         return session.getMetaData().getTables(
-            owner.getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, owner.getCatalog().getName()),
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
             object == null && objectName == null ?
                 owner.getDataSource().getAllObjectsPattern() :

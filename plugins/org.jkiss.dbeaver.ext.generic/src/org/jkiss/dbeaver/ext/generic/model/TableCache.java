@@ -124,7 +124,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         throws SQLException
     {
         return session.getMetaData().getColumns(
-            owner.getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, owner.getCatalog().getName()),
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
             forTable == null ?
                 owner.getDataSource().getAllObjectsPattern() :
