@@ -525,13 +525,15 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             combo.setText(objectValueToString(value));
             combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
             return combo;
-        } else if (DBSObject.class.isAssignableFrom(propType)) {
+        } else if (DBSObject.class.isAssignableFrom(propType) || (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor)property).isLinkPossible())) {
             UIUtils.createControlLabel(
                 parent,
                 property.getDisplayName());
             Composite linkPH = new Composite(parent, SWT.BORDER);
+            if (!DBSObject.class.isAssignableFrom(propType)) {
+                linkPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
             GridLayout layout = new GridLayout(1, false);
-            layout.marginHeight = 1;
             layout.marginHeight = 1;
             linkPH.setLayout(layout);
             Link link = new Link(linkPH, SWT.NONE);
@@ -546,6 +548,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     }
                 }
             });
+            if (!DBSObject.class.isAssignableFrom(propType)) {
+                link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
             return link;
         } else {
             return UIUtils.createLabelText(
