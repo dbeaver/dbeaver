@@ -126,15 +126,15 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     getCatalog() == null ?
                         this.getPackage() == null || !this.getPackage().isNameFromCatalog() ?
                             null :
-                            JDBCUtils.escapeWildCards(session, this.getPackage().getName()) :
-                        JDBCUtils.escapeWildCards(session, getCatalog().getName()),
+                            this.getPackage().getName() :
+                        getCatalog().getName(),
                     getSchema() == null ? null : JDBCUtils.escapeWildCards(session, getSchema().getName()),
                     JDBCUtils.escapeWildCards(session, getName()),
                     getDataSource().getAllObjectsPattern()
                 );
             } else {
                 dbResult = session.getMetaData().getFunctionColumns(
-                    getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, getCatalog().getName()),
+                    getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : JDBCUtils.escapeWildCards(session, getSchema().getName()),
                     JDBCUtils.escapeWildCards(session, getName()),
                     getDataSource().getAllObjectsPattern()

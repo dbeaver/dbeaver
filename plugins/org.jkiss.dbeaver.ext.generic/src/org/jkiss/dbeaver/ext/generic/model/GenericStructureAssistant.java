@@ -129,7 +129,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         final GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCResultSet dbResult = session.getMetaData().getProcedures(
-            catalog == null ? null : JDBCUtils.escapeWildCards(session, catalog.getName()),
+            catalog == null ? null : catalog.getName(),
             schema == null ? null : JDBCUtils.escapeWildCards(session, schema.getName()),
             procNameMask)) {
             while (dbResult.next()) {

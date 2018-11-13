@@ -350,9 +350,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             try (JDBCResultSet dbResult = metaData.getExportedKeys(
-                getCatalog() == null ? null : JDBCUtils.escapeWildCards(session, getCatalog().getName()),
-                getSchema() == null ? null : JDBCUtils.escapeWildCards(session, getSchema().getName()),
-                JDBCUtils.escapeWildCards(session, getName())))
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                getName()))
             {
                 while (dbResult.next()) {
                     ForeignKeyInfo fkInfo = new ForeignKeyInfo();
