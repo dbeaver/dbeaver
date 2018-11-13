@@ -72,7 +72,7 @@ public class OracleSynonym extends OracleSchemaObject implements DBSAlias {
         return schema == null ? objectOwner : schema;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, linkPossible = true, order = 4)
     public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
         if (objectTypeName == null) {
