@@ -270,14 +270,18 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
         Point textSize = super.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
         Point listSize = new Point(0, 0);
-        GC gc = new GC(getDisplay());
-        for (ITEM_TYPE item : items) {
-            String itemText = labelProvider.getText(item);
-            Point point = gc.stringExtent(itemText);
-            listSize.x = Math.max(listSize.x, point.x);
-            listSize.y = Math.max(listSize.y, point.y);
+        try {
+            GC gc = new GC(getDisplay());
+            for (ITEM_TYPE item : items) {
+                String itemText = labelProvider.getText(item);
+                Point point = gc.stringExtent(itemText);
+                listSize.x = Math.max(listSize.x, point.x);
+                listSize.y = Math.max(listSize.y, point.y);
+            }
+            gc.dispose();
+        } catch (Throwable e) {
+            // ignore. Something is wrong with GC? #4539
         }
-        gc.dispose();
         listSize.x += imageLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed).x;
         listSize.x += arrowSize.x;
         listSize.x += 20;
