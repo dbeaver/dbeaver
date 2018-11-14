@@ -167,8 +167,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
             // 1. Read all external schemas info
             esSchemaMap.clear();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM pg_catalog.svv_external_schemas WHERE databasename=?")) {
-                dbStat.setString(1, database.getName());
+                "SELECT * FROM " + DBUtils.getQuotedIdentifier(database) + ".pg_catalog.svv_external_schemas")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String esSchemaName = dbResult.getString("schemaname");
