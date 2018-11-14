@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
@@ -115,9 +116,9 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
-                "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " RENAME COLUMN " +
-                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " +
-                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName()))
+                    "EXEC " + SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), "sp_rename") +
+                    " '" + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) +
+                    "' , '" + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName()) + "', 'COLUMN'")
         );
     }
 
