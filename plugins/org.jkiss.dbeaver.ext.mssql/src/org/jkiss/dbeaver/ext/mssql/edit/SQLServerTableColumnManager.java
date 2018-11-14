@@ -92,7 +92,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
             actionList.add(new SQLDatabasePersistAction(
                 "Modify column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
-                " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
+                " ALTER COLUMN " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
         }
         if (hasComment) {
             actionList.add(new SQLDatabasePersistAction(
