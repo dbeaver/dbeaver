@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -34,8 +35,10 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
 import java.util.List;
@@ -57,6 +60,16 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         }
     };
 
+    protected final ColumnModifier<SQLServerTableColumn> SQLServerDefaultModifier = (monitor, column, sql, command) -> {
+        if (!column.isPersisted()) {
+            DefaultModifier.appendModifier(monitor, column, sql, command);
+        } else {
+            // Modify existing column
+            // TODO: implement default constraint create/drop
+            //String defaultValue = CommonUtils.toString(column.getDefaultValue());
+        }
+    };
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, SQLServerTableColumn> getObjectsCache(SQLServerTableColumn object)
@@ -66,7 +79,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
     protected ColumnModifier[] getSupportedModifiers(SQLServerTableColumn column, Map<String, Object> options)
     {
-        return new ColumnModifier[] {DataTypeModifier, IdentityModifier, DefaultModifier, NullNotNullModifier};
+        return new ColumnModifier[] {DataTypeModifier, IdentityModifier, SQLServerDefaultModifier, NullNotNullModifier};
     }
 
     @Override
@@ -96,10 +109,20 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
                 " ALTER COLUMN " + getNestedDeclaration(monitor, column.getTable(), command, options))); //$NON-NLS-1$
         }
         if (hasComment) {
-            actionList.add(new SQLDatabasePersistAction(
-                "Comment column",
-                "COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                    " IS '" + column.getDescription() + "'"));
+            boolean isUpdate = SQLServerUtils.isCommentSet(
+                monitor,
+                column.getTable().getDatabase(),
+                SQLServerObjectClass.OBJECT_OR_COLUMN,
+                column.getTable().getObjectId(),
+                column.getObjectId());
+            actionList.add(
+                new SQLDatabasePersistAction(
+                    "Add column comment",
+                    "EXEC " + SQLServerUtils.getSystemTableName(column.getTable().getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
+                        " 'MS_Description', " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
+                        " 'user', '" + column.getTable().getSchema().getName() + "'," +
+                        " 'table', '" + column.getTable().getName() + "'," +
+                        " 'column', '" + column.getName() + "'"));
         }
     }
 

@@ -76,7 +76,7 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
+        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
             appendTableModifiers(monitor, command.getObject(), command, query, true);
@@ -85,12 +85,22 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<SQLServerTable, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, NestedObjectCommand<SQLServerTable, PropertyHandler> command, Map<String, Object> options) {
+        final SQLServerTable table = command.getObject();
         if (command.getProperty("description") != null) {
-            actions.add(new SQLDatabasePersistAction(
-                "Comment table",
-                "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
+            boolean isUpdate = SQLServerUtils.isCommentSet(
+                monitor,
+                table.getDatabase(),
+                SQLServerObjectClass.OBJECT_OR_COLUMN,
+                table.getObjectId(),
+                0);
+            actionList.add(
+                new SQLDatabasePersistAction(
+                    "Add table comment",
+                    "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
+                        " 'MS_Description', " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
+                        " 'user', '" + table.getSchema().getName() + "'," +
+                        " 'table', '" + table.getName() + "'"));
         }
     }
 
