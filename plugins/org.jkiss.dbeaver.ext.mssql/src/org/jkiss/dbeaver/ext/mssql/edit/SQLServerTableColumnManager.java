@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -101,7 +102,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final SQLServerTableColumn column = command.getObject();
-        boolean hasComment = command.getProperty("description") != null;
+        boolean hasComment = command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null;
         if (!hasComment || command.getProperties().size() > 1) {
             actionList.add(new SQLDatabasePersistAction(
                 "Modify column",

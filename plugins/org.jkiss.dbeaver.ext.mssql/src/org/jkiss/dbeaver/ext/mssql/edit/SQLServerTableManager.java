@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -76,7 +77,7 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
+        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
             appendTableModifiers(monitor, command.getObject(), command, query, true);
@@ -87,7 +88,7 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, NestedObjectCommand<SQLServerTable, PropertyHandler> command, Map<String, Object> options) {
         final SQLServerTable table = command.getObject();
-        if (command.getProperty("description") != null) {
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             boolean isUpdate = SQLServerUtils.isCommentSet(
                 monitor,
                 table.getDatabase(),
