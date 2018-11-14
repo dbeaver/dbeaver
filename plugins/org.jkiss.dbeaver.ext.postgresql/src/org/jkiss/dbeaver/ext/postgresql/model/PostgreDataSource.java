@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
@@ -159,12 +160,19 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
+        } else {
+            if (getServerType() instanceof PostgreServerRedshift) {
+                if (!props.containsKey(PostgreConstants.PROP_SSL)) {
+                    // We need to disable SSL explicitly
+                    props.put(PostgreConstants.PROP_SSL, "false");
+                }
+            }
         }
         return props;
     }
 
     private void initSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
-        props.put("ssl", "true");
+        props.put(PostgreConstants.PROP_SSL, "true");
 
         final String rootCertProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_ROOT_CERT);
         if (!CommonUtils.isEmpty(rootCertProp)) {
