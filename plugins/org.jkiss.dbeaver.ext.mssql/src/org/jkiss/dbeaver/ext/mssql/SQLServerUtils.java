@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -152,4 +153,24 @@ public class SQLServerUtils {
         }
     }
 
+    public static boolean isCommentSet(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerObjectClass objectClass, long majorId, long minorId) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, database, "Check extended property")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT 1 FROM "+ SQLServerUtils.getExtendedPropsTableName(database) +
+                " WHERE [class] = ? AND [major_id] = ? AND [minor_id] = ? AND [name] = N'MS_Description'")) {
+                dbStat.setInt(1, objectClass.getClassId());
+                dbStat.setLong(2, majorId);
+                dbStat.setLong(3, minorId);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        } catch (Throwable e) {
+            log.debug("Error checking extended property in dictionary", e);
+            return false;
+        }
+    }
 }
