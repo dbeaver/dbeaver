@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -114,11 +115,13 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
+        SQLServerTable table = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "ALTER TABLE " + DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + //$NON-NLS-1$
-                    " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
+                "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), "sp_rename") +
+                    " '" + table.getSchema().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getOldName()) +
+                    "' , '" + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getNewName()) + "', 'TABLE'")
         );
     }
 

@@ -191,6 +191,17 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return super.getPrecision();
     }
 
+    @Property(viewable = true, editable = true, updatable = true, order = 50)
+    @Override
+    public boolean isRequired() {
+        return super.isRequired();
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 70)
+    @Override
+    public String getDefaultValue() {
+        return super.getDefaultValue();
+    }
 
     @Override
     public DBPDataKind getDataKind() {
