@@ -48,7 +48,7 @@ import java.util.Map;
 /**
  * PostgreProcedure
  */
-public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, PostgrePermissionsOwner, DBPUniqueObject, DBPOverloadedObject, DBPRefreshableObject
+public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, PostgrePermissionsOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
     private static final String CAT_FLAGS = "Flags";
@@ -307,6 +307,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     public String getSpecificName() {
         return name + "_" + getObjectId();
+    }
+
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        this.overloadedName = makeOverloadedName(getSchema(), getName(), params, false);
     }
 
     @Override

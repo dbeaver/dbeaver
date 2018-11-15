@@ -58,10 +58,14 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
 
     public static boolean renameNode(IWorkbenchWindow workbenchWindow, final DBNNode node, String newName)
     {
-        if (newName == null) {
-            newName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Rename " + node.getNodeType(), node.getNodeName());
+        String oldName = node instanceof DBNDatabaseNode ? ((DBNDatabaseNode) node).getPlainNodeName(true, false) : node.getNodeName();
+        if (oldName == null) {
+            oldName = "?";
         }
-        if (CommonUtils.isEmpty(newName) || newName.equals(node.getNodeName())) {
+        if (newName == null) {
+            newName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Rename " + node.getNodeType(), oldName);
+        }
+        if (CommonUtils.isEmpty(newName) || newName.equals(oldName)) {
             return false;
         }
 
@@ -84,7 +88,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 });
 */
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError("Rename", "Can't rename object '" + node.getNodeName() + "'", e);
+                DBUserInterface.getInstance().showError("Rename", "Can't rename object '" + oldName + "'", e);
             }
         }
         if (node instanceof DBNDatabaseNode) {

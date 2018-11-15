@@ -65,9 +65,9 @@ public abstract class AbstractProcedure<
         return name;
     }
 
-    public void setName(String tableName)
+    public void setName(String name)
     {
-        this.name = tableName;
+        this.name = name;
     }
 
     @Nullable
