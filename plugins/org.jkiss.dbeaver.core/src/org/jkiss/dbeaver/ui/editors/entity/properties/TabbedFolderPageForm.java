@@ -529,8 +529,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             UIUtils.createControlLabel(
                 parent,
                 property.getDisplayName());
-            Composite linkPH = new Composite(parent, SWT.BORDER);
-            if (!DBSObject.class.isAssignableFrom(propType)) {
+            Composite linkPH = new Composite(parent, SWT.NONE);
+            {
                 linkPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             }
             GridLayout layout = new GridLayout(1, false);
@@ -548,9 +548,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     }
                 }
             });
-            if (!DBSObject.class.isAssignableFrom(propType)) {
-                link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            }
+            link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             return link;
         } else {
             return UIUtils.createLabelText(
