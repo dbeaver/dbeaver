@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * OracleStructureAssistant
+ * SQLServerStructureAssistant
  */
 public class SQLServerStructureAssistant implements DBSStructureAssistant
 {
