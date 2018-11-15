@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -45,7 +47,7 @@ import java.util.*;
 /**
  * PostgreTypeType
  */
-public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass, DBPQualifiedObject, DBPImageProvider
+public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider
 {
     private static final Log log = Log.getLog(PostgreDataType.class);
 
@@ -96,6 +98,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private long collationId;
     private String defaultValue;
     private String canonicalName;
+    private String constraintText;
 
     private final AttributeCache attributeCache;
     private Object[] enumValues;
@@ -263,6 +266,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Override
+    @Property(viewable = true, order = 1)
     public String getName() {
         return super.getName();
     }
@@ -411,8 +415,29 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Property(category = CAT_MODIFIERS)
-    public long getCollationId() {
-        return collationId;
+    public PostgreCollation getCollationId(DBRProgressMonitor monitor) throws DBException {
+        if (collationId != 0) {
+            return getParentObject().getCollation(monitor, collationId);
+        }
+        return null;
+    }
+
+    @Property(category = CAT_MODIFIERS)
+    public String getConstraint(DBRProgressMonitor monitor) throws DBException {
+        if (typeType != PostgreTypeType.d) {
+            return null;
+        }
+        if (constraintText != null) {
+            return constraintText;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read domain constraint value")) {
+            this.constraintText = JDBCUtils.queryString(
+                session,
+                "SELECT pg_catalog.pg_get_constraintdef((SELECT oid FROM pg_catalog.pg_constraint WHERE contypid = " + getObjectId() + "), true)");
+        } catch (SQLException e) {
+            throw new DBCException("Error reading domain constraint value", e, getDataSource());
+        }
+        return this.constraintText;
     }
 
     @Property(category = CAT_ARRAY)
@@ -531,6 +556,69 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             return DBIcon.TYPE_JSON;
         }
         return null;
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        StringBuilder sql = new StringBuilder();
+
+        if (typeType == PostgreTypeType.d) {
+            sql.append("-- DROP DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
+        } else {
+            sql.append("-- DROP TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
+        }
+
+        switch (typeType) {
+            case p: {
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";");
+                break;
+            }
+            case d: {
+                sql.append("CREATE DOMAIN ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ").append(getBaseType(monitor).getFullyQualifiedName(DBPEvaluationContext.DDL));
+                PostgreCollation collation = getCollationId(monitor);
+                if (collation != null) {
+                    sql.append("\n\tCOLLATE ").append(collation.getName());
+                }
+                if (!CommonUtils.isEmpty(defaultValue)) {
+                    sql.append("\n\tDEFAULT ").append(defaultValue);
+                }
+                String constraint = getConstraint(monitor);
+                if (!CommonUtils.isEmpty(constraint)) {
+                    sql.append("\n\tCONSTRAINT ").append(constraint);
+                }
+
+                sql.append(";");
+                break;
+            }
+            case e: {
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS ENUM (\n");
+                if (enumValues != null) {
+                    for (int i = 0; i < enumValues.length; i++) {
+                        Object item = enumValues[i];
+                        sql.append("\t").append(SQLUtils.quoteString(this, CommonUtils.toString(item)));
+                        if (i < enumValues.length - 1) sql.append(",\n");
+                    }
+                    sql.append(");\n");
+                }
+                break;
+            }
+            default: {
+                sql.append("-- Data type ").append(getFullyQualifiedName(DBPEvaluationContext.UI)).append(" (").append(typeType.getName()).append(") DDL is not supported\n");
+                break;
+            }
+        }
+
+        String description = getDescription();
+        if (!CommonUtils.isEmpty(description)) {
+            sql.append("\nCOMMENT ON TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" IS ").append(SQLUtils.quoteString(this, description));
+        }
+
+        return sql.toString();
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+        throw new DBException("Not supported");
     }
 
     class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {

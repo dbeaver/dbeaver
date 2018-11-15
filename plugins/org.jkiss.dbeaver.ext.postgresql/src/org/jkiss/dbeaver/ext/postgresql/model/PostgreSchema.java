@@ -167,6 +167,18 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     }
 
     @Association
+    public PostgreCollation getCollation(DBRProgressMonitor monitor, long id)
+        throws DBException {
+        for (PostgreCollation collation : collationCache.getAllObjects(monitor, this)) {
+            if (collation.getObjectId() == id) {
+                return collation;
+            }
+        }
+        log.debug("Collation '" + id + "' not found in schema " + getName());
+        return null;
+    }
+
+    @Association
     public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
         throws DBException {
         return extensionCache.getAllObjects(monitor, this);
