@@ -32,10 +32,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.Map;
 
 /**
- * Oracle data type
+ * SQL Server data type
  */
 public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQualifiedObject, DBPScriptObject {
 
@@ -43,6 +44,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     private DBSObject owner;
     private String name;
+    private int typeID;
     private DBPDataKind dataKind;
     private int systemTypeId;
     private int userTypeId;
@@ -77,8 +79,10 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         if (userType) {
             SQLServerDataType systemDataType = getSystemDataType();
             this.dataKind = systemDataType == null ? DBPDataKind.UNKNOWN : systemDataType.getDataKind();
+            this.typeID = systemDataType == null ? Types.OTHER : systemDataType.getTypeID();
         } else {
             this.dataKind = getDataKindByName(this.name);
+            this.typeID = getDataTypeIDByName(this.name);
         }
 
         this.persisted = true;
@@ -135,7 +139,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     @Override
     public int getTypeID() {
-        return userTypeId;
+        return typeID;
     }
 
     @Override
@@ -143,20 +147,20 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return dataKind;
     }
 
-    @Property(viewable = false, order = 20)
     @Override
+    @Property(viewable = false, order = 20)
     public Integer getScale() {
         return scale == 0 ? null : scale;
     }
 
-    @Property(viewable = false, order = 21)
     @Override
+    @Property(viewable = false, order = 21)
     public Integer getPrecision() {
         return precision == 0 ? null : precision;
     }
 
-    @Property(viewable = false, order = 22)
     @Override
+    @Property(viewable = false, order = 22)
     public long getMaxLength() {
         return maxLength;
     }
@@ -169,6 +173,21 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     @Override
     public int getMaxScale() {
         return scale;
+    }
+
+    @Property(viewable = false, order = 23)
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    @Property(viewable = false, order = 24)
+    public boolean isAssemblyType() {
+        return assemblyType;
+    }
+
+    @Property(viewable = false, order = 25)
+    public String getCollationName() {
+        return collationName;
     }
 
     @NotNull
@@ -280,6 +299,78 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
             default:
                 return DBPDataKind.OBJECT;
+        }
+    }
+
+    public static int getDataTypeIDByName(String systemTypeName) {
+        switch (systemTypeName) {
+            case "char":
+                return Types.CHAR;
+            case "nchar":
+                return Types.NCHAR;
+            case "ntext":
+            case "nvarchar":
+                return Types.NVARCHAR;
+            case "varchar":
+            case "text":
+                return Types.VARCHAR;
+
+            case "sysname":
+                return Types.VARCHAR;
+
+            case "tinyint":
+                return Types.TINYINT;
+            case "bigint":
+                return Types.BIGINT;
+            case "bit":
+                return Types.BIT;
+            case "int":
+                return Types.INTEGER;
+            case "numeric":
+                return Types.NUMERIC;
+            case "real":
+                return Types.REAL;
+            case "smallint":
+                return Types.SMALLINT;
+            case "decimal":
+                return Types.DECIMAL;
+            case "float":
+                return Types.FLOAT;
+
+            case "date":
+                return Types.DATE;
+            case "datetime":
+            case "datetime2":
+                return Types.TIMESTAMP;
+            case "datetimeoffset":
+            case "smalldatetime":
+                return Types.TIMESTAMP;
+            case "time":
+                return Types.TIME;
+            case "timestamp":
+                return Types.TIMESTAMP;
+            case "binary":
+                return Types.BINARY;
+            case "image":
+            case "varbinary":
+                return Types.VARBINARY;
+            case "uniqueidentifier":
+                return Types.VARBINARY;
+
+            case "geography":
+            case "geometry":
+            case "hierarchyid":
+                return Types.OTHER;
+            case "money":
+            case "smallmoney":
+            case "sql_variant":
+                return Types.OTHER;
+
+            case "xml":
+                return Types.SQLXML;
+
+            default:
+                return Types.OTHER;
         }
     }
 
