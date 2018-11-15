@@ -16,25 +16,20 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.ui.controls.resultset;
+
+import org.eclipse.core.commands.IParameterValues;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.commands.IParameterValues;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.content.IContentType;
+public class PanelIdParameterValues implements IParameterValues {
 
-//FIXME: AF: to be moved to org.jkiss.dbeaver.runtime.core bundle
-public class ContentTypeParameterValues implements IParameterValues {
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Map getParameterValues() {
-        final Map values = new HashMap();
-        IContentType[] allContentTypes = Platform.getContentTypeManager().getAllContentTypes();
-        for (IContentType contentType : allContentTypes) {
-            values.put(contentType.getName(), contentType.getId());
+    public Map<String,String> getParameterValues() {
+        final Map<String,String> values = new HashMap<>();
+        for (ResultSetPanelDescriptor pd : ResultSetPresentationRegistry.getInstance().getAllPanels()) {
+            values.put(pd.getLabel(), pd.getId());
         }
         return values;
     }

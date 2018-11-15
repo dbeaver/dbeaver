@@ -52,7 +52,7 @@ public class ResultSetPropertyTester extends PropertyTester
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         try {
-            ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet((IWorkbenchPart)receiver);
+            ResultSetViewer rsv = (ResultSetViewer) ResultSetHandlerMain.getActiveResultSet((IWorkbenchPart)receiver);
             return rsv != null && checkResultSetProperty(rsv, property, expectedValue);
         } catch (Throwable e) {
             if (!DBeaverCore.isClosing()) {

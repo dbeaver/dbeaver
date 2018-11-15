@@ -732,7 +732,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     public void fillMenu(@NotNull IMenuManager menu) {
         menu.add(ActionUtils.makeCommandContribution(
             controller.getSite(),
-            ResultSetCommandHandler.CMD_TOGGLE_PANELS,
+            ResultSetHandlerMain.CMD_TOGGLE_PANELS,
             CommandContributionItem.STYLE_CHECK));
     }
 
