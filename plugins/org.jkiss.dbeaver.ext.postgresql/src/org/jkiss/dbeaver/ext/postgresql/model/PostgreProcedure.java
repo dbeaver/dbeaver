@@ -212,7 +212,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             log.error("Error parsing parameters defaults", e);
         }
 
-        this.overloadedName = makeOverloadedName(false);
+        this.overloadedName = makeOverloadedName(getSchema(), getName(), params, false);
 
         {
             final long varTypeId = JDBCUtils.safeGetLong(dbResult, "provariadic");
@@ -498,8 +498,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return procVolatile;
     }
 
-    private String makeOverloadedName(boolean quote) {
-        String selfName = (quote ? DBUtils.getQuotedIdentifier(this) : name);
+    public static String makeOverloadedName(PostgreSchema schema, String name, List<PostgreProcedureParameter> params, boolean quote) {
+        String selfName = (quote ? DBUtils.getQuotedIdentifier(schema.getDataSource(), name) : name);
         if (!CommonUtils.isEmpty(params)) {
             StringBuilder paramsSignature = new StringBuilder(64);
             paramsSignature.append("(");
@@ -515,7 +515,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 final PostgreDataType dataType = param.getParameterType();
                 final PostgreSchema typeContainer = dataType.getParentObject();
                 if (typeContainer == null ||
-                    typeContainer == getContainer() ||
+                    typeContainer == schema ||
                     typeContainer.isCatalogSchema())
                 {
                     paramsSignature.append(dataType.getName());
@@ -539,7 +539,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     public String getFullQualifiedSignature() {
-        return DBUtils.getQuotedIdentifier(getContainer()) + "." + makeOverloadedName(true);
+        return DBUtils.getQuotedIdentifier(getContainer()) + "." +
+            makeOverloadedName(getSchema(), getName(), params, true);
     }
 
     public String getProcedureTypeName() {
