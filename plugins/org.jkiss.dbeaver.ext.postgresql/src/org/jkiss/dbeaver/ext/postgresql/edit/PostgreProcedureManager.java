@@ -22,13 +22,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -48,7 +47,7 @@ import java.util.Map;
 /**
  * PostgreProcedureManager
  */
-public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, PostgreSchema> {
+public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, PostgreSchema> implements DBEObjectRenamer<PostgreProcedure> {
 
     @Nullable
     @Override
@@ -137,6 +136,24 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
             }
         }
 
+    }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, PostgreProcedure object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    {
+        PostgreProcedure procedure = command.getObject();
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Rename function",
+                "ALTER " + command.getObject().getProcedureTypeName() + " " +
+                        DBUtils.getQuotedIdentifier(procedure.getSchema()) + "." + PostgreProcedure.makeOverloadedName(procedure.getSchema(), command.getOldName(), procedure.getParameters(monitor), true) +
+                    " RENAME TO " + DBUtils.getQuotedIdentifier(procedure.getDataSource(), command.getNewName()))
+        );
     }
 
     private static class CreateFunctionPage extends CreateProcedurePage {
