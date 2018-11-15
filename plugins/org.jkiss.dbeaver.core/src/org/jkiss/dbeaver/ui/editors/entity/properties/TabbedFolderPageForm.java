@@ -573,7 +573,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private String getLinktitle(Object value) {
-        return value == null ? "          " : "<a>" + objectValueToString(value) + "</a>";
+        return value == null ? "N/A" : "<a>" + objectValueToString(value) + "</a>";
     }
 
     private void loadEditorValues(Map<DBPPropertyDescriptor, Object> editorValues) {
