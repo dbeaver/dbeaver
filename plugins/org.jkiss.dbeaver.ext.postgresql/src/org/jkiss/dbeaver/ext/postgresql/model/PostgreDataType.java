@@ -602,6 +602,21 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 }
                 break;
             }
+            case r: {
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n");
+                PostgreCollation collation = getCollationId(monitor);
+                if (collation != null) {
+                    sql.append("\n\tCOLLATION ").append(collation.getName());
+                }
+                if (!CommonUtils.isEmpty(canonicalName)) {
+                    sql.append("\n\tCOLLATION ").append(canonicalName);
+                }
+                // TODO: read data from pg_range
+//                if (!CommonUtils.isEmpty(su)) {
+//                    sql.append("\n\tCOLLATION ").append(canonicalName);
+//                }
+                break;
+            }
             default: {
                 sql.append("-- Data type ").append(getFullyQualifiedName(DBPEvaluationContext.UI)).append(" (").append(typeType.getName()).append(") DDL is not supported\n");
                 break;
