@@ -109,7 +109,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(DBRProgressMonitor monitor) {
         typesCache.clearCache();
         schemaCache.clearCache();
         triggerCache.clearCache();
@@ -124,14 +124,14 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return typesCache.getAllObjects(monitor, this);
     }
 
-    public SQLServerDataType getDataTypeByUserTypeId(DBRProgressMonitor monitor, String typeName) throws DBException {
+    public SQLServerDataType getDataType(DBRProgressMonitor monitor, String typeName) throws DBException {
         return typesCache.getObject(monitor, this, typeName);
     }
 
     public SQLServerDataType getDataTypeByUserTypeId(DBRProgressMonitor monitor, int typeID) throws DBException {
         typesCache.getAllObjects(monitor, this);
 
-        SQLServerDataType dataType = typesCache.getDataType(typeID);;
+        SQLServerDataType dataType = typesCache.getDataType(typeID);
         if (dataType != null) {
             return dataType;
         }
@@ -154,7 +154,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         }
 
         @Override
-        protected SQLServerDataType fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerDataType fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) {
             return new SQLServerDataType(database, resultSet);
         }
 
@@ -223,7 +223,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
     }
 
     @Override
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) {
         return SQLServerSchema.class;
     }
 
@@ -262,7 +262,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         }
 
         @Override
-        protected SQLServerSchema fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerSchema fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDatabase owner, @NotNull JDBCResultSet resultSet) {
             return new SQLServerSchema(owner, resultSet);
         }
 
@@ -302,7 +302,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         }
 
         @Override
-        protected SQLServerDatabaseTrigger fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerDatabaseTrigger fetchObject(JDBCSession session, SQLServerDatabase database, JDBCResultSet resultSet) {
             return new SQLServerDatabaseTrigger(database, resultSet);
         }
 
