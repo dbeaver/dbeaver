@@ -91,7 +91,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
         return objectId;
     }
 
-    @Property(viewable = false, order = 3)
+    //@Property(viewable = false, order = 3)
     public SQLServerObjectType getObjectType() {
         return objectType;
     }
@@ -195,7 +195,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     }
 
     @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    //@Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         return getDeclaration(monitor);
