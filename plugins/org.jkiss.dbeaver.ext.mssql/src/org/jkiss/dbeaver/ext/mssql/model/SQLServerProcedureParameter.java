@@ -56,7 +56,7 @@ public class SQLServerProcedureParameter implements DBSProcedureParameter, DBSAt
         this.ordinalPosition = JDBCUtils.safeGetInt(dbResult, "parameter_id");
 
         int typeID = JDBCUtils.safeGetInt(dbResult, "user_type_id");
-        this.dataType = procedure.getContainer().getDatabase().getDataType(monitor, typeID);
+        this.dataType = procedure.getContainer().getDatabase().getDataTypeByUserTypeId(monitor, typeID);
 
         boolean isOutput = JDBCUtils.safeGetInt(dbResult, "is_output") != 0;
         boolean isCursor = JDBCUtils.safeGetInt(dbResult, "is_cursor_ref") != 0;

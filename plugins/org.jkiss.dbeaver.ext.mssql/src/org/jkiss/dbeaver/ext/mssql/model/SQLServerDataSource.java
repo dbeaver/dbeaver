@@ -118,6 +118,18 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         return dataTypeCache.getCachedObjects();
     }
 
+    public SQLServerDataType getSystemDataType(int systemTypeId) {
+        for (SQLServerDataType dt : dataTypeCache.getCachedObjects()) {
+            if (dt.getObjectId() == systemTypeId) {
+                return dt;
+            }
+        }
+        log.debug("System data type " + systemTypeId + " not found");
+        SQLServerDataType sdt = new SQLServerDataType(this, String.valueOf(systemTypeId), systemTypeId, DBPDataKind.OBJECT, java.sql.Types.OTHER);
+        dataTypeCache.cacheObject(sdt);
+        return sdt;
+    }
+
     @Override
     public SQLServerDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
@@ -128,7 +140,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         DBSDataType dt = super.getLocalDataType(typeID);
         if (dt == null) {
             log.debug("System data type " + typeID + " not found");
-            return null;
         }
         return (SQLServerDataType) dt;
     }
