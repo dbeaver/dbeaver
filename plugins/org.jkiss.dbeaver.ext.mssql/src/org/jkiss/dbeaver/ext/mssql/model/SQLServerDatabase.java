@@ -124,18 +124,18 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return typesCache.getAllObjects(monitor, this);
     }
 
-    public SQLServerDataType getDataType(DBRProgressMonitor monitor, String typeName) throws DBException {
+    public SQLServerDataType getDataTypeByUserTypeId(DBRProgressMonitor monitor, String typeName) throws DBException {
         return typesCache.getObject(monitor, this, typeName);
     }
 
-    public SQLServerDataType getDataType(DBRProgressMonitor monitor, int typeID) throws DBException {
+    public SQLServerDataType getDataTypeByUserTypeId(DBRProgressMonitor monitor, int typeID) throws DBException {
         typesCache.getAllObjects(monitor, this);
 
         SQLServerDataType dataType = typesCache.getDataType(typeID);;
         if (dataType != null) {
             return dataType;
         }
-        dataType = dataSource.getLocalDataType(typeID);
+        dataType = dataSource.getSystemDataType(typeID);
         if (dataType != null) {
             return dataType;
         }

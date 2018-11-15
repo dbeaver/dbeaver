@@ -44,7 +44,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     private DBSObject owner;
     private String name;
-    private int typeID;
+    private int valueType;
     private DBPDataKind dataKind;
     private int systemTypeId;
     private int userTypeId;
@@ -79,13 +79,21 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         if (userType) {
             SQLServerDataType systemDataType = getSystemDataType();
             this.dataKind = systemDataType == null ? DBPDataKind.UNKNOWN : systemDataType.getDataKind();
-            this.typeID = systemDataType == null ? Types.OTHER : systemDataType.getTypeID();
+            this.valueType = systemDataType == null ? Types.OTHER : systemDataType.getTypeID();
         } else {
             this.dataKind = getDataKindByName(this.name);
-            this.typeID = getDataTypeIDByName(this.name);
+            this.valueType = getDataTypeIDByName(this.name);
         }
 
         this.persisted = true;
+    }
+
+    public SQLServerDataType(DBSObject owner, String name, int systemId, DBPDataKind dataKind, int valueType) {
+        this.owner = owner;
+        this.name = name;
+        this.systemTypeId = userTypeId = systemId;
+        this.dataKind = dataKind;
+        this.valueType = valueType;
     }
 
     @Override
@@ -115,7 +123,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     public SQLServerDataType getSystemDataType() {
         if (userType) {
-            return getDataSource().getLocalDataType(systemTypeId);
+            return getDataSource().getSystemDataType(systemTypeId);
         }
         return this;
     }
@@ -139,7 +147,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     @Override
     public int getTypeID() {
-        return typeID;
+        return valueType;
     }
 
     @Override

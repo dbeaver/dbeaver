@@ -512,7 +512,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
-            sql.append("SELECT t.name as table_name,fk.name,fk.key_index_id,fk.is_disabled,fkc.*,tr.schema_id referenced_schema_id\nFROM ")
+            sql.append("SELECT t.name as table_name,fk.name,fk.key_index_id,fk.is_disabled,fk.delete_referential_action,fk.update_referential_action," +
+                "fkc.*,tr.schema_id referenced_schema_id\nFROM ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "tables")).append(" t,")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "foreign_keys")).append(" fk,")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "foreign_key_columns")).append(" fkc, ")
