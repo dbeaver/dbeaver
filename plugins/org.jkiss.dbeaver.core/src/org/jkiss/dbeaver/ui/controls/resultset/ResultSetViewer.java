@@ -958,6 +958,9 @@ public class ResultSetViewer extends Viewer
         for (final ResultSetPanelDescriptor panel : availablePanels) {
             items.add(new ActionContributionItem(new PanelToggleAction(panel)));
         }
+        items.add(new Separator());
+        items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
+        items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
         return items;
     }
 
