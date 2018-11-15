@@ -30,12 +30,11 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 /**
 * PostgreSQL dialect
 */
-class PostgreDialect extends JDBCSQLDialect {
+public class PostgreDialect extends JDBCSQLDialect {
 
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -48,71 +47,77 @@ class PostgreDialect extends JDBCSQLDialect {
         super("PostgreSQL");
     }
 
+    public void addExtraKeywords(String ... keywords) {
+        super.addSQLKeywords(Arrays.asList(keywords));
+    }
+
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
 
-        addSQLKeywords(
-            Arrays.asList(
-                "SHOW",
-                "TYPE",
-                "USER",
-                "COMMENT",
-                "MATERIALIZED",
-                "ILIKE",
-                "ELSIF",
-                "ELSEIF",
-                "ANALYSE",
-                "ANALYZE",
-                "CONCURRENTLY",
-                "FREEZE",
-                "LANGUAGE",
-                "MODULE",
-                "OFFSET",
-                //"PUBLIC",
-                "RETURNING",
-                "VARIADIC",
-                "PERFORM",
-                "FOREACH",
-                "LOOP",
-                "PERFORM",
-                "RAISE",
-                "NOTICE",
-                "CONFLICT",
-                "EXTENSION",
+        addExtraKeywords(
+            "SHOW",
+            "TYPE",
+            "USER",
+            "COMMENT",
+            "MATERIALIZED",
+            "ILIKE",
+            "ELSIF",
+            "ELSEIF",
+            "ANALYSE",
+            "ANALYZE",
+            "CONCURRENTLY",
+            "FREEZE",
+            "LANGUAGE",
+            "MODULE",
+            "OFFSET",
+            //"PUBLIC",
+            "RETURNING",
+            "VARIADIC",
+            "PERFORM",
+            "FOREACH",
+            "LOOP",
+            "PERFORM",
+            "RAISE",
+            "NOTICE",
+            "CONFLICT",
+            "EXTENSION",
 
-                // "DEBUG", "INFO", "NOTICE", "WARNING", // levels
-                // "MESSAGE", "DETAIL", "HINT", "ERRCODE", //options
+            // "DEBUG", "INFO", "NOTICE", "WARNING", // levels
+            // "MESSAGE", "DETAIL", "HINT", "ERRCODE", //options
 
-                "DATATYPE",
-                "TABLESPACE",
-                "REFRESH"
-            ));
+            "DATATYPE",
+            "TABLESPACE",
+            "REFRESH"
+        );
 
-        addFunctions(
-            Arrays.asList(
-                "CURRENT_DATABASE",
-                "ARRAY_AGG",
-                "BIT_AND",
-                "BIT_OR",
-                "BOOL_AND",
-                "BOOL_OR",
-                "JSON_AGG",
-                "JSONB_AGG",
-                "JSON_OBJECT_AGG",
-                "JSONB_OBJECT_AGG",
-                "STRING_AGG",
-                "XMLAGG",
-                "BIT_LENGTH",
-                "CURRENT_CATALOG",
-                "CURRENT_SCHEMA",
-                "SQLCODE",
-                "LENGTH",
-                "SQLERROR"
-            ));
+        addExtraKeywords(
+            "CURRENT_DATABASE",
+            "ARRAY_AGG",
+            "BIT_AND",
+            "BIT_OR",
+            "BOOL_AND",
+            "BOOL_OR",
+            "JSON_AGG",
+            "JSONB_AGG",
+            "JSON_OBJECT_AGG",
+            "JSONB_OBJECT_AGG",
+            "STRING_AGG",
+            "XMLAGG",
+            "BIT_LENGTH",
+            "CURRENT_CATALOG",
+            "CURRENT_SCHEMA",
+            "SQLCODE",
+            "LENGTH",
+            "SQLERROR"
+        );
 
         addFunctions(Arrays.asList(PostgreConstants.POSTGIS_FUNCTIONS));
 
         removeSQLKeyword("LENGTH");
+
+        if (dataSource instanceof PostgreDataSource) {
+            ((PostgreDataSource) dataSource).getServerType().configureDialect(this);
+        }
     }
 
     @Override
