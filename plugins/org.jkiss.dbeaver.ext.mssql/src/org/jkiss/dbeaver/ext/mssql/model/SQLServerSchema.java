@@ -437,7 +437,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
      */
     static class UniqueConstraintCache extends JDBCCompositeCache<SQLServerSchema, SQLServerTable, SQLServerTableUniqueKey, SQLServerTableIndexColumn> {
 
-        protected UniqueConstraintCache(TableCache tableCache) {
+        UniqueConstraintCache(TableCache tableCache) {
             super(tableCache, SQLServerTable.class, "table_name", "name");
         }
 
