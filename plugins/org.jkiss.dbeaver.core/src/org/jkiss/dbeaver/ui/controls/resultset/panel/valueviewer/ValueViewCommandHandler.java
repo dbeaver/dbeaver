@@ -24,7 +24,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
@@ -37,7 +37,7 @@ public class ValueViewCommandHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        final ResultSetViewer rsv = (ResultSetViewer) ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (rsv == null) {
             return null;
         }

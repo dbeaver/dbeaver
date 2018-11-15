@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -47,7 +47,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
             DBeaverUI.getInstance().showError("Open Excel", "No active results viewer");
             return null;

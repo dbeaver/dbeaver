@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
 
 /**
  * Spreadsheet command handler.
@@ -38,7 +35,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
 
     public static SpreadsheetPresentation getActiveSpreadsheet(ExecutionEvent event)
     {
-        IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet != null) {
             IResultSetPresentation presentation = resultSet.getActivePresentation();
             if (presentation instanceof SpreadsheetPresentation) {
