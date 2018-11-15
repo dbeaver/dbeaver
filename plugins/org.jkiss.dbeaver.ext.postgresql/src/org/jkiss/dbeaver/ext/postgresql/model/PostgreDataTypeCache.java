@@ -114,7 +114,8 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     {
         // Initially cache only base types (everything but composite and arrays)
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT t.oid,t.* \n").append("FROM pg_catalog.pg_type t WHERE typnamespace=? ");
+        sql.append("SELECT t.oid,t.* \n" +
+            "FROM pg_catalog.pg_type t WHERE typnamespace=? ");
         if (PostgreUtils.supportsTypeCategory(session.getDataSource())) {
             sql.append("AND typcategory not in ('A','C')");
         } else {
