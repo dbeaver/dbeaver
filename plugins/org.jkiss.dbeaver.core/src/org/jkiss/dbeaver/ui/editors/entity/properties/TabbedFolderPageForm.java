@@ -83,6 +83,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     private Button saveButton;
     private Button scriptButton;
     private Button revertButton;
+    private Composite curButtonsContainer;
 
     private transient volatile boolean isLoading;
 
@@ -403,16 +404,20 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (!CommonUtils.isEmpty(propDescription)) {
                 editControl.setToolTipText(propDescription);
             }
-            //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
-            GridData gd = (GridData) editControl.getLayoutData();
-            if (gd == null ) {
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING);
-                editControl.setLayoutData(gd);
-            }
-            if (editControl instanceof Text || editControl instanceof Combo) {
-                gd.widthHint = Math.max(
-                    UIUtils.getFontHeight(group) * 15,
-                    editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
+            if (editControl instanceof Button) {
+                // nothing
+            } else {
+                //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
+                GridData gd = (GridData) editControl.getLayoutData();
+                if (gd == null) {
+                    gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING);
+                    editControl.setLayoutData(gd);
+                }
+                if (editControl instanceof Text || editControl instanceof Combo) {
+                    gd.widthHint = Math.max(
+                        UIUtils.getFontHeight(group) * 15,
+                        editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
+                }
             }
 
             editorMap.put(prop, editControl);
@@ -506,7 +511,15 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 return text;
             }
         } else if (BeanUtils.isBooleanType(propType)) {
-            Button editor = UIUtils.createCheckbox(parent, property.getDisplayName(), "", CommonUtils.toBoolean(value), 2);
+            if (curButtonsContainer == null) {
+                UIUtils.createEmptyLabel(parent, 1, 1);
+                curButtonsContainer = new Composite(parent, SWT.NONE);
+                RowLayout layout = new RowLayout(SWT.HORIZONTAL);
+                curButtonsContainer.setLayout(layout);
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                curButtonsContainer.setLayoutData(gd);
+            }
+            Button editor = UIUtils.createCheckbox(curButtonsContainer, property.getDisplayName(), "", CommonUtils.toBoolean(value), 1);
             if (readOnly) {
                 editor.setEnabled(false);
             }
