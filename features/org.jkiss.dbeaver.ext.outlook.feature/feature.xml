@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.jkiss.dbeaver.ext.outlook.feature"
+      label="dbeaver for Outlook"
+      version="1.0.1.qualifier">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <plugin
+         id="org.jkiss.dbeaver.data.outlook"
+         download-size="0"
+         install-size="0"
+         version="1.0.1.qualifier"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.core.runtime"
+         download-size="0"
+         install-size="0"
+         version="3.15.0.v20180817-1401"
+         unpack="false"/>
+
+   <plugin
+         id="org.jkiss.bundle.apache.poi"
+         download-size="0"
+         install-size="0"
+         version="3.16.0"/>
+
+   <plugin
+         id="org.jkiss.dbeaver.data.office"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
