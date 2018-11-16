@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.model.impl.app;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,9 +73,18 @@ public class ApplicationRegistry
         if (finalApps.isEmpty()) {
             log.error("No applications defined.");
         } else {
-            defaultApplication = finalApps.get(0);
-            if (finalApps.size() > 1) {
-                log.error("Multiple application defined. Use first one (" + defaultApplication.getId() + ")");
+            IProduct product = Platform.getProduct();
+            if (product != null) {
+                String productApp = product.getApplication();
+                if (!CommonUtils.isEmpty(productApp)) {
+                    defaultApplication = getApplication(productApp);
+                }
+            }
+            if (defaultApplication == null) {
+                defaultApplication = finalApps.get(0);
+                if (finalApps.size() > 1) {
+                    log.error("Multiple applications defined. Use first one (" + defaultApplication.getId() + ")");
+                }
             }
         }
     }
