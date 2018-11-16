@@ -174,7 +174,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.1.4.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
 
@@ -195,7 +195,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions or some PostgreSQL based databases (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.1.4.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
 
