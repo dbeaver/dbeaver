@@ -107,7 +107,7 @@ public class RuntimeUtils {
     }
 
     public static String getNativeBinaryName(String binName) {
-        return Platform.getOS().equals("win32") ? binName + ".exe" : binName;
+        return GeneralUtils.isWindows() ? binName + ".exe" : binName;
     }
 
     public static File getNativeClientBinary(@NotNull DBPNativeClientLocation home, @Nullable String binFolder, @NotNull String binName) throws IOException {

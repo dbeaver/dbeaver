@@ -1726,11 +1726,17 @@ public class UIUtils {
     }
 
     public static void fixReadonlyTextBackground(Text textField) {
-        if ((textField.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
-            // Do nothing because in E4.6 there is no good solution: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
-            //textField.setBackground(textField.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-        } else {
-            textField.setBackground(null);
+        // There is still no good workaround: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
+        if (false) {
+            if (GeneralUtils.isWindows()) {
+                // On Windows everything is fine
+                return;
+            }
+            if ((textField.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
+                textField.setBackground(textField.getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
+            } else {
+                textField.setBackground(null);
+            }
         }
     }
 
