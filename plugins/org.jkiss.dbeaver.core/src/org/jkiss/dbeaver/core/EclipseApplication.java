@@ -36,4 +36,9 @@ class EclipseApplication implements DBPApplication {
     public DBASecureStorage getSecureStorage() {
         return DefaultSecureStorage.INSTANCE;
     }
+
+    @Override
+    public String getInfoDetails() {
+        return null;
+    }
 }
