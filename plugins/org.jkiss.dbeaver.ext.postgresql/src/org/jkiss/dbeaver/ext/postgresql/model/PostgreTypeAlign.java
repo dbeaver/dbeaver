@@ -23,19 +23,25 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public enum PostgreTypeAlign implements DBPNamedObject
 {
-    c("Char"),
-    s("Short"),
-    i("Int"),
-    d("Double");
+    c("char", 1),
+    s("short", 2),
+    i("int", 4),
+    d("double", 8);
 
     private final String desc;
+    private final int bytes;
 
-    PostgreTypeAlign(String desc) {
+    PostgreTypeAlign(String desc, int bytes) {
         this.desc = desc;
+        this.bytes = bytes;
     }
 
     @Override
     public String getName() {
         return desc;
+    }
+
+    public int getBytes() {
+        return bytes;
     }
 }
