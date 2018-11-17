@@ -329,12 +329,12 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return typeCategory;
     }
 
-    @Property(viewable = true, order = 12)
+    @Property(viewable = true, optional = true, order = 12)
     public PostgreDataType getBaseType(DBRProgressMonitor monitor) {
         return getDatabase().getDataType(monitor, baseTypeId);
     }
 
-    @Property(viewable = true, order = 13)
+    @Property(viewable = true, optional = true, order = 13)
     public PostgreDataType getElementType(DBRProgressMonitor monitor) {
         return elementTypeId == 0 ? null : getDatabase().getDataType(monitor, elementTypeId);
     }
@@ -533,7 +533,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return this;
     }
 
-    @Property(viewable = true, order = 16)
+    @Property(viewable = true, optional = true, order = 16)
     public Object[] getEnumValues() {
         return enumValues;
     }
@@ -626,7 +626,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 if (isValidFuncRef(analyzeFunc)) appendCreateTypeParameter(sql, "ANALYZE", analyzeFunc);
                 if (getMaxLength() > 0) appendCreateTypeParameter(sql, "INTERNALLENGTH", getMaxLength());
                 if (isByValue) appendCreateTypeParameter(sql, "PASSEDBYVALUE");
-                if (align != null) appendCreateTypeParameter(sql, "ALIGNMENT", align.getName());
+                if (align != null && align.getBytes() > 1) appendCreateTypeParameter(sql, "ALIGNMENT", align.getBytes());
                 if (storage != null) appendCreateTypeParameter(sql, "STORAGE", storage.getName());
                 if (typeCategory != null) appendCreateTypeParameter(sql, "CATEGORY", typeCategory.name());
                 if (isPreferred) appendCreateTypeParameter(sql, "PREFERRED", isPreferred);
@@ -639,6 +639,24 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 if (!CommonUtils.isEmpty(arrayDelimiter)) appendCreateTypeParameter(sql, "DELIMITER", SQLUtils.quoteString(getDataSource(), arrayDelimiter));
                 if (collationId != 0) appendCreateTypeParameter(sql, "COLLATABLE", true);
 
+                sql.append(");\n");
+                break;
+            }
+            case c: {
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS (");
+                Collection<PostgreDataTypeAttribute> attributes = getAttributes(monitor);
+                if (!CommonUtils.isEmpty(attributes)) {
+                    boolean first = true;
+                    for (PostgreDataTypeAttribute attr : attributes) {
+                        if (!first) sql.append(",");
+                        first = false;
+
+                        sql.append("\n\t")
+                            .append(DBUtils.getQuotedIdentifier(attr)).append(" ").append(attr.getTypeName());
+                        String modifiers = SQLUtils.getColumnTypeModifiers(getDataSource(), attr, attr.getTypeName(), attr.getDataKind());
+                        if (modifiers != null) sql.append(modifiers);
+                    }
+                }
                 sql.append(");\n");
                 break;
             }
