@@ -598,23 +598,48 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         sql.append("\t").append(SQLUtils.quoteString(this, CommonUtils.toString(item)));
                         if (i < enumValues.length - 1) sql.append(",\n");
                     }
-                    sql.append(");\n");
                 }
+                sql.append(");\n");
                 break;
             }
             case r: {
                 sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" AS RANGE (\n");
                 PostgreCollation collation = getCollationId(monitor);
-                if (collation != null) {
-                    sql.append("\n\tCOLLATION ").append(collation.getName());
-                }
-                if (!CommonUtils.isEmpty(canonicalName)) {
-                    sql.append("\n\tCOLLATION ").append(canonicalName);
-                }
+                appendCreateTypeParameter(sql, "COLLATION ", collation.getName());
+                appendCreateTypeParameter(sql, "CANONICAL", canonicalName);
                 // TODO: read data from pg_range
 //                if (!CommonUtils.isEmpty(su)) {
 //                    sql.append("\n\tCOLLATION ").append(canonicalName);
 //                }
+                sql.append(");\n");
+                break;
+            }
+            case b: {
+                sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" (");
+
+                if (isValidFuncRef(inputFunc)) appendCreateTypeParameter(sql, "INPUT", inputFunc);
+                if (isValidFuncRef(outputFunc)) appendCreateTypeParameter(sql, "OUTPUT", outputFunc);
+                if (isValidFuncRef(receiveFunc)) appendCreateTypeParameter(sql, "RECEIVE", receiveFunc);
+                if (isValidFuncRef(sendFunc)) appendCreateTypeParameter(sql, "SEND", sendFunc);
+                if (isValidFuncRef(modInFunc)) appendCreateTypeParameter(sql, "TYPMOD_IN", modInFunc);
+                if (isValidFuncRef(modOutFunc)) appendCreateTypeParameter(sql, "TYPMOD_OUT", modOutFunc);
+                if (isValidFuncRef(analyzeFunc)) appendCreateTypeParameter(sql, "ANALYZE", analyzeFunc);
+                if (getMaxLength() > 0) appendCreateTypeParameter(sql, "INTERNALLENGTH", getMaxLength());
+                if (isByValue) appendCreateTypeParameter(sql, "PASSEDBYVALUE");
+                if (align != null) appendCreateTypeParameter(sql, "ALIGNMENT", align.getName());
+                if (storage != null) appendCreateTypeParameter(sql, "STORAGE", storage.getName());
+                if (typeCategory != null) appendCreateTypeParameter(sql, "CATEGORY", typeCategory.name());
+                if (isPreferred) appendCreateTypeParameter(sql, "PREFERRED", isPreferred);
+                appendCreateTypeParameter(sql, "DEFAULT", defaultValue);
+
+                PostgreDataType elementType = getElementType(monitor);
+                if (elementType != null) {
+                    appendCreateTypeParameter(sql, "ELEMENT", elementType.getFullyQualifiedName(DBPEvaluationContext.DDL));
+                }
+                if (!CommonUtils.isEmpty(arrayDelimiter)) appendCreateTypeParameter(sql, "DELIMITER", SQLUtils.quoteString(getDataSource(), arrayDelimiter));
+                if (collationId != 0) appendCreateTypeParameter(sql, "COLLATABLE", true);
+
+                sql.append(");\n");
                 break;
             }
             default: {
@@ -629,6 +654,27 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
 
         return sql.toString();
+    }
+
+    private boolean isValidFuncRef(String func) {
+        return !CommonUtils.isEmpty(func) && !func.equals("-");
+    }
+
+    private void appendCreateTypeParameter(@NotNull StringBuilder sql, @NotNull String name, @Nullable Object value) {
+        if (value == null) {
+            return;
+        }
+        if (sql.charAt(sql.length() - 1)!= '(') {
+            sql.append(",");
+        }
+        sql.append("\n\t").append(name).append(" = ").append(value);
+    }
+
+    private void appendCreateTypeParameter(@NotNull StringBuilder sql, @NotNull String name) {
+        if (Character.isLetterOrDigit(sql.charAt(sql.length() - 1))) {
+            sql.append(",");
+        }
+        sql.append("\n\t").append(name);
     }
 
     @Override
