@@ -45,6 +45,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -80,6 +81,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     private String curSelection;
     private Font monoFont;
     private boolean showNulls;
+    private boolean rightJustifyNumbers;
+    private boolean rightJustifyDateTime;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -230,6 +233,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     @Override
     public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
         colWidths = null;
+
+        DBPPreferenceStore prefs = getController().getPreferenceStore();
+        rightJustifyNumbers = prefs.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
+        rightJustifyDateTime = prefs.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
+
         if (controller.isRecordMode()) {
             printRecord();
         } else {
@@ -317,10 +325,23 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 if (displayString.length() >= colWidths[k]) {
                     displayString = CommonUtils.truncateString(displayString, colWidths[k]);
                 }
-                grid.append(displayString);
+
                 int stringWidth = getStringWidth(displayString);
-                for (int j = colWidths[k] - stringWidth; j > 0; j--) {
-                    grid.append(" ");
+
+                DBPDataKind dataKind = attr.getDataKind();
+                if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
+                    (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
+                {
+                    // Right justify value
+                    for (int j = colWidths[k] - stringWidth; j > 0; j--) {
+                        grid.append(" ");
+                    }
+                    grid.append(displayString);
+                } else {
+                    grid.append(displayString);
+                    for (int j = colWidths[k] - stringWidth; j > 0; j--) {
+                        grid.append(" ");
+                    }
                 }
             }
             if (delimTrailing) grid.append("|");
@@ -397,7 +418,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             DBDAttributeBinding attr = attrs.get(i);
             nameWidth = Math.max(nameWidth, getAttributeName(attr).length());
             if (currentRow != null) {
-                values[i] = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, currentRow), displayFormat);
+                String displayString = getCellString(model, attr, currentRow, displayFormat);
+                values[i] = displayString;
                 valueWidth = Math.max(valueWidth, values[i].length());
             }
         }
