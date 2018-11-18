@@ -383,11 +383,13 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private void createPropertyEditor(Composite group, DBPPropertyDescriptor prop) {
+        DBSObject databaseObject = input.getDatabaseObject();
+        boolean isReadOnlyCon = databaseObject == null || databaseObject.getDataSource().getContainer().isConnectionReadOnly();
         if (prop == null) {
             UIUtils.createEmptyLabel(group, 2, 1);
         } else {
-            boolean editable = prop.isEditable(curPropertySource.getEditableValue()) ||
-                (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename());
+            boolean editable = !isReadOnlyCon && (prop.isEditable(curPropertySource.getEditableValue()) ||
+                (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename()));
             Class<?> propType = prop.getDataType();
             Object propertyValue = curPropertySource.getPropertyValue(null, prop.getId());
             if (propertyValue == null && prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isOptional()) {
