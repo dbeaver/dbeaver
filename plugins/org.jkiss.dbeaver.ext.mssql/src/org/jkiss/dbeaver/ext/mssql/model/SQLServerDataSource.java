@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -62,6 +63,12 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         throws DBException
     {
         super(monitor, container, new SQLServerDialect());
+    }
+
+    @Override
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
+    {
+        return new SQLServerDataSourceInfo(this, metaData);
     }
 
     @Override

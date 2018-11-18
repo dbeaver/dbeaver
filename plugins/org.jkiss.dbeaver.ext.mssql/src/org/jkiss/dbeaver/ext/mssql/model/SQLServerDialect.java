@@ -48,6 +48,8 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
             {"\"", "\""},
     };
 
+    private static String[] EXEC_KEYWORDS =  { "CALL", "EXEC" };
+
     private JDBCDataSource dataSource;
 
     public SQLServerDialect() {
@@ -58,6 +60,21 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
         super.initDriverSettings(dataSource, metaData);
         addSQLKeyword("TOP");
         this.dataSource = dataSource;
+    }
+
+    @Override
+    public String getScriptDelimiter() {
+        return "GO";
+    }
+
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
+    }
+
+    @Override
+    public boolean isDelimiterAfterQuery() {
+        return true;
     }
 
     public String[][] getIdentifierQuoteStrings() {
