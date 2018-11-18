@@ -1350,7 +1350,7 @@ public class UIUtils {
             if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
                 return new AdvancedTextCellEditor(parent);
             } else {
-                return new CustomTextCellEditor(parent);
+                return new CustomTextCellEditor(parent, SWT.SINGLE | ((style & SWT.PASSWORD) != 0 ? SWT.PASSWORD : SWT.NONE));
             }
         } else if (BeanUtils.isNumericType(propertyType)) {
             return new CustomNumberCellEditor(parent, propertyType);
