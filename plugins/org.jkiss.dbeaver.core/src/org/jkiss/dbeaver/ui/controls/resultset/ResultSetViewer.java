@@ -2320,12 +2320,19 @@ public class ResultSetViewer extends Viewer
         int visualPosition = 0;
         // Set conditions
         DBSEntityConstraint refConstraint = association.getReferencedConstraint();
+        if (refConstraint == null) {
+            throw new DBException("Can't obtain association '" + DBUtils.getQuotedIdentifier(association) + "' target constraint (table " +
+                (association.getAssociatedEntity() == null ? "???" : DBUtils.getQuotedIdentifier(association.getAssociatedEntity())) + ")");
+        }
         List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
         List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
         if (ownAttrs.size() != refAttrs.size()) {
             throw new DBException(
                 "Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] association [" + association.getName() +
-                    "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
+                    "] columns differ from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
+        }
+        if (ownAttrs.isEmpty()) {
+            throw new DBException("Association '" + DBUtils.getQuotedIdentifier(association) + "' has empty column list");
         }
         // Add association constraints
         for (int i = 0; i < refAttrs.size(); i++) {
