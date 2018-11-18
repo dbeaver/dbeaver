@@ -43,12 +43,13 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     private Button showDescription;
     private Button columnWidthByValue;
     private Button showConnectionName;
+    private Button transformComplexTypes;
 
-    private Button gridShowOddRows;
     private Button rightJustifyNumbers;
     private Button rightJustifyDateTime;
+
+    private Button gridShowOddRows;
     private Button colorizeDataTypes;
-    private Button transformComplexTypes;
     private Spinner gridRowBatchSize;
     private Button gridShowCellIcons;
     private Button gridShowAttrFilters;
@@ -115,6 +116,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             columnWidthByValue = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
             showConnectionName = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_connection_name, false);
             transformComplexTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_structurize_complex_types, CoreMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
+            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 1);
+            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 1);
         }
 
         {
@@ -122,8 +125,6 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             gridShowOddRows = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
             colorizeDataTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
-            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 2);
-            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 2);
             gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_row_batch_size, 1, 1, Short.MAX_VALUE);
             gridRowBatchSize.setToolTipText(CoreMessages.pref_page_database_resultsets_label_row_batch_size_tip);
             gridShowCellIcons = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
