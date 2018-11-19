@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
  * Object type
  */
 public enum SQLServerObjectType implements DBSObjectType {
+
 	AF ("AF", null, "Aggregate function (CLR)"),
 	C ("C", SQLServerTableCheckConstraint.class, "CHECK constraint"),
 	D ("D", null, "DEFAULT (constraint or stand-alone)"),
@@ -57,6 +60,8 @@ public enum SQLServerObjectType implements DBSObjectType {
     private final String description;
     private final Class<? extends DBSObject> theClass;
 
+    private static final Log log = Log.getLog(SQLServerObjectType.class);
+
     SQLServerObjectType(String type, Class<? extends DBSObject> theClass, String description) {
         this.type = type;
         this.theClass = theClass;
@@ -88,9 +93,20 @@ public enum SQLServerObjectType implements DBSObjectType {
         return type;
     }
 
-    public DBSObject findObject(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerSchema schema, String objectName) {
-        System.err.println("SQL Server object search: Not Implemented");
-        return null;
+    public DBSObject findObject(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerSchema schema, String objectName) throws DBException {
+        if (schema == null) {
+            log.debug("Null schema in table " + objectName + " search (" + name() + ")");
+            return null;
+        }
+
+        if (SQLServerTableBase.class.isAssignableFrom(theClass)) {
+            return schema.getChild(monitor, objectName);
+        } else if (SQLServerProcedure.class.isAssignableFrom(theClass)) {
+            return schema.getProcedure(monitor, objectName);
+        } else {
+            log.debug("Unsupported object for SQL Server search: " + name());
+            return null;
+        }
     }
 
 }
