@@ -680,6 +680,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return procedureCache.getAllObjects(monitor, this);
     }
 
+    public SQLServerProcedure getProcedure(DBRProgressMonitor monitor, String name) throws DBException {
+        return procedureCache.getObject(monitor, this, name);
+    }
+
     static class ProcedureCache extends JDBCStructLookupCache<SQLServerSchema, SQLServerProcedure, SQLServerProcedureParameter> {
 
         public ProcedureCache() {

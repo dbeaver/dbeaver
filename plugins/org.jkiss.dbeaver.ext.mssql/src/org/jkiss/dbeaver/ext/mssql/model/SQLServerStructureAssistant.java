@@ -117,13 +117,10 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
 
             return objects;
         }
-        catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
-        }
     }
 
     private void searchAllObjects(final JDBCSession session, final SQLServerDatabase database, final SQLServerSchema schema, String objectNameMask, DBSObjectType[] objectTypes, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
-        throws SQLException, DBException
+        throws DBException
     {
         final List<SQLServerObjectType> supObjectTypes = new ArrayList<>(objectTypes.length + 2);
         for (DBSObjectType objectType : objectTypes) {
@@ -161,7 +158,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
                     }
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
                     final String objectName = JDBCUtils.safeGetString(dbResult, "name");
-                    final String objectTypeName = JDBCUtils.safeGetString(dbResult, "type");
+                    final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
                     final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
                     {
                         SQLServerSchema objectSchema = schemaId == 0 ? null : database.getSchema(session.getProgressMonitor(), schemaId);
@@ -184,6 +181,8 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
                     }
                 }
             }
+        } catch (Throwable e) {
+            throw new DBException("Error while searching in system catalog", e, dataSource);
         }
     }
 
