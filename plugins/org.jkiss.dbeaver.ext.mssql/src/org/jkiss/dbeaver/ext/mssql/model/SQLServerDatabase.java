@@ -255,10 +255,15 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
             }
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, schemaFilters, "name", false);
+                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", false);
             }
 
-            return session.prepareStatement(sql.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+            if (schemaFilters != null) {
+                JDBCUtils.setFilterParameters(dbStat, 1, schemaFilters);
+            }
+
+            return dbStat;
         }
 
         @Override
