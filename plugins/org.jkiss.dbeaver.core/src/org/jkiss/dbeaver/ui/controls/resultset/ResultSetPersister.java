@@ -481,128 +481,139 @@ class ResultSetPersister {
 
         private Throwable executeStatements(DBRProgressMonitor monitor)
         {
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
             try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, CoreMessages.controls_resultset_viewer_job_update)) {
                 monitor.beginTask(
                     CoreMessages.controls_resultset_viewer_monitor_aply_changes,
                     ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
+                Throwable[] error = new Throwable[1];
+                DBUtils.tryExecuteRecover(monitor, session.getDataSource(), param -> {
+                    error[0] = executeStatements(session);
+                });
+                return error[0];
 
-                if (!generateScript && txnManager != null) {
-                    monitor.subTask(CoreMessages.controls_resultset_check_autocommit_state);
-                    try {
-                        this.autocommit = txnManager.isAutoCommit();
-                    } catch (DBCException e) {
-                        log.warn("Can't determine autocommit state", e);
-                        this.autocommit = true;
-                    }
-                }
-                monitor.worked(1);
-                if (!generateScript && txnManager != null) {
-                    if (!this.autocommit && txnManager.supportsSavepoints()) {
-                        try {
-                            this.savepoint = txnManager.setSavepoint(monitor, null);
-                        } catch (Throwable e) {
-                            // May be savepoints not supported
-                            log.debug("Can't set savepoint", e);
-                        }
-                    }
-                }
-                try {
-                    for (DataStatementInfo statement : ResultSetPersister.this.deleteStatements) {
-                        if (monitor.isCanceled()) break;
-                        try {
-                            DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
-                            try (DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
-                                session,
-                                DBDAttributeValue.getAttributes(statement.keyAttributes),
-                                new ExecutionSource(dataContainer)))
-                            {
-                                batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
-                                if (generateScript) {
-                                    batch.generatePersistActions(session, script);
-                                } else {
-                                    deleteStats.accumulate(batch.execute(session));
-                                }
-                            }
-                            processStatementChanges(statement);
-                        } catch (DBException e) {
-                            processStatementError(statement, session);
-                            return e;
-                        }
-                        monitor.worked(1);
-                    }
-                    for (DataStatementInfo statement : ResultSetPersister.this.insertStatements) {
-                        if (monitor.isCanceled()) break;
-                        try {
-                            DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
-                            try (DBSDataManipulator.ExecuteBatch batch = dataContainer.insertData(
-                                session,
-                                DBDAttributeValue.getAttributes(statement.keyAttributes),
-                                statement.needKeys() ? new KeyDataReceiver(statement) : null,
-                                new ExecutionSource(dataContainer)))
-                            {
-                                batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
-                                if (generateScript) {
-                                    batch.generatePersistActions(session, script);
-                                } else {
-                                    insertStats.accumulate(batch.execute(session));
-                                }
-                            }
-                            processStatementChanges(statement);
-                        } catch (DBException e) {
-                            processStatementError(statement, session);
-                            return e;
-                        }
-                        monitor.worked(1);
-                    }
-                    for (DataStatementInfo statement : ResultSetPersister.this.updateStatements) {
-                        if (monitor.isCanceled()) break;
-                        try {
-                            DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
-                            try (DBSDataManipulator.ExecuteBatch batch = dataContainer.updateData(
-                                session,
-                                DBDAttributeValue.getAttributes(statement.updateAttributes),
-                                DBDAttributeValue.getAttributes(statement.keyAttributes),
-                                null,
-                                new ExecutionSource(dataContainer)))
-                            {
-                                // Make single array of values
-                                Object[] attributes = new Object[statement.updateAttributes.size() + statement.keyAttributes.size()];
-                                for (int i = 0; i < statement.updateAttributes.size(); i++) {
-                                    attributes[i] = statement.updateAttributes.get(i).getValue();
-                                }
-                                for (int i = 0; i < statement.keyAttributes.size(); i++) {
-                                    attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
-                                }
-                                // Execute
-                                batch.add(attributes);
-                                if (generateScript) {
-                                    batch.generatePersistActions(session, script);
-                                } else {
-                                    updateStats.accumulate(batch.execute(session));
-                                }
-                            }
-                            processStatementChanges(statement);
-                        } catch (DBException e) {
-                            processStatementError(statement, session);
-                            return e;
-                        }
-                        monitor.worked(1);
-                    }
-
-                    return null;
-                } finally {
-                    if (!generateScript && txnManager != null && this.savepoint != null) {
-                        try {
-                            txnManager.releaseSavepoint(monitor, this.savepoint);
-                        } catch (Throwable e) {
-                            // Maybe savepoints not supported
-                            log.debug("Can't release savepoint", e);
-                        }
-                    }
-                }
+            } catch (DBException e) {
+                return e;
             } finally {
                 monitor.done();
+            }
+        }
+
+        private Throwable executeStatements(DBCSession session) {
+            DBRProgressMonitor monitor = session.getProgressMonitor();
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
+            if (!generateScript && txnManager != null) {
+                monitor.subTask(CoreMessages.controls_resultset_check_autocommit_state);
+                try {
+                    this.autocommit = txnManager.isAutoCommit();
+                } catch (DBCException e) {
+                    log.warn("Can't determine autocommit state", e);
+                    this.autocommit = true;
+                }
+            }
+            monitor.worked(1);
+            if (!generateScript && txnManager != null) {
+                if (!this.autocommit && txnManager.supportsSavepoints()) {
+                    try {
+                        this.savepoint = txnManager.setSavepoint(monitor, null);
+                    } catch (Throwable e) {
+                        // May be savepoints not supported
+                        log.debug("Can't set savepoint", e);
+                    }
+                }
+            }
+            try {
+                for (DataStatementInfo statement : ResultSetPersister.this.deleteStatements) {
+                    if (monitor.isCanceled()) break;
+                    try {
+                        DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
+                        try (DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
+                            session,
+                            DBDAttributeValue.getAttributes(statement.keyAttributes),
+                            new ExecutionSource(dataContainer)))
+                        {
+                            batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
+                            if (generateScript) {
+                                batch.generatePersistActions(session, script);
+                            } else {
+                                deleteStats.accumulate(batch.execute(session));
+                            }
+                        }
+                        processStatementChanges(statement);
+                    } catch (DBException e) {
+                        processStatementError(statement, session);
+                        return e;
+                    }
+                    monitor.worked(1);
+                }
+                for (DataStatementInfo statement : ResultSetPersister.this.insertStatements) {
+                    if (monitor.isCanceled()) break;
+                    try {
+                        DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
+                        try (DBSDataManipulator.ExecuteBatch batch = dataContainer.insertData(
+                            session,
+                            DBDAttributeValue.getAttributes(statement.keyAttributes),
+                            statement.needKeys() ? new KeyDataReceiver(statement) : null,
+                            new ExecutionSource(dataContainer)))
+                        {
+                            batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
+                            if (generateScript) {
+                                batch.generatePersistActions(session, script);
+                            } else {
+                                insertStats.accumulate(batch.execute(session));
+                            }
+                        }
+                        processStatementChanges(statement);
+                    } catch (DBException e) {
+                        processStatementError(statement, session);
+                        return e;
+                    }
+                    monitor.worked(1);
+                }
+                for (DataStatementInfo statement : ResultSetPersister.this.updateStatements) {
+                    if (monitor.isCanceled()) break;
+                    try {
+                        DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
+                        try (DBSDataManipulator.ExecuteBatch batch = dataContainer.updateData(
+                            session,
+                            DBDAttributeValue.getAttributes(statement.updateAttributes),
+                            DBDAttributeValue.getAttributes(statement.keyAttributes),
+                            null,
+                            new ExecutionSource(dataContainer)))
+                        {
+                            // Make single array of values
+                            Object[] attributes = new Object[statement.updateAttributes.size() + statement.keyAttributes.size()];
+                            for (int i = 0; i < statement.updateAttributes.size(); i++) {
+                                attributes[i] = statement.updateAttributes.get(i).getValue();
+                            }
+                            for (int i = 0; i < statement.keyAttributes.size(); i++) {
+                                attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
+                            }
+                            // Execute
+                            batch.add(attributes);
+                            if (generateScript) {
+                                batch.generatePersistActions(session, script);
+                            } else {
+                                updateStats.accumulate(batch.execute(session));
+                            }
+                        }
+                        processStatementChanges(statement);
+                    } catch (DBException e) {
+                        processStatementError(statement, session);
+                        return e;
+                    }
+                    monitor.worked(1);
+                }
+
+                return null;
+            } finally {
+                if (!generateScript && txnManager != null && this.savepoint != null) {
+                    try {
+                        txnManager.releaseSavepoint(monitor, this.savepoint);
+                    } catch (Throwable e) {
+                        // Maybe savepoints not supported
+                        log.debug("Can't release savepoint", e);
+                    }
+                }
             }
         }
 
