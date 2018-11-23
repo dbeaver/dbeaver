@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.jkiss.dbeaver.ext.htmlcopy.feature"
+      label="Feature"
+      version="1.0.0.qualifier">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <requires>
+      <import plugin="org.jkiss.dbeaver.model"/>
+      <import plugin="org.jkiss.dbeaver.data.transfer"/>
+      <import plugin="org.eclipse.equinox.registry"/>
+      <import plugin="org.jkiss.dbeaver.core"/>
+      <import plugin="org.eclipse.core.commands"/>
+      <import plugin="org.eclipse.ui.workbench"/>
+      <import plugin="org.eclipse.core.runtime" version="3.15.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.swt"/>
+   </requires>
+
+   <plugin
+         id="org.jkiss.dbeaver.data.htmlcopy"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
