@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.office.handlers;
+package org.jkiss.dbeaver.data.outlook.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
+import org.jkiss.dbeaver.data.outlook.export.DataExporterOutlookHtml;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainerOptions;
@@ -44,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +54,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
     {
     	IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
-            DBeaverUI.getInstance().showError("Open Excel", "No active results viewer");
+            DBeaverUI.getInstance().showError("Open Outlook", "No active results viewer");
             return null;
         }
 
@@ -71,13 +71,14 @@ public class OpenSpreadsheetHandler extends AbstractHandler
         options.setSelectedRows(selectedRows);
         options.setSelectedColumns(selectedAttributes);
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
+        
         if (dataContainer == null || dataContainer.getDataSource() == null) {
-            DBeaverUI.getInstance().showError("Open Excel", "Not connected to a database");
+            DBeaverUI.getInstance().showError("Open Outlook", "Not connected to a database");
             return null;
         }
 
 
-        AbstractJob exportJob = new AbstractJob("Open Excel") {
+        AbstractJob exportJob = new AbstractJob("Open Outlook") {
 
             {
                 setUser(true);
@@ -87,43 +88,53 @@ public class OpenSpreadsheetHandler extends AbstractHandler
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    File tempDir = DBeaverCore.getInstance().getTempFolder(monitor, "office-files");
+
+                	
+                	File tempDir = DBeaverCore.getInstance().getTempFolder(monitor, "office-files");
                     File tempFile = new File(tempDir,
-                        CommonUtils.escapeFileName(CommonUtils.truncateString(dataContainer.getName(), 32)) +
-                            "." + new SimpleDateFormat("yyyyMMdd-HHmmss").format(System.currentTimeMillis()) + ".xlsx");
-
-                    DataExporterXLSX exporter = new DataExporterXLSX();
-
+                        CommonUtils.escapeFileName(CommonUtils.truncateString(String.valueOf(dataContainer.getName().hashCode()), 32)) +
+                            "." + new SimpleDateFormat("yyyyMMdd-HHmmss").format(System.currentTimeMillis()) + ".html");
+                	
+                    DataExporterOutlookHtml exporter = new DataExporterOutlookHtml();
+                    
                     StreamTransferConsumer consumer = new StreamTransferConsumer();
                     StreamConsumerSettings settings = new StreamConsumerSettings();
-
+                  
+                                 
+                    Map<Object, Object> properties = new HashMap<>();
+                  
                     settings.setOutputEncodingBOM(false);
+
                     settings.setOpenFolderOnFinish(false);
                     settings.setOutputFolder(tempDir.getAbsolutePath());
                     settings.setOutputFilePattern(tempFile.getName());
+                    
 
-                    Map<Object, Object> properties = DataExporterXLSX.getDefaultProperties();
-                    consumer.initTransfer(dataContainer, settings, true, exporter, properties);
+                   settings.setOutputClipboard(false);
+
+
+                    consumer.initTransfer(dataContainer, settings, false, exporter, properties);
+
 
                     DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
+                   
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);
                     DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
-                    producerSettings.setQueryRowCount(false);
+
+                    producerSettings.setQueryRowCount(true);
                     producerSettings.setSelectedRowsOnly(true);
                     producerSettings.setSelectedColumnsOnly(true);
-
+                    
                     producer.transferData(monitor, consumer, null, producerSettings);
 
                     consumer.finishTransfer(monitor, false);
 
-                    UIUtils.asyncExec(() -> {
-                        if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
-                            DBeaverUI.getInstance().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
-                        }
-                    });
+                    OutlookFromhtml.launch("CopyHtml.ps1",tempFile.getAbsolutePath());
+                    
+
                 } catch (Exception e) {
-                    DBeaverUI.getInstance().showError("Error opening in Excel", null, e);
+                    DBeaverUI.getInstance().showError("Error opening in Outlook", null, e);
                 }
                 return Status.OK_STATUS;
             }
