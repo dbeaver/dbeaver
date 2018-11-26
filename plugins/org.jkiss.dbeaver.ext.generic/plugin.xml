@@ -279,6 +279,9 @@
                                 instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
                         <file name="db2jcc4.jar" description="JDBC driver"/>
                     </fileSource>
+                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+
                 </driver>
                 <driver
                     id="db2_zos"
@@ -308,6 +311,8 @@
                         <file name="db2jcc4.jar" description="JDBC driver"/>
                     </fileSource>
 -->
+                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
                 </driver>
 
                 <driver
