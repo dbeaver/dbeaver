@@ -174,6 +174,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Nullable
     private CustomSashForm presentationSash;
     private CTabFolder resultTabs;
+    private CTabItem activeResultsTab;
 
     private SQLLogPanel logViewer;
     private SQLEditorOutputViewer outputViewer;
@@ -847,6 +848,12 @@ public class SQLEditor extends SQLEditorBase implements
         createQueryProcessor(true, true);
 
         {
+            resultTabs.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDown(MouseEvent e) {
+                    activeResultsTab = resultTabs.getItem(new Point(e.x, e.y));
+                }
+            });
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
             menuMgr.addMenuListener(manager -> {
@@ -860,7 +867,7 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                     });
                 }
-                final CTabItem activeTab = resultTabs.getSelection();
+                final CTabItem activeTab = getActiveResultsTab();
                 if (activeTab != null && activeTab.getData() instanceof QueryResultsContainer) {
                     {
                         final QueryResultsContainer resultsContainer = (QueryResultsContainer) activeTab.getData();
@@ -957,10 +964,16 @@ public class SQLEditor extends SQLEditorBase implements
         return viewItem;
     }
 
+    private CTabItem getActiveResultsTab() {
+        return activeResultsTab == null || activeResultsTab.isDisposed() ?
+                resultTabs.getSelection() : activeResultsTab;
+    }
+
     public void closeActiveTab() {
-        CTabItem tabItem = resultTabs.getSelection();
+        CTabItem tabItem = getActiveResultsTab();
         if (tabItem != null && tabItem.getShowClose()) {
             tabItem.dispose();
+            activeResultsTab = null;
         }
     }
 
