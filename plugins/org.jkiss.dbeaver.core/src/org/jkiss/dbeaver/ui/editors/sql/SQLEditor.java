@@ -866,6 +866,29 @@ public class SQLEditor extends SQLEditorBase implements
                             closeExtraResultTabs(null);
                         }
                     });
+                    int pinnedTabsCount = 0;
+                    for (CTabItem item : resultTabs.getItems()) {
+                        if (item.getData() instanceof QueryResultsContainer) {
+                            if (((QueryResultsContainer) item.getData()).isPinned()) {
+                                pinnedTabsCount++;
+                            }
+                        }
+                    }
+                    if (pinnedTabsCount > 1) {
+                        manager.add(new Action("Unpin all tabs") {
+                            @Override
+                            public void run()
+                            {
+                                for (CTabItem item : resultTabs.getItems()) {
+                                    if (item.getData() instanceof QueryResultsContainer) {
+                                        if (((QueryResultsContainer) item.getData()).isPinned()) {
+                                            ((QueryResultsContainer) item.getData()).setPinned(false);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
                 }
                 final CTabItem activeTab = getActiveResultsTab();
                 if (activeTab != null && activeTab.getData() instanceof QueryResultsContainer) {
