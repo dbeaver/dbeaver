@@ -754,6 +754,7 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
+                    <parameter name="use-search-string-escape" value="false"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
 
