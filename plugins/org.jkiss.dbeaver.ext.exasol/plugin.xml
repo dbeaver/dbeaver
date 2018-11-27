@@ -58,8 +58,39 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript" label="%tree.scripts.node.name"
                                 icon="#procedures" description="%tree.scripts.node.description">
-                            <items label="%tree.script.node.name" path="script" property="procedures" icon="#procedure">
-                            </items>
+                            <folder
+                                  icon="#procedures"
+                                  label="%tree.scripts.adapter.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
+                               <items
+                                     icon="#procedure"
+                                     label="%tree.script.node.name"
+                                     path="adapter"
+                                     property="adapter">
+                               </items>
+                            </folder>
+                            <folder
+                                  icon="#procedures"
+                                  label="%tree.scripts.script.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
+                               <items
+                                     icon="#procedure"
+                                     label="%tree.script.node.name"
+                                     path="procedure"
+                                     property="procedures">
+                               </items>
+                            </folder>
+                            <folder
+                                  icon="#procedures"
+                                  label="%tree.scripts.udf.node.name"
+                                  type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
+                               <items
+                                     icon="#procedure"
+                                     label="%tree.script.node.name"
+                                     path="udf"
+                                     property="udfs">
+                               </items>
+                            </folder>
                         </folder>
                         <folder
                               description="%tree.functions.node.description"
