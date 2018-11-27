@@ -17,39 +17,38 @@
  */
 package org.jkiss.dbeaver.ext.exasol;
 
-
 import org.eclipse.osgi.util.NLS;
 
 public class ExasolMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
-    public static String dialog_schema_drop_title;
-    public static String dialog_schema_drop_message;
-    public static String dialog_connection_alter_message;
-    public static String dialog_connection_alter_title;
-    
+	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
+	public static String dialog_schema_drop_title;
+	public static String dialog_schema_drop_message;
+	public static String dialog_connection_alter_message;
+	public static String dialog_connection_alter_title;
+
 	public static String dialog_table_tools_options;
 	public static String dialog_table_tools_result;
-	
+
 	public static String dialog_general_continue;
 
-    static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, ExasolMessages.class);
-    }
+	static {
+		// initialize resource bundle
+		NLS.initializeMessages(BUNDLE_NAME, ExasolMessages.class);
+	}
 
-    private ExasolMessages() {
-    }
+	private ExasolMessages() {
+	}
 
-    public static String editors_exasol_session_editor_title_kill_session;
-    public static String editors_exasol_session_editor_action_kill;
-    public static String editors_exasol_session_editor_confirm_action;
-    public static String editors_exasol_session_editor_title_kill_session_statement;
+	public static String editors_exasol_session_editor_title_kill_session;
+	public static String editors_exasol_session_editor_action_kill;
+	public static String editors_exasol_session_editor_confirm_action;
+	public static String editors_exasol_session_editor_title_kill_session_statement;
 
-    public static String dialog_connection_password;
-    public static String dialog_connection_port;
-    public static String dialog_connection_user_name;
+	public static String dialog_connection_password;
+	public static String dialog_connection_port;
+	public static String dialog_connection_user_name;
 
-    public static String dialog_table_tools_progress;
+	public static String dialog_table_tools_progress;
 	public static String dialog_table_tools_success_title;
 	public static String dialog_table_open_output_directory;
 	public static String dialog_table_tools_export_title;
@@ -64,8 +63,8 @@ public class ExasolMessages extends NLS {
 	public static String dialog_table_tools_import_title;
 	public static String dialog_struct_edit_fk_label_fk_name;
 	public static String edit_exasol_constraint_manager_dialog_title;
-	
+
 	public static String read_table_details;
-    
+	public static String read_schema_details;
 
 }
