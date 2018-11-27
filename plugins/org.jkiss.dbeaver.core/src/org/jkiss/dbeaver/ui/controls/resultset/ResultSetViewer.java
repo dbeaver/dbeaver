@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.Adapters;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
@@ -29,7 +31,10 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -63,7 +68,9 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -263,6 +270,15 @@ public class ResultSetViewer extends Viewer
 
                     }
                 });
+                MenuManager panelsMenuManager = new MenuManager();
+                panelsMenuManager.setRemoveAllWhenShown(true);
+                panelsMenuManager.addMenuListener(manager -> {
+                    for (IContributionItem menuItem : fillPanelsMenu()) {
+                        panelsMenuManager.add(menuItem);
+                    }
+                });
+                Menu panelsMenu = panelsMenuManager.createContextMenu(this.panelFolder);
+                this.panelFolder.setMenu(panelsMenu);
             }
 
             setEmptyPresentation();
@@ -319,7 +335,7 @@ public class ResultSetViewer extends Viewer
         setDataFilter(model.createDataFilter(), refresh);
     }
 
-    public void saveDataFilter()
+    void saveDataFilter()
     {
         DBCExecutionContext context = getExecutionContext();
         if (context == null) {
@@ -640,7 +656,7 @@ public class ResultSetViewer extends Viewer
 
         // Listen presentation selection change
         if (presentation instanceof ISelectionProvider) {
-            ((ISelectionProvider) presentation).addSelectionChangedListener(event -> fireResultSetSelectionChange(event));
+            ((ISelectionProvider) presentation).addSelectionChangedListener(this::fireResultSetSelectionChange);
         }
 
 
@@ -768,7 +784,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public IResultSetPanel[] getActivePanels() {
-        return activePanels.values().toArray(new IResultSetPanel[activePanels.size()]);
+        return activePanels.values().toArray(new IResultSetPanel[0]);
     }
 
     @Override
@@ -965,7 +981,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void addDefaultPanelActions() {
-        panelToolBar.add(new Action("View Menu", ImageDescriptor.createFromImageData(DBeaverIcons.getViewMenuImage().getImageData())) {
+        panelToolBar.add(new Action("View Menu", DBeaverIcons.getViewMenuImageDescriptor()) {
             @Override
             public void run() {
                 ToolBar tb = panelToolBar.getControl();
@@ -1020,7 +1036,7 @@ public class ResultSetViewer extends Viewer
         lockedBy.addDisposeListener(e -> actionsDisabled = false);
     }
 
-    public boolean isPresentationInFocus() {
+    boolean isPresentationInFocus() {
         Control activeControl = getActivePresentation().getControl();
         return !activeControl.isDisposed() && activeControl.isFocusControl();
     }
@@ -1246,7 +1262,7 @@ public class ResultSetViewer extends Viewer
                 protected ILoadService<String> createLoadService() {
                     return new DatabaseLoadService<String>("Load row count", getExecutionContext()) {
                         @Override
-                        public String evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        public String evaluate(DBRProgressMonitor monitor) {
                             try {
                                 long rowCount = readRowCount(monitor);
                                 return ROW_COUNT_FORMAT.format(rowCount);
@@ -1715,7 +1731,7 @@ public class ResultSetViewer extends Viewer
 
     void showFiltersDistinctMenu(DBDAttributeBinding curAttribute, boolean atKeyboardCursor) {
         Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
-        ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
+        ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[0]);
 
         FilterValueEditPopup menu = new FilterValueEditPopup(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
 
@@ -3246,7 +3262,7 @@ public class ResultSetViewer extends Viewer
             if (listeners.isEmpty()) {
                 return EMPTY_LISTENERS;
             }
-            listenersCopy = listeners.toArray(new IResultSetListener[listeners.size()]);
+            listenersCopy = listeners.toArray(new IResultSetListener[0]);
         }
         return listenersCopy;
     }
@@ -3273,7 +3289,7 @@ public class ResultSetViewer extends Viewer
         private final Map<String, List<String>> filterHistory = new HashMap<>();
         @NotNull
         @Override
-        public List<String> getQueryFilterHistory(@NotNull String query) throws DBException {
+        public List<String> getQueryFilterHistory(@NotNull String query) {
             final List<String> filters = filterHistory.get(query);
             if (filters != null) {
                 return filters;
@@ -3282,7 +3298,7 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) throws DBException {
+        public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) {
             List<String> filters = filterHistory.get(query);
             if (filters == null) {
                 filters = new ArrayList<>();
