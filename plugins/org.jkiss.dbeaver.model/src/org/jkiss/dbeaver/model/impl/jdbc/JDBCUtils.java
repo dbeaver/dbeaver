@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
@@ -772,7 +773,8 @@ public class JDBCUtils {
             return string;
         }
         try {
-            String escapeStr = session.getMetaData().getSearchStringEscape();
+            SQLDialect dialect = SQLUtils.getDialectFromDataSource(session.getDataSource());
+            String escapeStr = dialect.getSearchStringEscape();
             if (CommonUtils.isEmpty(escapeStr) || escapeStr.equals(" ")) {
                 return string;
             }

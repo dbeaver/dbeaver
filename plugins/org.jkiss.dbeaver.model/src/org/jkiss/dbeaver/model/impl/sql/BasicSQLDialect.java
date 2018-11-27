@@ -223,7 +223,7 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public String getSearchStringEscape()
     {
-        return "%";
+        return null;
     }
 
     @Override
