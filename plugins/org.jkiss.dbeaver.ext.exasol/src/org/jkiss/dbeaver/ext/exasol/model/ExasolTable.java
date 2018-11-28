@@ -252,6 +252,15 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     public DBSTableForeignKey getAssociation(DBRProgressMonitor monitor, String ukName) throws DBException {
         return getContainer().getAssociationCache().getObject(monitor, getContainer(), this, ukName);
     }
+    
+    
+    
+    public ExasolTableUniqueKey getPrimaryKey(@NotNull DBRProgressMonitor monitor) throws DBException {
+    	if (getConstraints(monitor).isEmpty())
+    		return null;
+    	return getConstraints(monitor).iterator().next();
+    }
+    
 
     // -----------------
     // Business Contract
