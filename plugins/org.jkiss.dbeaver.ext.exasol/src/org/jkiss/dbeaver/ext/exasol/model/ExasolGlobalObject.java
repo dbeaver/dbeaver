@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -66,7 +65,7 @@ public class ExasolGlobalObject implements DBSObject, DBPSaveableObject {
     }
 
     @Override
-    public DBPDataSource getDataSource() {
+    public ExasolDataSource getDataSource() {
         // TODO Auto-generated method stub
         return dataSource;
     }
