@@ -18,11 +18,14 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableForeignKeyCache;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTableUniqueKeyCache;
@@ -33,6 +36,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -50,10 +58,14 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     private String owner;
     private Timestamp createTime;
     private String remarks;
+    private Integer objectId;
 
 
     // ExasolSchema's children
     public final DBSObjectCache<ExasolSchema, ExasolScript> scriptCache;
+    public final DBSObjectCache<ExasolSchema, ExasolScript> udfCache;
+    public final DBSObjectCache<ExasolSchema, ExasolScript> adapterCache;
+
     public final DBSObjectCache<ExasolSchema, ExasolFunction> functionCache;
     private ExasolViewCache viewCache = new ExasolViewCache();
     private ExasolTableCache tableCache = new ExasolTableCache();
@@ -71,8 +83,29 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         		"select "
         		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
         		+ "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
-        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name and b.object_type = 'SCRIPT' where a.script_schema = '%s' order by script_name",
+        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
+        		+ "AND script_Type = 'SCRIPTING' order by script_name",
         		name);
+        
+        this.udfCache = new ExasolJDBCObjectSimpleCacheLiterals<>(
+        		ExasolScript.class,
+        		"select "
+        		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
+        		+ "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
+        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
+        		+ "AND script_Type = 'UDF' order by script_name",
+        		name);
+        
+        this.adapterCache = new ExasolJDBCObjectSimpleCacheLiterals<>(
+        		ExasolScript.class,
+        		"select "
+        		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
+        		+ "from EXA_ALL_SCRIPTS a inner join EXA_ALL_OBJECTS b "
+        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
+        		+ "AND script_Type = 'ADAPTER' order by script_name",
+        		name);
+        
+        
         
         this.functionCache = new ExasolJDBCObjectSimpleCacheLiterals<>(ExasolFunction.class,
                 "SELECT\n" + 
@@ -104,6 +137,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "OBJECT_COMMENT");
         this.name = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+        this.objectId = JDBCUtils.safeGetInt(dbResult, "SCHEMA_OBJECT_ID");
 
 
     }
@@ -205,6 +239,27 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         return scriptCache.getAllObjects(monitor, this);
     }
     
+    public Collection<ExasolScript> getUdfs(DBRProgressMonitor monitor) throws DBException {
+
+        return udfCache.getAllObjects(monitor, this);
+    }
+
+    public ExasolScript getUdf(DBRProgressMonitor monitor, String name) throws DBException {
+
+        return udfCache.getObject(monitor, this, name);
+    }
+
+
+    public Collection<ExasolScript> getAdapter(DBRProgressMonitor monitor) throws DBException {
+
+        return adapterCache.getAllObjects(monitor, this);
+    }
+
+    public ExasolScript getAdapter(DBRProgressMonitor monitor, String name) throws DBException {
+
+        return adapterCache.getObject(monitor, this, name);
+    }
+    
     
     @Override
     public ExasolScript getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
@@ -242,7 +297,23 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     }
 
     @Property(viewable = true, editable = false, order = 2)
-    public Timestamp getCreateTime() {
+    public Timestamp getCreateTime(DBRProgressMonitor monitor) throws DBCException {
+    	if (createTime == null) {
+        	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_schema_details );
+        	try (JDBCPreparedStatement stmt = session.prepareStatement("SELECT CREATED FROM SYS."+getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL)+"_OBJECTS WHERE OBJECT_ID = ?"))
+        	{
+        		stmt.setInt(1, this.objectId);
+        		try (JDBCResultSet dbResult = stmt.executeQuery()) 
+        		{
+        			dbResult.next();
+        	        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED"); 
+        		}
+        		
+        	} catch (SQLException e) {
+        		throw new DBCException(e,getDataSource());
+    		}
+    		
+    	}
         return createTime;
     }
 
@@ -289,6 +360,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 	{
 		return ExasolUtils.generateDDLforSchema(monitor, this);
 	}
+	
 	
 	public Boolean isPhysicalSchema()
 	{
