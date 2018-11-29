@@ -4,16 +4,16 @@
 
 
     <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.data.htmlcopy" name="%category.org.jkiss.dbeaver.ext.data.htmlcopy.name" description="%category.org.jkiss.dbeaver.ext.data.htmlcopy.description"/>
-        <command id="org.jkiss.dbeaver.ext.data.htmlcopy.results.openSpreadsheet" name="%command.org.jkiss.dbeaver.ext.data.htmlcopy.results.openSpreadsheet.name" description="%command.org.jkiss.dbeaver.ext.data.htmlcopy.results.openSpreadsheet.description" categoryId="org.jkiss.dbeaver.ext.data.htmlcopy"/>
+        <category id="org.jkiss.dbeaver.ext.data.htmlcopypaste" name="%category.org.jkiss.dbeaver.ext.data.htmlcopypaste.name" description="%category.org.jkiss.dbeaver.ext.data.htmlcopypaste.description"/>
+        <command id="org.jkiss.dbeaver.ext.data.htmlcopypaste.results.openSpreadsheet" name="%command.org.jkiss.dbeaver.ext.data.htmlcopypaste.results.openSpreadsheet.name" description="%command.org.jkiss.dbeaver.ext.data.htmlcopypaste.results.openSpreadsheet.description" categoryId="org.jkiss.dbeaver.ext.data.htmlcopypaste"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.data.htmlcopy.results.openSpreadsheet" icon="icons/html.png"/>
+        <image commandId="org.jkiss.dbeaver.ext.data.htmlcopypaste.results.openSpreadsheet" icon="icons/html.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.data.htmlcopy.results.openSpreadsheet" class="org.jkiss.dbeaver.data.htmlcopy.handlers.OpenSpreadsheetHandler">
+        <handler commandId="org.jkiss.dbeaver.ext.data.htmlcopypaste.results.openSpreadsheet" class="org.jkiss.dbeaver.data.htmlcopypaste.handlers.OpenSpreadsheetHandler">
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.resultset.hasData"/>
@@ -26,11 +26,11 @@
 
         <!-- Results viewer status bar additions -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=presentations">
-            <command commandId="org.jkiss.dbeaver.ext.data.htmlcopy.results.openSpreadsheet" style="push" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.ext.data.htmlcopy.results.openSpreadsheet.toolbar.label"/>
+            <command commandId="org.jkiss.dbeaver.ext.data.htmlcopypaste.results.openSpreadsheet" style="push" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.ext.data.htmlcopypaste.results.openSpreadsheet.toolbar.label"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">
-            <command commandId="org.jkiss.dbeaver.ext.data.htmlcopy.results.openSpreadsheet"/>
+            <command commandId="org.jkiss.dbeaver.ext.data.htmlcopypaste.results.openSpreadsheet"/>
         </menuContribution>
 
     </extension>
