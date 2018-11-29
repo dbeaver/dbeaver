@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="db2.zos" class="org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSMetaModel" driverId="generic/db2_zos"/>
+    </extension>
+
+</plugin>

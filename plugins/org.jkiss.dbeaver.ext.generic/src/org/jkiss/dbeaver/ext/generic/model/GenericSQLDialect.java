@@ -40,6 +40,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private boolean legacySQLDialect;
     private boolean suportsUpsert;
     private boolean quoteReservedWords;
+    private boolean useSearchStringEscape;
     private String dualTable;
     private String testSQL;
     private boolean hasDelimiterAfterQuery;
@@ -70,6 +71,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (this.suportsUpsert) {
             addSQLKeyword("UPSERT");
         }
+        this.useSearchStringEscape = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_USE_SEARCH_STRING_ESCAPE), true);
         this.quoteReservedWords = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
         this.testSQL = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_PING));
         if (CommonUtils.isEmpty(this.testSQL)) {
@@ -145,5 +147,14 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public String getDualTableName() {
         return dualTable;
+    }
+
+    @Override
+    public String getSearchStringEscape() {
+        if (useSearchStringEscape) {
+            return super.getSearchStringEscape();
+        } else {
+            return null;
+        }
     }
 }
