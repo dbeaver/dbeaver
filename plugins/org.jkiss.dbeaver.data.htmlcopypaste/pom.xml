@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
          <relativePath>../</relativePath>
     </parent>
-    <artifactId>org.jkiss.dbeaver.data.htmcopy</artifactId>
+    <artifactId>org.jkiss.dbeaver.data.htmlcopypaste</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 

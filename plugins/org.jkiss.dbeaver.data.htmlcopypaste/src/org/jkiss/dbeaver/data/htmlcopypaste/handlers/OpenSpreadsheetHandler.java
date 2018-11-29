@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.htmlcopy.handlers;
+package org.jkiss.dbeaver.data.htmlcopypaste.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -22,8 +22,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.data.htmlcopy.export.DataExporterCopyHtml;
-import org.jkiss.dbeaver.data.htmlcopy.transfer.stream.StreamTransfertConsumerHtmlCopy;
+import org.jkiss.dbeaver.data.htmlcopypaste.export.DataExporterCopyHtml;
+import org.jkiss.dbeaver.data.htmlcopypaste.transfer.stream.StreamTransfertConsumerHtmlCopy;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
