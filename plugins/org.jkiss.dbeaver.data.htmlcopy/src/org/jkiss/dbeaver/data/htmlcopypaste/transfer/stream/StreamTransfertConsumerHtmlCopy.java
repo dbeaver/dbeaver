@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.data.htmlcopy.transfer.stream;
+package org.jkiss.dbeaver.data.htmlcopypaste.transfer.stream;
 
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;

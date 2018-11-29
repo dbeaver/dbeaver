@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jkiss.dbeaver.ext.htmlcopy.feature"
+      id="org.jkiss.dbeaver.ext.htmlcopypaste.feature"
       label="Feature"
       version="1.0.0.qualifier">
 
@@ -28,7 +28,7 @@
    </requires>
 
    <plugin
-         id="org.jkiss.dbeaver.data.htmcopy"
+         id="org.jkiss.dbeaver.data.htmlcopypaste"
          download-size="0"
          install-size="0"
          version="1.0.0.qualifier"
