@@ -1,7 +1,6 @@
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,9 +35,8 @@ public class FireBirdPlanAnalyser implements DBCPlan {
 			// Read explained plan
 			try {
 				String plan = FireBirdUtils.getPlan(dbStat);
-				rootNodes = new ArrayList<>();
-				FireBirdPlanNode node = new FireBirdPlanNode(plan);
-                rootNodes.add(node);                
+				FireBirdPlanBuilder builder = new FireBirdPlanBuilder(plan);
+				rootNodes = builder.Build();
 			} finally {
 				dbStat.close();
 			}
