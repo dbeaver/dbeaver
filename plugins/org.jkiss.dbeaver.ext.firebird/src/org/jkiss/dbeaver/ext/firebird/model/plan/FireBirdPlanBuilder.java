@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jkiss.utils.Pair;
 
 public class FireBirdPlanBuilder {
 	
@@ -48,29 +47,29 @@ public class FireBirdPlanBuilder {
 			FireBirdPlanNode node = null;
 			FireBirdPlanNode plannode = null;
 			String identificator = "";
-			Pair<PlanToken, String> token;
+			PlanTokenMatch tokenMatch;
 			while (position < plan.length()) {
-				token = jump();
-				switch (token.getFirst()) {
+				tokenMatch = jump();
+				switch (tokenMatch.token) {
 				case PLAN:
 					//node = addPlanNode(node, token.getSecond() + "[" + plan + "]");
 					node = addPlanNode(null, plan);
 					plannode = node;
 					break;
 				case JOIN:
-					node = addPlanNode(node, token.getSecond());
+					node = addPlanNode(node, tokenMatch.getValue());
 					//jump();
 					break;
 				case NATURAL:
-					addPlanNode(node, identificator + " " + token.getSecond());
+					addPlanNode(node, identificator + " " + tokenMatch.getValue());
 					identificator = "";
 					break;
 				case INDEX:
 					String indexes = "";
 					do {
-						token = jump();
-						indexes = indexes + token.getSecond();
-					} while (token.getFirst() != PlanToken.RIGHTPARENTHESE);
+						tokenMatch = jump();
+						indexes = indexes + tokenMatch.getValue();
+					} while (tokenMatch.getToken() != PlanToken.RIGHTPARENTHESE);
 					addPlanNode(node, identificator + " " + indexes);
 					identificator = "";
 					break;
@@ -78,7 +77,7 @@ public class FireBirdPlanBuilder {
 					node = node.parent;
 					break;
 				case IDENTIFICATOR:
-					identificator = identificator + " " + token.getSecond();
+					identificator = identificator + " " + tokenMatch.getValue();
 					break;
 				default:
 					break;
@@ -87,22 +86,22 @@ public class FireBirdPlanBuilder {
 			return plannode;
 		}
 		
-		private Pair<PlanToken, String> find() {
+		private PlanTokenMatch find() {
 			for (Matcher matcher: matchers) {
 				if (matcher.find(position)) {
 					position = position + matcher.group().length();
-					return new Pair<>(matchertokens.get(matcher), matcher.group());
+					return new PlanTokenMatch(matchertokens.get(matcher), matcher.group());
 				}
 			}
-			return new Pair<>(PlanToken.IDENTIFICATOR, "???");
+			return new PlanTokenMatch(PlanToken.IDENTIFICATOR, "???");
 		}
 		
-		private Pair<PlanToken, String> jump() {
-			Pair<PlanToken, String> token = null;
+		private PlanTokenMatch jump() {
+			PlanTokenMatch tokenMatch = null;
 			do {
-				token = find();
-			} while (token.getFirst() == PlanToken.WHITESPACE);
-			return token;
+				tokenMatch = find();
+			} while (tokenMatch.getToken() == PlanToken.WHITESPACE);
+			return tokenMatch;
 		}
 		
 		private FireBirdPlanNode addPlanNode(FireBirdPlanNode parent, String text) {
@@ -138,6 +137,26 @@ public class FireBirdPlanBuilder {
 	    	Matcher matcher = pattern.matcher(text);
 	        return matcher;
 	    }
+	}
+	
+	private class PlanTokenMatch {
+		
+		private PlanToken token;
+		private String value;
+
+		public PlanTokenMatch(PlanToken token, String value) {
+			super();
+			this.token = token;
+			this.value = value;
+		}
+
+		public PlanToken getToken() {
+			return token;
+		}
+
+		public String getValue() {
+			return value;
+		}
 	}
 
 }
