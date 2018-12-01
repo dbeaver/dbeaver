@@ -52,13 +52,11 @@ public class FireBirdPlanBuilder {
 				tokenMatch = jump();
 				switch (tokenMatch.token) {
 				case PLAN:
-					//node = addPlanNode(node, token.getSecond() + "[" + plan + "]");
 					node = addPlanNode(null, plan);
 					plannode = node;
 					break;
 				case JOIN:
 					node = addPlanNode(node, tokenMatch.getValue());
-					//jump();
 					break;
 				case NATURAL:
 					addPlanNode(node, identificator + " " + tokenMatch.getValue());
