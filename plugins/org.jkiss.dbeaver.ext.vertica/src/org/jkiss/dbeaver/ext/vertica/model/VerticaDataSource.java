@@ -44,6 +44,11 @@ public class VerticaDataSource extends GenericDataSource {
     }
 
     @Override
+    protected boolean isPopulateClientAppName() {
+        return false;
+    }
+
+    @Override
     public boolean isOmitCatalog() {
         return true;
     }
