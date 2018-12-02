@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -44,6 +45,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -486,6 +488,15 @@ public class JDBCUtils {
             log.debug(e);
             return false;
         }
+
+        // Check for active tasks. Do not run ping if there is active task
+        for (DBPDataSourceTask task : dataSource.getContainer().getTasks()) {
+            if (task.isActiveTask()) {
+                return true;
+            }
+        }
+
+        // Run ping query
         final String testSQL = (dataSource instanceof SQLDataSource) ?
             ((SQLDataSource) dataSource).getSQLDialect().getTestSQL() : null;
         int invalidateTimeout = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);

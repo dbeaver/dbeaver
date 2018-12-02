@@ -72,4 +72,8 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
         DatabaseEditorUtils.setPartBackground(this, getContainer());
     }
 
+    @Override
+    public boolean isActiveTask() {
+        return false;
+    }
 }

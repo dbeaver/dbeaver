@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.utils.CommonUtils;
@@ -29,7 +29,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * DataSourceJob
  */
-public abstract class DataSourceJob extends AbstractJob implements DBPDataSourceUser
+public abstract class DataSourceJob extends AbstractJob implements DBPDataSourceTask
 {
     private final DBCExecutionContext executionContext;
 
@@ -72,5 +72,9 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
         return executionContext == family || family == DBPDataSource.class;
     }
 
+    @Override
+    public boolean isActiveTask() {
+        return getState() == RUNNING;
+    }
 
 }

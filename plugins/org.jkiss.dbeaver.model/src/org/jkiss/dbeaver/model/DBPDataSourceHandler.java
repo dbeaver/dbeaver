@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model;
 /**
  * DBPDataSourceHandler
  */
-public interface DBPDataSourceHandler extends DBPDataSourceUser
+public interface DBPDataSourceHandler extends DBPDataSourceTask
 {
     void beforeConnect();
 
