@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>org.jkiss.dbeaver.test</module>
+        <module>org.jkiss.dbeaver.ext.test</module>
 
     </modules>
 
