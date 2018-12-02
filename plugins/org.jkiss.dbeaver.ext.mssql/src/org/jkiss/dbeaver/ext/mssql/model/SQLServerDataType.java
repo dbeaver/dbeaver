@@ -276,11 +276,13 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case "date":
             case "datetime":
             case "datetime2":
-            case "datetimeoffset":
             case "smalldatetime":
             case "time":
             case "timestamp":
                 return DBPDataKind.DATETIME;
+
+            case "datetimeoffset":
+                return DBPDataKind.STRING;
 
             case "binary":
                 return DBPDataKind.BINARY;
@@ -350,13 +352,14 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case "datetime":
             case "datetime2":
                 return Types.TIMESTAMP;
-            case "datetimeoffset":
             case "smalldatetime":
                 return Types.TIMESTAMP;
             case "time":
                 return Types.TIME;
             case "timestamp":
                 return Types.TIMESTAMP;
+            case "datetimeoffset":
+                return Types.VARCHAR;
             case "binary":
                 return Types.BINARY;
             case "image":

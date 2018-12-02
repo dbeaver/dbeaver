@@ -77,8 +77,8 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
                 }
             }
         } else {
-            log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
-            return null;
+            //log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
+            return super.getValueFromObject(session, type, object, copy);
         }
     }
 
