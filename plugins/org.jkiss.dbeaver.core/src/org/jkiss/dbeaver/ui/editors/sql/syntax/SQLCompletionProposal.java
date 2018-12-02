@@ -133,7 +133,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         final int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
         final char structSeparator = syntaxManager.getStructSeparator();
 
-        boolean useFQName = dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ) &&
+        boolean useFQName = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ) &&
             replacementString.indexOf(structSeparator) != -1;
         if (useFQName) {
             replacementOffset = wordDetector.getStartOffset();
@@ -162,7 +162,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             }
             replacementOffset = wordDetector.getStartOffset() + startOffset;
             // If we are at the begin of word (curOffset == 0) then do not replace the word to the right.
-            boolean replaceWord = dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD);
+            boolean replaceWord = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_REPLACE_WORD);
             if (replaceWord) {
                 replacementLength = wordDetector.getEndOffset() - replacementOffset - endOffset;
             } else {
