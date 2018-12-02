@@ -236,7 +236,7 @@ public abstract class JDBCDataSource
                     // If we in transaction - rollback it.
                     // Any valuable transaction changes should be committed by UI
                     // so here we do it just in case to avoid error messages on close with open transaction
-                    if (!connection.getAutoCommit()) {
+                    if (!connection.isClosed() && !connection.getAutoCommit()) {
                         connection.rollback();
                     }
                 } catch (Throwable e) {

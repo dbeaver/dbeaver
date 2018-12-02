@@ -615,6 +615,14 @@ public class JDBCUtils {
         }
     }
 
+    public static void executeStatement(Connection session, String sql) throws SQLException
+    {
+        try (Statement dbStat = session.createStatement()) {
+            dbStat.execute(sql);
+        }
+    }
+
+
     @Nullable
     public static String queryString(JDBCSession session, String sql, Object... args) throws SQLException
     {

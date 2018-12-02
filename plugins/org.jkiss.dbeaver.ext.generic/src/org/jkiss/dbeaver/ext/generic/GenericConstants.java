@@ -66,6 +66,7 @@ public class GenericConstants {
     // URL parameter for DB shutdown. Added to support Derby DB shutdown process
     public static final String PARAM_CREATE_URL_PARAM = "create-url-param";
     public static final String PARAM_SHUTDOWN_URL_PARAM = "shutdown-url-param";
+    public static final String PARAM_QUERY_SHUTDOWN = "query-shutdown";
     public static final String TYPE_MODIFIER_IDENTITY = " IDENTITY";
 
     public static final String TERM_CATALOG = "catalog";
