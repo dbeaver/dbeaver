@@ -304,7 +304,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT c.*,t.name as table_name,t.schema_id, dc.definition as default_definition,ep.value as description\nFROM ")
+            sql.append("SELECT c.*,t.name as table_name,t.schema_id,COLUMNPROPERTY(c.object_id, c.name, 'charmaxlen') as char_max_length, dc.definition as default_definition,ep.value as description\nFROM ")
                 .append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_columns")).append(" c")
                 .append("\nJOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "all_objects")).append(" t ON t.object_id=c.object_id")
                 .append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getSystemTableName(owner.getDatabase(), "default_constraints")).append(" dc ON dc.parent_object_id=t.object_id AND dc.parent_column_id=c.column_id\n")
