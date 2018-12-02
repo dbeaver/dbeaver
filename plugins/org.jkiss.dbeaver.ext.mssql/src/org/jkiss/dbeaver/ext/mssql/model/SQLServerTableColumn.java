@@ -53,6 +53,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
     private long objectId;
     private int userTypeId;
     private SQLServerDataType dataType;
+    protected int bytesMaxLength;
     private String collationName;
     private String description;
     private boolean hidden;
@@ -121,8 +122,8 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
 
         this.userTypeId = JDBCUtils.safeGetInt(dbResult, "user_type_id");
         this.dataType = getTable().getDatabase().getDataTypeByUserTypeId(monitor, userTypeId);
-
-        setMaxLength(JDBCUtils.safeGetLong(dbResult, "max_length"));
+        this.bytesMaxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
+        this.maxLength = JDBCUtils.safeGetLong(dbResult, "char_max_length");
         setRequired(JDBCUtils.safeGetInt(dbResult, "is_nullable") == 0);
         setScale(JDBCUtils.safeGetInteger(dbResult, "scale"));
         setPrecision(JDBCUtils.safeGetInteger(dbResult, "precision"));
