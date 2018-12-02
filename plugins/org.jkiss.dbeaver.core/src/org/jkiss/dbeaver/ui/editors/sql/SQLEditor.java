@@ -134,7 +134,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPContextProvider,
     DBPEventListener,
     ISaveablePart2,
-    DBPDataSourceUser,
+    DBPDataSourceTask,
     DBPDataSourceHandler,
     DBPPreferenceListener
 {
@@ -495,6 +495,11 @@ public class SQLEditor extends SQLEditorBase implements
         synchronized (listeners) {
             listeners.remove(listener);
         }
+    }
+
+    @Override
+    public boolean isActiveTask() {
+        return getTotalQueryRunning() > 0;
     }
 
     private class OutputLogWriter extends Writer {

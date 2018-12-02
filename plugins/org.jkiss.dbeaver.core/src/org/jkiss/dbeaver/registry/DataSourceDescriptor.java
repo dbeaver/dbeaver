@@ -145,7 +145,7 @@ public class DataSourceDescriptor
     @Nullable
     private DBPDataSource dataSource;
 
-    private final List<DBPDataSourceUser> users = new ArrayList<>();
+    private final List<DBPDataSourceTask> users = new ArrayList<>();
 
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
@@ -983,14 +983,14 @@ public class DataSourceDescriptor
     }
 
     private void releaseDataSourceUsers(DBRProgressMonitor monitor) {
-        List<DBPDataSourceUser> usersStamp;
+        List<DBPDataSourceTask> usersStamp;
         synchronized (users) {
             usersStamp = new ArrayList<>(users);
         }
 
         int jobCount = 0;
         // Save all unsaved data
-        for (DBPDataSourceUser user : usersStamp) {
+        for (DBPDataSourceTask user : usersStamp) {
             if (user instanceof Job) {
                 jobCount++;
             }
@@ -1001,7 +1001,7 @@ public class DataSourceDescriptor
         if (jobCount > 0) {
             monitor.beginTask("Waiting for all active tasks to finish", jobCount);
             // Stop all jobs
-            for (DBPDataSourceUser user : usersStamp) {
+            for (DBPDataSourceTask user : usersStamp) {
                 if (user instanceof Job) {
                     Job job = (Job) user;
                     monitor.subTask("Stop '" + job.getName() + "'");
@@ -1049,7 +1049,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public Collection<DBPDataSourceUser> getUsers()
+    public Collection<DBPDataSourceTask> getTasks()
     {
         synchronized (users) {
             return new ArrayList<>(users);
@@ -1057,7 +1057,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void acquire(DBPDataSourceUser user)
+    public void acquire(DBPDataSourceTask user)
     {
         synchronized (users) {
             if (users.contains(user)) {
@@ -1069,7 +1069,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void release(DBPDataSourceUser user)
+    public void release(DBPDataSourceTask user)
     {
         synchronized (users) {
             if (!users.remove(user)) {

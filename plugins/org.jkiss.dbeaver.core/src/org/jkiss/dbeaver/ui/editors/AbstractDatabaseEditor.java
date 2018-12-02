@@ -90,4 +90,8 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
         return false;
     }
 
+    @Override
+    public boolean isActiveTask() {
+        return false;
+    }
 }
