@@ -295,7 +295,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case "geography":
             case "geometry":
             case "hierarchyid":
-
+                return DBPDataKind.BINARY;
             case "money":
             case "smallmoney":
 
@@ -368,7 +368,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case "geography":
             case "geometry":
             case "hierarchyid":
-                return Types.OTHER;
+                return Types.BINARY;
             case "money":
             case "smallmoney":
             case "sql_variant":
