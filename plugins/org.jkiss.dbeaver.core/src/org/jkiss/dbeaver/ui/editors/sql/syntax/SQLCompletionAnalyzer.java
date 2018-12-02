@@ -462,7 +462,11 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             String tableNamePattern = getTableNamePattern(sqlDialect);
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
-                structNamePattern = "(?:from|update|join|into|,)\\s+" + tableNamePattern;
+                String kwList = "from|update|join|into";
+                if (request.queryType != SQLCompletionProcessor.QueryType.COLUMN) {
+                    kwList = kwList + "|,";
+                }
+                structNamePattern = "(?:" + kwList + ")\\s+" + tableNamePattern;
             } else {
                 structNamePattern = getTableAliasPattern(token, tableNamePattern);
             }
