@@ -507,7 +507,7 @@ public class ResultSetViewer extends Viewer
                 this.availablePresentations = newPresentations;
                 if (!this.availablePresentations.isEmpty()) {
                     for (ResultSetPresentationDescriptor pd : this.availablePresentations) {
-                        if (pd == activePresentationDescriptor) {
+                        if (pd == activePresentationDescriptor && activePresentationDescriptor.getPresentationType().isPersistent()) {
                             // Keep the same presentation
                             return;
                         }
