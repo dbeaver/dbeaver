@@ -1371,7 +1371,7 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
             if (localFile != null) {
-                return localFile.getName();
+                scriptName = localFile.getName();
             } else {
                 scriptName = getEditorInput().getName();
             }
