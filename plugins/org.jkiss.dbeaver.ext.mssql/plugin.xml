@@ -129,9 +129,9 @@
 
                 <driver
                         id="microsoft"
-                        label="MS SQL Server"
+                        label="Microsoft driver"
                         icon="icons/mssql_icon.png"
-                        category="Microsoft Server"
+                        category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
                         useURL="false"
