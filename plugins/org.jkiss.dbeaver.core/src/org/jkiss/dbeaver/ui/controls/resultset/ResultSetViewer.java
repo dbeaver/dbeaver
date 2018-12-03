@@ -698,8 +698,12 @@ public class ResultSetViewer extends Viewer
             for (ToolItem item : presentationSwitchToolbar.getItems()) {
                 item.setSelection(item.getData() == activePresentationDescriptor);
             }
+
             // Save in global preferences
-            DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
+            if (activePresentationDescriptor.getPresentationType().isPersistent()) {
+                // Save current presentation (only if it is persistent)
+                DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
+            }
             savePresentationSettings();
         } catch (Throwable e1) {
             DBUserInterface.getInstance().showError(

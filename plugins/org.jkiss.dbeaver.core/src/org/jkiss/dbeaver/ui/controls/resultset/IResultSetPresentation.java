@@ -34,9 +34,23 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 public interface IResultSetPresentation {
 
     enum PresentationType {
-        COLUMNS,
-        DOCUMENT,
-        CUSTOM
+        COLUMNS(true),
+        DOCUMENT(true),
+        CUSTOM(true),
+        TRANSFORMER(false);
+
+        /**
+         * Persistent presentation will be reused next time user will show the same resultset.
+         */
+        public boolean isPersistent() {
+            return persistent;
+        }
+
+        private final boolean persistent;
+
+        PresentationType(boolean persistent) {
+            this.persistent = persistent;
+        }
     }
 
     enum RowPosition {
