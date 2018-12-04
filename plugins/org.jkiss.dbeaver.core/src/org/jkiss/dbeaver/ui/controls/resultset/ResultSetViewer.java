@@ -453,7 +453,7 @@ public class ResultSetViewer extends Viewer
     ////////////////////////////////////////
     // Presentation & panels
 
-    List<ResultSetPresentationDescriptor> getAvailablePresentations() {
+    public List<ResultSetPresentationDescriptor> getAvailablePresentations() {
         return availablePresentations;
     }
 
@@ -688,15 +688,17 @@ public class ResultSetViewer extends Viewer
         switchPresentation(availablePresentations.get(index));
     }
 
-    private void switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
+    public void switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
         try {
             IResultSetPresentation instance = selectedPresentation.createInstance();
             activePresentationDescriptor = selectedPresentation;
             setActivePresentation(instance);
             instance.refreshData(true, false, false);
 
-            for (ToolItem item : presentationSwitchToolbar.getItems()) {
-                item.setSelection(item.getData() == activePresentationDescriptor);
+            if (presentationSwitchToolbar != null) {
+                for (ToolItem item : presentationSwitchToolbar.getItems()) {
+                    item.setSelection(item.getData() == activePresentationDescriptor);
+                }
             }
 
             // Save in global preferences
