@@ -89,6 +89,11 @@ public class ResultSetPresentationRegistry {
         return null;
     }
 
+    public List<ResultSetPresentationDescriptor> getAllPresentations()
+    {
+        return presentations;
+    }
+
     public List<ResultSetPresentationDescriptor> getAvailablePresentations(DBCResultSet resultSet, IResultSetContext context)
     {
         List<ResultSetPresentationDescriptor> result = new ArrayList<>();
