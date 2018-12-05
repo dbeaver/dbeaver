@@ -112,7 +112,6 @@ class IndentFormatter {
                 case "INTO": //$NON-NLS-1$
                 case "DROP": //$NON-NLS-1$
                 case "TRUNCATE": //$NON-NLS-1$
-                case "SET":
                 case "TABLE": //$NON-NLS-1$
                     if (!isCompact) {
                         if (bracketsDepth > 0) {
@@ -167,13 +166,23 @@ class IndentFormatter {
                 case "ELSE":  //$NON-NLS-1$
                     result += insertReturnAndIndent(argList, index, indent);
                     break;
+                case "SET": {
+                    if (index > 1) {
+                        if ("UPDATE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
+                            // Extra line feed
+                            result += insertReturnAndIndent(argList, index, indent - 1);
+                        }
+                    }
+                    result += insertReturnAndIndent(argList, index + 1, indent);
+                    break;
+                }
                 case "ON": {
                     // FIXME: This produces double indent - #3679. But still needed in some cases?
                     // Initially was added for proper MySQL views formatting.
                     //indent++;
+                    result += insertReturnAndIndent(argList, index + 1, indent);
+                    break;
                 }
-                result += insertReturnAndIndent(argList, index + 1, indent);
-                break;
                 case "USING":  //$NON-NLS-1$ //$NON-NLS-2$
                     result += insertReturnAndIndent(argList, index, indent + 1);
                     break;
@@ -367,6 +376,16 @@ class IndentFormatter {
             }
         }
         return false;
+    }
+
+    private String getPrevKeyword(List<FormatterToken> argList, int index) {
+        for (int i = index - 1; i >= 0; i--) {
+            FormatterToken token = argList.get(i);
+            if (token.getType() == TokenType.KEYWORD) {
+                return token.getString();
+            }
+        }
+        return null;
     }
 
     private static int getNextKeyword(List<FormatterToken> argList, int index) {
