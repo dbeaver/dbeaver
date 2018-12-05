@@ -195,6 +195,18 @@
     <profiles>
         <profile>
             <!-- Profile used to sign jars -->
+            <id>eclipse-oxygen</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <!-- Use Oxygen repo -->
+                <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
+            </properties>
+        </profile>
+
+        <profile>
+            <!-- Profile used to sign jars -->
             <id>sign-code</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
