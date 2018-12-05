@@ -227,7 +227,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
     }
 
-    static void addColumnCommentAction(List<DBEPersistAction> actionList, PostgreAttribute column) {
+    public static void addColumnCommentAction(List<DBEPersistAction> actionList, PostgreAttribute column) {
         actionList.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
             DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
             " IS " + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()))));
