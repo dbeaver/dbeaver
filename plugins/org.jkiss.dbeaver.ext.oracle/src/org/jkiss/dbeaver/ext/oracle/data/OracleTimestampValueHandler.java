@@ -43,7 +43,7 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("'DATE '''yyyy-MM-dd''");
     private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("'TIME '''HH:mm:ss.SSS''");
 
-    private static Method TIMESTAMP_READ_METHOD = null, TIMESTAMPTZ_READ_METHOD = null, TIMESTAMPLTZ_READ_METHOD = null;
+    //private static Method TIMESTAMP_READ_METHOD = null, TIMESTAMPTZ_READ_METHOD = null, TIMESTAMPLTZ_READ_METHOD = null;
 
     public OracleTimestampValueHandler(DBDDataFormatterProfile formatterProfile) {
         super(formatterProfile);
@@ -67,31 +67,22 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     private static Object getTimestampReadMethod(Class<?> aClass, Connection connection, Object object) throws Exception {
         switch (aClass.getName()) {
             case OracleConstants.TIMESTAMP_CLASS_NAME:
-                synchronized (OracleTimestampValueHandler.class) {
-                    if (TIMESTAMP_READ_METHOD == null) {
-                        TIMESTAMP_READ_METHOD = aClass.getMethod("timestampValue");
-                        TIMESTAMP_READ_METHOD.setAccessible(true);
-                    }
-                }
-                return TIMESTAMP_READ_METHOD.invoke(object);
+                return getNativeMethod(aClass, "timestampValue")
+                    .invoke(object);
             case OracleConstants.TIMESTAMPTZ_CLASS_NAME:
-                synchronized (OracleTimestampValueHandler.class) {
-                    if (TIMESTAMPTZ_READ_METHOD == null) {
-                        TIMESTAMPTZ_READ_METHOD = aClass.getMethod("timestampValue", Connection.class);
-                        TIMESTAMPTZ_READ_METHOD.setAccessible(true);
-                    }
-                }
-                return TIMESTAMPTZ_READ_METHOD.invoke(object, connection);
+                return getNativeMethod(aClass, "timestampValue", Connection.class)
+                    .invoke(object, connection);
             case OracleConstants.TIMESTAMPLTZ_CLASS_NAME:
-                synchronized (OracleTimestampValueHandler.class) {
-                    if (TIMESTAMPLTZ_READ_METHOD == null) {
-                        TIMESTAMPLTZ_READ_METHOD = aClass.getMethod("timestampValue", Connection.class, Calendar.class);
-                        TIMESTAMPLTZ_READ_METHOD.setAccessible(true);
-                    }
-                }
-                return TIMESTAMPLTZ_READ_METHOD.invoke(object, connection, Calendar.getInstance());
+                return getNativeMethod(aClass, "timestampValue", Connection.class, Calendar.class)
+                    .invoke(object, connection, Calendar.getInstance());
         }
         throw new DBException("Unsupported Oracle TIMESTAMP type: " + aClass.getName());
+    }
+
+    private static Method getNativeMethod(Class<?> aClass, String name, Class<?> ... args) throws NoSuchMethodException {
+        Method method = aClass.getMethod(name, args);
+        method.setAccessible(true);
+        return method;
     }
 
     @Nullable
