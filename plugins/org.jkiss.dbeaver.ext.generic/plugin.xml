@@ -190,7 +190,7 @@
                 </driver>
                 <driver
                     id="postgresql_generic"
-                    label="PostgreSQL (Legacy)"
+                    label="PostgreSQL (Old)"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
