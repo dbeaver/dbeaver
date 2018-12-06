@@ -597,6 +597,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_select_datasource_error_title;
 	public static String dialog_select_datasource_title;
 	public static String dialog_struct_columns_select_column;
+	public static String dialog_struct_columns_type;
 
     public static String dialog_struct_columns_select_error_load_columns_message;
 	public static String dialog_struct_columns_select_error_load_columns_title;
