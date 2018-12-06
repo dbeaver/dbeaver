@@ -129,7 +129,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 CLabel infoLabel = UIUtils.createInfoLabel(placeholder, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
                 gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
                 infoLabel.setLayoutData(gd);
-                infoLabel.setToolTipText("You can use OS environment variables in connection parameters.\nUse ${variable} patterns.");
+                infoLabel.setToolTipText(CoreMessages.dialog_connection_env_variables_hint);
             }
 
             if (site.isNew()) {
@@ -139,7 +139,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 Composite linksComposite = UIUtils.createPlaceholder(placeholder, 2, 2);
                 linksComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                Label advancedLabel = UIUtils.createControlLabel(linksComposite, "Advanced settings");
+                Label advancedLabel = UIUtils.createControlLabel(linksComposite, CoreMessages.dialog_connection_advanced_settings);
                 advancedLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
                 if (!site.getDriver().isEmbedded()) {
