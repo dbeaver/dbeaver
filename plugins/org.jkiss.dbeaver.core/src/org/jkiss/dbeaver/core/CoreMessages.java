@@ -969,6 +969,8 @@ public class CoreMessages extends NLS {
 	
 	public static String dialog_connection_edit_driver_button;
 	public static String dialog_connection_driver;
+	public static String dialog_connection_advanced_settings;
+	public static String dialog_connection_env_variables_hint;
 
 	public static String editor_file_open_in_explorer;
 	public static String editor_file_copy_path;
