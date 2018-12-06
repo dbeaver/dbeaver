@@ -203,6 +203,10 @@ class GenericFilterValueEdit {
     }
 
     private void loadMultiValueList(@NotNull Collection<DBDLabelValuePair> values) {
+        if (tableViewer == null || tableViewer.getControl() == null || tableViewer.getControl().isDisposed()) {
+            return;
+        }
+
         Pattern pattern = null;
         if (!CommonUtils.isEmpty(filterPattern)) {
             pattern = Pattern.compile(SQLUtils.makeLikePattern("%" + filterPattern + "%"), Pattern.CASE_INSENSITIVE);

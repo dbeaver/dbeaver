@@ -227,12 +227,14 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
 
             // Add desc columns conditions
             if (searchInDesc) {
+                boolean hasCondition = searchInKeys;
                 for (DBSEntityAttribute descAttr : descAttributes) {
                     if (descAttr.getDataKind() == DBPDataKind.STRING) {
-                        if (searchInKeys) {
+                        if (hasCondition) {
                             query.append(" OR ");
                         }
                         query.append(DBUtils.getQuotedIdentifier(descAttr)).append(" LIKE ?");
+                        hasCondition = true;
                     }
                 }
             }
