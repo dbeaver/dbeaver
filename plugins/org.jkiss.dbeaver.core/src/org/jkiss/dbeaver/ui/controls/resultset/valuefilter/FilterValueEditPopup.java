@@ -90,7 +90,7 @@ public class FilterValueEditPopup extends Dialog {
         tableComposite.setLayoutData(gd);
         tableComposite.setLayout(new FillLayout());
 
-        filter.setupTable(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.NO_SCROLL | SWT.V_SCROLL, true, false, new GridData(GridData.FILL_BOTH));
+        filter.setupTable(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.NO_SCROLL | SWT.V_SCROLL, true, false, new GridData(GridData.FILL_BOTH));
         Table table = filter.tableViewer.getTable();
 
         TableViewerColumn resultsetColumn = new TableViewerColumn(filter.tableViewer, SWT.NONE);
