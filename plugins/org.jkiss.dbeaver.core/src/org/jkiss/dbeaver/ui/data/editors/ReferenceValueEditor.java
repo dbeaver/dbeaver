@@ -235,6 +235,23 @@ public class ReferenceValueEditor {
             ((StyledText)control).addModifyListener(modifyListener);
         }
 
+        if (refConstraint instanceof DBSEntityAssociation) {
+            final Text valueFilterText = new Text(parent, SWT.BORDER);
+            valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            valueFilterText.addModifyListener(e -> {
+                String filterPattern = valueFilterText.getText();
+                reloadSelectorValues(filterPattern);
+            });
+            valueFilterText.addPaintListener(e -> {
+                if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
+                    e.gc.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                    e.gc.drawText("Type part of dictionary value to search",
+                        2, 0, true);
+                    e.gc.setFont(null);
+                }
+            });
+        }
+
         final Object curValue = valueController.getValue();
 
         reloadSelectorValues(curValue instanceof Number ? curValue : null);
