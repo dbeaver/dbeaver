@@ -15,6 +15,10 @@ class FireBirdPlanException extends Exception {
 		super(makeMessage(unexpected, position, plan));
 	}
 	
+	public FireBirdPlanException(String info, String index) {
+		super(String.format("Error when getting info about %1$s index(%2$s)", index, info));
+	}
+	
 	private static String makeMessage(String expected, String actual, int position, String plan)
 	{
 		return addPlanMark(

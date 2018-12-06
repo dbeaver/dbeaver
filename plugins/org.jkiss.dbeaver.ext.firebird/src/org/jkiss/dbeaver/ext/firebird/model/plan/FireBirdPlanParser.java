@@ -1,11 +1,15 @@
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 class FireBirdPlanParser {
 
@@ -14,9 +18,12 @@ class FireBirdPlanParser {
 		private String plan;
 		private int position = 0;
 		private PlanTokenMatch tokenMatch;
+		private JDBCSession session;
 		
-		FireBirdPlanParser(String plan) {
+		FireBirdPlanParser(String plan, JDBCSession session) {
 			this.plan = plan;
+			this.session = session;
+			
 			for (PlanToken token: PlanToken.values()) {
 				Matcher matcher = token.newMatcher(plan);
 				matchers.add(matcher);
@@ -152,7 +159,7 @@ class FireBirdPlanParser {
 					break;
 				case INDEX:
 					String indexes = collectIndexes();
-					addPlanNode(parent, aliases + " INDEX(" + indexes + ")");
+					addPlanNode(parent, aliases + " INDEX (" + indexes + ")");
 					break;
 				case ORDER:
 					tokenMatch = jump();
@@ -187,7 +194,7 @@ class FireBirdPlanParser {
 			String indexes = "";
 			tokenMatch = jump();
 			while (tokenMatch.getToken() != PlanToken.RIGHTPARENTHESE) {
-				indexes = indexes + tokenMatch.getValue();
+				indexes = indexes + tokenMatch.getValue() + indexInfo(tokenMatch.getValue());
 				tokenMatch = jump();
 				if(tokenMatch.getToken() == PlanToken.COMMA) {
 					indexes = indexes + ",";
@@ -239,6 +246,33 @@ class FireBirdPlanParser {
 				parent.getNested().add(node);
 			}
 			return node;
+		}
+		
+		private String indexInfo(String index) throws FireBirdPlanException {
+			StringBuilder sb = new StringBuilder();
+			sb.append("( ");
+			try {
+				JDBCPreparedStatement dbStat;
+				dbStat = session.prepareStatement(
+						"SELECT RDB$FIELD_NAME, RDB$STATISTICS FROM RDB$INDEX_SEGMENTS "
+						+ "WHERE RDB$INDEX_NAME = ? ORDER BY RDB$FIELD_POSITION");
+	            try {
+	                dbStat.setString(1, index);
+	                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+	                    while (dbResult.next()) {
+	                    	sb.append(String.format("%1$s[%2$f]", dbResult.getString(1).trim(), dbResult.getDouble(2)));
+	                    	sb.append(", ");
+	                    }
+	                    sb.delete(sb.length() - 2, sb.length());
+	                }
+	            } finally {
+	                dbStat.close();
+	            }
+			} catch (SQLException e) {
+				throw new FireBirdPlanException(index, e.getMessage());
+			}
+			sb.append(" )");
+			return sb.toString();
 		}
 		
 		enum PlanToken {

@@ -36,7 +36,7 @@ public class FireBirdPlanAnalyser implements DBCPlan {
 			try {
 				String plan = FireBirdUtils.getPlan(dbStat);
 				FireBirdPlanBuilder builder = new FireBirdPlanBuilder(plan);
-				rootNodes = builder.Build();
+				rootNodes = builder.Build(session);
 			} finally {
 				dbStat.close();
 			}
