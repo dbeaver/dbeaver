@@ -3716,6 +3716,7 @@
         <presentation
                 id="spreadsheet"
                 label="%presentation.spreadsheet.label"
+                description="%presentation.spreadsheet.description"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
                 order="100"
@@ -3725,6 +3726,7 @@
         <presentation
                 id="plaintext"
                 label="%presentation.plaintext.label"
+                description="%presentation.plaintext.description"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_text.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation"
                 order="200"
