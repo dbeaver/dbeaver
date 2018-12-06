@@ -3919,9 +3919,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            EditDictionaryPage page = new EditDictionaryPage(
-                "Edit dictionary",
-                model.getSingleSource());
+            EditDictionaryPage page = new EditDictionaryPage(model.getSingleSource());
             page.edit();
         }
 
