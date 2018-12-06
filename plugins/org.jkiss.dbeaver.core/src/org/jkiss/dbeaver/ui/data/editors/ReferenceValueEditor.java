@@ -241,6 +241,9 @@ public class ReferenceValueEditor {
     }
 
     private void reloadSelectorValues(Object pattern) {
+        if (CommonUtils.equalObjects(lastPattern, pattern)) {
+            return;
+        }
         lastPattern = pattern;
         SelectorLoaderService loadingService = new SelectorLoaderService();
         if (pattern != null) {

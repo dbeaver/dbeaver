@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -28,8 +26,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -37,9 +35,11 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 
 public class FilterValueEditPopup extends Dialog {
 
@@ -83,13 +83,12 @@ public class FilterValueEditPopup extends Dialog {
         Composite group = (Composite) super.createDialogArea(parent);
         UIUtils.createControlLabel(group, "Choose value(s) to filter by");
 
-
         Composite tableComposite = new Composite(group, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 300;
         tableComposite.setLayoutData(gd);
-        tableComposite.setLayout(new GridLayout(1, false));
+        tableComposite.setLayout(new FillLayout());
 
         filter.setupTable(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.NO_SCROLL | SWT.V_SCROLL, true, false, new GridData(GridData.FILL_BOTH));
         Table table = filter.tableViewer.getTable();
@@ -102,15 +101,28 @@ public class FilterValueEditPopup extends Dialog {
             }
         });
 
+        DBSEntityReferrer descReferrer = ReferenceValueEditor.getEnumerableConstraint(filter.attr);
+        TableViewerColumn descColumn = null;
+        if (descReferrer != null) {
+            descColumn = new TableViewerColumn(filter.tableViewer, SWT.NONE);
+            descColumn.setLabelProvider(new ColumnLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    return ((DBDLabelValuePair) element).getLabel();
+                }
+            });
+        }
+
         resultsetColumn.getColumn().setResizable(false);
-        TableColumnLayout tableLayout = new TableColumnLayout();
-        tableComposite.setLayout(tableLayout);
 
         // Resize the column to fit the contents
-        resultsetColumn.getColumn().pack();
-        int resultsetWidth = resultsetColumn.getColumn().getWidth();
-        // Set  column to fill 100%, but with its packed width as minimum
-        tableLayout.setColumnData(resultsetColumn.getColumn(), new ColumnWeightData(100, resultsetWidth));
+        if (descColumn != null) {
+            descColumn.getColumn().setResizable(false);
+        }
+
+        UIUtils.asyncExec(() -> {
+            UIUtils.packColumns(table, true);
+        });
 
         FocusAdapter focusListener = new FocusAdapter() {
             @Override
@@ -136,8 +148,7 @@ public class FilterValueEditPopup extends Dialog {
             okPressed();
         });
 
-
-        if (filter.attr.getDataKind() == DBPDataKind.STRING) {
+        if (filter.attr.getDataKind() == DBPDataKind.STRING || descReferrer != null) {
             Text filterTextbox = filter.addFilterTextbox(group);
             filterTextbox.setFocus();
             filterTextbox.addTraverseListener(e -> {
@@ -171,4 +182,5 @@ public class FilterValueEditPopup extends Dialog {
     public Object getValue() {
         return ((DBDLabelValuePair) value).getValue();
     }
+
 }
