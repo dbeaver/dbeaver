@@ -320,11 +320,8 @@ class GenericFilterValueEdit {
         abstract Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
 
         void populateValues(@NotNull final Collection<DBDLabelValuePair> values) {
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    loadMultiValueList(values);
-                }
+            UIUtils.asyncExec(() -> {
+                loadMultiValueList(values);
             });
         }
     }
