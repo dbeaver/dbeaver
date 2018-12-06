@@ -213,12 +213,14 @@ public class ReferenceValueEditor {
                 curEditorValue,
                 DBDDisplayFormat.UI);
             boolean valueFound = false;
-            for (TableItem item : editorSelector.getItems()) {
-                if (item.getText(0).equals(curTextValue)) {
-                    editorSelector.select(editorSelector.indexOf(item));
-                    editorSelector.showItem(item);
-                    valueFound = true;
-                    break;
+            if (curTextValue != null) {
+                for (TableItem item : editorSelector.getItems()) {
+                    if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
+                        editorSelector.select(editorSelector.indexOf(item));
+                        editorSelector.showItem(item);
+                        valueFound = true;
+                        break;
+                    }
                 }
             }
 
