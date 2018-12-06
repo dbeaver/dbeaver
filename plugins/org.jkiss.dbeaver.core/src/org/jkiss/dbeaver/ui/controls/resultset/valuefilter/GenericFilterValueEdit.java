@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -56,6 +57,9 @@ import java.util.regex.Pattern;
 
 
 class GenericFilterValueEdit {
+
+    private static final Log log = Log.getLog(GenericFilterValueEdit.class);
+
     TableViewer tableViewer;
     String filterPattern;
 
@@ -251,7 +255,14 @@ class GenericFilterValueEdit {
                 }
             }
         }
-        Collections.sort(sortedList);
+        try {
+            Collections.sort(sortedList);
+        } catch (Exception e) {
+            // FIXME: This may happen in some crazy cases -
+            // FIXME: error "Comparison method violates its general contract!" happens in case of long strings sorting
+            // FIXME: Test on sakila.film.description
+            log.error("Error sorting value collection", e);
+        }
         if (hasNulls) {
             if (!rowData.containsKey(null)) {
                 sortedList.add(0, new DBDLabelValuePair(DBValueFormatting.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
