@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * JDBC abstract table column
@@ -175,7 +172,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 
     @NotNull
     @Override
-    public Collection<DBDLabelValuePair> getValueEnumeration(@NotNull DBCSession session, @Nullable Object valuePattern, int maxResults) throws DBException {
+    public List<DBDLabelValuePair> getValueEnumeration(@NotNull DBCSession session, @Nullable Object valuePattern, int maxResults) throws DBException {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ").append(DBUtils.getQuotedIdentifier(this)).append(", count(*)");

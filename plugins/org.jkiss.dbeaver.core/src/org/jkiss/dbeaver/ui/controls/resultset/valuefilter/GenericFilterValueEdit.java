@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 
 
@@ -155,7 +156,7 @@ class GenericFilterValueEdit {
     private void loadConstraintEnum(final DBSEntityReferrer refConstraint) {
         loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values") {
             @Override
-            Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
+            List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
                 final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
                 if (tableColumn == null) {
                     return null;
@@ -199,7 +200,7 @@ class GenericFilterValueEdit {
             tableViewer.getTable().getColumn(1).setText("Count");
         loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values") {
             @Override
-            Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
+            List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
                 return attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
             }
         };
@@ -318,7 +319,7 @@ class GenericFilterValueEdit {
                 return Status.OK_STATUS;
             }
             try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read value enumeration")) {
-                final Collection<DBDLabelValuePair> valueEnumeration = readEnumeration(session);
+                final List<DBDLabelValuePair> valueEnumeration = readEnumeration(session);
                 if (valueEnumeration == null) {
                     return Status.OK_STATUS;
                 } else {
@@ -332,7 +333,7 @@ class GenericFilterValueEdit {
         }
 
         @Nullable
-        abstract Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
+        abstract List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
 
         void populateValues(@NotNull final Collection<DBDLabelValuePair> values) {
             UIUtils.asyncExec(() -> {

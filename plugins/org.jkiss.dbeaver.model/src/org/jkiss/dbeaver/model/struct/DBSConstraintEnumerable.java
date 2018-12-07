@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -46,8 +45,8 @@ public interface DBSConstraintEnumerable extends DBSEntityConstraint
      * @param preceedingKeys other constrain key values. May be null.
      * @param sortByValue
      * @param sortAsc
-     * @param maxResults maximum enumeration values in result set     @return statement with result set which contains valid enumeration values.        */
-    Collection<DBDLabelValuePair> getKeyEnumeration(
+     * @param maxResults maximum enumeration values in result set     @return statement with result set which contains valid enumeration values.             */
+    List<DBDLabelValuePair> getKeyEnumeration(
         DBCSession session,
         DBSEntityAttribute keyColumn,
         Object keyPattern,
@@ -55,6 +54,15 @@ public interface DBSConstraintEnumerable extends DBSEntityConstraint
         boolean sortByValue,
         boolean sortAsc,
         int maxResults)
+        throws DBException;
+
+    List<DBDLabelValuePair> getKeyEnumeration(
+        DBCSession session,
+        DBSEntityAttribute keyColumn,
+        List<Object> keyValues,
+        @Nullable List<DBDAttributeValue> preceedingKeys,
+        boolean sortByValue,
+        boolean sortAsc)
         throws DBException;
 
 }

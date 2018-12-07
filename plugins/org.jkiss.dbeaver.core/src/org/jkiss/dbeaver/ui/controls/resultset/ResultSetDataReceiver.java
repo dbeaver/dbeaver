@@ -175,9 +175,10 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         UIUtils.syncExec(() -> {
             // Push data into viewer
             if (!nextSegmentRead) {
-                resultSetViewer.updatePresentation(resultSet);
+                boolean metadataChanged = resultSetViewer.getModel().isMetadataChanged();
+                resultSetViewer.updatePresentation(resultSet, metadataChanged);
                 resultSetViewer.setData(tmpRows, focusRow);
-                resultSetViewer.getActivePresentation().refreshData(true, false, !resultSetViewer.getModel().isMetadataChanged());
+                resultSetViewer.getActivePresentation().refreshData(true, false, !metadataChanged);
                 resultSetViewer.updateStatusMessage();
             } else {
                 resultSetViewer.appendData(tmpRows);
