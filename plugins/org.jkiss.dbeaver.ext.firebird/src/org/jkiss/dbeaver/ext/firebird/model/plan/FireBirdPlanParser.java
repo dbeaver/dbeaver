@@ -1,34 +1,20 @@
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 class FireBirdPlanParser {
 
-		private List<Matcher> matchers = new ArrayList<>(PlanToken.values().length);
-		private Map<Matcher,PlanToken> matchertokens = new HashMap<>(PlanToken.values().length);
 		private String plan;
-		private int position = 0;
-		private PlanTokenMatch tokenMatch;
 		private JDBCSession session;
+		private FireBirdPlanTokenMatcher tokenMatch;
 		
 		FireBirdPlanParser(String plan, JDBCSession session) {
 			this.plan = plan;
 			this.session = session;
-			
-			for (PlanToken token: PlanToken.values()) {
-				Matcher matcher = token.newMatcher(plan);
-				matchers.add(matcher);
-				matchertokens.put(matcher, token);
-			}
+			this.tokenMatch = new FireBirdPlanTokenMatcher(plan);
 		}
 		
 /*
@@ -59,10 +45,10 @@ class FireBirdPlanParser {
 */
 
 		FireBirdPlanNode parse() throws FireBirdPlanException {
-			tokenMatch = jump();
-			checkToken(PlanToken.PLAN, tokenMatch);
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.PLAN);
 			FireBirdPlanNode node = addPlanNode(null, plan);
-			tokenMatch = jump();
+			tokenMatch.jump();
 			planExpr(node);
 			return node;
 		}	
@@ -71,10 +57,10 @@ class FireBirdPlanParser {
 			switch (tokenMatch.token) {
 				case LEFTPARENTHESE:
 					do {
-						tokenMatch = jump();
+						tokenMatch.jump();
 						planItem(parent);
-					} while (tokenMatch.token == PlanToken.COMMA);
-					checkToken(PlanToken.RIGHTPARENTHESE, tokenMatch);
+					} while (tokenMatch.token == FireBirdPlanToken.COMMA);
+					tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
 					break;
 				case SORT:
 					sortedItem(parent);
@@ -89,7 +75,7 @@ class FireBirdPlanParser {
 					mergedItem(parent, false);
 					break;					
 				default:
-					raisePlanTokenException(tokenMatch);
+					tokenMatch.raisePlanTokenException();
 			}
 		}
 		
@@ -105,50 +91,50 @@ class FireBirdPlanParser {
 		}
 		
 		private void joinedItem(FireBirdPlanNode parent) throws FireBirdPlanException {
-			checkToken(PlanToken.JOIN, tokenMatch);
+			tokenMatch.checkToken(FireBirdPlanToken.JOIN);
 			FireBirdPlanNode node = addPlanNode(parent, "JOIN");
-			tokenMatch = jump();
-			checkToken(PlanToken.LEFTPARENTHESE, tokenMatch);
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
 			do {
-				tokenMatch = jump();
+				tokenMatch.jump();
 				planItem(node);
-				tokenMatch = jump();
-			} while (tokenMatch.getToken() == PlanToken.COMMA);
-			checkToken(PlanToken.RIGHTPARENTHESE, tokenMatch);
+				tokenMatch.jump();
+			} while (tokenMatch.getToken() == FireBirdPlanToken.COMMA);
+			tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
 		}
 			
 		private void mergedItem(FireBirdPlanNode parent, Boolean sorted) throws FireBirdPlanException {
 			if (sorted) {
-				checkToken(PlanToken.SORT_MERGE, tokenMatch);
+				tokenMatch.checkToken(FireBirdPlanToken.SORT_MERGE);
 			} else {
-				checkToken(PlanToken.MERGE, tokenMatch);
+				tokenMatch.checkToken(FireBirdPlanToken.MERGE);
 			}
-			tokenMatch = jump();
-			checkToken(PlanToken.LEFTPARENTHESE, tokenMatch);
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
 			FireBirdPlanNode node = null;
 			if (sorted) {
 				node = addPlanNode(parent, "SORT MERGE");
 			} else {
 				node = addPlanNode(parent, "MERGE");
 			}
-			tokenMatch = jump();
-			checkToken(PlanToken.LEFTPARENTHESE, tokenMatch);
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
 			do {
-				tokenMatch = jump();
+				tokenMatch.jump();
 				sortedItem(node);
-				tokenMatch = jump();
-			} while (tokenMatch.getToken() == PlanToken.COMMA);
-			checkToken(PlanToken.RIGHTPARENTHESE, tokenMatch);
+				tokenMatch.jump();
+			} while (tokenMatch.getToken() == FireBirdPlanToken.COMMA);
+			tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
 		}
 		
 		private void sortedItem(FireBirdPlanNode parent) throws FireBirdPlanException {
-			checkToken(PlanToken.SORT, tokenMatch);
+			tokenMatch.checkToken(FireBirdPlanToken.SORT);
 			FireBirdPlanNode node = addPlanNode(parent, "SORT");
-			tokenMatch = jump();
-			checkToken(PlanToken.LEFTPARENTHESE, tokenMatch);
-			tokenMatch = jump();
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
+			tokenMatch.jump();
 			planItem(node);
-			checkToken(PlanToken.RIGHTPARENTHESE, tokenMatch);			
+			tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);			
 		}
 		
 		private void basicItem(FireBirdPlanNode parent) throws FireBirdPlanException {
@@ -162,80 +148,46 @@ class FireBirdPlanParser {
 					addPlanNode(parent, aliases + " INDEX (" + indexes + ")");
 					break;
 				case ORDER:
-					tokenMatch = jump();
-					checkToken(PlanToken.IDENTIFICATOR, tokenMatch);
+					tokenMatch.jump();
+					tokenMatch.checkToken(FireBirdPlanToken.IDENTIFICATOR);
 					String orderIndex = tokenMatch.getValue();
-					tokenMatch = jump();
+					tokenMatch.jump();
 					String text = aliases + " ORDER " + orderIndex;
-					if (tokenMatch.getToken() == PlanToken.INDEX) {
+					if (tokenMatch.getToken() == FireBirdPlanToken.INDEX) {
 						String orderIndexes = collectIndexes();
 						text = text + " INDEX(" + orderIndexes + ")";
 					}
 					addPlanNode(parent, text);
 					break;
 			default:
-				raisePlanTokenException(tokenMatch);
+				tokenMatch.raisePlanTokenException();
 			}
 			
 		}
 
 		private String collectIdentifiers() {
 			String identifiers = "";
-			while (tokenMatch.getToken() == PlanToken.IDENTIFICATOR) {
+			while (tokenMatch.getToken() == FireBirdPlanToken.IDENTIFICATOR) {
 				identifiers = identifiers + tokenMatch.getValue() + " ";
-				tokenMatch = jump();
+				tokenMatch.jump();
 			};
 			return identifiers;
 		}
 		
 		private String collectIndexes() throws FireBirdPlanException {
-			tokenMatch = jump();
-			checkToken(PlanToken.LEFTPARENTHESE, tokenMatch);
+			tokenMatch.jump();
+			tokenMatch.checkToken(FireBirdPlanToken.LEFTPARENTHESE);
 			String indexes = "";
-			tokenMatch = jump();
-			while (tokenMatch.getToken() != PlanToken.RIGHTPARENTHESE) {
+			tokenMatch.jump();
+			while (tokenMatch.getToken() != FireBirdPlanToken.RIGHTPARENTHESE) {
 				indexes = indexes + tokenMatch.getValue() + indexInfo(tokenMatch.getValue());
-				tokenMatch = jump();
-				if(tokenMatch.getToken() == PlanToken.COMMA) {
+				tokenMatch.jump();
+				if(tokenMatch.getToken() == FireBirdPlanToken.COMMA) {
 					indexes = indexes + ",";
-					tokenMatch = jump();
+					tokenMatch.jump();
 				}
 			};
 			return indexes;
-		}
-		
-		private PlanTokenMatch find() {
-			for (Matcher matcher: matchers) {
-				if (matcher.find(position)) {
-					position = position + matcher.group().length();
-					return new PlanTokenMatch(matchertokens.get(matcher), matcher.group());
-				}
-			}
-			return new PlanTokenMatch(PlanToken.IDENTIFICATOR, "???");
-		}
-		
-		private PlanTokenMatch jump() {
-			PlanTokenMatch tokenMatch = null;
-			do {
-				tokenMatch = find();
-			} while (tokenMatch.getToken() == PlanToken.WHITESPACE);
-			return tokenMatch;
-		}
-		
-		private void checkToken(PlanToken token, PlanTokenMatch tokenMatch) throws FireBirdPlanException {
-			if (token != tokenMatch.getToken()) {
-				raisePlanTokenException(token, tokenMatch);
-			}
-		}
-		
-		private void raisePlanTokenException(PlanToken token, PlanTokenMatch tokenMatch) throws FireBirdPlanException {
-			throw new FireBirdPlanException(token.toString(), tokenMatch.getToken().toString(), 
-					position - tokenMatch.getValue().length(), plan);
-		}
-		
-		private void raisePlanTokenException(PlanTokenMatch tokenMatch) throws FireBirdPlanException {
-			throw new FireBirdPlanException(tokenMatch.getToken().toString(), 
-					position - tokenMatch.getValue().length(), plan);
 		}
 		
 		private FireBirdPlanNode addPlanNode(FireBirdPlanNode parent, String text) {
@@ -273,54 +225,6 @@ class FireBirdPlanParser {
 			}
 			sb.append(" )");
 			return sb.toString();
-		}
-		
-		enum PlanToken {
-			PLAN("\\GPLAN\\b"), 
-			JOIN("\\GJOIN\\b"), 
-			NATURAL("\\GNATURAL\\b"),
-			SORT_MERGE("\\GSORT\\w+MERGE\\b"),
-			SORT("\\GSORT\\b"), 
-			MERGE("\\GMERGE\\b"), 
-			ORDER("\\GORDER\\b"), 
-			INDEX("\\GINDEX\\b"), 
-			LEFTPARENTHESE("\\G\\("), 
-			RIGHTPARENTHESE("\\G\\)"),
-			COMMA("\\G,"),
-			WHITESPACE("\\G\\s+"),
-			IDENTIFICATOR("\\G\\b[\\w$]+\\b"),
-			UNRECOGNIZED("\\G\\b[^\\s]+\\b");
-		    
-			private final Pattern pattern;
-
-		    private PlanToken(String regex) {
-		        pattern = Pattern.compile(regex);
-		    }
-		    
-		    public Matcher newMatcher(String text) {
-		    	Matcher matcher = pattern.matcher(text);
-		        return matcher;
-		    }
-		}
-		
-		class PlanTokenMatch {
-			
-			private PlanToken token;
-			private String value;
-
-			public PlanTokenMatch(PlanToken token, String value) {
-				super();
-				this.token = token;
-				this.value = value;
-			}
-
-			public PlanToken getToken() {
-				return token;
-			}
-
-			public String getValue() {
-				return value;
-			}
 		}
 		
 	}
