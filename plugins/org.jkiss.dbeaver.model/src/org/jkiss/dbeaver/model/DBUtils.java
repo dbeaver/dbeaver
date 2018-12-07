@@ -44,7 +44,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.ToIntFunction;
 
 /**
  * DBUtils
@@ -1005,12 +1004,17 @@ public final class DBUtils {
         }
 
         String queryText;
-        if (hasLimits && limitTransformer != null) {
-            limitTransformer.setParameters(offset, maxRows);
-            queryText = limitTransformer.transformQueryString(sqlQuery);
-        } else if (fetchAllTransformer != null) {
-            queryText = fetchAllTransformer.transformQueryString(sqlQuery);
-        } else {
+        try {
+            if (hasLimits && limitTransformer != null) {
+                limitTransformer.setParameters(offset, maxRows);
+                queryText = limitTransformer.transformQueryString(sqlQuery);
+            } else if (fetchAllTransformer != null) {
+                queryText = fetchAllTransformer.transformQueryString(sqlQuery);
+            } else {
+                queryText = sqlQuery.getText();
+            }
+        } catch (Exception e) {
+            log.debug("Error transforming SQL query", e);
             queryText = sqlQuery.getText();
         }
 

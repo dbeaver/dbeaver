@@ -35,6 +35,8 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     public static final String KEYWORD_LIMIT = "LIMIT";
     public static final String KEYWORD_OFFSET = "OFFSET";
 
+    public static final Pattern NON_LIMIT_QUERY_PATTERN = Pattern.compile("\\s+(LIMIT|INTO|UPDATE|PROCEDURE|FETCH)\\s+");
+
     private boolean supportsExtendedLimit;
     private boolean supportsOffsetKeyword;
     private Number offset;
@@ -71,7 +73,6 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
             plainSelect = "SELECT".equals(SQLUtils.getFirstKeyword(dialect, testQuery));
         }
         if (plainSelect) {
-            Pattern NON_LIMIT_QUERY_PATTERN = Pattern.compile("\\s+(LIMIT|INTO|UPDATE|PROCEDURE|FETCH)\\s+");
             plainSelect = !NON_LIMIT_QUERY_PATTERN.matcher(testQuery).matches();
         }
         if (!plainSelect) {
