@@ -1046,7 +1046,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         queryText = SQLUtils.fixLineFeeds(queryText);
 
                         if (isDelimiter && (keepDelimiters || (hasBlocks ?
-                            dialect.isDelimiterAfterBlock() && firstKeyword != null && ArrayUtils.containsIgnoreCase(dialect.getDDLKeywords(), firstKeyword) :
+                            dialect.isDelimiterAfterBlock() && firstKeyword != null &&
+                                (SQLUtils.isBlockStartKeyword(dialect, firstKeyword) || ArrayUtils.containsIgnoreCase(dialect.getDDLKeywords(), firstKeyword)) :
                             dialect.isDelimiterAfterQuery())))
                         {
                             if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {

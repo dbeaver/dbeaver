@@ -397,6 +397,18 @@ public final class SQLUtils {
         return sql + trailingSpaces;
     }
 
+    public static boolean isBlockStartKeyword(SQLDialect dialect, String keyword) {
+        String[][] blockBoundStrings = dialect.getBlockBoundStrings();
+        if (blockBoundStrings != null) {
+            for (String[] block : blockBoundStrings) {
+                if (block.length > 0 && keyword.equalsIgnoreCase(block[0])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @NotNull
     public static SQLDialect getDialectFromObject(DBPObject object)
     {
