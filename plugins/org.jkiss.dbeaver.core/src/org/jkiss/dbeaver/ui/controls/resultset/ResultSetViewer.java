@@ -469,7 +469,7 @@ public class ResultSetViewer extends Viewer
         activePresentationDescriptor = null;
     }
 
-    void updatePresentation(final DBCResultSet resultSet) {
+    void updatePresentation(final DBCResultSet resultSet, boolean metadataChanged) {
         if (getControl().isDisposed()) {
             return;
         }
@@ -506,8 +506,8 @@ public class ResultSetViewer extends Viewer
                 changed = CommonUtils.isEmpty(this.availablePresentations) || !newPresentations.equals(this.availablePresentations);
                 this.availablePresentations = newPresentations;
                 if (!this.availablePresentations.isEmpty()) {
-                    for (ResultSetPresentationDescriptor pd : this.availablePresentations) {
-                        if (pd == activePresentationDescriptor && activePresentationDescriptor.getPresentationType().isPersistent()) {
+                    if (activePresentationDescriptor != null && (!metadataChanged || activePresentationDescriptor.getPresentationType().isPersistent())) {
+                        if (this.availablePresentations.contains(activePresentationDescriptor)) {
                             // Keep the same presentation
                             return;
                         }
