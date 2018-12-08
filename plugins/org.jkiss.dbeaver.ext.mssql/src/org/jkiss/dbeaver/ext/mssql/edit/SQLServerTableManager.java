@@ -100,7 +100,7 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
                     "Add table comment",
                     "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
                         " 'MS_Description', " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
-                        " 'user', '" + table.getSchema().getName() + "'," +
+                        " 'schema', '" + table.getSchema().getName() + "'," +
                         " 'table', '" + table.getName() + "'"));
         }
     }
