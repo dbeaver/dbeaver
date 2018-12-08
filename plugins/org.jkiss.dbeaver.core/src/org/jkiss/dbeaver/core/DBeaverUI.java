@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
@@ -210,6 +211,15 @@ public class DBeaverUI implements DBPPlatformUI {
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message) {
         return showError(title, null, new Status(IStatus.ERROR, DBeaverCore.PLUGIN_ID, message));
+    }
+
+    @Override
+    public void showMessageBox(String title, String message, boolean error) {
+        UIUtils.showMessageBox(
+            UIUtils.getActiveWorkbenchShell(),
+            title,
+            message,
+            error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
     }
 
     @Override
