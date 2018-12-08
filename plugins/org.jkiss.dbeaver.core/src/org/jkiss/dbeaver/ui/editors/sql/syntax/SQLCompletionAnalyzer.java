@@ -433,7 +433,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         if (request.activeQuery == null) {
             final SQLScriptElement queryAtPos = request.editor.extractQueryAtPos(request.documentOffset);
             if (queryAtPos != null) {
-                request.activeQuery = queryAtPos.getText() + " ";
+                request.activeQuery = queryAtPos.getText();
             }
         }
         if (request.activeQuery == null) {
