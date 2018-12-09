@@ -76,7 +76,8 @@ class FireBirdPlanParser {
 						tokenMatch.jump();
 						planItem(parent);
 					} while (tokenMatch.token == FireBirdPlanToken.COMMA);
-					//tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
+					tokenMatch.jump();
+					tokenMatch.checkToken(FireBirdPlanToken.RIGHTPARENTHESE);
 					break;
 				case SORT:
 					sortedItem(parent);
