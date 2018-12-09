@@ -77,7 +77,7 @@ class FireBirdPlanTokenMatcher {
 	}
 	
 	void raisePlanTokenException(FireBirdPlanToken expected, FireBirdPlanToken actual) throws FireBirdPlanException {
-		throw new FireBirdPlanException(token.toString(), actual.toString(), 
+		throw new FireBirdPlanException(expected.toString(), actual.toString(),
 				position - value.length(), subject);
 	}
 	
