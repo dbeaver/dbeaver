@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -60,49 +62,52 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private Timestamp createTime;
     private Boolean hasRead;
     private long tablecount;
-    private static String readAdditionalInfo =         "select * from ("
-									            + "select" +
-									            "	table_schema," +
-									            "	table_name," +
-									            "	table_owner," +
-									            "	table_has_distribution_key," +
-									            "	table_comment," +
-									            "	delete_percentage," +
-									            "	o.created," +
-									            "	o.last_commit," +
-									            "	s.raw_object_size," +
-									            "	s.mem_object_size," +
-									            "   s.object_type" +
-									            " from" +
-									            "		EXA_ALL_OBJECTS o" +
-									            "	inner join" +
-									            "		EXA_ALL_TABLES T" +
-									            "	on" +
-									            "		o.root_name = t.table_schema and" +
-									            "		t.table_name = o.object_name and" +
-									            "		o.object_type = 'TABLE'" +
-									            "	inner join " +
-									            "		EXA_ALL_OBJECT_SIZES s" +
-									            "	on" +
-									            "		o.root_name = s.root_name and" +
-									            "		o.object_name = s.object_name and" +
-									            "		o.object_type = s.object_type" +
-									            "   where o.root_name = '%s' and o.object_name = '%s' and t.table_schema = '%s' and t.table_name = '%s'" +
-									            " union all "
-									            + " select schema_name as table_schema,"
-									            + " object_name as table_name,"
-									            + " 'SYS' as table_owner,"
-									            + " false as table_has_distribution_key,"
-									            + " object_comment as table_comment,"
-									            + " 0 as delete_percentage,"
-									            + " cast( null as timestamp) as created,"
-									            + " cast( null as timestamp) as last_commit,"
-									            + " 0 as raw_object_size,"
-									            + " 0 as mem_object_size,"
-									            + " object_type"
-									            + " from SYS.EXA_SYSCAT WHERE object_type = 'TABLE' and schema_name = '%s' and object_name = '%s'"
-									            + ") as o"
-									            + "	order by table_schema,o.table_name";
+    private static String readAdditionalInfo =         "SELECT " + 
+    		"	* " + 
+    		"FROM " + 
+    		"	( " + 
+    		"	SELECT " + 
+    		"		table_schema, " + 
+    		"		table_name, " + 
+    		"		table_owner, " + 
+    		"		table_has_distribution_key, " + 
+    		"		table_comment, " + 
+    		"		delete_percentage, " + 
+    		"		o.created, " + 
+    		"		o.last_commit, " + 
+    		"		s.raw_object_size, " + 
+    		"		s.mem_object_size, " + 
+    		"		s.object_type " + 
+    		"	FROM " + 
+    		"		EXA_ALL_OBJECTS o " + 
+    		"	INNER JOIN EXA_ALL_TABLES T ON " + 
+    		"		o.object_id = t.table_object_id " + 
+    		"	INNER JOIN EXA_ALL_OBJECT_SIZES s ON " + 
+    		"		o.object_id = s.object_id " + 
+    		"	WHERE " + 
+    		"		o.object_id = %s AND o.object_id = %s AND t.table_object_id = %s " + 
+    		"UNION ALL " + 
+    		"	SELECT " + 
+    		"		schema_name AS table_schema, " + 
+    		"		object_name AS table_name, " + 
+    		"		'SYS' AS table_owner, " + 
+    		"		FALSE AS table_has_distribution_key, " + 
+    		"		object_comment AS table_comment, " + 
+    		"		0 AS delete_percentage, " + 
+    		"		CAST( NULL AS TIMESTAMP) AS created, " + 
+    		"		CAST( NULL AS TIMESTAMP) AS last_commit, " + 
+    		"		0 AS raw_object_size, " + 
+    		"		0 AS mem_object_size, " + 
+    		"		object_type " + 
+    		"	FROM " + 
+    		"		SYS.EXA_SYSCAT " + 
+    		"	WHERE " + 
+    		"		object_type = 'TABLE' " + 
+    		"		AND schema_name = '%s' " + 
+    		"		AND object_name = '%s' ) AS o " + 
+    		"ORDER BY " + 
+    		"	table_schema, " + 
+    		"	o.table_name";
     
     
     private static String count = "select count(*) as COUNTER from %s";
@@ -126,10 +131,9 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	try (JDBCStatement stmt = session.createStatement())
     	{
     		String sql = String.format(readAdditionalInfo,
-    				ExasolUtils.quoteString(this.getSchema().getName()),
-    				ExasolUtils.quoteString(this.getName()),
-    				ExasolUtils.quoteString(this.getSchema().getName()),
-    				ExasolUtils.quoteString(this.getName()),
+    				this.getObjectId(),
+    				this.getObjectId(),
+    				this.getObjectId(),
     				ExasolUtils.quoteString(this.getSchema().getName()),
     				ExasolUtils.quoteString(this.getName())
     				);
@@ -137,7 +141,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		try (JDBCResultSet dbResult = stmt.executeQuery(sql)) 
     		{
     			dbResult.next();
-    	        this.hasDistKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_DISTRIBUTION_KEY");
+				this.hasDistKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_DISTRIBUTION_KEY");
     	        this.lastCommit = JDBCUtils.safeGetTimestamp(dbResult, "LAST_COMMIT");
     	        this.sizeRaw = JDBCUtils.safeGetLong(dbResult, "RAW_OBJECT_SIZE");
     	        this.sizeCompressed = JDBCUtils.safeGetLong(dbResult, "MEM_OBJECT_SIZE");
@@ -178,49 +182,49 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     // -----------------
     // Properties
     // -----------------
-    @Property(viewable = false, expensive = true,  editable = false, order = 90, category = ExasolConstants.CAT_BASEOBJECT)
+    @Property(viewable = true, expensive = false,  editable = false, order = 90, category = ExasolConstants.CAT_BASEOBJECT)
     public Boolean getHasDistKey(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return hasDistKey;
     }
 
-    @Property(viewable = false, expensive = true, editable = false, order = 100, category = ExasolConstants.CAT_BASEOBJECT)
+    @Property(viewable = true, expensive = false, editable = false, order = 100, category = ExasolConstants.CAT_BASEOBJECT)
     public Timestamp getLastCommit(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return lastCommit;
     }
 
-    @Property(viewable = false, expensive = true, editable = false, order = 100, category = ExasolConstants.CAT_DATETIME)
+    @Property(viewable = true, expensive = false, editable = false, order = 100, category = ExasolConstants.CAT_DATETIME)
     public Timestamp getCreateTime(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return createTime;
     }
 
-    @Property(viewable = false, expensive = true, editable = false, order = 150, category = ExasolConstants.CAT_STATS)
+    @Property(viewable = true, expensive = false, editable = false, order = 150, category = ExasolConstants.CAT_STATS)
     public String getRawsize(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return ExasolUtils.humanReadableByteCount(sizeRaw, true);
     }
 
-    @Property(viewable = false, expensive = true, editable = false, order = 200, category = ExasolConstants.CAT_STATS)
+    @Property(viewable = true, expensive = false, editable = false, order = 200, category = ExasolConstants.CAT_STATS)
     public String getCompressedsize(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return ExasolUtils.humanReadableByteCount(sizeCompressed, true);
     }
 
-    @Property(viewable = false, expensive = true, editable = false, order = 250, category = ExasolConstants.CAT_STATS)
+    @Property(viewable = true, expensive = false, editable = false, order = 250, category = ExasolConstants.CAT_STATS)
     public float getDeletePercentage(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return this.deletePercentage;
     }    
     
-    @Property(viewable = false, expensive = true, editable = false, order = 300, category = ExasolConstants.CAT_STATS)
+    @Property(viewable = true, expensive = false, editable = false, order = 300, category = ExasolConstants.CAT_STATS)
     public long getTableCount(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
@@ -295,6 +299,20 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     public DBSObjectState getObjectState() {
         // table can only be in state normal
         return DBSObjectState.NORMAL;
+    }
+    
+    public Collection<ExasolTableColumn> getDistributionKey(DBRProgressMonitor monitor) throws DBException
+    {
+    	ArrayList<ExasolTableColumn> distKeyCols = new ArrayList<ExasolTableColumn>();
+    	
+    	for(ExasolTableColumn c : getAttributes(monitor))
+    	{
+    		if (c.isDistKey())
+    		{
+    			distKeyCols.add(c);
+    		}
+    	}
+    	return distKeyCols;
     }
     
     
