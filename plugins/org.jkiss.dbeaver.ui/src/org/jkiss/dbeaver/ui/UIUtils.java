@@ -522,6 +522,18 @@ public class UIUtils {
         return tipLabel;
     }
 
+    public static CLabel createInfoLabel(Composite parent, String text, int gridStyle, int hSpan) {
+        CLabel tipLabel = new CLabel(parent, SWT.NONE);
+        tipLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
+        tipLabel.setText(text);
+        GridData gd = new GridData(gridStyle);
+        if (hSpan > 1) {
+            gd.horizontalSpan = hSpan;
+        }
+        tipLabel.setLayoutData(gd);
+        return tipLabel;
+    }
+
     public static Text createLabelText(Composite parent, String label, String value)
     {
         return createLabelText(parent, label, value, SWT.BORDER);
