@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mockdata.MockDataUtils;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -80,7 +81,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     public Object generateValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isFirstRun) {
             isFirstRun = false;
-            isUnique = (DBUtils.checkUnique(monitor, dbsEntity, attribute) == DBUtils.UNIQ_TYPE.SINGLE);
+            isUnique = (MockDataUtils.checkUnique(monitor, dbsEntity, attribute) == MockDataUtils.UNIQ_TYPE.SINGLE);
             if (isUnique && (attribute instanceof DBSAttributeEnumerable)) {
                 uniqueValues = new HashSet<>();
                 Collection<DBDLabelValuePair> valuePairs = readColumnValues(monitor, (DBSAttributeEnumerable) attribute, UNIQUE_VALUES_SET_SIZE);

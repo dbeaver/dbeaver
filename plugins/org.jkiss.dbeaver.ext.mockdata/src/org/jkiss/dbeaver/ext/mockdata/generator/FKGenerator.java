@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mockdata.MockDataUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -72,7 +73,7 @@ public class FKGenerator extends AbstractMockValueGenerator
                 throw new DBException("Can't find reference column for '" + attribute.getName() + "'");
             }
 
-            int numberRefRecords = (DBUtils.checkUnique(monitor, dbsEntity, attribute) == DBUtils.UNIQ_TYPE.SINGLE) ? UNIQ_REF_RECORDS_LIMIT : REF_RECORDS_LIMIT;
+            int numberRefRecords = (MockDataUtils.checkUnique(monitor, dbsEntity, attribute) == MockDataUtils.UNIQ_TYPE.SINGLE) ? UNIQ_REF_RECORDS_LIMIT : REF_RECORDS_LIMIT;
             Collection<DBDLabelValuePair> values = readColumnValues(monitor, (DBSAttributeEnumerable) column.getReferencedColumn(), numberRefRecords);
             for (DBDLabelValuePair value : values) {
                 refValues.add(value.getValue());
