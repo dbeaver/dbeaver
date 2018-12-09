@@ -234,7 +234,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 boolean hasMiltiUniqs = false;
                 Set<String> miltiUniqColumns = new HashSet<>();
                 for (DBSAttributeBase attribute : attributes) {
-                    if (DBUtils.checkUnique(monitor, dbsEntity, attribute) == DBUtils.UNIQ_TYPE.MULTI) {
+                    if (MockDataUtils.checkUnique(monitor, dbsEntity, attribute) == MockDataUtils.UNIQ_TYPE.MULTI) {
                         hasMiltiUniqs = true;
 
                         // collect the columns from multi-uniqs
