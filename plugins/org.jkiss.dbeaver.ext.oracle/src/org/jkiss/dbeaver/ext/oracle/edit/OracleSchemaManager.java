@@ -149,11 +149,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
             passwordText = UIUtils.createLabelText(composite, "User Password", null, SWT.BORDER | SWT.PASSWORD);
             passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            CLabel infoLabel = UIUtils.createInfoLabel(composite, "Creating a schema is the same as creating a user.\nYou need to specify a password.");
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            infoLabel.setLayoutData(gd);
-
+            UIUtils.createInfoLabel(composite, "Creating a schema is the same as creating a user.\nYou need to specify a password.", GridData.FILL_HORIZONTAL, 2);
 
             return parent;
         }
