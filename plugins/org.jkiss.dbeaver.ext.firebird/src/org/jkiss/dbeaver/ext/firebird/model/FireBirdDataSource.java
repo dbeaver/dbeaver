@@ -16,19 +16,25 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.firebird.model.plan.FireBirdPlanAnalyser;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -42,7 +48,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FireBirdDataSource extends GenericDataSource {
+public class FireBirdDataSource extends GenericDataSource
+	implements DBCQueryPlanner {
 
     private static final Log log = Log.getLog(FireBirdDataSource.class);
 
@@ -124,4 +131,23 @@ public class FireBirdDataSource extends GenericDataSource {
         // Init
         super.initialize(monitor);
     }
+
+    @NotNull
+    @Override
+    public FireBirdDataSource getDataSource() {
+        return this;
+    }
+
+    
+	@Override
+	public DBCPlan planQueryExecution(DBCSession session, String query) throws DBException {
+		FireBirdPlanAnalyser plan = new FireBirdPlanAnalyser(this, (JDBCSession) session, query);
+        plan.explain();
+        return plan;
+	}
+
+	@Override
+	public DBCPlanStyle getPlanStyle() {
+		return DBCPlanStyle.PLAN;
+	}
 }
