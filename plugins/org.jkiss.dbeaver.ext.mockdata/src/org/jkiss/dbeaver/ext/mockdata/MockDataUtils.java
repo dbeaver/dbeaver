@@ -18,9 +18,15 @@
 package org.jkiss.dbeaver.ext.mockdata;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Random;
 
 public class MockDataUtils {
@@ -29,6 +35,10 @@ public class MockDataUtils {
     public static int INTEGER_PRECISION = String.valueOf(Integer.MAX_VALUE).length(); // 11
     public static int SHORT_PRECISION   = String.valueOf(Short.MAX_VALUE).length();   // 5
     public static int BYTE_PRECISION    = String.valueOf(Byte.MAX_VALUE).length();    // 3
+
+    public enum UNIQ_TYPE {
+        SINGLE, MULTI
+    }
 
     private static final Random random = new Random();
     private static IntKeyMap<Integer> degrees = new IntKeyMap<Integer>();
@@ -135,4 +145,23 @@ public class MockDataUtils {
         }
         return getRandomInt(minimum, maximum, random);
     }
+
+    public static UNIQ_TYPE checkUnique(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
+        for (DBSEntityConstraint constraint : CommonUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
+            DBSEntityConstraintType constraintType = constraint.getConstraintType();
+            if (constraintType.isUnique()) {
+                DBSEntityAttributeRef constraintAttribute = DBUtils.getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
+                if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
+                    List<? extends DBSEntityAttributeRef> refColumns = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+                    if (refColumns.size() > 1) {
+                        return UNIQ_TYPE.MULTI;
+                    } else {
+                        return UNIQ_TYPE.SINGLE;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 }

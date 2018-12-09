@@ -177,7 +177,7 @@ public class SearchDataQuery implements ISearchQuery {
             List<DBDAttributeConstraint> constraints = new ArrayList<>();
             for (DBSEntityAttribute attribute : CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()))) {
                 if (params.fastSearch) {
-                    if (!DBUtils.isIndexedAttribute(session.getProgressMonitor(), attribute)) {
+                    if (DBUtils.findAttributeIndex(session.getProgressMonitor(), attribute) == null) {
                         continue;
                     }
                 }
