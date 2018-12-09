@@ -44,6 +44,8 @@ public final class ExasolTableCache
 			+ "		 \"$ODBCJDBC\".\"ALL_COLUMNS\" c " + "where "
 			+ "	table_schem = '%s'" + "order by "
 			+ "	table_name,c.ordinal_position";
+	
+	private static final String SQL_TABLES = "SELECT * FROM \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'TABLE' order by TABLE_NAME";
 
 	public ExasolTableCache()
 	{
@@ -56,9 +58,15 @@ public final class ExasolTableCache
 			throws SQLException
 	{
 		JDBCDatabaseMetaData meta = session.getMetaData();
+		
+		String sql = String.format(SQL_TABLES, exasolSchema.getName());
+		
+		JDBCStatement dbstat = session.createStatement();
+		
+		((JDBCStatementImpl) dbstat).setQueryString(sql);
 
-		return meta.getTables("EXA_DB", exasolSchema.getName(), null,
-				new String[] { "TABLE" }).getSourceStatement();
+		return dbstat;
+
 	}
 
 	@SuppressWarnings("rawtypes")
