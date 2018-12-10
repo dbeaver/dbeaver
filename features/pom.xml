@@ -22,6 +22,7 @@
         <module>org.jkiss.dbeaver.ext.wmi.feature</module>
         <module>org.jkiss.dbeaver.ext.exasol.feature</module>
         <module>org.jkiss.dbeaver.ext.office.feature</module>
+		<module>org.jkiss.dbeaver.ext.outlook.feature</module>
         <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
         <module>org.jkiss.dbeaver.net.sshj.feature</module>
         <module>org.jkiss.dbeaver.rcp.feature</module>
