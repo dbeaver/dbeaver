@@ -34,11 +34,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainerOptions;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -58,20 +54,26 @@ public class OpenSpreadsheetHandler extends AbstractHandler
             return null;
         }
 
-        List<Long> selectedRows = new ArrayList<>();
-        for (ResultSetRow selectedRow : resultSet.getSelection().getSelectedRows()) {
-            selectedRows.add(Long.valueOf(selectedRow.getRowNumber()));
-        }
-        List<String> selectedAttributes = new ArrayList<>();
-        for (DBDAttributeBinding attributeBinding : resultSet.getSelection().getSelectedAttributes()) {
-            selectedAttributes.add(attributeBinding.getName());
-        }
 
         ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
-        options.setSelectedRows(selectedRows);
-        options.setSelectedColumns(selectedAttributes);
+
+        IResultSetSelection rsSelection = resultSet.getSelection();
+        List<ResultSetRow> rsSelectedRows = rsSelection.getSelectedRows();
+        if (rsSelectedRows.size() > 1) {
+            List<Long> selectedRows = new ArrayList<>();
+            for (ResultSetRow selectedRow : rsSelectedRows) {
+                selectedRows.add((long) selectedRow.getRowNumber());
+            }
+            List<String> selectedAttributes = new ArrayList<>();
+            for (DBDAttributeBinding attributeBinding : rsSelection.getSelectedAttributes()) {
+                selectedAttributes.add(attributeBinding.getName());
+            }
+
+            options.setSelectedRows(selectedRows);
+            options.setSelectedColumns(selectedAttributes);
+        }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
-        if (dataContainer == null || dataContainer.getDataSource() == null) {
+        if (dataContainer.getDataSource() == null) {
             DBeaverUI.getInstance().showError("Open Excel", "Not connected to a database");
             return null;
         }
