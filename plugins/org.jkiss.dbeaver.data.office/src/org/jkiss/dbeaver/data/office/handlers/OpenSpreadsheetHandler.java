@@ -25,21 +25,26 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainer;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainerOptions;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class OpenSpreadsheetHandler extends AbstractHandler
@@ -47,13 +52,25 @@ public class OpenSpreadsheetHandler extends AbstractHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
+    	IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
             DBeaverUI.getInstance().showError("Open Excel", "No active results viewer");
             return null;
         }
 
-        DBSDataContainer dataContainer = resultSet.getDataContainer();
+        List<Long> selectedRows = new ArrayList<>();
+        for (ResultSetRow selectedRow : resultSet.getSelection().getSelectedRows()) {
+            selectedRows.add(Long.valueOf(selectedRow.getRowNumber()));
+        }
+        List<String> selectedAttributes = new ArrayList<>();
+        for (DBDAttributeBinding attributeBinding : resultSet.getSelection().getSelectedAttributes()) {
+            selectedAttributes.add(attributeBinding.getName());
+        }
+
+        ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
+        options.setSelectedRows(selectedRows);
+        options.setSelectedColumns(selectedAttributes);
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
         if (dataContainer == null || dataContainer.getDataSource() == null) {
             DBeaverUI.getInstance().showError("Open Excel", "Not connected to a database");
             return null;
@@ -93,6 +110,8 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
+                    producerSettings.setSelectedRowsOnly(true);
+                    producerSettings.setSelectedColumnsOnly(true);
 
                     producer.transferData(monitor, consumer, null, producerSettings);
 
