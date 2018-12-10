@@ -84,10 +84,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private Object[] row;
     private File lobDirectory;
     private long lobCount;
-    private File outputFile;
+    protected File outputFile;
     private StreamExportSite exportSite;
     private Map<Object, Object> processorProperties;
-    private StringWriter outputBuffer;
+    protected StringWriter outputBuffer;
     private boolean isBinary;
     private boolean initialized = false;
 
@@ -324,7 +324,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (!isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
                 UIUtils.syncExec(() -> {
-                    TextTransfer textTransfer = TextTransfer.getInstance();
+                	TextTransfer textTransfer = TextTransfer.getInstance();
                     new Clipboard(UIUtils.getDisplay()).setContents(
                         new Object[]{outputBuffer.toString()},
                         new Transfer[]{textTransfer});
@@ -534,4 +534,5 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             return settings == null ? null : settings.getOutputEncoding();
         }
     }
+
 }

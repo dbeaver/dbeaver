@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Hmtl copy paste
+Bundle-SymbolicName: org.jkiss.dbeaver.data.htmlcopypaste;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20181119
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ClassPath: .
+Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.data.transfer,
+ org.eclipse.equinox.registry,
+ org.jkiss.dbeaver.core,
+ org.eclipse.core.commands,
+ org.eclipse.ui.workbench,
+ org.eclipse.core.runtime;bundle-version="3.15.0",
+ org.eclipse.swt
