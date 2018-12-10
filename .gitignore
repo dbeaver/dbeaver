@@ -44,3 +44,9 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+/plugins/org.jkiss.dbeaver.data.outlook/*.classpath
+/features/org.jkiss.dbeaver.ext.outlook.feature/.settings/*.prefs
+/features/org.jkiss.dbeaver.ext.htmlcopypaste.feature/.settings/org.eclipse.core.resources.prefs
+/features/org.jkiss.dbeaver.ext.htmlcopypaste.feature/.settings/org.eclipse.m2e.core.prefs
+/plugins/org.jkiss.dbeaver.data.htmlcopypaste/.classpath
+/plugins/org.jkiss.dbeaver.data.htmlcopypaste/.settings/*.prefs
