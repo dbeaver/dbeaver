@@ -293,29 +293,7 @@
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     defaultPort="50000"
                     description="DB2 z/OS driver"
-                    note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library.">
-
-                    <property name="loginTimeout" value="20"/>
-                    <property name="connectionTimeout" value="20"/>
-                    <property name="fullyMaterializeLobData" value="true"/>
-                    <property name="fullyMaterializeInputStreams" value="true"/>
-                    <property name="progressiveStreaming" value="2"/>
-                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
-
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
-                    <parameter name="meta-model" value="indexed"/>
-                    <parameter name="omit-type-cache" value="true"/>
-                    <parameter name="omit-catalog" value="true"/>
-
-                    <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
-                                name="DB2 JCC drivers"
-                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
-
-                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
-                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+                    note="Deprecated.">
                 </driver>
 
                 <driver
@@ -1129,6 +1107,21 @@
                         defaultPort="6718"
                         description="OpenEdge Progress JDBC driver"
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#">
+                </driver>
+
+                <!-- MonetDB -->
+                <driver
+                        id="monetdb"
+                        label="MonetDB"
+                        icon="icons/monetdb.png"
+                        class="nl.cwi.monetdb.jdbc.MonetDriver"
+                        sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
+                        defaultPort="50000"
+                        description="MonetDB JDBC driver"
+                        webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC">
+                    <file type="jar" path="maven:/monetdb:monetdb-jdbc-new:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
 
             </drivers>

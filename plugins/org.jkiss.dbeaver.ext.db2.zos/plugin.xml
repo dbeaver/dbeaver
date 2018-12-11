@@ -3,6 +3,59 @@
 
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- DB2 z/OS -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.db2.zos.DB2ZOSDataSourceProvider"
+                description="%datasource.db2_zos.description"
+                id="db2_zos"
+                parent="generic"
+                label="DB2 for z/OS"
+                icon="icons/db2_zos.png">
+            <drivers managable="true">
+
+                <driver
+                        id="db2_zos"
+                        label="DB2 z/OS"
+                        icon="icons/db2_zos.png"
+                        category="DB2"
+                        class="com.ibm.db2.jcc.DB2Driver"
+                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        defaultPort="50000"
+                        description="DB2 z/OS driver"
+                        note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library.">
+
+                    <replace provider="generic" driver="db2_zos"/>
+
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectionTimeout" value="20"/>
+                    <property name="fullyMaterializeLobData" value="true"/>
+                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <property name="progressiveStreaming" value="2"/>
+                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
+
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="meta-model" value="db2_zos"/>
+                    <parameter name="omit-type-cache" value="true"/>
+                    <parameter name="omit-catalog" value="true"/>
+
+                    <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
+                                name="DB2 JCC drivers"
+                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
+                        <file name="db2jcc4.jar" description="JDBC driver"/>
+                    </fileSource>
+
+                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+                </driver>
+            </drivers>
+
+        </datasource>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="db2_zos" class="org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSMetaModel">
             <!-- indexes mapping.  Needed for "broken" DB2 z/OS installations -->
