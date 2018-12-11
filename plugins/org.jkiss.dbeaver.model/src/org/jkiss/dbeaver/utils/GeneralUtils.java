@@ -620,4 +620,7 @@ public class GeneralUtils {
         return topic.replace("__dot__", ".");
     }
 
+    public static boolean isWindows() {
+        return Platform.getOS().contains("win32");
+    }
 }

@@ -280,6 +280,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         return !objectValue.isPersisted();
     }
 
+    @Override
+    protected boolean isReadOnlyList() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null && container.isConnectionReadOnly();
+    }
+
     @NotNull
     @Override
     protected String getListConfigId(List<Class<?>> classList) {

@@ -305,7 +305,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;
                     Boolean enabled = event.getEnabled();
-                    Object source = this;
+                    Object source = event;
                     if (event.getAction() == DBPEvent.Action.OBJECT_SELECT) {
                         nodeChange = DBNEvent.NodeChange.REFRESH;
                         if (enabled != null && enabled) {

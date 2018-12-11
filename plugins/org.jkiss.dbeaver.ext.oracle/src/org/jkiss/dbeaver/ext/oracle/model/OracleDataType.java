@@ -55,7 +55,8 @@ import java.util.Map;
 public class OracleDataType extends OracleObject<DBSObject>
     implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObject, DBPScriptObjectExt {
 
-    private static final Log log = Log.getLog(OracleTableForeignKey.class);
+    private static final Log log = Log.getLog(OracleDataType.class);
+
     public static final String TYPE_CODE_COLLECTION = "COLLECTION";
     public static final String TYPE_CODE_OBJECT = "OBJECT";
 

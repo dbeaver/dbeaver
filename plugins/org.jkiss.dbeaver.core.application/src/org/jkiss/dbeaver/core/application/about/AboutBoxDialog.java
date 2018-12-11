@@ -36,9 +36,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.text.DateFormat;
 
@@ -60,7 +62,7 @@ public class AboutBoxDialog extends InformationDialog
     public AboutBoxDialog(Shell shell)
     {
         super(shell);
-        NAME_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 20, SWT.BOLD);
+        NAME_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 14, SWT.BOLD);
         TITLE_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 10, SWT.NORMAL);
     }
 
@@ -101,6 +103,7 @@ public class AboutBoxDialog extends InformationDialog
         layout.marginHeight = 20;
         layout.marginWidth = 20;
         group.setLayout(layout);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         GridData gd;
 
@@ -164,7 +167,7 @@ public class AboutBoxDialog extends InformationDialog
 
         Label releaseTimeLabel = new Label(group, SWT.NONE);
         releaseTimeLabel.setBackground(background);
-        releaseTimeLabel.setText(DateFormat.getDateInstance(DateFormat.LONG).format(GeneralUtils.getProductReleaseDate()));
+        releaseTimeLabel.setText("Release date: " + DateFormat.getDateInstance(DateFormat.LONG).format(GeneralUtils.getProductReleaseDate()));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         releaseTimeLabel.setLayoutData(gd);
@@ -186,6 +189,13 @@ public class AboutBoxDialog extends InformationDialog
         gd = new GridData();
         gd.horizontalAlignment = GridData.CENTER;
         siteLink.setLayoutData(gd);
+
+        String infoDetails = DBeaverCore.getInstance().getApplication().getInfoDetails();
+        if (!CommonUtils.isEmpty(infoDetails)) {
+            Text extraText = new Text(group, SWT.MULTI | SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+            extraText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            extraText.setText(infoDetails);
+        }
 
         return parent;
     }

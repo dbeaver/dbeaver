@@ -235,9 +235,14 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         this.remarks = remarks;
     }
 
-    @Property(viewable = false, order = 121)
+    @Property(viewable = true, editable = true, updatable = true, order = 121)
     public Boolean isDistKey() {
         return isInDistKey;
+    }
+    
+    public void setDistKey(Boolean distKey)
+    {
+    	this.isInDistKey = distKey;
     }
 
 
@@ -315,6 +320,5 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 		// don't need this one
 		return false;
 	}
-
 
 }

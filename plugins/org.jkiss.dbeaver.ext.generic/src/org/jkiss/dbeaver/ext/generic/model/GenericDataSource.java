@@ -230,6 +230,19 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public void shutdown(DBRProgressMonitor monitor) {
+        String queryShutdown = CommonUtils.toString(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_SHUTDOWN));
+        if (!CommonUtils.isEmpty(queryShutdown)) {
+            for (JDBCRemoteInstance instance : getAvailableInstances()) {
+                for (JDBCExecutionContext context : instance.getAllContexts()) {
+                    try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Shutdown database")) {
+                        JDBCUtils.executeStatement(session, queryShutdown);
+                    } catch (Throwable e) {
+                        log.error("Error shutting down database", e);
+                    }
+                }
+            }
+        }
+
         super.shutdown(monitor);
         String paramShutdown = CommonUtils.toString(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SHUTDOWN_URL_PARAM));
         if (!CommonUtils.isEmpty(paramShutdown)) {

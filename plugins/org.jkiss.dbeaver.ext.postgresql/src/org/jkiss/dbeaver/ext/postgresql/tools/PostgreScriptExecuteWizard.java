@@ -66,7 +66,9 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreData
     {
         String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), PostgreConstants.BIN_FOLDER, "psql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
-        cmd.add("--echo-errors"); //$NON-NLS-1$
+        if (arg.getDataSource().isServerVersionAtLeast(9, 5)) {
+            cmd.add("--echo-errors"); //$NON-NLS-1$
+        }
     }
 
     @Override

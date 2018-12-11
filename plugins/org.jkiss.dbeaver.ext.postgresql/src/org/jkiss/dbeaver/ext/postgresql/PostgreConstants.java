@@ -41,6 +41,8 @@ public class PostgreConstants {
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
     public static final String PROP_SHOW_TEMPLATES_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-template-db@";
 
+    public static final String PROP_SSL = "ssl";
+
     public static final String PROP_SSL_CLIENT_CERT = "clientCert";
     public static final String PROP_SSL_CLIENT_KEY = "clientKey";
     public static final String PROP_SSL_ROOT_CERT = "rootCert";

@@ -146,13 +146,13 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     @Override
     public Integer getScale()
     {
-        return typedObject == null ? 0 : typedObject.getScale();
+        return typedObject == null ? null : typedObject.getScale();
     }
 
     @Override
     public Integer getPrecision()
     {
-        return typedObject == null ? 0 : typedObject.getPrecision();
+        return typedObject == null ? null : typedObject.getPrecision();
     }
 
     @Override

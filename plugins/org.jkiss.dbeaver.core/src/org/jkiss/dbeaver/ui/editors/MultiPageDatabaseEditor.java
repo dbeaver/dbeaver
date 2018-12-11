@@ -87,4 +87,8 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
     }
 
 
+    @Override
+    public boolean isActiveTask() {
+        return false;
+    }
 }

@@ -208,7 +208,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         TableColumn colPosition = UIUtils.createTableColumn(columnsTable, SWT.CENTER, "#"); //$NON-NLS-1$
         colPosition.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 1));
 
-        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, "Type"); //$NON-NLS-1$
+        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, CoreMessages.dialog_struct_columns_type); //$NON-NLS-1$
         colType.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 2));
     }
 

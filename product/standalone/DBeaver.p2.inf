@@ -7,5 +7,5 @@ instructions.configure=\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/svg/latest/,name:DBeaver SVG format support,enabled:true);\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/sshj/latest/,name:DBeaver SSHJ extension,enabled:true);\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/sshj/latest/,name:DBeaver SSHJ extension,enabled:true);\
-  addRepository(type:0,location:http${#58}//download.eclipse.org/releases/2018-09/,name:Eclipse 2018-09,enabled:true);\
-  addRepository(type:1,location:http${#58}//download.eclipse.org/releases/2018-09/,name:Eclipse 2018-09,enabled:true);
+  addRepository(type:0,location:http${#58}//download.eclipse.org/releases/oxygen/,name:Eclipse Oxygen,enabled:true);\
+  addRepository(type:1,location:http${#58}//download.eclipse.org/releases/oxygen/,name:Eclipse Oxygen,enabled:true);

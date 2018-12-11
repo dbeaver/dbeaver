@@ -55,7 +55,7 @@ public class DataSourceViewRegistry
     {
         for (DataSourceProviderDescriptor pd = provider; pd != null; pd = pd.getParentProvider()) {
             for (DataSourceViewDescriptor view : views) {
-                if (pd.getId().equals(view.getDataSourceId()) && targetID.equals(view.getTargetID())) {
+                if (view.getDataSources().contains(pd.getId()) && targetID.equals(view.getTargetID())) {
                     return view;
                 }
             }

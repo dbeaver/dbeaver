@@ -725,6 +725,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return false;
     }
 
+    protected boolean isReadOnlyList() {
+        return false;
+    }
+
     @NotNull
     protected Set<DBPPropertyDescriptor> getAllProperties() {
         ObjectColumn[] columns = columnController.getColumnsData(ObjectColumn.class);
@@ -870,6 +874,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
+            if (ObjectListControl.this.isReadOnlyList()) {
+                return false;
+            }
             ViewerCell cell = (ViewerCell) event.getSource();
             if (renderer.isHyperlink(getCellValue(cell.getElement(), cell.getColumnIndex())) &&
                 getItemsViewer().getControl().getCursor() == getItemsViewer().getControl().getDisplay().getSystemCursor(SWT.CURSOR_HAND)) {

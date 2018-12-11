@@ -10,7 +10,6 @@
         <relativePath>../</relativePath>
     </parent>
     <artifactId>plugins</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -28,6 +27,7 @@
         <module>org.jkiss.dbeaver.ext.bigquery</module>
         <module>org.jkiss.dbeaver.ext.clickhouse</module>
         <module>org.jkiss.dbeaver.ext.db2</module>
+        <module>org.jkiss.dbeaver.ext.db2.zos</module>
         <module>org.jkiss.dbeaver.ext.derby</module>
         <module>org.jkiss.dbeaver.ext.erd</module>
         <module>org.jkiss.dbeaver.ext.es.ui</module>

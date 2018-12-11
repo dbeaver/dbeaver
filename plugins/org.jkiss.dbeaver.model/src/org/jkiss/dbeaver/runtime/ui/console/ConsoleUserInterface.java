@@ -56,6 +56,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
+    public void showMessageBox(String title, String message, boolean error) {
+        System.out.println(title + (message == null ? "" : ": " + message));
+    }
+
+    @Override
     public long getLongOperationTimeout() {
         return 0;
     }

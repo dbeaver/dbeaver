@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.commands.ActionHandler;
@@ -55,7 +58,6 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
@@ -224,12 +226,12 @@ public class UIUtils {
                 }
             }
             if (fit && totalWidth < clientArea.width) {
-                int sbWidth = 0;
+                int sbWidth = table.getBorderWidth() * 2;
                 if (table.getVerticalBar() != null) {
                     sbWidth = table.getVerticalBar().getSize().x;
                 }
                 if (columns.length > 0) {
-                    float extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length;
+                    float extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 1;
                     for (TableColumn tc : columns) {
                         tc.setWidth((int) (tc.getWidth() + extraSpace));
                     }
@@ -517,6 +519,18 @@ public class UIUtils {
         CLabel tipLabel = new CLabel(parent, SWT.NONE);
         tipLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
         tipLabel.setText(text);
+        return tipLabel;
+    }
+
+    public static CLabel createInfoLabel(Composite parent, String text, int gridStyle, int hSpan) {
+        CLabel tipLabel = new CLabel(parent, SWT.NONE);
+        tipLabel.setImage(JFaceResources.getImage(org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_INFO));
+        tipLabel.setText(text);
+        GridData gd = new GridData(gridStyle);
+        if (hSpan > 1) {
+            gd.horizontalSpan = hSpan;
+        }
+        tipLabel.setLayoutData(gd);
         return tipLabel;
     }
 
@@ -1291,7 +1305,8 @@ public class UIUtils {
 
     public static boolean isInDialog() {
         try {
-            return isInDialog(Display.getCurrent().getActiveShell());
+            Shell activeShell = Display.getCurrent().getActiveShell();
+            return activeShell != null && isInDialog(activeShell);
         } catch (Exception e) {
             // IF we are in wrong thread
             return false;
@@ -1349,7 +1364,7 @@ public class UIUtils {
             if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
                 return new AdvancedTextCellEditor(parent);
             } else {
-                return new CustomTextCellEditor(parent);
+                return new CustomTextCellEditor(parent, SWT.SINGLE | ((style & SWT.PASSWORD) != 0 ? SWT.PASSWORD : SWT.NONE));
             }
         } else if (BeanUtils.isNumericType(propertyType)) {
             return new CustomNumberCellEditor(parent, propertyType);
@@ -1394,8 +1409,8 @@ public class UIUtils {
         return Program.launch(path);
     }
 
-    public static void fillDefaultTableContextMenu(IMenuManager menu, final Table table) {
-        menu.add(new Action(WorkbenchMessages.Workbench_copy) {
+    public static void fillDefaultTableContextMenu(IContributionManager menu, final Table table) {
+        menu.add(new Action("Copy selection") {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
@@ -1410,6 +1425,25 @@ public class UIUtils {
                 UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
             }
         });
+    }
+
+    public static void fillDefaultTreeContextMenu(IContributionManager menu, final Tree tree) {
+        menu.add(new Action("Copy selection") {
+            @Override
+            public void run() {
+                StringBuilder text = new StringBuilder();
+                int columnCount = tree.getColumnCount();
+                for (TreeItem item : tree.getSelection()) {
+                    if (text.length() > 0) text.append("\n");
+                    for (int i = 0 ; i < columnCount; i++) {
+                        if (i > 0) text.append("\t");
+                        text.append(item.getText(i));
+                    }
+                }
+                UIUtils.setClipboardContents(tree.getDisplay(), TextTransfer.getInstance(), text.toString());
+            }
+        });
+        //menu.add(ActionFactory.SELECT_ALL.create(UIUtils.getActiveWorkbenchWindow()));
     }
 
     public static void addFileOpenOverlay(Text text, SelectionListener listener) {
@@ -1725,11 +1759,17 @@ public class UIUtils {
     }
 
     public static void fixReadonlyTextBackground(Text textField) {
-        if ((textField.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
-            // Do nothing because in E4.6 there is no good solution: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
-            //textField.setBackground(textField.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-        } else {
-            textField.setBackground(null);
+        // There is still no good workaround: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
+        if (false) {
+            if (GeneralUtils.isWindows()) {
+                // On Windows everything is fine
+                return;
+            }
+            if ((textField.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
+                textField.setBackground(textField.getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
+            } else {
+                textField.setBackground(null);
+            }
         }
     }
 

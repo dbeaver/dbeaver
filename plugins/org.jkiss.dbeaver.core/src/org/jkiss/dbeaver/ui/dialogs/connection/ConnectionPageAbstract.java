@@ -118,7 +118,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         panel.setLayoutData(gd);
 
         {
-            Composite placeholder = UIUtils.createPlaceholder(panel, 2);
+            Composite placeholder = UIUtils.createPlaceholder(panel, 1, 5);
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
             gd.horizontalSpan = 4;
             gd.grabExcessHorizontalSpace = true;
@@ -128,40 +128,47 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
                 CLabel infoLabel = UIUtils.createInfoLabel(placeholder, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
                 gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
-                gd.grabExcessHorizontalSpace = true;
                 infoLabel.setLayoutData(gd);
-                infoLabel.setToolTipText("You can use OS environment variables in connection parameters.\nUse ${variable} patterns.");
-            } else {
-                Control label = UIUtils.createEmptyLabel(placeholder, 1, 1);
-                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
-                gd.grabExcessHorizontalSpace = true;
-                label.setLayoutData(gd);
+                infoLabel.setToolTipText(CoreMessages.dialog_connection_env_variables_hint);
             }
 
-            Composite linksComposite = UIUtils.createPlaceholder(placeholder, 1, 2);
-            linksComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            if (site.isNew()) {
+                Label divLabel = new Label(placeholder, SWT.SEPARATOR | SWT.HORIZONTAL);
+                divLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            if (!site.getDriver().isEmbedded()) {
-                Link netConfigLink = new Link(linksComposite, SWT.NONE);
-                netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link + "</a>");
-                netConfigLink.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        site.openSettingsPage(ConnectionPageNetwork.PAGE_NAME);
+                Composite linksComposite = UIUtils.createPlaceholder(placeholder, 2, 2);
+                linksComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+                Label advancedLabel = UIUtils.createControlLabel(linksComposite, CoreMessages.dialog_connection_advanced_settings);
+                advancedLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+                if (!site.getDriver().isEmbedded()) {
+                    Button netConfigLink = new Button(linksComposite, SWT.PUSH);
+                    netConfigLink.setText(CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link);
+                    netConfigLink.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            site.openSettingsPage(ConnectionPageNetwork.PAGE_NAME);
+                        }
+                    });
+                    netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+                    //((GridLayout)linksComposite.getLayout()).numColumns++;
+                }
+                {
+                    if (!site.getDriver().isEmbedded()) {
+                        UIUtils.createEmptyLabel(linksComposite, 1, 1);
                     }
-                });
-                netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            }
-            {
-                Link netConfigLink = new Link(linksComposite, SWT.NONE);
-                netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_general_link + "</a>");
-                netConfigLink.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        site.openSettingsPage(ConnectionPageGeneral.PAGE_NAME);
-                    }
-                });
-                netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+                    Button netConfigLink = new Button(linksComposite, SWT.PUSH);
+                    netConfigLink.setText(CoreMessages.dialog_connection_edit_wizard_conn_conf_general_link);
+                    netConfigLink.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            site.openSettingsPage(ConnectionPageGeneral.PAGE_NAME);
+                        }
+                    });
+                    netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+                    //((GridLayout)linksComposite.getLayout()).numColumns++;
+                }
             }
 
         }

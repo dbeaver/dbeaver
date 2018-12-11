@@ -410,7 +410,11 @@ public class PropertyTreeViewer extends TreeViewer {
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
-            final CellEditor cellEditor = UIUtils.createPropertyEditor(UIUtils.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, SWT.LEFT);
+            int editStyle = SWT.LEFT;
+            if (isHidePropertyValue(prop.property)) {
+                editStyle |= SWT.PASSWORD;
+            }
+            final CellEditor cellEditor = UIUtils.createPropertyEditor(UIUtils.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, editStyle);
             if (cellEditor == null) {
                 return;
             }
@@ -793,6 +797,9 @@ public class PropertyTreeViewer extends TreeViewer {
                     final Object propertyValue = getPropertyValue(node);
                     if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
+                    } else if (isHidePropertyValue(node.property)) {
+                        // Mask value
+                        return maskHiddenPropertyValue(propertyValue);
                     } else if (BeanUtils.isCollectionType(propertyValue.getClass())) {
                         StringBuilder str = new StringBuilder();
                         str.append("[");
@@ -939,6 +946,14 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
 
+    }
+
+    private String maskHiddenPropertyValue(Object propertyValue) {
+        return CommonUtils.isEmpty(CommonUtils.toString(propertyValue)) ? "" : "**********";
+    }
+
+    protected boolean isHidePropertyValue(DBPPropertyDescriptor property) {
+        return false;
     }
 
     private class SortListener implements Listener {

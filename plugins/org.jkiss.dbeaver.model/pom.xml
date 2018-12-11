@@ -10,13 +10,12 @@
          <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.model</artifactId>
-    <version>1.0.85-SNAPSHOT</version>
+    <version>1.0.87-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 
 
     <build>
-        <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
         <plugins>
             <!-- Disable warns because of sun.security.util.* dependencies -->
             <plugin>
@@ -64,19 +63,5 @@
         </plugins>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
 </project>

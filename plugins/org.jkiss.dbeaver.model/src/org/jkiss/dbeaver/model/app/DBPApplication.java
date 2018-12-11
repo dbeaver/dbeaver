@@ -29,4 +29,10 @@ public interface DBPApplication
     @NotNull
     DBASecureStorage getSecureStorage();
 
+    /**
+     * Application information details.
+     * Like license info or some custom produce info
+     */
+    String getInfoDetails();
+
 }

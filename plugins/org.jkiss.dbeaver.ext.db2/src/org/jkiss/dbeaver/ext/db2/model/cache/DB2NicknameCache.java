@@ -67,7 +67,7 @@ public final class DB2NicknameCache extends JDBCStructLookupCache<DB2Schema, DB2
     public DB2NicknameCache()
     {
         super("TABNAME");
-        setListOrderComparator(DBUtils.<DB2Nickname> nameComparator());
+        setListOrderComparator(DBUtils.nameComparator());
     }
 
     @NotNull

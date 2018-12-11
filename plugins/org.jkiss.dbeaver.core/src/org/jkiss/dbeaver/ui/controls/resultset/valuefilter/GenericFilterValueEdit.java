@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -52,10 +53,14 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 
 
 class GenericFilterValueEdit {
+
+    private static final Log log = Log.getLog(GenericFilterValueEdit.class);
+
     TableViewer tableViewer;
     String filterPattern;
 
@@ -151,7 +156,7 @@ class GenericFilterValueEdit {
     private void loadConstraintEnum(final DBSEntityReferrer refConstraint) {
         loadJob = new KeyLoadJob("Load constraint '" + refConstraint.getName() + "' values") {
             @Override
-            Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
+            List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
                 final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
                 if (tableColumn == null) {
                     return null;
@@ -195,7 +200,7 @@ class GenericFilterValueEdit {
             tableViewer.getTable().getColumn(1).setText("Count");
         loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values") {
             @Override
-            Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
+            List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
                 return attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
             }
         };
@@ -203,6 +208,10 @@ class GenericFilterValueEdit {
     }
 
     private void loadMultiValueList(@NotNull Collection<DBDLabelValuePair> values) {
+        if (tableViewer == null || tableViewer.getControl() == null || tableViewer.getControl().isDisposed()) {
+            return;
+        }
+
         Pattern pattern = null;
         if (!CommonUtils.isEmpty(filterPattern)) {
             pattern = Pattern.compile(SQLUtils.makeLikePattern("%" + filterPattern + "%"), Pattern.CASE_INSENSITIVE);
@@ -247,7 +256,14 @@ class GenericFilterValueEdit {
                 }
             }
         }
-        Collections.sort(sortedList);
+        try {
+            Collections.sort(sortedList);
+        } catch (Exception e) {
+            // FIXME: This may happen in some crazy cases -
+            // FIXME: error "Comparison method violates its general contract!" happens in case of long strings sorting
+            // FIXME: Test on sakila.film.description
+            log.error("Error sorting value collection", e);
+        }
         if (hasNulls) {
             if (!rowData.containsKey(null)) {
                 sortedList.add(0, new DBDLabelValuePair(DBValueFormatting.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
@@ -303,7 +319,7 @@ class GenericFilterValueEdit {
                 return Status.OK_STATUS;
             }
             try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read value enumeration")) {
-                final Collection<DBDLabelValuePair> valueEnumeration = readEnumeration(session);
+                final List<DBDLabelValuePair> valueEnumeration = readEnumeration(session);
                 if (valueEnumeration == null) {
                     return Status.OK_STATUS;
                 } else {
@@ -317,14 +333,11 @@ class GenericFilterValueEdit {
         }
 
         @Nullable
-        abstract Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
+        abstract List<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
 
         void populateValues(@NotNull final Collection<DBDLabelValuePair> values) {
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    loadMultiValueList(values);
-                }
+            UIUtils.asyncExec(() -> {
+                loadMultiValueList(values);
             });
         }
     }

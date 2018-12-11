@@ -165,11 +165,11 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     void setFolder(@Nullable DBPDataSourceFolder folder);
 
-    Collection<DBPDataSourceUser> getUsers();
+    Collection<DBPDataSourceTask> getTasks();
 
-    void acquire(DBPDataSourceUser user);
+    void acquire(DBPDataSourceTask user);
 
-    void release(DBPDataSourceUser user);
+    void release(DBPDataSourceTask user);
 
     void fireEvent(DBPEvent event);
 

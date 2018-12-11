@@ -25,6 +25,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -161,12 +162,12 @@ public class MetaDataPanel implements IResultSetPanel {
     }
 
     private class MetaDataTable extends DatabaseObjectListControl<DBDAttributeBinding> {
-        protected MetaDataTable(Composite parent) {
+        MetaDataTable(Composite parent) {
             super(parent, SWT.SHEET, presentation.getController().getSite(), new TreeContentProvider() {
                 @Override
                 public Object[] getChildren(Object parentElement) {
                     List<DBDAttributeBinding> nested = ((DBDAttributeBinding) parentElement).getNestedBindings();
-                    return nested == null ? new Object[0] : nested.toArray(new Object[nested.size()]);
+                    return nested == null ? new Object[0] : nested.toArray(new Object[0]);
                 }
 
                 @Override
@@ -178,6 +179,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
         @Override
         public void fillCustomActions(IContributionManager contributionManager) {
+            UIUtils.fillDefaultTreeContextMenu(contributionManager, (Tree) getItemsViewer().getControl());
             contributionManager.add(new Action("Copy column names") {
                 @Override
                 public void run() {
@@ -243,7 +245,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
     private class LoadAttributesService extends DatabaseLoadService<Collection<DBDAttributeBinding>> {
 
-        protected LoadAttributesService()
+        LoadAttributesService()
         {
             super("Load sessions", presentation.getController().getExecutionContext());
         }

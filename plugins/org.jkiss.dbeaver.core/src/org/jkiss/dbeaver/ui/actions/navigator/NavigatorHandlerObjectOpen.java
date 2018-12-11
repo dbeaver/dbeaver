@@ -185,6 +185,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
             if (selectedNode instanceof DBNDatabaseObject) {
                 DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
+                if (!objectNode.isPersisted()) {
+                    return null;
+                }
                 ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
                 setInputAttributes(objectInput, defaultPageId, defaultFolderId, attributes);
                 return workbenchWindow.getActivePage().openEditor(
@@ -193,6 +196,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             } else if (selectedNode instanceof DBNDatabaseNode) {
                 DBNDatabaseNode dnNode = (DBNDatabaseNode) selectedNode;
                 if (dnNode.getObject() != null) {
+                    if (!dnNode.getObject().isPersisted()) {
+                        return null;
+                    }
                     EntityEditorInput editorInput = new EntityEditorInput(dnNode);
                     if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
                         if (dnNode.getObject() instanceof DBSObjectContainer) {

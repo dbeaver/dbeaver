@@ -23,10 +23,10 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public enum PostgreTypeStorage implements DBPNamedObject
 {
-    p("p:Plain."),
-    e("e:Secondary"),
-    m("m:Compressed"),
-    x("x:Any");
+    p("plain"),
+    e("secondary"),
+    m("compressed"),
+    x("any");
 
     private final String desc;
 

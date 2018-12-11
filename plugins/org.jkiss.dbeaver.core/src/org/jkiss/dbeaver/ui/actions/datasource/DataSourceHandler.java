@@ -189,7 +189,7 @@ public class DataSourceHandler
     public static void disconnectDataSource(DBPDataSourceContainer dataSourceContainer, @Nullable final Runnable onFinish) {
 
         // Save users
-        for (DBPDataSourceUser user : dataSourceContainer.getUsers()) {
+        for (DBPDataSourceTask user : dataSourceContainer.getTasks()) {
             if (user instanceof ISaveablePart) {
                 if (!SaveChangesHandler.validateAndSave(new VoidProgressMonitor(), (ISaveablePart) user)) {
                     return;

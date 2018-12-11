@@ -20,12 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ import java.util.List;
  */
 public abstract class JDBCTableForeignKey<
     TABLE extends JDBCTable,
-    PRIMARY_KEY extends DBSEntityReferrer>
+    PRIMARY_KEY extends DBSEntityConstraint>
     extends JDBCTableConstraint<TABLE>
     implements DBSTableForeignKey
 {
@@ -75,8 +75,8 @@ public abstract class JDBCTableForeignKey<
                 } else {
                     // Try to find table with the same name as referenced constraint owner
                     DBSObject refTable = table.getContainer().getChild(monitor, refEntity.getName());
-                    if (refTable instanceof DBSEntity) {
-                        List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, referencedKey);
+                    if (refTable instanceof DBSEntity && referencedKey instanceof DBSEntityReferrer) {
+                        List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer)referencedKey);
                         this.referencedKey = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
                     }
                 }

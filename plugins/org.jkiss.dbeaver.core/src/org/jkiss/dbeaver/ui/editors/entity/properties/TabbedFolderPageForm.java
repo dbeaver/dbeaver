@@ -100,6 +100,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     private Button saveButton;
     private Button scriptButton;
     private Button revertButton;
+    private Composite curButtonsContainer;
 
     private transient volatile boolean isLoading;
 
@@ -192,6 +193,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (curPropertySource == null) {
             return;
         }
+        curPropertySource = input.getPropertySource();
         List<DBPPropertyDescriptor> allProps = filterProperties(curPropertySource.getPropertyDescriptors2());
 
         boolean firstInit = editorMap.isEmpty();
@@ -345,13 +347,14 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 new DatabaseLoadService<Map<DBPPropertyDescriptor, Object>>("Load main properties", input.getDatabaseObject().getDataSource()) {
                     @Override
                     public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(curPropertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
+                        DBPPropertySource propertySource = TabbedFolderPageForm.this.curPropertySource;
+                        monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(propertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
                         Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
                         for (DBPPropertyDescriptor prop : allProps) {
                             if (monitor.isCanceled()) {
                                 break;
                             }
-                            Object value = curPropertySource.getPropertyValue(monitor, prop.getId());
+                            Object value = propertySource.getPropertyValue(monitor, prop.getId());
                             propValues.put(prop, value);
                             monitor.worked(1);
                         }
@@ -400,11 +403,13 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private void createPropertyEditor(Composite group, DBPPropertyDescriptor prop) {
+        DBSObject databaseObject = input.getDatabaseObject();
+        boolean isReadOnlyCon = databaseObject == null || databaseObject.getDataSource().getContainer().isConnectionReadOnly();
         if (prop == null) {
             UIUtils.createEmptyLabel(group, 2, 1);
         } else {
-            boolean editable = prop.isEditable(curPropertySource.getEditableValue()) ||
-                (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename());
+            boolean editable = !isReadOnlyCon && (prop.isEditable(curPropertySource.getEditableValue()) ||
+                (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename()));
             Class<?> propType = prop.getDataType();
             Object propertyValue = curPropertySource.getPropertyValue(null, prop.getId());
             if (propertyValue == null && prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isOptional()) {
@@ -421,16 +426,20 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (!CommonUtils.isEmpty(propDescription)) {
                 editControl.setToolTipText(propDescription);
             }
-            //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
-            GridData gd = (GridData) editControl.getLayoutData();
-            if (gd == null ) {
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING);
-                editControl.setLayoutData(gd);
-            }
-            if (editControl instanceof Text || editControl instanceof Combo) {
-                gd.widthHint = Math.max(
-                    UIUtils.getFontHeight(group) * 15,
-                    editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
+            if (editControl instanceof Button) {
+                // nothing
+            } else {
+                //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
+                GridData gd = (GridData) editControl.getLayoutData();
+                if (gd == null) {
+                    gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING);
+                    editControl.setLayoutData(gd);
+                }
+                if (editControl instanceof Text || editControl instanceof Combo) {
+                    gd.widthHint = Math.max(
+                        UIUtils.getFontHeight(group) * 15,
+                        editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
+                }
             }
 
             editorMap.put(prop, editControl);
@@ -524,7 +533,15 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 return text;
             }
         } else if (BeanUtils.isBooleanType(propType)) {
-            Button editor = UIUtils.createCheckbox(parent, property.getDisplayName(), "", CommonUtils.toBoolean(value), 2);
+            if (curButtonsContainer == null) {
+                UIUtils.createEmptyLabel(parent, 1, 1);
+                curButtonsContainer = new Composite(parent, SWT.NONE);
+                RowLayout layout = new RowLayout(SWT.HORIZONTAL);
+                curButtonsContainer.setLayout(layout);
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                curButtonsContainer.setLayoutData(gd);
+            }
+            Button editor = UIUtils.createCheckbox(curButtonsContainer, property.getDisplayName(), "", CommonUtils.toBoolean(value), 1);
             if (readOnly) {
                 editor.setEnabled(false);
             }
@@ -543,13 +560,15 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             combo.setText(objectValueToString(value));
             combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
             return combo;
-        } else if (DBSObject.class.isAssignableFrom(propType)) {
+        } else if (DBSObject.class.isAssignableFrom(propType) || (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor)property).isLinkPossible())) {
             UIUtils.createControlLabel(
                 parent,
                 property.getDisplayName());
-            Composite linkPH = new Composite(parent, SWT.BORDER);
+            Composite linkPH = new Composite(parent, SWT.NONE);
+            {
+                linkPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
             GridLayout layout = new GridLayout(1, false);
-            layout.marginHeight = 1;
             layout.marginHeight = 1;
             linkPH.setLayout(layout);
             Link link = new Link(linkPH, SWT.NONE);
@@ -564,6 +583,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     }
                 }
             });
+            link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             return link;
         } else {
             return UIUtils.createLabelText(
@@ -575,18 +595,18 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private String getLinktitle(Object value) {
-        return value == null ? "          " : "<a>" + objectValueToString(value) + "</a>";
+        return value == null ? "N/A" : "<a>" + objectValueToString(value) + "</a>";
     }
 
     private void loadEditorValues(Map<DBPPropertyDescriptor, Object> editorValues) {
         try {
             isLoading = true;
-
-            Object object = curPropertySource.getEditableValue();
-            for (Map.Entry<DBPPropertyDescriptor, Object> prop : editorValues.entrySet()) {
-                setEditorValue(object, prop.getKey(), prop.getValue());
+            if (curPropertySource != null) {
+                Object object = curPropertySource.getEditableValue();
+                for (Map.Entry<DBPPropertyDescriptor, Object> prop : editorValues.entrySet()) {
+                    setEditorValue(object, prop.getKey(), prop.getValue());
+                }
             }
-
         } finally {
             isLoading = false;
         }

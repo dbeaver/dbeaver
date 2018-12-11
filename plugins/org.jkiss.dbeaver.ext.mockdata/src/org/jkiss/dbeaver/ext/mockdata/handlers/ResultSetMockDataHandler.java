@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class ResultSetMockDataHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
         List<DBSObject> selectedObjects;
-        IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet != null) {
             DBSDataContainer dataContainer = resultSet.getDataContainer();
             if (dataContainer == null || dataContainer.getDataSource() == null) {

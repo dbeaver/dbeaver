@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PrintFigureOperation;
 import org.eclipse.draw2d.geometry.Dimension;
@@ -77,7 +78,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
@@ -98,7 +99,7 @@ import java.util.List;
  * an editor </i> in chapter <i>Introduction to GEF </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
-    implements DBPDataSourceUser, ISearchContextProvider, IRefreshablePart
+    implements DBPDataSourceTask, ISearchContextProvider, IRefreshablePart
 {
     @Nullable
     protected ProgressControl progressControl;
@@ -853,6 +854,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     protected abstract void loadDiagram(boolean refreshMetadata);
+
+    @Override
+    public boolean isActiveTask() {
+        return diagramLoadingJob != null && diagramLoadingJob.getState() == Job.RUNNING;
+    }
 
     private class ChangeAttributePresentationAction extends Action {
         private final ERDViewStyle style;

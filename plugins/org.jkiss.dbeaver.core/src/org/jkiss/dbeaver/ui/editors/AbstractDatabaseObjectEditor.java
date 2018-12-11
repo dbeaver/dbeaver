@@ -127,4 +127,8 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         getObjectCommander().updateCommand(command, reflector);
     }
 
+    @Override
+    public boolean isActiveTask() {
+        return false;
+    }
 }

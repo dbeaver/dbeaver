@@ -110,12 +110,6 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
 //                            "Invalidate data source [" + context.getDataSource().getContainer().getName() + "]",
 //                            "Error while connecting to the datasource",// + "\nTime spent: " + RuntimeUtils.formatExecutionTime(invalidateJob.getTimeSpent()),
 //                            error);
-                        UIUtils.syncExec(new Runnable() {
-                            @Override
-                            public void run() {
-
-                            }
-                        });
                         final DBPDataSourceContainer container = dataSource.getContainer();
                         final Throwable dialogError = error;
                         final Integer result = new UITask<Integer>() {

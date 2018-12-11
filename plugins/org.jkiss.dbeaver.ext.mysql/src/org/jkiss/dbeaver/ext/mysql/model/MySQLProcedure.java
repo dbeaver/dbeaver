@@ -42,7 +42,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * GenericProcedure
+ * MySQLProcedure
  */
 public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject
 {

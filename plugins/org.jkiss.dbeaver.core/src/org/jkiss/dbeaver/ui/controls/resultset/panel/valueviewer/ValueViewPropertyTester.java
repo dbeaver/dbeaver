@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
@@ -33,7 +33,7 @@ public class ValueViewPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet((IWorkbenchPart) receiver);
+        ResultSetViewer rsv = (ResultSetViewer) ResultSetHandlerMain.getActiveResultSet((IWorkbenchPart) receiver);
         return rsv != null && checkResultSetProperty(rsv, property, expectedValue);
     }
 

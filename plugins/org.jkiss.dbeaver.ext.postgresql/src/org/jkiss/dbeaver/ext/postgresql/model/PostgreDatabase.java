@@ -674,7 +674,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         }
     }
 
-    public PostgreDataType getDataType(DBRProgressMonitor monitor, String typeName) {
+    public PostgreDataType getDataType(@Nullable DBRProgressMonitor monitor, String typeName) {
         if (typeName.endsWith("[]")) {
             // In some cases ResultSetMetadata returns it as []
             typeName = "_" + typeName.substring(0, typeName.length() - 2);
@@ -709,6 +709,10 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
             if (dataType != null) {
                 return dataType;
             }
+        }
+
+        if (monitor == null) {
+            return null;
         }
 
         // Type not found. Let's resolve it
