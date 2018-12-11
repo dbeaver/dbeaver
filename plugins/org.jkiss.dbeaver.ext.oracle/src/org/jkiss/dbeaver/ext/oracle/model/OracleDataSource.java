@@ -269,7 +269,9 @@ public class OracleDataSource extends JDBCDataSource
         Map<String, String> connectionsProps = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Program name
-            connectionsProps.put("v$session.program", CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), purpose), 48));
+            String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+            appName = appName.replace('(', '_').replace(')', '_'); // Replace brackets - Oracle don't like them
+            connectionsProps.put("v$session.program", CommonUtils.truncateString(appName, 48));
         }
         if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
             connectionsProps.put("v$session.osuser", System.getProperty(StandardConstants.ENV_USER_NAME));
