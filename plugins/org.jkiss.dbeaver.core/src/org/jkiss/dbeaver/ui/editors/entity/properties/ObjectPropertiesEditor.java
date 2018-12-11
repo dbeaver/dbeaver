@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -67,6 +68,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
+import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE;
+
 /**
  * ObjectPropertiesEditor
  */
@@ -100,6 +103,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this);
         pageControl.setShowDivider(true);
+        pageControl.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
 
         Composite container = new Composite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);

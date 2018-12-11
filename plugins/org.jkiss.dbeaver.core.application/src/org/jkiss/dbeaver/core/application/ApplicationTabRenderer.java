@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Rectangle;
  * TODO: Implement correct rendering of editor tabs
  * TODO: Have to read a lot about SWT CSS rendering. Maybe, some day..
  */
+@Deprecated
 public class ApplicationTabRenderer extends CTabRendering {
 
 

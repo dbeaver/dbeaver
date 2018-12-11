@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
+import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Rectangle;
@@ -34,6 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE;
 
 
 /**
@@ -69,6 +72,8 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
 
         public FolderPane(Composite parent, boolean last) {
             this.folderList = new TabbedFolderList(parent, !last);
+            this.folderList.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             if (!last) {
                 gd.verticalSpan = 2;
