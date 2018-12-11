@@ -49,14 +49,14 @@ public final class ExasolTableForeignKeyCache
             "			where\r\n" +
             "				CONSTRAINT_SCHEMA = '%s' and\r\n" +
             "				CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_TABLE = '%s' \r\n" +
-            "        ORDER BY 1,2,3 c\r\n" +
+            "        ORDER BY 1,2,3 \r\n" +
             "        )c\r\n" +
             "		inner join\r\n" +
             "		(SELECT * FROM EXA_ALL_CONSTRAINT_COLUMNS " +
             "			where\r\n" +
             "				CONSTRAINT_SCHEMA = '%s' and\r\n" +
             "				CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_TABLE = '%s' \r\n" +
-            "        ORDER BY 1,2,3 c\r\n" +
+            "        ORDER BY 1,2,3 \r\n" +
             " 		) cc\r\n" +
             "	using\r\n" +
             "			(\r\n" +
@@ -76,7 +76,7 @@ public final class ExasolTableForeignKeyCache
             "			where\r\n" +
             "				CONSTRAINT_SCHEMA = '%s' and\r\n" +
             "				CONSTRAINT_TYPE = 'FOREIGN KEY'\r\n" +
-            "        ORDER BY 1,2,3 c\r\n" +
+            "        ORDER BY 1,2,3 \r\n" +
             "        )c\r\n" +
             "		inner join\r\n" +
             "		(SELECT * FROM EXA_ALL_CONSTRAINT_COLUMNS " +

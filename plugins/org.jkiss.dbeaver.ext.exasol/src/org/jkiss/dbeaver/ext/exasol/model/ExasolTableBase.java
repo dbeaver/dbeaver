@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +48,8 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
 
     private String remarks;
     private String objectType;
+    private BigDecimal objectId;
+    
 
 
     public ExasolTableBase(ExasolSchema schema, String name, boolean persisted) {
@@ -58,6 +61,8 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
         setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
         this.objectType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
+        this.objectId =JDBCUtils.safeGetBigDecimal(dbResult, "OBJECT_ID");
+
     }
 
 
@@ -170,6 +175,11 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
     public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         // No Indexes in Exasol
         return Collections.emptyList();
+    }
+    
+    public BigDecimal getObjectId()
+    {
+    	return this.objectId;
     }
 
 
