@@ -17,6 +17,7 @@ import org.w3c.dom.css.CSSValue;
  * Editor tab colorer.
  * IT is disabled because it breaks dark theme.
  */
+@Deprecated
 public class EditorFolderElementHandler extends CSSPropertySelectedTabsSWTHandler {
 
 	private static final String PROP_BACKGROUND = "swt-selected-tabs-background";

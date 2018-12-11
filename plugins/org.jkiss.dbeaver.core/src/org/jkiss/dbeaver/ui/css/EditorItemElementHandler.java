@@ -4,7 +4,7 @@ import org.eclipse.e4.ui.css.core.engine.CSSEngine;
 import org.eclipse.e4.ui.css.swt.properties.AbstractCSSPropertySWTHandler;
 import org.eclipse.swt.widgets.Control;
 import org.w3c.dom.css.CSSValue;
-
+@Deprecated
 public class EditorItemElementHandler extends AbstractCSSPropertySWTHandler {
 
 	public EditorItemElementHandler() {

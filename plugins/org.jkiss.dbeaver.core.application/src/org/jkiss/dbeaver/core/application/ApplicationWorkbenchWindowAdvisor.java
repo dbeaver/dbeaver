@@ -211,13 +211,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Initialize workbench window");
         super.postWindowCreate();
         recomputeTitle();
-/*
+
         try {
-            ApplicationCSSManager.updateApplicationCSS(window.getShell().getDisplay());
+            ApplicationCSSManager.updateApplicationCSS(Display.getCurrent());
         } catch (Throwable e) {
             log.warn(e);
         }
-*/
+
 
         try {
             DBeaverCommandLine.executeCommandLineCommands(
