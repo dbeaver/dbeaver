@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreClass;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
@@ -58,6 +55,11 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
             return new GreenplumTable(schema, dbResult);
         }
         return super.createRelationOfClass(schema, kind, dbResult);
+    }
+
+    @Override
+    public void configureDialect(PostgreDialect dialect) {
+        dialect.addExtraKeywords("DISTRIBUTED");
     }
 }
 

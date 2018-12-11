@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,38 +16,85 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAlias;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
-* SQL server synonym
-*/
-public class SQLServerSynonym extends GenericSynonym implements DBPQualifiedObject {
-
+ * SQL Server synonym.
+ */
+public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject, SQLServerObject
+{
     private static final Log log = Log.getLog(SQLServerSynonym.class);
 
+    private long objectId;
+    private SQLServerSchema schema;
+    private String name;
     private String targetObjectName;
+    private String description;
 
-    public SQLServerSynonym(GenericStructContainer container, String name, String description, String targetObjectName) {
-        super(container, name, description);
+    private boolean persisted;
+
+    protected SQLServerSynonym(SQLServerSchema schema, long objectId, String name, String targetObjectName, boolean persisted) {
+        this.schema = schema;
+        this.objectId = objectId;
+        this.name = name;
         this.targetObjectName = targetObjectName;
+
+        this.persisted = persisted;
+    }
+
+    @Property(viewable = false, order = 80)
+    @Override
+    public long getObjectId() {
+        return objectId;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, order = 1)
+    public String getName() {
+        return name;
     }
 
     @Override
+    public boolean isPersisted() {
+        return persisted;
+    }
+
+    @Nullable
+    @Override
+    //@Property(viewable = true, multiline = true, order = 10)
+    public String getDescription() {
+        return description;
+    }
+
+    @Nullable
+    @Override
+    public SQLServerSchema getParentObject() {
+        return schema;
+    }
+
+    @NotNull
+    @Override
+    public SQLServerDataSource getDataSource() {
+        return schema.getDataSource();
+    }
+
+    @NotNull
+    @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
-        return DBUtils.getFullQualifiedName(
-            getDataSource(),
-            getParentObject(),
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            schema.getDatabase(),
+            schema,
             this);
     }
 
@@ -61,12 +108,12 @@ public class SQLServerSynonym extends GenericSynonym implements DBPQualifiedObje
         }
         String schemaName = DBUtils.getUnQuotedIdentifier(getDataSource(), targetObjectName.substring(0, divPos + 1));
         String objectName = DBUtils.getUnQuotedIdentifier(getDataSource(), targetObjectName.substring(divPos + 2));
-        GenericCatalog database = getParentObject().getCatalog();
-        GenericSchema schema = database.getSchema(monitor, schemaName);
-        if (schema == null) {
+        SQLServerSchema targetSchema = schema.getDatabase().getSchema(monitor, schemaName);
+        if (targetSchema == null) {
             log.debug("Schema '" + schemaName + "' not found for synonym '" + getName() + "'");
             return null;
         }
-        return schema.getChild(monitor, objectName);
+        return targetSchema.getChild(monitor, objectName);
     }
+
 }

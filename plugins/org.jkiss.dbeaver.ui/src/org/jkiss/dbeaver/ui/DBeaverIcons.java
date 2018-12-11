@@ -73,6 +73,7 @@ public class DBeaverIcons
     private static Map<String, IconDescriptor> imageMap = new HashMap<>();
     private static Map<String, IconDescriptor> compositeMap = new HashMap<>();
     private static Image viewMenuImage;
+    private static ImageDescriptor viewMenuImageDescriptor;
 
     @NotNull
     public static Image getImage(@NotNull DBPImage image)
@@ -217,4 +218,11 @@ public class DBeaverIcons
         return viewMenuImage;
     }
 
+    public static synchronized ImageDescriptor getViewMenuImageDescriptor() {
+        if (viewMenuImageDescriptor == null) {
+            viewMenuImageDescriptor = ImageDescriptor.createFromImage(
+                    getViewMenuImage());
+        }
+        return viewMenuImageDescriptor;
+    }
 }

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- DB2 z/OS -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.db2.zos.DB2ZOSDataSourceProvider"
+                description="%datasource.db2_zos.description"
+                id="db2_zos"
+                parent="generic"
+                label="DB2 for z/OS"
+                icon="icons/db2_zos.png">
+            <drivers managable="true">
+
+                <driver
+                        id="db2_zos"
+                        label="DB2 z/OS"
+                        icon="icons/db2_zos.png"
+                        category="DB2"
+                        class="com.ibm.db2.jcc.DB2Driver"
+                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        defaultPort="50000"
+                        description="DB2 z/OS driver"
+                        note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library.">
+
+                    <replace provider="generic" driver="db2_zos"/>
+
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectionTimeout" value="20"/>
+                    <property name="fullyMaterializeLobData" value="true"/>
+                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <property name="progressiveStreaming" value="2"/>
+                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
+
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="meta-model" value="db2_zos"/>
+                    <parameter name="omit-type-cache" value="true"/>
+                    <parameter name="omit-catalog" value="true"/>
+
+                    <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
+                                name="DB2 JCC drivers"
+                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
+                        <file name="db2jcc4.jar" description="JDBC driver"/>
+                    </fileSource>
+
+                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+                </driver>
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="db2_zos" class="org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSMetaModel">
+            <!-- indexes mapping.  Needed for "broken" DB2 z/OS installations -->
+            <object type="catalog">
+                <column id="TABLE_CAT" index="1"/>
+            </object>
+            <object type="schema">
+                <column id="TABLE_SCHEM" index="1"/>
+                <column id="TABLE_CATALOG" index="2"/>
+            </object>
+            <object type="table-type">
+                <column id="TABLE_TYPE" index="1"/>
+            </object>
+            <object type="table">
+                <column id="TABLE_CAT" index="1"/>
+                <column id="TABLE_SCHEM" index="2"/>
+                <column id="TABLE_NAME" index="3"/>
+                <column id="TABLE_TYPE" index="4"/>
+                <column id="REMARKS" index="5"/>
+                <column id="TYPE_CAT" index="6"/>
+                <column id="TYPE_SCHEM" index="7"/>
+                <column id="TYPE_NAME" index="8"/>
+                <column id="SELF_REFERENCING_COL_NAME" index="9"/>
+                <column id="REF_GENERATION" index="10"/>
+            </object>
+            <object type="table-column">
+                <column id="TABLE_CAT" index="1"/>
+                <column id="TABLE_SCHEM" index="2"/>
+                <column id="TABLE_NAME" index="3"/>
+                <column id="COLUMN_NAME" index="4"/>
+                <column id="DATA_TYPE" index="5"/>
+                <column id="TYPE_NAME" index="6"/>
+                <column id="COLUMN_SIZE" index="7"/>
+                <column id="BUFFER_LENGTH" index="8"/>
+                <column id="DECIMAL_DIGITS" index="9"/>
+                <column id="NUM_PREC_RADIX" index="10"/>
+                <column id="NULLABLE" index="11"/>
+                <column id="REMARKS" index="12"/>
+                <column id="COLUMN_DEF" index="13"/>
+                <column id="SQL_DATA_TYPE" index="14"/>
+                <column id="SQL_DATETIME_SUB" index="15"/>
+                <column id="CHAR_OCTET_LENGTH" index="16"/>
+                <column id="ORDINAL_POSITION" index="17"/>
+                <column id="IS_NULLABLE" index="18"/>
+                <column id="SCOPE_CATALOG" index="19"/>
+                <column id="SCOPE_SCHEMA" index="20"/>
+                <column id="SCOPE_TABLE" index="21"/>
+                <column id="SOURCE_DATA_TYPE" index="22"/>
+                <column id="IS_AUTOINCREMENT" index="23"/>
+                <column id="IS_GENERATEDCOLUMN" index="24"/>
+            </object>
+            <object type="primary-key">
+                <column id="TABLE_CAT" index="1"/>
+                <column id="TABLE_SCHEM" index="2"/>
+                <column id="TABLE_NAME" index="3"/>
+                <column id="COLUMN_NAME" index="4"/>
+                <column id="KEY_SEQ" index="5"/>
+                <column id="PK_NAME" index="6"/>
+            </object>
+            <object type="foreign-key">
+                <column id="PKTABLE_CAT" index="1"/>
+                <column id="PKTABLE_SCHEM" index="2"/>
+                <column id="PKTABLE_NAME" index="3"/>
+                <column id="PKCOLUMN_NAME" index="4"/>
+                <column id="FKTABLE_CAT" index="5"/>
+                <column id="FKTABLE_SCHEM" index="6"/>
+                <column id="FKTABLE_NAME" index="7"/>
+                <column id="FKCOLUMN_NAME" index="8"/>
+                <column id="KEY_SEQ" index="9"/>
+                <column id="UPDATE_RULE" index="10"/>
+                <column id="DELETE_RULE" index="11"/>
+                <column id="FK_NAME" index="12"/>
+                <column id="PK_NAME" index="13"/>
+                <column id="DEFERRABILITY" index="14"/>
+            </object>
+            <object type="procedure">
+                <column id="PROCEDURE_CAT" index="1"/>
+                <column id="PROCEDURE_SCHEM" index="2"/>
+                <column id="PROCEDURE_NAME" index="3"/>
+                <column id="REMARKS" index="4"/>
+                <column id="PROCEDURE_TYPE" index="5"/>
+                <column id="SPECIFIC_NAME" index="6"/>
+            </object>
+            <object type="procedure-column">
+                <column id="PROCEDURE_CAT" index="1"/>
+                <column id="PROCEDURE_SCHEM" index="2"/>
+                <column id="PROCEDURE_NAME" index="3"/>
+                <column id="COLUMN_NAME" index="4"/>
+                <column id="COLUMN_TYPE" index="5"/>
+                <column id="DATA_TYPE" index="6"/>
+                <column id="TYPE_NAME" index="7"/>
+                <column id="PRECISION" index="8"/>
+                <column id="LENGTH" index="9"/>
+                <column id="SCALE" index="10"/>
+                <column id="RADIX" index="11"/>
+                <column id="NULLABLE" index="12"/>
+                <column id="REMARKS" index="13"/>
+                <column id="COLUMN_DEF" index="14"/>
+                <column id="SQL_DATA_TYPE" index="15"/>
+                <column id="SQL_DATETIME_SUB" index="16"/>
+                <column id="CHAR_OCTET_LENGTH" index="17"/>
+                <column id="ORDINAL_POSITION" index="18"/>
+                <column id="IS_NULLABLE" index="19"/>
+                <column id="SPECIFIC_NAME" index="20"/>
+            </object>
+            <object type="index">
+                <column id="TABLE_CAT" index="1"/>
+                <column id="TABLE_SCHEM" index="2"/>
+                <column id="TABLE_NAME" index="3"/>
+                <column id="NON_UNIQUE" index="4"/>
+                <column id="INDEX_QUALIFIER" index="5"/>
+                <column id="INDEX_NAME" index="6"/>
+                <column id="TYPE" index="7"/>
+                <column id="ORDINAL_POSITION" index="8"/>
+                <column id="COLUMN_NAME" index="9"/>
+                <column id="ASC_OR_DESC" index="10"/>
+                <column id="CARDINALITY" index="11"/>
+                <column id="PAGES" index="12"/>
+                <column id="FILTER_CONDITION" index="13"/>
+            </object>
+        </meta>
+    </extension>
+
+</plugin>

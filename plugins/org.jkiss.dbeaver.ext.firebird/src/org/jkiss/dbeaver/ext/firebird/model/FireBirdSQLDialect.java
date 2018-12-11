@@ -24,9 +24,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 public class FireBirdSQLDialect extends GenericSQLDialect {
 
+    public static final String[] FB_BLOCK_HEADERS = new String[]{
+        "EXECUTE BLOCK",
+        "DECLARE",
+        //"IS",
+    };
+
     public static final String[][] FB_BEGIN_END_BLOCK = new String[][]{
         {"BEGIN", "END"},
-        {"EXECUTE BLOCK", "END"},
     };
 
     private static final String[] DDL_KEYWORDS = new String[] {
@@ -40,6 +45,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @Override
     public String[] getDDLKeywords() {
         return DDL_KEYWORDS;
+    }
+
+    @Override
+    public String[] getBlockHeaderStrings() {
+        return FB_BLOCK_HEADERS;
     }
 
     @Override

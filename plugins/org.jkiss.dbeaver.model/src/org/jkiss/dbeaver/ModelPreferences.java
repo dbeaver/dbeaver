@@ -104,6 +104,7 @@ public final class ModelPreferences
     //public final static String SQL_FORMAT_EXTERNAL_DIR = "sql.format.external.dir";
     public final static String SQL_FORMAT_EXTERNAL_TIMEOUT = "sql.format.external.timeout";
     public final static String SQL_FORMAT_LF_BEFORE_COMMA = "sql.format.lf.before.comma";
+    public static final String SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET = "sql.format.break.before.close.bracket";
 
     public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
 

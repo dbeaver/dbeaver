@@ -142,9 +142,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     }
                     lastUpdateTime = System.currentTimeMillis();
                     UIUtils.asyncExec(() -> {
-                        reloadSyntaxRules();
-                        // Reconfigure to let comments/strings colors to take effect
-                        getSourceViewer().configure(getSourceViewerConfiguration());
+                        ISourceViewer sourceViewer = getSourceViewer();
+                        if (sourceViewer != null) {
+                            reloadSyntaxRules();
+                            // Reconfigure to let comments/strings colors to take effect
+                            sourceViewer.configure(getSourceViewerConfiguration());
+                        }
                     });
                 }
             }
@@ -865,6 +868,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         String blockTogglePattern = null;
         int lastTokenLineFeeds = 0;
         int prevNotEmptyTokenType = SQLToken.T_UNKNOWN;
+        String firstKeyword = null;
         for (; ; ) {
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
@@ -961,6 +965,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }
 
+                if (firstKeyword == null && tokenLength > 0 && !token.isWhitespace()) {
+                    switch (tokenType) {
+                        case SQLToken.T_BLOCK_BEGIN:
+                        case SQLToken.T_BLOCK_END:
+                        case SQLToken.T_BLOCK_TOGGLE:
+                        case SQLToken.T_BLOCK_HEADER:
+                        case SQLToken.T_UNKNOWN:
+                            try {
+                                firstKeyword = document.get(tokenOffset, tokenLength);
+                            } catch (BadLocationException e) {
+                                log.error("Error getting first keyword", e);
+                            }
+                            break;
+                    }
+                }
+
                 boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
                 if (isControl && (scriptMode || cursorInsideToken) && !hasValuableTokens) {
                     // Control query
@@ -1026,7 +1046,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         queryText = SQLUtils.fixLineFeeds(queryText);
 
                         if (isDelimiter && (keepDelimiters || (hasBlocks ?
-                            dialect.isDelimiterAfterBlock() && queryText.trim().toUpperCase(Locale.ENGLISH).endsWith(SQLConstants.BLOCK_END) :
+                            dialect.isDelimiterAfterBlock() && firstKeyword != null &&
+                                (SQLUtils.isBlockStartKeyword(dialect, firstKeyword) || ArrayUtils.containsIgnoreCase(dialect.getDDLKeywords(), firstKeyword)) :
                             dialect.isDelimiterAfterQuery())))
                         {
                             if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {

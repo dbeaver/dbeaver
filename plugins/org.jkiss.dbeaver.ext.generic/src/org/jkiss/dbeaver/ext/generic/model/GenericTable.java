@@ -165,7 +165,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public synchronized Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsIndexes()) {
@@ -177,7 +177,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @Nullable
     @Override
-    public synchronized List<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public List<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
@@ -188,7 +188,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return null;
     }
 
-    synchronized void addUniqueKey(GenericPrimaryKey constraint) {
+    void addUniqueKey(GenericPrimaryKey constraint) {
         getContainer().getPrimaryKeysCache().cacheObject(constraint);
     }
 
@@ -352,7 +352,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             try (JDBCResultSet dbResult = metaData.getExportedKeys(
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
-                getName())) {
+                getName()))
+            {
                 while (dbResult.next()) {
                     ForeignKeyInfo fkInfo = new ForeignKeyInfo();
                     fkInfo.pkColumnName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PKCOLUMN_NAME);

@@ -89,18 +89,75 @@ public class SQLFormatterTokenizedTest {
     }
 
     @Test
-    public void shouldRemoveSpacesAroundCommentSymbol() {
-/*
+    public void shouldRemoveSpacesBeforeCommentSymbol() {
         //given
-        String expectedString = "-- SELECT * FROM mytable;";
-        String inputString = " -- SELECT * FROM mytable;";
+        String expectedString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\ttable1;" + lineBreak + "-- SELECT * FROM mytable;";
+        String inputString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\ttable1;" + lineBreak +" -- SELECT * FROM mytable;";
 
         //when
         String formattedString = formatter.format(inputString, configuration);
 
         //then
         assertEquals(expectedString, formattedString);
-*/
+    }
+
+    @Test
+    public void shouldAddLineBreakIfScriptStartsWithComment() {
+        //given
+        String expectedString = lineBreak + "-- SELECT * FROM mytable;";
+        String inputString = "-- SELECT * FROM mytable;";
+
+        //when
+        String formattedString = formatter.format(inputString, configuration);
+
+        //then
+        assertEquals(expectedString, formattedString);
+    }
+
+    @Test
+    public void shouldAddLineBreakBeforeBraceBySpecialSetting() {
+        //given
+        String expectedString = getExpectedStringWithLineBreakBeforeBraces();
+        String inputString = "SELECT (SELECT thecol FROM thetable) FROM dual";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
+
+        //when
+        String formattedString = formatter.format(inputString, configuration);
+
+        //then
+        assertEquals(expectedString, formattedString);
+    }
+
+
+    @Test
+    public void shouldAddIndentForName() {
+        //given
+        String expectedString = "SELECT"+lineBreak + "\tmy_field" + lineBreak + "FROM" + lineBreak + "\tmy_table";
+        String inputString = "SELECT my_field FROM my_table";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA))).thenReturn(false);
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
+
+        //when
+        String formattedString = formatter.format(inputString, configuration);
+
+        //then
+        assertEquals(expectedString, formattedString);
+    }
+
+    private String getExpectedStringWithLineBreakBeforeBraces() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT").append(lineBreak)
+                .append("\t(").append(lineBreak)
+                .append("\t\tSELECT").append(lineBreak)
+                .append("\t\t\tthecol").append(lineBreak)
+                .append("\t\tFROM").append(lineBreak)
+                .append("\t\t\tthetable").append(lineBreak)
+                .append("\t)").append(lineBreak)
+                .append("FROM").append(lineBreak).append("\tdual");
+        return sb.toString();
     }
 
 
@@ -132,10 +189,11 @@ public class SQLFormatterTokenizedTest {
                 .append("WHERE").append(lineBreak)
                 .append("\ta = 1;").append(lineBreak).append(lineBreak)
                 .append("UPDATE").append(lineBreak)
-                .append("\tTABLE1 SET").append(lineBreak)
-                .append("\t\ta = 2").append(lineBreak)
-                .append("\tWHERE").append(lineBreak)
-                .append("\t\ta = 1;").append(lineBreak).append(lineBreak)
+                .append("\tTABLE1").append(lineBreak)
+                .append("SET").append(lineBreak)
+                .append("\ta = 2").append(lineBreak)
+                .append("WHERE").append(lineBreak)
+                .append("\ta = 1;").append(lineBreak).append(lineBreak)
                 .append("SELECT").append(lineBreak)
                 .append("\ttable1.id,").append(lineBreak)
                 .append("\ttable2.number,").append(lineBreak)

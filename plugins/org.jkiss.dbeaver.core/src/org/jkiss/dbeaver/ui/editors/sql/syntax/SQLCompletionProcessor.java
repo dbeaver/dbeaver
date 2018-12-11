@@ -165,7 +165,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     if (keywordType == DBPKeywordType.TYPE) {
                         continue;
                     }
-                    if (request.queryType == QueryType.COLUMN && keywordType != DBPKeywordType.FUNCTION) {
+                    if (request.queryType == QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD)) {
                         continue;
                     }
                     request.proposals.add(

@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>5.2.4</dbeaver-version>
+        <dbeaver-version>5.3.0</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.1.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -72,6 +72,8 @@
     </repositories>
 
     <build>
+        <sourceDirectory>${project.basedir}/src</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
         <plugins>
 
             <!-- Tycho target platform -->
@@ -193,6 +195,18 @@
     <profiles>
         <profile>
             <!-- Profile used to sign jars -->
+            <id>eclipse-oxygen</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <!-- Use Oxygen repo -->
+                <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
+            </properties>
+        </profile>
+
+        <profile>
+            <!-- Profile used to sign jars -->
             <id>sign-code</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -224,5 +238,20 @@
             </build>
         </profile>
     </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>

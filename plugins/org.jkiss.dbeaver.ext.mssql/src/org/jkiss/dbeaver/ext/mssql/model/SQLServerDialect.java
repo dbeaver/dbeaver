@@ -18,24 +18,24 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvider {
+public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
         /*{
@@ -48,7 +48,9 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
             {"\"", "\""},
     };
 
-    private SQLServerDataSource dataSource;
+    private static String[] EXEC_KEYWORDS =  { "CALL", "EXEC" };
+
+    private JDBCDataSource dataSource;
 
     public SQLServerDialect() {
         super("SQLServer");
@@ -57,7 +59,22 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         addSQLKeyword("TOP");
-        this.dataSource = (SQLServerDataSource) dataSource;
+        this.dataSource = dataSource;
+    }
+
+    @Override
+    public String getScriptDelimiter() {
+        return "GO";
+    }
+
+    @Override
+    public String[] getExecuteKeywords() {
+        return EXEC_KEYWORDS;
+    }
+
+    @Override
+    public boolean isDelimiterAfterQuery() {
+        return true;
     }
 
     public String[][] getIdentifierQuoteStrings() {
@@ -71,7 +88,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
 
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
-        if (((SQLServerMetaModel)dataSource.getMetaModel()).isSqlServer()) {
+        if (SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver())) {
             if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
                 return MultiValueInsertMode.GROUP_ROWS;
             }
@@ -84,13 +101,11 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
     @Override
     public String getColumnTypeModifiers(DBPDataSource dataSource, DBSTypedObject column, String typeName, DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.DATETIME) {
-            Integer scale = column.getScale();
-            if (scale != null) {
-                if (column.getTypeID() == Types.VARCHAR && scale == 0) {
-                    // Bug in jTDS. Scale is always zero so just ignore it (#3555)
-                    return null;
+            if (SQLServerConstants.TYPE_DATETIME2.equalsIgnoreCase(typeName)) {
+                Integer scale = column.getScale();
+                if (scale != null && scale != 0) {
+                    return "(" + scale + ')';
                 }
-                return "(" + scale + ')';
             }
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);

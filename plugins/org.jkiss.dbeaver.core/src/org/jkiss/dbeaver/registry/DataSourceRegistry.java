@@ -45,11 +45,11 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
+import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
-import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
-import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -477,12 +477,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     /**
      * Find data source in all available registries
      */
-    public static DataSourceDescriptor findDataSource(String dataSourceId) {
+    public static DBPDataSourceContainer findDataSource(String dataSourceId) {
         ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
             DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
             if (dataSourceRegistry != null) {
-                DataSourceDescriptor dataSourceContainer = dataSourceRegistry.getDataSource(dataSourceId);
+                DBPDataSourceContainer dataSourceContainer = dataSourceRegistry.getDataSource(dataSourceId);
                 if (dataSourceContainer != null) {
                     return dataSourceContainer;
                 }

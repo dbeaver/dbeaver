@@ -152,7 +152,7 @@ public class ReferenceValueEditor {
                 Link hintLabel = UIUtils.createLink(labelGroup, "(<a>Define Description</a>)", new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        EditDictionaryPage editDictionaryPage = new EditDictionaryPage("Dictionary structure", refTable);
+                        EditDictionaryPage editDictionaryPage = new EditDictionaryPage(refTable);
                         if (editDictionaryPage.edit(parent.getShell())) {
                             reloadSelectorValues(null);
                         }
@@ -176,7 +176,7 @@ public class ReferenceValueEditor {
         valueColumn.setData(Boolean.TRUE);
         TableColumn descColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_description);
         descColumn.setData(Boolean.FALSE);
-        UIUtils.packColumns(editorSelector);
+
         SortListener sortListener = new SortListener();
         valueColumn.addListener(SWT.Selection, sortListener);
         descColumn.addListener(SWT.Selection, sortListener);
@@ -213,12 +213,14 @@ public class ReferenceValueEditor {
                 curEditorValue,
                 DBDDisplayFormat.UI);
             boolean valueFound = false;
-            for (TableItem item : editorSelector.getItems()) {
-                if (item.getText(0).equals(curTextValue)) {
-                    editorSelector.select(editorSelector.indexOf(item));
-                    editorSelector.showItem(item);
-                    valueFound = true;
-                    break;
+            if (curTextValue != null) {
+                for (TableItem item : editorSelector.getItems()) {
+                    if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
+                        editorSelector.select(editorSelector.indexOf(item));
+                        editorSelector.showItem(item);
+                        valueFound = true;
+                        break;
+                    }
                 }
             }
 
@@ -233,6 +235,25 @@ public class ReferenceValueEditor {
             ((StyledText)control).addModifyListener(modifyListener);
         }
 
+        if (refConstraint instanceof DBSEntityAssociation) {
+            final Text valueFilterText = new Text(parent, SWT.BORDER);
+            valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            valueFilterText.addModifyListener(e -> {
+                String filterPattern = valueFilterText.getText();
+                reloadSelectorValues(filterPattern);
+            });
+            valueFilterText.addPaintListener(e -> {
+                if (valueFilterText.isEnabled() && valueFilterText.getCharCount() == 0) {
+                    e.gc.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                    e.gc.drawText("Type part of dictionary value to search",
+                        2, 0, true);
+                    e.gc.setFont(null);
+                }
+            });
+        }
+        UIUtils.asyncExec(() -> {
+            UIUtils.packColumns(editorSelector, true);
+        });
         final Object curValue = valueController.getValue();
 
         reloadSelectorValues(curValue instanceof Number ? curValue : null);
@@ -241,6 +262,9 @@ public class ReferenceValueEditor {
     }
 
     private void reloadSelectorValues(Object pattern) {
+        if (CommonUtils.equalObjects(lastPattern, pattern)) {
+            return;
+        }
         lastPattern = pattern;
         SelectorLoaderService loadingService = new SelectorLoaderService();
         if (pattern != null) {

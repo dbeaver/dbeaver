@@ -34,6 +34,10 @@ public class CustomTextCellEditor extends TextCellEditor {
         super(parent);
     }
 
+    public CustomTextCellEditor(Composite parent, int style) {
+        super(parent, style);
+    }
+
     @Override
     protected Object doGetValue()
     {

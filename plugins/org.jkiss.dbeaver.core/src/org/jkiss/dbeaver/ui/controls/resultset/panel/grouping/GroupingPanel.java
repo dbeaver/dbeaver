@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
@@ -156,6 +157,8 @@ public class GroupingPanel implements IResultSetPanel {
         contributionManager.add(new DeleteColumnAction(resultsContainer));
         contributionManager.add(new Separator());
         contributionManager.add(new ClearGroupingAction(resultsContainer));
+
+        contributionManager.add(new PresentationSelectAction());
     }
 
     abstract static class GroupingAction extends Action {
@@ -330,4 +333,61 @@ public class GroupingPanel implements IResultSetPanel {
         }
     }
 
+    private class PresentationToggleAction extends Action {
+        private final ResultSetPresentationDescriptor presentationDescriptor;
+
+        public PresentationToggleAction(ResultSetPresentationDescriptor presentationDescriptor) {
+            super(presentationDescriptor.getLabel(), Action.AS_RADIO_BUTTON);
+            this.presentationDescriptor = presentationDescriptor;
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(presentationDescriptor.getIcon()));
+            setToolTipText(presentationDescriptor.getDescription());
+            // Icons turns menu into mess - checkboxes are much better
+            //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
+        }
+
+        @Override
+        public boolean isChecked() {
+            return presentationDescriptor.matches(
+                resultsContainer.getResultSetController().getActivePresentation().getClass());
+        }
+
+        @Override
+        public void run() {
+            ((ResultSetViewer)resultsContainer.getResultSetController()).switchPresentation(presentationDescriptor);
+        }
+    }
+
+    private class PresentationSelectAction extends Action implements IMenuCreator {
+        public PresentationSelectAction() {
+            super("View", AS_DROP_DOWN_MENU);
+            //setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.VI));
+        }
+
+        @Override
+        public IMenuCreator getMenuCreator() {
+            return this;
+        }
+
+        @Override
+        public void dispose() {
+
+        }
+
+        @Override
+        public Menu getMenu(Control parent) {
+            MenuManager menuManager = new MenuManager();
+            List<ResultSetPresentationDescriptor> presentations = ((ResultSetViewer) resultsContainer.getResultSetController()).getAvailablePresentations();
+            if (!CommonUtils.isEmpty(presentations)) {
+                for (ResultSetPresentationDescriptor pd : presentations) {
+                    menuManager.add(new PresentationToggleAction(pd));
+                }
+            }
+            return menuManager.createContextMenu(parent);
+        }
+
+        @Override
+        public Menu getMenu(Menu parent) {
+            return null;
+        }
+    }
 }

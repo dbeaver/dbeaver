@@ -234,7 +234,7 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    protected synchronized void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
         synchronized (objectCache) {
@@ -268,9 +268,11 @@ public abstract class JDBCCompositeCache<
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        String parentName = parentColumnName instanceof Number ?
-                            JDBCUtils.safeGetString(dbResult, ((Number)parentColumnName).intValue()) :
-                            JDBCUtils.safeGetString(dbResult, parentColumnName.toString());
+                        String parentName = forParent != null ?
+                            forParent.getName() :
+                            (parentColumnName instanceof Number ?
+                                JDBCUtils.safeGetString(dbResult, ((Number)parentColumnName).intValue()) :
+                                JDBCUtils.safeGetString(dbResult, parentColumnName.toString()));
                         String objectName = objectColumnName instanceof Number ?
                             JDBCUtils.safeGetString(dbResult, ((Number)objectColumnName).intValue()) :
                             JDBCUtils.safeGetString(dbResult, objectColumnName.toString());

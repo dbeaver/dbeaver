@@ -250,9 +250,14 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
                 log.debug(e);
             }
         }
+        addExtraDDLCommands(monitor, table, options, command);
         Collections.addAll(actions, command.getPersistActions(monitor, options));
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
+    }
+
+    protected void addExtraDDLCommands(DBRProgressMonitor monitor, OBJECT_TYPE table, Map<String, Object> options, StructCreateCommand createCommand) {
+
     }
 
     protected boolean isIncludeIndexInDDL(DBSTableIndex index) {

@@ -17,12 +17,13 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPObjectWithLongId;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * PostgreObject
  */
-public interface PostgreObject extends DBSObject {
+public interface PostgreObject extends DBSObject, DBPObjectWithLongId {
 
     @Override
     @NotNull
@@ -30,10 +31,5 @@ public interface PostgreObject extends DBSObject {
 
     @NotNull
     PostgreDatabase getDatabase();
-
-    /**
-     * OID
-     */
-    long getObjectId();
 
 }

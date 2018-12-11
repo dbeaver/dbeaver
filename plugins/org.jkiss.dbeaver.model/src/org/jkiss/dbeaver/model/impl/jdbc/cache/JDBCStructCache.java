@@ -103,18 +103,19 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                             if (monitor.isCanceled()) {
                                 break;
                             }
-                            String objectName;
-                            if (objectNameColumn instanceof Number) {
-                                objectName = JDBCUtils.safeGetString(dbResult, ((Number) objectNameColumn).intValue());
-                            } else {
-                                objectName = JDBCUtils.safeGetStringTrimmed(dbResult, objectNameColumn.toString());
-                            }
-                            if (objectName == null) {
-                                log.debug("NULL object name in " + this);
-                                continue;
-                            }
                             OBJECT object = forObject;
                             if (object == null) {
+                                String objectName;
+                                if (objectNameColumn instanceof Number) {
+                                    objectName = JDBCUtils.safeGetString(dbResult, ((Number) objectNameColumn).intValue());
+                                } else {
+                                    objectName = JDBCUtils.safeGetStringTrimmed(dbResult, objectNameColumn.toString());
+                                }
+                                if (objectName == null) {
+                                    log.debug("NULL object name in " + this);
+                                    continue;
+                                }
+
                                 object = super.getCachedObject(objectName);
                                 if (object == null) {
                                     log.debug("Object '" + objectName + "' not found in struct cache (" + getClass().getSimpleName() + ")");

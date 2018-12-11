@@ -43,40 +43,52 @@ public final class ExasolTableForeignKeyCache
     private static final String SQL_FK_TAB =
         "select\r\n" +
             "		CONSTRAINT_NAME,CONSTRAINT_TABLE,CONSTRAINT_SCHEMA,constraint_owner,c.constraint_enabled,constraint_Type," +
-            "cc.column_name,cc.ordinal_position,cc.referenced_schema,cc.referenced_table,cc.referenced_column," +
-            "PK.CONSTRAINT_NAME AS REF_PK_NAME\r\n" +
+            "cc.column_name,cc.ordinal_position,cc.referenced_schema,cc.referenced_table,cc.referenced_column" +
             "	from\r\n" +
-            "			EXA_ALL_CONSTRAINTS c\r\n" +
+            "		(SELECT * FROM 	EXA_ALL_CONSTRAINTS " +
+            "			where\r\n" +
+            "				CONSTRAINT_SCHEMA = '%s' and\r\n" +
+            "				CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_TABLE = '%s' \r\n" +
+            "        ORDER BY 1,2,3 \r\n" +
+            "        )c\r\n" +
             "		inner join\r\n" +
-            "			EXA_ALL_CONSTRAINT_COLUMNS cc\r\n" +
+            "		(SELECT * FROM EXA_ALL_CONSTRAINT_COLUMNS " +
+            "			where\r\n" +
+            "				CONSTRAINT_SCHEMA = '%s' and\r\n" +
+            "				CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_TABLE = '%s' \r\n" +
+            "        ORDER BY 1,2,3 \r\n" +
+            " 		) cc\r\n" +
             "	using\r\n" +
             "			(\r\n" +
             "				CONSTRAINT_SCHEMA, CONSTRAINT_TABLE, CONSTRAINT_NAME, CONSTRAINT_OWNER, CONSTRAINT_TYPE\r\n" +
             "			)\r\n" +
-            "		inner join \r\n" +
-            "			EXA_ALL_CONSTRAINTS pk\r\n" +
-            "    on REFERENCED_SCHEMA = PK.CONSTRAINT_SCHEMA AND REFERENCED_TABLE = PK.CONSTRAINT_TABLE AND PK.CONSTRAINT_TYPE = 'PRIMARY KEY'\r\n" +
             "	where\r\n" +
             "		CONSTRAINT_SCHEMA = '%s' and\r\n" +
-            "		CONSTRAINT_TYPE = 'FOREIGN KEY'AND CONSTRAINT_TABLE = '%s' \r\n" +
+            "		CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_TABLE = '%s' \r\n" +
             "	order by\r\n" +
             "		ORDINAL_POSITION";
     private static final String SQL_FK_ALL =
         "select\r\n" +
             "		CONSTRAINT_NAME,CONSTRAINT_TABLE,CONSTRAINT_SCHEMA,constraint_owner,c.constraint_enabled,constraint_Type," +
-            "cc.column_name,cc.ordinal_position,cc.referenced_schema,cc.referenced_table,cc.referenced_column," +
-            "PK.CONSTRAINT_NAME AS REF_PK_NAME\r\n" +
+            "cc.column_name,cc.ordinal_position,cc.referenced_schema,cc.referenced_table,cc.referenced_column" +
             "	from\r\n" +
-            "			EXA_ALL_CONSTRAINTS c\r\n" +
+            "		(SELECT * FROM 	EXA_ALL_CONSTRAINTS " +
+            "			where\r\n" +
+            "				CONSTRAINT_SCHEMA = '%s' and\r\n" +
+            "				CONSTRAINT_TYPE = 'FOREIGN KEY'\r\n" +
+            "        ORDER BY 1,2,3 \r\n" +
+            "        )c\r\n" +
             "		inner join\r\n" +
-            "			EXA_ALL_CONSTRAINT_COLUMNS cc\r\n" +
+            "		(SELECT * FROM EXA_ALL_CONSTRAINT_COLUMNS " +
+            "			where\r\n" +
+            "				CONSTRAINT_SCHEMA = '%s' and\r\n" +
+            "				CONSTRAINT_TYPE = 'FOREIGN KEY'  \r\n" +
+            "        ORDER BY 1,2,3 c\r\n" +
+            " 		) cc\r\n" +
             "	using\r\n" +
             "			(\r\n" +
             "				CONSTRAINT_SCHEMA, CONSTRAINT_TABLE, CONSTRAINT_NAME, CONSTRAINT_OWNER, CONSTRAINT_TYPE\r\n" +
             "			)\r\n" +
-            "		inner join \r\n" +
-            "			EXA_ALL_CONSTRAINTS pk\r\n" +
-            "    on REFERENCED_SCHEMA = PK.CONSTRAINT_SCHEMA AND REFERENCED_TABLE = PK.CONSTRAINT_TABLE AND PK.CONSTRAINT_TYPE = 'PRIMARY KEY'\r\n" +
             "	where\r\n" +
             "		CONSTRAINT_SCHEMA = '%s' and\r\n" +
             "		CONSTRAINT_TYPE = 'FOREIGN KEY' \r\n" +
@@ -94,9 +106,9 @@ public final class ExasolTableForeignKeyCache
         throws SQLException {
         String sql;
         if (forTable != null) {
-            sql = String.format(SQL_FK_TAB,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(forTable.getName()));
+            sql = String.format(SQL_FK_TAB,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(forTable.getName()),ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(forTable.getName()),ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(forTable.getName()));
         } else {
-            sql = String.format(SQL_FK_ALL,ExasolUtils.quoteString(exasolSchema.getName()));
+            sql = String.format(SQL_FK_ALL,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolSchema.getName()));
         }
         JDBCStatement dbStat = session.createStatement();
         

@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * DBSAttributeEnumerable
@@ -37,7 +37,7 @@ public interface DBSAttributeEnumerable extends DBSEntityAttribute
      * @return statement with result set which contains valid enumeration values.
      **/
     @NotNull
-    Collection<DBDLabelValuePair> getValueEnumeration(
+    List<DBDLabelValuePair> getValueEnumeration(
         @NotNull DBCSession session,
         @Nullable Object valuePattern,
         int maxResults)

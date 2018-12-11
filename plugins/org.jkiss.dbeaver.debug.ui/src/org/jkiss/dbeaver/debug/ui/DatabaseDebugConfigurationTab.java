@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -205,7 +204,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
         this.currentConfiguration = configuration;
         try {
             String dsId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String) null);
-            DataSourceDescriptor dataSource = DataSourceRegistry.findDataSource(dsId);
+            DBPDataSourceContainer dataSource = DataSourceRegistry.findDataSource(dsId);
             connectionCombo.select(dataSource);
             if (dataSource != null) {
                 driverText.setText(dataSource.getDriver().getFullName());

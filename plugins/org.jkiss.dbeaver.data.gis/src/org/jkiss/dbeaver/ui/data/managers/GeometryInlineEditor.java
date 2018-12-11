@@ -19,11 +19,14 @@ package org.jkiss.dbeaver.ui.data.managers;
 import com.vividsolutions.jts.geom.Geometry;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.gis.GisAttribute;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 
 /**
- * GeometryInlineEditor.
+ * GisAttribute.
  * Edits value as string. Also manager SRID.
 */
 public class GeometryInlineEditor extends StringInlineEditor {
@@ -40,13 +43,21 @@ public class GeometryInlineEditor extends StringInlineEditor {
         if (value instanceof Geometry) {
             this.valueSRID = ((Geometry) value).getSRID();
         }
+        if (valueSRID == 0) {
+            DBSTypedObject column = valueController.getValueType();
+            if (column instanceof GisAttribute) {
+                valueSRID = ((GisAttribute) column).getAttributeSRID(new VoidProgressMonitor());
+            }
+        }
     }
 
     @Override
     public Object extractEditorValue() throws DBCException {
         Object geometry = super.extractEditorValue();
-        if (geometry instanceof Geometry && valueSRID != 0) {
-            ((Geometry) geometry).setSRID(valueSRID);
+        if (geometry instanceof Geometry) {
+            if (valueSRID != 0) {
+                ((Geometry) geometry).setSRID(valueSRID);
+            }
         }
         return geometry;
     }

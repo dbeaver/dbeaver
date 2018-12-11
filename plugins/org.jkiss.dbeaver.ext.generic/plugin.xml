@@ -144,11 +144,13 @@
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
                     <property id="query-set-active-db" label="Set active database" description="Query to change active database" type="string" required="false" defaultValue=""/>
+                    <property id="query-shutdown" label="Shutdown database" description="Query to shutdown active database connection. Used for some embedded databases" type="string" required="false" defaultValue=""/>
                     <property id="ping-sql" label="PING query" description="Query to check connection state" type="string" required="false" defaultValue=""/>
                     <property id="dual-table" label="Dual table name" description="Name of dummy 'DUAL' table which is used for expressions evaluation" type="string" required="false" defaultValue=""/>
                     <property id="active-entity-type" label="Active object type" description="Type of selectable object (schema, catalog)" type="string" required="false" defaultValue="" validValues="catalog,schema"/>
                     <property id="supports-scroll" label="Driver supports results scrolling" description="Driver supports resultset scrolling" type="boolean" required="false" defaultValue="false"/>
                     <property id="quote-reserved-words" label="Quote reserved words" description="Quote columns/table names if they conflicts with reserved SQL keywords" type="boolean" required="false" defaultValue="true"/>
+                    <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) driverss" type="boolean" required="false" defaultValue="true"/>
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
@@ -174,7 +176,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard JDBC driver. Replaced by PostgreSQL extension driver.">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.1.4.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
 
@@ -188,14 +190,14 @@
                 </driver>
                 <driver
                     id="postgresql_generic"
-                    label="PostgreSQL (Legacy)"
+                    label="PostgreSQL (Old)"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions or some PostgreSQL based databases (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.1.4.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
 
@@ -279,6 +281,9 @@
                                 instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
                         <file name="db2jcc4.jar" description="JDBC driver"/>
                     </fileSource>
+                    <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
+                    <file type="jar" path="drivers/db2/db2jcc4.jar" bundle="drivers.db2"/>
+
                 </driver>
                 <driver
                     id="db2_zos"
@@ -288,25 +293,7 @@
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     defaultPort="50000"
                     description="DB2 z/OS driver"
-                    note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library.">
-
-                    <property name="loginTimeout" value="20"/>
-                    <property name="connectionTimeout" value="20"/>
-                    <property name="fullyMaterializeLobData" value="true"/>
-                    <property name="fullyMaterializeInputStreams" value="true"/>
-                    <property name="progressiveStreaming" value="2"/>
-                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
-
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
-                    <parameter name="meta-model" value="indexed"/>
-                    <parameter name="omit-type-cache" value="true"/>
-
-<!--
-                    <fileSource url="http://www-01.ibm.com/support/docview.wss?uid=swg21363866" name="DB2 JDBC drivers" instruction="Download JDBC (JCC) client driver. Also suply license jar file">
-                        <file name="db2jcc4.jar" description="JDBC driver"/>
-                    </fileSource>
--->
+                    note="Deprecated.">
                 </driver>
 
                 <driver
@@ -442,6 +429,7 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="query-shutdown" value="shutdown"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
@@ -748,6 +736,7 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
+                    <parameter name="use-search-string-escape" value="false"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
 
@@ -1118,6 +1107,21 @@
                         defaultPort="6718"
                         description="OpenEdge Progress JDBC driver"
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#">
+                </driver>
+
+                <!-- MonetDB -->
+                <driver
+                        id="monetdb"
+                        label="MonetDB"
+                        icon="icons/monetdb.png"
+                        class="nl.cwi.monetdb.jdbc.MonetDriver"
+                        sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
+                        defaultPort="50000"
+                        description="MonetDB JDBC driver"
+                        webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC">
+                    <file type="jar" path="maven:/monetdb:monetdb-jdbc-new:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
 
             </drivers>

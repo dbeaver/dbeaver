@@ -75,4 +75,5 @@ public interface PostgreServerExtension
 
     PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult);
 
+    void configureDialect(PostgreDialect dialect);
 }

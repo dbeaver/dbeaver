@@ -91,6 +91,12 @@ public @interface Property
     boolean optional() default false;
 
     /**
+     * It is possible that value of this property will be an object which can be linked.
+     * Used for caheable properties which may return java.lang.Object ot DBSObject.
+     */
+    boolean linkPossible() default false;
+
+    /**
      * Makes sense only for lazy properties. If set to true then this property value can be read
      * in non-lazy way with null progress monitor. In this case it will return "preview" value.
      * @return preview support flag

@@ -19,8 +19,12 @@ package org.jkiss.dbeaver.model.impl.sql;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryType;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+
+import java.util.regex.Pattern;
 
 /**
 * Query transformer for LIMIT
@@ -30,6 +34,8 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     //private static final Pattern SELECT_PATTERN = Pattern.compile("\\s*(?:select|update|delete|insert).+", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     public static final String KEYWORD_LIMIT = "LIMIT";
     public static final String KEYWORD_OFFSET = "OFFSET";
+
+    public static final Pattern NON_LIMIT_QUERY_PATTERN = Pattern.compile("\\s+(LIMIT|INTO|UPDATE|PROCEDURE|FETCH)\\s+");
 
     private boolean supportsExtendedLimit;
     private boolean supportsOffsetKeyword;
@@ -60,18 +66,14 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     public String transformQueryString(SQLQuery query) throws DBCException {
         String newQuery;
         String testQuery = query.getText().toUpperCase().trim();
+        SQLDialect dialect = SQLUtils.getDialectFromDataSource(query.getDataSource());
         boolean plainSelect = query.isPlainSelect();
         if (!plainSelect && query.getType() == SQLQueryType.UNKNOWN) {
             // Not parsed. Try to check with simple matcher
-            plainSelect = testQuery.startsWith("SELECT");
+            plainSelect = "SELECT".equals(SQLUtils.getFirstKeyword(dialect, testQuery));
         }
         if (plainSelect) {
-            plainSelect =
-                !testQuery.contains("LIMIT") &&
-                !testQuery.contains("INTO") &&
-                !testQuery.contains("UPDATE") &&
-                !testQuery.contains("PROCEDURE") &&
-                !testQuery.contains("FETCH");
+            plainSelect = !NON_LIMIT_QUERY_PATTERN.matcher(testQuery).matches();
         }
         if (!plainSelect) {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement

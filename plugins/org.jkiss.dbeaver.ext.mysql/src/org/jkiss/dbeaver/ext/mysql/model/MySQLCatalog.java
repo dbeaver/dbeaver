@@ -687,7 +687,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return session.getMetaData().getProcedureColumns(
                 owner.getName(),
                 null,
-                procedure == null ? null : procedure.getName(),
+                procedure == null ? null : JDBCUtils.escapeWildCards(session, procedure.getName()),
                 "%").getSourceStatement();
         }
 

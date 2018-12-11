@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -35,7 +36,7 @@ import java.util.Map;
 /**
  * PostgreViewManager
  */
-public class PostgreViewManager extends PostgreTableManagerBase {
+public class PostgreViewManager extends PostgreTableManagerBase implements DBEObjectRenamer<PostgreTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
         PostgreTableColumn.class,
@@ -119,6 +120,23 @@ public class PostgreViewManager extends PostgreTableManagerBase {
 
     public void appendViewDeclarationPostfix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) {
 
+    }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, PostgreTableBase object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    {
+        PostgreTableBase view = command.getObject();
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Rename view",
+                "ALTER VIEW " + DBUtils.getQuotedIdentifier(view.getSchema()) + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) + //$NON-NLS-1$
+                    " RENAME TO " + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())) //$NON-NLS-1$
+        );
     }
 
 }

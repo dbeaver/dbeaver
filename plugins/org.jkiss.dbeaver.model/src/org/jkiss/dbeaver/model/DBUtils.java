@@ -44,7 +44,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.ToIntFunction;
 
 /**
  * DBUtils
@@ -1005,12 +1004,17 @@ public final class DBUtils {
         }
 
         String queryText;
-        if (hasLimits && limitTransformer != null) {
-            limitTransformer.setParameters(offset, maxRows);
-            queryText = limitTransformer.transformQueryString(sqlQuery);
-        } else if (fetchAllTransformer != null) {
-            queryText = fetchAllTransformer.transformQueryString(sqlQuery);
-        } else {
+        try {
+            if (hasLimits && limitTransformer != null) {
+                limitTransformer.setParameters(offset, maxRows);
+                queryText = limitTransformer.transformQueryString(sqlQuery);
+            } else if (fetchAllTransformer != null) {
+                queryText = fetchAllTransformer.transformQueryString(sqlQuery);
+            } else {
+                queryText = sqlQuery.getText();
+            }
+        } catch (Exception e) {
+            log.debug("Error transforming SQL query", e);
             queryText = sqlQuery.getText();
         }
 
@@ -1337,19 +1341,19 @@ public final class DBUtils {
         }
     }
 
-    public static boolean isIndexedAttribute(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
+    public static DBSTableIndex findAttributeIndex(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
         DBSEntity entity = attribute.getParentObject();
         if (entity instanceof DBSTable) {
             Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexes)) {
                 for (DBSTableIndex index : indexes) {
                     if (getConstraintAttribute(monitor, index, attribute) != null) {
-                        return true;
+                        return index;
                     }
                 }
             }
         }
-        return false;
+        return null;
     }
 
     @Nullable
@@ -1521,7 +1525,7 @@ public final class DBUtils {
         return Comparator.comparing(DBPNamedObject::getName);
     }
 
-    public static <TYPE extends DBPNamedObject> Comparator<DBPNamedObject> nameComparatorIgnoreCase() {
+    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparatorIgnoreCase() {
         return (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName());
     }
 
@@ -1652,28 +1656,6 @@ public final class DBUtils {
         }
         DBSInstance instance = getObjectOwnerInstance(object);
         return instance == null ? null : instance.getDefaultContext(meta);
-    }
-
-    public enum UNIQ_TYPE {
-        SINGLE, MULTI
-    }
-
-    public static UNIQ_TYPE checkUnique(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
-        for (DBSEntityConstraint constraint : CommonUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
-            DBSEntityConstraintType constraintType = constraint.getConstraintType();
-            if (constraintType.isUnique()) {
-                DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
-                if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
-                    List<? extends DBSEntityAttributeRef> refColumns = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
-                    if (refColumns.size() > 1) {
-                        return UNIQ_TYPE.MULTI;
-                    } else {
-                        return UNIQ_TYPE.SINGLE;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     public static DBSEntityConstraint getConstraint(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {

@@ -326,8 +326,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 targetObject = containerMapping.getTarget();
 
                 try (DBCSession session = DBUtils.openMetaSession(monitor, dbObject, "Create target metadata")) {
-
-                    for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
+                    {
                         switch (containerMapping.getMappingType()) {
                             case create:
                                 createTargetTable(session, containerMapping);
@@ -351,7 +350,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     settings.getContainerNode().refreshNode(monitor, this);
 
                     // Reflect database changes in mappings
-                    for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
+                    {
                         switch (containerMapping.getMappingType()) {
                             case create:
                                 DBSObject newTarget = container.getChild(monitor, containerMapping.getTargetName());

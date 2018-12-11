@@ -143,6 +143,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.optional();
     }
 
+    public boolean isLinkPossible() {
+        return propInfo.linkPossible();
+    }
+
     public boolean supportsPreview()
     {
         return propInfo.supportsPreview();

@@ -192,7 +192,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public synchronized Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         // Read indexes using cache
@@ -202,7 +202,7 @@ public class MySQLTable extends MySQLTableBase
     @Nullable
     @Override
     @Association
-    public synchronized Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().constraintCache.getObjects(monitor, getContainer(), this);

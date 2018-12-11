@@ -362,6 +362,11 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         return DefaultSecureStorage.INSTANCE;
     }
 
+    @Override
+    public String getInfoDetails() {
+        return null;
+    }
+
     private int showMessageBox(String title, String message, int style) {
         // Can't lock specified path
         Shell shell = new Shell(getDisplay(), SWT.ON_TOP);

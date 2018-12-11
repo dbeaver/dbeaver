@@ -109,6 +109,11 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         }
     }
 
+    @Override
+    protected boolean isHidePropertyValue(DBPPropertyDescriptor property) {
+        return CommonUtils.toString(property.getId()).toLowerCase(Locale.ENGLISH).contains("password");
+    }
+
     private void createNewProperty(Object node, String category) {
         // Ask user for new property name
         String propName = EnterNameDialog.chooseName(getControl().getShell(), CoreMessages.controls_connection_properties_dialog_new_property_title);
@@ -127,7 +132,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         if (includeCustom && customProperties != null) {
             propertyDescriptors.addAll(customProperties);
         }
-        Collections.sort(propertyDescriptors, PROPERTIES_COMPARATOR);
+        propertyDescriptors.sort(PROPERTIES_COMPARATOR);
         return propertyDescriptors;
     }
 
@@ -171,7 +176,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
                     true));
             }
         }
-        Collections.sort(customProperties, PROPERTIES_COMPARATOR);
+        customProperties.sort(PROPERTIES_COMPARATOR);
     }
 
     private static Comparator<DBPPropertyDescriptor> PROPERTIES_COMPARATOR = new Comparator<DBPPropertyDescriptor>() {

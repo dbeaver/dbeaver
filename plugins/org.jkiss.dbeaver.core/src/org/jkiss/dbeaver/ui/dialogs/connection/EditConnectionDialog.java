@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Button;
@@ -37,6 +36,8 @@ public class EditConnectionDialog extends MultiPageWizardDialog
 {
 
     public static final int TEST_BUTTON_ID = 2000;
+    private static String lastActivePage;
+
     private Button testButton;
 
     public EditConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
@@ -63,9 +64,8 @@ public class EditConnectionDialog extends MultiPageWizardDialog
         getShell().setText(NLS.bind( CoreMessages.dialog_connection_edit_title, activeDataSource.getName()));
         getShell().setImage(DBeaverIcons.getImage(activeDataSource.getObjectImage()));
 
-        String activePage = getDialogBoundsSettings().get("activePage");
-        if (!CommonUtils.isEmpty(activePage)) {
-            getWizard().openSettingsPage(activePage);
+        if (!CommonUtils.isEmpty(lastActivePage)) {
+            getWizard().openSettingsPage(lastActivePage);
         }
 
         return contents;
@@ -93,10 +93,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     @Override
     public boolean close() {
         if (getCurrentPage() != null) {
-            String currentPageName = getCurrentPage().getName();
-            if (!CommonUtils.isEmptyTrimmed(currentPageName)) {
-                getDialogBoundsSettings().put("activePage", currentPageName);
-            }
+            lastActivePage = getCurrentPage().getName();
         }
         return super.close();
     }

@@ -156,8 +156,8 @@ public class TransactionMonitorToolbar {
 
             Color colorReverted = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
             Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_UNCOMMITTED);
-            final RGB COLOR_FULL = colorReverted.getRGB();
-            final RGB COLOR_EMPTY = colorCommitted.getRGB();
+            final RGB COLOR_FULL = colorReverted == null ? getDisplay().getSystemColor(SWT.COLOR_DARK_YELLOW).getRGB() : colorReverted.getRGB();
+            final RGB COLOR_EMPTY = colorCommitted == null ? getDisplay().getSystemColor(SWT.COLOR_GREEN).getRGB() : colorCommitted.getRGB();
 
             final int updateCount = txnState == null ? 0 : txnState.getUpdateCount();
 
