@@ -51,7 +51,7 @@ public class DB2ZOSMetaModel extends GenericMetaModel
 
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        if (sourceObject.getSchema().getName().equals("system")) {
+        if (!sourceObject.isView()) {
             return super.getTableDDL(monitor, sourceObject, options);
         }
         GenericDataSource dataSource = sourceObject.getDataSource();
