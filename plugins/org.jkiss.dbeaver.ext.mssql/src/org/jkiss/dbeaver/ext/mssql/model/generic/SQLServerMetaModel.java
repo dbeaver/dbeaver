@@ -89,6 +89,43 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
+    public void loadProcedures(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
+        if (!isSqlServer()) {
+            // #4378
+            GenericDataSource dataSource = container.getDataSource();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Synase procedure list")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "select distinct so.name as proc_name,su.name as schema_name,so.loginame as login_name,sc.text as definition\n" +
+                        "from syscomments sc, sysobjects so, sysusers su\n" +
+                        "where so.id = sc.id \n" +
+                        "and so.type = 'P'\n" +
+                        "and su.uid = so.uid\n" +
+                        "and su.name=?"))
+                {
+                    dbStat.setString(1, container.getName());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.nextRow()) {
+                            final GenericProcedure procedure = createProcedureImpl(
+                                container,
+                                JDBCUtils.safeGetString(dbResult, "proc_name"),
+                                null,
+                                null,
+                                DBSProcedureType.PROCEDURE,
+                                null);
+                            procedure.setSource(JDBCUtils.safeGetString(dbResult, "definition"));
+                            container.addProcedure(procedure);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, dataSource);
+            }
+        } else {
+            super.loadProcedures(monitor, container);
+        }
+    }
+
+    @Override
     public SQLServerGenericProcedure createProcedureImpl(GenericStructContainer container, String procedureName, String specificName, String remarks, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
         return new SQLServerGenericProcedure(container, procedureName, specificName, remarks, procedureType, functionResultType);
     }

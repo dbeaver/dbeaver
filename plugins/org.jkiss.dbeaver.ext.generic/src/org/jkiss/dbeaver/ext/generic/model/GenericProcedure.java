@@ -262,6 +262,14 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return CommonUtils.isEmpty(specificName) ? getName() : specificName;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (source == null) {
