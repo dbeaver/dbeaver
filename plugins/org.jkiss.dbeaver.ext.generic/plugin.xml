@@ -1131,6 +1131,21 @@
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#">
                 </driver>
 
+                <!-- MonetDB -->
+                <driver
+                        id="monetdb"
+                        label="MonetDB"
+                        icon="icons/monetdb.png"
+                        class="nl.cwi.monetdb.jdbc.MonetDriver"
+                        sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
+                        defaultPort="50000"
+                        description="MonetDB JDBC driver"
+                        webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC">
+                    <file type="jar" path="maven:/monetdb:monetdb-jdbc-new:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="false"/>
+                </driver>
+
             </drivers>
 
         </datasource>
