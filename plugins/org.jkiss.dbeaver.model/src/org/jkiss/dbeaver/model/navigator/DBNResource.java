@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -269,7 +269,11 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
                 }
             }
             if (!newName.equals(resource.getName())) {
-                resource.move(resource.getParent().getFullPath().append(newName), true, monitor.getNestedMonitor());
+                if (resource.isLinked()) {
+                    resource.move(resource.getFullPath().removeLastSegments(1).append(newName), IResource.SHALLOW, monitor.getNestedMonitor());
+                } else {
+                    resource.move(resource.getFullPath().removeLastSegments(1).append(newName), true, monitor.getNestedMonitor());
+                }
             }
         } catch (CoreException e) {
             throw new DBException("Can't rename resource", e);
