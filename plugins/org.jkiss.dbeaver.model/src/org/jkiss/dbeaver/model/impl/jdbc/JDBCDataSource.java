@@ -316,7 +316,8 @@ public abstract class JDBCDataSource
 
     @Override
     public List<? extends JDBCRemoteInstance> getAvailableInstances() {
-        return Collections.singletonList(getDefaultInstance());
+        JDBCRemoteInstance defaultInstance = getDefaultInstance();
+        return defaultInstance == null ? Collections.emptyList() : Collections.singletonList(defaultInstance);
     }
 
     @Override
