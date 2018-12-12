@@ -1119,7 +1119,7 @@
                         defaultPort="50000"
                         description="MonetDB JDBC driver"
                         webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC">
-                    <file type="jar" path="maven:/monetdb:monetdb-jdbc-new:RELEASE"/>
+                    <file type="jar" path="maven:/monetdb:monetdb-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="false"/>
                 </driver>
@@ -1329,6 +1329,12 @@
                 <column id="FILTER_CONDITION" index="13"/>
             </object>
         </meta>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="monetdb-maven-repo" name="MonetDB Repository" url="https://clojars.org/repo/" order="20">
+            <scope group="monetdb"/>
+        </repository>
     </extension>
 
 </plugin>

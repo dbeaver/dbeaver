@@ -541,7 +541,6 @@
         <repository id="exasol-maven-repo" name="Exasol Repository" url="https://maven.exasol.com/artifactory/exasol-releases" order="10">
             <scope group="com.exasol"/>
         </repository>
-
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
