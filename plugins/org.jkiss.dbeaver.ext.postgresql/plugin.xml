@@ -364,8 +364,6 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
-        <creator class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreDatabaseCreatePage" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" type="new"/>
-
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
