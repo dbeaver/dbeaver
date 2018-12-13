@@ -194,9 +194,10 @@ public abstract class AbstractJob extends Job
                 try {
                     BlockCanceler.cancelBlock(progressMonitor, block, getActiveThread());
                 } catch (DBException e) {
+                    log.debug("Block cancel error", e);
                     return GeneralUtils.makeExceptionStatus(e);
                 } catch (Throwable e) {
-                    log.debug("Cancel error", e);
+                    log.debug("Block cancel internal error", e);
                     return Status.CANCEL_STATUS;
                 }
                 blockCanceled = true;
