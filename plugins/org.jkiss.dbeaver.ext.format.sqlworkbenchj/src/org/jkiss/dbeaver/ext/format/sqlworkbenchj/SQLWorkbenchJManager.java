@@ -32,6 +32,10 @@ import java.net.URLClassLoader;
 public class SQLWorkbenchJManager {
 
     private static final Log log = Log.getLog(SQLWorkbenchJManager.class);
+    private static final String MYSQL_FORMAT_TYPE = "mysql";
+    private static final String POSTGRESQL_FORMAT_TYPE = "postgresql";
+    private static final String ORACLE_FORMAT_TYPE = "oracle";
+    private static final String DB_2_FORMAT_TYPE = "db2";
 
     private static SQLWorkbenchJManager instance;
     private final File workbenchPath;
@@ -72,17 +76,7 @@ public class SQLWorkbenchJManager {
         try {
             Class<?> wbFormatterClass = wbClassLoader.loadClass("workbench.sql.formatter.WbSqlFormatter");
 
-            String driverClassName = dataSource.getContainer().getDriver().getDriverClassName();
-            String formatType = "mysql";
-            if (driverClassName.contains("mysql")) {
-                formatType = "mysql";
-            } else if (driverClassName.contains("postgresql")) {
-                formatType = "postgresql";
-            } else if (driverClassName.contains("oracle")) {
-                formatType = "oracle";
-            } else if (driverClassName.contains("db2")) {
-                formatType = "db2";
-            }
+            String formatType = getFormatType(dataSource);
             Object wbFormatterInstance = wbFormatterClass.getConstructor(CharSequence.class, String.class).newInstance(source, formatType);
             Object formatResult = wbFormatterClass.getMethod("getFormattedSql").invoke(wbFormatterInstance);
             if (formatResult != null) {
@@ -93,6 +87,25 @@ public class SQLWorkbenchJManager {
         } catch (Exception e) {
             throw new DBException("Error calling SQL Workbench/J formatter", e);
         }
+    }
+
+    private String getFormatType(DBPDataSource dataSource) {
+        String defaultFormatType = MYSQL_FORMAT_TYPE;
+        if (dataSource == null){
+            return defaultFormatType;
+        }
+
+        String driverClassName = dataSource.getContainer().getDriver().getDriverClassName();
+        String formatType = defaultFormatType;
+
+        if (driverClassName.contains(POSTGRESQL_FORMAT_TYPE)) {
+            formatType = POSTGRESQL_FORMAT_TYPE;
+        } else if (driverClassName.contains(ORACLE_FORMAT_TYPE)) {
+            formatType = ORACLE_FORMAT_TYPE;
+        } else if (driverClassName.contains(DB_2_FORMAT_TYPE)) {
+            formatType = DB_2_FORMAT_TYPE;
+        }
+        return formatType;
     }
 
 }
