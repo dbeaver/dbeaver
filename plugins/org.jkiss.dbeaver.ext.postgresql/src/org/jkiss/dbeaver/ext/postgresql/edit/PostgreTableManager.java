@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum.GreenplumTable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,12 +34,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import static java.lang.String.format;
 
 /**
  * Postgre table manager
@@ -149,7 +144,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
             PostgreTableRegular table = (PostgreTableRegular) tableBase;
             try {
                 if (!alter) {
-                    ddl.append(PostgreWithClauseAppender.generateWithClause(table, tableBase));
+                    ddl.append(tableBase.getDataSource().getServerType().createWithClause(table, tableBase));
                 }
                 boolean hasOtherSpecs = false;
                 PostgreTablespace tablespace = table.getTablespace(monitor);

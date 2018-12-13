@@ -1,22 +1,22 @@
-package org.jkiss.dbeaver.ext.postgresql.model;
+package org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum;
 
-import org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum.GreenplumTable;
-import org.junit.Before;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.jkiss.dbeaver.ext.postgresql.model.PostgreWithClauseAppender.generateWithClause;
+import static org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum.GreenplumWithClauseBuilder.generateWithClause;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PostgreWithClauseAppenderTest {
+public class GreenplumWithClauseBuilderTest {
 
     @Mock
-    private PostgreTableRegular table;
+    private GreenplumTable table;
 
     @Mock
     private PostgreTableBase tableBase;
@@ -27,25 +27,25 @@ public class PostgreWithClauseAppenderTest {
     @Mock
     private PostgreServerExtension serverExtension;
 
+//    @Test
+//    public void generateWithClause_whenOidsAreSupportedAndNoRelOptions_shouldDisplayWithClauseWithOidsAsTrue() {
+//        setupGeneralWhenMocks(true, true);
+//
+//        String withClause = generateWithClause(table, tableBase);
+//        assertEquals("\nWITH (\n\tOIDS=TRUE\n)", withClause);
+//    }
+//
+//    @Test
+//    public void generateWithClause_whenTableSupportsOidsButDoesNotHaveOidsAndNoOptions_shouldNotDisplayWithClause() {
+//        setupGeneralWhenMocks(true, false);
+//
+//        String withClause = generateWithClause(table, tableBase);
+//        assertEquals("", withClause);
+//    }
+
     @Test
-    public void generateWithClause_whenOidsAreSupportedAndNoRelOptions_shouldDisplayWithClauseWithOidsAsTrue() {
-        setupGeneralWhenMocks(true, true);
-
-        String withClause = generateWithClause(table, tableBase);
-        assertEquals("\nWITH (\n\tOIDS=TRUE\n)", withClause);
-    }
-
-    @Test
-    public void generateWithClause_whenTableSupportsOidsButDoesNotHaveOidsAndNoOptions_shouldNotDisplayWithClause() {
-        setupGeneralWhenMocks(true, false);
-
-        String withClause = generateWithClause(table, tableBase);
-        assertEquals("", withClause);
-    }
-
-    @Test
-    public void generateWithClause_whenTableIsAGreenPlumTableWithOptions_shouldDisplayWithClauseWithRelOptions() {
-        table = mock(GreenplumTable.class);
+    public void generateWithClause_whenTableWithoutOidsAndWithOptions_shouldDisplayWithClauseWithRelOptions() {
+//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(false, false);
 
@@ -56,8 +56,8 @@ public class PostgreWithClauseAppenderTest {
     }
 
     @Test
-    public void generateWithClause_whenTableIsGreenPlumTableWithOidsAndOptions_shouldDisplayWithClauseWithOidsAndOptions() {
-        table = mock(GreenplumTable.class);
+    public void generateWithClause_whenTableWithOidsAndOptions_shouldDisplayWithClauseWithOidsAndOptions() {
+//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(true, true);
 
@@ -68,8 +68,8 @@ public class PostgreWithClauseAppenderTest {
     }
 
     @Test
-    public void generateWithClause_whenTableIsGreenPlumTableWithoutOidsAndWithoutOptions_shouldNotDisplayWithClause() {
-        table = mock(GreenplumTable.class);
+    public void generateWithClause_whenTableWithoutOidsAndWithoutOptions_shouldNotDisplayWithClause() {
+//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(false, false);
 
@@ -80,8 +80,8 @@ public class PostgreWithClauseAppenderTest {
     }
 
     @Test
-    public void generateWithClause_whenTableIsGreenPlumTableWithOidsWithoutOptions_shouldDisplayWithClauseWithOids() {
-        table = mock(GreenplumTable.class);
+    public void generateWithClause_whenTableWithOidsWithoutOptions_shouldDisplayWithClauseWithOids() {
+//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(true, true);
 
@@ -92,8 +92,8 @@ public class PostgreWithClauseAppenderTest {
     }
 
     @Test
-    public void generateWithClause_whenTableIsGreenPlumTableWithOidsWithMultipleOptions_shouldDisplayWithClauseWithOidsAndAllTheOptions() {
-        table = mock(GreenplumTable.class);
+    public void generateWithClause_whenTableWithOidsWithMultipleOptions_shouldDisplayWithClauseWithOidsAndAllTheOptions() {
+//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(true, true);
 

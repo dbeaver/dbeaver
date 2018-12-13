@@ -1,10 +1,12 @@
-package org.jkiss.dbeaver.ext.postgresql.model;
+package org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum;
 
-import org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum.GreenplumTable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 
 import static java.lang.String.format;
 
-public class PostgreWithClauseAppender {
+public class GreenplumWithClauseBuilder {
+
     public static String generateWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
