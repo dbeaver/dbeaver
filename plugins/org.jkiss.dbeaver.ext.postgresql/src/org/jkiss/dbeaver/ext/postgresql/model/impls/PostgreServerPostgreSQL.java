@@ -17,6 +17,10 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+
+import static org.jkiss.dbeaver.ext.postgresql.model.PostgreWithClauseBuilder.generateWithClause;
 
 /**
  * PostgreServerPostgreSQL
@@ -30,6 +34,11 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     @Override
     public String getServerTypeName() {
         return "PostgreSQL";
+    }
+
+    @Override
+    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
+        return generateWithClause(table);
     }
 
 }

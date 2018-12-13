@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import static org.jkiss.dbeaver.ext.postgresql.model.PostgreWithClauseBuilder.generateWithClause;
 
 /**
  * PostgreServerYellowBrick
@@ -48,6 +51,11 @@ public class PostgreServerYellowBrick extends PostgreServerExtensionBase {
             return ddl.toString();
         }
         return null;
+    }
+
+    @Override
+    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
+        return generateWithClause(table);
     }
 
 }

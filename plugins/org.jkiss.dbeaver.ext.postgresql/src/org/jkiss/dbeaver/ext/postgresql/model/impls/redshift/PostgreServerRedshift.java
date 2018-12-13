@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -34,6 +31,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.jkiss.dbeaver.ext.postgresql.model.PostgreWithClauseBuilder.generateWithClause;
 
 /**
  * PostgreServerRedshift
@@ -158,6 +157,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     @Override
     public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
         return new RedshiftSchemaCache();
+    }
+
+    @Override
+    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
+        return generateWithClause(table);
     }
 
     private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
