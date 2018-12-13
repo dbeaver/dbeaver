@@ -480,6 +480,25 @@
 
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <!--
+                <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMoneyValueManager">
+                    <supports dataSource="postgresql" typeName="money"/>
+                </manager>
+        -->
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
+            <supports dataSource="postgresql" extension="E"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
+            <supports dataSource="postgresql" typeName="BIT"/>
+        </manager>
+        <!--
+                <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreHStoreValueManager">
+                    <supports dataSource="postgresql" typeName="hstore"/>
+                </manager>
+        -->
+    </extension>
+
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.session_manager.name"
@@ -495,23 +514,6 @@
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor">
         </editor>
         
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.dataManager">
-        <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMoneyValueManager">
-            <supports dataSource="postgresql" typeName="money"/>
-        </manager>
-        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
-            <supports dataSource="postgresql" extension="E"/>
-        </manager>
-        <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
-            <supports dataSource="postgresql" typeName="BIT"/>
-        </manager>
-<!--
-        <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreHStoreValueManager">
-            <supports dataSource="postgresql" typeName="hstore"/>
-        </manager>
--->
     </extension>
 
     <extension point="org.jkiss.dbeaver.networkHandler">
