@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -378,7 +378,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private boolean supportsObjectRename() {
-        return EntityEditorsRegistry.getInstance().getObjectManager(
+        return ObjectManagerRegistry.getInstance().getObjectManager(
             curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class) != null;
     }
 
@@ -445,7 +445,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (!isLoading) {
             DBSObject databaseObject = input.getDatabaseObject();
             if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject.isPersisted()) {
-                DBEObjectRenamer renamer = EntityEditorsRegistry.getInstance().getObjectManager(curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
+                DBEObjectRenamer renamer = ObjectManagerRegistry.getInstance().getObjectManager(curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (renamer != null) {
                     try {
                         renamer.renameObject(input.getCommandContext(), databaseObject, CommonUtils.toString(value));

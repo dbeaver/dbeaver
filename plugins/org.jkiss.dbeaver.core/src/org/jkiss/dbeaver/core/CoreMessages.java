@@ -1080,6 +1080,14 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_enable_parameters_in_ddl_tip;
 	public static String pref_page_sql_editor_enable_variables;
 	public static String pref_page_sql_editor_enable_variables_tip;
+	// SQProposalsSearch
+	public static String pref_page_sql_format_group_search;
+	public static String pref_page_sql_completion_label_match_contains;
+	public static String pref_page_sql_completion_label_match_contains_tip;
+	public static String pref_page_sql_completion_label_use_global_search;
+	public static String pref_page_sql_completion_label_use_global_search_tip;
+	public static String pref_page_sql_completion_label_show_column_procedures;
+	public static String pref_page_sql_completion_label_show_column_procedures_tip;
 	// SQLFormat
 	public static String pref_page_sql_format_group_auto_close;
 	public static String pref_page_sql_format_label_single_quotes;
@@ -1125,12 +1133,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_completion_label_use_short_names;
 	public static String pref_page_sql_completion_label_use_long_names;
 	public static String pref_page_sql_completion_label_insert_space;
-	public static String pref_page_sql_completion_label_match_contains;
-	public static String pref_page_sql_completion_label_match_contains_tip;
-	public static String pref_page_sql_completion_label_use_global_search;
-	public static String pref_page_sql_completion_label_use_global_search_tip;
-	public static String pref_page_sql_completion_label_show_column_procedures;
-	public static String pref_page_sql_completion_label_show_column_procedures_tip;
+	public static String pref_page_sql_completion_label_sort_alphabetically;
 	public static String pref_page_sql_completion_label_show_server_help_topics;
 	public static String pref_page_sql_completion_label_show_server_help_topics_tip;
 	public static String pref_page_sql_completion_group_folding;

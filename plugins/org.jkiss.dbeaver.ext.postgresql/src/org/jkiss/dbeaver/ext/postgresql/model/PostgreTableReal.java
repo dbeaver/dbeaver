@@ -75,6 +75,10 @@ public abstract class PostgreTableReal extends PostgreTableBase
         }
     }
 
+    public TriggerCache getTriggerCache() {
+        return triggerCache;
+    }
+
     @Property(category = CAT_STATISTICS, viewable = true, order = 22)
     public long getRowCountEstimate() {
         return rowCountEstimate;
@@ -173,9 +177,10 @@ public abstract class PostgreTableReal extends PostgreTableBase
             throws SQLException
         {
             return session.prepareStatement(
-                "SELECT x.oid,x.*,p.pronamespace as func_schema_id" +
+                "SELECT x.oid,x.*,p.pronamespace as func_schema_id,d.description" +
                 "\nFROM pg_catalog.pg_trigger x" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_proc p ON p.oid=x.tgfoid " +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=x.oid AND d.objsubid=0 " +
                 "\nWHERE x.tgrelid=" + owner.getObjectId() +
                 (getDataSource().isServerVersionAtLeast(9, 0) ? " AND NOT x.tgisinternal" : ""));
         }

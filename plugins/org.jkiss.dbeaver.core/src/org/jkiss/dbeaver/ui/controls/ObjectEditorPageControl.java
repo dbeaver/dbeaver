@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -78,7 +78,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
             return false;
         }
         DBSObject databaseObject = getEditorPart().getEditorInput().getDatabaseObject();
-        return databaseObject != null && EntityEditorsRegistry.getInstance().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
+        return databaseObject != null && ObjectManagerRegistry.getInstance().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
     }
 
     private IEditorPart getMainEditorPart()

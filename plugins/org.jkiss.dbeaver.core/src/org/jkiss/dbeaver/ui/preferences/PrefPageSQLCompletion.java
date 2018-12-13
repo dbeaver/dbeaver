@@ -45,10 +45,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Button csShortName;
     private Button csLongName;
     private Button csInsertSpace;
+    private Button csSortAlphabetically;
+    private Button csShowServerHelpTopics;
+
     private Button csMatchContains;
     private Button csUseGlobalSearch;
     private Button csShowColumnProcedures;
-    private Button csShowServerHelpTopics;
 
     // Auto-close
     private Button acSingleQuotesCheck;
@@ -78,6 +80,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ) ||
             store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS) ||
+            store.contains(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY) ||
+
             store.contains(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS) ||
             store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT) ||
             store.contains(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES) ||
@@ -139,19 +143,24 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csShortName = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_short_names, null, false, 2);
             csLongName = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_long_names, null, false, 2);
             csInsertSpace = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_insert_space, null, false, 2);
-            csMatchContains = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_match_contains, CoreMessages.pref_page_sql_completion_label_match_contains_tip, false, 2);
-            csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_global_search, CoreMessages.pref_page_sql_completion_label_use_global_search_tip, false, 2);
-            csShowColumnProcedures = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_show_column_procedures, CoreMessages.pref_page_sql_completion_label_show_column_procedures_tip, false, 2);
+            csSortAlphabetically = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_sort_alphabetically, null, false, 2);
             csShowServerHelpTopics = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_show_server_help_topics, CoreMessages.pref_page_sql_completion_label_show_server_help_topics_tip, false, 2);
         }
 
-        Composite autoFormatPanel = new Composite(composite, SWT.NONE);
-        autoFormatPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        autoFormatPanel.setLayout(new GridLayout(1, false));
+        Composite rightPanel = new Composite(composite, SWT.NONE);
+        rightPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        rightPanel.setLayout(new GridLayout(1, false));
 
+        {
+            Composite assistGroup = UIUtils.createControlGroup(rightPanel, CoreMessages.pref_page_sql_format_group_search, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            csMatchContains = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_match_contains, CoreMessages.pref_page_sql_completion_label_match_contains_tip, false, 2);
+            csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_global_search, CoreMessages.pref_page_sql_completion_label_use_global_search_tip, false, 2);
+            csShowColumnProcedures = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_show_column_procedures, CoreMessages.pref_page_sql_completion_label_show_column_procedures_tip, false, 2);
+        }
         // Autoclose
         {
-            Composite acGroup = UIUtils.createControlGroup(autoFormatPanel, CoreMessages.pref_page_sql_format_group_auto_close, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite acGroup = UIUtils.createControlGroup(rightPanel, CoreMessages.pref_page_sql_format_group_auto_close, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_single_quotes, false);
             acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_double_quotes, false);
@@ -160,7 +169,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
         {
             // Formatting
-            Composite afGroup = UIUtils.createControlGroup(autoFormatPanel, CoreMessages.pref_page_sql_format_group_auto_format, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite afGroup = UIUtils.createControlGroup(rightPanel, CoreMessages.pref_page_sql_format_group_auto_format, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             afKeywordCase = UIUtils.createCheckbox(
                 afGroup,
                 CoreMessages.pref_page_sql_format_label_convert_keyword_case,
@@ -190,10 +199,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csShortName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME));
             csLongName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ));
             csInsertSpace.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
+            csSortAlphabetically.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY));
+            csShowServerHelpTopics.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
+
             csMatchContains.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS));
             csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
             csShowColumnProcedures.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES));
-            csShowServerHelpTopics.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
 
             acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
             acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
@@ -220,10 +231,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.PROPOSAL_SHORT_NAME, csShortName.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ, csLongName.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, csInsertSpace.getSelection());
+            store.setValue(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY, csSortAlphabetically.getSelection());
+            store.setValue(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS, csShowServerHelpTopics.getSelection());
+
             store.setValue(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS, csMatchContains.getSelection());
             store.setValue(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, csUseGlobalSearch.getSelection());
             store.setValue(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES, csShowColumnProcedures.getSelection());
-            store.setValue(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS, csShowServerHelpTopics.getSelection());
 
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
@@ -251,10 +264,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_SHORT_NAME);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ);
         store.setToDefault(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
+        store.setToDefault(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
+        store.setToDefault(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS);
+
         store.setToDefault(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
         store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
         store.setToDefault(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES);
-        store.setToDefault(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS);
 
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);

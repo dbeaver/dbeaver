@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -81,8 +81,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 //                throw new DBException("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
 //            }
 
-            final EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
-            DBEObjectManager<?> objectManager = editorsRegistry.getObjectManager(childType);
+            final ObjectManagerRegistry objectManagerRegistry = ObjectManagerRegistry.getInstance();
+            DBEObjectManager<?> objectManager = objectManagerRegistry.getObjectManager(childType);
             if (objectManager == null) {
                 throw new DBException("Object manager not found for type '" + childType.getName() + "'");
             }

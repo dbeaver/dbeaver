@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -383,7 +383,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             if (valueObject == null) {
                 return false;
             }
-            DBEObjectEditor objectEditor = EntityEditorsRegistry.getInstance().getObjectManager(curClass, DBEObjectEditor.class);
+            DBEObjectEditor objectEditor = ObjectManagerRegistry.getInstance().getObjectManager(curClass, DBEObjectEditor.class);
             return objectEditor != null && editableValue instanceof DBPObject && objectEditor.canEditObject((DBPObject) editableValue);
         }
 

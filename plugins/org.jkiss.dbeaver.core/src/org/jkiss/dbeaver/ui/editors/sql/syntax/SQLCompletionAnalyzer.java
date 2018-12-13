@@ -587,7 +587,9 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     "All objects"));
             } else if (!matchedObjects.isEmpty()) {
                 if (startPart == null || scoredMatches.isEmpty()) {
-                    matchedObjects.sort(DBUtils.nameComparatorIgnoreCase());
+                    if (dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY)) {
+                        matchedObjects.sort(DBUtils.nameComparatorIgnoreCase());
+                    }
                 } else {
                     matchedObjects.sort((o1, o2) -> {
                         int score1 = scoredMatches.get(o1.getName());
