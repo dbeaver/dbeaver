@@ -12,8 +12,6 @@
   <version>2.1.72-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
   <build>
-    <sourceDirectory>src</sourceDirectory>
-    <testSourceDirectory>tests</testSourceDirectory>
     <plugins>
       <!-- Disable warns because of sun.security.util.* dependencies -->
       <plugin>
