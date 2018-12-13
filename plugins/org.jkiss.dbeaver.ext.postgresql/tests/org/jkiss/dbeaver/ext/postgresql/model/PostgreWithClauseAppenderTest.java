@@ -27,10 +27,6 @@ public class PostgreWithClauseAppenderTest {
     @Mock
     private PostgreServerExtension serverExtension;
 
-    @Before
-    public void setup() {
-    }
-
     @Test
     public void generateWithClause_whenOidsAreSupportedAndNoRelOptions_shouldDisplayWithClauseWithOidsAsTrue() {
         setupGeneralWhenMocks(true, true);
