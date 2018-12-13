@@ -43,6 +43,635 @@ public class PostgreDialect extends JDBCSQLDialect {
         }
     );
 
+    /*
+
+    We can use clean and short list of Postgre specific KeyWords
+    and die trying to get one
+    or we can just make some grouping like this
+    https://docs.google.com/spreadsheets/d/1Bb9b52FjyWV49yOmoDT9C85cwIXoR-xrVVPfLwSIRYk/edit?usp=sharing
+
+    and parse'em later against,
+    the available list of native SQL KW from super class
+    */
+
+    public static final String[] POSTGRE_STARTING_COMMANDS = ArrayUtils.concatArrays(
+        new String[]{
+                "ABORT",
+                "ALTER",
+                "ANALYZE",
+                "BEGIN",
+                "CALL",
+                "CLOSE",
+                "CLUSTER",
+                "COMMENT",
+                "COMMIT",
+                "COPY",
+                "CREATE",
+                "DEALLOCATE",
+                "DECLARE",
+                "DELETE",
+                "DISCARD",
+                "DO",
+                "DROP",
+                "END",
+                "EXECUTE",
+                "EXPLAIN",
+                "FETCH",
+                "GRANT",
+                "IMPORT",
+                "INSERT",
+                "LISTEN",
+                "LOAD",
+                "LOCK",
+                "MOVE",
+                "NOTIFY",
+                "PREPARE",
+                "REFRESH",
+                "REINDEX",
+                "RELEASE",
+                "RESET",
+                "REVOKE",
+                "ROLLBACK",
+                "SAVEPOINT",
+                "SECURITY",
+                "SELECT",
+                "SET",
+                "SHOW",
+                "START",
+                "TRUNCATE",
+                "UPDATE",
+                "VALUES"
+                },
+        new String[]{ //those are some conditional, should check what to do with em
+                "CHECKPOINT",
+                "UNLISTEN",
+                "VACUUM",
+                "REASSIGN"
+                }
+    );
+
+    // lots of duplicates atm, check for KW, DDL, commands and etc
+    public static final String[] POSTGRE_COMMANDS = new String [] {
+            "AGGREGATE",
+            "COLLATION",
+            "DATABASE",
+            "DEFAULT",
+            "PRIVILEGES",
+            "DOMAIN",
+            "TRIGGER",
+            "EXTENSION",
+            "FOREIGN",
+            "TABLE",
+            "FUNCTION",
+            "GROUP",
+            "LANGUAGE",
+            "LARGE",
+            "OBJECT",
+            "MATERIALIZED",
+            "VIEW",
+            "OPERATOR",
+            "CLASS",
+            "FAMILY",
+            "POLICY",
+            "ROLE",
+            "RULE",
+            "SCHEMA",
+            "SEQUENCE",
+            "SERVER",
+            "STATISTICS",
+            "SUBSCRIPTION",
+            "SYSTEM",
+            "TABLESPACE",
+            "CONFIGURATION",
+            "DICTIONARY",
+            "PARSER",
+            "TEMPLATE",
+            "TYPE",
+            "USER",
+            "MAPPING",
+            "PREPARED",
+            "ACCESS",
+            "METHOD",
+            "CAST",
+            "AS",
+            "TRANSFORM",
+            "TRANSACTION",
+            "OWNED",
+            "TO",
+            "INTO",
+            "SESSION",
+            "AUTHORIZATION",
+            "INDEX",
+            "PROCEDURE",
+            "ASSERTION"
+    };
+
+
+    /**
+     * Should exclude duplicates compared to {@link SQLConstants#DEFAULT_TYPES}
+     *
+     * Also exclude base data types from
+     * @see PostgreConstants#DATA_TYPE_ALIASES
+     * */
+    public static final String[] POSTGRE_DATATYPES = new String[] {
+            "BIGINT",
+            "BIGSERIAL",
+            "BIT",
+            "BOOL",
+            "BOOLEAN",
+            "BOX",
+            "BYTEA",
+            "CHAR",
+            "CHARACTER",
+            "CIDR",
+            "CIRCLE",
+            "DATE",
+            "DATERANGE",
+            "DEC",
+            "DECIMAL",
+            "DOUBLE",
+            "FLOAT", "FLOAT4", "FLOAT8",
+            "INET",
+            "INT", "INT2", "INT4", "INT8",
+            "INT4RANGE", "INT8RANGE",
+            "INTEGER",
+            "INTERVAL",
+            "JSON",
+            "JSONB",
+            "LINE",
+            "LSEG",
+            "MACADDR", "MACADDR8",
+            "MONEY",
+            "NATIONAL",
+            "NCHAR",
+            "NUMERIC",
+            "NUMRANGE",
+            "PATH",
+            "POINT",
+            "POLYGON",
+            "PRECISION",
+            "REAL",
+            "SERIAL", "SERIAL2", "SERIAL4", "SERIAL8",
+            "SMALLINT",
+            "SMALLSERIAL",
+            "TEXT",
+            "TIME",
+            "TIMESTAMP",
+            "TIMESTAMPTZ",
+            "TIMETZ",
+            "TSQUERY",
+            "TSRANGE",
+            "TSTZRANGE",
+            "TSVECTOR",
+            "TXID_SNAPSHOT",
+            "UUID",
+            "VARBIT",
+            "VARCHAR",
+            "VARYING",
+            "XML",
+            "ZONE"
+    };
+
+    public static final String[] POSTGRE_EXCEPTIONS = new String[]{/* din't look if there is a common place for this type of tings*/};
+
+    public static String[] POSTGRE_FUNCTIONS_AGGR = new String[]{
+            "ARRAY_AGG",
+            "AVG",
+            "BIT_AND",
+            "BIT_OR",
+            "BOOL_AND",
+            "BOOL_OR",
+            "COUNT",
+            "EVERY",
+            "JSON_AGG",
+            "JSONB_AGG",
+            "JSON_OBJECT_AGG",
+            "JSONB_OBJECT_AGG",
+            "MAX",
+            "MIN",
+            "MODE",
+            "STRING_AGG",
+            "SUM",
+            "XMLAGG",
+            "CORR",
+            "COVAR_POP",
+            "COVAR_SAMP",
+            "REGR_AVGX",
+            "REGR_AVGY",
+            "REGR_COUNT",
+            "REGR_INTERCEPT",
+            "REGR_R2",
+            "REGR_SLOPE",
+            "REGR_SXX",
+            "REGR_SXY",
+            "REGR_SYY",
+            "STDDEV",
+            "STDDEV_POP",
+            "STDDEV_SAMP",
+            "VARIANCE",
+            "VAR_POP",
+            "VAR_SAMP",
+            "PERCENTILE_CONT",
+            "PERCENTILE_DISC"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_WINDOW = new String[]{
+            "ROW_NUMBER",
+            "RANK",
+            "DENSE_RANK",
+            "PERCENT_RANK",
+            "CUME_DIST",
+            "NTILE",
+            "LAG",
+            "LEAD",
+            "FIRST_VALUE",
+            "LAST_VALUE",
+            "NTH_VALUE"
+    };
+
+
+    public static String[] POSTGRE_FUNCTIONS_MATH = new String[]{
+            "ABS",
+            "CBRT",
+            "CEIL",
+            "CEILING",
+            "DEGREES",
+            "DIV",
+            "EXP",
+            "FLOOR",
+            "LN",
+            "LOG",
+            "MOD",
+            "PI",
+            "POWER",
+            "RADIANS",
+            "ROUND",
+            "SCALE",
+            "SIGN",
+            "SQRT",
+            "TRUNC",
+            "WIDTH_BUCKET",
+            "RANDOM",
+            "SETSEED",
+            "ACOS",
+            "ACOSD",
+            "ASIN",
+            "ASIND",
+            "ATAN",
+            "ATAND",
+            "ATAN2",
+            "ATAN2D",
+            "COS",
+            "COSD",
+            "COT",
+            "COTD",
+            "SIN",
+            "SIND",
+            "TAN",
+            "TAND"
+    };
+    public static String[] POSTGRE_FUNCTIONS_STRING = new String[]{
+            "BIT_LENGTH",
+            "CHAR_LENGTH",
+            "CHARACTER_LENGTH",
+            "LOWER",
+            "OCTET_LENGTH",
+            "OVERLAY",
+            "POSITION",
+            "SUBSTRING",
+            "TREAT",
+            "TRIM",
+            "UPPER",
+            "ASCII",
+            "BTRIM",
+            "CHR",
+            "CONCAT",
+            "CONCAT_WS",
+            "CONVERT",
+            "CONVERT_FROM",
+            "CONVERT_TO",
+            "DECODE",
+            "ENCODE",
+            "INITCAP",
+            "LEFT",
+            "LENGTH",
+            "LPAD",
+            "LTRIM",
+            "MD5",
+            "PARSE_IDENT",
+            "PG_CLIENT_ENCODING",
+            "QUOTE_IDENT",
+            "QUOTE_LITERAL",
+            "QUOTE_NULLABLE",
+            "REGEXP_MATCH",
+            "REGEXP_MATCHES",
+            "REGEXP_REPLACE",
+            "REGEXP_SPLIT_TO_ARRAY",
+            "REGEXP_SPLIT_TO_TABLE",
+            "REPEAT",
+            "REPLACE",
+            "REVERSE",
+            "RIGHT",
+            "RPAD",
+            "RTRIM",
+            "SPLIT_PART",
+            "STRPOS",
+            "SUBSTR",
+            "TO_ASCII",
+            "TO_HEX",
+            "TRANSLATE"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_DATETIME = new String[]{
+            "AGE",
+            "CLOCK_TIMESTAMP",
+            "DATE_PART",
+            "DATE_TRUNC",
+            "ISFINITE",
+            "JUSTIFY_DAYS",
+            "JUSTIFY_HOURS",
+            "JUSTIFY_INTERVAL",
+            "MAKE_DATE",
+            "MAKE_INTERVAL",
+            "MAKE_TIME",
+            "MAKE_TIMESTAMP",
+            "MAKE_TIMESTAMPTZ",
+            "NOW",
+            "STATEMENT_TIMESTAMP",
+            "TIMEOFDAY",
+            "TRANSACTION_TIMESTAMP"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_GEOMETRY = new String[]{
+            "AREA",
+            "CENTER",
+            "DIAMETER",
+            "HEIGHT",
+            "ISCLOSED",
+            "ISOPEN",
+            "NPOINTS",
+            "PCLOSE",
+            "POPEN",
+            "RADIUS",
+            "WIDTH",
+            "BOX",
+            "BOUND_BOX",
+            "CIRCLE",
+            "LINE",
+            "LSEG",
+            "PATH",
+            "POLYGON"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_NETWROK = new String[]{
+            "ABBREV",
+            "BROADCAST",
+            "HOST",
+            "HOSTMASK",
+            "MASKLEN",
+            "NETMASK",
+            "NETWORK",
+            "SET_MASKLEN",
+            "TEXT",
+            "INET_SAME_FAMILY",
+            "INET_MERGE",
+            "MACADDR8_SET7BIT"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_LO = new String[]{
+            "LO_FROM_BYTEA",
+            "LO_PUT",
+            "LO_GET",
+            "LO_CREAT",
+            "LO_CREATE",
+            "LO_UNLINK",
+            "LO_IMPORT",
+            "LO_EXPORT",
+            "LOREAD",
+            "LOWRITE",
+            "GROUPING",
+            "CAST"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_ADMIN = new String[]{
+            "CURRENT_SETTING",
+            "SET_CONFIG",
+            "BRIN_SUMMARIZE_NEW_VALUES",
+            "BRIN_SUMMARIZE_RANGE",
+            "BRIN_DESUMMARIZE_RANGE",
+            "GIN_CLEAN_PENDING_LIST"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_RANGE = new String[]{
+            "ISEMPTY",
+            "LOWER_INC",
+            "UPPER_INC",
+            "LOWER_INF",
+            "UPPER_INF",
+            "RANGE_MERGE"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_TEXT_SEARCH = new String[]{
+            "ARRAY_TO_TSVECTOR",
+            "GET_CURRENT_TS_CONFIG",
+            "NUMNODE",
+            "PLAINTO_TSQUERY",
+            "PHRASETO_TSQUERY",
+            "WEBSEARCH_TO_TSQUERY",
+            "QUERYTREE",
+            "SETWEIGHT",
+            "STRIP",
+            "TO_TSQUERY",
+            "TO_TSVECTOR",
+            "JSON_TO_TSVECTOR",
+            "JSONB_TO_TSVECTOR",
+            "TS_DELETE",
+            "TS_FILTER",
+            "TS_HEADLINE",
+            "TS_RANK",
+            "TS_RANK_CD",
+            "TS_REWRITE",
+            "TSQUERY_PHRASE",
+            "TSVECTOR_TO_ARRAY",
+            "TSVECTOR_UPDATE_TRIGGER",
+            "TSVECTOR_UPDATE_TRIGGER_COLUMN"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_XML = new String[]{
+            "XMLCOMMENT",
+            "XMLCONCAT",
+            "XMLELEMENT",
+            "XMLFOREST",
+            "XMLPI",
+            "XMLROOT",
+            "XMLEXISTS",
+            "XML_IS_WELL_FORMED",
+            "XML_IS_WELL_FORMED_DOCUMENT",
+            "XML_IS_WELL_FORMED_CONTENT",
+            "XPATH",
+            "XPATH_EXISTS",
+            "XMLTABLE",
+            "XMLNAMESPACES",
+            "TABLE_TO_XML",
+            "TABLE_TO_XMLSCHEMA",
+            "TABLE_TO_XML_AND_XMLSCHEMA",
+            "QUERY_TO_XML",
+            "QUERY_TO_XMLSCHEMA",
+            "QUERY_TO_XML_AND_XMLSCHEMA",
+            "CURSOR_TO_XML",
+            "CURSOR_TO_XMLSCHEMA",
+            "SCHEMA_TO_XML",
+            "SCHEMA_TO_XMLSCHEMA",
+            "SCHEMA_TO_XML_AND_XMLSCHEMA",
+            "DATABASE_TO_XML",
+            "DATABASE_TO_XMLSCHEMA",
+            "DATABASE_TO_XML_AND_XMLSCHEMA",
+            "XMLATTRIBUTES"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_JSON = new String[]{
+            "TO_JSON",
+            "TO_JSONB",
+            "ARRAY_TO_JSON",
+            "ROW_TO_JSON",
+            "JSON_BUILD_ARRAY",
+            "JSONB_BUILD_ARRAY",
+            "JSON_BUILD_OBJECT",
+            "JSONB_BUILD_OBJECT",
+            "JSON_OBJECT",
+            "JSONB_OBJECT",
+            "JSON_ARRAY_LENGTH",
+            "JSONB_ARRAY_LENGTH",
+            "JSON_EACH",
+            "JSONB_EACH",
+            "JSON_EACH_TEXT",
+            "JSONB_EACH_TEXT",
+            "JSON_EXTRACT_PATH",
+            "JSONB_EXTRACT_PATH",
+            "JSON_OBJECT_KEYS",
+            "JSONB_OBJECT_KEYS",
+            "JSON_POPULATE_RECORD",
+            "JSONB_POPULATE_RECORD",
+            "JSON_POPULATE_RECORDSET",
+            "JSONB_POPULATE_RECORDSET",
+            "JSON_ARRAY_ELEMENTS",
+            "JSONB_ARRAY_ELEMENTS",
+            "JSON_ARRAY_ELEMENTS_TEXT",
+            "JSONB_ARRAY_ELEMENTS_TEXT",
+            "JSON_TYPEOF",
+            "JSONB_TYPEOF",
+            "JSON_TO_RECORD",
+            "JSONB_TO_RECORD",
+            "JSON_TO_RECORDSET",
+            "JSONB_TO_RECORDSET",
+            "JSON_STRIP_NULLS",
+            "JSONB_STRIP_NULLS",
+            "JSONB_SET",
+            "JSONB_INSERT",
+            "JSONB_PRETTY"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_ARRAY = new String[]{
+            "ARRAY_APPEND",
+            "ARRAY_CAT",
+            "ARRAY_NDIMS",
+            "ARRAY_DIMS",
+            "ARRAY_FILL",
+            "ARRAY_LENGTH",
+            "ARRAY_LOWER",
+            "ARRAY_POSITION",
+            "ARRAY_POSITIONS",
+            "ARRAY_PREPEND",
+            "ARRAY_REMOVE",
+            "ARRAY_REPLACE",
+            "ARRAY_TO_STRING",
+            "ARRAY_UPPER",
+            "CARDINALITY",
+            "STRING_TO_ARRAY",
+            "UNNEST"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_INFO = new String[]{
+            "CURRENT_DATABASE",
+            "CURRENT_QUERY",
+            "CURRENT_SCHEMA",
+            "CURRENT_SCHEMAS",
+            "INET_CLIENT_ADDR",
+            "INET_CLIENT_PORT",
+            "INET_SERVER_ADDR",
+            "INET_SERVER_PORT",
+            "ROW_SECURITY_ACTIVE",
+            "FORMAT_TYPE",
+            "TO_REGCLASS",
+            "TO_REGPROC",
+            "TO_REGPROCEDURE",
+            "TO_REGOPER",
+            "TO_REGOPERATOR",
+            "TO_REGTYPE",
+            "TO_REGNAMESPACE",
+            "TO_REGROLE",
+            "COL_DESCRIPTION",
+            "OBJ_DESCRIPTION",
+            "SHOBJ_DESCRIPTION",
+            "TXID_CURRENT",
+            "TXID_CURRENT_IF_ASSIGNED",
+            "TXID_CURRENT_SNAPSHOT",
+            "TXID_SNAPSHOT_XIP",
+            "TXID_SNAPSHOT_XMAX",
+            "TXID_SNAPSHOT_XMIN",
+            "TXID_VISIBLE_IN_SNAPSHOT",
+            "TXID_STATUS"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_COMPRASION = new String[]{
+            "NUM_NONNULLS",
+            "NUM_NULLS"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_FORMATTING = new String[]{
+            "TO_CHAR",
+            "TO_DATE",
+            "TO_NUMBER",
+            "TO_TIMESTAMP"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_ENUM = new String[]{
+            "ENUM_FIRST",
+            "ENUM_LAST",
+            "ENUM_RANGE"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_SEQUENCE = new String[]{
+            "CURRVAL",
+            "LASTVAL",
+            "NEXTVAL",
+            "SETVAL"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_BINARY_STRING = new String[]{
+            "OCTET_LENGTH",
+            "GET_BIT",
+            "GET_BYTE",
+            "SET_BIT",
+            "SET_BYTE"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_CONDITIONAL= new String[]{
+            "COALESCE",
+            "NULLIF",
+            "GREATEST",
+            "LEAST"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_TRIGGER= new String[]{
+            "SUPPRESS_REDUNDANT_UPDATES_TRIGGER"
+    };
+
+    public static String[] POSTGRE_FUNCTIONS_SRF = new String[]{
+            "GENERATE_SERIES",
+            "GENERATE_SUBSCRIPTS"
+    };
+
     public PostgreDialect() {
         super("PostgreSQL");
     }
