@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -107,7 +107,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 final DBNContainer container = (DBNContainer) node.getParentNode();
                 DBSObject object = node.getObject();
                 if (object != null) {
-                    DBEObjectRenamer objectRenamer = EntityEditorsRegistry.getInstance().getObjectManager(object.getClass(), DBEObjectRenamer.class);
+                    DBEObjectRenamer objectRenamer = ObjectManagerRegistry.getInstance().getObjectManager(object.getClass(), DBEObjectRenamer.class);
                     if (objectRenamer != null) {
                         CommandTarget commandTarget = getCommandTarget(
                             workbenchWindow,

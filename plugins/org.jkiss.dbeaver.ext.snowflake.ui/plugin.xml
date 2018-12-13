@@ -10,11 +10,11 @@
                 dataSource="snowflake"
                 label="%snowflake.dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.snowflake.views.SnowflakeConnectionPage"
-                icon="icons/snowflake_icon.png">
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.snowflake.core/icons/snowflake_icon.png">
         </view>
         <view
                 class="org.jkiss.dbeaver.ext.snowflake.views.SnowflakeConnectionPage"
-                icon="icons/snowflake_icon.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.snowflake.core/snowflake_icon.png"
                 id="org.jkiss.dbeaver.ext.snowflake.dataSourceEditorView"
                 dataSource="snowflake"
                 label="%snowflake.dialog.connection.header"
