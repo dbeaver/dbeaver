@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
@@ -230,7 +230,7 @@ public class ObjectPropertyTester extends PropertyTester
 
     private static <T extends DBEObjectManager> T getObjectManager(Class<?> objectType, Class<T> managerType)
     {
-        return EntityEditorsRegistry.getInstance().getObjectManager(objectType, managerType);
+        return ObjectManagerRegistry.getInstance().getObjectManager(objectType, managerType);
     }
 
     public static void firePropertyChange(String propName)

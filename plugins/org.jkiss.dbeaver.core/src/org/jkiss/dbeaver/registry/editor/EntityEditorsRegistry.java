@@ -34,15 +34,14 @@ import java.util.Map;
 /**
  * EntityEditorsRegistry
  */
-public class EntityEditorsRegistry implements DBERegistry {
+public class EntityEditorsRegistry {
 
     private static final String TAG_EDITOR = "editor"; //NON-NLS-1
     private static final String TAG_MANAGER = "manager"; //NON-NLS-1
 
     private static EntityEditorsRegistry instance = null;
 
-    public synchronized static EntityEditorsRegistry getInstance()
-    {
+    public synchronized static EntityEditorsRegistry getInstance() {
         if (instance == null) {
             instance = new EntityEditorsRegistry(Platform.getExtensionRegistry());
         }
@@ -52,12 +51,8 @@ public class EntityEditorsRegistry implements DBERegistry {
     private EntityEditorDescriptor defaultEditor;
     private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
     private Map<String, List<EntityEditorDescriptor>> positionsMap = new HashMap<String, List<EntityEditorDescriptor>>();
-    private List<EntityManagerDescriptor> entityManagers = new ArrayList<EntityManagerDescriptor>();
-    private Map<String, EntityManagerDescriptor> entityManagerMap = new HashMap<>();
-    private Map<String, Boolean> nullEntityManagerMap = new HashMap<>();
 
-    public EntityEditorsRegistry(IExtensionRegistry registry)
-    {
+    public EntityEditorsRegistry(IExtensionRegistry registry) {
         // Create default editor
         defaultEditor = new EntityEditorDescriptor();
         // Load datasource providers from external plugins
@@ -72,30 +67,15 @@ public class EntityEditorsRegistry implements DBERegistry {
                     positionsMap.put(descriptor.getPosition(), list);
                 }
                 list.add(descriptor);
-            } else if (TAG_MANAGER.equals(ext.getName())) {
-                EntityManagerDescriptor descriptor = new EntityManagerDescriptor(ext);
-                entityManagers.add(descriptor);
             }
         }
-        for (EntityManagerDescriptor em : entityManagers) {
-            entityManagerMap.put(em.getObjectType().getImplName(), em);
-        }
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         entityEditors.clear();
-
-        for (EntityManagerDescriptor descriptor : entityManagers) {
-            descriptor.dispose();
-        }
-        entityManagers.clear();
-        entityManagerMap.clear();
-        nullEntityManagerMap.clear();
     }
 
-    public EntityEditorDescriptor getMainEntityEditor(DBPObject object, IEntityEditorContext context)
-    {
+    public EntityEditorDescriptor getMainEntityEditor(DBPObject object, IEntityEditorContext context) {
         for (EntityEditorDescriptor descriptor : entityEditors) {
             if (descriptor.appliesTo(object, context) && descriptor.isMain() && descriptor.getType() == EntityEditorDescriptor.Type.editor) {
                 return descriptor;
@@ -104,8 +84,7 @@ public class EntityEditorsRegistry implements DBERegistry {
         return defaultEditor;
     }
 
-    public List<EntityEditorDescriptor> getEntityEditors(DBPObject object, IEntityEditorContext context, String position)
-    {
+    public List<EntityEditorDescriptor> getEntityEditors(DBPObject object, IEntityEditorContext context, String position) {
         List<EntityEditorDescriptor> editors = new ArrayList<EntityEditorDescriptor>();
         final List<EntityEditorDescriptor> positionList =
             CommonUtils.isEmpty(position) ? entityEditors : positionsMap.get(position);
@@ -117,46 +96,6 @@ public class EntityEditorsRegistry implements DBERegistry {
             }
         }
         return editors;
-    }
-
-    private EntityManagerDescriptor getEntityManager(Class objectType)
-    {
-        String targetTypeName = objectType.getName();
-
-        // 1. Try exact match
-        EntityManagerDescriptor manager = entityManagerMap.get(targetTypeName);
-        if (manager != null) {
-            return manager;
-        }
-        if (nullEntityManagerMap.containsKey(targetTypeName)) {
-            return null;
-        }
-        // 2. Find first applicable
-        for (EntityManagerDescriptor descriptor : entityManagers) {
-            if (descriptor.appliesToType(objectType)) {
-                entityManagerMap.put(targetTypeName, descriptor);
-                return descriptor;
-            }
-        }
-        // TODO: need to re-validate. Maybe cache will break some lazy loaded bundles?
-        nullEntityManagerMap.put(targetTypeName, Boolean.TRUE);
-        return null;
-    }
-
-    public DBEObjectManager<?> getObjectManager(Class<?> aClass)
-    {
-        EntityManagerDescriptor entityManager = getEntityManager(aClass);
-        return entityManager == null ? null : entityManager.getManager();
-    }
-
-    public <T> T getObjectManager(Class<?> objectClass, Class<T> managerType)
-    {
-        final DBEObjectManager<?> objectManager = getObjectManager(objectClass);
-        if (objectManager != null && managerType.isAssignableFrom(objectManager.getClass())) {
-            return managerType.cast(objectManager);
-        } else {
-            return null;
-        }
     }
 
 }

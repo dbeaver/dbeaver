@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -59,7 +59,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
         }
 
         @SuppressWarnings("unchecked")
-        DBEObjectReorderer<DBSObject> objectReorderer = EntityEditorsRegistry.getInstance().getObjectManager(object.getClass(), DBEObjectReorderer.class);
+        DBEObjectReorderer<DBSObject> objectReorderer = ObjectManagerRegistry.getInstance().getObjectManager(object.getClass(), DBEObjectReorderer.class);
         if (objectReorderer == null) {
             return null;
         }

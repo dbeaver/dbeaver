@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -57,10 +58,12 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
     private static final String DIALOG_ID = "DBeaver.SelectObjectDialog";//$NON-NLS-1$
 
     private String listId;
-    private Collection<T> objects;
-    private List<T> selectedObjects = new ArrayList<>();
     private boolean singleSelection;
     private Font boldFont;
+
+    protected Collection<T> objects;
+    protected List<T> selectedObjects = new ArrayList<>();
+    protected DatabaseObjectListControl<T> objectList;
 
     public SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, String listId, Collection<T> objects, Collection<T> selected)
     {
@@ -87,7 +90,9 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        final DatabaseObjectListControl<T> objectList = new DatabaseObjectListControl<T>(
+        createUpperControls(group);
+
+        objectList = new DatabaseObjectListControl<T>(
             group,
             (singleSelection ? SWT.SINGLE : SWT.MULTI),
             null,
@@ -108,7 +113,11 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
                     new AbstractLoadService<Collection<T>>() {
                         @Override
                         public Collection<T> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            return objects;
+                            try {
+                                return getObjects(monitor);
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
                         }
 
                         @Override
@@ -120,7 +129,7 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
                         @Override
                         public void completeLoading(Collection<T> items) {
                             super.completeLoading(items);
-                            performSearch(ISearchContextProvider.SearchType.NONE);
+                            performSearch(SearchType.NONE);
                             getItemsViewer().getControl().setFocus();
 
                             closeOnFocusLost(getItemsViewer().getControl(), getSearchTextControl());
@@ -166,7 +175,7 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
                 contributionManager.add(new Action("Filter objects", DBeaverIcons.getImageDescriptor(UIIcon.SEARCH)) {
                     @Override
                     public void run() {
-                        performSearch(ISearchContextProvider.SearchType.NONE);
+                        performSearch(SearchType.NONE);
                     }
                 });
             }
@@ -213,6 +222,14 @@ public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel 
         objectList.loadData();
 
         return group;
+    }
+
+    protected Collection<T> getObjects(DBRProgressMonitor monitor) throws DBException {
+        return objects;
+    }
+
+    protected void createUpperControls(Composite composite) {
+
     }
 
     @Override

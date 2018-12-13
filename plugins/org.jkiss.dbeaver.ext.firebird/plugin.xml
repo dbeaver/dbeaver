@@ -77,7 +77,7 @@
         </datasource>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.databaseEditor">
+    <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableColumnManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn"/>
     </extension>
 

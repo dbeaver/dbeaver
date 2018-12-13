@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.ui.SimpleCommandContext;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -96,7 +96,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
         DBSObject objectToSeek = null;
         if (parentObject instanceof DBSObject) {
-            final DBEStructEditor parentStructEditor = EntityEditorsRegistry.getInstance().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
+            final DBEStructEditor parentStructEditor = ObjectManagerRegistry.getInstance().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
             if (parentStructEditor != null && RuntimeUtils.isTypeSupported(childType, parentStructEditor.getChildTypes())) {
                 objectToSeek = (DBSObject) parentObject;
             }
