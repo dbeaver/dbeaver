@@ -363,52 +363,23 @@
         </repository>
     </extension>
 
-    <!--extension point="org.jkiss.dbeaver.objectManager">
-        <creator
-                class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreDatabaseCreatePage"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"
-                type="new"/>
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <creator class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreDatabaseCreatePage" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" type="new"/>
 
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMViewManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
-        <manager
-                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleManager"
-                objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
-    </extension-->
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMViewManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
+    </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
@@ -456,46 +427,6 @@
             class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreDatabaseCreatePage"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"
             type="new"/>
-
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMViewManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
 
         <editor id="postgresql.role.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
                 label="%db.editor.role.permission.name" description="%db.editor.role.permission.description" icon="#permissions" position="additions_middle" type="folder">

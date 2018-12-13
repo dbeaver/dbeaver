@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -321,7 +321,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 } else if (node instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
                     if (object != null) {
-                        DBEObjectEditor objectManager = EntityEditorsRegistry.getInstance().getObjectManager(
+                        DBEObjectEditor objectManager = ObjectManagerRegistry.getInstance().getObjectManager(
                             object.getClass(),
                             DBEObjectEditor.class);
                         actionName = objectManager == null || !objectManager.canEditObject(object) ? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;

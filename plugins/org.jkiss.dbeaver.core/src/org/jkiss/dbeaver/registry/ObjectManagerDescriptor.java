@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
  */
 public class ObjectManagerDescriptor extends AbstractDescriptor
 {
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.objectManager"; //NON-NLS-1 //$NON-NLS-1$
+
     private String id;
     private ObjectType managerType;
     private ObjectType objectType;

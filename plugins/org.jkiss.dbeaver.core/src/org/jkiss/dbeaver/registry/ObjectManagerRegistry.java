@@ -51,7 +51,7 @@ public class ObjectManagerRegistry implements DBERegistry {
 
     public ObjectManagerRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EntityEditorDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ObjectManagerDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if (TAG_MANAGER.equals(ext.getName())) {
                 ObjectManagerDescriptor descriptor = new ObjectManagerDescriptor(ext);

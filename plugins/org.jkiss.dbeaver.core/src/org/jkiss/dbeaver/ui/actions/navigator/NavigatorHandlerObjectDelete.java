@@ -48,7 +48,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -153,7 +153,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (object == null) {
                 throw new DBException("Can't delete node with null object");
             }
-            DBEObjectMaker objectMaker = EntityEditorsRegistry.getInstance().getObjectManager(object.getClass(), DBEObjectMaker.class);
+            DBEObjectMaker objectMaker = ObjectManagerRegistry.getInstance().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
                 throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
             }

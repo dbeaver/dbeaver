@@ -94,11 +94,8 @@
         </view>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <manager
-            class="org.jkiss.dbeaver.ext.wmi.edit.WMINamespaceManager"
-            objectType="org.jkiss.dbeaver.ext.wmi.model.WMINamespace"
-            label="Namespace manager"/>
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.wmi.edit.WMINamespaceManager" objectType="org.jkiss.dbeaver.ext.wmi.model.WMINamespace" label="Namespace manager"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

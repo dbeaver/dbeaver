@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
@@ -121,7 +121,7 @@ public class ItemListControl extends NodeListControl
             boolean hasReorder = false;
             List<Class<?>> childrenTypes = ((DBNDatabaseNode) rootNode).getChildrenTypes(null);
             for (Class<?> chilType : childrenTypes) {
-                if (EntityEditorsRegistry.getInstance().getObjectManager(chilType, DBEObjectReorderer.class) != null) {
+                if (ObjectManagerRegistry.getInstance().getObjectManager(chilType, DBEObjectReorderer.class) != null) {
                     hasReorder = true;
                     break;
                 }

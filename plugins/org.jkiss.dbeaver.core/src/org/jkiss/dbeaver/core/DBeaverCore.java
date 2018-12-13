@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
@@ -63,7 +62,6 @@ import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
 import java.io.*;
-import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -448,7 +446,7 @@ public class DBeaverCore implements DBPPlatform {
     @NotNull
     @Override
     public DBERegistry getEditorsRegistry() {
-        return EntityEditorsRegistry.getInstance();
+        return ObjectManagerRegistry.getInstance();
     }
 
     @Override

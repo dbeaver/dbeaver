@@ -221,39 +221,20 @@
         </view>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLCatalogManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"
-            label="%manager.catalog.name"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTriggerManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLCatalogManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%manager.catalog.name"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTriggerManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+    </extension>
 
+    <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor id="mysql.source.view" class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSourceViewEditor"
             label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
             contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
