@@ -123,6 +123,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.simpleMode = request.simpleMode;
     }
 
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
+
     public DBPNamedObject getObject() {
         return object;
     }

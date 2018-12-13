@@ -56,7 +56,10 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
             int score2 = ((SQLCompletionProposal) p2).getProposalScore();
             if (score1 > 0 && score2 > 0) {
                 if (score1 == score2) {
-                    return p1.getDisplayString().compareToIgnoreCase(p2.getDisplayString());
+                    DBPDataSource dataSource = ((SQLCompletionProposal) p1).getDataSource();
+                    if (dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY)) {
+                        return p1.getDisplayString().compareToIgnoreCase(p2.getDisplayString());
+                    }
                 }
                 return score2 - score1;
             }

@@ -136,4 +136,17 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     protected int getDoubleClickTimeout() {
         return 0;
     }
+
+    @Override
+    public void activate() {
+        super.activate();
+    }
+
+    @Override
+    public void deactivate() {
+//        if (!UIUtils.hasFocus(textEditor)) {
+//            focusLost();
+//        }
+        super.deactivate();
+    }
 }
