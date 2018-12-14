@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.runtime;
 
 import org.eclipse.core.runtime.Adapters;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
@@ -42,6 +44,14 @@ public class DBWorkbench {
             throw new IllegalStateException("Internal configuration error. Platform UI not instantiated.");
         }
         return platformUI;
+    }
+
+    /**
+     * Service management
+     */
+    @Nullable
+    public static <T> T getService(@NotNull Class<T> serviceType) {
+        return ServiceRegistry.getInstance().getService(serviceType);
     }
 
 }

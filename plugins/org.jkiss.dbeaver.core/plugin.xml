@@ -19,8 +19,10 @@
   -->
 
 <plugin>
-    <!-- Non UI extensions -->
+    <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
     <extension-point id="org.jkiss.dbeaver.pluginService" name="%extension-point.org.jkiss.dbeaver.pluginService.name" schema="schema/org.jkiss.dbeaver.pluginService.exsd"/>
+
+    <!-- Non UI extensions -->
     <extension-point id="org.jkiss.dbeaver.mavenRepository" name="%extension-point.org.jkiss.dbeaver.mavenRepository.name" schema="schema/org.jkiss.dbeaver.mavenRepository.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="%extension-point.org.jkiss.dbeaver.dataTypeProvider.name" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="%extension-point.org.jkiss.dbeaver.dataSourceProvider.name" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
@@ -2962,7 +2964,7 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.model.DBWorkbench" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
+        <factory adaptableType="org.jkiss.dbeaver.runtime.DBWorkbench" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
             <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
         </factory>
@@ -3786,6 +3788,10 @@
             <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark">
             </themeid>
         </stylesheet>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceSQL" class="org.jkiss.dbeaver.ui.editors.sql.UIServiceSQLImpl"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.pluginService">
