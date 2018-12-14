@@ -58,6 +58,11 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
+    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+        return new GreenplumSchemaCache();
+    }
+
+    @Override
     public void configureDialect(PostgreDialect dialect) {
         dialect.addExtraKeywords("DISTRIBUTED");
     }
