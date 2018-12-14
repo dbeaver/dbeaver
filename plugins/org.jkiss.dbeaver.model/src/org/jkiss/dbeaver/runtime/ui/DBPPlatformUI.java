@@ -84,6 +84,7 @@ public interface DBPPlatformUI {
     // Process execution
     void executeProcess(DBRProcessDescriptor processDescriptor);
 
+    // Execute some action in UI thread
     void executeInUI(Runnable runnable);
 
     <RESULT> Job createLoadingService(

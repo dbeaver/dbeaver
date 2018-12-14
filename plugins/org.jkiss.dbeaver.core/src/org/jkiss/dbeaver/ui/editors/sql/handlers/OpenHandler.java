@@ -277,7 +277,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
         return openSQLEditor(workbenchWindow, sqlInput);
     }
 
-    public static SQLEditor openSQLEditor(
+    private static SQLEditor openSQLEditor(
         IWorkbenchWindow workbenchWindow,
         IEditorInput sqlInput)
     {
