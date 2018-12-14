@@ -3404,11 +3404,11 @@
 
     <!-- DBeaver extensions -->
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager" objectType="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.databaseEditor">
-        <manager
-                class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager"
-                objectType="org.jkiss.dbeaver.model.DBPDataSourceContainer">
-        </manager>
         <editor
                 id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
                 class="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
