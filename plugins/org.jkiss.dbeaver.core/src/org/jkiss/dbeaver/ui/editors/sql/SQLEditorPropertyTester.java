@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 
 /**
  * SQLEditorPropertyTester

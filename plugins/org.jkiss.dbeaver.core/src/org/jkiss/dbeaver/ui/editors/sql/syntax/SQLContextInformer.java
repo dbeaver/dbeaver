@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,7 +48,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 
