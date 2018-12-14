@@ -60,7 +60,6 @@ public interface DBPPlatformUI {
     long getLongOperationTimeout();
     void notifyAgent(String message, int status);
 
-
     /**
      * Asks for user credentials. Returns null if user canceled this action.
      */
@@ -74,22 +73,22 @@ public interface DBPPlatformUI {
     /**
      * UI utilities
      */
-    DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes);
+    DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes);
 
-    void openEntityEditor(DBSObject object);
-    void openEntityEditor(DBNNode selectedNode, @Nullable String defaultPageId);
-    void openSQLViewer(@Nullable DBCExecutionContext context, String title, @Nullable DBPImage image, String text);
-    void openConnectionEditor(DBPDataSourceContainer dataSourceContainer);
+    void openEntityEditor(@NotNull DBSObject object);
+    void openEntityEditor(@NotNull DBNNode selectedNode, @Nullable String defaultPageId);
+
+    void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer);
 
     // Process execution
-    void executeProcess(DBRProcessDescriptor processDescriptor);
+    void executeProcess(@NotNull DBRProcessDescriptor processDescriptor);
 
     // Execute some action in UI thread
-    void executeInUI(Runnable runnable);
+    void executeInUI(@NotNull Runnable runnable);
 
+    @NotNull
     <RESULT> Job createLoadingService(
         ILoadService<RESULT> loadingService,
         ILoadVisualizer<RESULT> visualizer);
-
 
 }

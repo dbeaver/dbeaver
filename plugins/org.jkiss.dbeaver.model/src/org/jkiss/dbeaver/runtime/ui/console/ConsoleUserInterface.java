@@ -107,11 +107,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void openSQLViewer(DBCExecutionContext context, String title, DBPImage image, String text) {
-        System.out.println(text);
-    }
-
-    @Override
     public void openConnectionEditor(DBPDataSourceContainer dataSourceContainer) {
         // do nothing
     }
