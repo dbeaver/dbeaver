@@ -63,7 +63,6 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLContextInformer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -639,7 +638,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         final List<IContentProposal> proposals = new ArrayList<>();
 
         final DBRRunnableWithProgress reader = monitor -> {
-            for (DBDAttributeBinding attribute : viewer.getModel().getAttributes()) {
+            DBDAttributeBinding[] attributes = viewer.getModel().getAttributes();
+            for (DBDAttributeBinding attribute : attributes) {
                 final String name = DBUtils.getUnQuotedIdentifier(attribute.getDataSource(), attribute.getName());
                 if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
                     final String content = DBUtils.getQuotedIdentifier(attribute) + " ";
@@ -647,7 +647,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             new ContentProposal(
                                     content,
                                     attribute.getName(),
-                                    SQLContextInformer.makeObjectDescription(monitor, attribute.getAttribute(), false),
+                                    DBInfoUtils.makeObjectDescription(monitor, attribute.getAttribute(), false),
                                     content.length()));
                 }
             }
