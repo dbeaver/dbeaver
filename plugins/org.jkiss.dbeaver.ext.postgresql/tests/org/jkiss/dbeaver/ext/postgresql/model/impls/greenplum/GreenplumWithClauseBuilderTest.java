@@ -27,25 +27,8 @@ public class GreenplumWithClauseBuilderTest {
     @Mock
     private PostgreServerExtension serverExtension;
 
-//    @Test
-//    public void generateWithClause_whenOidsAreSupportedAndNoRelOptions_shouldDisplayWithClauseWithOidsAsTrue() {
-//        setupGeneralWhenMocks(true, true);
-//
-//        String withClause = generateWithClause(table, tableBase);
-//        assertEquals("\nWITH (\n\tOIDS=TRUE\n)", withClause);
-//    }
-//
-//    @Test
-//    public void generateWithClause_whenTableSupportsOidsButDoesNotHaveOidsAndNoOptions_shouldNotDisplayWithClause() {
-//        setupGeneralWhenMocks(true, false);
-//
-//        String withClause = generateWithClause(table, tableBase);
-//        assertEquals("", withClause);
-//    }
-
     @Test
     public void generateWithClause_whenTableWithoutOidsAndWithOptions_shouldDisplayWithClauseWithRelOptions() {
-//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(false, false);
 
@@ -57,7 +40,6 @@ public class GreenplumWithClauseBuilderTest {
 
     @Test
     public void generateWithClause_whenTableWithOidsAndOptions_shouldDisplayWithClauseWithOidsAndOptions() {
-//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(true, true);
 
@@ -69,7 +51,6 @@ public class GreenplumWithClauseBuilderTest {
 
     @Test
     public void generateWithClause_whenTableWithoutOidsAndWithoutOptions_shouldNotDisplayWithClause() {
-//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(false, false);
 
@@ -81,7 +62,6 @@ public class GreenplumWithClauseBuilderTest {
 
     @Test
     public void generateWithClause_whenTableWithOidsWithoutOptions_shouldDisplayWithClauseWithOids() {
-//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(true, true);
 
@@ -93,7 +73,6 @@ public class GreenplumWithClauseBuilderTest {
 
     @Test
     public void generateWithClause_whenTableWithOidsWithMultipleOptions_shouldDisplayWithClauseWithOidsAndAllTheOptions() {
-//        table = mock(GreenplumTable.class);
 
         setupGeneralWhenMocks(true, true);
 
