@@ -36,7 +36,9 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.database.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
@@ -669,12 +671,15 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         DBPDataSource dataSource = container.getDataSource();
         try {
             final String ddl = DatabaseTransferConsumer.generateTargetTableDDL(new VoidProgressMonitor(), dataSource, container, mapping);
-            DBWorkbench.getPlatformUI().openSQLViewer(
-                DBUtils.getDefaultContext(container, true),
-                "Target DDL",
-                null,
-                ddl
-            );
+            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+            if (serviceSQL != null) {
+                serviceSQL.openSQLViewer(
+                    DBUtils.getDefaultContext(container, true),
+                    "Target DDL",
+                    null,
+                    ddl
+                );
+            }
         } catch (DBException e) {
             DBUserInterface.getInstance().showError("Target DDL", "Error generatiung target DDL", e);
         }

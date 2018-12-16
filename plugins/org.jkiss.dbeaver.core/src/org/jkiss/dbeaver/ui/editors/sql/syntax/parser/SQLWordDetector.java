@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.2"?>
-<!--
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
@@ -15,12 +13,26 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-  -->
+ */
+package org.jkiss.dbeaver.ui.editors.sql.syntax.parser;
 
-<plugin>
+import org.eclipse.jface.text.rules.IWordDetector;
 
-    <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.application" name="%extension-point.org.jkiss.dbeaver.application.name" schema="schema/org.jkiss.dbeaver.application.exsd"/>
+/**
+ * Determines whether a given character is valid as part of an SQL keyword in
+ * the current context.
+ */
+public class SQLWordDetector implements IWordDetector
+{
 
+    @Override
+    public boolean isWordStart(char c) {
+        return Character.isUnicodeIdentifierStart(c);
+    }
 
-</plugin>
+    @Override
+    public boolean isWordPart(char c) {
+        return Character.isUnicodeIdentifierPart(c) || c == '$';
+    }
+
+}

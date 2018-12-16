@@ -303,18 +303,6 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void openSQLViewer(DBCExecutionContext context, String title, DBPImage image, String text) {
-        ViewSQLDialog dialog = new ViewSQLDialog(
-            UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
-            context,
-            title,
-            image,
-            text
-        );
-        dialog.open();
-    }
-
-    @Override
     public void openConnectionEditor(DBPDataSourceContainer dataSourceContainer) {
         UIUtils.syncExec(() ->
             NavigatorHandlerObjectOpen.openConnectionEditor(
