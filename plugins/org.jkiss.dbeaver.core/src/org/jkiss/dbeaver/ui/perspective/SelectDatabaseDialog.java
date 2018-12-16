@@ -111,6 +111,8 @@ class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
                         objectList.loadData();
                     }
                 });
+
+                closeOnFocusLost(instanceCombo);
             }
         }
     }
