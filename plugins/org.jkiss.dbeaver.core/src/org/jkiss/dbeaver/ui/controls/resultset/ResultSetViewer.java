@@ -60,7 +60,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
@@ -422,7 +423,7 @@ public class ResultSetViewer extends Viewer
         if (context != null) {
             return context.getDataSource().getContainer().getPreferenceStore();
         }
-        return DBeaverCore.getGlobalPreferenceStore();
+        return DBWorkbench.getPlatform().getPreferenceStore();
     }
 
     @NotNull
@@ -704,7 +705,8 @@ public class ResultSetViewer extends Viewer
             // Save in global preferences
             if (activePresentationDescriptor.getPresentationType().isPersistent()) {
                 // Save current presentation (only if it is persistent)
-                DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
+                DBWorkbench.getPlatform().getPreferenceStore().setValue(
+                    DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
             }
             savePresentationSettings();
         } catch (Throwable e1) {
@@ -1521,6 +1523,7 @@ public class ResultSetViewer extends Viewer
         if (constraint.getOrderPosition() == 0) {
             if (ResultSetUtils.isServerSideFiltering(this) && supportsDataFilter()) {
                 if (ConfirmationDialog.showConfirmDialogNoToggle(
+                    DBeaverActivator.getCoreResourceBundle(),
                     viewerPanel.getShell(),
                     DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
@@ -1619,6 +1622,7 @@ public class ResultSetViewer extends Viewer
             return ISaveablePart2.YES;
         }
         int result = ConfirmationDialog.showConfirmDialog(
+            DBeaverActivator.getCoreResourceBundle(),
             viewerPanel.getShell(),
             DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
@@ -2410,6 +2414,7 @@ public class ResultSetViewer extends Viewer
                 }
                 if (panelsDirty) {
                     int result = ConfirmationDialog.showConfirmDialog(
+                        DBeaverActivator.getCoreResourceBundle(),
                         viewerPanel.getShell(),
                         DBeaverPreferences.CONFIRM_RS_PANEL_RESET,
                         ConfirmationDialog.CONFIRM);
@@ -2704,6 +2709,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         if (ConfirmationDialog.showConfirmDialogEx(
+            DBeaverActivator.getCoreResourceBundle(),
             viewerPanel.getShell(),
             DBeaverPreferences.CONFIRM_RS_FETCH_ALL,
             ConfirmationDialog.QUESTION,

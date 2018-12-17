@@ -36,9 +36,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -338,13 +338,13 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                 }
                 @Override
                 public boolean isChecked() {
-                    return DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
+                    return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
                 }
 
                 @Override
                 public void run() {
                     boolean newValue = !isChecked();
-                    DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
                     presentation.getController().updatePanelActions();
                 }
             });

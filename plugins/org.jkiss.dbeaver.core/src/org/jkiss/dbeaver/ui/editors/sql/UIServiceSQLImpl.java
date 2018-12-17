@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;

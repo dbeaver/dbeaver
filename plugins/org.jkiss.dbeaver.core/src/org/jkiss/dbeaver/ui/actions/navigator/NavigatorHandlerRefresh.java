@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -151,6 +152,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                             @Override
                             protected Boolean runTask() {
                                 return ConfirmationDialog.showConfirmDialog(
+                                    DBeaverActivator.getCoreResourceBundle(),
                                     null,
                                     DBeaverPreferences.CONFIRM_ENTITY_REVERT,
                                     ConfirmationDialog.QUESTION,

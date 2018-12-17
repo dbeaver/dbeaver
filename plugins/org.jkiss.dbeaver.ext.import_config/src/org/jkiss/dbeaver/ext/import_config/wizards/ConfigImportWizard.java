@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
+import org.jkiss.dbeaver.ui.navigator.dialogs.SelectObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

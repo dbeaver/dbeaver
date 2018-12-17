@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -76,6 +77,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
             DBPPreferenceStore globalPreferenceStore = DBeaverCore.getGlobalPreferenceStore();
             if (!globalPreferenceStore.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
+                        DBeaverActivator.getCoreResourceBundle(),
                         getShell(),
                         DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN,
                         ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID) {
