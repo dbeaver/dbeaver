@@ -10,13 +10,12 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.views,
  org.eclipse.jface,
  org.eclipse.jface.text,
- org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.core,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.editors,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.data.gis
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
 Bundle-ClassPath: .
-Import-Package: org.jkiss.dbeaver.ui.editors
