@@ -33,6 +33,7 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -207,7 +208,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
             if (window != null) {
                 if (!MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))) {
                     // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
-                    if (!ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
+                    if (!ConfirmationDialog.confirmAction(DBeaverActivator.getCoreResourceBundle(), window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
                         return false;
                     }
                 }

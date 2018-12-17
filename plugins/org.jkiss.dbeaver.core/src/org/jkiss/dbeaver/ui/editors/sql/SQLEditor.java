@@ -59,10 +59,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreFeatures;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -86,7 +83,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -1608,6 +1605,7 @@ public class SQLEditor extends SQLEditorBase implements
                     targetName = query.getSingleSource().getEntityName();
                 }
                 if (ConfirmationDialog.showConfirmDialogEx(
+                    DBeaverActivator.getCoreResourceBundle(),
                     getSite().getShell(),
                     DBeaverPreferences.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
@@ -1620,6 +1618,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
             if (ConfirmationDialog.showConfirmDialogEx(
+                DBeaverActivator.getCoreResourceBundle(),
                 getSite().getShell(),
                 DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL,
                 ConfirmationDialog.CONFIRM,
@@ -1960,6 +1959,7 @@ public class SQLEditor extends SQLEditorBase implements
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
 
             if (ConfirmationDialog.showConfirmDialog(
+                DBeaverActivator.getCoreResourceBundle(),
                 null,
                 DBeaverPreferences.CONFIRM_RUNNING_QUERY_CLOSE,
                 ConfirmationDialog.QUESTION,
