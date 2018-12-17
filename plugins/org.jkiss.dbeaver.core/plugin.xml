@@ -562,7 +562,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyObject">
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCopyObject">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -573,7 +573,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopySpecial">
+        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCopySpecial">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part.active"/></activeWhen>
             <enabledWhen>
                 <or>
@@ -590,7 +590,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh">
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh">
             <activeWhen>
                 <with variable="activePart">
                     <or>
@@ -612,16 +612,16 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectCreate"/>
-        <handler commandId="org.jkiss.dbeaver.core.project.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectRefresh"/>
-        <handler commandId="org.jkiss.dbeaver.core.project.select" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectSelect">
+        <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectCreate"/>
+        <handler commandId="org.jkiss.dbeaver.core.project.refresh" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectRefresh"/>
+        <handler commandId="org.jkiss.dbeaver.core.project.select" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSelect">
             <enabledWhen>
                 <with variable="selection">
                     <test property="org.jkiss.dbeaver.core.global.hasMultipleProjects"/>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectSetActive">
+        <handler commandId="org.jkiss.dbeaver.core.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSetActive">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -633,7 +633,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resource.create.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCreateFolder">
+        <handler commandId="org.jkiss.dbeaver.core.resource.create.folder" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCreateFolder">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -645,7 +645,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resource.link.file" class="org.jkiss.dbeaver.ui.actions.navigator.LinkFileHandler">
+        <handler commandId="org.jkiss.dbeaver.core.resource.link.file" class="org.jkiss.dbeaver.ui.navigator.actions.LinkFileHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -657,7 +657,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resource.link.folder" class="org.jkiss.dbeaver.ui.actions.navigator.LinkFolderHandler">
+        <handler commandId="org.jkiss.dbeaver.core.resource.link.folder" class="org.jkiss.dbeaver.ui.navigator.actions.LinkFolderHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -669,7 +669,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.sql.script.associate" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerAssociateScript">
+        <handler commandId="org.jkiss.dbeaver.core.sql.script.associate" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerAssociateScript">
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -682,16 +682,16 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerDriverManager"/>
-        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConnectionCreate">
+        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerDriverManager"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerConnectionCreate">
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConnectionMigrate"/>
-        <handler commandId="org.jkiss.dbeaver.core.new.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLocalFolderCreate">
+        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerConnectionMigrate"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.folder" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerLocalFolderCreate">
             <enabledWhen>
                 <with variable="selection">
                     <iterate operator="and">
@@ -705,30 +705,30 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCollapseAll">
+        <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCollapseAll">
             <enabledWhen>
                 <with variable="activePart">
                     <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.navigate.expandAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerExpandAll">
+        <handler commandId="org.eclipse.ui.navigate.expandAll" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerExpandAll">
             <enabledWhen>
                 <with variable="activePart">
                     <instanceof value="org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView"/>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.view.configure" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerViewConfigure"/>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkEditor">
+        <handler commandId="org.jkiss.dbeaver.core.navigator.view.configure" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerViewConfigure"/>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerLinkEditor">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.eclipse.ui.IEditorPart"/>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.preferences" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerPreferences"/>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.set.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerSetActiveObject">
+        <handler commandId="org.jkiss.dbeaver.core.navigator.preferences" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerPreferences"/>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.set.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerSetActiveObject">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -738,7 +738,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerAddBookmark">
+        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerAddBookmark">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -748,7 +748,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.open.browser" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenBrowser">
+        <handler commandId="org.jkiss.dbeaver.core.navigator.open.browser" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerOpenBrowser">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -847,7 +847,7 @@
 
         <!-- Navigator handlers -->
 
-        <handler commandId="org.jkiss.dbeaver.core.object.open" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen">
+        <handler commandId="org.jkiss.dbeaver.core.object.open" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen">
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -858,7 +858,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.object.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectCreateNew">
+        <handler commandId="org.jkiss.dbeaver.core.object.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -873,7 +873,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.object.filter.config" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig">
+        <handler commandId="org.jkiss.dbeaver.core.object.filter.config" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -886,7 +886,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.object.filter.clear" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterClear">
+        <handler commandId="org.jkiss.dbeaver.core.object.filter.clear" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterClear">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -899,7 +899,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.object.filter.toggle" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterToggle">
+        <handler commandId="org.jkiss.dbeaver.core.object.filter.toggle" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterToggle">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -912,7 +912,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterExclude">
+        <handler commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterExclude">
             <enabledWhen>
                 <with variable="selection">
                     <iterate operator="and">
@@ -924,7 +924,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.object.filter.add.include" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterInclude">
+        <handler commandId="org.jkiss.dbeaver.core.object.filter.add.include" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterInclude">
             <enabledWhen>
                 <with variable="selection">
                     <iterate operator="and">
@@ -937,7 +937,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectCreateCopy">
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateCopy">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -952,7 +952,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.object.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
+        <handler commandId="org.jkiss.dbeaver.core.object.delete" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectDelete">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -967,7 +967,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectDelete">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -982,7 +982,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.edit.rename" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename">
+        <handler commandId="org.eclipse.ui.edit.rename" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectRename">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part.active"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -996,7 +996,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.object.move.up" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectMove">
+        <handler commandId="org.jkiss.dbeaver.core.object.move.up" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectMove">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -1010,7 +1010,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.object.move.down" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectMove">
+        <handler commandId="org.jkiss.dbeaver.core.object.move.down" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectMove">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
             <enabledWhen>
                 <with variable="selection">
@@ -1025,7 +1025,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.object.goto" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectGoto">
+        <handler commandId="org.jkiss.dbeaver.core.object.goto" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectGoto">
             <activeWhen>
                 <or>
                     <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
@@ -1965,7 +1965,7 @@
             <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <separator name="projects" visible="true"/>
             <menu label="%menu.org.jkiss.dbeaver.core.project.select.label" commandId="org.jkiss.dbeaver.core.project.select">
-                <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
+                <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
             </menu>
             <command commandId="org.jkiss.dbeaver.core.new.folder" label="%command.org.jkiss.dbeaver.core.new.folder.name" tooltip="%command.org.jkiss.dbeaver.core.new.folder.description"/>
             <separator name="additions" visible="true"/>
@@ -2277,7 +2277,7 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.project">
-            <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
+            <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
         </menuContribution>
 
         <!-- SQL editor menu -->
