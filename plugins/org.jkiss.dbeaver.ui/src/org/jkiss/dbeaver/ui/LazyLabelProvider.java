@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TreeColumnViewerLabelProvider;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.ui.ILazyLabelProvider;
 
 /**
  * LazyLabelProvider

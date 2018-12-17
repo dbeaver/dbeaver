@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 
 public class DBeaverPerspective implements IPerspectiveFactory
 {
+    public static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
 
     public static final String FOLDER_NAVIGATION = "navigation"; //$NON-NLS-1$
     public static final String FOLDER_HELP = "help"; //$NON-NLS-1$
