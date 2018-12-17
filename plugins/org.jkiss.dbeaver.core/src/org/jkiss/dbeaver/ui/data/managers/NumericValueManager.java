@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.BitInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.NumberInlineEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
+import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 
 /**
  * JDBC number value handler
