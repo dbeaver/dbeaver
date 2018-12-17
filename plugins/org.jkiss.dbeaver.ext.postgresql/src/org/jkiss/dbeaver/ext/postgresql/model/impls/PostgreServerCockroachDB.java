@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import static org.jkiss.dbeaver.ext.postgresql.model.PostgreWithClauseBuilder.generateWithClause;
-
 /**
  * PostgreServerCockroachDB
  */
@@ -152,11 +150,5 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
             throw new DBException(e, table.getDataSource());
         }
     }
-
-    @Override
-    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
-        return generateWithClause(table);
-    }
-
 }
 
