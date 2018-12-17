@@ -26,7 +26,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.bundle.UIMessages;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -137,10 +137,10 @@ public class AutoRefreshControl {
         if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
             if (isAutoRefreshEnabled()) {
                 autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_STOP));
-                autoRefreshButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_stop_refresh);
+                autoRefreshButton.setToolTipText(UIMessages.sql_editor_resultset_filter_panel_btn_stop_refresh);
             } else {
                 autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_START));
-                autoRefreshButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_config_refresh);
+                autoRefreshButton.setToolTipText(UIMessages.sql_editor_resultset_filter_panel_btn_config_refresh);
             }
         }
     }
@@ -167,7 +167,7 @@ public class AutoRefreshControl {
                 schedulerMenu = new Menu(dropdown.getParent().getShell());
                 {
                     MenuItem mi = new MenuItem(schedulerMenu, SWT.NONE);
-                    mi.setText(CoreMessages.sql_editor_resultset_filter_panel_menu_customize);
+                    mi.setText(UIMessages.sql_editor_resultset_filter_panel_menu_customize);
                     mi.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -176,7 +176,7 @@ public class AutoRefreshControl {
                     });
 
                     mi = new MenuItem(schedulerMenu, SWT.NONE);
-                    mi.setText(CoreMessages.sql_editor_resultset_filter_panel_menu_stop);
+                    mi.setText(UIMessages.sql_editor_resultset_filter_panel_menu_stop);
                     mi.setEnabled(isAutoRefreshEnabled());
                     mi.addSelectionListener(new SelectionAdapter() {
                         @Override
@@ -198,8 +198,8 @@ public class AutoRefreshControl {
                         final Integer timeout = presetList.get(i);
                         mi = new MenuItem(schedulerMenu, SWT.PUSH);
                         String text = i == 0 ?
-                            NLS.bind(CoreMessages.sql_editor_resultset_filter_panel_menu_refresh_interval, timeout) :
-                            NLS.bind(CoreMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_1, timeout);
+                            NLS.bind(UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval, timeout) :
+                            NLS.bind(UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_1, timeout);
                         mi.setText(text);
                         if (isAutoRefreshEnabled() && timeout == defaultInterval) {
                             schedulerMenu.setDefaultItem(mi);

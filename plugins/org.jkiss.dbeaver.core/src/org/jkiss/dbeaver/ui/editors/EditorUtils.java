@@ -26,21 +26,14 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -284,22 +277,6 @@ public class EditorUtils {
             return false;
         }
         return "Auto save all editors".equals(currentJob.getName());
-    }
-
-    public static IPreferenceStore getEditorsPreferenceStore() {
-        return new ScopedPreferenceStore(InstanceScope.INSTANCE, "org.eclipse.ui.editors");
-    }
-
-    public static Color getDefaultTextBackground() {
-        IPreferenceStore preferenceStore = EditorUtils.getEditorsPreferenceStore();
-        String bgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-        return CommonUtils.isEmpty(bgRGB) ? Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
-    }
-
-    public static Color getDefaultTextForeground() {
-        IPreferenceStore preferenceStore = EditorUtils.getEditorsPreferenceStore();
-        String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
-        return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
     }
 
     public static void trackControlContext(IWorkbenchSite site, Control control, String contextId) {

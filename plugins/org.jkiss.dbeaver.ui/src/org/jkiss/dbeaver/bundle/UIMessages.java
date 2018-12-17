@@ -33,6 +33,13 @@ public class UIMessages extends NLS {
 	public static String ui_properties_tree_viewer_action_reset_value;
 	public static String ui_properties_tree_viewer_category_general;
 
+	public static String sql_editor_resultset_filter_panel_btn_config_refresh;
+	public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
+	public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
+	public static String sql_editor_resultset_filter_panel_menu_refresh_interval_1;
+	public static String sql_editor_resultset_filter_panel_menu_stop;
+	public static String sql_editor_resultset_filter_panel_menu_customize;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
