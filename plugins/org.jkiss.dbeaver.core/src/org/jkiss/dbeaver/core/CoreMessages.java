@@ -1388,14 +1388,9 @@ public class CoreMessages extends NLS {
 	public static String sql_editor_resultset_filter_panel_btn_remove;
 	public static String sql_editor_resultset_filter_panel_btn_save;
 	public static String sql_editor_resultset_filter_panel_btn_custom;
-	public static String sql_editor_resultset_filter_panel_btn_config_refresh;
-	public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
 	public static String sql_editor_resultset_filter_panel_label;
 	public static String sql_editor_resultset_filter_panel_btn_open_console;
-	public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
-	public static String sql_editor_resultset_filter_panel_menu_refresh_interval_1;
-	public static String sql_editor_resultset_filter_panel_menu_stop;
-	public static String sql_editor_resultset_filter_panel_menu_customize;
+
 	public static String sql_editor_resultset_filter_panel_control_no_data;
 	public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
 	// SQL editor resultset filter panel
