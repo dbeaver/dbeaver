@@ -240,7 +240,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ?
-            DBeaverCore.getInstance().getProjectRegistry().getActiveProject() : file.getProject();
+            DBWorkbench.getPlatform().getProjectManager().getActiveProject() : file.getProject();
     }
 
     @Nullable
@@ -463,7 +463,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Remove connection association
                 document.replace(region.getOffset(), region.getLength(), "");
             } else {
-                SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
+                SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
 
                 StringBuilder assocSpecLine = new StringBuilder(EMBEDDED_BINDING_PREFIX);
                 bindingType.appendSpec(dataSourceContainer, assocSpecLine);
@@ -3106,7 +3106,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            if (!DBeaverCore.isClosing() && resultsSash != null && !resultsSash.isDisposed()) {
+            if (!DBWorkbench.getPlatform().isShuttingDown() && resultsSash != null && !resultsSash.isDisposed()) {
                 dumpOutput(monitor);
 
                 schedule(200);

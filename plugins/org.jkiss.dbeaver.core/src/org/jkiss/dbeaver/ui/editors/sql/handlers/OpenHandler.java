@@ -34,20 +34,18 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -63,7 +61,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Handler;
 
 public class OpenHandler extends AbstractDataSourceHandler {
 
@@ -95,7 +92,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
 
         IProject project = !containers.isEmpty() ?
             containers.get(0).getRegistry().getProject() :
-            DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         checkProjectIsOpen(project);
         final DBPDataSourceContainer[] containerList = containers.toArray(new DBPDataSourceContainer[containers.size()]);
 
@@ -113,7 +110,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
     }
 
     public static void openNewEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, ISelection selection) throws CoreException {
-        IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         checkProjectIsOpen(project);
         IFolder folder = getCurrentScriptFolder(selection);
         IFile scriptFile = ResourceUtils.createNewScript(project, folder, dataSourceContainer);
@@ -155,11 +152,11 @@ public class OpenHandler extends AbstractDataSourceHandler {
     @Nullable
     private static DBPDataSourceContainer getCurrentConnection(ExecutionEvent event) throws InterruptedException {
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
-        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : projectRegistry.getActiveProject();
 
         if (dataSourceContainer == null) {
-            final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+            final DBPDataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
             if (dataSourceRegistry == null) {
                 return null;
             }
@@ -230,7 +227,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
     }
 
     public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) throws CoreException {
-        final IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        final IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         checkProjectIsOpen(project);
         ResourceUtils.ResourceInfo res = ResourceUtils.findRecentScript(project, dataSourceContainer);
         if (res != null) {

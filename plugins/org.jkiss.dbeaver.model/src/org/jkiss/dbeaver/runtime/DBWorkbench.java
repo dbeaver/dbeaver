@@ -28,22 +28,37 @@ import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
  */
 public class DBWorkbench {
 
-    private static DBWorkbench instance = new DBWorkbench();
+    private static final DBWorkbench instance = new DBWorkbench();
+
+    private static volatile DBPPlatform platformInstance = null;
+    private static volatile DBPPlatformUI platformUIInstance = null;
 
     public static DBPPlatform getPlatform() {
-        DBPPlatform platform = Adapters.adapt(instance, DBPPlatform.class);
-        if (platform == null) {
-            throw new IllegalStateException("Internal configuration error. Platform not instantiated.");
+        if (platformInstance == null) {
+            synchronized (DBWorkbench.class) {
+                if (platformInstance == null) {
+                    platformInstance = Adapters.adapt(instance, DBPPlatform.class);
+                    if (platformInstance == null) {
+                        throw new IllegalStateException("Internal configuration error. Platform not instantiated.");
+                    }
+                }
+            }
         }
-        return platform;
+        return platformInstance;
     }
 
     public static DBPPlatformUI getPlatformUI() {
-        DBPPlatformUI platformUI = Adapters.adapt(instance, DBPPlatformUI.class);
-        if (platformUI == null) {
-            throw new IllegalStateException("Internal configuration error. Platform UI not instantiated.");
+        if (platformUIInstance == null) {
+            synchronized (DBWorkbench.class) {
+                if (platformUIInstance == null) {
+                    platformUIInstance = Adapters.adapt(instance, DBPPlatformUI.class);
+                    if (platformUIInstance == null) {
+                        throw new IllegalStateException("Internal configuration error. Platform UI not instantiated.");
+                    }
+                }
+            }
         }
-        return platformUI;
+        return platformUIInstance;
     }
 
     /**
