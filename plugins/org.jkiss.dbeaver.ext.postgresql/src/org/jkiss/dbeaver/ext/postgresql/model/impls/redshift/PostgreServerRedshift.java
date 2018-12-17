@@ -32,8 +32,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jkiss.dbeaver.ext.postgresql.model.PostgreWithClauseBuilder.generateWithClause;
-
 /**
  * PostgreServerRedshift
  */
@@ -157,11 +155,6 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     @Override
     public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
         return new RedshiftSchemaCache();
-    }
-
-    @Override
-    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
-        return generateWithClause(table);
     }
 
     private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
