@@ -26,11 +26,16 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * TextEditorUtils
  */
 public class TextEditorUtils {
 
+
+    private static Map<String, Integer> ACTION_TRANSLATE_MAP;
 
     public static IPreferenceStore getEditorsPreferenceStore() {
         return new ScopedPreferenceStore(InstanceScope.INSTANCE, "org.eclipse.ui.editors");
@@ -47,4 +52,22 @@ public class TextEditorUtils {
         String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
         return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
     }
+
+    public static Map<String, Integer> getTextEditorActionMap()
+    {
+        if (ACTION_TRANSLATE_MAP == null) {
+            ACTION_TRANSLATE_MAP = new HashMap<>();
+            FakeTextEditor.fillActionMap(ACTION_TRANSLATE_MAP );
+        }
+        return ACTION_TRANSLATE_MAP;
+    }
+
+    private static class FakeTextEditor extends AbstractTextEditor {
+        static void fillActionMap(Map<String, Integer> map) {
+            for (AbstractTextEditor.IdMapEntry entry : AbstractTextEditor.ACTION_MAP) {
+                map.put(entry.getActionId(), entry.getAction());
+            }
+        }
+    }
+
 }

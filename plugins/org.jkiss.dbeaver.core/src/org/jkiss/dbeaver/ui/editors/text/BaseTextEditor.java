@@ -69,19 +69,6 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     public static final String GROUP_SQL_ADDITIONS = "sql.additions";
     public static final String GROUP_SQL_EXTRAS = "sql.extras";
 
-    private static Map<String, Integer> ACTION_TRANSLATE_MAP;
-
-    public static Map<String, Integer> getActionMap()
-    {
-        if (ACTION_TRANSLATE_MAP == null) {
-            ACTION_TRANSLATE_MAP = new HashMap<>();
-            for (IdMapEntry entry : ACTION_MAP) {
-                ACTION_TRANSLATE_MAP.put(entry.getActionId(), entry.getAction());
-            }
-        }
-        return ACTION_TRANSLATE_MAP;
-    }
-
     public static BaseTextEditor getTextEditor(IEditorPart editor)
     {
         if (editor == null) {
