@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -227,7 +226,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
                 throw new DBException("Navigator node '" + nodePath + "' not found");
             }
             if (node instanceof DBNDatabaseNode) {
-                EntityEditorInput realInput = new EntityEditorInput((DBNDatabaseNode) node);
+                DatabaseNodeEditorInput realInput = new DatabaseNodeEditorInput((DBNDatabaseNode) node);
                 realInput.setDefaultFolderId(activeFolderId);
                 realInput.setDefaultPageId(activePageId);
                 return realInput;

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
@@ -24,9 +25,11 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+import org.jkiss.dbeaver.bundle.UIMessages;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
  * Search actions contributor
@@ -84,4 +87,27 @@ public class EditorSearchActionsContributor extends MultiPageEditorActionBarCont
         actionBars.updateActionBars();
     }
 
+    /**
+     * Context search action
+     */
+    public static class ContextSearchAction extends Action {
+
+        private final ISearchContextProvider contextProvider;
+        private final ISearchContextProvider.SearchType searchType;
+
+        public ContextSearchAction(ISearchContextProvider contextProvider, ISearchContextProvider.SearchType searchType)
+        {
+            super(UIMessages.ui_actions_context_search_name, DBeaverIcons.getImageDescriptor(UIIcon.FIND));
+            this.contextProvider = contextProvider;
+            this.searchType = searchType;
+        }
+
+        @Override
+        public void run()
+        {
+            if (contextProvider.isSearchEnabled()) {
+                contextProvider.performSearch(searchType);
+            }
+        }
+    }
 }

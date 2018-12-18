@@ -91,4 +91,10 @@ public interface DBPPlatformUI {
         ILoadService<RESULT> loadingService,
         ILoadVisualizer<RESULT> visualizer);
 
+    /**
+     * FIXME: this is a hack. We need to call platform (workbench) to refresh part's contexts (enabled commands).
+     * There is no such thing as part in abstract UI. Need some better solution.
+     * @part IWorkbenchPart
+     */
+    void refreshPartState(Object part);
 }

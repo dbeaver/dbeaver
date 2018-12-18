@@ -139,29 +139,6 @@ public class DBeaverUI implements DBPPlatformUI {
         }
     }
 
-    /*
-    public static void runWithProgress(IWorkbenchPartSite site, final DBRRunnableWithProgress runnable)
-        throws InvocationTargetException, InterruptedException
-    {
-        IActionBars actionBars = null;
-        if (site instanceof IViewSite) {
-            actionBars = ((IViewSite) site).getActionBars();
-        } else if (site instanceof IEditorSite) {
-            actionBars = ((IEditorSite) site).getActionBars();
-        }
-        IStatusLineManager statusLineManager = null;
-        if (actionBars != null) {
-            statusLineManager = actionBars.getStatusLineManager();
-        }
-        if (statusLineManager == null) {
-            runInProgressService(runnable);
-        } else {
-            IProgressMonitor progressMonitor = statusLineManager.getProgressMonitor();
-            runnable.run(new DefaultProgressMonitor(progressMonitor));
-        }
-    }
-*/
-
     @Override
     public void notifyAgent(String message, int status) {
         if (!ModelPreferences.getPreferences().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
@@ -353,4 +330,12 @@ public class DBeaverUI implements DBPPlatformUI {
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
     }
+
+    @Override
+    public void refreshPartState(Object part) {
+        if (part instanceof IWorkbenchPart) {
+            UIUtils.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
+        }
+    }
+
 }

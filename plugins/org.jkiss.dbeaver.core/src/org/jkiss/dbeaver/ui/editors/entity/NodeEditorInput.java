@@ -23,7 +23,6 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
-import org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory;
 
 /**
  * NodeEditorInput

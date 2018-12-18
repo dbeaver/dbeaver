@@ -52,7 +52,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
+import org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.entity.NodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
@@ -199,7 +199,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     if (!dnNode.getObject().isPersisted()) {
                         return null;
                     }
-                    EntityEditorInput editorInput = new EntityEditorInput(dnNode);
+                    DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(dnNode);
                     if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
                         if (dnNode.getObject() instanceof DBSObjectContainer) {
                             // do not auto-refresh object containers (too expensive)

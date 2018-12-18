@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.entity;
+package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -23,16 +23,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
-import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -41,12 +38,12 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ProgressEditorPart extends EditorPart {
 
-    private final IDatabaseEditor entityEditor;
+    private final IDatabaseEditor ownerEditor;
     private Composite parentControl;
     private Canvas progressCanvas;
 
-    public ProgressEditorPart(IDatabaseEditor entityEditor) {
-        this.entityEditor = entityEditor;
+    public ProgressEditorPart(IDatabaseEditor ownerEditor) {
+        this.ownerEditor = ownerEditor;
     }
 
     @Override
@@ -109,8 +106,8 @@ public class ProgressEditorPart extends EditorPart {
             return;
         }
         try {
-            entityEditor.init(entityEditor.getEditorSite(), result);
-            entityEditor.recreateEditorControl();
+            ownerEditor.init(ownerEditor.getEditorSite(), result);
+            ownerEditor.recreateEditorControl();
         } catch (Exception e) {
             DBUserInterface.getInstance().showError("Editor init", "Can't initialize editor", e);
         }
@@ -159,10 +156,10 @@ public class ProgressEditorPart extends EditorPart {
             if (result == null) {
                 // Close editor
                 UIUtils.asyncExec(() ->
-                    entityEditor.getSite().getWorkbenchWindow().getActivePage().closeEditor(entityEditor, false));
+                    ownerEditor.getSite().getWorkbenchWindow().getActivePage().closeEditor(ownerEditor, false));
             } else {
                 // Activate entity editor (we have changed inner editors and need to force contexts activation).
-                UIUtils.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts(entityEditor));
+                DBWorkbench.getPlatformUI().refreshPartState(ownerEditor);
             }
         }
     }

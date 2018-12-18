@@ -129,4 +129,9 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         throw new IllegalStateException("Loading jobs not supported in console mode");
     }
+
+    @Override
+    public void refreshPartState(Object part) {
+        // do nothing
+    }
 }
