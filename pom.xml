@@ -126,13 +126,6 @@
                             <ws>cocoa</ws>
                             <arch>x86_64</arch>
                         </environment>
-<!--
-                        <environment>
-                            <os>solaris</os>
-                            <ws>gtk</ws>
-                            <arch>x86_64</arch>
-                        </environment>
--->
                     </environments>
                 </configuration>
             </plugin>
@@ -193,8 +186,8 @@
     </build>
 
     <profiles>
+        <!-- Profile used to switch to older (Oxygen) Eclipse platform -->
         <profile>
-            <!-- Profile used to sign jars -->
             <id>eclipse-oxygen</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -205,8 +198,8 @@
             </properties>
         </profile>
 
+        <!-- Profile for jars sign -->
         <profile>
-            <!-- Profile used to sign jars -->
             <id>sign-code</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -238,6 +231,8 @@
             </build>
         </profile>
     </profiles>
+
+    <!-- unit tests -->
 
     <dependencies>
         <dependency>
