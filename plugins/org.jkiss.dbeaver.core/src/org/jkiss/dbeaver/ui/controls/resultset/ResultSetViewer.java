@@ -1836,14 +1836,13 @@ public class ResultSetViewer extends Viewer
                 manager.add(ActionUtils.makeCommandContribution(site, CoreCommands.CMD_PASTE_SPECIAL));
                 manager.add(new Separator());
 
-                if (valueController != null) {
+                {
+                    MenuManager editMenu = new MenuManager(
+                        CoreMessages.actions_menu_edit,
+                        DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
+                        MENU_ID_EDIT); //$NON-NLS-1$
 
-                    {
-                        MenuManager editMenu = new MenuManager(
-                            CoreMessages.actions_menu_edit,
-                            DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
-                            MENU_ID_EDIT); //$NON-NLS-1$
-
+                    if (valueController != null) {
                         // Edit items
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT_INLINE));
@@ -1862,12 +1861,17 @@ public class ResultSetViewer extends Viewer
                         }
 
                         editMenu.add(new Separator());
+                    }
+
+                    if (!isReadOnly()) {
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
+                    }
+                    if (valueController != null && !valueController.isReadOnly()) {
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
-
-                        manager.add(editMenu);
                     }
+
+                    manager.add(editMenu);
                 }
             }
         }
