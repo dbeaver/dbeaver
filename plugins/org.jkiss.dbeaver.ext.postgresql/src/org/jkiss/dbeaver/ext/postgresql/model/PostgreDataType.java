@@ -140,6 +140,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             if (this.dataKind == DBPDataKind.OBJECT) {
                 if (PostgreConstants.TYPE_JSONB.equals(name) || PostgreConstants.TYPE_JSON.equals(name)) {
                     this.dataKind = DBPDataKind.CONTENT;
+                } else if (PostgreConstants.TYPE_INTERVAL.equals(name)) {
+                    this.dataKind = DBPDataKind.DATETIME;
                 }
             }
         }

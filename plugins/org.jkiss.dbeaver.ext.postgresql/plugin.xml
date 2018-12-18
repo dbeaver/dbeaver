@@ -417,6 +417,7 @@
             <type name="REFCURSOR"/>
             <type name="MONEY"/>
             <type name="GEOMETRY"/>
+            <type name="INTERVAL"/>
         </provider>
     </extension>
 

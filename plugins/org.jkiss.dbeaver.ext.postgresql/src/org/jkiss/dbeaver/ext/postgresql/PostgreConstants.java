@@ -67,6 +67,7 @@ public class PostgreConstants {
 
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
     public static final String PG_ARRAY_CLASS = "org.postgresql.jdbc.PgArray";
+    public static final String PG_INTERVAL_CLASS = "org.postgresql.util.PGInterval";
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);
@@ -79,6 +80,7 @@ public class PostgreConstants {
     public static final String TYPE_REFCURSOR = "refcursor";
     public static final String TYPE_MONEY = "money";
     public static final String TYPE_GEOMETRY = "geometry";
+    public static final String TYPE_INTERVAL = "interval";
 
     public static final String HANDLER_SSL = "postgre_ssl";
 
