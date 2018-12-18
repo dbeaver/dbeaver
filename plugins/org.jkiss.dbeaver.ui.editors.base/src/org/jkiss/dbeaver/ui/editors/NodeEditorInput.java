@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.entity;
+package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 
 /**
  * NodeEditorInput
