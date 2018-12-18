@@ -3010,7 +3010,7 @@
     <extension point="org.eclipse.ui.elementFactories">
         <factory id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
         <factory id="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory"/>
-        <factory id="org.jkiss.dbeaver.ui.editors.entity.NodeEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.entity.NodeEditorInputFactory"/>
+        <factory id="org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory"/>
     </extension>
 
     <extension point="org.eclipse.ui.themes">

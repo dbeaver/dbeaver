@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
-import org.jkiss.dbeaver.ui.editors.entity.NodeEditorInput;
+import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
 
 import java.util.Collection;
 
