@@ -24,8 +24,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -33,11 +31,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -99,7 +99,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         String title,
         DBSEntity entity)
     {
-        super(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, entity.getName()));
+        super(NLS.bind(EditorsMessages.dialog_struct_columns_select_title, title, entity.getName()));
         this.entity = entity;
     }
 
@@ -141,7 +141,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     protected void createColumnsGroup(Composite panel)
     {
-        columnsGroup = UIUtils.createControlGroup(panel, CoreMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
+        columnsGroup = UIUtils.createControlGroup(panel, EditorsMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
         //columnsViewer = new TableViewer(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
         columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
         columnsTable.setHeaderVisible(true);
@@ -202,13 +202,13 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
     }
 
     protected void createAttributeColumns(Table columnsTable) {
-        TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, CoreMessages.dialog_struct_columns_select_column);
+        TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, EditorsMessages.dialog_struct_columns_select_column);
         colName.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 0));
 
         TableColumn colPosition = UIUtils.createTableColumn(columnsTable, SWT.CENTER, "#"); //$NON-NLS-1$
         colPosition.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 1));
 
-        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, CoreMessages.dialog_struct_columns_type); //$NON-NLS-1$
+        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, EditorsMessages.dialog_struct_columns_type); //$NON-NLS-1$
         colType.addListener(SWT.Selection, new TableColumnSortListener(columnsTable, 2));
     }
 
@@ -255,8 +255,8 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             });
         } catch (InvocationTargetException e) {
             DBUserInterface.getInstance().showError(
-                    CoreMessages.dialog_struct_columns_select_error_load_columns_title,
-                CoreMessages.dialog_struct_columns_select_error_load_columns_message,
+                    EditorsMessages.dialog_struct_columns_select_error_load_columns_title,
+                EditorsMessages.dialog_struct_columns_select_error_load_columns_message,
                 e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
@@ -268,7 +268,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
             AttributeInfo col = new AttributeInfo(attribute);
             this.attributes.add(col);
 
-            DBNDatabaseNode attributeNode = DBeaverCore.getInstance().getNavigatorModel().findNode(attribute);
+            DBNDatabaseNode attributeNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(attribute);
             if (attributeNode != null) {
                 columnItem.setImage(0, DBeaverIcons.getImage(attributeNode.getNodeIcon()));
             }
@@ -289,7 +289,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createLabelText(
             tableGroup,
-            CoreMessages.dialog_struct_columns_select_label_table,
+            EditorsMessages.dialog_struct_columns_select_label_table,
             DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
         return tableGroup;
     }

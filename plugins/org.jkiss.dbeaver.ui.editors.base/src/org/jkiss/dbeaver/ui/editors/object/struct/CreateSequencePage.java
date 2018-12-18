@@ -17,20 +17,18 @@
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 public class CreateSequencePage extends BaseObjectEditPage {
 
@@ -40,7 +38,7 @@ public class CreateSequencePage extends BaseObjectEditPage {
 
     public CreateSequencePage(DBSObjectContainer container)
     {
-        super(CoreMessages.dialog_struct_create_procedure_title);
+        super(EditorsMessages.dialog_struct_create_procedure_title);
         this.container = container;
     }
 
@@ -51,15 +49,9 @@ public class CreateSequencePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_sequence_container, DBUtils.getObjectFullName(container, DBPEvaluationContext.UI)).setEditable(false);
-        final Text nameText = UIUtils.createLabelText(propsGroup,  CoreMessages.dialog_struct_create_sequence_name, null);
-        nameText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                name = nameText.getText();
-            }
-        });
+        UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_sequence_container, DBUtils.getObjectFullName(container, DBPEvaluationContext.UI)).setEditable(false);
+        final Text nameText = UIUtils.createLabelText(propsGroup,  EditorsMessages.dialog_struct_create_sequence_name, null);
+        nameText.addModifyListener(e -> name = nameText.getText());
         return propsGroup;
     }
 

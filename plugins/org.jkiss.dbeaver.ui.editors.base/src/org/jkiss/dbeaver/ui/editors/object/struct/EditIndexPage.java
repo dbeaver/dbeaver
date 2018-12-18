@@ -24,11 +24,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class EditIndexPage extends AttributesSelectorPage {
     @Override
     protected void createContentsBeforeColumns(Composite panel)
     {
-        UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_index_label_type);
+        UIUtils.createControlLabel(panel, EditorsMessages.dialog_struct_edit_index_label_type);
         final Combo typeCombo = new Combo(panel, SWT.DROP_DOWN | SWT.READ_ONLY);
         typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 

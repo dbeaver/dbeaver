@@ -71,11 +71,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -89,8 +85,17 @@ import org.jkiss.utils.CommonUtils;
 
 
 
-public class ExasolCreateForeignKeyDialog extends BaseObjectEditPage {
+public class ExasolCreateForeignKeyDialog extends EditForeignKeyPage {
+    public ExasolCreateForeignKeyDialog(String title, ExasolTable table) {
+        super(title, table, new DBSForeignKeyModifyRule[0]);
+    }
 
+    @Override
+    protected boolean supportsCustomName() {
+        return true;
+    }
+
+    /*
     public static class FKColumnInfo {
         final DBSEntityAttribute refColumn;
         DBSEntityAttribute ownColumn;
@@ -549,5 +554,5 @@ public class ExasolCreateForeignKeyDialog extends BaseObjectEditPage {
     }
 
 
-
+*/
 }

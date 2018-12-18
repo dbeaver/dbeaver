@@ -31,7 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
@@ -62,7 +62,7 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
                         try {
                             document.replace(textSelection.getOffset(), textSelection.getLength(), formattedText);
                         } catch (BadLocationException e) {
-                            DBeaverUI.getInstance().showError("Morph text", "Error replacing text", e);
+                            DBWorkbench.getPlatformUI().showError("Morph text", "Error replacing text", e);
                         }
                     }
                 }

@@ -24,11 +24,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 public class EntityEditPage extends BaseObjectEditPage {
 
@@ -37,7 +37,7 @@ public class EntityEditPage extends BaseObjectEditPage {
 
     public EntityEditPage(DBPDataSource dataSource, DBSEntityType entityType)
     {
-        super(CoreMessages.dialog_struct_create_entity_title + entityType.getName());
+        super(EditorsMessages.dialog_struct_create_entity_title + entityType.getName());
         this.dataSource = dataSource;
     }
 
@@ -48,7 +48,7 @@ public class EntityEditPage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_entity_group_name, null); //$NON-NLS-2$
+        final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_entity_group_name, null); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)

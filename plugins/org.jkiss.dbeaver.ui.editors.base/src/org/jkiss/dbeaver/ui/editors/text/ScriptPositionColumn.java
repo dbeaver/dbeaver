@@ -27,7 +27,7 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.ArrayUtils;
@@ -86,7 +86,7 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor)
             {
-                if (DBeaverCore.isClosing()) {
+                if (DBWorkbench.getPlatform().isShuttingDown()) {
                     return Status.CANCEL_STATUS;
                 }
                 BaseTextEditor editor = (BaseTextEditor)getEditor();
