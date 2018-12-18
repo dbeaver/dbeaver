@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.entity;
+package org.jkiss.dbeaver.ui.editors;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -27,16 +27,16 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
- * EntityEditorInput
+ * DatabaseNodeEditorInput
  */
-public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
+public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
 {
-    public EntityEditorInput(@NotNull DBNDatabaseNode dbmNode)
+    public DatabaseNodeEditorInput(@NotNull DBNDatabaseNode dbmNode)
     {
         super(dbmNode);
     }
 
-    public EntityEditorInput(@NotNull DBNDatabaseNode dbnDatabaseNode, @Nullable DBECommandContext commandContext)
+    public DatabaseNodeEditorInput(@NotNull DBNDatabaseNode dbnDatabaseNode, @Nullable DBECommandContext commandContext)
     {
         super(dbnDatabaseNode, commandContext);
     }

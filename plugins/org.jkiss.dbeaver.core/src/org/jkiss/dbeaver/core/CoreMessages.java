@@ -955,7 +955,6 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_page_log_task_progress_log;
 	public static String tools_wizard_page_log_task_started_at;
 	
-	public static String ui_actions_context_search_name;
     public static String ui_actions_exit_emergency_question;
 	public static String ui_common_button_help;
 	public static String ui_properties_category_information;

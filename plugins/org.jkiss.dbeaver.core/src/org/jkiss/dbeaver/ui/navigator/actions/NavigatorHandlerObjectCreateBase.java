@@ -41,9 +41,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -228,7 +228,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         workbenchWindow.getActivePage().activate(editor);
                     } else if (openEditor) {
                         // Open new one with existing context
-                        EntityEditorInput editorInput = new EntityEditorInput(
+                        DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(
                             newChild,
                             commandTarget.getContext());
                         workbenchWindow.getActivePage().openEditor(
