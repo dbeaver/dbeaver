@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -260,7 +261,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         // Handle all shortcuts by filters editor, not by host editor
-        UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
 
         {
             filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);

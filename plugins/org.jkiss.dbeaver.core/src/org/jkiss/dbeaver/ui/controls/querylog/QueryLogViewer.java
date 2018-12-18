@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -363,7 +364,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         });
         this.searchText.addModifyListener(e -> scheduleLogRefresh());
-        UIUtils.enableHostEditorKeyBindingsSupport(site, searchText);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(site, searchText);
 
         // Create log table
         logTable = new Table(
