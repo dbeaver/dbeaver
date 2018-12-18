@@ -18,9 +18,15 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+import java.util.List;
 
 /**
  * PostgreServerExtensionBase
@@ -173,5 +179,78 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     }
 
+    @Override
+    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
+        StringBuilder withClauseBuilder = new StringBuilder();
+
+        if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
+            withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
+            withClauseBuilder.append("\n)");
+        }
+
+        return withClauseBuilder.toString();
+    }
+
+    @Override
+    public String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter) {
+        StringBuilder ddl = new StringBuilder();
+        if (tableBase instanceof PostgreTable) {
+            PostgreTable table = (PostgreTable) tableBase;
+            if (!alter) {
+                try {
+                    final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
+                    if (!CommonUtils.isEmpty(superTables)) {
+                        ddl.append("\nINHERITS (");
+                        for (int i = 0; i < superTables.size(); i++) {
+                            if (i > 0) ddl.append(",");
+                            ddl.append(superTables.get(i).getAssociatedEntity().getFullyQualifiedName(DBPEvaluationContext.DDL));
+                        }
+                        ddl.append(")");
+                    }
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        if (tableBase instanceof PostgreTableRegular) {
+            PostgreTableRegular table = (PostgreTableRegular) tableBase;
+            try {
+                if (!alter) {
+                    ddl.append(tableBase.getDataSource().getServerType().createWithClause(table, tableBase));
+                }
+                boolean hasOtherSpecs = false;
+                PostgreTablespace tablespace = table.getTablespace(monitor);
+                if (tablespace != null && table.isTablespaceSpecified()) {
+                    if (!alter) {
+                        ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                    }
+                    hasOtherSpecs = true;
+                }
+                if (!alter && hasOtherSpecs) {
+                    ddl.append("\n");
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
+        } else if (tableBase instanceof PostgreTableForeign) {
+            PostgreTableForeign table = (PostgreTableForeign)tableBase;
+            try {
+                PostgreForeignServer foreignServer = table.getForeignServer(monitor);
+                if (foreignServer != null ) {
+                    ddl.append("\nSERVER ").append(DBUtils.getQuotedIdentifier(foreignServer));
+                }
+                String[] foreignOptions = table.getForeignOptions(monitor);
+                if (!ArrayUtils.isEmpty(foreignOptions)) {
+                    ddl.append("\nOPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+        tableBase.appendTableModifiers(monitor, ddl);
+
+        return ddl.toString();
+    }
 }
 

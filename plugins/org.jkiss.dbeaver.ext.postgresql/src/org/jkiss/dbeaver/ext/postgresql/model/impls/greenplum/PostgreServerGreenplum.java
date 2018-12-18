@@ -20,6 +20,8 @@ import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
+import static org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum.GreenplumWithClauseBuilder.generateWithClause;
+
 /**
  * PostgreServerGreenplum
  */
@@ -61,5 +63,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     public void configureDialect(PostgreDialect dialect) {
         dialect.addExtraKeywords("DISTRIBUTED");
     }
-}
 
+    @Override
+    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
+        return generateWithClause(table, tableBase);
+    }
+}

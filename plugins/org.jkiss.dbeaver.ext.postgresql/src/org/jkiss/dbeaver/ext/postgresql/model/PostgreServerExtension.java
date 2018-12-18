@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor; /**
+
+/**
  * PostgreServerExtension
  */
 public interface PostgreServerExtension
@@ -76,4 +76,8 @@ public interface PostgreServerExtension
     PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult);
 
     void configureDialect(PostgreDialect dialect);
+
+    String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase);
+
+    String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
 }
