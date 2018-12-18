@@ -17,21 +17,19 @@
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,7 +41,7 @@ public class CreateProcedurePage extends BaseObjectEditPage {
 
     public CreateProcedurePage(DBSObjectContainer container)
     {
-        super(CoreMessages.dialog_struct_create_procedure_title);
+        super(EditorsMessages.dialog_struct_create_procedure_title);
         this.container = container;
     }
 
@@ -54,15 +52,15 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text containerText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_container, DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
+        final Text containerText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_procedure_container, DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
         containerText.setEditable(false);
-        final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, null);
+        final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(e -> {
             name = nameText.getText();
             updatePageState();
         });
         if (getPredefinedProcedureType() == null) {
-            final Combo typeCombo = UIUtils.createLabelCombo(propsGroup, CoreMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
+            final Combo typeCombo = UIUtils.createLabelCombo(propsGroup, EditorsMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
             typeCombo.add(DBSProcedureType.PROCEDURE.name());
             typeCombo.add(DBSProcedureType.FUNCTION.name());
             typeCombo.addModifyListener(e -> {

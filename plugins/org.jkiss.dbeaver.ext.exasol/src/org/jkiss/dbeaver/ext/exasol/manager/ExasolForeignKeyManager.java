@@ -4,9 +4,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableKeyColumn;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateForeignKeyDialog;
-import org.jkiss.dbeaver.ext.exasol.ui.ExasolCreateForeignKeyDialog.FKColumnInfo;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -48,12 +48,12 @@ public class ExasolForeignKeyManager
                 }
 
                 final ExasolTableForeignKey foreignKey = new ExasolTableForeignKey(
-                    parent, editPage.getUniqueConstraint(), editPage.isEnabled(), editPage.getName()
+                    parent, (ExasolTableUniqueKey) editPage.getUniqueConstraint(), editPage.isEnabled(), editPage.getName()
                 );
 
                 List<ExasolTableKeyColumn> columns = new ArrayList<ExasolTableKeyColumn>();
                 int cnt = 0;
-                for (FKColumnInfo column : editPage.getColumns()) {
+                for (ExasolCreateForeignKeyDialog.FKColumnInfo column : editPage.getColumns()) {
                     try {
                         columns.add(new ExasolTableKeyColumn(foreignKey, parent.getAttribute(monitor, column.getOwnColumn().getName()), ++cnt));
                     } catch (DBException e) {
