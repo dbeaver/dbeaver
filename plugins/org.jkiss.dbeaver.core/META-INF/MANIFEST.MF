@@ -126,6 +126,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.nebula.widgets.gallery,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.ui;visibility:=reexport,
+ org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
  org.jkiss.dbeaver.data.transfer,
  org.jkiss.bundle.bouncycastle;resolution:=optional

@@ -699,7 +699,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         // Register as datasource listener in all datasources
         // We need it because at this moment there could be come already loaded registries (on startup)
         DataSourceProviderRegistry.getInstance().addDataSourceRegistryListener(DataSourceManagementToolbar.this);
-        for (DataSourceRegistry registry : DataSourceRegistry.getAllRegistries()) {
+        for (DBPDataSourceRegistry registry : DBUtils.getAllRegistries()) {
             handleRegistryLoad(registry);
         }
 

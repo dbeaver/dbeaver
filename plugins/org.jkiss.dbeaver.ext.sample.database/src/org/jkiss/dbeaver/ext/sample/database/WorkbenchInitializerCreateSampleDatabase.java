@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -60,7 +61,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             // No active project
             return;
         }
-        if (DataSourceRegistry.findDataSource(SAMPLE_DB1_ID) != null) {
+        if (DBUtils.findDataSource(SAMPLE_DB1_ID) != null) {
             // Already exist
             return;
         }

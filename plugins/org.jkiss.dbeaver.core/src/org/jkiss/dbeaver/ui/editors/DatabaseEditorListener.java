@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IWorkbenchPage;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.INavigatorListener;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * DatabaseEditorListener
@@ -44,7 +44,7 @@ public class DatabaseEditorListener implements INavigatorListener
             dataSourceContainer.acquire(databaseEditor);
         }
         // Register node listener
-        DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+        DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
     }
 
     public void dispose()
@@ -56,7 +56,7 @@ public class DatabaseEditorListener implements INavigatorListener
         }
 
         // Remove node listener
-        DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
+        DBWorkbench.getPlatform().getNavigatorModel().removeListener(this);
     }
 
     public DBNNode getTreeNode()
@@ -86,7 +86,7 @@ public class DatabaseEditorListener implements INavigatorListener
                 }
             }
             if (closeEditor) {
-                if (DBeaverCore.isClosing()) {
+                if (DBWorkbench.getPlatform().isShuttingDown()) {
                     // Do not update editors during shutdown, just remove listeners
                     dispose();
                     return;

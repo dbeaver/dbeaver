@@ -107,6 +107,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.views.SQLResultsView;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -300,7 +301,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
         IEditorInput input = getEditorInput();
         if (input != null) {
-            EditorUtils.setInputDataSource(input, container, true);
+            EditorUtils.setInputDataSource(input, container);
+            IFile file = EditorUtils.getFileFromInput(input);
+            if (file != null) {
+                NavigatorUtils.refreshNavigatorResource(file, container);
+            }
         }
 
         checkConnected(false, status -> UIUtils.asyncExec(() -> {
@@ -317,7 +322,7 @@ public class SQLEditor extends SQLEditorBase implements
             dataSourceContainer.acquire(this);
         }
 
-        if (EditorUtils.isWriteEmbeddedBinding()) {
+        if (SQLEditorBase.isWriteEmbeddedBinding()) {
             // Patch connection reference
             UIUtils.syncExec(this::embedDataSourceAssociation);
         }
@@ -327,7 +332,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void updateDataSourceContainer() {
         DBPDataSourceContainer inputDataSource = null;
-        if (EditorUtils.isReadEmbeddedBinding()) {
+        if (SQLEditorBase.isReadEmbeddedBinding()) {
             // Try to get datasource from contents (always, no matter what )
             inputDataSource = getDataSourceFromContent();
         }
@@ -2008,7 +2013,7 @@ public class SQLEditor extends SQLEditorBase implements
             IFileStore fileStore = EFS.getStore(saveFile.toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
-            EditorUtils.setInputDataSource(input, getDataSourceContainer(), false);
+            EditorUtils.setInputDataSource(input, getDataSourceContainer());
 
             init(getEditorSite(), input);
         } catch (CoreException e) {

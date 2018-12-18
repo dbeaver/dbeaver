@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -166,6 +167,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             }
         }
         return false;
+    }
+
+    static boolean isReadEmbeddedBinding() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ);
+    }
+
+    static boolean isWriteEmbeddedBinding() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE);
     }
 
     protected void handleInputChange(IEditorInput input) {

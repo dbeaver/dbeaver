@@ -22,12 +22,12 @@ import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 public class DatabaseEditorInputFactory implements IElementFactory
@@ -68,7 +68,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
         final String activePageId = memento.getString(TAG_ACTIVE_PAGE);
         final String activeFolderId = memento.getString(TAG_ACTIVE_FOLDER);
 
-        final DBPDataSourceContainer dataSourceContainer = DataSourceRegistry.findDataSource(dataSourceId);
+        final DBPDataSourceContainer dataSourceContainer = DBUtils.findDataSource(dataSourceId);
         if (dataSourceContainer == null) {
             log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
@@ -79,7 +79,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
             return null;
         }
         final IProject project = dataSourceContainer.getRegistry().getProject();
-        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+        final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
         navigatorModel.ensureProjectLoaded(project);
 
         return new DatabaseLazyEditorInput(dataSourceContainer, project, nodePath, nodeName, activePageId, activeFolderId);
@@ -87,7 +87,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
 
     public static void saveState(IMemento memento, DatabaseEditorInput input)
     {
-        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS)) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS)) {
             return;
         }
         final DBCExecutionContext context = input.getExecutionContext();

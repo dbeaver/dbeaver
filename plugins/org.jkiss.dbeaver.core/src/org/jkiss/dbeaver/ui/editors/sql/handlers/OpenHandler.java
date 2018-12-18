@@ -270,7 +270,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
     }
 
     public static SQLEditor openSQLConsole(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, IEditorInput sqlInput) {
-        EditorUtils.setInputDataSource(sqlInput, dataSourceContainer, false);
+        EditorUtils.setInputDataSource(sqlInput, dataSourceContainer);
         return openSQLEditor(workbenchWindow, sqlInput);
     }
 
