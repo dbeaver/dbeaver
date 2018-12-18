@@ -95,6 +95,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -231,7 +232,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.spreadsheet.addDisposeListener(e -> dispose());
 
         trackPresentationControl();
-        UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
     }
 
     @Override

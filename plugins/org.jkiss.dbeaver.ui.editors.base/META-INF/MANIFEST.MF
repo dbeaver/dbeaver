@@ -11,9 +11,13 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
  org.eclipse.core.filesystem,
+ org.eclipse.jface,
+ org.eclipse.jface.text,
  org.eclipse.ui,
  org.eclipse.ui.ide,
+ org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui
 Bundle-ClassPath: .
-Export-Package: org.jkiss.dbeaver.ui.editors
+Export-Package: org.jkiss.dbeaver.ui.editors,
+ org.jkiss.dbeaver.ui.controls

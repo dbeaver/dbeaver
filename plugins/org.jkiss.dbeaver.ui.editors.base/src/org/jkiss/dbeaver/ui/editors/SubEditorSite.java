@@ -24,7 +24,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.services.IServiceLocator;
-import org.jkiss.dbeaver.bundle.UIActivator;
 
 /**
 * Sub editor site
@@ -94,7 +93,7 @@ public class SubEditorSite implements IEditorSite {
     @Override
     public String getPluginId()
     {
-        return UIActivator.PLUGIN_ID;
+        return parentSite.getPluginId();
     }
 
     @Override

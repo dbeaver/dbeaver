@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
@@ -80,7 +81,7 @@ class StatusLabel extends Composite {
         statusText.setLayoutData(gd);
 
         if (viewer != null) {
-            UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.statusText);
+            TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.statusText);
             UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.statusText);
         }
 
