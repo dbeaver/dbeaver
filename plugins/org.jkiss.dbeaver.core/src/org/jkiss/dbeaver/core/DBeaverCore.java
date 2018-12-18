@@ -495,6 +495,8 @@ public class DBeaverCore implements DBPPlatform {
         return projectRegistry;
     }
 
+    @NotNull
+    @Override
     public DBPExternalFileManager getExternalFileManager() {
         return projectRegistry;
     }

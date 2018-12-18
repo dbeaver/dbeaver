@@ -23,7 +23,6 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
@@ -33,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
@@ -90,7 +90,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public String getName()
     {
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME)) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME)) {
             return node.getNodeFullName();
         } else {
             return node.getName();
@@ -103,7 +103,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         if (getExecutionContext() == null ||
             getDatabaseObject() == null ||
             !getDatabaseObject().isPersisted() ||
-            !DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS))
+            !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS))
         {
             return null;
         }

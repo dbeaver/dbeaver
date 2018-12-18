@@ -37,14 +37,12 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -136,14 +134,6 @@ public class EditorUtils {
     //////////////////////////////////////////////////////////
     // Datasource <-> resource manipulations
 
-    public static boolean isReadEmbeddedBinding() {
-        return DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ);
-    }
-
-    public static boolean isWriteEmbeddedBinding() {
-        return DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE);
-    }
-
     public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput)
     {
         if (editorInput instanceof IDatabaseEditorInput) {
@@ -161,18 +151,18 @@ public class EditorUtils {
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
-                    final DBPExternalFileManager efManager = DBeaverCore.getInstance().getExternalFileManager();
+                    final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
                     String dataSourceId = (String) efManager.getFileProperty(localFile, PROP_SQL_DATA_SOURCE_ID);
                     String projectName = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT_ID);
                     if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
                         return null;
                     }
-                    final IProject project = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
+                    final IProject project = DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
                     if (project == null || !project.exists()) {
                         log.error("Can't locate project '" + projectName + "' in workspace");
                         return null;
                     }
-                    DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+                    DBPDataSourceRegistry dataSourceRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
                     return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSource(dataSourceId);
 
                 } else {
@@ -194,12 +184,12 @@ public class EditorUtils {
             if (dataSourceId != null) {
                 IProject project = file.getProject();
                 if (projectId != null) {
-                    final IProject fileProject = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectId);
+                    final IProject fileProject = DBWorkbench.getPlatform().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectId);
                     if (fileProject != null && fileProject.exists()) {
                         project = fileProject;
                     }
                 }
-                DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+                DBPDataSourceRegistry dataSourceRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
                 return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSource(dataSourceId);
             } else {
                 // Try to extract from embedded comment
@@ -211,7 +201,7 @@ public class EditorUtils {
         }
     }
 
-    public static void setInputDataSource(@NotNull IEditorInput editorInput, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
+    public static void setInputDataSource(@NotNull IEditorInput editorInput, @Nullable DBPDataSourceContainer dataSourceContainer)
     {
         if (editorInput instanceof INonPersistentEditorInput) {
             ((INonPersistentEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
@@ -219,19 +209,19 @@ public class EditorUtils {
         }
         IFile file = getFileFromInput(editorInput);
         if (file != null) {
-            setFileDataSource(file, dataSourceContainer, notify);
+            setFileDataSource(file, dataSourceContainer);
         } else {
             File localFile = getLocalFileFromInput(editorInput);
             if (localFile != null) {
-                setFileDataSource(dataSourceContainer, localFile);
+                setFileDataSource(localFile, dataSourceContainer);
             } else {
                 log.error("Can't set datasource for input " + editorInput);
             }
         }
     }
 
-    private static void setFileDataSource(@Nullable DBPDataSourceContainer dataSourceContainer, File localFile) {
-        final DBPExternalFileManager efManager = DBeaverCore.getInstance().getExternalFileManager();
+    private static void setFileDataSource(File localFile, @Nullable DBPDataSourceContainer dataSourceContainer) {
+        final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
         efManager.setFileProperty(
             localFile,
             PROP_SQL_PROJECT_ID,
@@ -244,17 +234,9 @@ public class EditorUtils {
 
     public static void setFileDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer)
     {
-        setFileDataSource(file, dataSourceContainer, false);
-    }
-
-    public static void setFileDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
-    {
         try {
             file.setPersistentProperty(QN_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
             file.setPersistentProperty(QN_PROJECT_ID, dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
-            if (notify) {
-                NavigatorUtils.refreshNavigatorResource(file, dataSourceContainer);
-            }
         } catch (CoreException e) {
             log.error("Internal error while writing file property", e);
         }

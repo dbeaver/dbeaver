@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
@@ -61,7 +62,8 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             }
             DBPDataSourceContainer dataSource = dialog.getDataSource();
             for (IFile script : scripts) {
-                EditorUtils.setFileDataSource(script, dataSource, true);
+                EditorUtils.setFileDataSource(script, dataSource);
+                NavigatorUtils.refreshNavigatorResource(script, dataSource);
             }
         }
         return null;

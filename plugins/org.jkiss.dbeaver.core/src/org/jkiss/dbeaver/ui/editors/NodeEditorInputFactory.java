@@ -21,10 +21,10 @@ import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.entity.NodeEditorInput;
 
 public class NodeEditorInputFactory implements IElementFactory
@@ -48,7 +48,7 @@ public class NodeEditorInputFactory implements IElementFactory
         if (nodePath == null) {
             return null;
         }
-        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+        final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
 
         try {
             final DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);

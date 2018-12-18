@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -1663,6 +1665,36 @@ public final class DBUtils {
             DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
             if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
                 return constraint;
+            }
+        }
+        return null;
+    }
+
+    public static List<DBPDataSourceRegistry> getAllRegistries() {
+        List<DBPDataSourceRegistry> result = new ArrayList<>();
+        for (IProject project : DBWorkbench.getPlatform().getLiveProjects()) {
+            if (project.isOpen()) {
+                DBPDataSourceRegistry registry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
+                if (registry != null) {
+                    result.add(registry);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Find data source in all available registries
+     */
+    public static DBPDataSourceContainer findDataSource(String dataSourceId) {
+        DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
+        for (IProject project : DBWorkbench.getPlatform().getLiveProjects()) {
+            DBPDataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+            if (dataSourceRegistry != null) {
+                DBPDataSourceContainer dataSourceContainer = dataSourceRegistry.getDataSource(dataSourceId);
+                if (dataSourceContainer != null) {
+                    return dataSourceContainer;
+                }
             }
         }
         return null;

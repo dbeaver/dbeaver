@@ -22,7 +22,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -33,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UITask;
@@ -184,7 +184,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
 
     public IDatabaseEditorInput initializeRealInput(final DBRProgressMonitor monitor) throws DBException
     {
-        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+        final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
 
         while (!dataSource.isConnected()) {
             boolean connected;
