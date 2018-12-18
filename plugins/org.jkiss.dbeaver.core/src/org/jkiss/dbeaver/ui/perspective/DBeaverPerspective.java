@@ -68,7 +68,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
             BOTTOM_BOTTOM_LEFT,
             IPageLayout.BOTTOM,
             0.7f,
-            FOLDER_NAVIGATION);
+            editorArea);
         bottomLeft.addView(ProjectExplorerView.VIEW_ID);
         bottomLeft.addPlaceholder(DatabaseBrowserView.VIEW_ID);
 
