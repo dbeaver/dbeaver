@@ -180,18 +180,6 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
-        StringBuilder withClauseBuilder = new StringBuilder();
-
-        if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
-            withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
-            withClauseBuilder.append("\n)");
-        }
-
-        return withClauseBuilder.toString();
-    }
-
-    @Override
     public String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter) {
         StringBuilder ddl = new StringBuilder();
         if (tableBase instanceof PostgreTable) {
@@ -217,7 +205,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             PostgreTableRegular table = (PostgreTableRegular) tableBase;
             try {
                 if (!alter) {
-                    ddl.append(tableBase.getDataSource().getServerType().createWithClause(table, tableBase));
+                    ddl.append(createWithClause(table, tableBase));
                 }
                 boolean hasOtherSpecs = false;
                 PostgreTablespace tablespace = table.getTablespace(monitor);
@@ -252,5 +240,17 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
         return ddl.toString();
     }
+
+    protected String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
+        StringBuilder withClauseBuilder = new StringBuilder();
+
+        if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
+            withClauseBuilder.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
+            withClauseBuilder.append("\n)");
+        }
+
+        return withClauseBuilder.toString();
+    }
+
 }
 

@@ -77,7 +77,5 @@ public interface PostgreServerExtension
 
     void configureDialect(PostgreDialect dialect);
 
-    String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase);
-
     String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
 }
