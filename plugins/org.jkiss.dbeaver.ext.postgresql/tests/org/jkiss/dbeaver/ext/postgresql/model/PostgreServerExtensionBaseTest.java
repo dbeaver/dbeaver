@@ -20,7 +20,7 @@ public class PostgreServerExtensionBaseTest {
     @Mock
     private PostgreDataSource dataSource;
 
-    private PostgreServerExtension serverExtension;
+    private PostgreServerPostgreSQL serverExtension;
 
     @Before
     public void setUp() {
