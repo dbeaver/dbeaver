@@ -241,7 +241,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return ddl.toString();
     }
 
-    protected String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
+    public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
         if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
