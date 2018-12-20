@@ -103,6 +103,7 @@ public class ItemListControl extends NodeListControl
             contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
+        // Object operations
 
         if (rootNode instanceof DBNDatabaseNode) {
             contributionManager.add(new Separator());
@@ -116,6 +117,8 @@ public class ItemListControl extends NodeListControl
                 workbenchSite,
                 CoreCommands.CMD_OBJECT_DELETE));
         }
+
+        // Reorder
 
         if (rootNode instanceof DBNDatabaseNode && rootNode.isPersisted()) {
             boolean hasReorder = false;
@@ -137,6 +140,19 @@ public class ItemListControl extends NodeListControl
             }
         }
 
+        if (rootNode instanceof DBNDatabaseNode) {
+            // Expand/collapse
+            final List<DBXTreeNode> inlineMetas = collectInlineMetas((DBNDatabaseNode) rootNode, ((DBNDatabaseNode) rootNode).getMeta());
+            if (!inlineMetas.isEmpty()) {
+                contributionManager.add(new Separator());
+                contributionManager.add(
+                    ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_COLLAPSE_ALL));
+                contributionManager.add(
+                    ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_EXPAND_ALL));
+            }
+        }
+
+        // Save/revert
         if (workbenchSite instanceof MultiPageEditorSite) {
             final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
             if (editor instanceof EntityEditor) {
