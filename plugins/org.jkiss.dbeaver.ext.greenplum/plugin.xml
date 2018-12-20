@@ -3,8 +3,50 @@
 
 <plugin>
 
-    <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="greenplum" class="org.jkiss.dbeaver.ext.greenplum.model.GreenplumMetaModel" driverClass="ru.yandex.greenplum.GreenplumDriver"/>
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="greenplum" name="Greenplum" class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreenplum" logo="icons/greenplum_logo.png"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.greenplum.GreenplumDataSourceProvider"
+                description="%datasource.greenplum.description"
+                id="greenplum"
+                parent="postgresql"
+                label="Greenplum"
+                icon="icons/greenplum_icon.png">
+
+            <drivers managable="true">
+
+                <driver
+                        id="greenplum-jdbc"
+                        label="Greenplum"
+                        icon="icons/greenplum_icon.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        useURL="false"
+                        defaultPort="5432"
+                        webURL="https://greenplum.org/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        description="%driver.greenplum.description">
+                    <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.2.1]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="greenplum"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
     </extension>
 
 </plugin>
