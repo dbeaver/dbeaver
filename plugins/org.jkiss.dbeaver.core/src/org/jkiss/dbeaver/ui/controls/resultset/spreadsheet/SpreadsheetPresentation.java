@@ -81,6 +81,9 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -1725,6 +1728,29 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public Color getCellHeaderSelectionBackground(Object element) {
             return cellHeaderSelectionBackground;
+        }
+
+        @Override
+        public String getCellLinkText(Object colElement, Object rowElement) {
+            boolean recordMode = controller.isRecordMode();
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
+            ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
+            Object value = controller.getModel().getCellValue(attr, row);
+            List<DBSEntityReferrer> referrers = attr.getReferrers();
+            if (!CommonUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
+                StringBuilder text = new StringBuilder();
+                for (DBSEntityReferrer ref : referrers) {
+                    if (ref instanceof DBSEntityAssociation) {
+                        DBSEntity associatedEntity = ((DBSEntityAssociation) ref).getAssociatedEntity();
+                        if (associatedEntity != null) {
+                            if (text.length() > 0) text.append("\n");
+                            text.append(DBUtils.getObjectFullName(associatedEntity, DBPEvaluationContext.UI));
+                        }
+                    }
+                }
+                return text.toString();
+            }
+            return null;
         }
 
         @Override
