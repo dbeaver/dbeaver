@@ -191,7 +191,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         return new ListContentProvider();
     }
 
-    private static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node, DBXTreeNode meta)
+    protected static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node, DBXTreeNode meta)
     {
         final List<DBXTreeNode> inlineMetas = new ArrayList<>();
 

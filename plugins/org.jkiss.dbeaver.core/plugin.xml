@@ -708,14 +708,14 @@
         <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCollapseAll">
             <enabledWhen>
                 <with variable="activePart">
-                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                    <adapt type="org.jkiss.dbeaver.ui.navigator.INavigatorModelView"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.navigate.expandAll" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerExpandAll">
             <enabledWhen>
                 <with variable="activePart">
-                    <instanceof value="org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView"/>
+                    <adapt type="org.jkiss.dbeaver.ui.navigator.INavigatorModelView"/>
                 </with>
             </enabledWhen>
         </handler>
