@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ControlEditor;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
