@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum;
+package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum.GreenplumWithClauseBuilder.generateWithClause;
+import static org.jkiss.dbeaver.ext.greenplum.model.GreenplumWithClauseBuilder.generateWithClause;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 

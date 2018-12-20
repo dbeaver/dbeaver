@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum;
+package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
