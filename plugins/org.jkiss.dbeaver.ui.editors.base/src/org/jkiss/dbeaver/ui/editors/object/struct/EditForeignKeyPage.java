@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -200,35 +201,35 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             columnsTable.addMouseListener(new ColumnsMouseListener(tableEditor, columnsTable));
         }
 
-        final Composite cascadeGroup = UIUtils.createPlaceholder(panel, 4, 5);
-        {
-            // Cascades
-            cascadeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            final Combo onDeleteCombo = UIUtils.createLabelCombo(cascadeGroup, EditorsMessages.dialog_struct_edit_fk_combo_on_delete, SWT.DROP_DOWN | SWT.READ_ONLY);
-            onDeleteCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            final Combo onUpdateCombo = UIUtils.createLabelCombo(cascadeGroup, EditorsMessages.dialog_struct_edit_fk_combo_on_update, SWT.DROP_DOWN | SWT.READ_ONLY);
-            onUpdateCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (DBSForeignKeyModifyRule modifyRule : supportedModifyRules) {
-                onDeleteCombo.add(modifyRule.getName());
-                onUpdateCombo.add(modifyRule.getName());
+        if (!ArrayUtils.isEmpty(supportedModifyRules)) {
+            final Composite cascadeGroup = UIUtils.createPlaceholder(panel, 4, 5);
+            {
+                // Cascades
+                cascadeGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                final Combo onDeleteCombo = UIUtils.createLabelCombo(cascadeGroup, EditorsMessages.dialog_struct_edit_fk_combo_on_delete, SWT.DROP_DOWN | SWT.READ_ONLY);
+                onDeleteCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                final Combo onUpdateCombo = UIUtils.createLabelCombo(cascadeGroup, EditorsMessages.dialog_struct_edit_fk_combo_on_update, SWT.DROP_DOWN | SWT.READ_ONLY);
+                onUpdateCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                for (DBSForeignKeyModifyRule modifyRule : supportedModifyRules) {
+                    onDeleteCombo.add(modifyRule.getName());
+                    onUpdateCombo.add(modifyRule.getName());
+                }
+                onDeleteCombo.select(0);
+                onUpdateCombo.select(0);
+                onDeleteRule = onUpdateRule = supportedModifyRules[0];
+                onDeleteCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        onDeleteRule = supportedModifyRules[onDeleteCombo.getSelectionIndex()];
+                    }
+                });
+                onUpdateCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        onUpdateRule = supportedModifyRules[onUpdateCombo.getSelectionIndex()];
+                    }
+                });
             }
-            onDeleteCombo.select(0);
-            onUpdateCombo.select(0);
-            onDeleteRule = onUpdateRule = supportedModifyRules[0];
-            onDeleteCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    onDeleteRule = supportedModifyRules[onDeleteCombo.getSelectionIndex()];
-                }
-            });
-            onUpdateCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    onUpdateRule = supportedModifyRules[onUpdateCombo.getSelectionIndex()];
-                }
-            });
         }
         //panel.setTabList(new Control[] { tableList, pkGroup, columnsTable, cascadeGroup });
 
