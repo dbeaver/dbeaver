@@ -159,7 +159,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
         }
 
-        final Composite pkGroup = UIUtils.createPlaceholder(panel, 2);
+        final Composite pkGroup = UIUtils.createComposite(panel, 2);
         {
             pkGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, EditorsMessages.dialog_struct_edit_fk_combo_unik, SWT.DROP_DOWN | SWT.READ_ONLY);
