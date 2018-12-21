@@ -105,7 +105,7 @@ public class ItemListControl extends NodeListControl
 
         // Object operations
 
-        if (rootNode instanceof DBNDatabaseNode) {
+        if (rootNode instanceof DBNDatabaseFolder) {
             contributionManager.add(new Separator());
             contributionManager.add(ActionUtils.makeCommandContribution(
                 workbenchSite,
