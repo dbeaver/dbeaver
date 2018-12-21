@@ -55,19 +55,11 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         return currentSelection;
     }
 
-    private void loadSettings()
-   {
-        this.settings.loadFrom(
-            UIUtils.getActiveWorkbenchWindow(), getDialogSettings());
-    }
-
-    public DataTransferSettings getSettings()
-    {
+    public DataTransferSettings getSettings() {
         return settings;
     }
 
-    public <T extends IDataTransferSettings> T getPageSettings(IWizardPage page, Class<T> type)
-    {
+    public <T extends IDataTransferSettings> T getPageSettings(IWizardPage page, Class<T> type) {
         return type.cast(settings.getNodeSettings(page));
     }
 
@@ -90,8 +82,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     @Nullable
     @Override
-    public IWizardPage getNextPage(IWizardPage page)
-    {
+    public IWizardPage getNextPage(IWizardPage page) {
         IWizardPage[] pages = getPages();
         int curIndex = -1;
         for (int i = 0; i < pages.length; i++) {
@@ -117,8 +108,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     @Nullable
     @Override
-    public IWizardPage getPreviousPage(IWizardPage page)
-    {
+    public IWizardPage getPreviousPage(IWizardPage page) {
         IWizardPage[] pages = getPages();
         int curIndex = -1;
         for (int i = 0; i < pages.length; i++) {
@@ -142,8 +132,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     }
 
     @Override
-    public boolean canFinish()
-    {
+    public boolean canFinish() {
         for (IWizardPage page : getPages()) {
             if (settings.isPageValid(page) && !page.isPageComplete()) {
                 return false;
@@ -158,7 +147,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     @Override
     public boolean performCancel() {
         // Save settings anyway
-        getSettings().saveTo(getDialogSettings());
+        saveSettings();
 
         return super.performCancel();
     }
@@ -166,7 +155,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     @Override
     public boolean performFinish() {
         // Save settings
-        getSettings().saveTo(getDialogSettings());
+        saveSettings();
         DTActivator.getDefault().saveDialogSettings();
 
         // Start consumers
@@ -195,6 +184,15 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
         // Done
         return true;
+    }
+
+    private void loadSettings() {
+        this.settings.loadFrom(
+            UIUtils.getActiveWorkbenchWindow(), getDialogSettings());
+    }
+
+    private void saveSettings() {
+        settings.saveTo(getDialogSettings());
     }
 
     private void executeJobs() {
