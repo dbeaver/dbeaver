@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -56,6 +57,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ui.editors.entity.GlobalContributorManager;
@@ -98,7 +100,16 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         // Add lazy props listener
         //PropertiesContributor.getInstance().addLazyListener(this);
 
-        pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this);
+        pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this) {
+            @Override
+            public void fillCustomActions(IContributionManager contributionManager) {
+                super.fillCustomActions(contributionManager);
+                if (propertiesPanel != null && folderComposite == null) {
+                    // We have object editor and no folders - contribute default actions
+                    DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
+                }
+            }
+        };
         pageControl.setShowDivider(true);
 
         Composite container = new Composite(pageControl, SWT.NONE);
