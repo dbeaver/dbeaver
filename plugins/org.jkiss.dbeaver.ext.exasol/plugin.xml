@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-    <extension
-            point="org.jkiss.dbeaver.dataSourceProvider">
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider"
                 description="%datasource.exasol.description"
                 icon="icons/Exasol_icon.png"
                 id="exasol"
                 label="%datasource.exasol.label">
-            <tree
-                    icon="icons/Exasol_icon.png"
-                    label="Exasol data source"
-                    path="exasol">
+            <tree icon="icons/Exasol_icon.png" label="Exasol data source" path="exasol">
                 <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema" label="%tree.schemas.node.name"
                         icon="#folder_schemas" description="%tree.schemas.node.description">
                     <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
@@ -364,10 +360,8 @@
                         defaultPort="8563"
                         description="%driver.exasol.description"
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">
-                   <file
-                         path="maven:/com.exasol:exasol-jdbc:RELEASE"
-                         type="jar">
-                   </file>
+                    <file path="maven:/com.exasol:exasol-jdbc:RELEASE" type="jar" bundle="!drivers.exasol"/>
+                    <file type="jar" path="drivers/exasol/exasol-jdbc.jar" bundle="drivers.exasol"/>
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="600"/>
