@@ -50,8 +50,8 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -188,11 +188,6 @@ public class NavigatorUtils {
                 return;
             }
 
-            manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-
-            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
-            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS_END));
-
             manager.add(new Separator());
 
             final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
@@ -217,7 +212,14 @@ public class NavigatorUtils {
                 manager.add(new Separator());
             }
 
+            manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
             manager.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS));
+
+            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
+            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS_END));
+
+            manager.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS_END));
             manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 
             if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {

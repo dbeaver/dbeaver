@@ -91,7 +91,7 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
             accessKeyText.setToolTipText("AWS account access key ID");
             accessKeyText.addModifyListener(textListener);
 
-            secretAccessKeyText = UIUtils.createLabelText(addrGroup, "AWS Access Key", "", SWT.BORDER | SWT.PASSWORD);
+            secretAccessKeyText = UIUtils.createLabelText(addrGroup, "AWS Secret Key", "", SWT.BORDER | SWT.PASSWORD);
             secretAccessKeyText.setToolTipText("AWS account secret access key ID");
             secretAccessKeyText.addModifyListener(textListener);
 

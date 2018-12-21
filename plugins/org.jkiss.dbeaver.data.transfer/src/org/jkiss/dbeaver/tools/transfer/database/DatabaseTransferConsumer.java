@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
@@ -118,8 +118,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         DBSEntityAttribute attribute = ((DBSEntity) targetObject).getAttribute(session.getProgressMonitor(), columnMapping.sourceAttr.getName());
                         if (attribute != null) {
                             columnMapping.targetAttr = new DatabaseMappingAttribute(null, columnMapping.sourceAttr);
-                            columnMapping.targetAttr.target = attribute;
-                            columnMapping.targetAttr.mappingType = DatabaseMappingType.existing;
+                            columnMapping.targetAttr.setTarget(attribute);
+                            columnMapping.targetAttr.setMappingType(DatabaseMappingType.existing);
                         }
                     } catch (DBException e) {
                         log.error("Error getting target attribute");
@@ -134,14 +134,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
                 }
             }
-            if (columnMapping.targetAttr.mappingType == DatabaseMappingType.skip) {
+            if (columnMapping.targetAttr.getMappingType() == DatabaseMappingType.skip) {
                 continue;
             }
-            DBSEntityAttribute targetAttr = columnMapping.targetAttr.target;
+            DBSEntityAttribute targetAttr = columnMapping.targetAttr.getTarget();
             if (targetAttr == null) {
-                if (columnMapping.targetAttr.source instanceof DBSEntityAttribute) {
+                if (columnMapping.targetAttr.getSource() instanceof DBSEntityAttribute) {
                     // Use source attr. Some datasource (e.g. document oriented do not have strict set of attributes)
-                    targetAttr = (DBSEntityAttribute)columnMapping.targetAttr.source;
+                    targetAttr = (DBSEntityAttribute)columnMapping.targetAttr.getSource();
                 } else {
                     throw new DBCException("Target attribute for [" + columnMapping.sourceAttr.getName() + "] wasn't resolved");
                 }
@@ -159,7 +159,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         executeBatch = targetObject.insertData(
             targetSession,
-            targetAttributes.toArray(new DBSAttributeBase[targetAttributes.size()]),
+            targetAttributes.toArray(new DBSAttributeBase[0]),
             null,
             new AbstractExecutionSource(sourceObject, targetContext, this));
     }
@@ -456,7 +456,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attr.getTargetName())).append(" ").append(attr.getTargetType(dataSource));
         if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
-            if (attr.source.isRequired()) sql.append(" NOT NULL");
+            if (attr.getSource().isRequired()) sql.append(" NOT NULL");
         }
     }
 
@@ -477,11 +477,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void executeDDL(DBCSession  session, String sql)
         throws DBCException
     {
-        DBCStatement dbStat = DBUtils.makeStatement(session, sql, false);
-        try {
+        try (DBCStatement dbStat = DBUtils.makeStatement(session, sql, false)) {
             dbStat.executeStatement();
-        } finally {
-            dbStat.close();
         }
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
         if (txnManager != null && !txnManager.isAutoCommit()) {
@@ -495,11 +492,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         if (!last && settings.isOpenTableOnFinish()) {
             if (containerMapping != null && containerMapping.getTarget() != null) {
-                UIUtils.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        DBWorkbench.getPlatformUI().openEntityEditor(containerMapping.getTarget());
-                    }
+                UIUtils.syncExec(() -> {
+                    DBWorkbench.getPlatformUI().openEntityEditor(containerMapping.getTarget());
                 });
             }
         }

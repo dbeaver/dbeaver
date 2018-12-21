@@ -28,11 +28,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.DirectObjectReference;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
@@ -40,17 +38,16 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.*;
 
 
@@ -241,22 +238,20 @@ public class SQLContextInformer
         }
     }
 
-    public static String makeObjectDescription(@Nullable DBRProgressMonitor monitor, DBPNamedObject object, boolean html) {
-        final PropertiesReader reader = new PropertiesReader(object, html);
-
-        if (monitor == null) {
-            SystemJob searchJob = new SystemJob("Extract object properties info", reader);
-            searchJob.schedule();
-            UIUtils.waitJobCompletion(searchJob);
-        } else {
-            reader.run(monitor);
-        }
-        return reader.getPropertiesInfo();
-    }
-
     public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, final DBPDataSource dataSource, DBPNamedObject object, final String[] keywords, final DBPKeywordType keywordType) {
         if (object != null) {
-            return makeObjectDescription(monitor, object, true);
+            if (monitor == null) {
+                String[] desc = new String[1];
+                SystemJob searchJob = new SystemJob("Extract object properties info", monitor1 ->
+                {
+                    desc[0] = DBInfoUtils.makeObjectDescription(monitor1, object, true);
+                });
+                searchJob.schedule();
+                UIUtils.waitJobCompletion(searchJob);
+                return desc[0];
+            } else {
+                return DBInfoUtils.makeObjectDescription(monitor, object, true);
+            }
         } else if (keywordType != null && dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS)) {
             HelpReader helpReader = new HelpReader(dataSource, keywordType, keywords);
             if (monitor == null) {
@@ -289,86 +284,6 @@ public class SQLContextInformer
         } else {
             return null;
         }
-    }
-
-    private static class PropertiesReader implements DBRRunnableWithProgress {
-
-        private final StringBuilder info = new StringBuilder();
-        private final DBPNamedObject object;
-        private final boolean html;
-
-        public PropertiesReader(DBPNamedObject object, boolean html) {
-            this.object = object;
-            this.html = html;
-        }
-
-/*
-        boolean hasRemoteProperties() {
-            for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
-                if (descriptor.isRemote()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-*/
-
-        String getPropertiesInfo() {
-            return info.toString();
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) {
-            DBPNamedObject targetObject = object;
-            if (object instanceof DBSObjectReference) {
-                try {
-                    targetObject = ((DBSObjectReference) object).resolveObject(monitor);
-                } catch (DBException e) {
-                    StringWriter buf = new StringWriter();
-                    e.printStackTrace(new PrintWriter(buf, true));
-                    info.append(buf.toString());
-                }
-            }
-            PropertyCollector collector = new PropertyCollector(targetObject, false);
-            collector.collectProperties();
-
-            for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
-                Object propValue = collector.getPropertyValue(null, descriptor.getId());
-                if (propValue == null) {
-                    continue;
-                }
-                String propString;
-                if (propValue instanceof DBPNamedObject) {
-                    propString = ((DBPNamedObject) propValue).getName();
-                } else {
-                    propString = DBValueFormatting.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
-                }
-                if (CommonUtils.isEmpty(propString)) {
-                    continue;
-                }
-                if (html) {
-                    info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");
-                    info.append(propString);
-                    info.append("<br>");
-                } else {
-                    info.append(descriptor.getDisplayName()).append(": ").append(propString).append("\n");
-                }
-            }
-
-/*
-            if (targetObject instanceof DBPScriptObject) {
-                try {
-                    String definitionText = ((DBPScriptObject) targetObject).getObjectDefinitionText(monitor, null);
-                    if (!CommonUtils.isEmpty(definitionText)) {
-                        info.append("<hr><pre>").append(definitionText).append("</pre>");
-                    }
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-*/
-        }
-
     }
 
     private static class HelpReader implements DBRRunnableWithProgress {

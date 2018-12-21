@@ -59,10 +59,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreFeatures;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -84,8 +81,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -111,6 +109,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.views.SQLResultsView;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -244,7 +243,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ?
-            DBeaverCore.getInstance().getProjectRegistry().getActiveProject() : file.getProject();
+            DBWorkbench.getPlatform().getProjectManager().getActiveProject() : file.getProject();
     }
 
     @Nullable
@@ -304,7 +303,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
         IEditorInput input = getEditorInput();
         if (input != null) {
-            EditorUtils.setInputDataSource(input, container, true);
+            EditorUtils.setInputDataSource(input, container);
+            IFile file = EditorUtils.getFileFromInput(input);
+            if (file != null) {
+                NavigatorUtils.refreshNavigatorResource(file, container);
+            }
         }
 
         checkConnected(false, status -> UIUtils.asyncExec(() -> {
@@ -321,7 +324,7 @@ public class SQLEditor extends SQLEditorBase implements
             dataSourceContainer.acquire(this);
         }
 
-        if (EditorUtils.isWriteEmbeddedBinding()) {
+        if (SQLEditorBase.isWriteEmbeddedBinding()) {
             // Patch connection reference
             UIUtils.syncExec(this::embedDataSourceAssociation);
         }
@@ -331,7 +334,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void updateDataSourceContainer() {
         DBPDataSourceContainer inputDataSource = null;
-        if (EditorUtils.isReadEmbeddedBinding()) {
+        if (SQLEditorBase.isReadEmbeddedBinding()) {
             // Try to get datasource from contents (always, no matter what )
             inputDataSource = getDataSourceFromContent();
         }
@@ -467,7 +470,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Remove connection association
                 document.replace(region.getOffset(), region.getLength(), "");
             } else {
-                SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
+                SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
 
                 StringBuilder assocSpecLine = new StringBuilder(EMBEDDED_BINDING_PREFIX);
                 bindingType.appendSpec(dataSourceContainer, assocSpecLine);
@@ -1611,6 +1614,7 @@ public class SQLEditor extends SQLEditorBase implements
                     targetName = query.getSingleSource().getEntityName();
                 }
                 if (ConfirmationDialog.showConfirmDialogEx(
+                    DBeaverActivator.getCoreResourceBundle(),
                     getSite().getShell(),
                     DBeaverPreferences.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
@@ -1623,6 +1627,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
             if (ConfirmationDialog.showConfirmDialogEx(
+                DBeaverActivator.getCoreResourceBundle(),
                 getSite().getShell(),
                 DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL,
                 ConfirmationDialog.CONFIRM,
@@ -1963,6 +1968,7 @@ public class SQLEditor extends SQLEditorBase implements
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
 
             if (ConfirmationDialog.showConfirmDialog(
+                DBeaverActivator.getCoreResourceBundle(),
                 null,
                 DBeaverPreferences.CONFIRM_RUNNING_QUERY_CLOSE,
                 ConfirmationDialog.QUESTION,
@@ -2011,7 +2017,7 @@ public class SQLEditor extends SQLEditorBase implements
             IFileStore fileStore = EFS.getStore(saveFile.toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
-            EditorUtils.setInputDataSource(input, getDataSourceContainer(), false);
+            EditorUtils.setInputDataSource(input, getDataSourceContainer());
 
             init(getEditorSite(), input);
         } catch (CoreException e) {
@@ -3110,7 +3116,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            if (!DBeaverCore.isClosing() && resultsSash != null && !resultsSash.isDisposed()) {
+            if (!DBWorkbench.getPlatform().isShuttingDown() && resultsSash != null && !resultsSash.isDisposed()) {
                 dumpOutput(monitor);
 
                 schedule(200);

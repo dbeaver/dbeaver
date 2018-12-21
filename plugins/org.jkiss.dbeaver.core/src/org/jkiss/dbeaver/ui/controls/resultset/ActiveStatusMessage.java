@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -90,7 +91,7 @@ abstract class ActiveStatusMessage extends Composite {
         messageText.setLayoutData(gd);
 
         if (viewer != null) {
-            UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.messageText);
+            TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.messageText);
             UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.messageText);
         }
     }

@@ -165,7 +165,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     private String getHoverInfo()
     {
         String text = null;
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         for (Annotation annotation : annotations) {
             if (annotation instanceof MarkerAnnotation) {
                 try {

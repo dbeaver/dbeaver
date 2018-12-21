@@ -444,7 +444,6 @@ public class DataTransferSettings {
                 }
             }
         }
-
     }
 
     void saveTo(IDialogSettings dialogSettings) {

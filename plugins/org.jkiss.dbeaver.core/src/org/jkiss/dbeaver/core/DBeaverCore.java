@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,6 +25,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -45,7 +47,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
@@ -61,9 +62,9 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.ServiceReference;
 
 import java.io.*;
-import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
@@ -231,6 +232,9 @@ public class DBeaverCore implements DBPPlatform {
         this.navigatorModel = new DBNModel(this);
         this.navigatorModel.initialize();
 
+        // Activate proxy service
+        activateProxyService();
+
         // Activate plugin services
         for (IPluginService pluginService : PluginServiceRegistry.getInstance().getServices()) {
             try {
@@ -245,6 +249,14 @@ public class DBeaverCore implements DBPPlatform {
         new KeepAliveJob(this).scheduleMonitor();
 
         log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
+    }
+
+    private void activateProxyService() {
+        try {
+            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
+        } catch (Throwable e) {
+            log.debug("Proxy service not found");
+        }
     }
 
     private void initializeProjects() {
@@ -448,7 +460,7 @@ public class DBeaverCore implements DBPPlatform {
     @NotNull
     @Override
     public DBERegistry getEditorsRegistry() {
-        return EntityEditorsRegistry.getInstance();
+        return ObjectManagerRegistry.getInstance();
     }
 
     @Override
@@ -483,6 +495,8 @@ public class DBeaverCore implements DBPPlatform {
         return projectRegistry;
     }
 
+    @NotNull
+    @Override
     public DBPExternalFileManager getExternalFileManager() {
         return projectRegistry;
     }

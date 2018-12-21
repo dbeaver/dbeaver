@@ -60,7 +60,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
@@ -89,7 +90,7 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
@@ -206,8 +207,8 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        this.defaultBackground = EditorUtils.getDefaultTextBackground();
-        this.defaultForeground = EditorUtils.getDefaultTextForeground();
+        this.defaultBackground = TextEditorUtils.getDefaultTextBackground();
+        this.defaultForeground = TextEditorUtils.getDefaultTextForeground();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         this.viewerPanel.setData(CONTROL_ID, this);
@@ -426,7 +427,7 @@ public class ResultSetViewer extends Viewer
         if (context != null) {
             return context.getDataSource().getContainer().getPreferenceStore();
         }
-        return DBeaverCore.getGlobalPreferenceStore();
+        return DBWorkbench.getPlatform().getPreferenceStore();
     }
 
     @NotNull
@@ -708,7 +709,8 @@ public class ResultSetViewer extends Viewer
             // Save in global preferences
             if (activePresentationDescriptor.getPresentationType().isPersistent()) {
                 // Save current presentation (only if it is persistent)
-                DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
+                DBWorkbench.getPlatform().getPreferenceStore().setValue(
+                    DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
             }
             savePresentationSettings();
         } catch (Throwable e1) {
@@ -1533,6 +1535,7 @@ public class ResultSetViewer extends Viewer
         if (constraint.getOrderPosition() == 0) {
             if (ResultSetUtils.isServerSideFiltering(this) && supportsDataFilter()) {
                 if (ConfirmationDialog.showConfirmDialogNoToggle(
+                    DBeaverActivator.getCoreResourceBundle(),
                     viewerPanel.getShell(),
                     DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
@@ -1631,6 +1634,7 @@ public class ResultSetViewer extends Viewer
             return ISaveablePart2.YES;
         }
         int result = ConfirmationDialog.showConfirmDialog(
+            DBeaverActivator.getCoreResourceBundle(),
             viewerPanel.getShell(),
             DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
@@ -1844,14 +1848,13 @@ public class ResultSetViewer extends Viewer
                 manager.add(ActionUtils.makeCommandContribution(site, CoreCommands.CMD_PASTE_SPECIAL));
                 manager.add(new Separator());
 
-                if (valueController != null) {
+                {
+                    MenuManager editMenu = new MenuManager(
+                        CoreMessages.actions_menu_edit,
+                        DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
+                        MENU_ID_EDIT); //$NON-NLS-1$
 
-                    {
-                        MenuManager editMenu = new MenuManager(
-                            CoreMessages.actions_menu_edit,
-                            DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
-                            MENU_ID_EDIT); //$NON-NLS-1$
-
+                    if (valueController != null) {
                         // Edit items
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT_INLINE));
@@ -1870,12 +1873,17 @@ public class ResultSetViewer extends Viewer
                         }
 
                         editMenu.add(new Separator());
+                    }
+
+                    if (!isReadOnly()) {
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
+                    }
+                    if (valueController != null && !valueController.isReadOnly()) {
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
-
-                        manager.add(editMenu);
                     }
+
+                    manager.add(editMenu);
                 }
             }
         }
@@ -2422,6 +2430,7 @@ public class ResultSetViewer extends Viewer
                 }
                 if (panelsDirty) {
                     int result = ConfirmationDialog.showConfirmDialog(
+                        DBeaverActivator.getCoreResourceBundle(),
                         viewerPanel.getShell(),
                         DBeaverPreferences.CONFIRM_RS_PANEL_RESET,
                         ConfirmationDialog.CONFIRM);
@@ -2716,6 +2725,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         if (ConfirmationDialog.showConfirmDialogEx(
+            DBeaverActivator.getCoreResourceBundle(),
             viewerPanel.getShell(),
             DBeaverPreferences.CONFIRM_RS_FETCH_ALL,
             ConfirmationDialog.QUESTION,

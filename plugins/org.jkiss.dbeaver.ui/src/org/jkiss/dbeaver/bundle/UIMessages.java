@@ -20,24 +20,33 @@ package org.jkiss.dbeaver.bundle;
 import org.eclipse.osgi.util.NLS;
 
 public class UIMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.bundle.UIMessages"; //$NON-NLS-1$
-	
-	public static String output_label_directory;
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.bundle.UIMessages"; //$NON-NLS-1$
 
-	public static String properties_name;
-	public static String properties_value;
+    public static String output_label_directory;
 
-	public static String ui_properties_tree_viewer__to_default;
-	public static String ui_properties_tree_viewer_action_copy_name;
-	public static String ui_properties_tree_viewer_action_copy_value;
-	public static String ui_properties_tree_viewer_action_reset_value;
-	public static String ui_properties_tree_viewer_category_general;
+    public static String properties_name;
+    public static String properties_value;
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
-	}
+    public static String ui_actions_context_search_name;
 
-	private UIMessages() {
-	}
+    public static String ui_properties_tree_viewer__to_default;
+    public static String ui_properties_tree_viewer_action_copy_name;
+    public static String ui_properties_tree_viewer_action_copy_value;
+    public static String ui_properties_tree_viewer_action_reset_value;
+    public static String ui_properties_tree_viewer_category_general;
+
+    public static String sql_editor_resultset_filter_panel_btn_config_refresh;
+    public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
+    public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
+    public static String sql_editor_resultset_filter_panel_menu_refresh_interval_1;
+    public static String sql_editor_resultset_filter_panel_menu_stop;
+    public static String sql_editor_resultset_filter_panel_menu_customize;
+
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
+    }
+
+    private UIMessages() {
+    }
 }

@@ -58,16 +58,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ICustomActionsProvider;
-import org.jkiss.dbeaver.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -78,7 +72,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.List;
 
 /**
  * TabbedFolderPageProperties
@@ -399,7 +395,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private boolean supportsObjectRename() {
-        return EntityEditorsRegistry.getInstance().getObjectManager(
+        return ObjectManagerRegistry.getInstance().getObjectManager(
             curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class) != null;
     }
 
@@ -466,7 +462,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (!isLoading) {
             DBSObject databaseObject = input.getDatabaseObject();
             if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject.isPersisted()) {
-                DBEObjectRenamer renamer = EntityEditorsRegistry.getInstance().getObjectManager(curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
+                DBEObjectRenamer renamer = ObjectManagerRegistry.getInstance().getObjectManager(curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (renamer != null) {
                     try {
                         renamer.renameObject(input.getCommandContext(), databaseObject, CommonUtils.toString(value));

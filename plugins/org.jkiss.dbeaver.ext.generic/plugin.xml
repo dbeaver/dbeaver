@@ -1119,7 +1119,7 @@
                         defaultPort="50000"
                         description="MonetDB JDBC driver"
                         webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC">
-                    <file type="jar" path="maven:/monetdb:monetdb-jdbc-new:RELEASE"/>
+                    <file type="jar" path="maven:/monetdb:monetdb-jdbc:RELEASE"/>
 
                     <parameter name="use-search-string-escape" value="false"/>
                 </driver>
@@ -1159,6 +1159,15 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"   objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"    objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"         objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"     objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
                 id="generic.table.ddl.view"
@@ -1188,25 +1197,6 @@
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject"/>
         </editor>
-
-        <manager
-            class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"
-            objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
@@ -1329,6 +1319,12 @@
                 <column id="FILTER_CONDITION" index="13"/>
             </object>
         </meta>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="monetdb-maven-repo" name="MonetDB Repository" url="https://clojars.org/repo/" order="20">
+            <scope group="monetdb"/>
+        </repository>
     </extension>
 
 </plugin>

@@ -64,7 +64,6 @@ import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CSmartSelector;
 import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
-import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -105,7 +104,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         private DBSObject active;
         private boolean enabled;
 
-        public DatabaseListReader(@NotNull DBCExecutionContext context) {
+        DatabaseListReader(@NotNull DBCExecutionContext context) {
             super(CoreMessages.toolbar_datasource_selector_action_read_databases, context);
             setSystem(true);
             this.enabled = false;
@@ -632,7 +631,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         updateJob.schedule();
     }
 
-    private void changeDataBaseSelection(DBNDatabaseNode node) {
+    private void changeDataBaseSelection(@Nullable String newInstanceName, @NotNull DBNDatabaseNode node) {
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
         final String newName = node.getNodeName();
         if (dsContainer != null && dsContainer.isConnected()) {
@@ -644,6 +643,13 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                         DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
                         DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
                         if (os != null) {
+                            if (newInstanceName != null && !CommonUtils.equalObjects(currentDatabaseInstanceName, newInstanceName)) {
+                                // Change current instance
+                                DBSObject newInstance = oc.getChild(monitor, newInstanceName);
+                                if (newInstance != null) {
+                                    os.setDefaultObject(monitor, newInstance);
+                                }
+                            }
                             final DBSObject defObject = os.getDefaultObject();
                             if (defObject instanceof DBSObjectContainer) {
                                 // USe seconds level of active object
@@ -693,7 +699,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         // Register as datasource listener in all datasources
         // We need it because at this moment there could be come already loaded registries (on startup)
         DataSourceProviderRegistry.getInstance().addDataSourceRegistryListener(DataSourceManagementToolbar.this);
-        for (DataSourceRegistry registry : DataSourceRegistry.getAllRegistries()) {
+        for (DBPDataSourceRegistry registry : DBUtils.getAllRegistries()) {
             handleRegistryLoad(registry);
         }
 
@@ -800,10 +806,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (items.isEmpty()) {
             return;
         }
-        SelectObjectDialog<DBNDatabaseNode> dialog = new SelectObjectDialog<>(databaseCombo.getShell(),
-            "Choose catalog/schema",
-            true,
-            "SchemaSelector",
+        DBPDataSourceContainer dataSourceContainer = connectionCombo.getSelectedItem();
+        SelectDatabaseDialog dialog = new SelectDatabaseDialog(
+            databaseCombo.getShell(),
+            dataSourceContainer,
+            currentDatabaseInstanceName,
             items,
             selectedDB == null ? null : Collections.singletonList(selectedDB));
         dialog.setModeless(true);
@@ -811,10 +818,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             return;
         }
         DBNDatabaseNode node = dialog.getSelectedObject();
-        if (node != null) {
+        if (node != null && node != databaseCombo.getSelectedItem()) {
+            // Change current database
             databaseCombo.select(node);
+            changeDataBaseSelection(dialog.getCurrentInstanceName(), node);
         }
-        changeDataBaseSelection(node);
     }
 
     @Override

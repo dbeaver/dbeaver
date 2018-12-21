@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 /**
 * BaseValueEditor
@@ -85,7 +86,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         if (isInline && UIUtils.isInDialog(inlineControl)) {
             //isInline = false;
         }
-        UIUtils.enableHostEditorKeyBindingsSupport(valueController.getValueSite(), inlineControl);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(valueController.getValueSite(), inlineControl);
 
 //            if (!isInline) {
 //                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());

@@ -42,7 +42,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -722,9 +722,9 @@ public class TabbedFolderList extends Composite {
 
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
-        listBackground = EditorUtils.getDefaultTextBackground();;
+        listBackground = TextEditorUtils.getDefaultTextBackground();;
         widgetBackground = getBackground();
-        widgetForeground = EditorUtils.getDefaultTextForeground();
+        widgetForeground = TextEditorUtils.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 

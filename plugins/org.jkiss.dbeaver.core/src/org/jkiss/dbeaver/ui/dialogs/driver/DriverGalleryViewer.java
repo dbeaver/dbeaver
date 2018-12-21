@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -56,8 +56,8 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
     public DriverGalleryViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
         super(new Gallery(parent, SWT.V_SCROLL | SWT.MULTI | SWT.BORDER));
         setContentProvider(new FlatTreeContentProvider(new ListContentProvider()));
-        gallery.setBackground(EditorUtils.getDefaultTextBackground());
-        gallery.setForeground(EditorUtils.getDefaultTextForeground());
+        gallery.setBackground(TextEditorUtils.getDefaultTextBackground());
+        gallery.setForeground(TextEditorUtils.getDefaultTextForeground());
         gallery.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         gallery.addSelectionListener(new SelectionListener() {
