@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -86,6 +85,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -102,7 +103,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
-import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE;
 
 /**
  * ResultSetViewer
@@ -231,7 +231,7 @@ public class ResultSetViewer extends Viewer
 
             if (supportsPanels()) {
                 this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
-                panelFolder.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+                CSSUtils.setCSSClass(panelFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 this.panelFolder.marginWidth = 0;
                 this.panelFolder.marginHeight = 0;
                 this.panelFolder.setMinimizeVisible(true);
@@ -1163,7 +1163,7 @@ public class ResultSetViewer extends Viewer
         statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
-        statusBar.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
         RowLayout toolbarsLayout = new RowLayout(SWT.HORIZONTAL);
         toolbarsLayout.marginTop = 0;
         toolbarsLayout.marginBottom = 0;
@@ -1188,7 +1188,7 @@ public class ResultSetViewer extends Viewer
             editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
 
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
-            editorToolBar.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(editorToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             toolbarList.add(editToolBarManager);
         }
@@ -1203,7 +1203,7 @@ public class ResultSetViewer extends Viewer
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
-            navToolBar.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             navToolBarManager.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
             toolbarList.add(navToolBarManager);
         }
@@ -1230,13 +1230,13 @@ public class ResultSetViewer extends Viewer
             configToolBarManager.add(new ToolbarSeparatorContribution(true));
 
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
-            configToolBar.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             toolbarList.add(configToolBarManager);
         }
 
         {
             presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            presentationSwitchToolbar.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(presentationSwitchToolbar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             RowData rd = new RowData();
             rd.exclude = true;
             presentationSwitchToolbar.setLayoutData(rd);
@@ -1251,7 +1251,7 @@ public class ResultSetViewer extends Viewer
                 menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_CONTRIBUTION_ID);
             }
             ToolBar addToolBar = addToolbBarManagerar.createControl(statusBar);
-            addToolBar.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             toolbarList.add(addToolbBarManagerar);
         }
 
@@ -1262,7 +1262,7 @@ public class ResultSetViewer extends Viewer
             configToolBarManager.add(new ConfigAction());
             configToolBarManager.update(true);
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
-            configToolBar.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             toolbarList.add(configToolBarManager);
         }
         {

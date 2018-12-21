@@ -10,9 +10,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Widget;
 import org.w3c.dom.css.CSSValue;
 
-import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE;
 
-public class ConnectionSpecifiedCompositeElementHandler extends CSSPropertyBackgroundSWTHandler {
+/**
+ * Needed to override theme styles.
+ * For now it's used only for coloring widgets regarding the connection type color.
+ */
+public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandler {
 
     @Override
     public void applyCSSPropertyBackgroundColor(Object element, CSSValue value, String pseudo, CSSEngine engine)
@@ -22,8 +25,8 @@ public class ConnectionSpecifiedCompositeElementHandler extends CSSPropertyBackg
             return;
         }
 
-        Color newColor = ConnectionSpecifiedSelectedTabFillHandler.getCurrentConnectionColor();
-        if (COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
+        Color newColor = CustomSelectedTabFillHandler.getCurrentConnectionColor();
+        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
             applyCustomBackground(element, newColor);
         } else {
             super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);

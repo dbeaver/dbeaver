@@ -11,10 +11,11 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Widget;
 import org.w3c.dom.css.CSSValue;
 
-import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE;
-import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.getCurrentConnectionColor;
-
-public class ConnectionSpecifiedUnselectedTabHandler extends CSSPropertyUnselectedTabsSWTHandler {
+/**
+ * Needed to override theme styles.
+ * For now it's used only for coloring widgets regarding the connection type color.
+ */
+public class CustomUnselectedTabHandler extends CSSPropertyUnselectedTabsSWTHandler {
 
     @Override
     public boolean applyCSSProperty(Object element, String property, CSSValue value, String pseudo, CSSEngine engine) throws Exception {
@@ -23,8 +24,8 @@ public class ConnectionSpecifiedUnselectedTabHandler extends CSSPropertyUnselect
             return false;
         }
 
-        Color newColor = getCurrentConnectionColor();
-        if (COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
+        Color newColor = CustomSelectedTabFillHandler.getCurrentConnectionColor();
+        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
             CTabFolder nativeWidget = (CTabFolder) ((CTabFolderElement) element).getNativeWidget();
             if (nativeWidget.getRenderer() instanceof CTabRendering) {
                 ((CTabRendering) nativeWidget.getRenderer()).setUnselectedTabsColor(newColor);

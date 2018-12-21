@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
@@ -71,13 +70,15 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE;
+
 
 /**
  * TabbedFolderPageProperties
@@ -119,7 +120,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 //        scrolled.setLayout(new GridLayout(1, false));
 
         propertiesGroup = new Composite(parent, SWT.NONE);
-        propertiesGroup.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.setCSSClass(propertiesGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
         //propertiesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 //        scrolled.setContent(propertiesGroup);
 //        scrolled.setExpandHorizontal(true);
@@ -245,7 +246,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
 
             Composite primaryGroup = new Composite(propertiesGroup, SWT.BORDER);
-            primaryGroup.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(primaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
             primaryGroup.setLayout(new GridLayout(2, false));
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = maxGroupWidth;
@@ -256,7 +257,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (hasSecondaryProps) {
                 secondaryGroup = new Composite(propertiesGroup, SWT.BORDER);
                 secondaryGroup.setLayout(new GridLayout(2, false));
-                secondaryGroup.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+                CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 gd = new GridData(GridData.FILL_BOTH);
                 gd.widthHint = maxGroupWidth;
                 secondaryGroup.setLayoutData(gd);
