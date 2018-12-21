@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -44,6 +44,10 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     public DataTransferWizard(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers) {
         this.settings = new DataTransferSettings(producers, consumers);
+        setDialogSettings(
+            UIUtils.getSettingsSection(
+                DTActivator.getDefault().getDialogSettings(),
+                RS_EXPORT_WIZARD_DIALOG_SETTINGS));
         loadSettings();
     }
 
@@ -52,11 +56,9 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     }
 
     private void loadSettings()
-    {
-        IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
-        setDialogSettings(section);
-
-        settings.loadFrom(UIUtils.getActiveWorkbenchWindow(), section);
+   {
+        this.settings.loadFrom(
+            UIUtils.getActiveWorkbenchWindow(), getDialogSettings());
     }
 
     public DataTransferSettings getSettings()
@@ -165,6 +167,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     public boolean performFinish() {
         // Save settings
         getSettings().saveTo(getDialogSettings());
+        DTActivator.getDefault().saveDialogSettings();
 
         // Start consumers
         try {

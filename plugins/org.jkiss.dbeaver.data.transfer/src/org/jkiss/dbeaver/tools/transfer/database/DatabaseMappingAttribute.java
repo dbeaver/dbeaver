@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -248,5 +249,17 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     public void setTargetType(String targetType)
     {
         this.targetType = targetType;
+    }
+
+    void saveSettings(IDialogSettings settings) {
+        if (targetName != null) {
+            settings.put("targetName", targetName);
+        }
+        if (targetType != null) {
+            settings.put("targetType", targetType);
+        }
+        if (mappingType != null) {
+            settings.put("mappingType", mappingType.name());
+        }
     }
 }
