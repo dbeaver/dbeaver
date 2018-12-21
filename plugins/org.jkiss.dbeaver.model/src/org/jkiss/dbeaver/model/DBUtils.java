@@ -533,7 +533,12 @@ public final class DBUtils {
             if (pathStr.length() > 0) {
                 pathStr.append('/');
             }
-            pathStr.append(getQuotedIdentifier(obj));
+            obj = getPublicObjectContainer(obj);
+            if (obj instanceof DBPDataSourceContainer) {
+                pathStr.append(((DBPDataSourceContainer) obj).getId());
+            } else {
+                pathStr.append(getQuotedIdentifier(obj));
+            }
         }
         return pathStr.toString();
     }

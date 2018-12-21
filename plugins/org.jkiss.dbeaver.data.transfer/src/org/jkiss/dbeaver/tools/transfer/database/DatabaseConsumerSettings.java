@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.code.NotNull;
@@ -216,6 +217,15 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("commitAfterRows", commitAfterRows);
         dialogSettings.put("truncateBeforeLoad", truncateBeforeLoad);
         dialogSettings.put("openTableOnFinish", openTableOnFinish);
+        IDialogSettings mappings = DialogSettings.getOrCreateSection(dialogSettings, "mappings");
+
+        for (DatabaseMappingContainer dmc : dataMappings.values()) {
+            DBSDataContainer sourceDatacontainer = dmc.getSource();
+            if (sourceDatacontainer != null) {
+                IDialogSettings dmcSettings = mappings.addNewSection(DBUtils.getObjectFullId(sourceDatacontainer));
+                dmc.saveSettings(dmcSettings);
+            }
+        }
     }
 
     @NotNull
