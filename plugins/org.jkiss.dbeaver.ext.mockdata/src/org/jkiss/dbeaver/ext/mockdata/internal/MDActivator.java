@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.internal;
+package org.jkiss.dbeaver.ext.mockdata.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-public class DTActivator extends AbstractUIPlugin {
+public class MDActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.data.transfer";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.mockdata";
 
     // The shared instance
-    private static DTActivator plugin;
+    private static MDActivator plugin;
 
-    public DTActivator() {
+    public MDActivator() {
     }
 
     @Override
@@ -43,7 +43,7 @@ public class DTActivator extends AbstractUIPlugin {
         super.stop(context);
     }
 
-    public static DTActivator getDefault() {
+    public static MDActivator getDefault() {
         return plugin;
     }
 
