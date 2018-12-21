@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDComplexValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
+import org.jkiss.dbeaver.ui.data.dialogs.ComplexObjectEditor;
 
 /**
 * ComplexValueInlineEditor

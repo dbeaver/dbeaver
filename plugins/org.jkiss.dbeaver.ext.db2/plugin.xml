@@ -416,6 +416,33 @@
         </view>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2AliasManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Alias"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2BufferpoolManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2DataTypeManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ForeignKeyManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2IndexManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ModuleManager"       objectType="org.jkiss.dbeaver.ext.db2.model.module.DB2Module"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2MQTManager"          objectType="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2NicknameManager"     objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2PackageManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Package"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2RemoteServerManager" objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2RoleManager"         objectType="org.jkiss.dbeaver.ext.db2.model.security.DB2Role"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2RoutineManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2SchemaManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2SequenceManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2StorageGroupManager" objectType="org.jkiss.dbeaver.ext.db2.model.DB2StorageGroup"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TableColumnManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TableManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TablespaceManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TriggerManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2UniqueKeyManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2VariableManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Variable"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ViewManager"         objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2WrapperManager"      objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2XMLSchemaManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.databaseEditor">
     
         <editor id="source.declaration" 
@@ -454,31 +481,6 @@
            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
         </editor>
 
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2AliasManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Alias"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2BufferpoolManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2DataTypeManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ForeignKeyManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2IndexManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ModuleManager"       objectType="org.jkiss.dbeaver.ext.db2.model.module.DB2Module"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2MQTManager"          objectType="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2NicknameManager"     objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2PackageManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Package"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2RemoteServerManager" objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2RoleManager"         objectType="org.jkiss.dbeaver.ext.db2.model.security.DB2Role"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2RoutineManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2SchemaManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2SequenceManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2StorageGroupManager" objectType="org.jkiss.dbeaver.ext.db2.model.DB2StorageGroup"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TableColumnManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TableManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TablespaceManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TriggerManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2UniqueKeyManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2VariableManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Variable"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ViewManager"         objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2WrapperManager"      objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2XMLSchemaManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema"/>
-        
     </extension>
     
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

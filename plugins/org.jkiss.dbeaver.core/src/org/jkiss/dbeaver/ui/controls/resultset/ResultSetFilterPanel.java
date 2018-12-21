@@ -36,7 +36,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -53,22 +52,19 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
-import org.jkiss.dbeaver.ui.editors.StringEditorInput;
-import org.jkiss.dbeaver.ui.editors.SubEditorSite;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLContextInformer;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,7 +72,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 /**
  * ResultSetFilterPanel
@@ -270,7 +265,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         // Handle all shortcuts by filters editor, not by host editor
-        UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
 
         {
             filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
@@ -587,35 +582,24 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         editorPH.setLayoutData(new GridData(GridData.FILL_BOTH));
         editorPH.setLayout(new FillLayout());
 
-        final SQLEditorBase editor = new SQLEditorBase() {
-            @Nullable
-            @Override
-            public DBCExecutionContext getExecutionContext() {
-                return viewer.getExecutionContext();
+        try {
+            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+            if (serviceSQL != null) {
+                Object sqlPanel = serviceSQL.createSQLPanel(viewer.getSite(), editorPH, viewer, DEFAULT_QUERY_TEXT, getActiveQueryText());
+                if (sqlPanel instanceof TextViewer) {
+                    StyledText textWidget = ((TextViewer) sqlPanel).getTextWidget();
+                    //textWidget.setAlwaysShowScrollBars(false);
+
+                    panel.setBackground(textWidget.getBackground());
+
+                    return textWidget;
+                }
             }
 
-            @Override
-            public void createPartControl(Composite parent) {
-                super.createPartControl(parent);
-                getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES).setEnabled(false);
-            }
-
-            @Override
-            public boolean isFoldingEnabled() {
-                return false;
-            }
-        };
-        editor.setHasVerticalRuler(false);
-        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput(DEFAULT_QUERY_TEXT, getActiveQueryText(), true, GeneralUtils.getDefaultFileEncoding()));
-        editor.createPartControl(editorPH);
-        editor.reloadSyntaxRules();
-        StyledText textWidget = editor.getTextViewer().getTextWidget();
-        //textWidget.setAlwaysShowScrollBars(false);
-
-        panel.setBackground(textWidget.getBackground());
-        panel.addDisposeListener(e -> editor.dispose());
-
-        return textWidget;
+            return null;
+        } catch (DBException e) {
+            throw new PartInitException("Error creating SQL panel", e);
+        }
     }
 
     private void openEditorForActiveQuery() {
@@ -626,12 +610,14 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         } else {
             editorName = "Query";
         }
-        OpenHandler.openSQLConsole(
-            UIUtils.getActiveWorkbenchWindow(),
-            dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
-            editorName,
-            getActiveQueryText()
-        );
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        if (serviceSQL != null) {
+            serviceSQL.openSQLConsole(
+                dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
+                editorName,
+                getActiveQueryText()
+            );
+        }
     }
 
     @Override
@@ -645,7 +631,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         final List<IContentProposal> proposals = new ArrayList<>();
 
         final DBRRunnableWithProgress reader = monitor -> {
-            for (DBDAttributeBinding attribute : viewer.getModel().getAttributes()) {
+            DBDAttributeBinding[] attributes = viewer.getModel().getAttributes();
+            for (DBDAttributeBinding attribute : attributes) {
                 final String name = DBUtils.getUnQuotedIdentifier(attribute.getDataSource(), attribute.getName());
                 if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
                     final String content = DBUtils.getQuotedIdentifier(attribute) + " ";
@@ -653,7 +640,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             new ContentProposal(
                                     content,
                                     attribute.getName(),
-                                    SQLContextInformer.makeObjectDescription(monitor, attribute.getAttribute(), false),
+                                    DBInfoUtils.makeObjectDescription(monitor, attribute.getAttribute(), false),
                                     content.length()));
                 }
             }
@@ -746,27 +733,29 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 return;
             }
 
-            Point controlRect = editControl.computeSize(-1, -1);
+            if (editControl != null) {
+                Point controlRect = editControl.computeSize(-1, -1);
 
-            Rectangle parentRect = getDisplay().map(activeObjectPanel, null, getBounds());
-            Rectangle displayRect = getMonitor().getClientArea();
-            int width = Math.min(filterComposite.getSize().x, Math.max(MIN_INFO_PANEL_WIDTH, controlRect.x + 30));
-            int height = Math.min(MAX_INFO_PANEL_HEIGHT, Math.max(MIN_INFO_PANEL_HEIGHT, controlRect.y + 30));
-            int x = parentRect.x + e.x + 1;
-            int y = parentRect.y + e.y + 1;
-            if (y + height > displayRect.y + displayRect.height) {
-                y = parentRect.y - height;
-            }
-            popup.setBounds(x, y, width, height);
-            popup.setVisible(true);
-            editControl.setFocus();
-
-            editControl.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    popup.dispose();
+                Rectangle parentRect = getDisplay().map(activeObjectPanel, null, getBounds());
+                Rectangle displayRect = getMonitor().getClientArea();
+                int width = Math.min(filterComposite.getSize().x, Math.max(MIN_INFO_PANEL_WIDTH, controlRect.x + 30));
+                int height = Math.min(MAX_INFO_PANEL_HEIGHT, Math.max(MIN_INFO_PANEL_HEIGHT, controlRect.y + 30));
+                int x = parentRect.x + e.x + 1;
+                int y = parentRect.y + e.y + 1;
+                if (y + height > displayRect.y + displayRect.height) {
+                    y = parentRect.y - height;
                 }
-            });
+                popup.setBounds(x, y, width, height);
+                popup.setVisible(true);
+                editControl.setFocus();
+
+                editControl.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        popup.dispose();
+                    }
+                });
+            }
         }
 
         @Override

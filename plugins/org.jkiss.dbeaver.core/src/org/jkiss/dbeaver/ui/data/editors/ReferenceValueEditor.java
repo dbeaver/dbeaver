@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -70,6 +70,7 @@ public class ReferenceValueEditor {
     private Table editorSelector;
     private volatile boolean sortByValue = true;
     private volatile boolean sortAsc = true;
+    private volatile boolean dictLoaded = false;
     private Object lastPattern;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
@@ -262,10 +263,12 @@ public class ReferenceValueEditor {
     }
 
     private void reloadSelectorValues(Object pattern) {
-        if (CommonUtils.equalObjects(lastPattern, pattern)) {
+        if (dictLoaded && CommonUtils.equalObjects(lastPattern, pattern)) {
+            selectCurrentValue();
             return;
         }
         lastPattern = pattern;
+        dictLoaded = true;
         SelectorLoaderService loadingService = new SelectorLoaderService();
         if (pattern != null) {
             loadingService.setPattern(pattern);
@@ -294,34 +297,40 @@ public class ReferenceValueEditor {
                 discItem.setData(entry.getValue());
             }
 
-            Control editorControl = valueEditor.getControl();
-            if (editorControl != null && !editorControl.isDisposed()) {
-                try {
-                    Object curValue = valueEditor.extractEditorValue();
-                    final String curTextValue = valueController.getValueHandler().getValueDisplayString(
-                            ((IAttributeController) valueController).getBinding(),
-                            curValue,
-                            DBDDisplayFormat.UI);
-
-                    TableItem curItem = null;
-                    for (TableItem item : editorSelector.getItems()) {
-                        if (item.getText(0).equals(curTextValue)) {
-                            curItem = item;
-                            break;
-                        }
-                    }
-                    if (curItem != null) {
-                        editorSelector.setSelection(curItem);
-                        editorSelector.showItem(curItem);
-                    }
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
+            selectCurrentValue();
 
             UIUtils.maxTableColumnsWidth(editorSelector);
         } finally {
             editorSelector.setRedraw(true);
+        }
+    }
+
+    private void selectCurrentValue() {
+        Control editorControl = valueEditor.getControl();
+        if (editorControl != null && !editorControl.isDisposed()) {
+            try {
+                Object curValue = valueEditor.extractEditorValue();
+                final String curTextValue = valueController.getValueHandler().getValueDisplayString(
+                        ((IAttributeController) valueController).getBinding(),
+                        curValue,
+                        DBDDisplayFormat.UI);
+
+                TableItem curItem = null;
+                for (TableItem item : editorSelector.getItems()) {
+                    if (item.getText(0).equals(curTextValue)) {
+                        curItem = item;
+                        break;
+                    }
+                }
+                if (curItem != null) {
+                    editorSelector.setSelection(curItem);
+                    editorSelector.showItem(curItem);
+                } else {
+                    editorSelector.deselectAll();
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
         }
     }
 

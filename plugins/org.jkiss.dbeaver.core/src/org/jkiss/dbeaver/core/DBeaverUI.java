@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -50,13 +49,12 @@ import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.navigator.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
-import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -140,29 +138,6 @@ public class DBeaverUI implements DBPPlatformUI {
             contextListener.activatePartContexts(part);
         }
     }
-
-    /*
-    public static void runWithProgress(IWorkbenchPartSite site, final DBRRunnableWithProgress runnable)
-        throws InvocationTargetException, InterruptedException
-    {
-        IActionBars actionBars = null;
-        if (site instanceof IViewSite) {
-            actionBars = ((IViewSite) site).getActionBars();
-        } else if (site instanceof IEditorSite) {
-            actionBars = ((IEditorSite) site).getActionBars();
-        }
-        IStatusLineManager statusLineManager = null;
-        if (actionBars != null) {
-            statusLineManager = actionBars.getStatusLineManager();
-        }
-        if (statusLineManager == null) {
-            runInProgressService(runnable);
-        } else {
-            IProgressMonitor progressMonitor = statusLineManager.getProgressMonitor();
-            runnable.run(new DefaultProgressMonitor(progressMonitor));
-        }
-    }
-*/
 
     @Override
     public void notifyAgent(String message, int status) {
@@ -303,18 +278,6 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public void openSQLViewer(DBCExecutionContext context, String title, DBPImage image, String text) {
-        ViewSQLDialog dialog = new ViewSQLDialog(
-            UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
-            context,
-            title,
-            image,
-            text
-        );
-        dialog.open();
-    }
-
-    @Override
     public void openConnectionEditor(DBPDataSourceContainer dataSourceContainer) {
         UIUtils.syncExec(() ->
             NavigatorHandlerObjectOpen.openConnectionEditor(
@@ -367,4 +330,12 @@ public class DBeaverUI implements DBPPlatformUI {
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
     }
+
+    @Override
+    public void refreshPartState(Object part) {
+        if (part instanceof IWorkbenchPart) {
+            UIUtils.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
+        }
+    }
+
 }

@@ -24,6 +24,7 @@ public interface CoreCommands
     String GROUP_TOOLS = "tools";
     String GROUP_TOOLS_END = "tools_end";
     String GROUP_NAVIGATOR_ADDITIONS = "navigator_additions";
+    String GROUP_NAVIGATOR_ADDITIONS_END = "navigator_additions_end";
 
 
     String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$

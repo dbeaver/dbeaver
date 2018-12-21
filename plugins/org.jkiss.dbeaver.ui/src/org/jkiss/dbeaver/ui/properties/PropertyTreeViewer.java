@@ -38,7 +38,7 @@ import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.bundle.UIMessages;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

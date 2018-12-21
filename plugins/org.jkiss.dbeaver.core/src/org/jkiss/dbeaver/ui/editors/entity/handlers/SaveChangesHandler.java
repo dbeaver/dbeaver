@@ -27,8 +27,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -58,13 +58,7 @@ public class SaveChangesHandler extends AbstractHandler
         final EntityEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);
         if (editor != null) {
             try {
-                UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        validateAndSave(monitor, editor);
-                    }
-                });
+                UIUtils.runInProgressService(monitor -> validateAndSave(monitor, editor));
             } catch (InvocationTargetException e) {
                 //UIUtils.showErrorDialog();
             } catch (InterruptedException e) {
@@ -112,6 +106,7 @@ public class SaveChangesHandler extends AbstractHandler
                     saveableName = CommonUtils.toString(saveable);
                 }
                 int confirmResult = ConfirmationDialog.showConfirmDialog(
+                    DBeaverActivator.getCoreResourceBundle(),
                     shell,
                     DBeaverPreferences.CONFIRM_EDITOR_CLOSE,
                     ConfirmationDialog.QUESTION_WITH_CANCEL,

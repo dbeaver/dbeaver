@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver;
 
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
+
 /**
  * Preferences constants
  */
@@ -36,7 +38,7 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_SYNC_EDITOR_DATASOURCE = "navigator.sync.editor.datasource"; //$NON-NLS-1$
     public static final String NAVIGATOR_REFRESH_EDITORS_ON_OPEN = "navigator.refresh.editor.open"; //$NON-NLS-1$
     public static final String NAVIGATOR_GROUP_BY_DRIVER = "navigator.group.by.driver"; //$NON-NLS-1$
-    public static final String NAVIGATOR_EDITOR_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
+    public static final String NAVIGATOR_EDITOR_FULL_NAME = DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME; //$NON-NLS-1$
     public static final String NAVIGATOR_EDITOR_SHOW_TABLE_GRID = "navigator.editor.showGrid"; //$NON-NLS-1$
     public static final String NAVIGATOR_OBJECT_DOUBLE_CLICK = "navigator.object.doubleClick"; //$NON-NLS-1$
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
@@ -99,7 +101,7 @@ public final class DBeaverPreferences
     // General UI
     public static final String UI_AUTO_UPDATE_CHECK = "ui.auto.update.check"; //$NON-NLS-1$
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
-    public static final String UI_KEEP_DATABASE_EDITORS = "ui.editors.reopen-after-restart"; //$NON-NLS-1$
+    public static final String UI_KEEP_DATABASE_EDITORS = DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE; //$NON-NLS-1$
 
     // Resources
     public static final String RESOURCE_HANDLER_ROOT_PREFIX = "resource.root."; //$NON-NLS-1$

@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -56,12 +57,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
-import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -363,7 +364,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         });
         this.searchText.addModifyListener(e -> scheduleLogRefresh());
-        UIUtils.enableHostEditorKeyBindingsSupport(site, searchText);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(site, searchText);
 
         // Create log table
         logTable = new Table(
@@ -893,7 +894,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
                 if (dsContainer == null) {
                     String containerId = stmtExec.getStatement().getSession().getContainerId();
-                    dsContainer = DataSourceRegistry.findDataSource(containerId);
+                    dsContainer = DBUtils.findDataSource(containerId);
                 }
                 String queryString = stmtExec.getQueryString();
                 if (!CommonUtils.isEmptyTrimmed(queryString)) {

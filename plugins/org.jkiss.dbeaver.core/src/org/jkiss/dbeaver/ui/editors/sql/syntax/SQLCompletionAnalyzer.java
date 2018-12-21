@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -587,7 +588,9 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     "All objects"));
             } else if (!matchedObjects.isEmpty()) {
                 if (startPart == null || scoredMatches.isEmpty()) {
-                    matchedObjects.sort(DBUtils.nameComparatorIgnoreCase());
+                    if (dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY)) {
+                        matchedObjects.sort(DBUtils.nameComparatorIgnoreCase());
+                    }
                 } else {
                     matchedObjects.sort((o1, o2) -> {
                         int score1 = scoredMatches.get(o1.getName());

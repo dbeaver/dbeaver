@@ -16,6 +16,8 @@
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.core</module>
         <module>org.jkiss.dbeaver.ui</module>
+        <module>org.jkiss.dbeaver.ui.editors.base</module>
+        <module>org.jkiss.dbeaver.ui.editors.data</module>
 
         <module>org.jkiss.dbeaver.debug.core</module>
         <module>org.jkiss.dbeaver.debug.ui</module>
@@ -33,6 +35,7 @@
         <module>org.jkiss.dbeaver.ext.es.ui</module>
         <module>org.jkiss.dbeaver.ext.firebird</module>
         <module>org.jkiss.dbeaver.ext.generic</module>
+        <module>org.jkiss.dbeaver.ext.greenplum</module>
         <module>org.jkiss.dbeaver.ext.import_config</module>
         <module>org.jkiss.dbeaver.ext.format.sqlworkbenchj</module>
         <module>org.jkiss.dbeaver.ext.h2</module>

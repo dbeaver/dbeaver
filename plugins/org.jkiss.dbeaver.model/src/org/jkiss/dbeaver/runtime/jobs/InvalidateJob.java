@@ -161,20 +161,22 @@ public class InvalidateJob extends DataSourceJob
             DBUserInterface.getInstance().showError("Forced disconnect", "Datasource '" + container.getName() + "' was disconnected: destination database unreachable.\n" + msg);
         }
 
-        if (goodContextsNumber == 0) {
-            DBeaverNotifications.showNotification(
-                dataSource,
-                DBeaverNotifications.NT_RECONNECT,
-                "Datasource invalidate failed",
-                DBPMessageType.ERROR,
-                feedback);
-        } else {
-            DBeaverNotifications.showNotification(
-                dataSource,
-                DBeaverNotifications.NT_RECONNECT,
-                "Datasource was invalidated\n\n" +
-                    "Live connection count: " + goodContextsNumber + "/" + totalContexts,
-                DBPMessageType.INFORMATION);
+        if (totalContexts > 0) {
+            if (goodContextsNumber == 0) {
+                DBeaverNotifications.showNotification(
+                    dataSource,
+                    DBeaverNotifications.NT_RECONNECT,
+                    "Datasource invalidate failed",
+                    DBPMessageType.ERROR,
+                    feedback);
+            } else {
+                DBeaverNotifications.showNotification(
+                    dataSource,
+                    DBeaverNotifications.NT_RECONNECT,
+                    "Datasource was invalidated\n\n" +
+                        "Live connection count: " + goodContextsNumber + "/" + totalContexts,
+                    DBPMessageType.INFORMATION);
+            }
         }
 
         return invalidateResults;

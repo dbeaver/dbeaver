@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.exec.*;
@@ -358,6 +359,7 @@ public class DataSourceHandler
         public void run()
         {
             result = ConfirmationDialog.showConfirmDialog(
+                DBeaverActivator.getCoreResourceBundle(),
                 null,
                 DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
                 ConfirmationDialog.QUESTION_WITH_CANCEL,

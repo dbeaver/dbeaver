@@ -3,37 +3,6 @@
 
 <plugin>
 
-    <extension point="org.jkiss.dbeaver.dataSourceProvider">
-
-        <!-- Snowflake -->
-
-        <datasource
-                class="org.jkiss.dbeaver.ext.snowflake.SnowflakeDataSourceProvider"
-                description="%datasource.snowflake.description"
-                id="snowflake"
-                parent="generic"
-                label="Snowflake"
-                icon="icons/snowflake_icon.png">
-            <drivers managable="true">
-
-                <driver
-                        id="snowflake_jdbc"
-                        label="Snowflake"
-                        class="net.snowflake.client.jdbc.SnowflakeDriver"
-                        icon="icons/snowflake_icon.png"
-                        sampleURL="jdbc:snowflake://{host}[:port]/?[db={database}]"
-                        defaultPort="443"
-                        description="Snowflake JDBC driver"
-                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
-                    <replace provider="generic" driver="snowflake_generic"/>
-                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
-                </driver>
-
-            </drivers>
-
-        </datasource>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
                 id="org.jkiss.dbeaver.ext.snowflake.dataSourceWizardView"
@@ -41,11 +10,11 @@
                 dataSource="snowflake"
                 label="%snowflake.dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.snowflake.views.SnowflakeConnectionPage"
-                icon="icons/snowflake_icon.png">
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.snowflake.core/icons/snowflake_icon.png">
         </view>
         <view
                 class="org.jkiss.dbeaver.ext.snowflake.views.SnowflakeConnectionPage"
-                icon="icons/snowflake_icon.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.snowflake.core/snowflake_icon.png"
                 id="org.jkiss.dbeaver.ext.snowflake.dataSourceEditorView"
                 dataSource="snowflake"
                 label="%snowflake.dialog.connection.header"

@@ -596,40 +596,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_select_datasource_error_message;
 	public static String dialog_select_datasource_error_title;
 	public static String dialog_select_datasource_title;
-	public static String dialog_struct_columns_select_column;
-	public static String dialog_struct_columns_type;
-
-    public static String dialog_struct_columns_select_error_load_columns_message;
-	public static String dialog_struct_columns_select_error_load_columns_title;
-	public static String dialog_struct_columns_select_group_columns;
-	public static String dialog_struct_columns_select_label_table;
-	public static String dialog_struct_columns_select_title;
-	public static String dialog_struct_create_entity_group_name;
-	public static String dialog_struct_create_entity_title;
-	public static String dialog_struct_create_procedure_combo_type;
-	public static String dialog_struct_create_procedure_label_name;
-	public static String dialog_struct_create_procedure_title;
-	public static String dialog_struct_create_procedure_container;
-	public static String dialog_struct_create_sequence_title;
-	public static String dialog_struct_create_sequence_name;
-	public static String dialog_struct_create_sequence_container;	
-	public static String dialog_struct_edit_constrain_label_type;
-	public static String dialog_struct_edit_fk_column_col_type;
-	public static String dialog_struct_edit_fk_column_column;
-	public static String dialog_struct_edit_fk_column_ref_col;
-	public static String dialog_struct_edit_fk_column_ref_col_type;
-	public static String dialog_struct_edit_fk_combo_on_delete;
-	public static String dialog_struct_edit_fk_combo_on_update;
-	public static String dialog_struct_edit_fk_combo_unik;
-	public static String dialog_struct_edit_fk_error_load_constraint_columns_message;
-	public static String dialog_struct_edit_fk_error_load_constraint_columns_title;
-	public static String dialog_struct_edit_fk_error_load_constraints_message;
-	public static String dialog_struct_edit_fk_error_load_constraints_title;
-	public static String dialog_struct_edit_fk_label_columns;
-	public static String dialog_struct_edit_fk_label_ref_table;
-	public static String dialog_struct_edit_fk_label_table;
-	public static String dialog_struct_edit_fk_title;
-	public static String dialog_struct_edit_index_label_type;
 
 	public static String dialog_tunnel_checkbox_use_handler;
 	public static String dialog_tunnel_title;
@@ -955,7 +921,6 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_page_log_task_progress_log;
 	public static String tools_wizard_page_log_task_started_at;
 	
-	public static String ui_actions_context_search_name;
     public static String ui_actions_exit_emergency_question;
 	public static String ui_common_button_help;
 	public static String ui_properties_category_information;
@@ -1080,6 +1045,14 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_enable_parameters_in_ddl_tip;
 	public static String pref_page_sql_editor_enable_variables;
 	public static String pref_page_sql_editor_enable_variables_tip;
+	// SQProposalsSearch
+	public static String pref_page_sql_format_group_search;
+	public static String pref_page_sql_completion_label_match_contains;
+	public static String pref_page_sql_completion_label_match_contains_tip;
+	public static String pref_page_sql_completion_label_use_global_search;
+	public static String pref_page_sql_completion_label_use_global_search_tip;
+	public static String pref_page_sql_completion_label_show_column_procedures;
+	public static String pref_page_sql_completion_label_show_column_procedures_tip;
 	// SQLFormat
 	public static String pref_page_sql_format_group_auto_close;
 	public static String pref_page_sql_format_label_single_quotes;
@@ -1125,12 +1098,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_completion_label_use_short_names;
 	public static String pref_page_sql_completion_label_use_long_names;
 	public static String pref_page_sql_completion_label_insert_space;
-	public static String pref_page_sql_completion_label_match_contains;
-	public static String pref_page_sql_completion_label_match_contains_tip;
-	public static String pref_page_sql_completion_label_use_global_search;
-	public static String pref_page_sql_completion_label_use_global_search_tip;
-	public static String pref_page_sql_completion_label_show_column_procedures;
-	public static String pref_page_sql_completion_label_show_column_procedures_tip;
+	public static String pref_page_sql_completion_label_sort_alphabetically;
 	public static String pref_page_sql_completion_label_show_server_help_topics;
 	public static String pref_page_sql_completion_label_show_server_help_topics_tip;
 	public static String pref_page_sql_completion_group_folding;
@@ -1385,14 +1353,9 @@ public class CoreMessages extends NLS {
 	public static String sql_editor_resultset_filter_panel_btn_remove;
 	public static String sql_editor_resultset_filter_panel_btn_save;
 	public static String sql_editor_resultset_filter_panel_btn_custom;
-	public static String sql_editor_resultset_filter_panel_btn_config_refresh;
-	public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
 	public static String sql_editor_resultset_filter_panel_label;
 	public static String sql_editor_resultset_filter_panel_btn_open_console;
-	public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
-	public static String sql_editor_resultset_filter_panel_menu_refresh_interval_1;
-	public static String sql_editor_resultset_filter_panel_menu_stop;
-	public static String sql_editor_resultset_filter_panel_menu_customize;
+
 	public static String sql_editor_resultset_filter_panel_control_no_data;
 	public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
 	// SQL editor resultset filter panel

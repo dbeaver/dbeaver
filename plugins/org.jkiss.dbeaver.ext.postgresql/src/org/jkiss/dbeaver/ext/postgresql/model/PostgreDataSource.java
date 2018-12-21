@@ -24,9 +24,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
-import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
@@ -489,8 +489,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     public PostgreServerExtension getServerType() {
         if (serverExtension == null) {
             PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+
             try {
-                serverExtension = serverType.getImplClass().getConstructor(PostgreDataSource.class).newInstance(this);
+                serverExtension = serverType.createServerExtension(this);
             } catch (Throwable e) {
                 log.error("Can't determine server type", e);
                 serverExtension = new PostgreServerPostgreSQL(this);

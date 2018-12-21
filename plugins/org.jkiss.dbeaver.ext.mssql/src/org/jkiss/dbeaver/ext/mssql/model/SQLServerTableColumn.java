@@ -124,6 +124,9 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         this.dataType = getTable().getDatabase().getDataTypeByUserTypeId(monitor, userTypeId);
         this.bytesMaxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
         this.maxLength = JDBCUtils.safeGetLong(dbResult, "char_max_length");
+        if (this.maxLength == 0) {
+            this.maxLength = this.bytesMaxLength;
+        }
         setRequired(JDBCUtils.safeGetInt(dbResult, "is_nullable") == 0);
         setScale(JDBCUtils.safeGetInteger(dbResult, "scale"));
         setPrecision(JDBCUtils.safeGetInteger(dbResult, "precision"));
@@ -181,14 +184,19 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         return super.getMaxLength();
     }
 
+    @Property(order = 42)
+    public int getBytesMaxLength() {
+        return bytesMaxLength;
+    }
+
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 43)
     public Integer getScale() {
         return super.getScale();
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 43)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 44)
     public Integer getPrecision() {
         return super.getPrecision();
     }

@@ -3713,8 +3713,13 @@ public abstract class LightGrid extends Canvas {
             // Check tooltip
             String newTip = null;
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
-                // get cell specific tooltip
-                newTip = getCellToolTip(hoveringColumn, hoveringItem);
+                if (overLink) {
+                    newTip = getContentProvider().getCellLinkText(columnElements[col.getIndex()], rowElements[row]);
+                }
+                if (CommonUtils.isEmpty(newTip)) {
+                    // get cell specific tooltip
+                    newTip = getCellToolTip(hoveringColumn, hoveringItem);
+                }
             } else if (columnHeadersVisible && hoveringColumn != null && y <= headerHeight) {
                 // get column header specific tooltip
                 if (hoveringOnColumnSorter) {

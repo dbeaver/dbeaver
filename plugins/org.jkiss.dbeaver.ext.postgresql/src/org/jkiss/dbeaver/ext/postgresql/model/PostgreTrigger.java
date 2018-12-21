@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -57,7 +58,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     public static final int TRIGGER_TYPE_TRUNCATE   = (1 << 5);
     public static final int TRIGGER_TYPE_INSTEAD    = (1 << 6);
 
-    private PostgreTableBase table;
+    private PostgreTableReal table;
     private long objectId;
     private String enabledState;
     private String whenExpression;
@@ -71,10 +72,11 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     private PostgreTriggerType type;
     private boolean persisted;
     private PostgreTableColumn[] columnRefs;
+    protected String description;
 
     public PostgreTrigger(
         DBRProgressMonitor monitor,
-        PostgreTableBase table,
+        PostgreTableReal table,
         ResultSet dbResult) throws DBException {
         this.persisted = true;
         this.name = JDBCUtils.safeGetString(dbResult, "tgname");
@@ -109,7 +111,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_TRUNCATE)) {
             mt.add(DBSManipulationType.TRUNCATE);
         }
-        this.manipulationTypes = mt.toArray(new DBSManipulationType[mt.size()]);
+        this.manipulationTypes = mt.toArray(new DBSManipulationType[0]);
 
         if (CommonUtils.isBitSet(tgType, TRIGGER_TYPE_ROW)) {
             type = PostgreTriggerType.ROW;
@@ -135,6 +137,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
             }
         }
 
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
     @NotNull
@@ -201,14 +204,19 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         return getDatabase().getProcedure(monitor, functionSchemaId, functionId);
     }
 
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Nullable
     @Override
     public String getDescription() {
-        return null;
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
-    public PostgreTableBase getParentObject()
+    public PostgreTableReal getParentObject()
     {
         return table;
     }
@@ -231,12 +239,27 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (body == null) {
+            StringBuilder ddl = new StringBuilder();
+            ddl.append("-- DROP TRIGGER ").append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
+                .append(DBUtils.getQuotedIdentifier(getTable())).append(";\n\n");
+
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
-                body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+                String triggerSource = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
+                if (triggerSource != null) {
+                    triggerSource = SQLUtils.formatSQL(getDataSource(), triggerSource);
+                    ddl.append(triggerSource).append(";");
+                }
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
-            body = SQLUtils.formatSQL(getDataSource(), body);
+
+            if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS)) {
+                ddl.append("\n").append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
+                    .append(" ON ").append(DBUtils.getQuotedIdentifier(getTable()))
+                    .append(" IS ")
+                    .append(SQLUtils.quoteString(this, getDescription())).append(";");
+            }
+            this.body = ddl.toString();
         }
         return body;
     }

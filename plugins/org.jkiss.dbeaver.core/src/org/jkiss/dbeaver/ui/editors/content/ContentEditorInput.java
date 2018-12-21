@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.editors.IStatefulEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -60,7 +61,7 @@ import java.io.*;
 /**
  * ContentEditorInput
  */
-public class ContentEditorInput implements IPathEditorInput, DBPContextProvider, IEncodingSupport
+public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInput, DBPContextProvider, IEncodingSupport
 {
     private static final Log log = Log.getLog(ContentEditorInput.class);
 

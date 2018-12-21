@@ -38,11 +38,11 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -103,6 +103,7 @@ public class ItemListControl extends NodeListControl
             contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
+        // Object operations
 
         if (rootNode instanceof DBNDatabaseNode) {
             contributionManager.add(new Separator());
@@ -117,11 +118,13 @@ public class ItemListControl extends NodeListControl
                 CoreCommands.CMD_OBJECT_DELETE));
         }
 
+        // Reorder
+
         if (rootNode instanceof DBNDatabaseNode && rootNode.isPersisted()) {
             boolean hasReorder = false;
             List<Class<?>> childrenTypes = ((DBNDatabaseNode) rootNode).getChildrenTypes(null);
             for (Class<?> chilType : childrenTypes) {
-                if (EntityEditorsRegistry.getInstance().getObjectManager(chilType, DBEObjectReorderer.class) != null) {
+                if (ObjectManagerRegistry.getInstance().getObjectManager(chilType, DBEObjectReorderer.class) != null) {
                     hasReorder = true;
                     break;
                 }
@@ -137,6 +140,19 @@ public class ItemListControl extends NodeListControl
             }
         }
 
+        if (rootNode instanceof DBNDatabaseNode) {
+            // Expand/collapse
+            final List<DBXTreeNode> inlineMetas = collectInlineMetas((DBNDatabaseNode) rootNode, ((DBNDatabaseNode) rootNode).getMeta());
+            if (!inlineMetas.isEmpty()) {
+                contributionManager.add(new Separator());
+                contributionManager.add(
+                    ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_COLLAPSE_ALL));
+                contributionManager.add(
+                    ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_EXPAND_ALL));
+            }
+        }
+
+        // Save/revert
         if (workbenchSite instanceof MultiPageEditorSite) {
             final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
             if (editor instanceof EntityEditor) {

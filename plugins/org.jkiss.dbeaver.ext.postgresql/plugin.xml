@@ -20,6 +20,16 @@
   
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.postgresql.serverType" name="PostgreSQL Server Type" schema="schema/org.jkiss.dbeaver.postgresql.serverType.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="postgresql" name="PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL" logo="icons/postgresql_logo.png"/>
+        <serverType id="redshift" name="Redshift" class="org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift" logo="icons/redshift_logo.png" defaultDatbase="dev" defaultUser="awsuser" customURL="true"/>
+        <serverType id="timescale" name="Timescale" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTimescale" logo="icons/timescale_logo.png"/>
+        <serverType id="yellowbrick" name="Yellowbrick" class="org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick" logo="icons/yellowbrick_logo.png"/>
+        <serverType id="cockroach" name="Cockroach" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" defaultDatbase="system" defaultUser="root"/>
+    </extension>
+
     <!--
         PostgreSQL extension
      -->
@@ -233,25 +243,13 @@
                 <driver
                         id="postgres-greenplum-jdbc"
                         label="Greenplum"
-                        icon="icons/greenplum_icon.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="false"
                         defaultPort="5432"
-                        webURL="http://jdbc.postgresql.org/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                        description="%driver.greenplum.description">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
-                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
-                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.2.1]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
-
-                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
+                        description="Obsolete">
                     <parameter name="serverType" value="greenplum"/>
-                    <property name="loginTimeout" value="20"/>
-                    <property name="connectTimeout" value="20"/>
                 </driver>
 
                 <driver
@@ -363,6 +361,22 @@
         </repository>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMViewManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
                 id="org.jkiss.dbeaver.ext.postgresql.dataSourceWizardView"
@@ -401,49 +415,15 @@
             <type name="REFCURSOR"/>
             <type name="MONEY"/>
             <type name="GEOMETRY"/>
+            <type name="INTERVAL"/>
         </provider>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMViewManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
+        <creator
+            class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreDatabaseCreatePage"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"
+            type="new"/>
 
         <editor id="postgresql.role.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
                 label="%db.editor.role.permission.name" description="%db.editor.role.permission.description" icon="#permissions" position="additions_middle" type="folder">
@@ -480,6 +460,25 @@
 
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <!--
+                <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMoneyValueManager">
+                    <supports dataSource="postgresql" typeName="money"/>
+                </manager>
+        -->
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
+            <supports dataSource="postgresql" extension="E"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
+            <supports dataSource="postgresql" typeName="BIT"/>
+        </manager>
+        <!--
+                <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreHStoreValueManager">
+                    <supports dataSource="postgresql" typeName="hstore"/>
+                </manager>
+        -->
+    </extension>
+
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.session_manager.name"
@@ -495,23 +494,6 @@
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor">
         </editor>
         
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.dataManager">
-        <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMoneyValueManager">
-            <supports dataSource="postgresql" typeName="money"/>
-        </manager>
-        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
-            <supports dataSource="postgresql" extension="E"/>
-        </manager>
-        <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
-            <supports dataSource="postgresql" typeName="BIT"/>
-        </manager>
-<!--
-        <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreHStoreValueManager">
-            <supports dataSource="postgresql" typeName="hstore"/>
-        </manager>
--->
     </extension>
 
     <extension point="org.jkiss.dbeaver.networkHandler">

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
@@ -60,7 +61,7 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.IProgressControlProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
@@ -69,7 +70,7 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -359,6 +360,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     {
         if (isDirty()) {
             if (ConfirmationDialog.showConfirmDialog(
+                DBeaverActivator.getCoreResourceBundle(),
                 null,
                 DBeaverPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,
@@ -389,6 +391,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     // Undo of last command in command context will close editor
                     // Let's ask user about it
                     if (ConfirmationDialog.showConfirmDialog(
+                            DBeaverActivator.getCoreResourceBundle(),
                             null,
                             DBeaverPreferences.CONFIRM_ENTITY_REJECT,
                             ConfirmationDialog.QUESTION,
@@ -653,6 +656,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public int promptToSaveOnClose()
     {
         final int result = ConfirmationDialog.showConfirmDialog(
+            DBeaverActivator.getCoreResourceBundle(),
             getSite().getShell(),
             DBeaverPreferences.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,

@@ -40,11 +40,11 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -191,7 +191,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         return new ListContentProvider();
     }
 
-    private static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node, DBXTreeNode meta)
+    protected static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node, DBXTreeNode meta)
     {
         final List<DBXTreeNode> inlineMetas = new ArrayList<>();
 
@@ -383,7 +383,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             if (valueObject == null) {
                 return false;
             }
-            DBEObjectEditor objectEditor = EntityEditorsRegistry.getInstance().getObjectManager(curClass, DBEObjectEditor.class);
+            DBEObjectEditor objectEditor = ObjectManagerRegistry.getInstance().getObjectManager(curClass, DBEObjectEditor.class);
             return objectEditor != null && editableValue instanceof DBPObject && objectEditor.canEditObject((DBPObject) editableValue);
         }
 
