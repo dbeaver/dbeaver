@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.postgresql.model.impls.greenplum;
+package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class GreenplumSchema extends PostgreSchema {
     private static final Log log = Log.getLog(GreenplumSchema.class);
     private GreenplumTableCache greenplumTableCache = new GreenplumTableCache();
-
 
     public GreenplumSchema(PostgreDatabase owner, String name, JDBCResultSet resultSet) throws SQLException {
         super(owner, name, resultSet);
