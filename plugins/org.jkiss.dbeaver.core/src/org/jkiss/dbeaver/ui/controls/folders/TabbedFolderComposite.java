@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Rectangle;
@@ -30,18 +29,20 @@ import org.eclipse.swt.widgets.Sash;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE;
+
 
 
 /**
  * Folders composite.
- * Styles:
+ * DBStyles:
  * SWT.LEFT, SWT.RIGHT - tabs orientation
  */
 public class TabbedFolderComposite extends Composite implements ITabbedFolderContainer {
@@ -72,7 +73,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
 
         public FolderPane(Composite parent, boolean last) {
             this.folderList = new TabbedFolderList(parent, !last);
-            this.folderList.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(this.folderList, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             if (!last) {

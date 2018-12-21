@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -98,7 +97,8 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -646,7 +646,7 @@ public class SQLEditor extends SQLEditorBase implements
                 this,
                 parent,
                 resultSetOrientation.getSashOrientation() | SWT.SMOOTH);
-        resultsSash.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.setCSSClass(resultsSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
         resultsSash.setSashWidth(5);
 
         UIUtils.setHelp(resultsSash, IHelpContextIds.CTX_SQL_EDITOR);
@@ -776,7 +776,7 @@ public class SQLEditor extends SQLEditorBase implements
     private void createResultTabs()
     {
         resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
-        resultTabs.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
         resultTabs.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -2437,7 +2437,7 @@ public class SQLEditor extends SQLEditorBase implements
                 tabItem.setImage(IMG_DATA_GRID);
                 tabItem.setData(this);
                 tabItem.setShowClose(true);
-                tabItem.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE);
+                CSSUtils.setCSSClass(tabItem, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
                 tabItem.setControl(viewer.getControl());
                 tabItem.addDisposeListener(resultTabDisposeListener);

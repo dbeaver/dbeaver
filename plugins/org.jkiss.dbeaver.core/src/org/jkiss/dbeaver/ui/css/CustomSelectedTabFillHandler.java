@@ -15,8 +15,11 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.w3c.dom.css.CSSValue;
 
-public class ConnectionSpecifiedSelectedTabFillHandler extends CSSPropertye4SelectedTabFillHandler {
-    public static final String COLORED_BY_CONNECTION_TYPE = "coloredByConnectionType";
+/**
+ * Needed to override theme styles.
+ * For now it's used only for coloring widgets regarding the connection type color.
+ */
+public class CustomSelectedTabFillHandler extends CSSPropertye4SelectedTabFillHandler {
 
 
     @Override
@@ -29,7 +32,7 @@ public class ConnectionSpecifiedSelectedTabFillHandler extends CSSPropertye4Sele
         }
 
         Color newColor = getCurrentConnectionColor();
-        if (COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
+        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
             CTabFolder nativeWidget = (CTabFolder) ((CTabFolderElement) element).getNativeWidget();
             if (nativeWidget.getRenderer() instanceof CTabRendering) {
                 ((CTabRendering) nativeWidget.getRenderer()).setSelectedTabFill(newColor);

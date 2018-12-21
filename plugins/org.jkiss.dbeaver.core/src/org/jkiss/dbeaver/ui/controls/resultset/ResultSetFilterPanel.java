@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
@@ -60,6 +59,8 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -76,7 +77,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.jkiss.dbeaver.ui.css.ConnectionSpecifiedSelectedTabFillHandler.COLORED_BY_CONNECTION_TYPE;
 
 /**
  * ResultSetFilterPanel
@@ -125,7 +125,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
         this.viewer = rsv;
-        this.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.setCSSClass(this, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         this.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -149,7 +149,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             gl.verticalSpacing = 0;
             this.filterComposite.setLayout(gl);
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            this.filterComposite.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
 
@@ -277,7 +277,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
             filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-            filtersApplyButton.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.setCSSClass(filtersApplyButton, DBStyles.COLORED_BY_CONNECTION_TYPE);
             filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
             //filtersApplyButton.setText("Apply");
             filtersApplyButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_apply);
