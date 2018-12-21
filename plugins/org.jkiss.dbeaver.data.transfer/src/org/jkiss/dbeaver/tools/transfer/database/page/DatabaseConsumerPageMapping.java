@@ -705,13 +705,13 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
 
         if (mappingViewer.getInput() == null) {
-            Map<DBSDataContainer,DatabaseMappingContainer> dataMappings = settings.getDataMappings();
+            //Map<DBSDataContainer,DatabaseMappingContainer> dataMappings = settings.getDataMappings();
             for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
                 if (pipe.getProducer() == null) {
                     continue;
                 }
                 DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getDatabaseObject();
-                if (!dataMappings.containsKey(sourceObject)) {
+                if (settings.getDataMapping(sourceObject) == null) {
                     DatabaseMappingContainer mapping;
                     if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
                         try {
@@ -723,10 +723,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     } else {
                         mapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceObject);
                     }
-                    dataMappings.put(sourceObject, mapping);
+                    settings.addDataMappings(getContainer(), sourceObject, mapping);
                 }
             }
-            List<DatabaseMappingContainer> model = new ArrayList<>(dataMappings.values());
+            List<DatabaseMappingContainer> model = new ArrayList<>(settings.getDataMappings().values());
             mappingViewer.setInput(model);
 
             Tree table = mappingViewer.getTree();

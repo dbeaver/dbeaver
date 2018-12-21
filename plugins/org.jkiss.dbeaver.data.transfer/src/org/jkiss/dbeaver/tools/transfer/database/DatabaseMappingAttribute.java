@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,13 +35,16 @@ import java.util.List;
 */
 public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
+    private static final Log log = Log.getLog(DatabaseMappingAttribute.class);
+
     public static final String TARGET_NAME_SKIP = "[skip]";
-    final DatabaseMappingContainer parent;
-    DBSAttributeBase source;
-    DBSEntityAttribute target;
-    String targetName;
-    String targetType;
-    DatabaseMappingType mappingType;
+
+    private final DatabaseMappingContainer parent;
+    private DBSAttributeBase source;
+    private DBSEntityAttribute target;
+    private String targetName;
+    private String targetType;
+    private DatabaseMappingType mappingType;
 
     DatabaseMappingAttribute(DatabaseMappingContainer parent, DBSAttributeBase source)
     {
@@ -261,5 +265,23 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
         }
+    }
+
+    public void loadSettings(IDialogSettings settings) {
+        targetName = settings.get("targetName");
+        targetType = settings.get("targetType");
+        if (settings.get("mappingType") != null) {
+            try {
+                mappingType = DatabaseMappingType.valueOf(settings.get("mappingType"));
+            } catch (IllegalArgumentException e) {
+                log.error(e);
+                mappingType = DatabaseMappingType.unspecified;
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        return DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
     }
 }

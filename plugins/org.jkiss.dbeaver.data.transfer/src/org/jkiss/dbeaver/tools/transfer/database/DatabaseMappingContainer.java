@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -40,6 +41,9 @@ import java.util.List;
  * DatabaseMappingContainer
  */
 public class DatabaseMappingContainer implements DatabaseMappingObject {
+
+    private static final Log log = Log.getLog(DatabaseMappingContainer.class);
+
     private DatabaseConsumerSettings settings;
     private DBSDataContainer source;
     private DBSDataManipulator target;
@@ -209,6 +213,31 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 if (sourceAttr != null) {
                     IDialogSettings attrSettings = attrsSection.addNewSection(sourceAttr.getName());
                     attrMapping.saveSettings(attrSettings);
+                }
+            }
+        }
+    }
+
+    public void loadSettings(IRunnableContext context, IDialogSettings settings) {
+        targetName = settings.get("targetName");
+        if (settings.get("mappingType") != null) {
+            try {
+                refreshMappingType(context, DatabaseMappingType.valueOf(settings.get("mappingType")));
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        if (!attributeMappings.isEmpty()) {
+            IDialogSettings attrsSection = settings.getSection("attributes");
+            if (attrsSection != null) {
+                for (DatabaseMappingAttribute attrMapping : attributeMappings) {
+                    DBSAttributeBase sourceAttr = attrMapping.getSource();
+                    if (sourceAttr != null) {
+                        IDialogSettings attrSettings = attrsSection.getSection(sourceAttr.getName());
+                        if (attrSettings != null) {
+                            attrMapping.loadSettings(attrSettings);
+                        }
+                    }
                 }
             }
         }
