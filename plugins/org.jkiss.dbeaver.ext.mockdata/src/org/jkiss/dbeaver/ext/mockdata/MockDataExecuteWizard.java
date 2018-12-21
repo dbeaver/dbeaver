@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
@@ -26,6 +25,7 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mockdata.internal.MDActivator;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -50,7 +50,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     public static final boolean JUST_GENERATE_SCRIPT = false;
 
-    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
+    private static final String WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
 
     private MockDataWizardPageSettings settingsPage;
     private MockDataSettings mockDataSettings;
@@ -59,6 +59,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         super(dbObjects, task);
         this.nativeClientHomeRequired = false;
         this.mockDataSettings = mockDataSettings;
+
+        setDialogSettings(
+            UIUtils.getSettingsSection(
+                MDActivator.getDefault().getDialogSettings(),
+                WIZARD_DIALOG_SETTINGS));
     }
 
     @Override
@@ -71,10 +76,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     }
 
     void loadSettings() {
-        IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
-        setDialogSettings(section);
-
-        mockDataSettings.loadFrom(section);
+        mockDataSettings.loadFrom(getDialogSettings());
     }
 
     @Override
