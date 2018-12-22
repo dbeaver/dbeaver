@@ -3883,23 +3883,4 @@
         </perspective>
     </extension>
 
-    <extension point="org.eclipse.e4.ui.css.core.propertyHandler">
-        <handler adapter="org.eclipse.e4.ui.css.swt.dom.CTabFolderElement" composite="true"
-                 handler="org.jkiss.dbeaver.ui.css.CustomSelectedTabFillHandler">
-            <property-name name="swt-selected-tab-fill"/>
-        </handler>
-
-        <handler adapter="org.eclipse.e4.ui.css.swt.dom.CTabFolderElement" composite="true"
-                 handler="org.jkiss.dbeaver.ui.css.CustomUnselectedTabHandler">
-            <property-name name="swt-unselected-tabs-color"/>
-        </handler>
-
-        <handler adapter="org.eclipse.e4.ui.css.swt.dom.CompositeElement" composite="true"
-                 handler="org.jkiss.dbeaver.ui.css.CustomCompositeElementHandler">
-            <property-name name="background"/>
-            <property-name name="background-color"/>
-            <property-name name="color"/>
-        </handler>
-    </extension>
-
 </plugin>
