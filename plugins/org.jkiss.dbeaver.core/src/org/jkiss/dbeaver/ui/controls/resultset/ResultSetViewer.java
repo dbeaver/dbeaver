@@ -969,6 +969,18 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    boolean isPanelVisible(String panelId) {
+        return getPanelTab(panelId) != null;
+    }
+
+    void closePanel(String panelId) {
+        CTabItem panelTab = getPanelTab(panelId);
+        if (panelTab != null) {
+            panelTab.dispose();
+            removePanel(panelId);
+        }
+    }
+
     void toggleVerticalLayout() {
         PresentationSettings settings = getPresentationSettings();
         settings.verticalLayout = !settings.verticalLayout;
@@ -980,7 +992,16 @@ public class ResultSetViewer extends Viewer
         List<IContributionItem> items = new ArrayList<>();
 
         for (final ResultSetPanelDescriptor panel : availablePanels) {
-            items.add(new ActionContributionItem(new PanelToggleAction(panel)));
+            CommandContributionItemParameter params = new CommandContributionItemParameter(
+                site,
+                panel.getId(),
+                ResultSetHandlerTogglePanel.CMD_TOGGLE_PANEL,
+                CommandContributionItem.STYLE_CHECK
+            );
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put(ResultSetHandlerTogglePanel.PARAM_PANEL_ID, panel.getId());
+            params.parameters = parameters;
+            items.add(new CommandContributionItem(params));
         }
         items.add(new Separator());
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
@@ -3995,87 +4016,5 @@ public class ResultSetViewer extends Viewer
         boolean panelsVisible;
         boolean verticalLayout;
     }
-
-    private class PanelToggleAction extends Action {
-        private final ResultSetPanelDescriptor panel;
-
-        public PanelToggleAction(ResultSetPanelDescriptor panel) {
-            super(panel.getLabel(), Action.AS_CHECK_BOX);
-            this.panel = panel;
-            setToolTipText(panel.getDescription());
-            // Icons turns menu into mess - checkboxes are much better
-            //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
-        }
-
-        @Override
-        public boolean isChecked() {
-            return activePanels.containsKey(panel.getId());
-        }
-
-        @Override
-        public void run() {
-            if (isPanelsVisible() && isChecked()) {
-                CTabItem panelTab = getPanelTab(panel.getId());
-                if (panelTab != null) {
-                    panelTab.dispose();
-                    removePanel(panel.getId());
-                }
-            } else {
-                activatePanel(panel.getId(), true, true);
-            }
-        }
-    }
-
-    private class ToolbarToggleAction extends Action {
-        private final String toolbarId;
-
-        public ToolbarToggleAction(String toolbarId, String toolbarLabel) {
-            super(toolbarLabel, Action.AS_CHECK_BOX);
-            this.toolbarId = toolbarId;
-            //setToolTipText(panel.getDescription());
-        }
-
-        @Override
-        public boolean isChecked() {
-            return activePanels.containsKey(toolbarId);
-        }
-
-        @Override
-        public void run() {
-/*
-            if (isPanelsVisible() && isChecked()) {
-                CTabItem panelTab = getPanelTab(panel.getId());
-                if (panelTab != null) {
-                    panelTab.dispose();
-                    removePanel(panel.getId());
-                }
-            } else {
-                activatePanel(panel.getId(), true, true);
-            }
-*/
-        }
-    }
-
-    /*
-    public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
-        IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
-            targetNode,
-            DatabaseDataEditor.class.getName(),
-            Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
-            DBeaverUI.getActiveWorkbenchWindow()
-        );
-
-        if (entityEditor instanceof MultiPageEditorPart) {
-            Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
-            if (selectedPage instanceof IResultSetContainer) {
-                ResultSetViewer rsv = (ResultSetViewer) ((IResultSetContainer) selectedPage).getResultSetController();
-                if (rsv != null && !rsv.isRefreshInProgress() && !newFilter.equals(rsv.getModel().getDataFilter())) {
-                    // Set filter directly
-                    rsv.refreshWithFilter(newFilter);
-                }
-            }
-        }
-    }
-*/
 
 }
