@@ -63,6 +63,10 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         super(dataSource, catalog, schemaName);
     }
 
+    public ProjectionCache getProjectionCache() {
+        return projectionCache;
+    }
+
     @Override
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
         List<DBSObject> children = new ArrayList<>(getTables(monitor));

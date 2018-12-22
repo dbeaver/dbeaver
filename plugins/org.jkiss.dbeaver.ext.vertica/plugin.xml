@@ -196,6 +196,7 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaTableColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaProjectionColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn"/>
     </extension>
 
 
