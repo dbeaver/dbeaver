@@ -1669,6 +1669,16 @@ public class UIUtils {
         return item;
     }
 
+    public static Point getParentSize(Control control) {
+        for (Composite composite = control.getParent(); composite != null; composite = composite.getParent()) {
+            Point size = composite.getSize();
+            if (size.x > 0 && size.y > 0) {
+                return size;
+            }
+        }
+        return new Point(0, 0);
+    }
+
     public static void resizeShell(Shell shell) {
         Point shellSize = shell.getSize();
         Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
