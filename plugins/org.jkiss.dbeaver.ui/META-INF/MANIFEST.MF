@@ -10,6 +10,7 @@ Bundle-Activator: org.jkiss.dbeaver.bundle.UIActivator
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.css,
  org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.controls.autorefresh,
  org.jkiss.dbeaver.ui.dialogs,
@@ -32,5 +33,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.mylyn.commons.notifications.core,
  org.eclipse.mylyn.commons.notifications.ui,
  org.eclipse.mylyn.commons.workbench,
+ org.eclipse.e4.ui.css.core,
+ org.eclipse.e4.ui.css.swt,
+ org.eclipse.e4.ui.workbench.renderers.swt,
  org.jkiss.dbeaver.model
 
