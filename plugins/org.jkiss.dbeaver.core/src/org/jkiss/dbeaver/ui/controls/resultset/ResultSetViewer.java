@@ -1632,7 +1632,6 @@ public class ResultSetViewer extends Viewer
     void appendData(List<Object[]> rows)
     {
         model.appendData(rows);
-        activePresentation.refreshData(false, true, true);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
