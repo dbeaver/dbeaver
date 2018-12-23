@@ -246,7 +246,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 Point sashSize = UIUtils.getParentSize(sashForm);
                 if (sashSize.x > 0 && sashSize.y > 0) {
                     float ratio = (float) propsSize.y / (float) sashSize.y;
-                    int propsRatio = (int) (1000 * ratio) + 10;
+                    int propsRatio = Math.min(1000, (int) (1000 * ratio));
                     sashForm.setWeights(new int[]{propsRatio, 1000 - propsRatio});
                     sashForm.layout();
                 }
