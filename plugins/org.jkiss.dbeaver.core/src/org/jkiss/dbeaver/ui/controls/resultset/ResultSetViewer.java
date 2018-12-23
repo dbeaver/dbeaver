@@ -1218,8 +1218,11 @@ public class ResultSetViewer extends Viewer
             navToolbar.add(new Separator());
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
-            navToolbar.createControl(statusBar);
             navToolbar.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
+            navToolbar.createControl(statusBar);
+
+            //filtersMenu.add(new ToggleServerSideOrderingAction());
+
             toolbarList.add(navToolbar);
         }
         {
@@ -1994,6 +1997,8 @@ public class ResultSetViewer extends Viewer
                 if (isHasMoreData() && getDataContainer() != null &&  (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                     navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
                 }
+                navigateMenu.add(new Separator());
+                navigateMenu.add(new ToggleRefreshOnScrollingAction());
                 navigateMenu.add(new Separator());
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
@@ -3506,10 +3511,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class ToggleServerSideOrderingAction extends Action {
-        ToggleServerSideOrderingAction()
-        {
-            super(CoreMessages.pref_page_database_resultsets_label_server_side_order);
+    private abstract class ToggleConnectionPreferenceAction extends Action {
+        private final String prefId;
+        ToggleConnectionPreferenceAction(String prefId, String title) {
+            super(title);
+            this.prefId = prefId;
         }
 
         @Override
@@ -3521,7 +3527,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isChecked()
         {
-            return getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
+            return getPreferenceStore().getBoolean(prefId);
         }
 
         @Override
@@ -3529,8 +3535,20 @@ public class ResultSetViewer extends Viewer
         {
             DBPPreferenceStore preferenceStore = getPreferenceStore();
             preferenceStore.setValue(
-                DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE,
-                !preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
+                prefId,
+                !preferenceStore.getBoolean(prefId));
+        }
+    }
+
+    private class ToggleServerSideOrderingAction extends ToggleConnectionPreferenceAction {
+        ToggleServerSideOrderingAction() {
+            super(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, CoreMessages.pref_page_database_resultsets_label_server_side_order);
+        }
+    }
+
+    private class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
+        ToggleRefreshOnScrollingAction() {
+            super(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling);
         }
     }
 

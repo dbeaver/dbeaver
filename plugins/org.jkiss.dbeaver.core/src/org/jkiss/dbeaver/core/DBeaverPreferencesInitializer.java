@@ -184,6 +184,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         // ResultSet
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_READ_METADATA, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_READ_REFERENCES, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS, 200);
