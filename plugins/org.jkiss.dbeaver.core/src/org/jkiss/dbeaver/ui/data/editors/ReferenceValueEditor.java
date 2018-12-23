@@ -263,7 +263,7 @@ public class ReferenceValueEditor {
     }
 
     private void reloadSelectorValues(Object pattern) {
-        if (dictLoaded && CommonUtils.equalObjects(lastPattern, pattern)) {
+        if (dictLoaded && CommonUtils.equalObjects(String.valueOf(lastPattern), String.valueOf(pattern))) {
             selectCurrentValue();
             return;
         }
