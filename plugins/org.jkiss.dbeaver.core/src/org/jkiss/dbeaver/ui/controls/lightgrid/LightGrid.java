@@ -84,6 +84,9 @@ public abstract class LightGrid extends Canvas {
      */
     private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
     private static final boolean MAXIMIZE_SINGLE_COLUMN = false;
+    // Indicates that last time refreshData was called grid control was hidden (had zero size)
+    // In that case columns will be repacked even if keepState is true
+    private boolean controlWasHidden;
 
     public enum EventSource {
         MOUSE,
@@ -488,7 +491,7 @@ public abstract class LightGrid extends Canvas {
         int savedVSB = keepState ? vScroll.getSelection() : -1;
 
         int[] oldWidths = null;
-        if (keepState) {
+        if (keepState && !controlWasHidden) {
             // Save widths
             oldWidths = new int[columns.size()];
             if (!columns.isEmpty()) {
@@ -497,6 +500,7 @@ public abstract class LightGrid extends Canvas {
                 }
             }
         }
+        controlWasHidden = getClientArea().height == 0;
 
         if (refreshColumns) {
             this.removeAll();
