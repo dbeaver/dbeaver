@@ -14,33 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.stream;
-
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.editors.binary.BinaryEditor;
+package org.jkiss.dbeaver.ui.data;
 
 /**
- * CONTENT Binary Editor
+ * Multi-value controller.
+ * Supports value editors switch.
  */
-public class BinaryEditorPart extends BinaryEditor implements IEditorPart {
+public interface IMultiController
+{
+    /**
+     * Closes current value editor.
+     * This action may initiated by editor control (e.g. on Enter or Esc key)
+     */
+    void closeInlineEditor();
 
-    public BinaryEditorPart()
-    {
-    }
-
-    @Override
-    public String getTitle()
-    {
-        return "Binary";
-    }
-
-    @Override
-    public Image getTitleImage()
-    {
-        return DBeaverIcons.getImage(DBIcon.TYPE_BINARY);
-    }
+    /**
+     * Closes current editor and activated next cell editor
+     * @param next true for next and false for previous cell
+     */
+    void nextInlineEditor(boolean next);
 
 }

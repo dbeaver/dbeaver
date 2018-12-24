@@ -17,7 +17,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.base
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.editors.data
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.editors.binary,
+ org.jkiss.dbeaver.ui.editors.binary.data,
  org.jkiss.dbeaver.ui.editors.binary.pref
