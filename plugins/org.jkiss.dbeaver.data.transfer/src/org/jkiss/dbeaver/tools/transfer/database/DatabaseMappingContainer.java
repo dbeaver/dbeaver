@@ -44,28 +44,28 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
 
-    private DatabaseConsumerSettings settings;
+    private DatabaseConsumerSettings consumerSettings;
     private DBSDataContainer source;
     private DBSDataManipulator target;
     private String targetName;
     private DatabaseMappingType mappingType;
     private List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
 
-    public DatabaseMappingContainer(DatabaseConsumerSettings settings, DBSDataContainer source) {
-        this.settings = settings;
+    public DatabaseMappingContainer(DatabaseConsumerSettings consumerSettings, DBSDataContainer source) {
+        this.consumerSettings = consumerSettings;
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    public DatabaseMappingContainer(IRunnableContext context, DatabaseConsumerSettings settings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
-        this.settings = settings;
+    public DatabaseMappingContainer(IRunnableContext context, DatabaseConsumerSettings consumerSettings, DBSDataContainer sourceObject, DBSDataManipulator targetObject) throws DBException {
+        this.consumerSettings = consumerSettings;
         this.source = sourceObject;
         this.target = targetObject;
         refreshMappingType(context, DatabaseMappingType.existing);
     }
 
     public DatabaseConsumerSettings getSettings() {
-        return settings;
+        return consumerSettings;
     }
 
     @Override
@@ -222,7 +222,25 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         targetName = settings.get("targetName");
         if (settings.get("mappingType") != null) {
             try {
-                refreshMappingType(context, DatabaseMappingType.valueOf(settings.get("mappingType")));
+                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf(settings.get("mappingType"));
+                if (!CommonUtils.isEmpty(targetName)) {
+                    DBSObjectContainer objectContainer = consumerSettings.getContainer();
+                    if (objectContainer != null) {
+                        DBSObject child = objectContainer.getChild(new VoidProgressMonitor(), targetName);
+                        if (child instanceof DBSDataManipulator) {
+                            target = (DBSDataManipulator) child;
+                        }
+                    }
+                }
+
+                if (target != null && newMappingType == DatabaseMappingType.create) {
+                    // Change create to existing.
+                    newMappingType = DatabaseMappingType.existing;
+                } else if (target == null && newMappingType == DatabaseMappingType.existing) {
+                    newMappingType = DatabaseMappingType.create;
+                }
+                refreshMappingType(context, newMappingType);
+
             } catch (Exception e) {
                 log.error(e);
             }

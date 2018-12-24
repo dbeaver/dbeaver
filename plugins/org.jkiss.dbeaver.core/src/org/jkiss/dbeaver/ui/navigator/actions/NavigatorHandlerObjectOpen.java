@@ -212,7 +212,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         editorInput,
                         EntityEditor.class.getName());
                 } else {
-                    DBUserInterface.getInstance().showError("No object", "Node do not has associated database object");
+                    DBUserInterface.getInstance().showError("No object", "Node has no associated database object");
                     return null;
                 }
             } else {

@@ -104,7 +104,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
-
 /**
  * ResultSetViewer
  *
@@ -973,6 +972,18 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    boolean isPanelVisible(String panelId) {
+        return getPanelTab(panelId) != null;
+    }
+
+    void closePanel(String panelId) {
+        CTabItem panelTab = getPanelTab(panelId);
+        if (panelTab != null) {
+            panelTab.dispose();
+            removePanel(panelId);
+        }
+    }
+
     void toggleVerticalLayout() {
         PresentationSettings settings = getPresentationSettings();
         settings.verticalLayout = !settings.verticalLayout;
@@ -984,7 +995,16 @@ public class ResultSetViewer extends Viewer
         List<IContributionItem> items = new ArrayList<>();
 
         for (final ResultSetPanelDescriptor panel : availablePanels) {
-            items.add(new ActionContributionItem(new PanelToggleAction(panel)));
+            CommandContributionItemParameter params = new CommandContributionItemParameter(
+                site,
+                panel.getId(),
+                ResultSetHandlerTogglePanel.CMD_TOGGLE_PANEL,
+                CommandContributionItem.STYLE_CHECK
+            );
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put(ResultSetHandlerTogglePanel.PARAM_PANEL_ID, panel.getId());
+            params.parameters = parameters;
+            items.add(new CommandContributionItem(params));
         }
         items.add(new Separator());
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
@@ -1204,9 +1224,10 @@ public class ResultSetViewer extends Viewer
             navToolBarManager.add(new Separator());
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
             navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
+            navToolBarManager.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            navToolBarManager.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
+
             toolbarList.add(navToolBarManager);
         }
         {
@@ -1620,7 +1641,6 @@ public class ResultSetViewer extends Viewer
     void appendData(List<Object[]> rows)
     {
         model.appendData(rows);
-        activePresentation.refreshData(false, true, true);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
@@ -1985,6 +2005,8 @@ public class ResultSetViewer extends Viewer
                 if (isHasMoreData() && getDataContainer() != null &&  (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                     navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
                 }
+                navigateMenu.add(new Separator());
+                navigateMenu.add(new ToggleRefreshOnScrollingAction());
                 navigateMenu.add(new Separator());
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
@@ -3497,10 +3519,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class ToggleServerSideOrderingAction extends Action {
-        ToggleServerSideOrderingAction()
-        {
-            super(CoreMessages.pref_page_database_resultsets_label_server_side_order);
+    private abstract class ToggleConnectionPreferenceAction extends Action {
+        private final String prefId;
+        ToggleConnectionPreferenceAction(String prefId, String title) {
+            super(title);
+            this.prefId = prefId;
         }
 
         @Override
@@ -3512,7 +3535,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isChecked()
         {
-            return getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
+            return getPreferenceStore().getBoolean(prefId);
         }
 
         @Override
@@ -3520,8 +3543,20 @@ public class ResultSetViewer extends Viewer
         {
             DBPPreferenceStore preferenceStore = getPreferenceStore();
             preferenceStore.setValue(
-                DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE,
-                !preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
+                prefId,
+                !preferenceStore.getBoolean(prefId));
+        }
+    }
+
+    private class ToggleServerSideOrderingAction extends ToggleConnectionPreferenceAction {
+        ToggleServerSideOrderingAction() {
+            super(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, CoreMessages.pref_page_database_resultsets_label_server_side_order);
+        }
+    }
+
+    private class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
+        ToggleRefreshOnScrollingAction() {
+            super(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling);
         }
     }
 
@@ -4007,87 +4042,5 @@ public class ResultSetViewer extends Viewer
         boolean panelsVisible;
         boolean verticalLayout;
     }
-
-    private class PanelToggleAction extends Action {
-        private final ResultSetPanelDescriptor panel;
-
-        public PanelToggleAction(ResultSetPanelDescriptor panel) {
-            super(panel.getLabel(), Action.AS_CHECK_BOX);
-            this.panel = panel;
-            setToolTipText(panel.getDescription());
-            // Icons turns menu into mess - checkboxes are much better
-            //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
-        }
-
-        @Override
-        public boolean isChecked() {
-            return activePanels.containsKey(panel.getId());
-        }
-
-        @Override
-        public void run() {
-            if (isPanelsVisible() && isChecked()) {
-                CTabItem panelTab = getPanelTab(panel.getId());
-                if (panelTab != null) {
-                    panelTab.dispose();
-                    removePanel(panel.getId());
-                }
-            } else {
-                activatePanel(panel.getId(), true, true);
-            }
-        }
-    }
-
-    private class ToolbarToggleAction extends Action {
-        private final String toolbarId;
-
-        public ToolbarToggleAction(String toolbarId, String toolbarLabel) {
-            super(toolbarLabel, Action.AS_CHECK_BOX);
-            this.toolbarId = toolbarId;
-            //setToolTipText(panel.getDescription());
-        }
-
-        @Override
-        public boolean isChecked() {
-            return activePanels.containsKey(toolbarId);
-        }
-
-        @Override
-        public void run() {
-/*
-            if (isPanelsVisible() && isChecked()) {
-                CTabItem panelTab = getPanelTab(panel.getId());
-                if (panelTab != null) {
-                    panelTab.dispose();
-                    removePanel(panel.getId());
-                }
-            } else {
-                activatePanel(panel.getId(), true, true);
-            }
-*/
-        }
-    }
-
-    /*
-    public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
-        IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
-            targetNode,
-            DatabaseDataEditor.class.getName(),
-            Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
-            DBeaverUI.getActiveWorkbenchWindow()
-        );
-
-        if (entityEditor instanceof MultiPageEditorPart) {
-            Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
-            if (selectedPage instanceof IResultSetContainer) {
-                ResultSetViewer rsv = (ResultSetViewer) ((IResultSetContainer) selectedPage).getResultSetController();
-                if (rsv != null && !rsv.isRefreshInProgress() && !newFilter.equals(rsv.getModel().getDataFilter())) {
-                    // Set filter directly
-                    rsv.refreshWithFilter(newFilter);
-                }
-            }
-        }
-    }
-*/
 
 }
