@@ -14,51 +14,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * PostgreTriggerManager
+ * Postgre table manager
  */
-public class PostgreTriggerManager extends SQLObjectEditor<PostgreTrigger, PostgreTableReal> {//implements DBEObjectRenamer<PostgreTrigger> {
+public class PostgrePartitionManager extends SQLStructEditor<PostgreTablePartition, PostgreTableRegular> {
 
     @Override
-    public boolean canCreateObject(PostgreTableReal parent) {
+    public boolean canCreateObject(PostgreTableRegular parent) {
         return false;
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_SAVE_IMMEDIATELY;
+    public boolean canDeleteObject(PostgreTablePartition object) {
+        return false;
     }
 
     @Override
-    public DBSObjectCache<? extends DBSObject, PostgreTrigger> getObjectsCache(PostgreTrigger object) {
-        return object.getParentObject().getTriggerCache();
-    }
-
-    @Override
-    protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableReal parent, Object copyFrom) throws DBException {
+    protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableRegular parent, Object copyFrom) throws DBException {
         return null;
+    }
+
+    @Override
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+
     }
 
     @Override
@@ -67,20 +71,23 @@ public class PostgreTriggerManager extends SQLObjectEditor<PostgreTrigger, Postg
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTrigger, PropertyHandler> command, Map<String, Object> options) throws DBException {
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
-            actions.add(new SQLDatabasePersistAction(
-                "Comment trigger",
-                "COMMENT ON TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + DBUtils.getQuotedIdentifier(command.getObject().getTable()) +
-                    " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
-        }
-    }
-
-    @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
 
     }
 
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return 0;
+    }
+
+    @Override
+    public DBSObjectCache<? extends DBSObject, PostgreTablePartition> getObjectsCache(PostgreTablePartition object) {
+        return null;
+    }
+
+    @Override
+    public Class<?>[] getChildTypes() {
+        return new Class[0];
+    }
 
 }
-

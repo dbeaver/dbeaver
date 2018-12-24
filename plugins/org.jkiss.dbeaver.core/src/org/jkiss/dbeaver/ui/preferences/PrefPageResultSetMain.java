@@ -41,6 +41,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset"; //$NON-NLS-1$
 
     private Button autoFetchNextSegmentCheck;
+    private Button rereadOnScrollingCheck;
     private Text resultSetSize;
     private Button resultSetUseSQLCheck;
     private Button serverSideOrderingCheck;
@@ -68,6 +69,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
+            store.contains(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING) ||
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
             store.contains(DBeaverPreferences.RESULT_SET_READ_METADATA) ||
@@ -100,8 +102,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
             resultSetSize = UIUtils.createLabelText(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size, "0", SWT.BORDER);
             resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-            autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, null, true, 2);
-            resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, null, false, 2);
+            autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment_tip, true, 2);
+            rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
+            resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, CoreMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
             serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, null, false, 2);
             readQueryMetadata = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_metadata,
                CoreMessages.pref_page_database_resultsets_label_read_metadata_tip, false, 2);
@@ -152,6 +155,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         try {
             autoFetchNextSegmentCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
+            rereadOnScrollingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING));
             resultSetSize.setText(store.getString(DBeaverPreferences.RESULT_SET_MAX_ROWS));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
@@ -179,6 +183,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         try {
             store.setValue(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, rereadOnScrollingCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
@@ -204,6 +209,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING);
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);

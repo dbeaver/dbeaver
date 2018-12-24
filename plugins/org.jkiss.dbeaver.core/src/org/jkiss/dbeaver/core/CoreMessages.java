@@ -762,7 +762,11 @@ public class CoreMessages extends NLS {
     public static String pref_page_database_resultsets_label_binary_editor_type;
     public static String pref_page_database_resultsets_label_binary_strings_max_length;
     public static String pref_page_database_resultsets_label_auto_fetch_segment;
+	public static String pref_page_database_resultsets_label_auto_fetch_segment_tip;
+	public static String pref_page_database_resultsets_label_reread_on_scrolling;
+	public static String pref_page_database_resultsets_label_reread_on_scrolling_tip;
     public static String pref_page_database_resultsets_label_use_sql;
+	public static String pref_page_database_resultsets_label_use_sql_tip;
     public static String pref_page_database_resultsets_label_server_side_order;
 	public static String pref_page_database_resultsets_label_fetch_size;
 	public static String pref_page_database_resultsets_label_read_metadata;

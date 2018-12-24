@@ -109,6 +109,15 @@ public class ResultSetPresentationRegistry {
         return panels;
     }
 
+    public ResultSetPanelDescriptor getPanel(String panelId) {
+        for (ResultSetPanelDescriptor panel : panels) {
+            if (panel.getId().equals(panelId)) {
+                return panel;
+            }
+        }
+        return null;
+    }
+
     public List<ResultSetPanelDescriptor> getSupportedPanels(DBPDataSource dataSource, String presentationId, IResultSetPresentation.PresentationType presentationType) {
         List<ResultSetPanelDescriptor> result = new ArrayList<>();
         for (ResultSetPanelDescriptor panel : panels) {

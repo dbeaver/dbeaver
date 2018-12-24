@@ -170,7 +170,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         Object[] rowValues = new Object[targetAttributes.size()];
         for (int i = 0; i < columnMappings.length; i++) {
             ColumnMapping column = columnMappings[i];
-            if (column.targetIndex < 0) {
+            if (column == null || column.targetIndex < 0) {
                 continue;
             }
             final Object attrValue;

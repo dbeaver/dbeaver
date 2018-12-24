@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
@@ -272,10 +273,25 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         targetType = settings.get("targetType");
         if (settings.get("mappingType") != null) {
             try {
-                mappingType = DatabaseMappingType.valueOf(settings.get("mappingType"));
-            } catch (IllegalArgumentException e) {
+                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf(settings.get("mappingType"));
+
+                if (!CommonUtils.isEmpty(targetName)) {
+                    DBSDataManipulator targetEntity = parent.getTarget();
+                    if (targetEntity instanceof DBSEntity) {
+                        this.target = ((DBSEntity) targetEntity).getAttribute(new VoidProgressMonitor(), targetName);
+                    }
+                }
+
+                if (target != null && newMappingType == DatabaseMappingType.create) {
+                    // Change create to existing.
+                    newMappingType = DatabaseMappingType.existing;
+                } else if (target == null && newMappingType == DatabaseMappingType.existing) {
+                    newMappingType = DatabaseMappingType.create;
+                }
+
+                setMappingType(newMappingType);
+            } catch (Exception e) {
                 log.error(e);
-                mappingType = DatabaseMappingType.unspecified;
             }
         }
     }
