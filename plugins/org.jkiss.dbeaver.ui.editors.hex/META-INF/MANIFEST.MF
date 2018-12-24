@@ -21,5 +21,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.data
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.editors.binary,
- org.jkiss.dbeaver.ui.editors.binary.data,
  org.jkiss.dbeaver.ui.editors.binary.pref

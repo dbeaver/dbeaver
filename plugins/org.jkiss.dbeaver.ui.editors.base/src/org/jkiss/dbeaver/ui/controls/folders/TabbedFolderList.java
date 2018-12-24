@@ -120,12 +120,7 @@ public class TabbedFolderList extends Composite {
             selected = false;
             this.index = index;
 
-            addPaintListener(new PaintListener() {
-
-                public void paintControl(PaintEvent e) {
-                    paint(e);
-                }
-            });
+            addPaintListener(this::paint);
             addMouseListener(new MouseAdapter() {
 
                 public void mouseUp(MouseEvent e) {

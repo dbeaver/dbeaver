@@ -138,12 +138,6 @@
             properties="active"
             type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
-            class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
-            id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
-            namespace="org.jkiss.dbeaver.core.navigator"
-            properties="active,focused"
-            type="org.eclipse.ui.IWorkbenchPart"/>
-        <propertyTester
             class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
             id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
             namespace="org.jkiss.dbeaver.ui.editors.entity"
@@ -2970,25 +2964,6 @@
         </factory>
         <factory adaptableType="org.jkiss.dbeaver.model.struct.DBSObject" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
             <adapter type="org.jkiss.dbeaver.runtime.resource.WorkspaceResourceResolver"/>
-        </factory>
-        <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
-            <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
-            <adapter type="org.jkiss.dbeaver.model.DBPObject"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.rdb.DBSSchema"/>
-            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-            <adapter type="org.eclipse.ui.views.properties.IPropertySource"/>
-            <adapter type="org.eclipse.core.resources.IResource"/>
-            <adapter type="org.eclipse.core.resources.IProject"/>
-            <adapter type="org.eclipse.core.resources.IFile"/>
-            <adapter type="org.eclipse.core.resources.IFolder"/>
-            <adapter type="org.eclipse.ui.model.IWorkbenchAdapter"/>
         </factory>
         <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>

@@ -48,6 +48,12 @@ public class UIMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_menu_stop;
     public static String sql_editor_resultset_filter_panel_menu_customize;
 
+    public static String button_add;
+    public static String button_enable;
+    public static String button_remove;
+    public static String button_clear;
+    public static String button_reset_to_defaults;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);

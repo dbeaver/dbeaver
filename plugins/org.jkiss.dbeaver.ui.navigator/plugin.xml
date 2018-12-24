@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
+                id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
+                namespace="org.jkiss.dbeaver.core.navigator"
+                properties="active,focused"
+                type="org.eclipse.ui.IWorkbenchPart"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.rdb.DBSSchema"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+            <adapter type="org.eclipse.ui.views.properties.IPropertySource"/>
+            <adapter type="org.eclipse.core.resources.IResource"/>
+            <adapter type="org.eclipse.core.resources.IProject"/>
+            <adapter type="org.eclipse.core.resources.IFile"/>
+            <adapter type="org.eclipse.core.resources.IFolder"/>
+            <adapter type="org.eclipse.ui.model.IWorkbenchAdapter"/>
+        </factory>
+    </extension>
+
+</plugin>

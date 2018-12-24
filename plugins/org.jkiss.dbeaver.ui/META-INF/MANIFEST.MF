@@ -15,6 +15,7 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.dialogs,
  org.jkiss.dbeaver.ui.dialogs.exec,
  org.jkiss.dbeaver.ui.dnd,
+ org.jkiss.dbeaver.ui.internal,
  org.jkiss.dbeaver.ui.notifications,
  org.jkiss.dbeaver.ui.preferences,
  org.jkiss.dbeaver.ui.properties
