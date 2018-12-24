@@ -93,11 +93,6 @@ public final class DBeaverPreferences
 
     private static final String PROPERTY_USE_ALL_COLUMNS_QUIET = "virtual-key-quiet";
 
-    // Hex editor font identifiers
-    public static final String HEX_FONT_NAME = "hex.font.name"; //$NON-NLS-1$
-    public static final String HEX_FONT_SIZE = "hex.font.size"; //$NON-NLS-1$
-    public static final String HEX_FONT_STYLE = "hex.font.style"; //$NON-NLS-1$
-
     // General UI
     public static final String UI_AUTO_UPDATE_CHECK = "ui.auto.update.check"; //$NON-NLS-1$
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
@@ -155,7 +150,5 @@ public final class DBeaverPreferences
 
     public static final String LOGS_DEBUG_ENABLED = "logs.debug.enabled";
     public static final String LOGS_DEBUG_LOCATION = "logs.debug.location";
-    
-    public static final String HEX_DEF_WIDTH ="default.hex.width";
 
 }
