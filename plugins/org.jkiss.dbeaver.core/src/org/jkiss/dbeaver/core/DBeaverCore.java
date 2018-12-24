@@ -533,6 +533,11 @@ public class DBeaverCore implements DBPPlatform {
     }
 
     @Override
+    public File getConfigurationFile(String fileName) {
+        return DBeaverActivator.getConfigurationFile(fileName);
+    }
+
+    @Override
     public boolean isShuttingDown() {
         return isClosing();
     }

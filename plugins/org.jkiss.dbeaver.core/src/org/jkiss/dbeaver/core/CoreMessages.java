@@ -213,11 +213,6 @@ public class CoreMessages extends NLS {
 	public static String controls_object_list_monitor_load_lazy_props;
 	public static String controls_object_list_monitor_load_props;
 	public static String controls_object_list_status_objects;
-	public static String controls_progress_page_action_close;
-	public static String controls_progress_page_job_search;
-	public static String controls_progress_page_progress_bar_cancel_tooltip;
-	public static String controls_progress_page_progress_bar_loading_tooltip;
-	public static String controls_progress_page_toolbar_title;
 
 	public static String controls_querylog__ms;
 	public static String controls_querylog_action_clear_log;

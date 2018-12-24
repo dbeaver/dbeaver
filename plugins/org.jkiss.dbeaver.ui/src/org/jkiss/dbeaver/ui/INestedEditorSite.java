@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.controls;
+package org.jkiss.dbeaver.ui;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
+import org.jkiss.code.NotNull;
 
 /**
- * IProgressControlProvider
+ * INestedEditorSite
  */
-public interface IProgressControlProvider
+public interface INestedEditorSite extends IEditorSite
 {
-    @Nullable
-    ProgressPageControl getProgressControl();
+    @NotNull
+    IEditorPart getFolderEditor();
+
 }
