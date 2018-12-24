@@ -20,9 +20,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -32,7 +32,8 @@ import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Viewer columns registry
@@ -55,7 +56,7 @@ class TabbedFoldersRegistry {
     private volatile ConfigSaver saver = null;
 
     public TabbedFoldersRegistry() {
-        File savedStates = DBeaverActivator.getConfigurationFile(COLUMNS_CONFIG_FILE);
+        File savedStates = DBWorkbench.getPlatform().getConfigurationFile(COLUMNS_CONFIG_FILE);
         if (savedStates.exists()) {
             loadConfiguration(savedStates);
         }
@@ -112,7 +113,7 @@ class TabbedFoldersRegistry {
 
         private void flushConfig() {
 
-            File configFile = DBeaverActivator.getConfigurationFile(COLUMNS_CONFIG_FILE);
+            File configFile = DBWorkbench.getPlatform().getConfigurationFile(COLUMNS_CONFIG_FILE);
             try (OutputStream out = new FileOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
                 xml.setButify(true);

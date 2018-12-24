@@ -28,10 +28,11 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -113,9 +114,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     public void fillConfigMenu(IContributionManager menuManager)
     {
-        menuManager.add(new Action(CoreMessages.obj_editor_properties_control_action_configure_columns, DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+        menuManager.add(new Action(UINavigatorMessages.obj_editor_properties_control_action_configure_columns, DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
             {
-                setDescription(CoreMessages.obj_editor_properties_control_action_configure_columns_description);
+                setDescription(UINavigatorMessages.obj_editor_properties_control_action_configure_columns_description);
             }
             @Override
             public void run()
@@ -608,7 +609,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.dialog_edit_driver_button_reset_to_defaults, false);
+            createButton(parent, IDialogConstants.DETAILS_ID, UIMessages.button_reset_to_defaults, false);
             super.createButtonsForButtonBar(parent);
         }
 

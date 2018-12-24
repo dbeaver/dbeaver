@@ -28,24 +28,7 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.text.source.ISharedTextColors;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.*;
-import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
-
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 

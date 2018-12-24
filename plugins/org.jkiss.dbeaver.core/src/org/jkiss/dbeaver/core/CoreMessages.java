@@ -401,7 +401,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_manager_message_delete_driver_text;
 	public static String dialog_driver_manager_message_delete_driver_title;
 	public static String dialog_driver_manager_title;
-	
+
+	public static String dialog_filter_global_link;
+	public static String dialog_filter_list_exclude;
+	public static String dialog_filter_list_include;
+	public static String dialog_filter_title;
 	public static String dialog_edit_driver_button_add_file;
 	public static String dialog_edit_driver_button_add_folder;
 	public static String dialog_edit_driver_button_add_artifact;
@@ -411,7 +415,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_button_details;
 	public static String dialog_edit_driver_button_delete;
 	public static String dialog_edit_driver_button_down;
-	public static String dialog_edit_driver_button_reset_to_defaults;
 	public static String dialog_edit_driver_button_up;
 	public static String dialog_edit_driver_dialog_driver_error_message;
 	public static String dialog_edit_driver_dialog_driver_error_title;
@@ -439,16 +442,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_text_driver_license;
 	public static String dialog_edit_driver_title_create_driver;
 	public static String dialog_edit_driver_title_edit_driver;
-
-	public static String dialog_filter_button_add;
-	public static String dialog_filter_button_enable;
-	public static String dialog_filter_button_remove;
-	public static String dialog_filter_button_clear;
-	public static String dialog_filter_global_link;
-	public static String dialog_filter_list_exclude;
-	public static String dialog_filter_list_include;
-	public static String dialog_filter_table_column_value;
-	public static String dialog_filter_title;
 
 	public static String dialog_migrate_wizard_choose_driver_description;
 	public static String dialog_migrate_wizard_choose_driver_title;
@@ -1314,7 +1307,7 @@ public class CoreMessages extends NLS {
 	public static String obj_editor_properties_control_action_configure_columns;
 	public static String obj_editor_properties_control_action_configure_columns_description;
 	//object properties editor
-	
+
 	//toolbar editor menu item
 	public static String toolbar_cmd_undo_name;
 	public static String toolbar_cmd_redo_name;

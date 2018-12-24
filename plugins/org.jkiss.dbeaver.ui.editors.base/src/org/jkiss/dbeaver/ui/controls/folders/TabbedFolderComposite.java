@@ -86,16 +86,13 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                 gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.heightHint = TabbedFolderList.SECTION_DIV_HEIGHT;
                 sash.setLayoutData(gd);
-                sash.addPaintListener(new PaintListener() {
-                    @Override
-                    public void paintControl(PaintEvent e) {
-                        e.gc.setBackground(folderList.widgetBackground);
-                        e.gc.setForeground(folderList.widgetForeground);
-                        e.gc.fillRectangle(0, 1, e.width, e.height - 2);
-                        e.gc.setForeground(folderList.widgetNormalShadow);
-                        e.gc.drawLine(0, 0, e.width - 1, 0);
-                        e.gc.drawLine(0, e.height - 1, e.width - 1, e.height - 1);
-                    }
+                sash.addPaintListener(e -> {
+                    e.gc.setBackground(folderList.widgetBackground);
+                    e.gc.setForeground(folderList.widgetForeground);
+                    e.gc.fillRectangle(0, 1, e.width, e.height - 2);
+                    e.gc.setForeground(folderList.widgetNormalShadow);
+                    e.gc.drawLine(0, 0, e.width - 1, 0);
+                    e.gc.drawLine(0, e.height - 1, e.width - 1, e.height - 1);
                 });
                 sash.addSelectionListener(new SelectionAdapter() {
                     @Override

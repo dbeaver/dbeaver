@@ -27,10 +27,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class StringEditorTable {
         // valueTable.setHeaderVisible(true);
         valueTable.setLinesVisible(true);
 
-        final TableColumn valueColumn = UIUtils.createTableColumn(valueTable, SWT.LEFT, CoreMessages.dialog_filter_table_column_value);
+        final TableColumn valueColumn = UIUtils.createTableColumn(valueTable, SWT.LEFT, UIMessages.properties_value);
 
         valueTable.addControlListener(new ControlAdapter() {
             @Override
@@ -102,11 +103,11 @@ public class StringEditorTable {
         Composite buttonsGroup = UIUtils.createPlaceholder(group, 1, 5);
         buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         final Button addButton = new Button(buttonsGroup, SWT.PUSH);
-        addButton.setText(CoreMessages.dialog_filter_button_add);
+        addButton.setText(UIMessages.button_add);
         addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Button removeButton = new Button(buttonsGroup, SWT.PUSH);
-        removeButton.setText(CoreMessages.dialog_filter_button_remove);
+        removeButton.setText(UIMessages.button_remove);
         removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         removeButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -122,7 +123,7 @@ public class StringEditorTable {
         removeButton.setEnabled(false);
 
         final Button clearButton = new Button(buttonsGroup, SWT.PUSH);
-        clearButton.setText(CoreMessages.dialog_filter_button_clear);
+        clearButton.setText(UIMessages.button_clear);
         clearButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         clearButton.addSelectionListener(new SelectionAdapter() {
             @Override
