@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.Action;
-import org.jkiss.dbeaver.bundle.UIMessages;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 /**
  * Context search action

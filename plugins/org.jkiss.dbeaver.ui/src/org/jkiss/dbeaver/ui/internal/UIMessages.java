@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.bundle;
+package org.jkiss.dbeaver.ui.internal;
 
 import org.eclipse.osgi.util.NLS;
 
 public class UIMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.bundle.UIMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIMessages"; //$NON-NLS-1$
 
     public static String output_label_directory;
 
