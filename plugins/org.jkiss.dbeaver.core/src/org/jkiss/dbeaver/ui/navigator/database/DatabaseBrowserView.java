@@ -18,23 +18,22 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class DatabaseBrowserView extends NavigatorViewBase {

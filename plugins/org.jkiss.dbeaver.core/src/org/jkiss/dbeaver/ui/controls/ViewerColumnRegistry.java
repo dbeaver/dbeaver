@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -76,7 +76,7 @@ class ViewerColumnRegistry {
     private volatile ConfigSaver saver = null;
 
     public ViewerColumnRegistry() {
-        File columnsConfig = DBeaverActivator.getConfigurationFile(COLUMNS_CONFIG_FILE);
+        File columnsConfig = DBWorkbench.getPlatform().getConfigurationFile(COLUMNS_CONFIG_FILE);
         if (columnsConfig.exists()) {
             loadConfiguration(columnsConfig);
         }
@@ -132,7 +132,7 @@ class ViewerColumnRegistry {
 
         private void flushConfig() {
 
-            File configFile = DBeaverActivator.getConfigurationFile(COLUMNS_CONFIG_FILE);
+            File configFile = DBWorkbench.getPlatform().getConfigurationFile(COLUMNS_CONFIG_FILE);
             try (OutputStream out = new FileOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
                 xml.setButify(true);

@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderEditorSite;
+import org.jkiss.dbeaver.ui.INestedEditorSite;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorManager;
@@ -247,7 +247,7 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
         return editor != null && editor.isSaveOnCloseNeeded();
     }
 
-    private class TabbedFolderPageEditorSite extends MultiPageEditorSite implements ITabbedFolderEditorSite {
+    private class TabbedFolderPageEditorSite extends MultiPageEditorSite implements INestedEditorSite {
 
         public TabbedFolderPageEditorSite(MultiPageEditorPart multiPageEditor, IEditorPart editor) {
             super(multiPageEditor, editor);

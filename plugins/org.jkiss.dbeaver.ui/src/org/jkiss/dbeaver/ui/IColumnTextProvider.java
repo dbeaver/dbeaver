@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.controls.folders;
-
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorSite;
-import org.jkiss.code.NotNull;
+package org.jkiss.dbeaver.ui;
 
 /**
- * ITabbedFolderEditorSite
+ * IColumnTextProvider
  */
-public interface ITabbedFolderEditorSite extends IEditorSite
+public interface IColumnTextProvider<ELEMENT>
 {
-    @NotNull
-    IEditorPart getFolderEditor();
-
+    String getText(ELEMENT element);
 }

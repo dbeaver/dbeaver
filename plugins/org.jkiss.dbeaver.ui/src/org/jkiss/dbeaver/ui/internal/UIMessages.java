@@ -35,6 +35,12 @@ public class UIMessages extends NLS {
     public static String ui_properties_tree_viewer_action_reset_value;
     public static String ui_properties_tree_viewer_category_general;
 
+    public static String controls_progress_page_action_close;
+    public static String controls_progress_page_job_search;
+    public static String controls_progress_page_progress_bar_cancel_tooltip;
+    public static String controls_progress_page_progress_bar_loading_tooltip;
+    public static String controls_progress_page_toolbar_title;
+
     public static String sql_editor_resultset_filter_panel_btn_config_refresh;
     public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
     public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
