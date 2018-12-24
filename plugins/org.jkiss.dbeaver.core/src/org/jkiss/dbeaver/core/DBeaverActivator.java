@@ -40,6 +40,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
     // The shared instance
     private static DBeaverActivator instance;
+    private static File configDir;
     private ResourceBundle pluginResourceBundle, coreResourceBundle;
     private PrintStream debugWriter;
     private DBPPreferenceStore preferences;
@@ -93,9 +94,12 @@ public class DBeaverActivator extends AbstractUIPlugin {
     /**
      * Returns configuration file
      */
-    public static File getConfigurationFile(String fileName)
+    public static synchronized File getConfigurationFile(String fileName)
     {
-        return new File(getInstance().getStateLocation().toFile(), fileName);
+        if (configDir == null) {
+            configDir = getInstance().getStateLocation().toFile();
+        }
+        return new File(configDir, fileName);
     }
 
     /**

@@ -31,17 +31,18 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.IEncodingSupport;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.binary.internal.BinaryEditorMessages;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -176,7 +177,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             }
             
         };
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.addPropertyChangeListener(preferencesChangeListener);
       
         manager.addLongSelectionListener(new SelectionAdapter() {
@@ -239,7 +240,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             manager = null;
         }
 
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.removePropertyChangeListener(preferencesChangeListener);
 
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
@@ -404,14 +405,14 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void menuAboutToShow(IMenuManager manager)
     {
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_COPY, CoreMessages.dialog_find_replace_copy));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, CoreMessages.dialog_find_replace_paste));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, CoreMessages.controls_querylog_action_select_all));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, CoreMessages.dialog_find_replace_find_replace));
-        manager.add(new EditorAction(ITextEditorActionDefinitionIds.LINE_GOTO, CoreMessages.dialog_find_replace_goto_line));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_COPY, BinaryEditorMessages.dialog_find_replace_copy));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, BinaryEditorMessages.dialog_find_replace_paste));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, WorkbenchMessages.Workbench_selectAll));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, BinaryEditorMessages.dialog_find_replace_find_replace));
+        manager.add(new EditorAction(ITextEditorActionDefinitionIds.LINE_GOTO, BinaryEditorMessages.dialog_find_replace_goto_line));
         manager.add(new Separator());
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, CoreMessages.dialog_find_replace_undo));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, CoreMessages.dialog_find_replace_redo));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, BinaryEditorMessages.dialog_find_replace_undo));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, BinaryEditorMessages.dialog_find_replace_redo));
     }
 
     class EditorAction extends Action {
