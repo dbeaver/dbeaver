@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.bundle;
+package org.jkiss.dbeaver.ui.editors.data.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -22,22 +22,20 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.osgi.framework.BundleContext;
 
-public class UIActivator extends AbstractUIPlugin {
+public class DataEditorsActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.editors.data";
 
     // The shared instance
-    private static UIActivator plugin;
+    private static DataEditorsActivator plugin;
 
-    public UIActivator() {
+    public DataEditorsActivator() {
     }
 
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        // Set notifications handler
-        DBeaverNotifications.setHandler(NotificationUtils::sendNotification);
         plugin = this;
     }
 
@@ -47,7 +45,7 @@ public class UIActivator extends AbstractUIPlugin {
         super.stop(context);
     }
 
-    public static UIActivator getDefault() {
+    public static DataEditorsActivator getDefault() {
         return plugin;
     }
 

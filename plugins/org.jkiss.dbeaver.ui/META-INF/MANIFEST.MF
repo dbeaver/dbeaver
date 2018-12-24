@@ -6,7 +6,7 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ui;singleton:=true
 Bundle-Version: 5.1.15.qualifier
 Bundle-Release-Date: 20190107
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Activator: org.jkiss.dbeaver.bundle.UIActivator
+Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui,

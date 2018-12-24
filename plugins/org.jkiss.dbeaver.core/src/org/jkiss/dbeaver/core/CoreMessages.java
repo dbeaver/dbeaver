@@ -1375,9 +1375,6 @@ public class CoreMessages extends NLS {
 	public static String toolbar_cmd_redo_name;
 	//toolbar editor menu item
 
-	public static String grid_tooltip_sort_by_column;
-	public static String grid_tooltip_filter_by_column;
-
 	public static String CreateLinkHandler_e_create_link_message;
 	public static String CreateLinkHandler_e_create_link_title;
 	public static String CreateLinkHandler_e_create_link_validation;
