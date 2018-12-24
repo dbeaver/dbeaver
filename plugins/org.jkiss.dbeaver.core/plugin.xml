@@ -3684,8 +3684,6 @@
             <supports kind="ROWID"/>
         </manager>
 -->
-        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.BinaryStreamValueManager" id="binary" label="Binary" primaryMime="octet/binary"
-            description="Hex editor" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/binary.png"/>
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.ImageStreamValueManager" id="image" label="Image" primaryMime="octet/image"
             description="Image viewer" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/image.png"/>
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.TextStreamValueManager" id="plaintext" label="Text" primaryMime="text/plain"
