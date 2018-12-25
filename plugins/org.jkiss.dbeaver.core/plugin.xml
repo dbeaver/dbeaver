@@ -342,7 +342,7 @@
                     id="panelId"
                     name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.param.panelId.name"
                     optional="false"
-                    values="org.jkiss.dbeaver.ui.controls.resultset.PanelIdParameterValues">
+                    values="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerTogglePanel$PanelIdParameterValues">
             </commandParameter>
         </command>
         <command id="org.jkiss.dbeaver.core.resultset.grid.toggleLayout" name="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.rs"/>
