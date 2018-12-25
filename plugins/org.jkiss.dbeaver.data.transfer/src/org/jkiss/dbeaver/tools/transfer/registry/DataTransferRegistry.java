@@ -109,6 +109,17 @@ public class DataTransferRegistry {
         return result;
     }
 
+    public List<DataTransferNodeDescriptor> getNodes(DataTransferNodeDescriptor.NodeType nodeType)
+    {
+        List<DataTransferNodeDescriptor> result = new ArrayList<>();
+        for (DataTransferNodeDescriptor node : nodes) {
+            if (node.getNodeType() == nodeType) {
+                result.add(node);
+            }
+        }
+        return result;
+    }
+
     public DataTransferNodeDescriptor getNodeByType(Class<? extends IDataTransferNode> type)
     {
         for (DataTransferNodeDescriptor node : nodes) {
@@ -140,4 +151,14 @@ public class DataTransferRegistry {
         return null;
     }
 
+    public DataTransferProcessorDescriptor getProcessor(String processorFullId) {
+        String[] idParts = processorFullId.split(":");
+        if (idParts.length == 2) {
+            DataTransferNodeDescriptor node = getNodeById(idParts[0]);
+            if (node != null) {
+                return node.getProcessor(idParts[1]);
+            }
+        }
+        return null;
+    }
 }

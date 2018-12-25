@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.IResultSetPanel;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -48,7 +50,7 @@ public class ResultSetPanelDescriptor extends AbstractContextDescriptor {
     private final List<String> supportedPresentations = new ArrayList<>();
     private final List<String> supportedDataSources = new ArrayList<>();
 
-    protected ResultSetPanelDescriptor(IConfigurationElement config) {
+    public ResultSetPanelDescriptor(IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
