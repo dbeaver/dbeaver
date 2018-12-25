@@ -63,6 +63,7 @@ import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -76,7 +77,6 @@ import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -1519,7 +1519,7 @@ public class UIUtils {
             PlatformUI.getWorkbench().getProgressService().runInUI(context,
                 monitor -> runnable.run(RuntimeUtils.makeMonitor(monitor)), ResourcesPlugin.getWorkspace().getRoot());
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(null, null, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(null, null, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }

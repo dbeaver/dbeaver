@@ -39,8 +39,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
@@ -299,7 +299,7 @@ public class ItemListControl extends NodeListControl
                     }
                 }
             } catch (Exception e) {
-                DBUserInterface.getInstance().showError("Error setting property value", "Error setting property '" + property.getId() + "' value", e);
+                DBWorkbench.getPlatformUI().showError("Error setting property value", "Error setting property '" + property.getId() + "' value", e);
             }
         }
 

@@ -23,7 +23,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tools.ToolDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -58,7 +58,7 @@ public class NavigatorActionExecuteTool implements IActionDelegate
             IExternalTool toolInstance = tool.createTool();
             toolInstance.execute(window, part, objects);
         } catch (Throwable e) {
-            DBUserInterface.getInstance().showError("Tool error", "Error executing tool '" + tool.getLabel() + "'", e);
+            DBWorkbench.getPlatformUI().showError("Tool error", "Error executing tool '" + tool.getLabel() + "'", e);
         }
     }
 

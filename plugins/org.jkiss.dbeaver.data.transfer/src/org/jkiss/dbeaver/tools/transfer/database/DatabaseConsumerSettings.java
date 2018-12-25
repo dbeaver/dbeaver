@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
@@ -241,7 +240,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 runnableContext.run(true, true,
                     monitor -> containerNode.initializeNode(new DefaultProgressMonitor(monitor), null));
             } catch (InvocationTargetException e) {
-                DBUserInterface.getInstance().showError("Init connection", "Error connecting to datasource", e.getTargetException());
+                DBWorkbench.getPlatformUI().showError("Init connection", "Error connecting to datasource", e.getTargetException());
             } catch (InterruptedException e) {
                 // ignore
             }

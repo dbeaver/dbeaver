@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -81,7 +80,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
                     break;
             }
         } catch (CoreException e) {
-            DBUserInterface.getInstance().showError("Open editor", "Can execute command '" + actionId + "'", e);
+            DBWorkbench.getPlatformUI().showError("Open editor", "Can execute command '" + actionId + "'", e);
         }
         return null;
     }
@@ -283,7 +282,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
                 sqlInput,
                 SQLEditor.class.getName());
         } catch (PartInitException e) {
-            DBUserInterface.getInstance().showError("Can't open editor", null, e);
+            DBWorkbench.getPlatformUI().showError("Can't open editor", null, e);
         }
         return null;
     }

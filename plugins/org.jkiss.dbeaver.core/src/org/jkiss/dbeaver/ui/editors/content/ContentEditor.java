@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
@@ -83,7 +83,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException)e).getTargetException();
             }
-            DBUserInterface.getInstance().showError("Cannot open content editor", null, e);
+            DBWorkbench.getPlatformUI().showError("Cannot open content editor", null, e);
             return null;
         }
         try {
@@ -271,7 +271,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                 // Close editor
                 closeValueEditor();
             } catch (Exception e) {
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         "Can't save content",
                     "Can't save content to database",
                     e);
@@ -298,7 +298,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             });
         }
         catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Can't save content",
                     "Can't save content to file '" + saveFile.getAbsolutePath() + "'",
                     e.getTargetException());
@@ -517,7 +517,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             UIUtils.runInProgressService(initializer);
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Cannot refresh content editor", null, e);
+            DBWorkbench.getPlatformUI().showError("Cannot refresh content editor", null, e);
         } catch (InterruptedException e) {
             // ignore
         }

@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -124,7 +123,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 if (status.isOK()) {
                     UIUtils.syncExec(() -> openNodeByPath(dsNode, (IFile) resource, storage));
                 } else {
-                    DBUserInterface.getInstance().showError(
+                    DBWorkbench.getPlatformUI().showError(
                         "Open bookmark",
                         "Can't open bookmark",
                         status);
@@ -146,7 +145,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                     nodeLoader.databaseNode, null, UIUtils.getActiveWorkbenchWindow()));
             }
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                 CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing

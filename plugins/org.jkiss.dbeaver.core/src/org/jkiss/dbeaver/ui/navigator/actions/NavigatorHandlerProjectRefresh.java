@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -41,7 +40,7 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Refresh workspace", "Can't refresh workspace", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Refresh workspace", "Can't refresh workspace", e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }

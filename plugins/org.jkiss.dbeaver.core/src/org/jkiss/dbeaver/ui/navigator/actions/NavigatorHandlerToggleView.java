@@ -25,7 +25,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
@@ -43,7 +43,7 @@ public class NavigatorHandlerToggleView extends AbstractHandler implements IElem
             try {
                 workbenchWindow.getActivePage().showView(viewId);
             } catch (PartInitException e) {
-                DBUserInterface.getInstance().showError("Toggle view", "Cannot open view " + viewId, e);
+                DBWorkbench.getPlatformUI().showError("Toggle view", "Cannot open view " + viewId, e);
             }
         }
         return null;

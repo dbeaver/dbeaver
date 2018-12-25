@@ -31,7 +31,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.registry.maven.MavenRepository;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
@@ -99,7 +99,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                             item.setText(new String[]{url.getHost(), urlString});
                             item.setData(repository);
                         } catch (MalformedURLException e1) {
-                            DBUserInterface.getInstance().showError(CoreMessages.pref_page_drivers_maven_label_bad_url, CoreMessages.pref_page_drivers_maven_label_bad_url_tip, e1);
+                            DBWorkbench.getPlatformUI().showError(CoreMessages.pref_page_drivers_maven_label_bad_url, CoreMessages.pref_page_drivers_maven_label_bad_url_tip, e1);
                         }
                     }
                 }

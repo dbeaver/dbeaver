@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -164,7 +163,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             if (valueController instanceof IMultiController) {
                 ((IMultiController) valueController).closeInlineEditor();
             }
-            DBUserInterface.getInstance().showError("Value save", "Can't save edited value", e);
+            DBWorkbench.getPlatformUI().showError("Value save", "Can't save edited value", e);
         }
     }
 

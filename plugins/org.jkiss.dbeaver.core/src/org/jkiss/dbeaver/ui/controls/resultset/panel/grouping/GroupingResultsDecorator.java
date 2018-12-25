@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetDecorator;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
@@ -164,7 +164,7 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
                 try {
                     container.rebuildGrouping();
                 } catch (DBException e) {
-                    DBUserInterface.getInstance().showError("Grouping error", "Can't perform grouping query", e);
+                    DBWorkbench.getPlatformUI().showError("Grouping error", "Can't perform grouping query", e);
                 }
             }
         });

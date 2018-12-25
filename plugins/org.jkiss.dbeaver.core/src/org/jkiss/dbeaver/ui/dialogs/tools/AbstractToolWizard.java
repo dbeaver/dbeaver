@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -40,7 +39,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -212,7 +210,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
             ((WizardPage)getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
             getContainer().updateMessage();
             return false;
@@ -246,7 +244,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             return false;
         }
         catch (InvocationTargetException ex) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     NLS.bind(CoreMessages.tools_wizard_error_task_error_title, task),
                 CoreMessages.tools_wizard_error_task_error_message + task,
                 ex.getTargetException());

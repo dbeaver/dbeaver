@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -195,7 +195,7 @@ public class FilterValueEditDialog extends BaseDialog{
                 Object value = ResultSetUtils.getAttributeValueFromClipboard(handler.attr);
                 handler.editor.primeEditorValue(value);
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError("Copy from clipboard", "Can't copy value", e);
+                DBWorkbench.getPlatformUI().showError("Copy from clipboard", "Can't copy value", e);
             }
         } else {
             super.buttonPressed(buttonId);

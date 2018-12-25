@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectObjectDialog;
 import org.jkiss.utils.CommonUtils;
@@ -78,7 +77,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             // Flush drivers configuration
             DataSourceProviderRegistry.getInstance().saveDrivers();
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Import driver", null, e);
+            DBWorkbench.getPlatformUI().showError("Import driver", null, e);
             return false;
         }
 
@@ -89,7 +88,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                 }
             }
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Import driver", null, e);
+            DBWorkbench.getPlatformUI().showError("Import driver", null, e);
             return false;
         }
 

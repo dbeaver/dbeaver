@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
@@ -77,7 +76,7 @@ public class CreateConnectionDialog extends ActiveWizardDialog
     @Override
     public int open() {
         if (DBWorkbench.getPlatform().getProjectManager().getActiveProject() == null) {
-            DBUserInterface.getInstance().showError("No active project", "No active project, can't create new connection.\nActivate or create new project.");
+            DBWorkbench.getPlatformUI().showError("No active project", "No active project, can't create new connection.\nActivate or create new project.");
             return IDialogConstants.CANCEL_ID;
         }
         return super.open();

@@ -26,7 +26,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,7 +50,7 @@ public class NavigatorHandlerCreateFolder extends NavigatorHandlerObjectBase {
                 try {
                     ((DBNResource)element).createNewFolder(folderName);
                 } catch (DBException e) {
-                    DBUserInterface.getInstance().showError(
+                    DBWorkbench.getPlatformUI().showError(
                             CoreMessages.actions_navigator_create_folder_error_title,
                             NLS.bind(CoreMessages.actions_navigator_create_folder_error_message, folderName),
                             e);

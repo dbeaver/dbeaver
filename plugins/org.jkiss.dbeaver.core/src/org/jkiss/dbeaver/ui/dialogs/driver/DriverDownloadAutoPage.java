@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -143,7 +143,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(CoreMessages.dialog_driver_download_auto_page_driver_download_error, CoreMessages.dialog_driver_download_auto_page_driver_download_error_msg, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_driver_download_auto_page_driver_download_error, CoreMessages.dialog_driver_download_auto_page_driver_download_error_msg, e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

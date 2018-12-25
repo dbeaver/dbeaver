@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -26,7 +27,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -130,7 +130,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
 
             if (innerError != null) {
                 log.debug(innerError);
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         getName(),
                     null,
                     innerError);

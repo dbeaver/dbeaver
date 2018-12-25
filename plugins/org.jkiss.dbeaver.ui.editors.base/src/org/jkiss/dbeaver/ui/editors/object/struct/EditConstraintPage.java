@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.utils.ArrayUtils;
@@ -98,7 +98,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
         try {
             this.attributes = constraint.getAttributeReferences(new VoidProgressMonitor());
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Can't get attributes", "Error obtaining entity attributes", e);
+            DBWorkbench.getPlatformUI().showError("Can't get attributes", "Error obtaining entity attributes", e);
         }
     }
 

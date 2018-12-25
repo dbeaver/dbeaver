@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
@@ -119,7 +118,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                     DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(container.getDataSource());
                     if (dsNode != null) {
                         DBNNode curNode = selectedFunction == null ? null : navigatorModel.getNodeByObject(selectedFunction);
-                        DBNNode node = DBUserInterface.getInstance().selectObject(
+                        DBNNode node = DBWorkbench.getPlatformUI().selectObject(
                             parent.getShell(),
                             "Select function to debug",
                             dsNode,
