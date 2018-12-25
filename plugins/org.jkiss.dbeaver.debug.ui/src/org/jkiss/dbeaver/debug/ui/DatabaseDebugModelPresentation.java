@@ -32,7 +32,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
@@ -42,10 +41,11 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -145,7 +145,7 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
             IDatabaseBreakpoint breakpoint = (IDatabaseBreakpoint) element;
             try {
                 String nodePath = breakpoint.getNodePath();
-                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
                 DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
                 if (node instanceof DBNDatabaseNode) {
                     DBNDatabaseNode databaseNode = (DBNDatabaseNode) node;

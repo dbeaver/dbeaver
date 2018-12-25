@@ -22,8 +22,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
 public class NavigatorHandlerProjectSelect extends NavigatorHandlerObjectBase {
@@ -32,8 +32,8 @@ public class NavigatorHandlerProjectSelect extends NavigatorHandlerObjectBase {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final DBeaverCore core = DBeaverCore.getInstance();
-        final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
+        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(
+            DBWorkbench.getPlatform().getProjectManager().getActiveProject());
         if (projectNode != null) {
             final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
             try {

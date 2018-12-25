@@ -29,7 +29,6 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
@@ -68,7 +67,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     protected NavigatorViewBase()
     {
         super();
-        model = DBeaverCore.getInstance().getNavigatorModel();
+        model = DBWorkbench.getPlatform().getNavigatorModel();
     }
 
     public DBNModel getModel()

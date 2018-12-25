@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput;
@@ -167,7 +167,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         // Refresh new object (so it can load some props from database)
                         if (newObject instanceof DBPRefreshableObject) {
                             monitor.subTask("Load object from server");
-                            final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
+                            final DBNDatabaseNode newChild = DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject);
                             if (newChild != null) {
                                 newChild.refreshNode(monitor, this);
                                 newObject = (OBJECT_TYPE) newChild.getObject();
@@ -184,7 +184,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        if (DBeaverCore.getInstance().getNavigatorModel().findNode(newObject) != null) {
+                        if (DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject) != null) {
                             break;
                         }
                         RuntimeUtils.pause(100);
@@ -213,7 +213,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         private void openNewObject() {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             try {
-                final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
+                final DBNDatabaseNode newChild = DBWorkbench.getPlatform().getNavigatorModel().findNode(newObject);
                 if (newChild != null) {
                     DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
                     if (view != null) {

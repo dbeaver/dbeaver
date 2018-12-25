@@ -23,7 +23,6 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -120,7 +119,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         if (project == null) {
             throw new DBException("Project '" + projectName + "' not found");
         }
-        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+        final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
         navigatorModel.ensureProjectLoaded(project);
         return navigatorModel.getNodeByPath(new VoidProgressMonitor(), project, nodePath);
     }

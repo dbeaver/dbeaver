@@ -74,19 +74,6 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 // Rename with null monitor because it is some local resource
                 node.rename(new VoidProgressMonitor(), newName);
                 return true;
-/*
-                final String newNodeName = newName;
-                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            node.rename(monitor, newNodeName);
-                        } catch (DBException e1) {
-                            throw new InvocationTargetException(e1);
-                        }
-                    }
-                });
-*/
             } catch (DBException e) {
                 DBUserInterface.getInstance().showError("Rename", "Can't rename object '" + oldName + "'", e);
             }

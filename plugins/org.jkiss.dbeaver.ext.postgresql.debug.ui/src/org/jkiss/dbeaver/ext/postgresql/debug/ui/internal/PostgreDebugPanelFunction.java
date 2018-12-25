@@ -27,7 +27,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -115,7 +115,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
             @Override
             protected void dropDown(boolean drop) {
                 if (drop) {
-                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                    DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
                     DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(container.getDataSource());
                     if (dsNode != null) {
                         DBNNode curNode = selectedFunction == null ? null : navigatorModel.getNodeByObject(selectedFunction);

@@ -26,7 +26,6 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -65,7 +65,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             if (objectFilter == null) {
                 objectFilter = new DBSObjectFilter();
             }
-            final DBPDataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectManager().getDataSourceRegistry(folder.getOwnerProject());
+            final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(folder.getOwnerProject());
             final boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
             String parentName = "?";
             if (folder.getValueObject() instanceof DBSObject) {

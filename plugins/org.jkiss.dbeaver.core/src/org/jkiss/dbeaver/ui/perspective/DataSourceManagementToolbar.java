@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
@@ -128,7 +127,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 } else {
                     enabled = true;
 
-                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                    DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
 
                     DBSObject defObject = objectSelector.getDefaultObject();
                     if (defObject instanceof DBSObjectContainer) {
@@ -170,7 +169,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     public DataSourceManagementToolbar(IWorkbenchWindow workbenchWindow) {
         toolBarInstance = this;
         this.workbenchWindow = workbenchWindow;
-        DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+        DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
 
         final ISelectionListener selectionListener = (part, selection) -> {
             if (part == activePart && selection instanceof IStructuredSelection) {
@@ -215,7 +214,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     }
 
     private void dispose() {
-        DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
+        DBWorkbench.getPlatform().getNavigatorModel().removeListener(this);
 
         IWorkbenchPage activePage = workbenchWindow.getActivePage();
         if (activePage != null) {

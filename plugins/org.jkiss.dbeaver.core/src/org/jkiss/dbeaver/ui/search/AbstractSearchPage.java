@@ -24,7 +24,6 @@ import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -94,12 +93,12 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
             while (st.hasMoreTokens()) {
                 String nodePath = st.nextToken();
                 try {
-                    DBNDataSource dsNode = DBeaverCore.getInstance().getNavigatorModel().getDataSourceByPath(nodePath);
+                    DBNDataSource dsNode = DBWorkbench.getPlatform().getNavigatorModel().getDataSourceByPath(nodePath);
                     if (dsNode == null || brokenDataSources.contains(dsNode)) {
                         continue;
                     }
 
-                    DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, dsNode.getOwnerProject(), nodePath);
+                    DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, dsNode.getOwnerProject(), nodePath);
                     if (node != null) {
                         result.add(node);
                     } else {
