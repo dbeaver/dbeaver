@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,13 +68,13 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
 
     @Override
     public void createControl(Composite parent) {
-        loadState(DBeaverCore.getGlobalPreferenceStore());
+        loadState(DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     @Override
     public boolean performAction() {
         try {
-            saveState(DBeaverCore.getGlobalPreferenceStore());
+            saveState(DBWorkbench.getPlatform().getPreferenceStore());
             NewSearchUI.runQueryInBackground(createQuery());
         } catch (DBException e) {
             DBUserInterface.getInstance().showError("Search error", "Can't perform search", e);

@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -199,7 +200,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     protected DBPPreferenceStore getTargetPreferenceStore() {
         return useDataSourceSettings() ?
             getDataSourceContainer().getPreferenceStore() :
-            DBeaverCore.getGlobalPreferenceStore();
+            DBWorkbench.getPlatform().getPreferenceStore();
     }
 
     private Link createLink(Composite composite, String text) {
@@ -306,7 +307,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     public final boolean performOk() {
         DBPPreferenceStore store = isDataSourcePreferencePage() ?
             getDataSourceContainer().getPreferenceStore() :
-            DBeaverCore.getGlobalPreferenceStore();
+            DBWorkbench.getPlatform().getPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
             clearPreferences(store);

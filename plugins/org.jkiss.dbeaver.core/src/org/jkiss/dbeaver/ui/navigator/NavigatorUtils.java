@@ -595,7 +595,7 @@ public class NavigatorUtils {
 
     private static void sortNodes(DBNNode[] children)
     {
-        final DBPPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
+        final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
 
         // Sort children is we have this feature on in preferences
         // and if children are not folders

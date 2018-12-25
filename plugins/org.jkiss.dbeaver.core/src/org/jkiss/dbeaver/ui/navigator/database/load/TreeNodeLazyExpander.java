@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ui.navigator.database.load;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Tree;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -55,7 +55,7 @@ public class TreeNodeLazyExpander extends TreeNodeSpecial {
 
     @Override
     public boolean handleDefaultAction(DatabaseNavigatorTree tree) {
-        int longListFetchSize = DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
+        int longListFetchSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
         boolean lastSegment = visibleChildren + longListFetchSize > allChildren.length;
         int nextSegmentSize = lastSegment ? allChildren.length - visibleChildren : longListFetchSize;
         Object[] nodes = new Object[lastSegment ? nextSegmentSize : nextSegmentSize + 1];

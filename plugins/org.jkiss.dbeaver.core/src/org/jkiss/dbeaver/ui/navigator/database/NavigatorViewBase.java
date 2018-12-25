@@ -35,16 +35,17 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 
@@ -132,13 +133,13 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder)) {
                     toggleNode(viewer, node);
                 } else if (node instanceof DBNDataSource) {
-                    DoubleClickBehavior dsBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
+                    DoubleClickBehavior dsBehaviorDefault = DoubleClickBehavior.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
                     if (dsBehaviorDefault == DoubleClickBehavior.EXPAND) {
                         toggleNode(viewer, node);
                     } else {
                         DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
                         DoubleClickBehavior doubleClickBehavior =
-                            DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
+                            DoubleClickBehavior.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
                         switch (doubleClickBehavior) {
                             case EDIT:
                                 NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, UIUtils.getActiveWorkbenchWindow());
@@ -169,7 +170,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 } else if (node instanceof TreeNodeSpecial) {
                     ((TreeNodeSpecial) node).handleDefaultAction(navigatorTree);
                 } else {
-                    DoubleClickBehavior dcBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+                    DoubleClickBehavior dcBehaviorDefault = DoubleClickBehavior.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
                     boolean hasChildren = node instanceof DBNNode && ((DBNNode) node).hasChildren(true);
                     if (hasChildren && dcBehaviorDefault == DoubleClickBehavior.EXPAND) {
                         toggleNode(viewer, node);
@@ -210,7 +211,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             lastSelection = null;
         }
 
-        if (lastSelection instanceof DBNDatabaseNode && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE)) {
+        if (lastSelection instanceof DBNDatabaseNode && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE)) {
             IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (activeEditor != null) {
                 NavigatorUtils.syncEditorWithNavigator(this, activeEditor);

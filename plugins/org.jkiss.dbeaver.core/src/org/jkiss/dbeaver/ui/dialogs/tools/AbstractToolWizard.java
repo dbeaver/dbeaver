@@ -94,7 +94,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             connectionInfo = dataSourceContainer.getActualConnectionConfiguration();
         }
 
-        final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         extraCommandArgs = store.getString(PROP_NAME_EXTRA_ARGS);
     }
@@ -226,7 +226,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     @Override
     public boolean performFinish() {
         // Save settings
-        final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(PROP_NAME_EXTRA_ARGS, extraCommandArgs);
 
         if (getContainer().getCurrentPage() != logPage) {
