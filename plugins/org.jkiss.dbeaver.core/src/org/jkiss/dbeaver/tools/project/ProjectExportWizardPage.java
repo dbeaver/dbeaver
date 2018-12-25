@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -99,7 +100,7 @@ class ProjectExportWizardPage extends WizardPage {
             }
         }
         if (projectList.isEmpty()) {
-            IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
             if (activeProject != null) {
     			projectList.add(activeProject);
 			}
@@ -120,7 +121,7 @@ class ProjectExportWizardPage extends WizardPage {
             }
         });
 
-        for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
+        for (IProject project : DBWorkbench.getPlatform().getLiveProjects()) {
             final TableItem item = new TableItem(projectsTable, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
             item.setText(project.getName());
@@ -202,7 +203,7 @@ class ProjectExportWizardPage extends WizardPage {
     ProjectExportData getExportData()
     {
         final String outputDir = directoryText.getText();
-        DBeaverCore.getGlobalPreferenceStore().setValue(PREF_PROJECTS_EXPORT_OUT_DIR, outputDir);
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_PROJECTS_EXPORT_OUT_DIR, outputDir);
         return new ProjectExportData(
             getProjectsToExport(),
             new File(outputDir),

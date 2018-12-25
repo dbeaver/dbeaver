@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.utils.CommonUtils;
@@ -99,7 +100,7 @@ class DiagramCreateWizardPage extends WizardPage {
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);
 
-        final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+        final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
         if (rootNode == null) {
             setControl(placeholder);
 			return;

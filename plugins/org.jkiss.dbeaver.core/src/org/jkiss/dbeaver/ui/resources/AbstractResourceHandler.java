@@ -28,9 +28,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 
 import java.util.Collection;
 
@@ -106,6 +107,6 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     }
 
     protected IFolder getDefaultRoot(IProject project) {
-        return DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, getClass(), false);
+        return DBWorkbench.getPlatform().getProjectManager().getResourceDefaultRoot(project, getClass(), false);
     }
 }

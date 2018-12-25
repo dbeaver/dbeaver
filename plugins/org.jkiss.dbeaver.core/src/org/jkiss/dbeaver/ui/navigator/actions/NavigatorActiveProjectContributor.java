@@ -24,7 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class NavigatorActiveProjectContributor extends ContributionItem
 {
@@ -38,8 +38,8 @@ public class NavigatorActiveProjectContributor extends ContributionItem
     
     private void createMenu(final Menu menu)
     {
-        final IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        for (final IProject project : DBeaverCore.getInstance().getLiveProjects()) {
+        final IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+        for (final IProject project : DBWorkbench.getPlatform().getLiveProjects()) {
             MenuItem txnItem = new MenuItem(menu, SWT.RADIO);
             txnItem.setText(project.getName());
             txnItem.setSelection(project == activeProject);
@@ -49,7 +49,7 @@ public class NavigatorActiveProjectContributor extends ContributionItem
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    DBeaverCore.getInstance().getProjectRegistry().setActiveProject(project);
+                    DBWorkbench.getPlatform().getProjectManager().setActiveProject(project);
                 }
             });
         }

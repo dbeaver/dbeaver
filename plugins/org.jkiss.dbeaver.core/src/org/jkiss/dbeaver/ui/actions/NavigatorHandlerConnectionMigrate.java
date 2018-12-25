@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.MigrateConnectionWizard;
 
@@ -37,7 +37,7 @@ public class NavigatorHandlerConnectionMigrate extends AbstractHandler {
         ActiveWizardDialog dialog = new ActiveWizardDialog(
             window,
             new MigrateConnectionWizard(
-                DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry(),
+                DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(DBWorkbench.getPlatform().getProjectManager().getActiveProject()),
                 currentSelection instanceof IStructuredSelection ? (IStructuredSelection) currentSelection : null));
         dialog.open();
 
