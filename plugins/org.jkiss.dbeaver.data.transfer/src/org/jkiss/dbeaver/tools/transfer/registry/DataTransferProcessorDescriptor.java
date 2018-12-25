@@ -46,6 +46,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     private final String description;
     private final String appFileExtension;
     private final String appName;
+    private final int order;
     @NotNull
     private final DBPImage icon;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
@@ -64,6 +65,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         this.isBinary = CommonUtils.getBoolean(config.getAttribute("binary"), false);
         this.appFileExtension = config.getAttribute("appFileExtension");
         this.appName = config.getAttribute("appName");
+        this.order = CommonUtils.toInt(config.getAttribute("order"));
 
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren("sourceType"))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
@@ -101,6 +103,10 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
             }
         }
         return program;
+    }
+
+    public int getOrder() {
+        return order;
     }
 
     @NotNull

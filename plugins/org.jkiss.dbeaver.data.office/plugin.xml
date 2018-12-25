@@ -12,7 +12,8 @@
                 label="%dataTransfer.processor.xlsx.name"
                 binary="true"
                 appFileExtension="xlsx"
-                appName="Excel">
+                appName="Excel"
+                order="10">
                     <propertyGroup label="%dataTransfer.processor.xlsx.propertyGroup.general.label">
                         <property id="extension" label="%dataTransfer.processor.xlsx.property.extension.label" defaultValue="xlsx"/>
 
@@ -55,7 +56,10 @@
 
         <!-- Results viewer status bar additions -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=presentations">
-            <command commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" style="push" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.toolbar.label"/>
+            <command commandId="org.jkiss.dbeaver.core.resultset.openWith" style="push" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.toolbar.label">
+                <parameter name="processorId" value="stream_consumer:stream.xlsx">
+                </parameter>
+            </command>
         </menuContribution>
 
     </extension>
