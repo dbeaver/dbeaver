@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -84,5 +87,18 @@ public class ResultSetHandlerTogglePanel extends AbstractHandler implements IEle
                 }
             }
         }
+    }
+
+    public static class PanelIdParameterValues implements IParameterValues {
+
+        @Override
+        public Map<String,String> getParameterValues() {
+            final Map<String,String> values = new HashMap<>();
+            for (ResultSetPanelDescriptor pd : ResultSetPresentationRegistry.getInstance().getAllPanels()) {
+                values.put(pd.getLabel(), pd.getId());
+            }
+            return values;
+        }
+
     }
 }

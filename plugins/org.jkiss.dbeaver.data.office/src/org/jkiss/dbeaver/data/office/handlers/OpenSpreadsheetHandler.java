@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
@@ -94,7 +95,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                         CommonUtils.escapeFileName(CommonUtils.truncateString(dataContainer.getName(), 32)) +
                             "." + new SimpleDateFormat("yyyyMMdd-HHmmss").format(System.currentTimeMillis()) + ".xlsx");
 
-                    DataExporterXLSX exporter = new DataExporterXLSX();
+                    StreamExporterAbstract exporter = new DataExporterXLSX();
 
                     StreamTransferConsumer consumer = new StreamTransferConsumer();
                     StreamConsumerSettings settings = new StreamConsumerSettings();
