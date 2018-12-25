@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
  */
 public interface UIServiceSQL {
 
-    void openSQLViewer(@Nullable DBCExecutionContext context, String title, @Nullable DBPImage image, String text);
+    int openSQLViewer(@Nullable DBCExecutionContext context, String title, @Nullable DBPImage image, String text, boolean showSaveButton);
 
     /**
      * @return IEditorPart

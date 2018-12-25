@@ -40,14 +40,14 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
-import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
-import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -214,19 +214,13 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         } catch (InterruptedException e) {
             return false;
         }
-        DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
-        if (view != null) {
-            ViewSQLDialog dialog = new ViewSQLDialog(
-                view.getSite(),
-                commandContext.getExecutionContext(),
-                dialogTitle,
-                UIIcon.SQL_PREVIEW,
-                script.toString());
-            dialog.setShowSaveButton(true);
-            return dialog.open() == IDialogConstants.PROCEED_ID;
-        } else {
-            return false;
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        if (serviceSQL != null) {
+            return serviceSQL.openSQLViewer(
+                commandContext.getExecutionContext(), dialogTitle, UIIcon.SQL_PREVIEW, script.toString(), true) == IDialogConstants.PROCEED_ID;
         }
+
+        return false;
     }
 
     private static class NodeLoader implements DBRRunnableWithProgress {

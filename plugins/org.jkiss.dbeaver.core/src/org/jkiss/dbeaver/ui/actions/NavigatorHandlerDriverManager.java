@@ -14,25 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.navigator.actions;
+package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverManagerDialog;
 
-public class NavigatorHandlerConnectionCreate extends AbstractHandler {
+public class NavigatorHandlerDriverManager extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        CreateConnectionDialog dialog = new CreateConnectionDialog(
-            window,
-            new NewConnectionWizard());
+        DriverManagerDialog dialog = new DriverManagerDialog(HandlerUtil.getActiveShell(event));
         dialog.open();
 
         return null;
