@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -85,7 +85,7 @@ public class GroupingPanel implements IResultSetPanel {
                     try {
                         resultsContainer.rebuildGrouping();
                     } catch (DBException e) {
-                        DBUserInterface.getInstance().showError("Grouping error", "Can't refresh grouping query", e);
+                        DBWorkbench.getPlatformUI().showError("Grouping error", "Can't refresh grouping query", e);
                     }
                 }
                 prevQueryText = queryText;
@@ -182,7 +182,7 @@ public class GroupingPanel implements IResultSetPanel {
                 try {
                     resultsContainer.rebuildGrouping();
                 } catch (DBException e) {
-                    DBUserInterface.getInstance().showError("Grouping error", "Can't change grouping settings", e);
+                    DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping settings", e);
                 }
             }
         }
@@ -207,7 +207,7 @@ public class GroupingPanel implements IResultSetPanel {
                     try {
                         resultsContainer.rebuildGrouping();
                     } catch (DBException e) {
-                        DBUserInterface.getInstance().showError("Grouping error", "Can't change grouping query", e);
+                        DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping query", e);
                     }
                 }
             }
@@ -300,7 +300,7 @@ public class GroupingPanel implements IResultSetPanel {
             try {
                 resultsContainer.rebuildGrouping();
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError("Grouping error", "Can't change duplicates presentation", e);
+                DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change duplicates presentation", e);
             }
         }
     }
@@ -328,7 +328,7 @@ public class GroupingPanel implements IResultSetPanel {
             try {
                 resultsContainer.rebuildGrouping();
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError("Grouping error", "Can't change duplicates presentation", e);
+                DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change duplicates presentation", e);
             }
         }
     }

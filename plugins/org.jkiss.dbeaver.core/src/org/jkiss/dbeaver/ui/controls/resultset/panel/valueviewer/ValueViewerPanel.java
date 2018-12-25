@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -210,7 +209,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             try {
                 valueEditor = valueManager.createEditor(previewController);
             } catch (Throwable e) {
-                DBUserInterface.getInstance().showError("Value preview", "Can't create value viewer", e);
+                DBWorkbench.getPlatformUI().showError("Value preview", "Can't create value viewer", e);
                 return;
             }
             if (valueEditor != null) {
@@ -293,7 +292,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
-            DBUserInterface.getInstance().showError("Value apply", "Can't apply edited value", e);
+            DBWorkbench.getPlatformUI().showError("Value apply", "Can't apply edited value", e);
         } finally {
             valueSaving = false;
         }

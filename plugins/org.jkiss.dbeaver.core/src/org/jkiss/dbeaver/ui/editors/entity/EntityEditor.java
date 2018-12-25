@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -59,7 +58,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
@@ -350,7 +348,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Show error dialog
 
             UIUtils.asyncExec(() ->
-                DBUserInterface.getInstance().showError("Can't save '" + getDatabaseObject().getName() + "'", null, vError));
+                DBWorkbench.getPlatformUI().showError("Can't save '" + getDatabaseObject().getName() + "'", null, vError));
             return false;
         }
     }
@@ -461,8 +459,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return IDialogConstants.CANCEL_ID;
         } catch (InvocationTargetException e) {
             log.error(e);
-            //UIUtils.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
-            DBeaverUI.getInstance().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
         } finally {
             saveInProgress = false;
         }

@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -117,7 +117,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                     @Override
                     public void done(IJobChangeEvent event) {
                         if (error != null) {
-                            DBUserInterface.getInstance().showError("Refresh", "Error refreshing node", error);
+                            DBWorkbench.getPlatformUI().showError("Refresh", "Error refreshing node", error);
                         }
                     }
                 });

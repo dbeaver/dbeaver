@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -107,7 +106,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
         }
         catch (Throwable e) {
-            DBUserInterface.getInstance().showError("Create object", null, e);
+            DBWorkbench.getPlatformUI().showError("Create object", null, e);
             return false;
         }
 
@@ -124,7 +123,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         try {
             UIUtils.runInProgressService(objectCreator);
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("New object", "Error creating new object", e);
+            DBWorkbench.getPlatformUI().showError("New object", "Error creating new object", e);
             return;
         } catch (InterruptedException e) {
             return;
@@ -239,7 +238,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     throw new DBException("Can't find node corresponding to new object");
                 }
             } catch (Throwable e) {
-                DBUserInterface.getInstance().showError("Create object", null, e);
+                DBWorkbench.getPlatformUI().showError("Create object", null, e);
             }
         }
 

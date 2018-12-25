@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -75,7 +75,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 node.rename(new VoidProgressMonitor(), newName);
                 return true;
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError("Rename", "Can't rename object '" + oldName + "'", e);
+                DBWorkbench.getPlatformUI().showError("Rename", "Can't rename object '" + oldName + "'", e);
             }
         }
         if (node instanceof DBNDatabaseNode) {
@@ -122,7 +122,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 }
             }
         } catch (Throwable e) {
-            DBUserInterface.getInstance().showError("Rename object", "Can't rename object '" + node.getNodeName() + "'", e);
+            DBWorkbench.getPlatformUI().showError("Rename object", "Can't rename object '" + node.getNodeName() + "'", e);
             return false;
         }
         return false;

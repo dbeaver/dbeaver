@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.ArrayList;
@@ -115,7 +115,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
                 }
             }
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Object move", "Error during object reposition", e);
+            DBWorkbench.getPlatformUI().showError("Object move", "Error during object reposition", e);
         }
         return null;
     }

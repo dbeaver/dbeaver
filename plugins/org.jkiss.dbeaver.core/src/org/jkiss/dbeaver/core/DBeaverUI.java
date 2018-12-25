@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.jkiss.dbeaver.ui.UITask;
@@ -117,7 +116,6 @@ public class DBeaverUI implements DBPPlatformUI {
 
     private void initialize() {
         this.trayItem = new TrayIconHandler();
-        DBUserInterface.setInstance(this);
 
         if (DBeaverCore.isStandalone()) {
             //Policy.setErrorSupportProvider(new ApplicationErrorSupportProvider());

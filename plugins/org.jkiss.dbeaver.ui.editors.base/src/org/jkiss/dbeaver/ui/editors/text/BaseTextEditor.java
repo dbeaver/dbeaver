@@ -39,7 +39,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -242,7 +242,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             }
         }
         catch (IOException e) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Can't load file",
                 "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());
         }
@@ -282,7 +282,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         } catch (InterruptedException e) {
             // do nothing
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Save failed", null, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Save failed", null, e.getTargetException());
         }
 
         afterSaveToFile(saveFile);

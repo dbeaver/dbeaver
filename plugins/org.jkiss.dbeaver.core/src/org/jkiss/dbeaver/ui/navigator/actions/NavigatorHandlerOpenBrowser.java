@@ -25,7 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
 
 public class NavigatorHandlerOpenBrowser extends NavigatorHandlerObjectBase {
@@ -46,7 +46,7 @@ public class NavigatorHandlerOpenBrowser extends NavigatorHandlerObjectBase {
             try {
                 workbenchWindow.getActivePage().showView(DatabaseBrowserView.VIEW_ID, nodeId, IWorkbenchPage.VIEW_ACTIVATE);
             } catch (PartInitException e) {
-                DBUserInterface.getInstance().showError("Database browser", "Error opening database browser", e);
+                DBWorkbench.getPlatformUI().showError("Database browser", "Error opening database browser", e);
             }
         }
         return null;

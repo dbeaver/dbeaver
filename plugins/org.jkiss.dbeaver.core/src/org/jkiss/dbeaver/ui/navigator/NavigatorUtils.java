@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -419,7 +418,7 @@ public class NavigatorUtils {
                         try {
                             ((DBNNode)curObject).dropNodes(nodesToDrop);
                         } catch (DBException e) {
-                            DBUserInterface.getInstance().showError("Drop error", "Can't drop node", e);
+                            DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop node", e);
                         }
                     }
                 }

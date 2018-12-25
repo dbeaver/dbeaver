@@ -26,7 +26,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -34,7 +33,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -639,7 +638,7 @@ public class DBNModel implements IResourceChangeListener {
                 }
 
                 try {
-                    DBUserInterface.getInstance().executeInUI(() -> {
+                    DBWorkbench.getPlatformUI().executeInUI(() -> {
                         for (int i = 0; i < realEvents.length; i++) {
                             for (INavigatorListener listener : listenersCopy) {
                                 listener.nodeChanged(realEvents[i]);

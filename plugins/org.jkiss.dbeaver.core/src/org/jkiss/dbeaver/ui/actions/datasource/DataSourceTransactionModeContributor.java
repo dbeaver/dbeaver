@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -123,7 +123,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             try {
                 dataSource.getContainer().setDefaultTransactionsIsolation(level);
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         "Transactions Isolation",
                     "Can't set transaction isolation level to '" + level + "'",
                     e);

@@ -78,7 +78,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -715,7 +714,7 @@ public class ResultSetViewer extends Viewer
             }
             savePresentationSettings();
         } catch (Throwable e1) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Presentation switch",
                 "Can't switch presentation",
                 e1);
@@ -833,7 +832,7 @@ public class ResultSetViewer extends Viewer
         try {
             panel = panelDescriptor.createInstance();
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Can't show panel", "Can't create panel '" + id + "'", e);
+            DBWorkbench.getPlatformUI().showError("Can't show panel", "Can't create panel '" + id + "'", e);
             return false;
         }
         activePanels.put(id, panel);
@@ -2398,7 +2397,7 @@ public class ResultSetViewer extends Viewer
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
             DBDAttributeBinding ownBinding = model.getAttributeBinding(ownAttr.getAttribute());
             if (ownBinding == null) {
-                DBUserInterface.getInstance().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
+                DBWorkbench.getPlatformUI().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
                 return;
             }
 
@@ -2705,7 +2704,7 @@ public class ResultSetViewer extends Viewer
             dataReceiver.setNextSegmentRead(false);
             runDataPump(dataContainer, dataFilter, 0, segmentSize, -1, true, false, finalizer);
         } else {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Error executing query",
                 dataContainer == null ?
                     "Viewer detached from data source" :
@@ -2938,7 +2937,7 @@ public class ResultSetViewer extends Viewer
                         final boolean metadataChanged = model.isMetadataChanged();
                         if (error != null) {
                             setStatus(error.getMessage(), DBPMessageType.ERROR);
-                            DBUserInterface.getInstance().showError(
+                            DBWorkbench.getPlatformUI().showError(
                                     "Error executing query",
                                 "Query execution failed",
                                 error);
@@ -3036,7 +3035,7 @@ public class ResultSetViewer extends Viewer
             };
             return persister.applyChanges(monitor, false, applyListener);
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Apply changes error", "Error saving changes in database", e);
+            DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
             return false;
         }
     }
@@ -3062,7 +3061,7 @@ public class ResultSetViewer extends Viewer
             persister.applyChanges(monitor, true, null);
             return persister.getScript();
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("SQL script generate error", "Error saving changes in database", e);
+            DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);
             return Collections.emptyList();
         }
     }
@@ -3920,7 +3919,7 @@ public class ResultSetViewer extends Viewer
                 vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
                 updateColors(vEntity);
             } catch (IllegalStateException e) {
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         "Row color",
                     "Can't set row color",
                     e);

@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -1627,7 +1626,7 @@ public final class DBUtils {
                 if (!monitor.isCanceled()) {
                     // Do not recover if connection was canceled
                     InvalidateJob.invalidateDataSource(monitor, dataSource, false,
-                        () -> DBUserInterface.getInstance().openConnectionEditor(dataSource.getContainer()));
+                        () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
                     if (i < tryCount - 1) {
                         log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
                     }

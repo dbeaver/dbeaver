@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
@@ -321,7 +321,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             super.okPressed();
         }
         catch (Exception e) {
-            DBUserInterface.getInstance().showError(CoreMessages.dialog_value_view_dialog_error_updating_title, CoreMessages.dialog_value_view_dialog_error_updating_message, e);
+            DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_value_view_dialog_error_updating_title, CoreMessages.dialog_value_view_dialog_error_updating_message, e);
             super.cancelPressed();
         }
     }

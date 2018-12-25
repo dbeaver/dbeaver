@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -79,10 +79,10 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                             }
                         }
                     } else {
-                        DBUserInterface.getInstance().showError("Paste error", "Unsupported clipboard format. File or folder were expected.");
+                        DBWorkbench.getPlatformUI().showError("Paste error", "Unsupported clipboard format. File or folder were expected.");
                     }
                 } else {
-                    DBUserInterface.getInstance().showError("Paste error", "Clipboard contains data in unsupported format");
+                    DBWorkbench.getPlatformUI().showError("Paste error", "Clipboard contains data in unsupported format");
                 }
             } finally {
                 clipboard.dispose();
@@ -110,7 +110,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Copy error", "Error copying resource", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Copy error", "Error copying resource", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
@@ -179,7 +179,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Copy error", "Error copying resource", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Copy error", "Error copying resource", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
