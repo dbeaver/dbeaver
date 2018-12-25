@@ -63,7 +63,7 @@ import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.bundle.UIActivator;
+import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;

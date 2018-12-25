@@ -90,6 +90,9 @@ public interface DBPPlatform
     @NotNull
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
+    @NotNull
+    File getConfigurationFile(String fileName);
+
     boolean isShuttingDown();
 
 }
