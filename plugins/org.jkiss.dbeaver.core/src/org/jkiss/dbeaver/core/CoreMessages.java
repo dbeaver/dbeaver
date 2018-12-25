@@ -213,11 +213,6 @@ public class CoreMessages extends NLS {
 	public static String controls_object_list_monitor_load_lazy_props;
 	public static String controls_object_list_monitor_load_props;
 	public static String controls_object_list_status_objects;
-	public static String controls_progress_page_action_close;
-	public static String controls_progress_page_job_search;
-	public static String controls_progress_page_progress_bar_cancel_tooltip;
-	public static String controls_progress_page_progress_bar_loading_tooltip;
-	public static String controls_progress_page_toolbar_title;
 
 	public static String controls_querylog__ms;
 	public static String controls_querylog_action_clear_log;
@@ -406,7 +401,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_manager_message_delete_driver_text;
 	public static String dialog_driver_manager_message_delete_driver_title;
 	public static String dialog_driver_manager_title;
-	
+
+	public static String dialog_filter_global_link;
+	public static String dialog_filter_list_exclude;
+	public static String dialog_filter_list_include;
+	public static String dialog_filter_title;
 	public static String dialog_edit_driver_button_add_file;
 	public static String dialog_edit_driver_button_add_folder;
 	public static String dialog_edit_driver_button_add_artifact;
@@ -416,7 +415,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_button_details;
 	public static String dialog_edit_driver_button_delete;
 	public static String dialog_edit_driver_button_down;
-	public static String dialog_edit_driver_button_reset_to_defaults;
 	public static String dialog_edit_driver_button_up;
 	public static String dialog_edit_driver_dialog_driver_error_message;
 	public static String dialog_edit_driver_dialog_driver_error_title;
@@ -445,49 +443,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_title_create_driver;
 	public static String dialog_edit_driver_title_edit_driver;
 
-	public static String dialog_filter_button_add;
-	public static String dialog_filter_button_enable;
-	public static String dialog_filter_button_remove;
-	public static String dialog_filter_button_clear;
-	public static String dialog_filter_global_link;
-	public static String dialog_filter_list_exclude;
-	public static String dialog_filter_list_include;
-	public static String dialog_filter_table_column_value;
-	public static String dialog_filter_title;
-	public static String dialog_find_replace_1_replacement;
-	public static String dialog_find_replace_backward;
-	public static String dialog_find_replace_cancel;
-	public static String dialog_find_replace_close;
-	public static String dialog_find_replace_direction;
-	public static String dialog_find_replace_error_;
-	public static String dialog_find_replace_find;
-	public static String dialog_find_replace_find_literal;
-	public static String dialog_find_replace_find_replace;
-	public static String dialog_find_replace_copy;
-	public static String dialog_find_replace_paste;
-	public static String dialog_find_replace_goto_line;
-	public static String dialog_find_replace_undo;
-	public static String dialog_find_replace_redo;
-	public static String dialog_find_replace_forward;
-	public static String dialog_find_replace_found_literal;
-	public static String dialog_find_replace_ignore_case;
-	public static String dialog_find_replace_literal_not_found;
-	public static String dialog_find_replace_new_find;
-	public static String dialog_find_replace_replace;
-	public static String dialog_find_replace_replace_all;
-	public static String dialog_find_replace_replace_find;
-	public static String dialog_find_replace_replace_with;
-	public static String dialog_find_replace_replacements;
-	public static String dialog_find_replace_searching;
-	public static String dialog_find_replace_stop;
-	public static String dialog_find_replace_text;
-	public static String dialog_go_to_button_close;
-	public static String dialog_go_to_button_go_to_location;
-	public static String dialog_go_to_button_show_location;
-	public static String dialog_go_to_label_enter_location_number;
-	public static String dialog_go_to_label_not_number;
-	public static String dialog_go_to_label_out_of_range;
-	public static String dialog_go_to_title;
 	public static String dialog_migrate_wizard_choose_driver_description;
 	public static String dialog_migrate_wizard_choose_driver_title;
 	public static String dialog_migrate_wizard_name;
@@ -630,23 +585,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_sql_param_hide_checkbox;
 	public static String dialog_sql_param_hide_checkbox_tip;
 	public static String dialog_sql_param_hint;
-
-	public static String editor_binary_hex_default_font;
-	public static String editor_binary_hex_font_style_bold;
-	public static String editor_binary_hex_font_style_bold_italic;
-	public static String editor_binary_hex_font_style_italic;
-	public static String editor_binary_hex_font_style_regular;
-	public static String editor_binary_hex_froup_font_selection;
-	public static String editor_binary_hex_label_available_fix_width_fonts;
-	public static String editor_binary_hex_label_name;
-	public static String editor_binary_hex_label_style;
-	public static String editor_binary_hex_label_size;
-	public static String editor_binary_hex_sample_text;
-	public static String editor_binary_hex_status_line_offset;
-	public static String editor_binary_hex_status_line_selection;
-	public static String editor_binary_hex_status_line_text_insert;
-	public static String editor_binary_hex_status_line_text_ovewrite;
-	public static String editor_binary_hex_status_line_value;
 
 	public static String editors_entity_dialog_persist_title;
 	public static String editors_entity_dialog_preview_title;
@@ -1369,14 +1307,11 @@ public class CoreMessages extends NLS {
 	public static String obj_editor_properties_control_action_configure_columns;
 	public static String obj_editor_properties_control_action_configure_columns_description;
 	//object properties editor
-	
+
 	//toolbar editor menu item
 	public static String toolbar_cmd_undo_name;
 	public static String toolbar_cmd_redo_name;
 	//toolbar editor menu item
-
-	public static String grid_tooltip_sort_by_column;
-	public static String grid_tooltip_filter_by_column;
 
 	public static String CreateLinkHandler_e_create_link_message;
 	public static String CreateLinkHandler_e_create_link_title;
