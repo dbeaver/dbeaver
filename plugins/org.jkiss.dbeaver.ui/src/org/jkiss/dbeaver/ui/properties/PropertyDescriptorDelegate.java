@@ -52,7 +52,7 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
                 DBPImage image = DBValueFormatting.getObjectImage((DBPObject) element, false);
 /*
                 if (image == null && element instanceof DBSObject) {
-                    final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DBSObject) element);
+                    final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode((DBSObject) element);
                     if (node != null) {
                         image = node.getNodeIcon();
                     }

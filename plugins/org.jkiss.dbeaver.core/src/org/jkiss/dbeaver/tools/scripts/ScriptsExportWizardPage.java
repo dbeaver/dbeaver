@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -106,7 +105,7 @@ class ScriptsExportWizardPage extends WizardPage {
         placeholder.setLayout(new GridLayout(1, false));
 
         // Project list
-        scriptsNavigator = new DatabaseNavigatorTree(placeholder, DBeaverCore.getInstance().getNavigatorModel().getRoot(), SWT.BORDER | SWT.CHECK);
+        scriptsNavigator = new DatabaseNavigatorTree(placeholder, DBWorkbench.getPlatform().getNavigatorModel().getRoot(), SWT.BORDER | SWT.CHECK);
         GridData gd = new GridData(GridData.FILL_BOTH);
         scriptsNavigator.setLayoutData(gd);
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) scriptsNavigator.getViewer();

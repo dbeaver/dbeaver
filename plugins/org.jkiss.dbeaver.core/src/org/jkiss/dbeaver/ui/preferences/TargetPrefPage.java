@@ -35,7 +35,6 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -107,7 +106,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         if (containerNode == null) {
             final DBPDataSourceContainer dsContainer = element.getAdapter(DBPDataSourceContainer.class);
             if (dsContainer != null) {
-                containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(dsContainer);
+                containerNode = (DBNDataSource) DBWorkbench.getPlatform().getNavigatorModel().findNode(dsContainer);
             } else {
                 IDatabaseEditorInput dbInput = element.getAdapter(IDatabaseEditorInput.class);
                 if (dbInput != null) {
@@ -118,10 +117,10 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
                 } else if (element instanceof DBPContextProvider) {
                     DBCExecutionContext context = ((DBPContextProvider) element).getExecutionContext();
                     if (context != null) {
-                        containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(context.getDataSource().getContainer());
+                        containerNode = (DBNDataSource) DBWorkbench.getPlatform().getNavigatorModel().findNode(context.getDataSource().getContainer());
                     }
                 } else if (element instanceof DBPDataSourceContainer) {
-                    containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBPDataSourceContainer) element);
+                    containerNode = (DBNDataSource) DBWorkbench.getPlatform().getNavigatorModel().findNode((DBPDataSourceContainer) element);
                 }
             }
         }

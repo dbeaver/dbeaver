@@ -34,7 +34,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -147,7 +146,7 @@ class ScriptsImportWizardPage extends WizardPage {
         }
 
         UIUtils.createControlLabel(placeholder, CoreMessages.dialog_scripts_import_wizard_label_root_folder);
-        importRoot = DBeaverCore.getInstance().getNavigatorModel().getRoot();
+        importRoot = DBWorkbench.getPlatform().getNavigatorModel().getRoot();
         final DatabaseNavigatorTree scriptsNavigator = new DatabaseNavigatorTree(placeholder, importRoot, SWT.BORDER | SWT.SINGLE, false);
         scriptsNavigator.setLayoutData(new GridData(GridData.FILL_BOTH));
         scriptsNavigator.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
@@ -207,7 +206,7 @@ class ScriptsImportWizardPage extends WizardPage {
     private static class ConnectionLabelProvider extends LabelProvider implements IColorProvider {
         @Override
         public Image getImage(Object element) {
-            final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().findNode((DataSourceDescriptor) element);
+            final DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode((DataSourceDescriptor) element);
             return node == null ? null : DBeaverIcons.getImage(node.getNodeIcon());
         }
 

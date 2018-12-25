@@ -28,7 +28,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -100,7 +99,7 @@ class DiagramCreateWizardPage extends WizardPage {
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);
 
-        final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
+        final DBNProject rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
         if (rootNode == null) {
             setControl(placeholder);
 			return;

@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -85,7 +84,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
         this.defaultSelection = new TreeSelection(new TreePath(new Object[]{rootNode}));
-        this.model = DBeaverCore.getInstance().getNavigatorModel();
+        this.model = DBWorkbench.getPlatform().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(e -> {
             if (model != null) {

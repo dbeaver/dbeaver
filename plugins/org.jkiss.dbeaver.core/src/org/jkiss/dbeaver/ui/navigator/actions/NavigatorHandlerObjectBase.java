@@ -23,7 +23,6 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -144,7 +143,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     public static DBNDatabaseNode getNodeByObject(DBSObject object)
     {
-        DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
+        DBNModel model = DBWorkbench.getPlatform().getNavigatorModel();
         DBNDatabaseNode node = model.findNode(object);
         if (node == null) {
             NodeLoader nodeLoader = new NodeLoader(model, Collections.singleton(object));
@@ -164,7 +163,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     public static Collection<DBNDatabaseNode> getNodesByObjects(Collection<Object> objects)
     {
-        DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
+        DBNModel model = DBWorkbench.getPlatform().getNavigatorModel();
         List<DBNDatabaseNode> result = new ArrayList<>();
         List<Object> missingObjects = new ArrayList<>();
         for (Object object : objects) {
@@ -210,7 +209,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBeaverUI.getInstance().showError("Script generation error", "Error generating alter script", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Script generation error", "Error generating alter script", e.getTargetException());
         } catch (InterruptedException e) {
             return false;
         }

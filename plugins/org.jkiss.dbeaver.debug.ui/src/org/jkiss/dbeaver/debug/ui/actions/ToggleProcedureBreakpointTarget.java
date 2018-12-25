@@ -31,7 +31,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -68,7 +68,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         if (databaseObject == null) {
             return;
         }
-        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(new VoidProgressMonitor(), databaseObject, false);
+        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(new VoidProgressMonitor(), databaseObject, false);
         if (node == null) {
             return;
         }

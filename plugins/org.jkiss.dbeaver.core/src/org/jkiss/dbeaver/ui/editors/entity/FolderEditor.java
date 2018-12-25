@@ -31,9 +31,9 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
@@ -169,7 +169,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         }
         String nodePath = history.get(position);
         try {
-            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(new VoidProgressMonitor(), nodePath);
+            DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(new VoidProgressMonitor(), nodePath);
             if (node != null) {
                 historyPosition = position;
                 itemControl.changeCurrentNode(node);
@@ -193,7 +193,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                 final DBNNode parentNode = rootNode.getParentNode();
                 if (parentNode instanceof DBNProjectDatabases || parentNode instanceof DBNLocalFolder) {
                     List<DBNNode> nodesWithParent = new ArrayList<>(items);
-                    nodesWithParent.add(0, DBeaverCore.getInstance().getNavigatorModel().getRoot());
+                    nodesWithParent.add(0, DBWorkbench.getPlatform().getNavigatorModel().getRoot());
                     items = nodesWithParent;
                 }
             }
