@@ -22,6 +22,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -48,10 +51,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Open results in external application
@@ -63,6 +63,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
     public static final String CMD_OPEN_WITH = "org.jkiss.dbeaver.core.resultset.openWith";
     public static final String PARAM_PROCESSOR_ID = "processorId";
 
+    public static final String PARAM_ACTIVE_APP = "org.jkiss.dbeaver.core.resultset.openWith.currentApp";
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -70,25 +72,40 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         if (resultSet == null) {
             return null;
         }
-        String processorId = event.getParameter(PARAM_PROCESSOR_ID);
-        if (processorId == null) {
+        DataTransferProcessorDescriptor processor = getActiveProcessor(event.getParameter(PARAM_PROCESSOR_ID));
+
+        if (processor == null) {
             return null;
         }
         switch (event.getCommand().getId()) {
             case CMD_OPEN_WITH:
-                openResultsWith(resultSet, processorId);
+                openResultsWith(resultSet, processor);
                 break;
         }
         return null;
     }
 
-    private static void openResultsWith(IResultSetController resultSet, String processorId) {
-        DataTransferProcessorDescriptor processor = DataTransferRegistry.getInstance().getProcessor(processorId);
-        if (processor == null) {
-            log.debug("Processor '" + processorId + "' not found");
-            return;
+    static DataTransferProcessorDescriptor getActiveProcessor(String processorId) {
+        if (CommonUtils.isEmpty(processorId)) {
+            processorId = DBWorkbench.getPlatform().getPreferenceStore().getString(PARAM_ACTIVE_APP);
         }
-        openResultsWith(resultSet, processor);
+        if (CommonUtils.isEmpty(processorId)) {
+            DataTransferProcessorDescriptor defaultAppProcessor = getDefaultProcessor();
+            if (defaultAppProcessor != null) {
+                return defaultAppProcessor;
+            }
+        } else {
+            return DataTransferRegistry.getInstance().getProcessor(processorId);
+        }
+        return null;
+    }
+
+    static DataTransferProcessorDescriptor getDefaultProcessor() {
+        DataTransferProcessorDescriptor defaultAppProcessor = getDefaultAppProcessor();
+        if (defaultAppProcessor != null) {
+            return defaultAppProcessor;
+        }
+        return null;
     }
 
     private static void openResultsWith(IResultSetController resultSet, DataTransferProcessorDescriptor processor) {
@@ -116,6 +133,13 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             return;
         }
 
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        String prevActiveApp = preferenceStore.getString(PARAM_ACTIVE_APP);
+        if (!CommonUtils.equalObjects(prevActiveApp, processor.getFullId())) {
+            //preferenceStore.setValue(PARAM_ACTIVE_APP, processor.getFullId());
+            //resultSet.updateEditControls();
+            //resultSet.getControl().layout(true);
+        }
 
         AbstractJob exportJob = new AbstractJob("Open " + processor.getAppName()) {
 
@@ -186,9 +210,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
     @Override
     public void updateElement(UIElement element, Map parameters) {
         // Put processor name in command label
-        String processorId = (String) parameters.get(PARAM_PROCESSOR_ID);
-        if (processorId != null) {
-            DataTransferProcessorDescriptor processor = DataTransferRegistry.getInstance().getProcessor(processorId);
+        DataTransferProcessorDescriptor processor = getActiveProcessor((String) parameters.get(PARAM_PROCESSOR_ID));
+        if (processor != null) {
             element.setText(processor.getAppName());
             if (!CommonUtils.isEmpty(processor.getDescription())) {
                 element.setTooltip(processor.getDescription());
@@ -197,6 +220,19 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                 element.setIcon(DBeaverIcons.getImageDescriptor(processor.getIcon()));
             }
         }
+    }
+
+    private static DataTransferProcessorDescriptor getDefaultAppProcessor() {
+        List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
+        for (final DataTransferNodeDescriptor consumerNode : DataTransferRegistry.getInstance().getNodes(DataTransferNodeDescriptor.NodeType.CONSUMER)) {
+            for (DataTransferProcessorDescriptor processor : consumerNode.getProcessors()) {
+                if (processor.getAppFileExtension() != null) {
+                    processors.add(processor);
+                }
+            }
+        }
+        processors.sort(Comparator.comparingInt(DataTransferProcessorDescriptor::getOrder));
+        return processors.isEmpty() ? null : processors.get(0);
     }
 
     public static class OpenWithParameterValues implements IParameterValues {
@@ -217,4 +253,18 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         }
 
     }
+
+    public static class OpenWithMenuContributor extends CompoundContributionItem
+    {
+        @Override
+        protected IContributionItem[] getContributionItems() {
+            final ResultSetViewer rsv = (ResultSetViewer) ResultSetHandlerMain.getActiveResultSet(
+                UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
+            if (rsv == null) {
+                return new IContributionItem[0];
+            }
+            return rsv.fillOpenWithMenu().getItems();
+        }
+    }
+
 }
