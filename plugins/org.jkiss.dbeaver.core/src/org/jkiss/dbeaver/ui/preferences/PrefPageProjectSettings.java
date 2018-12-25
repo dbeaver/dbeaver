@@ -39,17 +39,17 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.service.prefs.BackingStoreException;
-import org.jkiss.dbeaver.core.CoreMessages;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -172,7 +172,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
     protected void performDefaults()
     {
         resourceTable.removeAll();
-        for (ResourceHandlerDescriptor descriptor : DBeaverCore.getInstance().getProjectRegistry().getResourceHandlerDescriptors()) {
+        for (ResourceHandlerDescriptor descriptor : ((ProjectRegistry)DBWorkbench.getPlatform().getProjectManager()).getResourceHandlerDescriptors()) {
             if (!descriptor.isManagable()) {
                 continue;
             }

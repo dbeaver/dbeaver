@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
@@ -33,7 +33,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     public DatabaseNavigatorView()
     {
         super();
-        DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
+        DBWorkbench.getPlatform().getProjectManager().addProjectListener(this);
     }
 
     @Override
@@ -44,14 +44,14 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public DBNNode getRootNode()
     {
-        DBNProject projectNode = getModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+        DBNProject projectNode = getModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
     @Override
     public void dispose()
     {
-        DBeaverCore.getInstance().getProjectRegistry().removeProjectListener(this);
+        DBWorkbench.getPlatform().getProjectManager().removeProjectListener(this);
         super.dispose();
     }
 

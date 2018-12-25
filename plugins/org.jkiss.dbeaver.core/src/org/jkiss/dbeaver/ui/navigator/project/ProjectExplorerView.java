@@ -25,11 +25,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.LazyLabelProvider;
 import org.jkiss.dbeaver.ui.ProgramInfo;
@@ -54,13 +54,13 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     private ViewerColumnController columnController;
 
     public ProjectExplorerView() {
-        DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
+        DBWorkbench.getPlatform().getProjectManager().addProjectListener(this);
     }
 
     @Override
     public DBNNode getRootNode()
     {
-        DBNProject projectNode = getModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+        DBNProject projectNode = getModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
         return projectNode != null ? projectNode : getModel().getRoot();
     }
 
@@ -204,7 +204,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     @Override
     public void dispose()
     {
-        DBeaverCore.getInstance().getProjectRegistry().removeProjectListener(this);
+        DBWorkbench.getPlatform().getProjectManager().removeProjectListener(this);
         super.dispose();
     }
 

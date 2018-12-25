@@ -21,9 +21,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -87,7 +87,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         InstanceConnectionParameters instanceConParameters = new InstanceConnectionParameters();
         final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
-            DBeaverCore.getInstance().getProjectRegistry().getActiveProject(),
+            DBWorkbench.getPlatform().getProjectManager().getActiveProject(),
             connectionSpec,
             instanceConParameters,
             false,

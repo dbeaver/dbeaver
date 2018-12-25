@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -44,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -52,9 +52,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.editors.DatabaseNodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
-import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
@@ -104,7 +102,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     public static void openResource(IResource resource, IWorkbenchWindow window)
     {
         try {
-            DBPResourceHandler handler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+            DBPResourceHandler handler = DBWorkbench.getPlatform().getProjectManager().getResourceHandler(resource);
             if (handler != null) {
                 handler.openResource(resource);
             }
@@ -200,7 +198,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         return null;
                     }
                     DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(dnNode);
-                    if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
+                    if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
                         if (dnNode.getObject() instanceof DBSObjectContainer) {
                             // do not auto-refresh object containers (too expensive)
                         } else {

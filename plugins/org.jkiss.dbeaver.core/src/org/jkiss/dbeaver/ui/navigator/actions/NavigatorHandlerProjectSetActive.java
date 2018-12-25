@@ -21,9 +21,9 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class NavigatorHandlerProjectSetActive extends NavigatorHandlerObjectBase {
 
@@ -38,7 +38,7 @@ public class NavigatorHandlerProjectSetActive extends NavigatorHandlerObjectBase
                 return null;
             }
             DBNProject projectNode = (DBNProject)element;
-            final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+            final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
             if (projectRegistry.getActiveProject() != projectNode.getProject()) {
                 projectRegistry.setActiveProject(projectNode.getProject());
             }

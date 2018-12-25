@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -437,7 +438,7 @@ public class NavigatorUtils {
                 return activeContainer.getDefaultObject() == object;
             }
         } else if (element instanceof DBNProject) {
-            if (((DBNProject)element).getProject() == DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {
+            if (((DBNProject)element).getProject() == DBWorkbench.getPlatform().getProjectManager().getActiveProject()) {
                 return true;
             }
         }
@@ -538,11 +539,11 @@ public class NavigatorUtils {
     }
 
     public static DBNDatabaseNode getNodeByObject(DBSObject object) {
-        return DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(object);
+        return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
     }
 
     public static DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered) {
-        return DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, addFiltered);
+        return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, object, addFiltered);
     }
 
     public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {

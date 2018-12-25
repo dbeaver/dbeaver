@@ -21,11 +21,11 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
 
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
-        return DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(
+        return DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(
             pageDrivers.getConnectionProject());
     }
 

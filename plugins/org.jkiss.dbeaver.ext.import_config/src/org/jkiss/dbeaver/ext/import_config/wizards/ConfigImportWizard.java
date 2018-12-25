@@ -22,13 +22,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectObjectDialog;
@@ -170,7 +173,9 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         } catch (DBException e) {
             UIUtils.showMessageBox(getShell(), "Extract URL parameters", e.getMessage(), SWT.ICON_WARNING);
         }
-        final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
+        final DBPDataSourceRegistry dataSourceRegistry =
+            DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(
+                DBWorkbench.getPlatform().getProjectManager().getActiveProject());
 
         String name = connectionInfo.getAlias();
         for (int i = 0; ; i++) {

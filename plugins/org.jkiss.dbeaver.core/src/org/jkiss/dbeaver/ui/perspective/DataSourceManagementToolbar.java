@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -306,7 +307,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 if (fileDataSource != null) {
                     return fileDataSource.getRegistry().getDataSources();
                 }
-                final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(curFile.getProject());
+                final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(curFile.getProject());
                 if (dsRegistry != null) {
                     return dsRegistry.getDataSources();
                 }
@@ -333,7 +334,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (dataSourceContainer != null) {
             return dataSourceContainer.getRegistry().getProject();
         } else {
-            return DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            return DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         }
     }
 

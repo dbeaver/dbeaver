@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.tools.project;
 
 import org.eclipse.core.resources.IProject;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.File;
@@ -36,10 +36,10 @@ class ProjectExportData {
     private boolean exportDrivers;
     private String archiveFileName;
 
-    ProjectRegistry projectRegistry;
+    DBPProjectManager projectRegistry;
     XMLBuilder meta;
     ZipOutputStream archiveStream;
-    Set<DriverDescriptor> usedDrivers = new HashSet<>();
+    Set<DBPDriver> usedDrivers = new HashSet<>();
 
     public ProjectExportData(List<IProject> projects, File outputFolder, boolean exportDrivers, String archiveFileName)
     {
@@ -49,7 +49,7 @@ class ProjectExportData {
         this.archiveFileName = archiveFileName;
     }
 
-    void initExport(ProjectRegistry projectRegistry, XMLBuilder meta, ZipOutputStream archiveStream)
+    void initExport(DBPProjectManager projectRegistry, XMLBuilder meta, ZipOutputStream archiveStream)
     {
         this.projectRegistry = projectRegistry;
         this.meta = meta;
