@@ -168,7 +168,9 @@
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
                     description="%dataTransfer.processor.html.description"
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/html.png"
-                    label="%dataTransfer.processor.html.name">
+                    label="%dataTransfer.processor.html.name"
+                    appFileExtension="html"
+                    appName="Web browser">
                 <propertyGroup label="%dataTransfer.processor.html.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.html.property.extension.label" defaultValue="html"/>
                     <property id="extractImages" label="%dataTransfer.processor.html.property.images.name" type="boolean" description="%dataTransfer.processor.html.property.images.description" defaultValue="true"/>
