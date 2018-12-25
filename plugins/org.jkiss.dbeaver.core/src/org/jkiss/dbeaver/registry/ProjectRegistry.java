@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
@@ -37,7 +38,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManager {
     private static final Log log = Log.getLog(ProjectRegistry.class);
@@ -80,7 +84,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         throws DBException
     {
         final DBeaverCore core = DBeaverCore.getInstance();
-        String activeProjectName = DBeaverCore.getGlobalPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        String activeProjectName = DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         List<IProject> projects = core.getLiveProjects();
 
@@ -318,7 +322,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     {
         final IProject oldValue = this.activeProject;
         this.activeProject = project;
-        DBeaverCore.getGlobalPreferenceStore().setValue(PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
 
         GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_ACTIVE_PROJECT);
 

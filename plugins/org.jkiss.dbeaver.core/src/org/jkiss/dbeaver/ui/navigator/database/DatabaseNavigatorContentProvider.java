@@ -21,10 +21,10 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -121,7 +121,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 if (ArrayUtils.isEmpty(children)) {
                     return EMPTY_CHILDREN;
                 } else {
-                    int longListFetchSize = DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
+                    int longListFetchSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
                     if (children.length > longListFetchSize) {
                         Object[] curChildren = new Object[longListFetchSize + 1];
                         System.arraycopy(children, 0, curChildren, 0, longListFetchSize);

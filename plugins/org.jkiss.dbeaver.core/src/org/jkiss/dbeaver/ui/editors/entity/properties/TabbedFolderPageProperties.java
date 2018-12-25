@@ -37,7 +37,6 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -46,16 +45,16 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -80,7 +79,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
     public TabbedFolderPageProperties(IWorkbenchPart part, IDatabaseEditorInput input) {
         this.part = part;
         this.input = input;
-        this.attached = !DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO);
+        this.attached = !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO);
     }
 
     @Override
@@ -297,7 +296,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         if (UIUtils.confirmAction(part.getSite().getShell(),
             title,
             title + " will require to reopen editor.\nAre you sure?")) {
-            DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+            DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
             prefs.setValue(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, attached);
             IEditorPart editor;
             if (part.getSite() instanceof MultiPageEditorSite) {

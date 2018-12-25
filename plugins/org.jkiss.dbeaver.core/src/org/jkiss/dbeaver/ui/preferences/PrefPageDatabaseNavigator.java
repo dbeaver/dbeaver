@@ -26,8 +26,8 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -54,7 +54,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     public PrefPageDatabaseNavigator()
     {
         super();
-        setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
+        setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
     }
 
     @Override
@@ -104,7 +104,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     @Override
     protected void performDefaults()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         expandOnConnectCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
         showObjectTipsCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_OBJECT_TIPS));
@@ -121,7 +121,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         store.setValue(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, showObjectTipsCheck.getSelection());

@@ -124,7 +124,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     @Override
     public void createPartControl(Composite parent)
     {
-        //setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
+        //setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
 
         super.createPartControl(parent);
 

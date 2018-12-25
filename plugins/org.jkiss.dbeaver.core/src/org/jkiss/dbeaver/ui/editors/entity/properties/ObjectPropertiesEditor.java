@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -48,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
@@ -67,7 +67,10 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ObjectPropertiesEditor
@@ -139,7 +142,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             createPropertiesPanel(container);
         } else {
             Composite foldersParent = container;
-            if (hasPropertiesEditor() && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+            if (hasPropertiesEditor() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
                 sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
                 sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
                 foldersParent = sashForm;
@@ -150,7 +153,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
 
         // Create props
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
             if (hasPropertiesEditor()) {
                 propertiesPanel = new TabbedFolderPageForm(this, pageControl, getEditorInput());
 
@@ -252,7 +255,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
 
             } else {
-                String sashStateStr = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.ENTITY_EDITOR_INFO_SASH_STATE);
+                String sashStateStr = DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.ENTITY_EDITOR_INFO_SASH_STATE);
                 int sashPanelHeight = !CommonUtils.isEmpty(sashStateStr) ? Integer.parseInt(sashStateStr) : 400;
                 if (sashPanelHeight < 0) sashPanelHeight = 0;
                 if (sashPanelHeight > 1000) sashPanelHeight = 1000;
@@ -266,7 +269,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                         if (weights != null && weights.length > 0) {
                             int topWeight = weights[0];
                             if (topWeight == 0) topWeight = 1;
-                            DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.ENTITY_EDITOR_INFO_SASH_STATE, topWeight);
+                            DBWorkbench.getPlatform().getPreferenceStore().setValue(DBeaverPreferences.ENTITY_EDITOR_INFO_SASH_STATE, topWeight);
                         }
                     }
                 });
@@ -481,7 +484,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void makeStandardPropertiesTabs(List<TabbedFolderInfo> tabList)
     {
-        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
             tabList.add(new TabbedFolderInfo(
                 //PropertiesContributor.CATEGORY_INFO,
                 PropertiesContributor.TAB_STANDARD,

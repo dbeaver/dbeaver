@@ -32,12 +32,12 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.ui.editors.sql.SQLScriptBindingType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLScriptBindingType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -132,7 +132,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     @Override
     protected void performDefaults()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         bindEmbeddedReadCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ));
         bindEmbeddedWriteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE));
@@ -173,7 +173,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ, bindEmbeddedReadCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE, bindEmbeddedWriteCheck.getSelection());

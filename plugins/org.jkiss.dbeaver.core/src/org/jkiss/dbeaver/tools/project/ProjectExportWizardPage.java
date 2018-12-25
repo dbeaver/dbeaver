@@ -83,7 +83,7 @@ class ProjectExportWizardPage extends WizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        String outDir = DBeaverCore.getGlobalPreferenceStore().getString(PREF_PROJECTS_EXPORT_OUT_DIR);
+        String outDir = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_PROJECTS_EXPORT_OUT_DIR);
         if (CommonUtils.isEmpty(outDir)) {
             outDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }

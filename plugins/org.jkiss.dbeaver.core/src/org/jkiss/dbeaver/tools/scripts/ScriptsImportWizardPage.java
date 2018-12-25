@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
@@ -80,7 +81,7 @@ class ScriptsImportWizardPage extends WizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        String externalDir = DBeaverCore.getGlobalPreferenceStore().getString(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR);
+        String externalDir = DBWorkbench.getPlatform().getPreferenceStore().getString(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR);
         if (CommonUtils.isEmpty(externalDir)) {
             externalDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }
@@ -194,7 +195,7 @@ class ScriptsImportWizardPage extends WizardPage {
             dataSourceContainer = (DBPDataSourceContainer) scriptsDataSources.getItem(dsIndex);
         }
         final String outputDir = directoryText.getText();
-        DBeaverCore.getGlobalPreferenceStore().setValue(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
         return new ScriptsImportData(
             new File(outputDir),
             extensionsText.getText(),

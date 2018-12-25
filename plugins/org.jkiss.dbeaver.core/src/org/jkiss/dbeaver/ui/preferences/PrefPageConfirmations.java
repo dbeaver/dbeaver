@@ -28,8 +28,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -105,7 +105,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     @Override
     protected void performDefaults()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
             String id = entry.getKey();
@@ -125,7 +125,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
             String id = entry.getKey();

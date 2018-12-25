@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.sample.database;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -51,7 +50,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(PROP_SAMPLE_DB_CANCELED)) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SAMPLE_DB_CANCELED)) {
             // Create was canceled
             return;
         }
@@ -72,7 +71,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             "Create Sample Database",
             "Do you want to create sample database?\nIt can be used as an example to explore basic " + GeneralUtils.getProductName() + " features."))
         {
-            DBeaverCore.getGlobalPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
             return;
         }
 

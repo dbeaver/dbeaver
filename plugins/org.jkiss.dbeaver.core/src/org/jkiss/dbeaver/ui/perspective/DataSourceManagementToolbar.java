@@ -714,7 +714,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         comboGroup.setLayout(layout);
 
         final int fontHeight = UIUtils.getFontHeight(parent);
-        int comboWidth = fontHeight * DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH);
+        int comboWidth = fontHeight * DBWorkbench.getPlatform().getPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH);
 
         connectionCombo = new SelectDataSourceCombo(comboGroup) {
 
@@ -737,7 +737,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.addItem(null);
         connectionCombo.select(0);
 
-        comboWidth = fontHeight * DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH);
+        comboWidth = fontHeight * DBWorkbench.getPlatform().getPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH);
         databaseCombo = new CSmartSelector<DBNDatabaseNode>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER,
             new DatabaseLabelProviders.DatabaseLabelProvider() {
                 @Override

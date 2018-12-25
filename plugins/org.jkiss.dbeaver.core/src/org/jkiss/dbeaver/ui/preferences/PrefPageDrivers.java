@@ -29,9 +29,9 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -141,7 +141,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     @Override
     protected void performDefaults()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         versionUpdateCheck.setSelection(store.getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE));
 
@@ -169,7 +169,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(ModelPreferences.UI_DRIVERS_VERSION_UPDATE, versionUpdateCheck.getSelection());
 
         store.setValue(ModelPreferences.UI_PROXY_HOST, proxyHostText.getText());
