@@ -33,14 +33,20 @@ public class ProgramInfo {
     private static final Map<String, ProgramInfo> programMap = new HashMap<>();
 
     private final Program program;
+    private final String fileExtension;
     private DBIconBinary image;
 
-    public ProgramInfo(Program program) {
+    public ProgramInfo(Program program, String fileExtension) {
+        this.fileExtension = fileExtension;
         this.program = program;
     }
 
     public Program getProgram() {
         return program;
+    }
+
+    public String getFileExtension() {
+        return fileExtension;
     }
 
     public DBPImage getImage() {
@@ -52,20 +58,28 @@ public class ProgramInfo {
     {
         if (resource instanceof IFile) {
             final String fileExtension = CommonUtils.notEmpty(resource.getFileExtension());
-            ProgramInfo programInfo = programMap.get(fileExtension);
-            if (programInfo == null) {
-                Program program = Program.findProgram(fileExtension);
-                programInfo = new ProgramInfo(program);
-                if (program != null) {
-                    final ImageData imageData = program.getImageData();
-                    if (imageData != null) {
-                        programInfo.image = new DBIconBinary(program.getName(), imageData);
-                    }
-                }
-                programMap.put(fileExtension, programInfo);
+            if (!CommonUtils.isEmpty(fileExtension)) {
+                return getProgram(fileExtension);
             }
-            return programInfo.program == null ? null : programInfo;
         }
         return null;
     }
+
+    public static ProgramInfo getProgram(String fileExtension)
+    {
+        ProgramInfo programInfo = programMap.get(fileExtension);
+        if (programInfo == null) {
+            Program program = Program.findProgram(fileExtension);
+            programInfo = new ProgramInfo(program, fileExtension);
+            if (program != null) {
+                final ImageData imageData = program.getImageData();
+                if (imageData != null) {
+                    programInfo.image = new DBIconBinary(program.getName(), imageData);
+                }
+            }
+            programMap.put(fileExtension, programInfo);
+        }
+        return programInfo.program == null ? null : programInfo;
+    }
+
 }
