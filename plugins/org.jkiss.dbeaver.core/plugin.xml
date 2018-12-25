@@ -342,7 +342,15 @@
                     id="panelId"
                     name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.param.panelId.name"
                     optional="false"
-                    values="org.jkiss.dbeaver.ui.controls.resultset.PanelIdParameterValues">
+                    values="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerTogglePanel$PanelIdParameterValues">
+            </commandParameter>
+        </command>
+        <command id="org.jkiss.dbeaver.core.resultset.openWith" name="%command.org.jkiss.dbeaver.core.resultset.openWith.name" description="%command.org.jkiss.dbeaver.core.resultset.openWith.description" categoryId="org.jkiss.dbeaver.core.rs">
+            <commandParameter
+                    id="processorId"
+                    name="%command.org.jkiss.dbeaver.core.resultset.openWith.param.processorId.name"
+                    optional="false"
+                    values="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith$OpenWithParameterValues">
             </commandParameter>
         </command>
         <command id="org.jkiss.dbeaver.core.resultset.grid.toggleLayout" name="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.rs"/>
@@ -1350,6 +1358,13 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanel" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerTogglePanel">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.hasData"/>
+                </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.toggleLayout" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain">
             <!--<activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>-->
@@ -2572,6 +2587,10 @@
         <!-- RSV panels config drop-down menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.panels">
             <dynamic id="org.jkiss.dbeaver.core.resultset.panels" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer$PanelsMenuContributor"/>
+        </menuContribution>
+        <!-- RSV open-with drop-down menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.openWith">
+            <dynamic id="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith$OpenWithMenuContributor"/>
         </menuContribution>
     </extension>
 

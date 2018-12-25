@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,6 +35,7 @@ public class ResultSetPresentationRegistry {
 
     private static final String TAG_PRESENTATION = "presentation"; //NON-NLS-1
     private static final String TAG_PANEL = "panel"; //NON-NLS-1
+    private static final String TAG_OPEN_WITH = "openWith"; //NON-NLS-1
 
     private static ResultSetPresentationRegistry instance;
 

@@ -79,9 +79,14 @@ import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.IResultSetPanel;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
@@ -1009,6 +1014,44 @@ public class ResultSetViewer extends Viewer
         return items;
     }
 
+    MenuManager fillOpenWithMenu() {
+        MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
+
+        ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
+
+        List<DataTransferProcessorDescriptor> appProcessors = new ArrayList<>();
+
+        for (final DataTransferNodeDescriptor consumerNode : DataTransferRegistry.getInstance().getAvailableConsumers(Collections.singleton(dataContainer))) {
+            for (DataTransferProcessorDescriptor processor : consumerNode.getProcessors()) {
+                if (processor.getAppFileExtension() != null) {
+                    appProcessors.add(processor);
+                }
+            }
+        }
+
+        appProcessors.sort(Comparator.comparingInt(DataTransferProcessorDescriptor::getOrder));
+
+        for (DataTransferProcessorDescriptor processor : appProcessors) {
+            CommandContributionItemParameter params = new CommandContributionItemParameter(
+                site,
+                processor.getId(),
+                ResultSetHandlerOpenWith.CMD_OPEN_WITH,
+                CommandContributionItem.STYLE_RADIO
+            );
+            params.label = processor.getAppName();
+            if (processor.getIcon() != null) {
+                params.icon = DBeaverIcons.getImageDescriptor(processor.getIcon());
+            }
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, processor.getFullId());
+            params.parameters = parameters;
+            openWithMenu.add(new CommandContributionItem(params));
+        }
+
+        return openWithMenu;
+    }
+
     private void addDefaultPanelActions() {
         panelToolBar.add(new Action("View Menu", DBeaverIcons.getViewMenuImageDescriptor()) {
             @Override
@@ -1241,7 +1284,7 @@ public class ResultSetViewer extends Viewer
                     "org.jkiss.dbeaver.core.resultset.panels",
                     ResultSetHandlerMain.CMD_TOGGLE_PANELS,
                     CommandContributionItem.STYLE_PULLDOWN);
-                ciParam.label = "Panels";
+                ciParam.label = CoreMessages.controls_resultset_config_panels;
                 ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
                 configToolbar.add(new CommandContributionItem(ciParam));
             }
@@ -1261,6 +1304,27 @@ public class ResultSetViewer extends Viewer
         {
             ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             addToolbar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+
+/*
+            if (false) {
+                CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
+                    site,
+                    "org.jkiss.dbeaver.core.resultset.openWith",
+                    ResultSetHandlerOpenWith.CMD_OPEN_WITH,
+                    CommandContributionItem.STYLE_PULLDOWN);
+                ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
+                DataTransferProcessorDescriptor activeProcessor = ResultSetHandlerOpenWith.getDefaultProcessor();
+                if (activeProcessor != null) {
+                    ciParam.label = activeProcessor.getAppName();
+                    ciParam.icon = DBeaverIcons.getImageDescriptor(activeProcessor.getIcon());
+                }
+                Map<String, String> params = new HashMap<>();
+                //params.put(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, "stream:stream.xlsx");
+                ciParam.parameters = params;
+                addToolbar.add(new CommandContributionItem(ciParam));
+            }
+*/
+
             addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
@@ -2065,6 +2129,7 @@ public class ResultSetViewer extends Viewer
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && model.hasData()) {
             manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
+            manager.add(fillOpenWithMenu());
         }
         manager.add(new GroupMarker("results_export"));
         manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
