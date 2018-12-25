@@ -55,7 +55,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
 
@@ -677,8 +676,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     DBUtils.getDefaultContext(container, true),
                     "Target DDL",
                     null,
-                    ddl
-                );
+                    ddl,
+                    false);
             }
         } catch (DBException e) {
             DBUserInterface.getInstance().showError("Target DDL", "Error generatiung target DDL", e);
