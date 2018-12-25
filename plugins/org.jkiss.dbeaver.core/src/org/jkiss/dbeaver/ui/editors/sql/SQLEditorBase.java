@@ -736,15 +736,23 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         break;
                     }
                 }
-                {
+                if (currentLine == firstLine) {
                     for (String delim : statementDelimiters) {
                         final int offset = TextUtils.getOffsetOf(document, firstLine, delim);
                         if (offset >= 0 && isDefaultPartition(partitioner, offset)) {
-                            startPos = document.getLineOffset(firstLine) + offset;
+                            int delimOffset = document.getLineOffset(firstLine) + offset;
                             if (currentPos > startPos) {
-                                break;
-                            } else {
-                                startPos = 0;
+                                boolean hasValuableChars = false;
+                                for (int i = delimOffset + delim.length(); i <= currentPos; i++) {
+                                    if (!Character.isWhitespace(document.getChar(i))) {
+                                        hasValuableChars = true;
+                                        break;
+                                    }
+                                }
+                                if (hasValuableChars) {
+                                    startPos = delimOffset;
+                                    break;
+                                }
                             }
                         }
                     }
