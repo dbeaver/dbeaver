@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.IResultSetPanel;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
