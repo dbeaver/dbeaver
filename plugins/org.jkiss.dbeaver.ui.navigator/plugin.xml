@@ -3,6 +3,8 @@
 
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.databaseEditor" name="%extension-point.org.jkiss.dbeaver.databaseEditor.name" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
+
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
                 class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
@@ -67,7 +69,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">
-        <category id="org.jkiss.dbeaver.core.new.general" name="%category.org.jkiss.dbeaver.core.new.general.name"/>
         <wizard
                 category="org.jkiss.dbeaver.core.new.general"
                 class="org.jkiss.dbeaver.tools.project.ProjectCreateWizard"
@@ -78,6 +79,21 @@
                 %wizard.org.jkiss.dbeaver.core.wizard.new.project.description
             </description>
         </wizard>
+    </extension>
+
+    <extension point="org.eclipse.ui.propertyPages">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator" id="org.jkiss.dbeaver.preferences.navigator" name="%page.org.jkiss.dbeaver.preferences.databaseNavigator.name">
+            <enabledWhen>
+                <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+            </enabledWhen>
+        </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="%page.org.jkiss.dbeaver.preferences.projectSettings.name">
+            <enabledWhen>
+                <adapt type="org.eclipse.core.resources.IProject">
+                    <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>
+                </adapt>
+            </enabledWhen>
+        </page>
     </extension>
 
 </plugin>

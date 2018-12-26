@@ -14,6 +14,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.ui,
  org.eclipse.ui.views,
+ org.eclipse.ui.ide,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base
@@ -28,4 +29,5 @@ Export-Package: org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.navigator.database,
  org.jkiss.dbeaver.ui.navigator.dialogs,
  org.jkiss.dbeaver.ui.navigator.project,
- org.jkiss.dbeaver.ui.preferences
+ org.jkiss.dbeaver.ui.preferences,
+ org.jkiss.dbeaver.tools.project

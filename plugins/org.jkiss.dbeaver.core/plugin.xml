@@ -36,7 +36,6 @@
 
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.databaseEditor" name="%extension-point.org.jkiss.dbeaver.databaseEditor.name" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataManager" name="%extension-point.org.jkiss.dbeaver.dataManager.name" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
@@ -370,7 +369,7 @@
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.txn.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_log.png"/>
 
-        <image commandId="org.jkiss.dbeaver.core.project.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/create.png"/>
+        <image commandId="org.jkiss.dbeaver.core.project.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.select" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.png"/>
@@ -2926,24 +2925,12 @@
               <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
            </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator" id="org.jkiss.dbeaver.preferences.navigator" name="%page.org.jkiss.dbeaver.preferences.databaseNavigator.name">
-            <enabledWhen>
-                <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
-            </enabledWhen>
-        </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
                     <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
                 </or>
-            </enabledWhen>
-        </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="%page.org.jkiss.dbeaver.preferences.projectSettings.name">
-            <enabledWhen>
-                <adapt type="org.eclipse.core.resources.IProject">
-                    <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>
-                </adapt>
             </enabledWhen>
         </page>
     </extension>
@@ -3314,7 +3301,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.newWizards">
-        <category id="org.jkiss.dbeaver.core.new.general" name="%category.org.jkiss.dbeaver.core.new.general.name"/>
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
              class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
