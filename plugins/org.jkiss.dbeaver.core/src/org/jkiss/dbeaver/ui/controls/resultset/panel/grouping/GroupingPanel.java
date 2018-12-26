@@ -144,7 +144,7 @@ public class GroupingPanel implements IResultSetPanel {
     }
 
     @Override
-    public void contributeActions(ToolBarManager manager) {
+    public void contributeActions(IContributionManager manager) {
         fillToolBar(manager);
     }
 
