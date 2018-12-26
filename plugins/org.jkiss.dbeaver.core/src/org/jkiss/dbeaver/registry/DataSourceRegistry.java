@@ -26,7 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverNature;
+import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
@@ -279,6 +280,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
+    @Override
     public DBPDataSourceFolder getFolder(String path) {
         return findFolderByPath(path, true);
     }
@@ -447,24 +449,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return SecurePreferencesFactory.getDefault().node("dbeaver").node("datasources");
     }
 
-    public static List<DataSourceRegistry> getAllRegistries() {
-        List<DataSourceRegistry> result = new ArrayList<>();
-        for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
-            if (project.isOpen()) {
-                DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-                if (registry != null) {
-                    result.add(registry);
-                }
-            }
-        }
-        return result;
-    }
-
     public static List<DBPDataSourceContainer> getAllDataSources() {
         List<DBPDataSourceContainer> result = new ArrayList<>();
         for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
             if (project.isOpen()) {
-                DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+                DBPDataSourceRegistry registry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
                 if (registry != null) {
                     result.addAll(registry.getDataSources());
                 }
@@ -473,23 +462,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return result;
     }
 
-
-    /**
-     * Find data source in all available registries
-     */
-    public static DBPDataSourceContainer findDataSource(String dataSourceId) {
-        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-        for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
-            DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
-            if (dataSourceRegistry != null) {
-                DBPDataSourceContainer dataSourceContainer = dataSourceRegistry.getDataSource(dataSourceId);
-                if (dataSourceContainer != null) {
-                    return dataSourceContainer;
-                }
-            }
-        }
-        return null;
-    }
 
     private void loadDataSources(boolean refresh) {
         if (!project.isOpen()) {

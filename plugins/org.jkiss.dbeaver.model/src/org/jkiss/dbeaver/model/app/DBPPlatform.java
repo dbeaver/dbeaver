@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.app;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -84,7 +85,13 @@ public interface DBPPlatform
     DBASecureStorage getSecureStorage();
 
     @NotNull
+    DBPExternalFileManager getExternalFileManager();
+
+    @NotNull
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
+
+    @NotNull
+    File getConfigurationFile(String fileName);
 
     boolean isShuttingDown();
 

@@ -36,11 +36,10 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.data.StringContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -166,7 +165,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 try {
                     loadStringStreamManagers();
                 } catch (Throwable e) {
-                    DBUserInterface.getInstance().showError("No string editor", "Can't load string content managers", e);
+                    DBWorkbench.getPlatformUI().showError("No string editor", "Can't load string content managers", e);
                 }
             } else {
                 //UIUtils.createLabel(editPlaceholder, UIIcon.REFRESH);
@@ -182,7 +181,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             try {
                 streamEditor = curStreamManager.getInstance().createPanelEditor(valueController);
             } catch (Throwable e) {
-                DBUserInterface.getInstance().showError("No stream editor", "Can't create stream editor", e);
+                DBWorkbench.getPlatformUI().showError("No stream editor", "Can't create stream editor", e);
             }
         }
         if (streamEditor == null) {

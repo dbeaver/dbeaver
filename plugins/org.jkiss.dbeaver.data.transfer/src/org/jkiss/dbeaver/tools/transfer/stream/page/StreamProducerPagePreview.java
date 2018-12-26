@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -385,7 +385,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             UIUtils.packColumns(previewTable, false);
 
             if (finalError != null) {
-                DBUserInterface.getInstance().showError("Load entity meta", "Can't load entity attributes", finalError);
+                DBWorkbench.getPlatformUI().showError("Load entity meta", "Can't load entity attributes", finalError);
             }
         });
     }
@@ -437,7 +437,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         UIUtils.asyncExec(() -> {
             UIUtils.packColumns(previewTable, false);
             if (finalError != null) {
-                DBUserInterface.getInstance().showError("OReview data", "Can't load preview data", finalError);
+                DBWorkbench.getPlatformUI().showError("OReview data", "Can't load preview data", finalError);
             }
         });
     }

@@ -23,20 +23,18 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tools.ToolDescriptor;
 import org.jkiss.dbeaver.registry.tools.ToolGroupDescriptor;
 import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
-import org.jkiss.dbeaver.ui.editors.AbstractDatabaseEditor;
+import org.jkiss.dbeaver.ui.actions.NavigatorActionExecuteTool;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -199,7 +197,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                     objectInput,
                     editorMeta.getEditorId());
             } catch (PartInitException e) {
-                DBUserInterface.getInstance().showError("Editor open", "Error opening tool editor '" + editorMeta.getEditorId() + "'", e.getStatus());
+                DBWorkbench.getPlatformUI().showError("Editor open", "Error opening tool editor '" + editorMeta.getEditorId() + "'", e.getStatus());
             }
         }
     }

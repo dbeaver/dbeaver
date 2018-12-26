@@ -35,15 +35,15 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
+import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -106,7 +106,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         if (containerNode == null) {
             final DBPDataSourceContainer dsContainer = element.getAdapter(DBPDataSourceContainer.class);
             if (dsContainer != null) {
-                containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(dsContainer);
+                containerNode = (DBNDataSource) DBWorkbench.getPlatform().getNavigatorModel().findNode(dsContainer);
             } else {
                 IDatabaseEditorInput dbInput = element.getAdapter(IDatabaseEditorInput.class);
                 if (dbInput != null) {
@@ -117,10 +117,10 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
                 } else if (element instanceof DBPContextProvider) {
                     DBCExecutionContext context = ((DBPContextProvider) element).getExecutionContext();
                     if (context != null) {
-                        containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(context.getDataSource().getContainer());
+                        containerNode = (DBNDataSource) DBWorkbench.getPlatform().getNavigatorModel().findNode(context.getDataSource().getContainer());
                     }
                 } else if (element instanceof DBPDataSourceContainer) {
-                    containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBPDataSourceContainer) element);
+                    containerNode = (DBNDataSource) DBWorkbench.getPlatform().getNavigatorModel().findNode((DBPDataSourceContainer) element);
                 }
             }
         }
@@ -199,7 +199,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     protected DBPPreferenceStore getTargetPreferenceStore() {
         return useDataSourceSettings() ?
             getDataSourceContainer().getPreferenceStore() :
-            DBeaverCore.getGlobalPreferenceStore();
+            DBWorkbench.getPlatform().getPreferenceStore();
     }
 
     private Link createLink(Composite composite, String text) {
@@ -306,7 +306,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     public final boolean performOk() {
         DBPPreferenceStore store = isDataSourcePreferencePage() ?
             getDataSourceContainer().getPreferenceStore() :
-            DBeaverCore.getGlobalPreferenceStore();
+            DBWorkbench.getPlatform().getPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
             clearPreferences(store);

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.CursorViewDialog;
+import org.jkiss.dbeaver.ui.data.dialogs.CursorViewDialog;
 
 /**
  * Object value manager.

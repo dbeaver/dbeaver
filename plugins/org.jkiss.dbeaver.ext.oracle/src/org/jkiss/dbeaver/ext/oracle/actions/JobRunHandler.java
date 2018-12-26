@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -109,7 +109,7 @@ public class JobRunHandler extends OracleTaskHandler
                     return null;
                 }
                 if (error != null) {
-                    DBUserInterface.getInstance().showError("Unexpected run schedule error", null, error);
+                    DBWorkbench.getPlatformUI().showError("Unexpected run schedule error", null, error);
                 } else if (!CommonUtils.isEmpty(compileLog.getErrorStack())) {
                     // Show compile errors
                     int line = -1, position = -1;
@@ -123,7 +123,7 @@ public class JobRunHandler extends OracleTaskHandler
                     }
 
                     String errorTitle = job.getName() + " run schedule failed";
-                    DBUserInterface.getInstance().showError(errorTitle, fullMessage.toString());
+                    DBWorkbench.getPlatformUI().showError(errorTitle, fullMessage.toString());
                 } else {
                     String message = job.getName() + " successfully scheduled to run";
                     UIUtils.showMessageBox(activeShell, "Done", message, SWT.ICON_INFORMATION);

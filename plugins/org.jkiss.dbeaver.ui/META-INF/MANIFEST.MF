@@ -3,18 +3,21 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ui;singleton:=true
-Bundle-Version: 5.1.14.qualifier
-Bundle-Release-Date: 20181224
+Bundle-Version: 5.1.15.qualifier
+Bundle-Release-Date: 20190107
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Activator: org.jkiss.dbeaver.bundle.UIActivator
+Bundle-Activator: org.jkiss.dbeaver.ui.internal.UIActivator
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.controls,
- org.jkiss.dbeaver.ui.editors,
+ org.jkiss.dbeaver.ui.controls.autorefresh,
  org.jkiss.dbeaver.ui.dialogs,
  org.jkiss.dbeaver.ui.dialogs.exec,
+ org.jkiss.dbeaver.ui.dnd,
+ org.jkiss.dbeaver.ui.internal,
  org.jkiss.dbeaver.ui.notifications,
+ org.jkiss.dbeaver.ui.preferences,
  org.jkiss.dbeaver.ui.properties
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
@@ -23,10 +26,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface,
  org.eclipse.jface.text,
  org.eclipse.ui,
- org.eclipse.ui.editors,
  org.eclipse.ui.ide,
  org.eclipse.ui.views,
- org.eclipse.ui.workbench.texteditor,
  org.eclipse.mylyn.commons.ui,
  org.eclipse.mylyn.commons.workbench,
  org.eclipse.mylyn.commons.notifications.core,

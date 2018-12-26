@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-    <extension
-            point="org.jkiss.dbeaver.dataSourceProvider">
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider"
                 description="%datasource.exasol.description"
                 icon="icons/Exasol_icon.png"
                 id="exasol"
                 label="%datasource.exasol.label">
-            <tree
-                    icon="icons/Exasol_icon.png"
-                    label="Exasol data source"
-                    path="exasol">
+            <tree icon="icons/Exasol_icon.png" label="Exasol data source" path="exasol">
                 <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema" label="%tree.schemas.node.name"
                         icon="#folder_schemas" description="%tree.schemas.node.description">
                     <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
@@ -364,10 +360,8 @@
                         defaultPort="8563"
                         description="%driver.exasol.description"
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">
-                   <file
-                         path="maven:/com.exasol:exasol-jdbc:RELEASE"
-                         type="jar">
-                   </file>
+                    <file path="maven:/com.exasol:exasol-jdbc:RELEASE" type="jar" bundle="!drivers.exasol"/>
+                    <file type="jar" path="drivers/exasol/exasol-jdbc.jar" bundle="drivers.exasol"/>
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="600"/>
@@ -397,8 +391,21 @@
         </view>
     </extension>
 
-    <extension
-            point="org.jkiss.dbeaver.databaseEditor">
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableColumnManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolScriptManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolScript"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolViewManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolView"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolFunctionManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSchemaManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConnectionManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolForeignKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager" objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager" objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole"/>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
@@ -408,18 +415,8 @@
                 label="%editor.source.ddl.name"
                 position="additions_middle"
                 type="folder">
-           <objectType
-                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
-           </objectType>
+           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
         </editor>
-        <manager
-                class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableManager"
-                objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTable">
-        </manager>
-        <manager
-                class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTableColumnManager"
-                objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn">
-        </manager>
         <editor
               class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
               contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
@@ -430,14 +427,8 @@
               label="%meta.org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema.adapterNotes.name"
               position="additions_middle"
               type="folder">
-           <objectType
-                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema">
-           </objectType>
+           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolVirtualSchema"/>
         </editor>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolScriptManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
-        </manager>
         <editor
               class="org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceViewEditor"
               contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
@@ -447,49 +438,12 @@
               label="%editor.exasol.source.view.label"
               position="additions_middle"
               type="folder">
-           <objectType
-                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
-           </objectType>
-           <objectType
-                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript">
-           </objectType>
-           <objectType
-                 name="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
-           </objectType>
+           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolView"/>
+           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolScript"/>
+           <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction"/>
         </editor>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolViewManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolView">
-        </manager>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolFunctionManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolFunction">
-        </manager>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSchemaManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolSchema">
-        </manager>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConnectionManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection">
-        </manager>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolForeignKeyManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey">
-        </manager>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPrimaryKeyManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey">
-        </manager>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser">
-        </manager>
-        <manager
-              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager"
-              objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole">
-        </manager>
     </extension>
+
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor.name"

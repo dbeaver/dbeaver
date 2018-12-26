@@ -22,17 +22,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
@@ -116,7 +114,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         try {
             processDescriptor.execute();
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Execute process", processDescriptor.getName(), e);
+            DBWorkbench.getPlatformUI().showError("Execute process", processDescriptor.getName(), e);
         }
     }
 
@@ -128,5 +126,10 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         throw new IllegalStateException("Loading jobs not supported in console mode");
+    }
+
+    @Override
+    public void refreshPartState(Object part) {
+        // do nothing
     }
 }

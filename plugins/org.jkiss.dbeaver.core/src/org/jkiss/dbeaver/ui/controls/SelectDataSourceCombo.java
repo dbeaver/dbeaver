@@ -21,7 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
+import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 
 public abstract class SelectDataSourceCombo extends CSmartSelector<DBPDataSourceContainer> {
 

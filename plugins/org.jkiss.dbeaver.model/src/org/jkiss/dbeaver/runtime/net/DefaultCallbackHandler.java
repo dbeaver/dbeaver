@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.runtime.net;
 
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -37,7 +37,7 @@ public class DefaultCallbackHandler implements CallbackHandler {
         for (Callback callback : callbacks) {
             if (callback instanceof PasswordCallback) {
                 if (password == null) {
-                    final DBAAuthInfo authInfo = DBUserInterface.getInstance().promptUserCredentials("Enter password", null, null, true, true);
+                    final DBAAuthInfo authInfo = DBWorkbench.getPlatformUI().promptUserCredentials("Enter password", null, null, true, true);
                     if (authInfo != null) {
                         if (authInfo.isSavePassword()) {
                             password = authInfo.getUserPassword().toCharArray();

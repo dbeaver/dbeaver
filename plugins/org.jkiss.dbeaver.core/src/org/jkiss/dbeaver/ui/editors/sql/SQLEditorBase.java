@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
@@ -168,13 +169,21 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         return false;
     }
 
+    static boolean isReadEmbeddedBinding() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ);
+    }
+
+    static boolean isWriteEmbeddedBinding() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_WRITE);
+    }
+
     protected void handleInputChange(IEditorInput input) {
         if (isBigScript(input)) {
             uninstallOccurrencesFinder();
         } else {
             setMarkingOccurrences(
-                DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
-                DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
     }
 
@@ -195,8 +204,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     @Override
     protected void initializeEditor() {
         super.initializeEditor();
-        this.markOccurrencesUnderCursor = DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
-        this.markOccurrencesForSelection = DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+        this.markOccurrencesUnderCursor = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        this.markOccurrencesForSelection = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
         setEditorContextMenuId(SQLEditorContributions.SQL_EDITOR_CONTEXT_MENU_ID);
         setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
@@ -217,7 +226,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             }
         }
         DBPDataSource dataSource = getDataSource();
-        return dataSource == null ? DBeaverCore.getGlobalPreferenceStore() : dataSource.getContainer().getPreferenceStore();
+        return dataSource == null ? DBWorkbench.getPlatform().getPreferenceStore() : dataSource.getContainer().getPreferenceStore();
     }
 
     @Override
@@ -225,8 +234,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         String property = event.getProperty();
         if (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property) || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property)) {
             setMarkingOccurrences(
-                DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
-                DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         } else {
             super.handlePreferenceStoreChanged(event);
         }
@@ -702,6 +711,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         int startPos = 0;
         boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
         final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
+        int lastPos = currentPos >= docLength ? docLength - 1 : currentPos;
 
         try {
             int currentLine = document.getLineOfOffset(currentPos);
@@ -726,17 +736,35 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         isDefaultPartition(partitioner, document.getLineOffset(firstLine))) {
                         break;
                     }
-                } else {
+                }
+                if (currentLine == firstLine) {
                     for (String delim : statementDelimiters) {
                         final int offset = TextUtils.getOffsetOf(document, firstLine, delim);
                         if (offset >= 0 && isDefaultPartition(partitioner, offset)) {
-                            break;
+                            int delimOffset = document.getLineOffset(firstLine) + offset + delim.length();
+                            if (currentPos > startPos) {
+                                if (docLength > delimOffset) {
+                                    boolean hasValuableChars = false;
+                                    for (int i = delimOffset; i <= lastPos; i++) {
+                                        if (!Character.isWhitespace(document.getChar(i))) {
+                                            hasValuableChars = true;
+                                            break;
+                                        }
+                                    }
+                                    if (hasValuableChars) {
+                                        startPos = delimOffset;
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
                 firstLine--;
             }
-            startPos = document.getLineOffset(firstLine);
+            if (startPos == 0) {
+                startPos = document.getLineOffset(firstLine);
+            }
 
             // Move currentPos at line begin
             currentPos = lineOffset;

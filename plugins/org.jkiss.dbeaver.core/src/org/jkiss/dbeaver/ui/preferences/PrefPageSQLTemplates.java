@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.texteditor.templates.TemplatePreferencePage;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateStore;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 
@@ -32,7 +32,7 @@ public class PrefPageSQLTemplates extends TemplatePreferencePage implements IWor
 
     public PrefPageSQLTemplates()
     {
-        setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
+        setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
         setTemplateStore(SQLTemplatesRegistry.getInstance().getTemplateStore());
         setContextTypeRegistry(SQLTemplatesRegistry.getInstance().getTemplateContextRegistry());
     }

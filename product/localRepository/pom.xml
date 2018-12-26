@@ -65,7 +65,7 @@
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-p2-repository-plugin</artifactId>
-                <version>${tycho-version}-SNAPSHOT</version>
+                <version>${tycho-version}</version>
                 <configuration>
                     <repositoryName>${repo-name}</repositoryName>
                     <includeAllDependencies>false</includeAllDependencies>
@@ -77,7 +77,7 @@
             <plugin>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>8.1.5.v20120716-SNAPSHOT</version>
+                <version>8.1.16.v20140903</version>
                 <configuration>
                     <scanIntervalSeconds>10</scanIntervalSeconds>
                     <webAppSourceDirectory>${basedir}/target/repository/</webAppSourceDirectory>

@@ -21,11 +21,11 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -43,7 +43,7 @@ public class DatabaseLabelProviders {
             if (element == null) {
                 return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
             }
-            DBNModel nm = DBeaverCore.getInstance().getNavigatorModel();
+            DBNModel nm = DBWorkbench.getPlatform().getNavigatorModel();
             nm.ensureProjectLoaded(((DBPDataSourceContainer) element).getRegistry().getProject());
             final DBNDatabaseNode node = nm.findNode((DBPDataSourceContainer) element);
             return node == null ? null : DBeaverIcons.getImage(node.getNodeIcon());

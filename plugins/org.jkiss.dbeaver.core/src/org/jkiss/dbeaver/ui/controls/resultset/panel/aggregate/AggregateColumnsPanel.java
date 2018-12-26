@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -200,7 +201,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     @Override
-    public void contributeActions(ToolBarManager manager) {
+    public void contributeActions(IContributionManager manager) {
         fillToolBar(manager);
     }
 

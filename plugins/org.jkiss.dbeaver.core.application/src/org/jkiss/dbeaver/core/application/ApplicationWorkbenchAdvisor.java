@@ -33,13 +33,14 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.ui.DBeaverUIConstants;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
+import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 import org.osgi.framework.Bundle;
 
 import java.net.URL;
@@ -51,7 +52,7 @@ import java.net.URL;
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     private static final Log log = Log.getLog(ApplicationWorkbenchAdvisor.class);
 
-    private static final String PERSPECTIVE_ID = DBeaverUIConstants.PERSPECTIVE_DBEAVER;
+    private static final String PERSPECTIVE_ID = DBeaverPerspective.PERSPECTIVE_ID;
     public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$
 
     private static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
@@ -102,7 +103,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 /*
         // Set default resource encoding to UTF-8
-        String defEncoding = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
+        String defEncoding = DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
         if (CommonUtils.isEmpty(defEncoding)) {
             defEncoding = GeneralUtils.UTF8_ENCODING;
         }
@@ -153,7 +154,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
                 }
             }
         };
-        DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(settingsChangeListener);
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(settingsChangeListener);
 */
 
     }
@@ -186,7 +187,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     @Override
     public boolean preShutdown() {
-        //DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(settingsChangeListener);
+        //DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(settingsChangeListener);
 
         if (!saveAndCleanup()) {
             // User rejected to exit
@@ -207,7 +208,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
             if (window != null) {
                 if (!MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))) {
                     // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
-                    if (!ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
+                    if (!ConfirmationDialog.confirmAction(DBeaverActivator.getCoreResourceBundle(), window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
                         return false;
                     }
                 }

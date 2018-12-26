@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.registry.driver.LocalNativeClientLocation;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.RemoteNativeClientLocation;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -193,7 +193,7 @@ public class ClientHomesPanel extends Composite {
                     }
                 });
             } catch (InvocationTargetException e) {
-                DBUserInterface.getInstance().showError("Client download", "Failed to download client files", e.getTargetException());
+                DBWorkbench.getPlatformUI().showError("Client download", "Failed to download client files", e.getTargetException());
             }
         }
         try {

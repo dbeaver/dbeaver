@@ -99,14 +99,13 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
         return super.getPrecision();
     }
 
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Override
     public String getDescription() {
-        return super.getDescription();
-    }
-
-    @Property(viewable = true, multiline = true, order = 100)
-    public String getDescription(DBRProgressMonitor monitor) throws DBException {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

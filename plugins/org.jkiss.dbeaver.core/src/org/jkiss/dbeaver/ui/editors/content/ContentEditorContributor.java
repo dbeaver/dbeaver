@@ -30,7 +30,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -256,7 +256,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 editor.fireContentChanged();
             }
             catch (InvocationTargetException e) {
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         "Can't load content",
                     "Can't load content from file '" + loadFile.getAbsolutePath() + "'",
                     e.getTargetException());

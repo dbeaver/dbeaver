@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
@@ -56,12 +57,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
-import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -363,7 +365,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         });
         this.searchText.addModifyListener(e -> scheduleLogRefresh());
-        UIUtils.enableHostEditorKeyBindingsSupport(site, searchText);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(site, searchText);
 
         // Create log table
         logTable = new Table(
@@ -415,7 +417,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         // Register QM listener
         QMUtils.registerMetaListener(this);
 
-        DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
 
         logTable.addListener(SWT.Resize, new Listener() {
             @Override
@@ -491,7 +493,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private void dispose()
     {
-        DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(this);
+        DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
         QMUtils.unregisterMetaListener(this);
         UIUtils.dispose(dndSource);
         UIUtils.dispose(logTable);
@@ -625,7 +627,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return;
         }
         reloadInProgress = true;
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         this.entriesPerPage = Math.max(MIN_ENTRIES_PER_PAGE, store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE));
         this.defaultFilter = new DefaultEventFilter();
@@ -831,7 +833,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private void createFiltersMenu(IMenuManager manager) {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         QMEventCriteria criteria = QMUtils.createDefaultCriteria(store);
         for (DBCExecutionPurpose purpose : DBCExecutionPurpose.values()) {
             IAction toggleAction = new Action(purpose.getTitle(), Action.AS_CHECK_BOX) {
@@ -893,7 +895,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
                 if (dsContainer == null) {
                     String containerId = stmtExec.getStatement().getSession().getContainerId();
-                    dsContainer = DataSourceRegistry.findDataSource(containerId);
+                    dsContainer = DBUtils.findDataSource(containerId);
                 }
                 String queryString = stmtExec.getQueryString();
                 if (!CommonUtils.isEmptyTrimmed(queryString)) {
@@ -1147,7 +1149,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             final List<QMMetaEvent> events = new ArrayList<>();
             QMEventBrowser eventBrowser = QMUtils.getEventBrowser(currentSessionOnly);
             if (eventBrowser != null) {
-                QMEventCriteria criteria = QMUtils.createDefaultCriteria(DBeaverCore.getGlobalPreferenceStore());
+                QMEventCriteria criteria = QMUtils.createDefaultCriteria(DBWorkbench.getPlatform().getPreferenceStore());
                 criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
 
                 monitor.beginTask("Load query history", 1);

@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.Authenticator;
@@ -132,7 +132,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
     }
 
     private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
-        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword, false, true);
+        return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, userName, userPassword, false, true);
     }
 
 }

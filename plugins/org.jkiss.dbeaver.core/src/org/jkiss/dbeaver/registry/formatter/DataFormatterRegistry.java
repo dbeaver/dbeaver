@@ -23,11 +23,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -102,7 +102,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         if (globalProfile == null) {
             globalProfile = new DataFormatterProfile(
                 "Global",
-                DBeaverCore.getGlobalPreferenceStore());
+                DBWorkbench.getPlatform().getPreferenceStore());
         }
         return globalProfile;
     }
@@ -207,7 +207,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
     private class CustomProfileStore extends SimplePreferenceStore {
         private CustomProfileStore()
         {
-            super(DBeaverCore.getGlobalPreferenceStore());
+            super(DBWorkbench.getPlatform().getPreferenceStore());
         }
 
         @Override

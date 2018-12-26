@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.code.NotNull;
@@ -33,7 +34,6 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
@@ -61,6 +61,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     private int commitAfterRows = 10000;
     private boolean truncateBeforeLoad = false;
     private boolean openTableOnFinish = true;
+
+    private transient IDialogSettings dialogSettings;
 
     public DatabaseConsumerSettings() {
     }
@@ -158,6 +160,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     @Override
     public void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings) {
+        this.dialogSettings = dialogSettings;
+
         containerNodePath = dialogSettings.get("container");
         if (dialogSettings.get("openNewConnections") != null) {
             openNewConnections = dialogSettings.getBoolean("openNewConnections");
@@ -189,19 +193,18 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
             }
             checkContainerConnection(runnableContext);
         }
-    }
 
-    private void checkContainerConnection(IRunnableContext runnableContext) {
-        // If container node is datasource (this may happen if datasource do not support schemas/catalogs)
-        // then we need to check connection
-        if (containerNode instanceof DBNDataSource && containerNode.getDataSource() == null) {
-            try {
-                runnableContext.run(true, true,
-                    monitor -> containerNode.initializeNode(new DefaultProgressMonitor(monitor), null));
-            } catch (InvocationTargetException e) {
-                DBUserInterface.getInstance().showError("Init connection", "Error connecting to datasource", e.getTargetException());
-            } catch (InterruptedException e) {
-                // ignore
+        // Load mapping for current objects
+        IDialogSettings mappings = dialogSettings.getSection("mappings");
+        if (mappings != null) {
+            for (DatabaseMappingContainer dmc : dataMappings.values()) {
+                DBSDataContainer sourceDatacontainer = dmc.getSource();
+                if (sourceDatacontainer != null) {
+                    IDialogSettings dmcSettings = mappings.getSection(DBUtils.getObjectFullId(sourceDatacontainer));
+                    if (dmcSettings != null) {
+                        dmc.loadSettings(runnableContext, dmcSettings);
+                    }
+                }
             }
         }
     }
@@ -216,6 +219,32 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("commitAfterRows", commitAfterRows);
         dialogSettings.put("truncateBeforeLoad", truncateBeforeLoad);
         dialogSettings.put("openTableOnFinish", openTableOnFinish);
+
+        // Load all data mappings
+        IDialogSettings mappings = DialogSettings.getOrCreateSection(dialogSettings, "mappings");
+
+        for (DatabaseMappingContainer dmc : dataMappings.values()) {
+            DBSDataContainer sourceDatacontainer = dmc.getSource();
+            if (sourceDatacontainer != null) {
+                IDialogSettings dmcSettings = mappings.addNewSection(DBUtils.getObjectFullId(sourceDatacontainer));
+                dmc.saveSettings(dmcSettings);
+            }
+        }
+    }
+
+    private void checkContainerConnection(IRunnableContext runnableContext) {
+        // If container node is datasource (this may happen if datasource do not support schemas/catalogs)
+        // then we need to check connection
+        if (containerNode instanceof DBNDataSource && containerNode.getDataSource() == null) {
+            try {
+                runnableContext.run(true, true,
+                    monitor -> containerNode.initializeNode(new DefaultProgressMonitor(monitor), null));
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Init connection", "Error connecting to datasource", e.getTargetException());
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
     }
 
     @NotNull
@@ -248,6 +277,21 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                     log.error("Error getting container node", e.getTargetException());
                 } catch (InterruptedException e) {
                     // ignore
+                }
+            }
+        }
+    }
+
+    public void addDataMappings(IRunnableContext context, DBSDataContainer dataContainer, DatabaseMappingContainer mappingContainer) {
+        dataMappings.put(dataContainer, mappingContainer);
+
+        if (dialogSettings != null) {
+            // Load settings
+            IDialogSettings mappings = dialogSettings.getSection("mappings");
+            if (mappings != null) {
+                IDialogSettings dmcSettings = mappings.getSection(DBUtils.getObjectFullId(dataContainer));
+                if (dmcSettings != null) {
+                    mappingContainer.loadSettings(context, dmcSettings);
                 }
             }
         }

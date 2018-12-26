@@ -49,7 +49,7 @@ public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableOb
             return code;
         }
 
-        static RelKind valueOf(String code) {
+        public static RelKind valueOf(String code) {
             try {
                 return (RelKind) RelKind.class.getField(code).get(null);
             } catch (Throwable e1) {

@@ -42,6 +42,11 @@ import java.util.Map;
 public class PostgreTriggerManager extends SQLObjectEditor<PostgreTrigger, PostgreTableReal> {//implements DBEObjectRenamer<PostgreTrigger> {
 
     @Override
+    public boolean canCreateObject(PostgreTableReal parent) {
+        return false;
+    }
+
+    @Override
     public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }

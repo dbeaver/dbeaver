@@ -39,10 +39,11 @@ import org.jkiss.dbeaver.debug.ui.internal.DebugConfigurationPanelRegistry;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
@@ -177,7 +178,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             } catch (DBException e) {
                 selectedDebugType = null;
                 selectedDebugPanel = null;
-                DBUserInterface.getInstance().showError("Panel create error", "Can't create debugger config panel " + debugPanel.getId(), e);
+                DBWorkbench.getPlatformUI().showError("Panel create error", "Can't create debugger config panel " + debugPanel.getId(), e);
             }
         } else {
             selectedDebugType = null;
@@ -204,7 +205,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
         this.currentConfiguration = configuration;
         try {
             String dsId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String) null);
-            DBPDataSourceContainer dataSource = DataSourceRegistry.findDataSource(dsId);
+            DBPDataSourceContainer dataSource = DBUtils.findDataSource(dsId);
             connectionCombo.select(dataSource);
             if (dataSource != null) {
                 driverText.setText(dataSource.getDriver().getFullName());

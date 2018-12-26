@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.exec.*;
@@ -39,9 +40,9 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -95,7 +96,7 @@ public class DataSourceHandler
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        UIUtils.asyncExec(() -> DBUserInterface.getInstance().showError(
+                        UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
                             connectJob.getName(),
                             null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
                             result));
@@ -158,7 +159,7 @@ public class DataSourceHandler
         DBAAuthInfo authInfo = new UITask<DBAAuthInfo>() {
             @Override
             protected DBAAuthInfo runTask() {
-                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
+                return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
             }
         }.execute();
         if (authInfo == null) {
@@ -215,7 +216,7 @@ public class DataSourceHandler
                     if (onFinish != null) {
                         onFinish.run();
                     } else if (!result.isOK()) {
-                        DBUserInterface.getInstance().showError(
+                        DBWorkbench.getPlatformUI().showError(
                                 disconnectJob.getName(),
                             null,
                             result);
@@ -358,6 +359,7 @@ public class DataSourceHandler
         public void run()
         {
             result = ConfirmationDialog.showConfirmDialog(
+                DBeaverActivator.getCoreResourceBundle(),
                 null,
                 DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
                 ConfirmationDialog.QUESTION_WITH_CANCEL,

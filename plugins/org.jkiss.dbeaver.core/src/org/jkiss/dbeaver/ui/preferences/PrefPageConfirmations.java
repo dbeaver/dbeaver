@@ -28,10 +28,11 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.HashMap;
@@ -73,15 +74,15 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
 
         {
             Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_confirmations_group_object_editor, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_DELETE);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_REJECT);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_REVERT);
+            createConfirmCheckbox(groupObjects, NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
+            createConfirmCheckbox(groupObjects, NavigatorPreferences.CONFIRM_ENTITY_DELETE);
+            createConfirmCheckbox(groupObjects, NavigatorPreferences.CONFIRM_ENTITY_REJECT);
+            createConfirmCheckbox(groupObjects, NavigatorPreferences.CONFIRM_ENTITY_REVERT);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_DANGER_SQL);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL);
 
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_EDITOR_CLOSE);
+            createConfirmCheckbox(groupObjects, NavigatorPreferences.CONFIRM_EDITOR_CLOSE);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_RUNNING_QUERY_CLOSE);
         }
 
@@ -105,7 +106,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     @Override
     protected void performDefaults()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
             String id = entry.getKey();
@@ -125,7 +126,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
             String id = entry.getKey();

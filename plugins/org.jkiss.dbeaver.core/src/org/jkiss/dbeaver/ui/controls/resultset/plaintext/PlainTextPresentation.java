@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -121,7 +122,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             }
         });
         findReplaceTarget = new StyledTextFindReplaceTarget(text);
-        UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), text);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), text);
 
         applyThemeSettings();
 
