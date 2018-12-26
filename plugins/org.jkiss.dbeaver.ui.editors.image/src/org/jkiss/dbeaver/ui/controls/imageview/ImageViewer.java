@@ -25,7 +25,6 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.io.InputStream;
@@ -138,11 +137,11 @@ public class ImageViewer extends Composite {
     }
 
     public void fillToolBar(IContributionManager toolBar) {
-        toolBar.add(itemZoomIn = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN, CoreMessages.controls_imageview_zoom_in, UIIcon.ZOOM_IN));
-        toolBar.add(itemZoomOut = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT, CoreMessages.controls_imageview_zoom_out, UIIcon.ZOOM_OUT));
-        toolBar.add(itemRotate = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE, CoreMessages.controls_imageview_rotate, UIIcon.ROTATE_LEFT));
-        toolBar.add(itemFit = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT, CoreMessages.controls_imageview_fit_window, UIIcon.FIT_WINDOW));
-        toolBar.add(itemOriginal = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL, CoreMessages.controls_imageview_original_size, UIIcon.ORIGINAL_SIZE));
+        toolBar.add(itemZoomIn = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN, ImageViewMessages.controls_imageview_zoom_in, UIIcon.ZOOM_IN));
+        toolBar.add(itemZoomOut = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT, ImageViewMessages.controls_imageview_zoom_out, UIIcon.ZOOM_OUT));
+        toolBar.add(itemRotate = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE, ImageViewMessages.controls_imageview_rotate, UIIcon.ROTATE_LEFT));
+        toolBar.add(itemFit = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT, ImageViewMessages.controls_imageview_fit_window, UIIcon.FIT_WINDOW));
+        toolBar.add(itemOriginal = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL, ImageViewMessages.controls_imageview_original_size, UIIcon.ORIGINAL_SIZE));
     }
 
 }
