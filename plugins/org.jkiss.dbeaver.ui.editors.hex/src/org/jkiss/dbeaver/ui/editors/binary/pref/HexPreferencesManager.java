@@ -59,7 +59,7 @@ public class HexPreferencesManager {
 
     private Composite composite = null;
     private Composite parent = null;
-    private Text text = null;
+    private Text textName = null;
     private Text textStyle = null;
     private Text textSize = null;
     private List listFont = null;
@@ -126,7 +126,7 @@ public class HexPreferencesManager {
             UIUtils.createControlLabel(fontGroup, BinaryEditorMessages.editor_binary_hex_label_style);
             UIUtils.createControlLabel(fontGroup, BinaryEditorMessages.editor_binary_hex_label_size);
 
-            Text textName = new Text(fontGroup, SWT.SINGLE | SWT.BORDER);
+            textName = new Text(fontGroup, SWT.SINGLE | SWT.BORDER);
             GridData gridData4 = new GridData();
             gridData4.horizontalAlignment = GridData.FILL;
             textName.setLayoutData(gridData4);
@@ -369,13 +369,13 @@ public class HexPreferencesManager {
 
     private void refreshWidgets()
     {
-        if (composite.isDisposed() || text == null)
+        if (composite.isDisposed() || textName == null)
             return;
 
         if (fontsSorted == null || !fontsSorted.containsKey(sampleFontData.getName())) {
-            text.setText(BinaryEditorMessages.editor_binary_hex_default_font);
+            textName.setText(BinaryEditorMessages.editor_binary_hex_default_font);
         } else {
-            text.setText(sampleFontData.getName());
+            textName.setText(sampleFontData.getName());
         }
         showSelected(listFont, sampleFontData.getName());
 
@@ -420,14 +420,14 @@ public class HexPreferencesManager {
 
     private void updateAndRefreshSample()
     {
-        sampleFontData = new FontData(text.getText(), getSize(), fontStyleToInt(textStyle.getText()));
+        sampleFontData = new FontData(textName.getText(), getSize(), fontStyleToInt(textStyle.getText()));
         refreshSample();
     }
 
 
     private void updateSizeItems()
     {
-        Set<Integer> sizes = fontsSorted.get(text.getText());
+        Set<Integer> sizes = fontsSorted.get(textName.getText());
         if (sizes == null) {
             listSize.removeAll();
             return;
