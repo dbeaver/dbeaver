@@ -36,7 +36,7 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
 
     public AbstractContextDescriptor(IConfigurationElement config)
     {
-        super(config == null ? DBConstants.MODEL_BUNDLE_ID : config.getContributor().getName());
+        super(config.getContributor().getName());
         if (config != null) {
             String objectType = config.getAttribute(OBJECT_TYPE);
             if (objectType != null) {
@@ -46,6 +46,11 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
                 objectTypes.add(new ObjectType(typeCfg));
             }
         }
+    }
+
+    public AbstractContextDescriptor(String pluginId)
+    {
+        super(pluginId);
     }
 
     public boolean hasObjectTypes() {

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInputFactory;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditorInputFactory;
+import org.jkiss.dbeaver.ui.internal.UINavigatorActivator;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -68,7 +69,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
 
     EntityEditorDescriptor()
     {
-        super(null);
+        super(UINavigatorActivator.PLUGIN_ID);
         this.id = DEFAULT_OBJECT_EDITOR_ID;
         this.editorType = new AbstractDescriptor.ObjectType(ObjectPropertiesEditor.class.getName());
         this.contributorType = null;
