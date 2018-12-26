@@ -94,6 +94,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -2130,7 +2131,7 @@ public class ResultSetViewer extends Viewer
             manager.add(fillOpenWithMenu());
         }
         manager.add(new GroupMarker("results_export"));
-        manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
         if (dataContainer != null && model.hasData()) {
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));

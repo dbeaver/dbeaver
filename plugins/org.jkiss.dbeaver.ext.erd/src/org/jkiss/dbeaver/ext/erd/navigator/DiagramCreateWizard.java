@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -123,7 +123,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
             DiagramCreator creator = new DiagramCreator(rootObjects);
             UIUtils.run(getContainer(), true, true, creator);
 
-            NavigatorHandlerObjectOpen.openResource(creator.diagramFile, UIUtils.getActiveWorkbenchWindow());
+            OpenHandler.openResource(creator.diagramFile, UIUtils.getActiveWorkbenchWindow());
         }
         catch (InterruptedException ex) {
             return false;

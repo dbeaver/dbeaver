@@ -21,20 +21,10 @@ package org.jkiss.dbeaver.core;
  */
 public interface CoreCommands
 {
-    String GROUP_TOOLS = "tools";
-    String GROUP_TOOLS_END = "tools_end";
-    String GROUP_NAVIGATOR_ADDITIONS = "navigator_additions";
-    String GROUP_NAVIGATOR_ADDITIONS_END = "navigator_additions_end";
 
 
     String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
     String CMD_PASTE_SPECIAL = "org.jkiss.dbeaver.core.edit.paste.special"; //$NON-NLS-1$
-
-    String CMD_OBJECT_OPEN = "org.jkiss.dbeaver.core.object.open"; //$NON-NLS-1$
-    String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create"; //$NON-NLS-1$
-    String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete"; //$NON-NLS-1$
-    String CMD_OBJECT_MOVE_UP = "org.jkiss.dbeaver.core.object.move.up"; //$NON-NLS-1$
-    String CMD_OBJECT_MOVE_DOWN = "org.jkiss.dbeaver.core.object.move.down"; //$NON-NLS-1$
 
     String CMD_CONNECT = "org.jkiss.dbeaver.core.connect";
     String CMD_DISCONNECT = "org.jkiss.dbeaver.core.disconnect";
@@ -76,5 +66,4 @@ public interface CoreCommands
     String CMD_SYNC_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.sync.connection";
 
     String CMD_SQL_RENAME = "org.jkiss.dbeaver.ui.editors.sql.rename";
-    String CMD_OBJECT_SET_ACTIVE = "org.jkiss.dbeaver.core.navigator.set.active";
 }

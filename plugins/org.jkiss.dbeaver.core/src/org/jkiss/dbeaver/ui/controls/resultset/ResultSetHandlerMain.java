@@ -45,7 +45,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -64,6 +63,7 @@ import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -278,7 +278,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                         ViewSQLDialog dialog = new ViewSQLDialog(
                             activePart.getSite(),
                             rsv.getExecutionContext(),
-                            CoreMessages.editors_entity_dialog_preview_title,
+                            UINavigatorMessages.editors_entity_dialog_preview_title,
                             UIIcon.SQL_PREVIEW,
                             scriptText);
                         dialog.open();

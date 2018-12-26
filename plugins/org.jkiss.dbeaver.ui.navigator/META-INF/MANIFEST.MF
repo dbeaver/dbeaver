@@ -18,4 +18,14 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base
 Export-Package: org.jkiss.dbeaver.ui.controls,
- org.jkiss.dbeaver.ui.navigator
+ org.jkiss.dbeaver.ui.controls.itemlist,
+ org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.ui.dialogs,
+ org.jkiss.dbeaver.ui.editors.entity,
+ org.jkiss.dbeaver.ui.internal,
+ org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.ui.navigator.actions,
+ org.jkiss.dbeaver.ui.navigator.database,
+ org.jkiss.dbeaver.ui.navigator.dialogs,
+ org.jkiss.dbeaver.ui.navigator.project,
+ org.jkiss.dbeaver.ui.preferences

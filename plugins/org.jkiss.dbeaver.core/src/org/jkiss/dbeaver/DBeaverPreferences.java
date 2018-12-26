@@ -32,27 +32,10 @@ public final class DBeaverPreferences
 
     public static final String PLATFORM_LANGUAGE = "platform.language"; //$NON-NLS-1$
 
-    public static final String NAVIGATOR_EXPAND_ON_CONNECT = "navigator.expand.on.connect"; //$NON-NLS-1$
-    public static final String NAVIGATOR_SORT_ALPHABETICALLY = "navigator.sort.case.insensitive"; //$NON-NLS-1$
-    public static final String NAVIGATOR_SORT_FOLDERS_FIRST = "navigator.sort.forlers.first"; //$NON-NLS-1$
-    public static final String NAVIGATOR_SYNC_EDITOR_DATASOURCE = "navigator.sync.editor.datasource"; //$NON-NLS-1$
-    public static final String NAVIGATOR_REFRESH_EDITORS_ON_OPEN = "navigator.refresh.editor.open"; //$NON-NLS-1$
-    public static final String NAVIGATOR_GROUP_BY_DRIVER = "navigator.group.by.driver"; //$NON-NLS-1$
-    public static final String NAVIGATOR_EDITOR_FULL_NAME = DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME; //$NON-NLS-1$
-    public static final String NAVIGATOR_EDITOR_SHOW_TABLE_GRID = "navigator.editor.showGrid"; //$NON-NLS-1$
-    public static final String NAVIGATOR_OBJECT_DOUBLE_CLICK = "navigator.object.doubleClick"; //$NON-NLS-1$
-    public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
-    public static final String NAVIGATOR_SHOW_SQL_PREVIEW = "navigator.editor.show.preview"; //$NON-NLS-1$
-    public static final String NAVIGATOR_SHOW_OBJECT_TIPS = "navigator.show.objects.tips"; //$NON-NLS-1$
-    public static final String NAVIGATOR_LONG_LIST_FETCH_SIZE = "navigator.long.list.fetch.size"; //$NON-NLS-1$
-
     public static final String TOOLBARS_SHOW_GENERAL_ALWAYS = "toolbars.show.general.always"; //$NON-NLS-1$
     public static final String TOOLBARS_SHOW_EDIT = "toolbars.show.edit"; //$NON-NLS-1$
     public static final String TOOLBARS_DATABASE_SELECTOR_WIDTH = "toolbars.database.selector.width"; //$NON-NLS-1$
     public static final String TOOLBARS_SCHEMA_SELECTOR_WIDTH = "toolbars.schema.selector.width"; //$NON-NLS-1$
-
-    public static final String ENTITY_EDITOR_DETACH_INFO = "entity.editor.info.detach"; //$NON-NLS-1$
-    public static final String ENTITY_EDITOR_INFO_SASH_STATE = "entity.editor.info.sash.state"; //$NON-NLS-1$
 
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
 
@@ -76,13 +59,6 @@ public final class DBeaverPreferences
     public static final String CONFIRM_RS_EDIT_CLOSE = "close_resultset_edit"; //$NON-NLS-1$
     public static final String CONFIRM_RS_PANEL_RESET = "reset_panels_content"; //$NON-NLS-1$
     public static final String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
-    public static final String CONFIRM_ENTITY_EDIT_CLOSE = "close_entity_edit"; //$NON-NLS-1$
-    public static final String CONFIRM_ENTITY_DELETE = "entity_delete"; //$NON-NLS-1$
-    public static final String CONFIRM_LOCAL_FOLDER_DELETE = "local_folder_delete"; //$NON-NLS-1$
-    public static final String CONFIRM_ENTITY_REJECT = "entity_reject"; //$NON-NLS-1$
-    public static final String CONFIRM_ENTITY_REVERT = "entity_revert"; //$NON-NLS-1$
-    //public static final String CONFIRM_ENTITY_RENAME = "entity_rename"; //$NON-NLS-1$
-    public static final String CONFIRM_EDITOR_CLOSE = "close_editor_edit"; //$NON-NLS-1$
     public static final String CONFIRM_RUNNING_QUERY_CLOSE = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_MANUAL_DOWNLOAD = "driver_download_manual"; //$NON-NLS-1$
@@ -90,6 +66,8 @@ public final class DBeaverPreferences
     public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
     public static final String CONFIRM_DANGER_SQL = "dangerous_sql"; //$NON-NLS-1$
     public static final String CONFIRM_MASS_PARALLEL_SQL = "mass_parallel_sql"; //$NON-NLS-1$
+
+    public static final String NAVIGATOR_EDITOR_FULL_NAME = DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME; //$NON-NLS-1$
 
     private static final String PROPERTY_USE_ALL_COLUMNS_QUIET = "virtual-key-quiet";
 

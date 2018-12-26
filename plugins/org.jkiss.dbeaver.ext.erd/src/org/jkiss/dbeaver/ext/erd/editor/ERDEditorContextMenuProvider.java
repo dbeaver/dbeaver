@@ -25,8 +25,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 
 /**
  * Provides a context menu for the schema diagram editor. A virtual cut and paste from the flow example
@@ -77,8 +77,8 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider {
 
             menu.add(new Separator());
 
-            menu.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
-            menu.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS));
+            menu.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
+            menu.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
             //menu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             //menu.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 

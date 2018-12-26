@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -90,10 +91,10 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
-        refreshEditorOnOpen.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
+        refreshEditorOnOpen.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
         editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
-        showTableGrid.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
-        showPreviewOnSave.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
+        showTableGrid.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
+        showPreviewOnSave.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
     }
 
     @Override
@@ -102,10 +103,10 @@ public class PrefPageEntityEditor extends AbstractPrefPage implements IWorkbench
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
-        store.setValue(DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, showPreviewOnSave.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, showPreviewOnSave.getSelection());
 
         PrefUtils.savePreferenceStore(store);
 
