@@ -17,10 +17,9 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 
 /**
@@ -39,5 +38,5 @@ public interface IResultSetPanel {
 
     void refresh(boolean force);
 
-    void contributeActions(ToolBarManager manager);
+    void contributeActions(IContributionManager manager);
 }

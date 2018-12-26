@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.metadata;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -158,7 +157,7 @@ public class MetaDataPanel implements IResultSetPanel {
     }
 
     @Override
-    public void contributeActions(ToolBarManager manager) {
+    public void contributeActions(IContributionManager manager) {
     }
 
     private class MetaDataTable extends DatabaseObjectListControl<DBDAttributeBinding> {

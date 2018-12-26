@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -150,7 +149,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
     }
 
     @Override
-    public void contributeActions(ToolBarManager manager) {
+    public void contributeActions(IContributionManager manager) {
         fillToolBar(manager);
     }
 
