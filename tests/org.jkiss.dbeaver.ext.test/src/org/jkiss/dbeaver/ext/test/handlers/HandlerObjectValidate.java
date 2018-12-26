@@ -53,7 +53,7 @@ public class HandlerObjectValidate extends AbstractHandler {
         } catch (InterruptedException e) {
             // skip
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatform().showError("Validation failed", null, e.getTargetException());
+            //DBWorkbench.getPlatform().showError("Validation failed", null, e.getTargetException());
         }
     }
 
