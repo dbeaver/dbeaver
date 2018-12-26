@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.IResultSetPanel;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 

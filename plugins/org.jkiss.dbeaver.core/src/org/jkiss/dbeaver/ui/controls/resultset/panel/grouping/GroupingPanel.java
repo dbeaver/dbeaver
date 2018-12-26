@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.IResultSetPanel;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
