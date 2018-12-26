@@ -6,32 +6,28 @@ Thank you for reporting an issue.
  and
  - open issues in Github tracker: https://github.com/dbeaver/dbeaver/issues
   
-If you cannot find a similar problem, then create a new issue.
+If you cannot find a similar problem, then create a new issue. Short tips about new issues can be found here: https://github.com/dbeaver/dbeaver/wiki/Posting-issues
+
+Please, do not create issue duplicates. If you find the same or similar issue, just add a comment or vote for this feature. It helps us to track the most popular requests and fix them faster.
 
 Please fill in as much of the template as possible.
 -->
 
-## Have you checked DBeaver docs, and open Github issues?
+#### System information: 
+- Operating system (distribution) and version
+- DBeaver version
+- Java version 
+- Additional extensions
 
-No
-
-## Is this a BUG / ISSUE report or a QUESTION?
-
-Invalid
-
-## System information. 
-
-#### Your DBeaver version.
-
-#### Your Databese version.
-
-#### Your JDBC version.
-
-#### Operating system (distribution) and version.
+#### Connection specification:
+- Database name and version
+- Driver name
+- Do you use security connection (SSH, Proxy, etc)? 
 
 
-## Describe the problem you're observing.
+#### Describe the problem you're observing:
 
-#### Can you reproduce the problem? If so, describe how. If not, describe troubleshooting steps you took before opening the issue.
+#### Steps to reproduce, if exist:
 
 #### Include any warning/errors/backtraces from the logs
+<!-- Please, find the short guide how to find logs here: https://github.com/dbeaver/dbeaver/wiki/Log-files-->
