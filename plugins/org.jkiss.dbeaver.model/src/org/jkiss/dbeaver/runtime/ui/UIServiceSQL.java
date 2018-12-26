@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.runtime.ui;
 
+import org.eclipse.core.resources.IResource;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -48,4 +49,9 @@ public interface UIServiceSQL {
     Object createSQLPanel(Object site, Object parentControl, DBPContextProvider contextProvider, String panelName, String sqlText)
         throws DBException;
 
+    Object openNewScript(DBPDataSourceContainer dataSource);
+
+    Object openRecentScript(DBPDataSourceContainer dataSource);
+
+    void openResource(IResource element);
 }

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -81,7 +82,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
     {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
+        syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
 
         showGeneralToolbarEverywhere.setSelection(store.getBoolean(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS));
         showEditToolbar.setSelection(store.getBoolean(DBeaverPreferences.TOOLBARS_SHOW_EDIT));
@@ -94,7 +95,7 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
     {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        store.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
         store.setValue(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS, showGeneralToolbarEverywhere.getSelection());
         store.setValue(DBeaverPreferences.TOOLBARS_SHOW_EDIT, showEditToolbar.getSelection());
         store.setValue(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH, toolbarDatabaseSelectorWidth.getSelection());

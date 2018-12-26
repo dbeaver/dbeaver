@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -66,26 +67,26 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE, true);
 
         // Navigator
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, false);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, false);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, false);
 
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, false);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, false);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.EDIT.name());
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.EXPAND.name());
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE, 5000);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, true);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.EDIT.name());
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK, NavigatorViewBase.DoubleClickBehavior.EXPAND.name());
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, true);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, true);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE, 5000);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_SHOW_EDIT, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH, 20);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH, 18);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, true);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO, true);
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);

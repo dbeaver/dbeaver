@@ -34,4 +34,50 @@
         </factory>
     </extension>
 
+    <extension point="org.eclipse.ui.views">
+        <category id="org.jkiss.dbeaver.core.category" name="%category.org.jkiss.dbeaver.core.category.name"/>
+        <view
+                id="org.jkiss.dbeaver.core.databaseNavigator"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView"
+                allowMultiple="false"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/databases.png"
+                name="%view.database.navigator.title"/>
+        <view
+                id="org.jkiss.dbeaver.core.databaseBrowser"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView"
+                allowMultiple="true"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.png"
+                name="%view.database.browser.title"/>
+        <view
+                id="org.jkiss.dbeaver.core.projectNavigator"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView"
+                allowMultiple="false"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/projects.png"
+                name="%view.project.navigator.title"/>
+        <view
+                id="org.jkiss.dbeaver.core.projectExplorer"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView"
+                allowMultiple="false"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
+                name="%view.project.explorer.title"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <category id="org.jkiss.dbeaver.core.new.general" name="%category.org.jkiss.dbeaver.core.new.general.name"/>
+        <wizard
+                category="org.jkiss.dbeaver.core.new.general"
+                class="org.jkiss.dbeaver.tools.project.ProjectCreateWizard"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
+                id="org.jkiss.dbeaver.core.wizard.new.project"
+                name="%wizard.org.jkiss.dbeaver.core.wizard.new.project.name">
+            <description>
+                %wizard.org.jkiss.dbeaver.core.wizard.new.project.description
+            </description>
+        </wizard>
+    </extension>
+
 </plugin>

@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
@@ -28,11 +30,12 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -101,5 +104,30 @@ public class UIServiceSQLImpl implements UIServiceSQL {
         return editor.getTextViewer();
     }
 
+    @Override
+    public Object openNewScript(DBPDataSourceContainer dataSource) {
+        try {
+            OpenHandler.openRecentScript(UIUtils.getActiveWorkbenchWindow(), dataSource, null);
+            return true;
+        } catch (CoreException e) {
+            DBWorkbench.getPlatformUI().showError("Open SQL editor", "Can't open SQL editor", e);
+            return false;
+        }
+    }
 
+    @Override
+    public Object openRecentScript(DBPDataSourceContainer dataSource) {
+        try {
+            OpenHandler.openNewEditor(UIUtils.getActiveWorkbenchWindow(), dataSource, null);
+            return true;
+        } catch (CoreException e) {
+            DBWorkbench.getPlatformUI().showError("Open new SQL editor", "Can't open new SQL editor", e);
+            return false;
+        }
+    }
+
+    @Override
+    public void openResource(IResource element) {
+        OpenHandler.openResource(element, UIUtils.getActiveWorkbenchWindow());
+    }
 }

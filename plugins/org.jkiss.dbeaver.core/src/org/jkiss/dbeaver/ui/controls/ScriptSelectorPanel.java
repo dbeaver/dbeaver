@@ -45,7 +45,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils.ResourceInfo;
 import org.jkiss.utils.CommonUtils;
@@ -136,7 +136,7 @@ public class ScriptSelectorPanel {
                 IFile scriptFile;
                 try {
                     scriptFile = ResourceUtils.createNewScript(rootFolder.getProject(), rootFolder, containers.length == 0 ? null : containers[0]);
-                    NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
+                    OpenHandler.openResource(scriptFile, workbenchWindow);
                 } catch (CoreException ex) {
                     log.error(ex);
                 }
@@ -258,7 +258,7 @@ public class ScriptSelectorPanel {
                 }
                 popup.dispose();
                 for (ResourceInfo ri : files) {
-                    NavigatorHandlerObjectOpen.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri);
+                    OpenHandler.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri);
                 }
             }
         });

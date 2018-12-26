@@ -58,6 +58,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         super.start(context);
 
         instance = this;
+
         Bundle bundle = getBundle();
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
