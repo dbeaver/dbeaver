@@ -711,6 +711,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         int startPos = 0;
         boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
         final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
+        int lastPos = currentPos >= docLength ? docLength - 1 : currentPos;
 
         try {
             int currentLine = document.getLineOfOffset(currentPos);
@@ -742,9 +743,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         if (offset >= 0 && isDefaultPartition(partitioner, offset)) {
                             int delimOffset = document.getLineOffset(firstLine) + offset + delim.length();
                             if (currentPos > startPos) {
-                                if (document.getLength() > delimOffset) {
+                                if (docLength > delimOffset) {
                                     boolean hasValuableChars = false;
-                                    for (int i = delimOffset; i <= currentPos; i++) {
+                                    for (int i = delimOffset; i <= lastPos; i++) {
                                         if (!Character.isWhitespace(document.getChar(i))) {
                                             hasValuableChars = true;
                                             break;
