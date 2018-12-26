@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.stream;
+package org.jkiss.dbeaver.ui.data.managers.image;
 
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.ui.IEditorPart;

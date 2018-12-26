@@ -3626,8 +3626,6 @@
             <supports kind="ROWID"/>
         </manager>
 -->
-        <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.ImageStreamValueManager" id="image" label="Image" primaryMime="octet/image"
-            description="Image viewer" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/image.png"/>
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.TextStreamValueManager" id="plaintext" label="Text" primaryMime="text/plain"
             description="Plain text" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"/>
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.XMLStreamValueManager" id="xml" label="XML" primaryMime="text/xml"

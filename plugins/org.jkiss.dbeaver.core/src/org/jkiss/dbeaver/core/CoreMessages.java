@@ -152,17 +152,7 @@ public class CoreMessages extends NLS {
 	public static String controls_column_info_panel_property_key;
 	public static String controls_driver_tree_column_connections;
 	public static String controls_driver_tree_column_name;
-	public static String controls_imageview_fit_window;
-	public static String controls_imageview_original_size;
-	public static String controls_imageview_rotate;
-	public static String controls_imageview_zoom_in;
-	public static String controls_imageview_zoom_out;
 	public static String controls_itemlist_action_copy;
-    public static String controls_locale_selector_group_locale;
-    public static String controls_locale_selector_label_country;
-    public static String controls_locale_selector_label_language;
-    public static String controls_locale_selector_label_locale;
-    public static String controls_locale_selector_label_variant;
 
 	public static String controls_querylog__ms;
 	public static String controls_querylog_action_clear_log;
@@ -729,10 +719,6 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_label_refresh_defaults_after_execute_tip;
 	public static String pref_page_sql_editor_label_clear_output_before_execute;
 	public static String pref_page_sql_editor_label_clear_output_before_execute_tip;
-	
-	public static String pref_page_target_button_use_datasource_settings;
-	public static String pref_page_target_link_show_datasource_settings;
-	public static String pref_page_target_link_show_global_settings;
 	
 	public static String pref_page_ui_general_checkbox_automatic_updates;
 	public static String pref_page_ui_general_combo_language;

@@ -152,6 +152,10 @@ public class UINavigatorMessages extends NLS {
     public static String confirm_close_entity_edit_message;
     public static String confirm_close_entity_edit_toggleMessage;
 
+    public static String pref_page_target_button_use_datasource_settings;
+    public static String pref_page_target_link_show_datasource_settings;
+    public static String pref_page_target_link_show_global_settings;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UINavigatorMessages.class);

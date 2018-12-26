@@ -25,7 +25,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
  org.eclipse.ui,
  org.eclipse.ui.views,
+ org.eclipse.mylyn.commons.ui,
+ org.eclipse.mylyn.commons.workbench,
  org.eclipse.mylyn.commons.notifications.core,
  org.eclipse.mylyn.commons.notifications.ui,
+ org.eclipse.mylyn.commons.workbench,
  org.jkiss.dbeaver.model
 

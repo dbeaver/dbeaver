@@ -54,6 +54,12 @@ public class UIMessages extends NLS {
     public static String button_clear;
     public static String button_reset_to_defaults;
 
+    public static String controls_locale_selector_group_locale;
+    public static String controls_locale_selector_label_country;
+    public static String controls_locale_selector_label_language;
+    public static String controls_locale_selector_label_locale;
+    public static String controls_locale_selector_label_variant;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
