@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,7 +45,7 @@ import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.data.dialogs.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -88,7 +87,7 @@ public class ContentValueManager extends BaseValueManager {
                             try {
                                 activeEditor.primeEditorValue(controller.getValue());
                             } catch (DBException e) {
-                                DBUserInterface.getInstance().showError("Load from file", "Error loading contents from file", e);
+                                DBWorkbench.getPlatformUI().showError("Load from file", "Error loading contents from file", e);
                             }
                         }
                     }
@@ -184,7 +183,7 @@ public class ContentValueManager extends BaseValueManager {
             });
         }
         catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     CoreMessages.model_jdbc_could_not_save_content,
                 CoreMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
                 e.getTargetException());

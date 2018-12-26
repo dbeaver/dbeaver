@@ -35,9 +35,9 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -96,7 +96,7 @@ class ScriptsExportWizardPage extends WizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        String outDir = DBeaverCore.getGlobalPreferenceStore().getString(PREF_SCRIPTS_EXPORT_OUT_DIR);
+        String outDir = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SCRIPTS_EXPORT_OUT_DIR);
         if (CommonUtils.isEmpty(outDir)) {
             outDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }
@@ -105,7 +105,7 @@ class ScriptsExportWizardPage extends WizardPage {
         placeholder.setLayout(new GridLayout(1, false));
 
         // Project list
-        scriptsNavigator = new DatabaseNavigatorTree(placeholder, DBeaverCore.getInstance().getNavigatorModel().getRoot(), SWT.BORDER | SWT.CHECK);
+        scriptsNavigator = new DatabaseNavigatorTree(placeholder, DBWorkbench.getPlatform().getNavigatorModel().getRoot(), SWT.BORDER | SWT.CHECK);
         GridData gd = new GridData(GridData.FILL_BOTH);
         scriptsNavigator.setLayoutData(gd);
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) scriptsNavigator.getViewer();
@@ -193,7 +193,7 @@ class ScriptsExportWizardPage extends WizardPage {
         }
 
         final String outputDir = directoryText.getText();
-        DBeaverCore.getGlobalPreferenceStore().setValue(PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
         return new ScriptsExportData(result, overwriteCheck.getSelection(), new File(outputDir));
     }
 

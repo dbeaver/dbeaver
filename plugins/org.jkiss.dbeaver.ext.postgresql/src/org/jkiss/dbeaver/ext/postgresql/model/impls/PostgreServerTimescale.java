@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 
 /**
- * PostgreServerGreenplum
+ * PostgreServerTimescale
  */
 public class PostgreServerTimescale extends PostgreServerExtensionBase {
 
@@ -31,6 +33,5 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
     public String getServerTypeName() {
         return "Timescale";
     }
-
 }
 

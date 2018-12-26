@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
@@ -33,13 +36,16 @@ import java.util.List;
 */
 public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
+    private static final Log log = Log.getLog(DatabaseMappingAttribute.class);
+
     public static final String TARGET_NAME_SKIP = "[skip]";
-    final DatabaseMappingContainer parent;
-    DBSAttributeBase source;
-    DBSEntityAttribute target;
-    String targetName;
-    String targetType;
-    DatabaseMappingType mappingType;
+
+    private final DatabaseMappingContainer parent;
+    private DBSAttributeBase source;
+    private DBSEntityAttribute target;
+    private String targetName;
+    private String targetType;
+    private DatabaseMappingType mappingType;
 
     DatabaseMappingAttribute(DatabaseMappingContainer parent, DBSAttributeBase source)
     {
@@ -248,5 +254,50 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     public void setTargetType(String targetType)
     {
         this.targetType = targetType;
+    }
+
+    void saveSettings(IDialogSettings settings) {
+        if (targetName != null) {
+            settings.put("targetName", targetName);
+        }
+        if (targetType != null) {
+            settings.put("targetType", targetType);
+        }
+        if (mappingType != null) {
+            settings.put("mappingType", mappingType.name());
+        }
+    }
+
+    public void loadSettings(IDialogSettings settings) {
+        targetName = settings.get("targetName");
+        targetType = settings.get("targetType");
+        if (settings.get("mappingType") != null) {
+            try {
+                DatabaseMappingType newMappingType = DatabaseMappingType.valueOf(settings.get("mappingType"));
+
+                if (!CommonUtils.isEmpty(targetName)) {
+                    DBSDataManipulator targetEntity = parent.getTarget();
+                    if (targetEntity instanceof DBSEntity) {
+                        this.target = ((DBSEntity) targetEntity).getAttribute(new VoidProgressMonitor(), targetName);
+                    }
+                }
+
+                if (target != null && newMappingType == DatabaseMappingType.create) {
+                    // Change create to existing.
+                    newMappingType = DatabaseMappingType.existing;
+                } else if (target == null && newMappingType == DatabaseMappingType.existing) {
+                    newMappingType = DatabaseMappingType.create;
+                }
+
+                setMappingType(newMappingType);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        return DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
     }
 }

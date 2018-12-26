@@ -12,7 +12,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -53,7 +53,7 @@ public class DatabaseScriptDialog extends TitleAreaDialog {
                 ((StyledText) text).setEditable(true);;
             }
         } catch (PartInitException e) {
-            DBUserInterface.getInstance().showError(getShell().getText(), null, e);
+            DBWorkbench.getPlatformUI().showError(getShell().getText(), null, e);
         }
         Composite panel = UIUtils.createPlaceholder(parent, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));

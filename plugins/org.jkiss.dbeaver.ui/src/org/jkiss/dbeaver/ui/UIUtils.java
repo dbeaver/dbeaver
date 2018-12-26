@@ -60,11 +60,11 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.bundle.UIActivator;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -77,7 +77,6 @@ import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -86,7 +85,6 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
@@ -1189,69 +1187,6 @@ public class UIUtils {
         return false;
     }
 
-    /**
-     * Eclipse hack. Disables/enabled all key bindings in specified site's part. Works only if host editor is extender of
-     * AbstractTextEditor Uses reflection because setActionActivation is private method
-     * TODO: find better way to disable key bindings or prioritize event handling to widgets
-     * 
-     * @param partSite workbench part site
-     * @param enable enable or disable
-     */
-    @Deprecated
-    public static void enableHostEditorKeyBindings(IWorkbenchPartSite partSite, boolean enable)
-    {
-        IWorkbenchPart part = partSite.getPart();
-        if (part instanceof AbstractTextEditor) {
-            AbstractTextEditor hostEditor = (AbstractTextEditor) part;
-            Control widget = hostEditor.getAdapter(Control.class);
-            if (widget == null || widget.isDisposed()) {
-                return;
-            }
-            try {
-                Method activatorMethod = AbstractTextEditor.class.getDeclaredMethod("setActionActivation", Boolean.TYPE);
-                activatorMethod.setAccessible(true);
-                activatorMethod.invoke(hostEditor, enable);
-            } catch (Throwable e) {
-                if (e instanceof InvocationTargetException) {
-                    e = ((InvocationTargetException) e).getTargetException();
-                }
-                log.warn("Can't disable text editor action activations", e);
-            }
-            //hostEditor.getEditorSite().getActionBarContributor().setActiveEditor(hostEditor);
-        }
-    }
-
-    public static void enableHostEditorKeyBindingsSupport(final IWorkbenchPartSite partSite, Control control)
-    {
-        if (!(partSite.getPart() instanceof AbstractTextEditor)) {
-            return;
-        }
-
-        final boolean[] activated = new boolean[] {false};
-        control.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (!activated[0]) {
-                    UIUtils.enableHostEditorKeyBindings(partSite, false);
-                    activated[0] = true;
-                }
-            }
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (activated[0]) {
-                    UIUtils.enableHostEditorKeyBindings(partSite, true);
-                    activated[0] = false;
-                }
-            }
-        });
-        control.addDisposeListener(e -> {
-            if (activated[0]) {
-                UIUtils.enableHostEditorKeyBindings(partSite, true);
-                activated[0] = false;
-            }
-        });
-    }
-
     public static CTabItem getTabItem(CTabFolder tabFolder, Object data)
     {
         for (CTabItem item : tabFolder.getItems()) {
@@ -1584,7 +1519,7 @@ public class UIUtils {
             PlatformUI.getWorkbench().getProgressService().runInUI(context,
                 monitor -> runnable.run(RuntimeUtils.makeMonitor(monitor)), ResourcesPlugin.getWorkspace().getRoot());
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(null, null, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(null, null, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -1732,6 +1667,16 @@ public class UIUtils {
         Point preferred = item.computeSize(size.x, size.y);
         item.setPreferredSize(preferred);
         return item;
+    }
+
+    public static Point getParentSize(Control control) {
+        for (Composite composite = control.getParent(); composite != null; composite = composite.getParent()) {
+            Point size = composite.getSize();
+            if (size.x > 0 && size.y > 0) {
+                return size;
+            }
+        }
+        return new Point(0, 0);
     }
 
     public static void resizeShell(Shell shell) {

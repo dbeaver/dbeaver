@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -51,7 +53,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
@@ -485,17 +486,12 @@ public class PostgreUtils {
     }
 
     public static PostgreServerType getServerType(DBPDriver driver) {
-        if (driver != null) {
-            String serverTypeName = CommonUtils.toString(
-                driver.getDriverParameter(PostgreConstants.PROP_SERVER_TYPE))
-                    .toUpperCase();
-            try {
-                return PostgreServerType.valueOf(serverTypeName);
-            } catch (IllegalArgumentException e) {
-                log.debug("Bad PostgreSQL server type: " + serverTypeName);
-            }
+        String serverTypeName = CommonUtils.toString(driver.getDriverParameter(PostgreConstants.PROP_SERVER_TYPE));
+        PostgreServerType serverType = PostgreServerTypeRegistry.getInstance().getServerType(serverTypeName);
+        if (serverType == null) {
+            throw new IllegalStateException("PostgreSQL server type '" + serverTypeName + "' not found");
         }
-        return PostgreServerType.POSTGRESQL;
+        return serverType;
     }
 
     public static List<PostgrePermission> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePermissionsOwner owner, @Nullable Object acl) throws DBException {

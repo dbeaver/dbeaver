@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -135,7 +135,7 @@ public class ResultSetReferenceMenu
         try {
             UIUtils.runInProgressService(refCollector);
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Table References", "Error reading referencing tables for '" + singleSource.getName() + "'", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Table References", "Error reading referencing tables for '" + singleSource.getName() + "'", e.getTargetException());
             return;
         } catch (InterruptedException e) {
             return;

@@ -37,10 +37,10 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
@@ -199,7 +199,7 @@ public class OracleCompilerDialog extends BaseDialog
             try {
                 UIUtils.runInProgressService(monitor -> performCompilation(monitor, toCompile));
             } catch (InvocationTargetException e) {
-                DBUserInterface.getInstance().showError("Compile error", null, e.getTargetException());
+                DBWorkbench.getPlatformUI().showError("Compile error", null, e.getTargetException());
             } catch (InterruptedException e) {
                 // do nothing
             }

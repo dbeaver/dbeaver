@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -26,10 +25,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -44,6 +44,10 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     public DataTransferWizard(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers) {
         this.settings = new DataTransferSettings(producers, consumers);
+        setDialogSettings(
+            UIUtils.getSettingsSection(
+                DTActivator.getDefault().getDialogSettings(),
+                RS_EXPORT_WIZARD_DIALOG_SETTINGS));
         loadSettings();
     }
 
@@ -51,21 +55,11 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         return currentSelection;
     }
 
-    private void loadSettings()
-    {
-        IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
-        setDialogSettings(section);
-
-        settings.loadFrom(UIUtils.getActiveWorkbenchWindow(), section);
-    }
-
-    public DataTransferSettings getSettings()
-    {
+    public DataTransferSettings getSettings() {
         return settings;
     }
 
-    public <T extends IDataTransferSettings> T getPageSettings(IWizardPage page, Class<T> type)
-    {
+    public <T extends IDataTransferSettings> T getPageSettings(IWizardPage page, Class<T> type) {
         return type.cast(settings.getNodeSettings(page));
     }
 
@@ -88,8 +82,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     @Nullable
     @Override
-    public IWizardPage getNextPage(IWizardPage page)
-    {
+    public IWizardPage getNextPage(IWizardPage page) {
         IWizardPage[] pages = getPages();
         int curIndex = -1;
         for (int i = 0; i < pages.length; i++) {
@@ -115,8 +108,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     @Nullable
     @Override
-    public IWizardPage getPreviousPage(IWizardPage page)
-    {
+    public IWizardPage getPreviousPage(IWizardPage page) {
         IWizardPage[] pages = getPages();
         int curIndex = -1;
         for (int i = 0; i < pages.length; i++) {
@@ -140,8 +132,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     }
 
     @Override
-    public boolean canFinish()
-    {
+    public boolean canFinish() {
         for (IWizardPage page : getPages()) {
             if (settings.isPageValid(page) && !page.isPageComplete()) {
                 return false;
@@ -156,7 +147,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     @Override
     public boolean performCancel() {
         // Save settings anyway
-        getSettings().saveTo(getDialogSettings());
+        saveSettings();
 
         return super.performCancel();
     }
@@ -164,7 +155,8 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     @Override
     public boolean performFinish() {
         // Save settings
-        getSettings().saveTo(getDialogSettings());
+        saveSettings();
+        DTActivator.getDefault().saveDialogSettings();
 
         // Start consumers
         try {
@@ -181,7 +173,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Transfer init failed", "Can't start data transfer", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Transfer init failed", "Can't start data transfer", e.getTargetException());
             return false;
         } catch (InterruptedException e) {
             return false;
@@ -192,6 +184,15 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
         // Done
         return true;
+    }
+
+    private void loadSettings() {
+        this.settings.loadFrom(
+            UIUtils.getActiveWorkbenchWindow(), getDialogSettings());
+    }
+
+    private void saveSettings() {
+        settings.saveTo(getDialogSettings());
     }
 
     private void executeJobs() {

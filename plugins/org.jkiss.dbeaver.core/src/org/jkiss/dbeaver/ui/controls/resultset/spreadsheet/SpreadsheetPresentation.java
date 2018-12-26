@@ -81,8 +81,11 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -95,6 +98,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -179,7 +183,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     Object value = activeInlineEditor.extractEditorValue();
                     valueController.updateValue(value, true);
                 } catch (DBException e) {
-                    DBUserInterface.getInstance().showError("Error extracting editor value", null, e);
+                    DBWorkbench.getPlatformUI().showError("Error extracting editor value", null, e);
                 }
             }
             spreadsheet.cancelInlineEditor();
@@ -231,7 +235,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.spreadsheet.addDisposeListener(e -> dispose());
 
         trackPresentationControl();
-        UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
     }
 
     @Override
@@ -601,7 +605,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             controller.updateEditControls();
         }
         catch (Exception e) {
-            DBUserInterface.getInstance().showError("Cannot replace cell value", null, e);
+            DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
         }
     }
 
@@ -920,7 +924,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             activeInlineEditor = valueController.getValueManager().createEditor(valueController);
         }
         catch (Exception e) {
-            DBUserInterface.getInstance().showError("Cannot edit value", null, e);
+            DBWorkbench.getPlatformUI().showError("Cannot edit value", null, e);
             return null;
         }
         if (activeInlineEditor != null) {
@@ -1724,6 +1728,29 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public Color getCellHeaderSelectionBackground(Object element) {
             return cellHeaderSelectionBackground;
+        }
+
+        @Override
+        public String getCellLinkText(Object colElement, Object rowElement) {
+            boolean recordMode = controller.isRecordMode();
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
+            ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
+            Object value = controller.getModel().getCellValue(attr, row);
+            List<DBSEntityReferrer> referrers = attr.getReferrers();
+            if (!CommonUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
+                StringBuilder text = new StringBuilder();
+                for (DBSEntityReferrer ref : referrers) {
+                    if (ref instanceof DBSEntityAssociation) {
+                        DBSEntity associatedEntity = ((DBSEntityAssociation) ref).getAssociatedEntity();
+                        if (associatedEntity != null) {
+                            if (text.length() > 0) text.append("\n");
+                            text.append(DBUtils.getObjectFullName(associatedEntity, DBPEvaluationContext.UI));
+                        }
+                    }
+                }
+                return text.toString();
+            }
+            return null;
         }
 
         @Override

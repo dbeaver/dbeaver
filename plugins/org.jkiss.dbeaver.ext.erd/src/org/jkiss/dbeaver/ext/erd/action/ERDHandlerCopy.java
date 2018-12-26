@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyObject;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCopyObject;
 
 public class ERDHandlerCopy extends NavigatorHandlerCopyObject {
     public ERDHandlerCopy() {

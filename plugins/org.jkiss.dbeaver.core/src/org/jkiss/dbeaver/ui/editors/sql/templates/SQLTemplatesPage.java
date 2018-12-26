@@ -34,9 +34,9 @@ import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.templates.AbstractTemplatesPage;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ProxyPageSite;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -142,7 +142,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     @Override
     protected IPreferenceStore getTemplatePreferenceStore()
     {
-        return new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore());
+        return new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     @Override

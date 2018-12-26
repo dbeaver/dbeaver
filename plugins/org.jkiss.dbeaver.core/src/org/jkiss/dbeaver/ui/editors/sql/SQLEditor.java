@@ -59,10 +59,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreFeatures;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -86,10 +83,9 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
@@ -110,6 +106,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.views.SQLResultsView;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -243,7 +240,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ?
-            DBeaverCore.getInstance().getProjectRegistry().getActiveProject() : file.getProject();
+            DBWorkbench.getPlatform().getProjectManager().getActiveProject() : file.getProject();
     }
 
     @Nullable
@@ -303,12 +300,16 @@ public class SQLEditor extends SQLEditorBase implements
         }
         IEditorInput input = getEditorInput();
         if (input != null) {
-            EditorUtils.setInputDataSource(input, container, true);
+            EditorUtils.setInputDataSource(input, container);
+            IFile file = EditorUtils.getFileFromInput(input);
+            if (file != null) {
+                NavigatorUtils.refreshNavigatorResource(file, container);
+            }
         }
 
         checkConnected(false, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
-                DBUserInterface.getInstance().showError("Can't connect to database", "Error connecting to datasource", status);
+                DBWorkbench.getPlatformUI().showError("Can't connect to database", "Error connecting to datasource", status);
             }
             setFocus();
         }));
@@ -320,7 +321,7 @@ public class SQLEditor extends SQLEditorBase implements
             dataSourceContainer.acquire(this);
         }
 
-        if (EditorUtils.isWriteEmbeddedBinding()) {
+        if (SQLEditorBase.isWriteEmbeddedBinding()) {
             // Patch connection reference
             UIUtils.syncExec(this::embedDataSourceAssociation);
         }
@@ -330,7 +331,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void updateDataSourceContainer() {
         DBPDataSourceContainer inputDataSource = null;
-        if (EditorUtils.isReadEmbeddedBinding()) {
+        if (SQLEditorBase.isReadEmbeddedBinding()) {
             // Try to get datasource from contents (always, no matter what )
             inputDataSource = getDataSourceFromContent();
         }
@@ -370,7 +371,7 @@ public class SQLEditor extends SQLEditorBase implements
                         public void done(IJobChangeEvent event) {
                             if (job.error != null) {
                                 releaseExecutionContext();
-                                DBUserInterface.getInstance().showError("Open context", "Can't open editor connection", job.error);
+                                DBWorkbench.getPlatformUI().showError("Open context", "Can't open editor connection", job.error);
                             } else {
                                 if (onSuccess != null) {
                                     onSuccess.run();
@@ -466,7 +467,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Remove connection association
                 document.replace(region.getOffset(), region.getLength(), "");
             } else {
-                SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
+                SQLScriptBindingType bindingType = SQLScriptBindingType.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE));
 
                 StringBuilder assocSpecLine = new StringBuilder(EMBEDDED_BINDING_PREFIX);
                 bindingType.appendSpec(dataSourceContainer, assocSpecLine);
@@ -1244,7 +1245,7 @@ public class SQLEditor extends SQLEditorBase implements
                     panelInstance = panel.createPanel();
                     panelControl = panelInstance.createPanel(resultTabs, SQLEditor.this, extraPresentation);
                 } catch (DBException e) {
-                    DBUserInterface.getInstance().showError("Panel opening error", "Can't create panel " + panel.getLabel(), e);
+                    DBWorkbench.getPlatformUI().showError("Panel opening error", "Can't create panel " + panel.getLabel(), e);
                     return;
                 }
                 extraPresentationPanels.put(panel, panelInstance);
@@ -1422,7 +1423,7 @@ public class SQLEditor extends SQLEditorBase implements
         // 1. Determine whether planner supports plan extraction
         DBCQueryPlanner planner = DBUtils.getAdapter(DBCQueryPlanner.class, getDataSource());
         if (planner == null) {
-            DBUserInterface.getInstance().showError("Execution plan", "Execution plan explain isn't supported by current datasource");
+            DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan explain isn't supported by current datasource");
             return;
         }
         DBCPlanStyle planStyle = planner.getPlanStyle();
@@ -1460,7 +1461,7 @@ public class SQLEditor extends SQLEditorBase implements
         try {
             planView.explainQueryPlan(getExecutionContext(), sqlQuery);
         } catch (DBCException e) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     CoreMessages.editors_sql_error_execution_plan_title,
                 CoreMessages.editors_sql_error_execution_plan_message,
                 e);
@@ -1516,7 +1517,7 @@ public class SQLEditor extends SQLEditorBase implements
             SQLScriptElement sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
                 //setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
-                DBUserInterface.getInstance().showError(CoreMessages.editors_sql_status_empty_query_string, CoreMessages.editors_sql_status_empty_query_string);
+                DBWorkbench.getPlatformUI().showError(CoreMessages.editors_sql_status_empty_query_string, CoreMessages.editors_sql_status_empty_query_string);
                 return;
             } else {
                 elements = Collections.singletonList(sqlQuery);
@@ -1543,7 +1544,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         catch (DBException e) {
-            DBUserInterface.getInstance().showError("Bad query", "Can't execute query", e);
+            DBWorkbench.getPlatformUI().showError("Bad query", "Can't execute query", e);
             return;
         }
         processQueries(elements, newTab, false, true, queryListener);
@@ -1555,7 +1556,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (sqlQuery instanceof SQLQuery) {
             processQueries(Collections.singletonList(sqlQuery), false, true, true, null);
         } else {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Extract data",
                     "Can't extract data from control command");
         }
@@ -1572,7 +1573,7 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 DBRProgressListener connectListener = status -> {
                     if (!status.isOK() || container == null || !container.isConnected()) {
-                        DBUserInterface.getInstance().showError(
+                        DBWorkbench.getPlatformUI().showError(
                                 CoreMessages.editors_sql_error_cant_obtain_session,
                             null,
                             status);
@@ -1589,7 +1590,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (viewer != null) {
                     viewer.setStatus(ex.getMessage(), DBPMessageType.ERROR);
                 }
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         CoreMessages.editors_sql_error_cant_obtain_session,
                     ex.getMessage());
                 return;
@@ -1608,6 +1609,7 @@ public class SQLEditor extends SQLEditorBase implements
                     targetName = query.getSingleSource().getEntityName();
                 }
                 if (ConfirmationDialog.showConfirmDialogEx(
+                    DBeaverActivator.getCoreResourceBundle(),
                     getSite().getShell(),
                     DBeaverPreferences.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
@@ -1620,6 +1622,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
             if (ConfirmationDialog.showConfirmDialogEx(
+                DBeaverActivator.getCoreResourceBundle(),
                 getSite().getShell(),
                 DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL,
                 ConfirmationDialog.CONFIRM,
@@ -1960,6 +1963,7 @@ public class SQLEditor extends SQLEditorBase implements
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
 
             if (ConfirmationDialog.showConfirmDialog(
+                DBeaverActivator.getCoreResourceBundle(),
                 null,
                 DBeaverPreferences.CONFIRM_RUNNING_QUERY_CLOSE,
                 ConfirmationDialog.QUESTION,
@@ -2008,11 +2012,11 @@ public class SQLEditor extends SQLEditorBase implements
             IFileStore fileStore = EFS.getStore(saveFile.toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
 
-            EditorUtils.setInputDataSource(input, getDataSourceContainer(), false);
+            EditorUtils.setInputDataSource(input, getDataSourceContainer());
 
             init(getEditorSite(), input);
         } catch (CoreException e) {
-            DBUserInterface.getInstance().showError("File save", "Can't open SQL editor from external file", e);
+            DBWorkbench.getPlatformUI().showError("File save", "Can't open SQL editor from external file", e);
         }
     }
 
@@ -2237,14 +2241,14 @@ public class SQLEditor extends SQLEditorBase implements
                 return;
             }
             if (curJobRunning.get() > 0) {
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         CoreMessages.editors_sql_error_cant_execute_query_title,
                     CoreMessages.editors_sql_error_cant_execute_query_message);
                 return;
             }
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext == null) {
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         CoreMessages.editors_sql_error_cant_execute_query_title,
                     CoreMessages.editors_sql_status_not_connected_to_database);
                 return;
@@ -2403,7 +2407,7 @@ public class SQLEditor extends SQLEditorBase implements
                 try {
                     sqlView = (SQLResultsView) getSite().getPage().showView(SQLResultsView.VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
                 } catch (Throwable e) {
-                    DBUserInterface.getInstance().showError("Detached results", "Can't open results view", e);
+                    DBWorkbench.getPlatformUI().showError("Detached results", "Can't open results view", e);
                 }
             }
 
@@ -3106,7 +3110,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            if (!DBeaverCore.isClosing() && resultsSash != null && !resultsSash.isDisposed()) {
+            if (!DBWorkbench.getPlatform().isShuttingDown() && resultsSash != null && !resultsSash.isDisposed()) {
                 dumpOutput(monitor);
 
                 schedule(200);

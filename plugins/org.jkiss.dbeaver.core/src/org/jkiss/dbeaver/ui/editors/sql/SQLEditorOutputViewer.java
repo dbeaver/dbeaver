@@ -26,8 +26,8 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -48,7 +48,7 @@ public class SQLEditorOutputViewer extends Composite {
 
         text = new StyledText(this, SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         text.setMargins(5, 5, 5, 5);
-        UIUtils.enableHostEditorKeyBindingsSupport(site, text);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(site, text);
         Writer out = new Writer() {
             @Override
             public void write(final char[] cbuf, final int off, final int len) throws IOException {

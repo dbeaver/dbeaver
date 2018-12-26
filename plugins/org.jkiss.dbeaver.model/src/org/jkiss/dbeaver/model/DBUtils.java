@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
@@ -35,8 +36,8 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -531,7 +532,12 @@ public final class DBUtils {
             if (pathStr.length() > 0) {
                 pathStr.append('/');
             }
-            pathStr.append(getQuotedIdentifier(obj));
+            obj = getPublicObjectContainer(obj);
+            if (obj instanceof DBPDataSourceContainer) {
+                pathStr.append(((DBPDataSourceContainer) obj).getId());
+            } else {
+                pathStr.append(getQuotedIdentifier(obj));
+            }
         }
         return pathStr.toString();
     }
@@ -1620,7 +1626,7 @@ public final class DBUtils {
                 if (!monitor.isCanceled()) {
                     // Do not recover if connection was canceled
                     InvalidateJob.invalidateDataSource(monitor, dataSource, false,
-                        () -> DBUserInterface.getInstance().openConnectionEditor(dataSource.getContainer()));
+                        () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
                     if (i < tryCount - 1) {
                         log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
                     }
@@ -1663,6 +1669,36 @@ public final class DBUtils {
             DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
             if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
                 return constraint;
+            }
+        }
+        return null;
+    }
+
+    public static List<DBPDataSourceRegistry> getAllRegistries() {
+        List<DBPDataSourceRegistry> result = new ArrayList<>();
+        for (IProject project : DBWorkbench.getPlatform().getLiveProjects()) {
+            if (project.isOpen()) {
+                DBPDataSourceRegistry registry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
+                if (registry != null) {
+                    result.add(registry);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Find data source in all available registries
+     */
+    public static DBPDataSourceContainer findDataSource(String dataSourceId) {
+        DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
+        for (IProject project : DBWorkbench.getPlatform().getLiveProjects()) {
+            DBPDataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+            if (dataSourceRegistry != null) {
+                DBPDataSourceContainer dataSourceContainer = dataSourceRegistry.getDataSource(dataSourceId);
+                if (dataSourceContainer != null) {
+                    return dataSourceContainer;
+                }
             }
         }
         return null;

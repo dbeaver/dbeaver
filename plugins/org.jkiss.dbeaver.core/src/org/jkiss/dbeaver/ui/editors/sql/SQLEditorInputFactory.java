@@ -27,7 +27,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.ByteArrayInputStream;
 
@@ -57,7 +57,7 @@ public class SQLEditorInputFactory implements IElementFactory
             return null;
         }
         // Make sure that core is initialized
-        DBeaverCore.getInstance();
+        DBWorkbench.getPlatform().getEditorsRegistry();
 
         // Get a handle to the IFile...which can be a handle
         // to a resource that does not exist in workspace

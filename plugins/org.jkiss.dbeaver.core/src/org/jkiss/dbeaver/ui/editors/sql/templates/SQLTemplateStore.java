@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -182,7 +183,7 @@ public class SQLTemplateStore extends TemplateStore {
     private static class CustomTemplatesStore extends SimplePreferenceStore {
         private CustomTemplatesStore()
         {
-            super(DBeaverCore.getGlobalPreferenceStore());
+            super(DBWorkbench.getPlatform().getPreferenceStore());
             try {
                 File configurationFile = getConfigurationFile();
                 if (configurationFile.exists()) {

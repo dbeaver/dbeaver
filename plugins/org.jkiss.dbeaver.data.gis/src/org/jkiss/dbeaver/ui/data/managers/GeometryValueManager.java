@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
+import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 
 /**
  * Geometry value manager

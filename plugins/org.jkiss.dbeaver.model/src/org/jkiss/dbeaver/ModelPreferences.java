@@ -134,6 +134,10 @@ public final class ModelPreferences
         initializeDefaultPreferences(ModelPreferences.preferences);
     }
 
+    public static Bundle getMainBundle() {
+        return mainBundle;
+    }
+
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
         // Notifications
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_ENABLED, true);

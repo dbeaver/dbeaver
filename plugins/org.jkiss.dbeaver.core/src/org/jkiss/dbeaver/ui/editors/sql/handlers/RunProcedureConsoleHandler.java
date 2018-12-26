@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
@@ -69,7 +69,7 @@ public class RunProcedureConsoleHandler extends OpenObjectConsoleHandler {
         try {
             openConsole(workbenchWindow, generator, ds, title, false, currentSelection);
         } catch (Exception e) {
-            DBUserInterface.getInstance().showError("Open console", "Can open SQL editor", e);
+            DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
         }
         return null;
     }

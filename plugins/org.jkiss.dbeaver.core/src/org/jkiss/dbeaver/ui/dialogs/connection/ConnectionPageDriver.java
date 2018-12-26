@@ -18,23 +18,21 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverGalleryViewer;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeViewer;
 
@@ -80,7 +78,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         final List<IProject> projects = DBeaverCore.getInstance().getLiveProjects();
         if (!projects.isEmpty()) {
 
-            final IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            final IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
             for (IProject project : projects) {
                 projectCombo.add(project.getName());
             }

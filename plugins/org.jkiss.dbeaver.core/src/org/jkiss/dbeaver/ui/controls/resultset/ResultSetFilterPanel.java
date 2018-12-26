@@ -52,11 +52,11 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
@@ -260,7 +260,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         // Handle all shortcuts by filters editor, not by host editor
-        UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
+        TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
 
         {
             filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
@@ -722,7 +722,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             try {
                 editControl = createObjectPanel(popup);
             } catch (PartInitException e1) {
-                DBUserInterface.getInstance().showError("Object info", "Error opening object info", e1);
+                DBWorkbench.getPlatformUI().showError("Object info", "Error opening object info", e1);
                 popup.dispose();
                 return;
             }
