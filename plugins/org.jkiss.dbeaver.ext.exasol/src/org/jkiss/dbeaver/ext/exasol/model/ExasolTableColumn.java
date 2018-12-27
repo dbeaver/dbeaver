@@ -140,7 +140,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     }
 
     public void setDataType(ExasolDataType dataType) {
-        if (!this.dataType.getTypeName().equals(dataType))
+        if (!this.dataType.getTypeName().equals(dataType.getTypeName()))
             this.changed = true;
         this.dataType = dataType;
     }
