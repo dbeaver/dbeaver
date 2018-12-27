@@ -114,13 +114,14 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
 
         IResultSetSelection rsSelection = resultSet.getSelection();
         List<ResultSetRow> rsSelectedRows = rsSelection.getSelectedRows();
-        if (rsSelectedRows.size() > 1) {
+        List<DBDAttributeBinding> rsSelectedAttributes = rsSelection.getSelectedAttributes();
+        if (rsSelectedRows.size() > 1 || rsSelectedAttributes.size() > 1) {
             List<Long> selectedRows = new ArrayList<>();
             for (ResultSetRow selectedRow : rsSelectedRows) {
                 selectedRows.add((long) selectedRow.getRowNumber());
             }
             List<String> selectedAttributes = new ArrayList<>();
-            for (DBDAttributeBinding attributeBinding : rsSelection.getSelectedAttributes()) {
+            for (DBDAttributeBinding attributeBinding : rsSelectedAttributes) {
                 selectedAttributes.add(attributeBinding.getName());
             }
 
