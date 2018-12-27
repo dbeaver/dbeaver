@@ -3,7 +3,6 @@ package org.jkiss.dbeaver.ext.greenplum.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -18,9 +17,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GreenplumSchema extends PostgreSchema {
-    private static final Log log = Log.getLog(GreenplumSchema.class);
     private GreenplumTableCache greenplumTableCache = new GreenplumTableCache();
 
     public GreenplumSchema(PostgreDatabase owner, String name, JDBCResultSet resultSet) throws SQLException {
@@ -29,10 +28,12 @@ public class GreenplumSchema extends PostgreSchema {
 
     @Override
     public Collection<? extends JDBCTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        return greenplumTableCache.getTypedObjects(monitor, this, GreenplumTable.class)
-                .stream()
-                .filter(table -> !table.isPartition())
-                .collect(Collectors.toCollection(ArrayList::new));
+        return Stream.concat(
+                greenplumTableCache.getTypedObjects(monitor, this, GreenplumExternalTable.class).stream(),
+                greenplumTableCache.getTypedObjects(monitor, this, GreenplumTable.class)
+                        .stream()
+                        .filter(table -> !table.isPartition())
+        ).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public class GreenplumTableCache extends TableCache {
@@ -42,13 +43,25 @@ public class GreenplumSchema extends PostgreSchema {
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema postgreSchema, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
-            String sqlQuery = "SELECT c.oid,d.description, c.*\n" +
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
+                                                    @NotNull PostgreSchema postgreSchema,
+                                                    @Nullable PostgreTableBase object,
+                                                    @Nullable String objectName) throws SQLException {
+            String sqlQuery = "SELECT c.oid,d.description, c.*,\n" +
+                    "CASE WHEN x.urilocation IS NOT NULL THEN array_to_string(x.urilocation, ',') ELSE '' END AS urilocation,\n" +
+                    "x.fmttype, x.fmtopts,\n" +
+                    "coalesce(x.rejectlimit, 0) AS rejectlimit,\n" +
+                    "coalesce(x.rejectlimittype, '') AS rejectlimittype,\n" +
+                    "array_to_string(x.execlocation, ',') AS execlocation,\n" +
+                    "pg_encoding_to_char(x.encoding) AS encoding,\n" +
+                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\"\n" +
                     "FROM pg_catalog.pg_class c\n" +
                     "inner join pg_catalog.pg_namespace ns\n" +
                     "\ton ns.oid = c.relnamespace\n" +
                     "LEFT OUTER JOIN pg_catalog.pg_description d\n" +
                     "\tON d.objoid=c.oid AND d.objsubid=0\n" +
+                    "left outer join pg_catalog.pg_exttable x\n" +
+                    "\ton x.reloid = c.oid\n" +
                     "left outer join pg_catalog.pg_partitions p\n" +
                     "\ton c.relname = p.partitiontablename and ns.nspname = p.schemaname\n" +
                     "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') AND p.partitiontablename is null "
