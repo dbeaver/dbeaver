@@ -45,11 +45,6 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     //region KeyWords
 
-    // TODO remove on PR review
-    // Please refer to GSpreadsheat to see available information on keywords comparision
-    // https://docs.google.com/spreadsheets/d/1Bb9b52FjyWV49yOmoDT9C85cwIXoR-xrVVPfLwSIRYk/edit?usp=sharing
-    // Regards
-
     public static String[] POSTGRE_EXTRA_KEYWORDS = new String[]{
             "ABSENT",
             "ACCORDING",
@@ -237,54 +232,35 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     //region FUNCTIONS KW
 
-    /* Commented out elements are already present in SQL and PGSQL*/
     public static String[] POSTGRE_FUNCTIONS_AGGREGATE = new String[]{
             "ARRAY_AGG",
-            /*"AVG",*/
             "BIT_AND",
             "BIT_OR",
             "BOOL_AND",
             "BOOL_OR",
-            /*"COUNT",*/
             "EVERY",
             "JSON_AGG",
             "JSONB_AGG",
             "JSON_OBJECT_AGG",
             "JSONB_OBJECT_AGG",
-            /*"MAX",
-            "MIN",*/
             "MODE",
             "STRING_AGG",
-            /*"SUM",*/
             "XMLAGG",
             "CORR",
             "COVAR_POP",
             "COVAR_SAMP",
-            /*"REGR_AVGX",
-            "REGR_AVGY",
-            "REGR_COUNT",
-            "REGR_INTERCEPT",
-            "REGR_R2",
-            "REGR_SLOPE",
-            "REGR_SXX",
-            "REGR_SXY",
-            "REGR_SYY",*/
             "STDDEV",
             "STDDEV_POP",
             "STDDEV_SAMP",
             "VARIANCE",
             "VAR_POP",
             "VAR_SAMP"
-            /*,
-            "PERCENTILE_CONT",
-            "PERCENTILE_DISC"*/
     };
 
     public static String[] POSTGRE_FUNCTIONS_WINDOW = new String[]{
             "ROW_NUMBER",
             "RANK",
             "DENSE_RANK",
-            /*"PERCENT_RANK",*/
             "CUME_DIST",
             "NTILE",
             "LAG",
@@ -296,53 +272,31 @@ public class PostgreDialect extends JDBCSQLDialect {
 
 
     public static String[] POSTGRE_FUNCTIONS_MATH = new String[]{
-            /*"ABS",
-            "ACOS",*/
             "ACOSD",
-            /*"ASIN",*/
             "ASIND",
-            /*"ATAN",
-            "ATAN2",*/
             "ATAN2D",
             "ATAND",
             "CBRT",
             "CEIL",
             "CEILING",
-            /*"COS",*/
             "COSD",
-           /* "COT",*/
             "COTD",
-            /*"DEGREES",*/
             "DIV",
             "EXP",
-            /*"FLOOR",*/
             "LN",
-            /*"LOG",*/
             "MOD",
-            /*"PI",
-            "POWER",
-            "RADIANS",*/
             "RANDOM",
-            /*"ROUND",*/
             "SCALE",
             "SETSEED",
-            /*"SIGN",
-            "SIN",*/
             "SIND",
-            /*"SQRT",
-            "TAN",*/
             "TAND",
             "TRUNC",
             "WIDTH_BUCKET"
     };
     public static String[] POSTGRE_FUNCTIONS_STRING = new String[]{
-            /*"ASCII",*/
             "BIT_LENGTH",
             "BTRIM",
-            /*"CHAR_LENGTH",
-            "CHARACTER_LENGTH",*/
             "CHR",
-            /*"CONCAT",*/
             "CONCAT_WS",
             "CONVERT",
             "CONVERT_FROM",
@@ -352,11 +306,8 @@ public class PostgreDialect extends JDBCSQLDialect {
             "INITCAP",
             "LEFT",
             "LENGTH",
-            /*"LOWER",*/
             "LPAD",
-            /*"LTRIM",*/
             "MD5",
-            /*"OCTET_LENGTH",*/
             "OVERLAY",
             "PARSE_IDENT",
             "PG_CLIENT_ENCODING",
@@ -369,22 +320,17 @@ public class PostgreDialect extends JDBCSQLDialect {
             "REGEXP_REPLACE",
             "REGEXP_SPLIT_TO_ARRAY",
             "REGEXP_SPLIT_TO_TABLE",
-            /*"REPEAT",*/
             "REPLACE",
             "REVERSE",
             "RIGHT",
             "RPAD",
-            /*"RTRIM",*/
             "SPLIT_PART",
             "STRPOS",
-            /*"SUBSTR",*/
             "SUBSTRING",
             "TO_ASCII",
             "TO_HEX",
             "TRANSLATE",
             "TREAT",
-            /*"TRIM",
-            "UPPER"*/
     };
 
     public static String[] POSTGRE_FUNCTIONS_DATETIME = new String[]{
@@ -401,7 +347,6 @@ public class PostgreDialect extends JDBCSQLDialect {
             "MAKE_TIME",
             "MAKE_TIMESTAMP",
             "MAKE_TIMESTAMPTZ",
-            /*"NOW",*/
             "STATEMENT_TIMESTAMP",
             "TIMEOFDAY",
             "TRANSACTION_TIMESTAMP"
@@ -654,7 +599,6 @@ public class PostgreDialect extends JDBCSQLDialect {
     };
 
     public static String[] POSTGRE_FUNCTIONS_BINARY_STRING = new String[]{
-            /*"OCTET_LENGTH",*/
             "GET_BIT",
             "GET_BYTE",
             "SET_BIT",
