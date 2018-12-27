@@ -21,9 +21,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 /**
  * Project handler
@@ -40,7 +40,7 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     @Override
     public int getFeatures(IResource resource)
     {
-        if (resource != DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {
+        if (resource != DBWorkbench.getPlatform().getProjectManager().getActiveProject()) {
             return FEATURE_DELETE | FEATURE_RENAME;
         }
         return FEATURE_RENAME;

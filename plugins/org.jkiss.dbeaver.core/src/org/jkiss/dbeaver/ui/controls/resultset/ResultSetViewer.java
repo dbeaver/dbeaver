@@ -78,10 +78,13 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
@@ -91,6 +94,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -710,7 +714,7 @@ public class ResultSetViewer extends Viewer
             }
             savePresentationSettings();
         } catch (Throwable e1) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Presentation switch",
                 "Can't switch presentation",
                 e1);
@@ -828,7 +832,7 @@ public class ResultSetViewer extends Viewer
         try {
             panel = panelDescriptor.createInstance();
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Can't show panel", "Can't create panel '" + id + "'", e);
+            DBWorkbench.getPlatformUI().showError("Can't show panel", "Can't create panel '" + id + "'", e);
             return false;
         }
         activePanels.put(id, panel);
@@ -969,6 +973,18 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    boolean isPanelVisible(String panelId) {
+        return getPanelTab(panelId) != null;
+    }
+
+    void closePanel(String panelId) {
+        CTabItem panelTab = getPanelTab(panelId);
+        if (panelTab != null) {
+            panelTab.dispose();
+            removePanel(panelId);
+        }
+    }
+
     void toggleVerticalLayout() {
         PresentationSettings settings = getPresentationSettings();
         settings.verticalLayout = !settings.verticalLayout;
@@ -980,12 +996,59 @@ public class ResultSetViewer extends Viewer
         List<IContributionItem> items = new ArrayList<>();
 
         for (final ResultSetPanelDescriptor panel : availablePanels) {
-            items.add(new ActionContributionItem(new PanelToggleAction(panel)));
+            CommandContributionItemParameter params = new CommandContributionItemParameter(
+                site,
+                panel.getId(),
+                ResultSetHandlerTogglePanel.CMD_TOGGLE_PANEL,
+                CommandContributionItem.STYLE_CHECK
+            );
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put(ResultSetHandlerTogglePanel.PARAM_PANEL_ID, panel.getId());
+            params.parameters = parameters;
+            items.add(new CommandContributionItem(params));
         }
         items.add(new Separator());
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
         return items;
+    }
+
+    MenuManager fillOpenWithMenu() {
+        MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
+
+        ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
+
+        List<DataTransferProcessorDescriptor> appProcessors = new ArrayList<>();
+
+        for (final DataTransferNodeDescriptor consumerNode : DataTransferRegistry.getInstance().getAvailableConsumers(Collections.singleton(dataContainer))) {
+            for (DataTransferProcessorDescriptor processor : consumerNode.getProcessors()) {
+                if (processor.getAppFileExtension() != null) {
+                    appProcessors.add(processor);
+                }
+            }
+        }
+
+        appProcessors.sort(Comparator.comparingInt(DataTransferProcessorDescriptor::getOrder));
+
+        for (DataTransferProcessorDescriptor processor : appProcessors) {
+            CommandContributionItemParameter params = new CommandContributionItemParameter(
+                site,
+                processor.getId(),
+                ResultSetHandlerOpenWith.CMD_OPEN_WITH,
+                CommandContributionItem.STYLE_RADIO
+            );
+            params.label = processor.getAppName();
+            if (processor.getIcon() != null) {
+                params.icon = DBeaverIcons.getImageDescriptor(processor.getIcon());
+            }
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, processor.getFullId());
+            params.parameters = parameters;
+            openWithMenu.add(new CommandContributionItem(params));
+        }
+
+        return openWithMenu;
     }
 
     private void addDefaultPanelActions() {
@@ -1197,8 +1260,11 @@ public class ResultSetViewer extends Viewer
             navToolbar.add(new Separator());
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
-            navToolbar.createControl(statusBar);
             navToolbar.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
+            navToolbar.createControl(statusBar);
+
+            //filtersMenu.add(new ToggleServerSideOrderingAction());
+
             toolbarList.add(navToolbar);
         }
         {
@@ -1217,7 +1283,7 @@ public class ResultSetViewer extends Viewer
                     "org.jkiss.dbeaver.core.resultset.panels",
                     ResultSetHandlerMain.CMD_TOGGLE_PANELS,
                     CommandContributionItem.STYLE_PULLDOWN);
-                ciParam.label = "Panels";
+                ciParam.label = CoreMessages.controls_resultset_config_panels;
                 ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
                 configToolbar.add(new CommandContributionItem(ciParam));
             }
@@ -1237,6 +1303,27 @@ public class ResultSetViewer extends Viewer
         {
             ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             addToolbar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+
+/*
+            if (false) {
+                CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
+                    site,
+                    "org.jkiss.dbeaver.core.resultset.openWith",
+                    ResultSetHandlerOpenWith.CMD_OPEN_WITH,
+                    CommandContributionItem.STYLE_PULLDOWN);
+                ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
+                DataTransferProcessorDescriptor activeProcessor = ResultSetHandlerOpenWith.getDefaultProcessor();
+                if (activeProcessor != null) {
+                    ciParam.label = activeProcessor.getAppName();
+                    ciParam.icon = DBeaverIcons.getImageDescriptor(activeProcessor.getIcon());
+                }
+                Map<String, String> params = new HashMap<>();
+                //params.put(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, "stream:stream.xlsx");
+                ciParam.parameters = params;
+                addToolbar.add(new CommandContributionItem(ciParam));
+            }
+*/
+
             addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
@@ -1608,7 +1695,6 @@ public class ResultSetViewer extends Viewer
     void appendData(List<Object[]> rows)
     {
         model.appendData(rows);
-        activePresentation.refreshData(false, true, true);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
@@ -1974,6 +2060,8 @@ public class ResultSetViewer extends Viewer
                     navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COUNT));
                 }
                 navigateMenu.add(new Separator());
+                navigateMenu.add(new ToggleRefreshOnScrollingAction());
+                navigateMenu.add(new Separator());
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
                 navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
 
@@ -2040,9 +2128,10 @@ public class ResultSetViewer extends Viewer
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && model.hasData()) {
             manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
+            manager.add(fillOpenWithMenu());
         }
         manager.add(new GroupMarker("results_export"));
-        manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
+        manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
         if (dataContainer != null && model.hasData()) {
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
@@ -2308,7 +2397,7 @@ public class ResultSetViewer extends Viewer
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
             DBDAttributeBinding ownBinding = model.getAttributeBinding(ownAttr.getAttribute());
             if (ownBinding == null) {
-                DBUserInterface.getInstance().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
+                DBWorkbench.getPlatformUI().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
                 return;
             }
 
@@ -2615,7 +2704,7 @@ public class ResultSetViewer extends Viewer
             dataReceiver.setNextSegmentRead(false);
             runDataPump(dataContainer, dataFilter, 0, segmentSize, -1, true, false, finalizer);
         } else {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Error executing query",
                 dataContainer == null ?
                     "Viewer detached from data source" :
@@ -2848,7 +2937,7 @@ public class ResultSetViewer extends Viewer
                         final boolean metadataChanged = model.isMetadataChanged();
                         if (error != null) {
                             setStatus(error.getMessage(), DBPMessageType.ERROR);
-                            DBUserInterface.getInstance().showError(
+                            DBWorkbench.getPlatformUI().showError(
                                     "Error executing query",
                                 "Query execution failed",
                                 error);
@@ -2946,7 +3035,7 @@ public class ResultSetViewer extends Viewer
             };
             return persister.applyChanges(monitor, false, applyListener);
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Apply changes error", "Error saving changes in database", e);
+            DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
             return false;
         }
     }
@@ -2972,7 +3061,7 @@ public class ResultSetViewer extends Viewer
             persister.applyChanges(monitor, true, null);
             return persister.getScript();
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("SQL script generate error", "Error saving changes in database", e);
+            DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);
             return Collections.emptyList();
         }
     }
@@ -3485,10 +3574,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class ToggleServerSideOrderingAction extends Action {
-        ToggleServerSideOrderingAction()
-        {
-            super(CoreMessages.pref_page_database_resultsets_label_server_side_order);
+    private abstract class ToggleConnectionPreferenceAction extends Action {
+        private final String prefId;
+        ToggleConnectionPreferenceAction(String prefId, String title) {
+            super(title);
+            this.prefId = prefId;
         }
 
         @Override
@@ -3500,7 +3590,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isChecked()
         {
-            return getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
+            return getPreferenceStore().getBoolean(prefId);
         }
 
         @Override
@@ -3508,8 +3598,20 @@ public class ResultSetViewer extends Viewer
         {
             DBPPreferenceStore preferenceStore = getPreferenceStore();
             preferenceStore.setValue(
-                DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE,
-                !preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
+                prefId,
+                !preferenceStore.getBoolean(prefId));
+        }
+    }
+
+    private class ToggleServerSideOrderingAction extends ToggleConnectionPreferenceAction {
+        ToggleServerSideOrderingAction() {
+            super(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, CoreMessages.pref_page_database_resultsets_label_server_side_order);
+        }
+    }
+
+    private class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
+        ToggleRefreshOnScrollingAction() {
+            super(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling);
         }
     }
 
@@ -3817,7 +3919,7 @@ public class ResultSetViewer extends Viewer
                 vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
                 updateColors(vEntity);
             } catch (IllegalStateException e) {
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         "Row color",
                     "Can't set row color",
                     e);
@@ -3995,87 +4097,5 @@ public class ResultSetViewer extends Viewer
         boolean panelsVisible;
         boolean verticalLayout;
     }
-
-    private class PanelToggleAction extends Action {
-        private final ResultSetPanelDescriptor panel;
-
-        public PanelToggleAction(ResultSetPanelDescriptor panel) {
-            super(panel.getLabel(), Action.AS_CHECK_BOX);
-            this.panel = panel;
-            setToolTipText(panel.getDescription());
-            // Icons turns menu into mess - checkboxes are much better
-            //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
-        }
-
-        @Override
-        public boolean isChecked() {
-            return activePanels.containsKey(panel.getId());
-        }
-
-        @Override
-        public void run() {
-            if (isPanelsVisible() && isChecked()) {
-                CTabItem panelTab = getPanelTab(panel.getId());
-                if (panelTab != null) {
-                    panelTab.dispose();
-                    removePanel(panel.getId());
-                }
-            } else {
-                activatePanel(panel.getId(), true, true);
-            }
-        }
-    }
-
-    private class ToolbarToggleAction extends Action {
-        private final String toolbarId;
-
-        public ToolbarToggleAction(String toolbarId, String toolbarLabel) {
-            super(toolbarLabel, Action.AS_CHECK_BOX);
-            this.toolbarId = toolbarId;
-            //setToolTipText(panel.getDescription());
-        }
-
-        @Override
-        public boolean isChecked() {
-            return activePanels.containsKey(toolbarId);
-        }
-
-        @Override
-        public void run() {
-/*
-            if (isPanelsVisible() && isChecked()) {
-                CTabItem panelTab = getPanelTab(panel.getId());
-                if (panelTab != null) {
-                    panelTab.dispose();
-                    removePanel(panel.getId());
-                }
-            } else {
-                activatePanel(panel.getId(), true, true);
-            }
-*/
-        }
-    }
-
-    /*
-    public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
-        IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
-            targetNode,
-            DatabaseDataEditor.class.getName(),
-            Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
-            DBeaverUI.getActiveWorkbenchWindow()
-        );
-
-        if (entityEditor instanceof MultiPageEditorPart) {
-            Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
-            if (selectedPage instanceof IResultSetContainer) {
-                ResultSetViewer rsv = (ResultSetViewer) ((IResultSetContainer) selectedPage).getResultSetController();
-                if (rsv != null && !rsv.isRefreshInProgress() && !newFilter.equals(rsv.getModel().getDataFilter())) {
-                    // Set filter directly
-                    rsv.refreshWithFilter(newFilter);
-                }
-            }
-        }
-    }
-*/
 
 }

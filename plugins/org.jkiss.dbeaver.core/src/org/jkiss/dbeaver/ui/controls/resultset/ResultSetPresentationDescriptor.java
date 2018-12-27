@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.MimeType;

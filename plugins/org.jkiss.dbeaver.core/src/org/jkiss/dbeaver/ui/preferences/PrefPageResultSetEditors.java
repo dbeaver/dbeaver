@@ -61,7 +61,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     public PrefPageResultSetEditors()
     {
         super();
-//        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
+//        setPreferenceStore(DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     @Override

@@ -17,18 +17,16 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -85,7 +83,7 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected void performDefaults()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         logsDebugEnabled.setSelection(store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
         logsDebugLocation.setText(store.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
@@ -96,7 +94,7 @@ public class PrefPageErrorLogs extends AbstractPrefPage implements IWorkbenchPre
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         store.setValue(DBeaverPreferences.LOGS_DEBUG_ENABLED, logsDebugEnabled.getSelection());
         store.setValue(DBeaverPreferences.LOGS_DEBUG_LOCATION, logsDebugLocation.getText());

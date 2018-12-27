@@ -51,9 +51,9 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -865,7 +865,7 @@ public class DataSourceDescriptor
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver());
 
             monitor.subTask("Execute process " + processDescriptor.getName());
-            DBUserInterface.getInstance().executeProcess(processDescriptor);
+            DBWorkbench.getPlatformUI().executeProcess(processDescriptor);
 
             {
                 // Run output grab job

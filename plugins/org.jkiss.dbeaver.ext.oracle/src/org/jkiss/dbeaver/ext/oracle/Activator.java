@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ext.oracle;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.osgi.framework.BundleContext;
 
@@ -49,13 +49,13 @@ public class Activator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
         PrefUtils.setDefaultPreferenceValue(
-			DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
+			DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
         PrefUtils.setDefaultPreferenceValue(
-			DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_DBMS_OUTPUT, true);
+			DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DBMS_OUTPUT, true);
 		PrefUtils.setDefaultPreferenceValue(
-			DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS, true);
+			DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS, true);
 		PrefUtils.setDefaultPreferenceValue(
-			DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING, true);
+			DBWorkbench.getPlatform().getPreferenceStore(), OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING, true);
     }
 
 	/*

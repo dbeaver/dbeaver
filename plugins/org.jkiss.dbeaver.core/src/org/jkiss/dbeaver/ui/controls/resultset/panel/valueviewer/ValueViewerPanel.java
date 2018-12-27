@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -39,12 +38,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
@@ -150,7 +149,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
     }
 
     @Override
-    public void contributeActions(ToolBarManager manager) {
+    public void contributeActions(IContributionManager manager) {
         fillToolBar(manager);
     }
 
@@ -209,7 +208,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             try {
                 valueEditor = valueManager.createEditor(previewController);
             } catch (Throwable e) {
-                DBUserInterface.getInstance().showError("Value preview", "Can't create value viewer", e);
+                DBWorkbench.getPlatformUI().showError("Value preview", "Can't create value viewer", e);
                 return;
             }
             if (valueEditor != null) {
@@ -292,7 +291,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
             previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
-            DBUserInterface.getInstance().showError("Value apply", "Can't apply edited value", e);
+            DBWorkbench.getPlatformUI().showError("Value apply", "Can't apply edited value", e);
         } finally {
             valueSaving = false;
         }

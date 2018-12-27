@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
@@ -47,7 +47,7 @@ public class ResourcePropertyTester extends PropertyTester
             return false;
         }
         IResource resource = (IResource)receiver;
-        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
         DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
         if (handler == null) {
             return false;
@@ -65,7 +65,7 @@ public class ResourcePropertyTester extends PropertyTester
             case PROP_CAN_SET_ACTIVE:
                 return resource instanceof IProject && resource != projectRegistry.getActiveProject();
             case PROP_TYPE:
-                final DBPResourceHandler resourceHandler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+                final DBPResourceHandler resourceHandler = DBWorkbench.getPlatform().getProjectManager().getResourceHandler(resource);
                 return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
         }
         return false;

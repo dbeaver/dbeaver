@@ -184,7 +184,7 @@ public class DBeaverCore implements DBPPlatform {
         // Validate that UI was initialized
         DBeaverUI.getInstance();
 
-        DBPPreferenceStore prefsStore = getGlobalPreferenceStore();
+        DBPPreferenceStore prefsStore = getPreferenceStore();
         //' Global pref events forwarder
         prefsStore.addPropertyChangeListener(event -> {
             // Forward event to all data source preferences
@@ -388,7 +388,7 @@ public class DBeaverCore implements DBPPlatform {
             this.language = language;
             // This property is fake. But we set it to trigger property change listener
             // which will ask to restart workbench.
-            getGlobalPreferenceStore().setValue(DBeaverPreferences.PLATFORM_LANGUAGE, language.getCode());
+            getPreferenceStore().setValue(DBeaverPreferences.PLATFORM_LANGUAGE, language.getCode());
         } catch (AccessDeniedException e) {
             throw new DBException("Can't save startup configuration - access denied.\n" +
                 "You could try to change national locale manually in '" + iniFile.getAbsolutePath() + "'. Refer to readme.txt file for details.", e);
@@ -476,7 +476,7 @@ public class DBeaverCore implements DBPPlatform {
     @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
-        return getGlobalPreferenceStore();
+        return DBeaverActivator.getInstance().getPreferences();
     }
 
     @NotNull
@@ -530,6 +530,11 @@ public class DBeaverCore implements DBPPlatform {
             }
         }
         return tempFolder;
+    }
+
+    @Override
+    public File getConfigurationFile(String fileName) {
+        return DBeaverActivator.getConfigurationFile(fileName);
     }
 
     @Override

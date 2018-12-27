@@ -80,7 +80,7 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
@@ -642,7 +642,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         int divPos = filePath.lastIndexOf('.');
         if (divPos == -1) {
-            DBUserInterface.getInstance().showError("ERD export", "No file extension was specified");
+            DBWorkbench.getPlatformUI().showError("ERD export", "No file extension was specified");
             return;
         }
         String ext = filePath.substring(divPos + 1);
@@ -654,7 +654,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
         }
         if (targetFormat == null) {
-            DBUserInterface.getInstance().showError("ERD export", "No export format correspond to file extension '" + ext + "'");
+            DBWorkbench.getPlatformUI().showError("ERD export", "No export format correspond to file extension '" + ext + "'");
             return;
         }
 
@@ -665,7 +665,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
             formatHandler.exportDiagram(getDiagram(), figure, getDiagramPart(), outFile);
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("ERD export failed", null, e);
+            DBWorkbench.getPlatformUI().showError("ERD export failed", null, e);
         }
     }
 
@@ -995,7 +995,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         }
                         MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[messageStatuses.size()]), null, null);
 
-                        DBUserInterface.getInstance().showError(
+                        DBWorkbench.getPlatformUI().showError(
                                 "Diagram loading errors",
                             "Error(s) occurred during diagram loading. If these errors are recoverable then fix errors and then refresh/reopen diagram",
                             status);

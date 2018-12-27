@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
@@ -81,7 +80,7 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
         try {
             openConsole(workbenchWindow, generator, ds, title, !entities.isEmpty(), currentSelection);
         } catch (Exception e) {
-            DBUserInterface.getInstance().showError("Open console", "Can open SQL editor", e);
+            DBWorkbench.getPlatformUI().showError("Open console", "Can open SQL editor", e);
         }
         return null;
     }

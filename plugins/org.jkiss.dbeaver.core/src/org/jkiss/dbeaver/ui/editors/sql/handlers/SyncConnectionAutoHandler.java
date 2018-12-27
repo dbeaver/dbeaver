@@ -21,9 +21,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 
 import java.util.Map;
 
@@ -37,13 +37,13 @@ public class SyncConnectionAutoHandler extends AbstractHandler implements IEleme
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
-        prefs.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE,
-            !prefs.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
+        prefs.setValue(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE,
+            !prefs.getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
         return null;
     }
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-        element.setChecked(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
+        element.setChecked(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
     }
 }

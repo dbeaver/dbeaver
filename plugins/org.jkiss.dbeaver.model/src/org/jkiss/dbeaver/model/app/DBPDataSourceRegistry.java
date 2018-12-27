@@ -68,6 +68,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     List<? extends DBPDataSourceFolder> getRootFolders();
 
+    DBPDataSourceFolder getFolder(String path);
+
     DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);

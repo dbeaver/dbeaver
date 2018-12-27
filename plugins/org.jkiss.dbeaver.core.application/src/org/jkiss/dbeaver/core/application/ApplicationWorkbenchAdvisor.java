@@ -103,7 +103,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 /*
         // Set default resource encoding to UTF-8
-        String defEncoding = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
+        String defEncoding = DBWorkbench.getPlatform().getPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
         if (CommonUtils.isEmpty(defEncoding)) {
             defEncoding = GeneralUtils.UTF8_ENCODING;
         }
@@ -154,7 +154,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
                 }
             }
         };
-        DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(settingsChangeListener);
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(settingsChangeListener);
 */
 
     }
@@ -187,7 +187,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     @Override
     public boolean preShutdown() {
-        //DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(settingsChangeListener);
+        //DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(settingsChangeListener);
 
         if (!saveAndCleanup()) {
             // User rejected to exit

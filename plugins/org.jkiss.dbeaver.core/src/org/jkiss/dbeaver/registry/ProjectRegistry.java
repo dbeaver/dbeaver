@@ -23,12 +23,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverNature;
+import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
@@ -37,16 +39,16 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManager {
     private static final Log log = Log.getLog(ProjectRegistry.class);
 
-    public static final String RESOURCE_ROOT_FOLDER_NODE = "resourceRootFolder";
-
     private static final String PROP_PROJECT_ACTIVE = "project.active";
     private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
-    private static final Map<IProject, IEclipsePreferences> projectPreferences = new HashMap<>();
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
 
@@ -80,7 +82,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         throws DBException
     {
         final DBeaverCore core = DBeaverCore.getInstance();
-        String activeProjectName = DBeaverCore.getGlobalPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        String activeProjectName = DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         List<IProject> projects = core.getLiveProjects();
 
@@ -291,9 +293,14 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         return dataSourceRegistry;
     }
 
-    public ResourceHandlerDescriptor[] getResourceHandlerDescriptors()
+    @Override
+    public DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors()
     {
-        return handlerDescriptors.toArray(new ResourceHandlerDescriptor[handlerDescriptors.size()]);
+        DBPResourceHandlerDescriptor[] result = new DBPResourceHandlerDescriptor[handlerDescriptors.size()];
+        for (int i = 0; i < handlerDescriptors.size(); i++) {
+            result[i] = handlerDescriptors.get(i);
+        }
+        return result;
     }
 
     public DataSourceRegistry getActiveDataSourceRegistry()
@@ -318,7 +325,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     {
         final IProject oldValue = this.activeProject;
         this.activeProject = project;
-        DBeaverCore.getGlobalPreferenceStore().setValue(PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
 
         GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_ACTIVE_PROJECT);
 
@@ -454,20 +461,6 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         } catch (Exception e) {
             log.error("Error saving external files properties", e);
         }
-    }
-
-    public static IEclipsePreferences getResourceHandlerPreferences(IProject project, String node) {
-        IEclipsePreferences projectSettings = getProjectPreferences(project);
-        return (IEclipsePreferences) projectSettings.node(node);
-    }
-
-    public static synchronized IEclipsePreferences getProjectPreferences(IProject project) {
-        IEclipsePreferences preferences = projectPreferences.get(project);
-        if (preferences == null) {
-            preferences = new ProjectScope(project).getNode("org.jkiss.dbeaver.project.resources");
-            projectPreferences.put(project, preferences);
-        }
-        return preferences;
     }
 
 }

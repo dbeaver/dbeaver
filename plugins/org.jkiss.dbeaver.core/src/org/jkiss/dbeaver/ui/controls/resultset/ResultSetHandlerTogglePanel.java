@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.core.commands.IParameterValues;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,7 +36,7 @@ import java.util.Map;
 public class ResultSetHandlerTogglePanel extends AbstractHandler implements IElementUpdater {
 
     public static final String CMD_TOGGLE_PANEL = "org.jkiss.dbeaver.core.resultset.grid.togglePanel";
-    private static final String PARAM_PANEL_ID = "panelId";
+    public static final String PARAM_PANEL_ID = "panelId";
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
@@ -42,23 +45,23 @@ public class ResultSetHandlerTogglePanel extends AbstractHandler implements IEle
         if (resultSet == null) {
             return null;
         }
+        String panelId = event.getParameter(PARAM_PANEL_ID);
+        if (panelId == null) {
+            return null;
+        }
         switch (event.getCommand().getId()) {
             case CMD_TOGGLE_PANEL:
-                toggleResultsPanel(resultSet, HandlerUtil.getActiveShell(event), event.getParameter(PARAM_PANEL_ID));
+                toggleResultsPanel(resultSet, panelId);
                 break;
         }
         return null;
     }
 
-    private static void toggleResultsPanel(IResultSetController resultSet, Shell shell, String panelId) {
-        boolean isVisible = false;
-        IResultSetPanel visiblePanel = resultSet.getVisiblePanel();
-        if (visiblePanel != null) {
-            String activePanelId = ((ResultSetViewer) resultSet).getActivePanelId();
-            isVisible = CommonUtils.equalObjects(activePanelId, panelId);
-        }
+    private static void toggleResultsPanel(IResultSetController resultSet, String panelId) {
+        boolean isVisible = ((ResultSetViewer)resultSet).isPanelVisible(panelId);
+
         if (isVisible) {
-            ((ResultSetViewer)resultSet).closeActivePanel();
+            ((ResultSetViewer)resultSet).closePanel(panelId);
         } else {
             resultSet.activatePanel(panelId, true, true);
         }
@@ -67,5 +70,35 @@ public class ResultSetHandlerTogglePanel extends AbstractHandler implements IEle
     @Override
     public void updateElement(UIElement element, Map parameters) {
         // Put panel name in command label
+        String panelId = (String) parameters.get(PARAM_PANEL_ID);
+        if (panelId != null) {
+            ResultSetPanelDescriptor panel = ResultSetPresentationRegistry.getInstance().getPanel(panelId);
+            if (panel != null) {
+                element.setText(panel.getLabel());
+                if (!CommonUtils.isEmpty(panel.getDescription())) {
+                    element.setTooltip(panel.getDescription());
+                }
+            }
+            IWorkbenchPart workbenchPart = element.getServiceLocator().getService(IWorkbenchPart.class);
+            if (workbenchPart != null) {
+                IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(workbenchPart);
+                if (resultSet != null) {
+                    element.setChecked(((ResultSetViewer)resultSet).isPanelVisible(panelId));
+                }
+            }
+        }
+    }
+
+    public static class PanelIdParameterValues implements IParameterValues {
+
+        @Override
+        public Map<String,String> getParameterValues() {
+            final Map<String,String> values = new HashMap<>();
+            for (ResultSetPanelDescriptor pd : ResultSetPresentationRegistry.getInstance().getAllPanels()) {
+                values.put(pd.getLabel(), pd.getId());
+            }
+            return values;
+        }
+
     }
 }

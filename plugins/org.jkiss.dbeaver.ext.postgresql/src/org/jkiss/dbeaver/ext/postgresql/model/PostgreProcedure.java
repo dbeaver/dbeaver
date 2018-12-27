@@ -55,6 +55,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private static final String CAT_PROPS = "Properties";
     private static final String CAT_STATS = "Statistics";
 
+    public static final float DEFAULT_EST_ROWS = 1000.0f;
+    public static final float DEFAULT_COST = 100.0f;
+
     public enum ProcedureVolatile {
         i("IMMUTABLE"),
         s("STABLE"),
@@ -243,6 +246,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.description = JDBCUtils.safeGetString(dbResult, "description");
 
         this.acl = JDBCUtils.safeGetObject(dbResult, "proacl");
+
+        this.config = JDBCUtils.safeGetArray(dbResult, "proconfig");
     }
 
     @NotNull
@@ -278,6 +283,16 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         List<PostgreProcedureParameter> result = new ArrayList<>();
         for (PostgreProcedureParameter param : params) {
             if (param.getParameterKind().isInput()) {
+                result.add(param);
+            }
+        }
+        return result;
+    }
+
+    public List<PostgreProcedureParameter> getParameters(DBSProcedureParameterKind kind) {
+        List<PostgreProcedureParameter> result = new ArrayList<>();
+        for (PostgreProcedureParameter param : params) {
+            if (param.getParameterKind() == kind) {
                 result.add(param);
             }
         }
@@ -374,17 +389,31 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return procDDL;
     }
 
-    private String generateFunctionDeclaration(DBRProgressMonitor monitor, PostgreLanguage language, String returnType, String functionBody) throws DBException {
+    private String generateFunctionDeclaration(DBRProgressMonitor monitor, PostgreLanguage language, String returnTypeName, String functionBody) throws DBException {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder decl = new StringBuilder();
         decl.append("CREATE OR REPLACE FUNCTION ").append(getFullQualifiedSignature()).append(lineSeparator);
-        if (!CommonUtils.isEmpty(returnType)) {
+        if (!CommonUtils.isEmpty(returnTypeName)) {
             decl.append("\tRETURNS ");
             if (isReturnsSet()) {
-                decl.append("SETOF ");
+                // Check for TABLE parameters and construct
+                List<PostgreProcedureParameter> tableParams = getParameters(DBSProcedureParameterKind.TABLE);
+                if (!tableParams.isEmpty()) {
+                    decl.append("TABLE (");
+                    for (int i = 0; i < tableParams.size(); i++) {
+                        PostgreProcedureParameter tp = tableParams.get(i);
+                        if (i > 0) decl.append(", ");
+                        decl.append(tp.getName()).append(" ").append(tp.getTypeName());
+                    }
+                    decl.append(")");
+                } else {
+                    decl.append("SETOF ").append(returnTypeName);
+                }
+            } else {
+                decl.append(returnTypeName);
             }
-            decl.append(returnType).append(lineSeparator);
+            decl.append(lineSeparator);
         }
         if (language != null) {
             decl.append("\tLANGUAGE ").append(language).append(lineSeparator);
@@ -395,18 +424,33 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (procVolatile != null) {
             decl.append("\t").append(procVolatile.getCreateClause()).append(lineSeparator);
         }
-        if (execCost > 0) {
-            decl.append("\tCOST ").append(execCost).append(lineSeparator);
+        if (execCost > 0 && execCost != DEFAULT_COST) {
+            decl.append("\tCOST ").append(CommonUtils.niceFormatFloat(execCost)).append(lineSeparator);
         }
-        if (estRows > 0) {
-            decl.append("\tROWS ").append(estRows).append(lineSeparator);
+        if (estRows > 0 && estRows != DEFAULT_EST_ROWS) {
+            decl.append("\tROWS ").append(CommonUtils.niceFormatFloat(estRows)).append(lineSeparator);
         }
         if (!ArrayUtils.isEmpty(config)) {
-            // ?
+            for (String configLine : config) {
+                int divPos = configLine.indexOf('=');
+                if (divPos != -1) {
+                    String paramName = configLine.substring(0, divPos);
+                    String paramValue = configLine.substring(divPos + 1);
+                    boolean isNumeric = true;
+                    try {
+                        Double.parseDouble(paramValue);
+                    } catch (NumberFormatException e) {
+                        isNumeric = false;
+                    }
+                    decl.append("\tSET ").append(paramName).append(" = ").append(isNumeric ? paramValue : "'" + paramValue + "'").append(lineSeparator);
+                } else {
+                    log.debug("Wrong function configuration parameter [" + configLine + "]");
+                }
+            }
         }
-        decl.append("AS $function$").append(lineSeparator);
+        decl.append("AS $function$").append(" ");
         if (!CommonUtils.isEmpty(functionBody)) {
-            decl.append("\t").append(functionBody).append(lineSeparator);
+            decl.append("\t").append(functionBody).append(" ");
         }
         decl.append("$function$").append(lineSeparator);
 

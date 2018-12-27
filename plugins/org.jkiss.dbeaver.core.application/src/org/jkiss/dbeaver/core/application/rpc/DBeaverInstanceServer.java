@@ -21,10 +21,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -72,7 +71,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                 if (file.exists()) {
                     EditorUtils.openExternalFileEditor(file, window);
                 } else {
-                    DBUserInterface.getInstance().showError("Open file", "Can't open '" + file.getAbsolutePath() + "': file doesn't exist");
+                    DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + file.getAbsolutePath() + "': file doesn't exist");
                 }
             }
             shell.setMinimized(false);
@@ -87,7 +86,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         InstanceConnectionParameters instanceConParameters = new InstanceConnectionParameters();
         final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
-            DBeaverCore.getInstance().getProjectRegistry().getActiveProject(),
+            DBWorkbench.getPlatform().getProjectManager().getActiveProject(),
             connectionSpec,
             instanceConParameters,
             false,

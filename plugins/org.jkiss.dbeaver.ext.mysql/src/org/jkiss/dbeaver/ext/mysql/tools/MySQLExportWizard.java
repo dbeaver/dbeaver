@@ -24,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
@@ -33,6 +32,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
@@ -79,7 +79,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
         this.method = DumpMethod.NORMAL;
         this.outputFolder = new File(DialogUtils.getCurDialogFolder()); //$NON-NLS-1$ //$NON-NLS-2$
 
-        final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         this.outputFilePattern = store.getString("MySQL.export.outputFilePattern");
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.sql";
@@ -192,7 +192,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     public boolean performFinish() {
         objectsPage.saveState();
 
-        final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue("MySQL.export.outputFilePattern", this.outputFilePattern);
         store.setValue("MySQL.export.noCreateStatements", noCreateStatements);
         store.setValue("MySQL.export.addDropStatements", addDropStatements);

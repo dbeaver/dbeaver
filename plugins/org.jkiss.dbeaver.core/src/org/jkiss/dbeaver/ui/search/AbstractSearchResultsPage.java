@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ui.search;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.search.ui.*;
+import org.eclipse.search.ui.ISearchResult;
+import org.eclipse.search.ui.ISearchResultListener;
+import org.eclipse.search.ui.ISearchResultPage;
+import org.eclipse.search.ui.ISearchResultViewPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -28,11 +31,11 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.Page;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -214,7 +217,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         public SearchResultsControl(Composite resultsGroup)
         {
             super(resultsGroup, SWT.SHEET, getSite(),
-                DBeaverCore.getInstance().getNavigatorModel().getRoot(),
+                DBWorkbench.getPlatform().getNavigatorModel().getRoot(),
                 new ResultsContentProvider());
         }
 

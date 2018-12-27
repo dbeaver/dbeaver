@@ -42,8 +42,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
@@ -178,7 +178,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             } catch (DBException e) {
                 selectedDebugType = null;
                 selectedDebugPanel = null;
-                DBUserInterface.getInstance().showError("Panel create error", "Can't create debugger config panel " + debugPanel.getId(), e);
+                DBWorkbench.getPlatformUI().showError("Panel create error", "Can't create debugger config panel " + debugPanel.getId(), e);
             }
         } else {
             selectedDebugType = null;

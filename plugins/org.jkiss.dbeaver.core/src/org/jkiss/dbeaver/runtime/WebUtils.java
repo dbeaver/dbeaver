@@ -66,7 +66,7 @@ public class WebUtils {
         }
         log.debug("Open [" + urlString + "]");
 
-        DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
         String proxyHost = prefs.getString(ModelPreferences.UI_PROXY_HOST);
         Proxy proxy = null;
         if (!CommonUtils.isEmpty(proxyHost)) {
