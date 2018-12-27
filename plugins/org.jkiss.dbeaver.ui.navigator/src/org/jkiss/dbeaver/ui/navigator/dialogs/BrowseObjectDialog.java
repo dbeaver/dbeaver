@@ -51,6 +51,7 @@ public class BrowseObjectDialog extends Dialog {
     private Class<?>[] resultTypes;
     private Class<?>[] leafTypes;
     private List<DBNNode> selectedObjects = new ArrayList<>();
+    private TreeNodeSpecial specialNode;
     private DatabaseNavigatorTree navigatorTree;
 
     private BrowseObjectDialog(
@@ -137,23 +138,32 @@ public class BrowseObjectDialog extends Dialog {
         }
         treeViewer.addSelectionChangedListener(event -> {
             selectedObjects.clear();
+            specialNode = null;
             IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
             for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-                DBNNode node = (DBNNode) iter.next();
-                if (node instanceof DBSWrapper) {
+                Object node = iter.next();
+                if (node instanceof DBNNode && node instanceof DBSWrapper) {
                     DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
                     if (object != null) {
                         if (!matchesType(object.getClass(), true)) {
                             selectedObjects.clear();
                             break;
                         }
-                        selectedObjects.add(node);
+                        selectedObjects.add((DBNNode)node);
                     }
+                } else if (node instanceof TreeNodeSpecial) {
+                    specialNode = (TreeNodeSpecial)node;
                 }
             }
             getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
         });
-        treeViewer.addDoubleClickListener(event -> okPressed());
+        treeViewer.addDoubleClickListener(event -> {
+            if (!selectedObjects.isEmpty()) {
+                okPressed();
+            } else if (specialNode != null) {
+                specialNode.handleDefaultAction(navigatorTree);
+            }
+        });
         treeViewer.getTree().setFocus();
 
         return group;
