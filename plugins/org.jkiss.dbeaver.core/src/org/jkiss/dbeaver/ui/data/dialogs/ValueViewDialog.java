@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
-import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
+import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.utils.CommonUtils;
 
 /**

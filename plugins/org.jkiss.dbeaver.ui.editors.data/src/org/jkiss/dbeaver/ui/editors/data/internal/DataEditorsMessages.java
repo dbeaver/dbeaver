@@ -24,8 +24,9 @@ public class DataEditorsMessages extends NLS {
 
 	public static String grid_tooltip_sort_by_column;
 	public static String grid_tooltip_filter_by_column;
+    public static String controls_column_info_panel_property_key;
 
-	static {
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, DataEditorsMessages.class);
 	}
