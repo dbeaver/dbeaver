@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -71,6 +68,8 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     private IStreamValueEditor<Control> streamEditor;
     private Control editorControl;
 
+    private IContributionManager toolbarManager;
+
     public ContentPanelEditor(IValueController controller) {
         super(controller);
     }
@@ -79,7 +78,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
         manager.add(new ContentTypeSwitchAction());
         if (streamEditor != null) {
-            streamEditor.contributeActions(manager, control);
+            streamEditor.contributeActions(manager, editorControl);
+        } else {
+            toolbarManager = manager;
         }
     }
 
@@ -168,9 +169,19 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                     DBWorkbench.getPlatformUI().showError("No string editor", "Can't load string content managers", e);
                 }
             } else {
-                //UIUtils.createLabel(editPlaceholder, UIIcon.REFRESH);
-                runSreamManagerDetector((DBDContent) content, editPlaceholder);
-                return editPlaceholder;
+                if (content instanceof DBDContentCached) {
+                    try {
+                        detectStreamManager(new VoidProgressMonitor(), (DBDContent) content);
+                    } catch (DBException e) {
+                        log.error(e);
+                        valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+                        return editPlaceholder;
+                    }
+                } else {
+                    //UIUtils.createLabel(editPlaceholder, UIIcon.REFRESH);
+                    runSreamManagerDetector((DBDContent) content, editPlaceholder);
+                    return editPlaceholder;
+                }
             }
         }
         return createStreamManagerControl(editPlaceholder);
@@ -189,6 +200,25 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         editorControl = streamEditor.createControl(valueController);
+
+        if (toolbarManager != null) {
+            if (toolbarManager instanceof ToolBarManager) {
+                ((ToolBarManager) toolbarManager).getControl().setRedraw(false);
+            }
+            // Lazy toolbar initialization
+            try {
+                streamEditor.contributeActions(toolbarManager, editorControl);
+                toolbarManager.update(true);
+            } catch (Exception e) {
+                log.error(e);
+            } finally {
+                if (toolbarManager instanceof ToolBarManager) {
+                    ((ToolBarManager) toolbarManager).getControl().setRedraw(true);
+                }
+                toolbarManager = null;
+            }
+        }
+
         return editorControl;
     }
 
@@ -289,6 +319,12 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             }
         }
         return null;
+    }
+
+    private void detectStreamManager(DBRProgressMonitor monitor, DBDContent content) throws DBException {
+        streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
+        String savedManagerId = valueToManagerMap.get(makeValueId());
+        detectCurrentStreamManager(savedManagerId);
     }
 
     private class ContentTypeSwitchAction extends Action implements SelectionListener {
@@ -405,9 +441,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Load LOB value");
-                streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
-                String savedManagerId = valueToManagerMap.get(makeValueId());
-                detectCurrentStreamManager(savedManagerId);
+                detectStreamManager(monitor, content);
             } catch (Exception e) {
                 valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
             } finally {
@@ -415,6 +449,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             }
             return content;
         }
+
     }
 
 
