@@ -11,5 +11,5 @@ Require-Bundle: org.eclipse.ui,
 Bundle-Activator: org.jkiss.dbeaver.ext.bigquery.BigQueryActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: DBeaver Co
+Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
