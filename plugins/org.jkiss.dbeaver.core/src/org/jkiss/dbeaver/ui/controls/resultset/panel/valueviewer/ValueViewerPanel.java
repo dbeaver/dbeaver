@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -318,7 +319,6 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
     private void fillToolBar(final IContributionManager contributionManager)
     {
         contributionManager.add(new Separator());
-        //contributionManager.add(new Separator());
         if (valueManager != null) {
             try {
                 valueManager.contributeActions(contributionManager, previewController, valueEditor);
@@ -326,6 +326,8 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                 log.error("Can't contribute value manager actions", e);
             }
         }
+
+        contributionManager.add(new GroupMarker(IValueManager.GROUP_ACTIONS_ADDITIONAL));
 
         contributionManager.add(
             ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
