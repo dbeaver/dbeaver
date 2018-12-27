@@ -21,6 +21,36 @@
 
     <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
     <extension-point id="org.jkiss.dbeaver.application" name="%extension-point.org.jkiss.dbeaver.application.name" schema="schema/org.jkiss.dbeaver.application.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.dataFormatter">
+        <formatter id="date" label="%DateFormatter.date.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.DateFormatSample">
+            <propertyGroup label="%DateFormatter.date.general.label">
+                <property id="pattern" label="%DateFormatter.date.general.pattern.label" type="string" description="%DateFormatter.date.general.pattern.description" required="true"/>
+            </propertyGroup>
+        </formatter>
+        <formatter id="time" label="%DateFormatter.time.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimeFormatSample">
+            <propertyGroup label="%DateFormatter.time.general.label">
+                <property id="pattern" label="%DateFormatter.time.general.pattern.label" type="string" description="%DateFormatter.time.general.pattern.description" required="true"/>
+            </propertyGroup>
+        </formatter>
+        <formatter id="timestamp" label="%DateFormatter.timestamp.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample">
+            <propertyGroup label="%DateFormatter.timestamp.general.label">
+                <property id="pattern" label="%DateFormatter.timestamp.general.pattern.label" type="string" description="%DateFormatter.timestamp.general.pattern.description" required="true"/>
+            </propertyGroup>
+        </formatter>
+        <formatter id="number" label="%DateFormatter.number.label" class="org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.NumberFormatSample">
+            <propertyGroup label="%DateFormatter.number.general.label">
+                <property id="useGrouping" label="%DateFormatter.number.general.grouping.label" type="boolean" description="%DateFormatter.number.general.grouping.description"/>
+                <property id="maxIntegerDigits" label="%DateFormatter.number.general.maxIntDigits.label" type="integer" description="%DateFormatter.number.general.maxIntDigits.description"/>
+                <property id="minIntegerDigits" label="%DateFormatter.number.general.minIntDigits.label" type="integer" description="%DateFormatter.number.general.minIntDigits.description"/>
+                <property id="maxFractionDigits" label="%DateFormatter.number.general.maxFractDigits.label" type="integer" description="%DateFormatter.number.general.maxFractDigits.description"/>
+                <property id="minFractionDigits" label="%DateFormatter.number.general.minFractDigits.label" type="integer" description="%DateFormatter.number.general.minFractDigits.description"/>
+                <property id="useTypeScale" label="%DateFormatter.number.general.useTypeScale.label" type="boolean" description="%DateFormatter.number.general.useTypeScale.description"/>
+                <property id="roundingMode" label="%DateFormatter.number.general.roundingMode.label" type="string" description="%DateFormatter.number.general.roundingMode.description" validValues="UP,DOWN,CEILING,FLOOR,HALF_UP,HALF_DOWN,HALF_EVEN,UNNECESSARY"/>
+            </propertyGroup>
+        </formatter>
+    </extension>
 
 
 </plugin>

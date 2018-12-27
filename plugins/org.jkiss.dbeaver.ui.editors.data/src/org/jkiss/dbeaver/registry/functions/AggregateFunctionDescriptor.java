@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -43,13 +42,13 @@ public class AggregateFunctionDescriptor extends AbstractContextDescriptor {
     public AggregateFunctionDescriptor(IConfigurationElement config)
     {
         super(config);
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.implClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-        this.type = config.getAttribute(RegistryConstants.ATTR_TYPE);
-        this.isDefault = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
+        this.id = config.getAttribute("id");
+        this.label = config.getAttribute("label");
+        this.description = config.getAttribute("description");
+        this.implClass = new ObjectType(config.getAttribute("class"));
+        this.icon = iconToImage(config.getAttribute("icon"));
+        this.type = config.getAttribute("type");
+        this.isDefault = CommonUtils.toBoolean(config.getAttribute("default"));
     }
 
     public String getId() {
