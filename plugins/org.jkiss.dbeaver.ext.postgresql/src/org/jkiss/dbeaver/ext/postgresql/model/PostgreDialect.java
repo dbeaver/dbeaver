@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,221 +43,224 @@ public class PostgreDialect extends JDBCSQLDialect {
         }
     );
 
-    /*
+    //region KeyWords
 
-    We can use clean and short list of Postgre specific KeyWords
-    and die trying to get one
-    or we can just make some grouping like this
-    https://docs.google.com/spreadsheets/d/1Bb9b52FjyWV49yOmoDT9C85cwIXoR-xrVVPfLwSIRYk/edit?usp=sharing
+    // TODO remove on PR review
+    // Please refer to GSpreadsheat to see available information on keywords comparision
+    // https://docs.google.com/spreadsheets/d/1Bb9b52FjyWV49yOmoDT9C85cwIXoR-xrVVPfLwSIRYk/edit?usp=sharing
+    // Regards
 
-    and parse'em later against,
-    the available list of native SQL KW from super class
-    */
-
-    public static final String[] POSTGRE_STARTING_COMMANDS = ArrayUtils.concatArrays(
-        new String[]{
-                "ABORT",
-                "ALTER",
-                "ANALYZE",
-                "BEGIN",
-                "CALL",
-                "CLOSE",
-                "CLUSTER",
-                "COMMENT",
-                "COMMIT",
-                "COPY",
-                "CREATE",
-                "DEALLOCATE",
-                "DECLARE",
-                "DELETE",
-                "DISCARD",
-                "DO",
-                "DROP",
-                "END",
-                "EXECUTE",
-                "EXPLAIN",
-                "FETCH",
-                "GRANT",
-                "IMPORT",
-                "INSERT",
-                "LISTEN",
-                "LOAD",
-                "LOCK",
-                "MOVE",
-                "NOTIFY",
-                "PREPARE",
-                "REFRESH",
-                "REINDEX",
-                "RELEASE",
-                "RESET",
-                "REVOKE",
-                "ROLLBACK",
-                "SAVEPOINT",
-                "SECURITY",
-                "SELECT",
-                "SET",
-                "SHOW",
-                "START",
-                "TRUNCATE",
-                "UPDATE",
-                "VALUES"
-                },
-        new String[]{ //those are some conditional, should check what to do with em
-                "CHECKPOINT",
-                "UNLISTEN",
-                "VACUUM",
-                "REASSIGN"
-                }
-    );
-
-    // lots of duplicates atm, check for KW, DDL, commands and etc
-    public static final String[] POSTGRE_COMMANDS = new String [] {
-            "AGGREGATE",
-            "COLLATION",
-            "DATABASE",
-            "DEFAULT",
-            "PRIVILEGES",
-            "DOMAIN",
-            "TRIGGER",
-            "EXTENSION",
-            "FOREIGN",
-            "TABLE",
-            "FUNCTION",
-            "GROUP",
-            "LANGUAGE",
-            "LARGE",
-            "OBJECT",
-            "MATERIALIZED",
-            "VIEW",
-            "OPERATOR",
-            "CLASS",
-            "FAMILY",
-            "POLICY",
-            "ROLE",
-            "RULE",
-            "SCHEMA",
-            "SEQUENCE",
-            "SERVER",
-            "STATISTICS",
-            "SUBSCRIPTION",
-            "SYSTEM",
-            "TABLESPACE",
-            "CONFIGURATION",
-            "DICTIONARY",
-            "PARSER",
-            "TEMPLATE",
-            "TYPE",
-            "USER",
-            "MAPPING",
-            "PREPARED",
-            "ACCESS",
-            "METHOD",
-            "CAST",
-            "AS",
-            "TRANSFORM",
-            "TRANSACTION",
-            "OWNED",
-            "TO",
-            "INTO",
-            "SESSION",
-            "AUTHORIZATION",
-            "INDEX",
-            "PROCEDURE",
-            "ASSERTION"
-    };
-
-
-    /**
-     * Should exclude duplicates compared to {@link SQLConstants#DEFAULT_TYPES}
-     *
-     * Also exclude base data types from
-     * @see PostgreConstants#DATA_TYPE_ALIASES
-     * */
-    public static final String[] POSTGRE_DATATYPES = new String[] {
-            "BIGINT",
-            "BIGSERIAL",
-            "BIT",
-            "BOOL",
-            "BOOLEAN",
-            "BOX",
-            "BYTEA",
-            "CHAR",
-            "CHARACTER",
-            "CIDR",
-            "CIRCLE",
-            "DATE",
-            "DATERANGE",
-            "DEC",
-            "DECIMAL",
-            "DOUBLE",
-            "FLOAT", "FLOAT4", "FLOAT8",
-            "INET",
-            "INT", "INT2", "INT4", "INT8",
-            "INT4RANGE", "INT8RANGE",
-            "INTEGER",
-            "INTERVAL",
-            "JSON",
-            "JSONB",
-            "LINE",
-            "LSEG",
-            "MACADDR", "MACADDR8",
-            "MONEY",
-            "NATIONAL",
-            "NCHAR",
-            "NUMERIC",
-            "NUMRANGE",
-            "PATH",
-            "POINT",
-            "POLYGON",
-            "PRECISION",
-            "REAL",
-            "SERIAL", "SERIAL2", "SERIAL4", "SERIAL8",
-            "SMALLINT",
-            "SMALLSERIAL",
-            "TEXT",
-            "TIME",
-            "TIMESTAMP",
-            "TIMESTAMPTZ",
-            "TIMETZ",
-            "TSQUERY",
-            "TSRANGE",
-            "TSTZRANGE",
-            "TSVECTOR",
-            "TXID_SNAPSHOT",
-            "UUID",
-            "VARBIT",
-            "VARCHAR",
-            "VARYING",
-            "XML",
-            "ZONE"
-    };
-
-    public static final String[] POSTGRE_EXCEPTIONS = new String[]{/* din't look if there is a common place for this type of tings*/};
-
-    //region FUNCTION KeyWords
-    public static String[] POSTGRE_FUNCTIONS_AGGR = new String[]{
+    public static String[] POSTGRE_EXTRA_KEYWORDS = new String[]{
+            "ABSENT",
+            "ACCORDING",
+            "ADA",
+            "ADMIN",
             "ARRAY_AGG",
-            "AVG",
+            "ARRAY_MAX_CARDINALITY",
+            "BASE64",
+            "BEGIN_FRAME",
+            "BEGIN_PARTITION",
+            "BERNOULLI",
+            "BIT_LENGTH",
+            "BLOCKED",
+            "BOM",
+            "BREADTH",
+            "CATALOG_NAME",
+            "CHARACTER_SET_CATALOG",
+            "CHARACTER_SET_NAME",
+            "CHARACTER_SET_SCHEMA",
+            "CLASS_ORIGIN",
+            "COBOL",
+            "COLLATION_CATALOG",
+            "COLLATION_NAME",
+            "COLLATION_SCHEMA",
+            "COLUMN_NAME",
+            "COMMAND_FUNCTION",
+            "COMMAND_FUNCTION_CODE",
+            "CONDITION_NUMBER",
+            "CONNECTION_NAME",
+            "CONSTRAINT_CATALOG",
+            "CONSTRAINT_NAME",
+            "CONSTRAINT_SCHEMA",
+            "CONTROL",
+            "CURRENT_ROW",
+            "DATALINK",
+            "DATETIME_INTERVAL_CODE",
+            "DATETIME_INTERVAL_PRECISION",
+            "DB",
+            "DLNEWCOPY",
+            "DLPREVIOUSCOPY",
+            "DLURLCOMPLETE",
+            "DLURLCOMPLETEONLY",
+            "DLURLCOMPLETEWRITE",
+            "DLURLPATH",
+            "DLURLPATHONLY",
+            "DLURLPATHWRITE",
+            "DLURLSCHEME",
+            "DLURLSERVER",
+            "DLVALUE",
+            "DYNAMIC_FUNCTION",
+            "DYNAMIC_FUNCTION_CODE",
+            "EMPTY",
+            "END_FRAME",
+            "END_PARTITION",
+            "ENFORCED",
+            "EXPRESSION",
+            "FILE",
+            "FIRST_VALUE",
+            "FLAG",
+            "FORTRAN",
+            "FRAME_ROW",
+            "FS",
+            "GROUPS",
+            "HEX",
+            "ID",
+            "IGNORE",
+            "IMMEDIATELY",
+            "INCLUDE",
+            "INDENT",
+            "INTEGRITY",
+            "KEY_MEMBER",
+            "LAG",
+            "LAST_VALUE",
+            "LEAD",
+            "LIBRARY",
+            "LIKE_REGEX",
+            "LINK",
+            "MAX_CARDINALITY",
+            "MESSAGE_LENGTH",
+            "MESSAGE_OCTET_LENGTH",
+            "MESSAGE_TEXT",
+            "MODULE",
+            "NAME",
+            "NAMES",
+            "NAMESPACE",
+            "NCHAR",
+            "NCLOB",
+            "NFC",
+            "NFD",
+            "NFKC",
+            "NFKD",
+            "NIL",
+            "NTH_VALUE",
+            "NTILE",
+            "NULLABLE",
+            "OCCURRENCES_REGEX",
+            "PARAMETER_MODE",
+            "PARAMETER_NAME",
+            "PARAMETER_ORDINAL_POSITION",
+            "PARAMETER_SPECIFIC_CATALOG",
+            "PARAMETER_SPECIFIC_NAME",
+            "PARAMETER_SPECIFIC_SCHEMA",
+            "PASCAL",
+            "PASSTHROUGH",
+            "PERCENT",
+            "PERIOD",
+            "PERMISSION",
+            "PLI",
+            "PORTION",
+            "POSITION_REGEX",
+            "PRECEDES",
+            "PROCEDURES",
+            "PUBLIC",
+            "RECOVERY",
+            "REQUIRING",
+            "RESPECT",
+            "RESTORE",
+            "RETURNED_CARDINALITY",
+            "RETURNED_LENGTH",
+            "RETURNED_OCTET_LENGTH",
+            "RETURNED_SQLSTATE",
+            "ROUTINES",
+            "ROUTINE_CATALOG",
+            "ROUTINE_NAME",
+            "ROUTINE_SCHEMA",
+            "ROW_COUNT",
+            "SCHEMA_NAME",
+            "SCOPE_CATALOG",
+            "SCOPE_NAME",
+            "SCOPE_SCHEMA",
+            "SELECTIVE",
+            "SERVER_NAME",
+            "SIMPLE",
+            "SPECIFIC_NAME",
+            "SQLCODE",
+            "SQLERROR",
+            "STATE",
+            "SUBCLASS_ORIGIN",
+            "SUBSTRING_REGEX",
+            "SUCCEEDS",
+            "SYSTEM_TIME",
+            "TABLE_NAME",
+            "TOKEN",
+            "TOP_LEVEL_COUNT",
+            "TRANSACTIONS_COMMITTED",
+            "TRANSACTIONS_ROLLED_BACK",
+            "TRANSACTION_ACTIVE",
+            "TRANSLATE_REGEX",
+            "TRIGGER_CATALOG",
+            "TRIGGER_NAME",
+            "TRIGGER_SCHEMA",
+            "TRIM_ARRAY",
+            "UNLINK",
+            "UNTYPED",
+            "URI",
+            "USER_DEFINED_TYPE_CATALOG",
+            "USER_DEFINED_TYPE_CODE",
+            "USER_DEFINED_TYPE_NAME",
+            "USER_DEFINED_TYPE_SCHEMA",
+            "VALUE",
+            "VALUE_OF",
+            "VERSIONING",
+            "XMLAGG",
+            "XMLBINARY",
+            "XMLCAST",
+            "XMLCOMMENT",
+            "XMLDECLARATION",
+            "XMLDOCUMENT",
+            "XMLITERATE",
+            "XMLQUERY",
+            "XMLSCHEMA",
+            "XMLTEXT",
+            "XMLVALIDATE"
+    };
+
+    public static String[] POSTGRE_ONE_CHAR_KEYWORDS = new String[]{
+            "C",
+            "G",
+            "K",
+            "M",
+            "T",
+            "P"
+    };
+    //endregion
+
+    //region FUNCTIONS KW
+
+    /* Commented out elements are already present in SQL and PGSQL*/
+    public static String[] POSTGRE_FUNCTIONS_AGGREGATE = new String[]{
+            "ARRAY_AGG",
+            /*"AVG",*/
             "BIT_AND",
             "BIT_OR",
             "BOOL_AND",
             "BOOL_OR",
-            "COUNT",
+            /*"COUNT",*/
             "EVERY",
             "JSON_AGG",
             "JSONB_AGG",
             "JSON_OBJECT_AGG",
             "JSONB_OBJECT_AGG",
-            "MAX",
-            "MIN",
+            /*"MAX",
+            "MIN",*/
             "MODE",
             "STRING_AGG",
-            "SUM",
+            /*"SUM",*/
             "XMLAGG",
             "CORR",
             "COVAR_POP",
             "COVAR_SAMP",
-            "REGR_AVGX",
+            /*"REGR_AVGX",
             "REGR_AVGY",
             "REGR_COUNT",
             "REGR_INTERCEPT",
@@ -265,22 +268,23 @@ public class PostgreDialect extends JDBCSQLDialect {
             "REGR_SLOPE",
             "REGR_SXX",
             "REGR_SXY",
-            "REGR_SYY",
+            "REGR_SYY",*/
             "STDDEV",
             "STDDEV_POP",
             "STDDEV_SAMP",
             "VARIANCE",
             "VAR_POP",
-            "VAR_SAMP",
+            "VAR_SAMP"
+            /*,
             "PERCENTILE_CONT",
-            "PERCENTILE_DISC"
+            "PERCENTILE_DISC"*/
     };
 
     public static String[] POSTGRE_FUNCTIONS_WINDOW = new String[]{
             "ROW_NUMBER",
             "RANK",
             "DENSE_RANK",
-            "PERCENT_RANK",
+            /*"PERCENT_RANK",*/
             "CUME_DIST",
             "NTILE",
             "LAG",
@@ -292,61 +296,53 @@ public class PostgreDialect extends JDBCSQLDialect {
 
 
     public static String[] POSTGRE_FUNCTIONS_MATH = new String[]{
-            "ABS",
+            /*"ABS",
+            "ACOS",*/
+            "ACOSD",
+            /*"ASIN",*/
+            "ASIND",
+            /*"ATAN",
+            "ATAN2",*/
+            "ATAN2D",
+            "ATAND",
             "CBRT",
             "CEIL",
             "CEILING",
-            "DEGREES",
+            /*"COS",*/
+            "COSD",
+           /* "COT",*/
+            "COTD",
+            /*"DEGREES",*/
             "DIV",
             "EXP",
-            "FLOOR",
+            /*"FLOOR",*/
             "LN",
-            "LOG",
+            /*"LOG",*/
             "MOD",
-            "PI",
+            /*"PI",
             "POWER",
-            "RADIANS",
-            "ROUND",
-            "SCALE",
-            "SIGN",
-            "SQRT",
-            "TRUNC",
-            "WIDTH_BUCKET",
+            "RADIANS",*/
             "RANDOM",
+            /*"ROUND",*/
+            "SCALE",
             "SETSEED",
-            "ACOS",
-            "ACOSD",
-            "ASIN",
-            "ASIND",
-            "ATAN",
-            "ATAND",
-            "ATAN2",
-            "ATAN2D",
-            "COS",
-            "COSD",
-            "COT",
-            "COTD",
-            "SIN",
+            /*"SIGN",
+            "SIN",*/
             "SIND",
-            "TAN",
-            "TAND"
+            /*"SQRT",
+            "TAN",*/
+            "TAND",
+            "TRUNC",
+            "WIDTH_BUCKET"
     };
     public static String[] POSTGRE_FUNCTIONS_STRING = new String[]{
+            /*"ASCII",*/
             "BIT_LENGTH",
-            "CHAR_LENGTH",
-            "CHARACTER_LENGTH",
-            "LOWER",
-            "OCTET_LENGTH",
-            "OVERLAY",
-            "POSITION",
-            "SUBSTRING",
-            "TREAT",
-            "TRIM",
-            "UPPER",
-            "ASCII",
             "BTRIM",
+            /*"CHAR_LENGTH",
+            "CHARACTER_LENGTH",*/
             "CHR",
-            "CONCAT",
+            /*"CONCAT",*/
             "CONCAT_WS",
             "CONVERT",
             "CONVERT_FROM",
@@ -356,11 +352,15 @@ public class PostgreDialect extends JDBCSQLDialect {
             "INITCAP",
             "LEFT",
             "LENGTH",
+            /*"LOWER",*/
             "LPAD",
-            "LTRIM",
+            /*"LTRIM",*/
             "MD5",
+            /*"OCTET_LENGTH",*/
+            "OVERLAY",
             "PARSE_IDENT",
             "PG_CLIENT_ENCODING",
+            "POSITION",
             "QUOTE_IDENT",
             "QUOTE_LITERAL",
             "QUOTE_NULLABLE",
@@ -369,18 +369,22 @@ public class PostgreDialect extends JDBCSQLDialect {
             "REGEXP_REPLACE",
             "REGEXP_SPLIT_TO_ARRAY",
             "REGEXP_SPLIT_TO_TABLE",
-            "REPEAT",
+            /*"REPEAT",*/
             "REPLACE",
             "REVERSE",
             "RIGHT",
             "RPAD",
-            "RTRIM",
+            /*"RTRIM",*/
             "SPLIT_PART",
             "STRPOS",
-            "SUBSTR",
+            /*"SUBSTR",*/
+            "SUBSTRING",
             "TO_ASCII",
             "TO_HEX",
-            "TRANSLATE"
+            "TRANSLATE",
+            "TREAT",
+            /*"TRIM",
+            "UPPER"*/
     };
 
     public static String[] POSTGRE_FUNCTIONS_DATETIME = new String[]{
@@ -397,7 +401,7 @@ public class PostgreDialect extends JDBCSQLDialect {
             "MAKE_TIME",
             "MAKE_TIMESTAMP",
             "MAKE_TIMESTAMPTZ",
-            "NOW",
+            /*"NOW",*/
             "STATEMENT_TIMESTAMP",
             "TIMEOFDAY",
             "TRANSACTION_TIMESTAMP"
@@ -650,7 +654,7 @@ public class PostgreDialect extends JDBCSQLDialect {
     };
 
     public static String[] POSTGRE_FUNCTIONS_BINARY_STRING = new String[]{
-            "OCTET_LENGTH",
+            /*"OCTET_LENGTH",*/
             "GET_BIT",
             "GET_BYTE",
             "SET_BIT",
@@ -674,247 +678,6 @@ public class PostgreDialect extends JDBCSQLDialect {
     };
     //endregion
 
-    //region Reserverd, RoleAttrs, and Clause KeyWords
-
-    public static final String[] POSTGRE_ROLE_ATTRS = new String[]{
-            "SUPERUSER",
-            "NOSUPERUSER",
-            "CREATEDB",
-            "NOCREATEDB",
-            "CREATEROLE",
-            "NOCREATEROLE",
-            "INHERIT",
-            "NOINHERIT",
-            "LOGIN",
-            "NOLOGIN",
-            "REPLICATION",
-            "NOREPLICATION",
-            "BYPASSRLS",
-            "NOBYPASSRLS"
-    };
-
-    public static final String[] POSTGRE_KW_SET_2 = new String[]{
-            "ALIAS",
-            "BEGIN",
-            "CONSTANT",
-            "DECLARE",
-            "END",
-            "EXCEPTION",
-            "RETURN",
-            "PERFORM ",
-            "RAISE",
-            "GET",
-            "DIAGNOSTICS",
-            "STACKED ",
-            "FOREACH",
-            "LOOP",
-            "ELSIF",
-            "EXIT",
-            "WHILE",
-            "REVERSE",
-            "SLICE",
-            "DEBUG",
-            "LOG",
-            "INFO",
-            "NOTICE",
-            "WARNING",
-            "ASSERT",
-            "OPEN"
-    };
-
-    public static final String[] POSTGRE_CLAUSE_KW = new String[]{
-            "BY",
-            "RETURNS",
-            "INOUT",
-            "OUT",
-            "SETOF",
-            "IF",
-            "STRICT",
-            "CURRENT",
-            "CONTINUE",
-            "OWNER",
-            "LOCATION",
-            "OVER",
-            "PARTITION",
-            "WITHIN",
-            "BETWEEN",
-            "ESCAPE",
-            "EXTERNAL",
-            "INVOKER",
-            "DEFINER",
-            "WORK",
-            "RENAME",
-            "VERSION",
-            "CONNECTION",
-            "CONNECT",
-            "TABLES",
-            "TEMP",
-            "TEMPORARY",
-            "FUNCTIONS",
-            "SEQUENCES",
-            "TYPES",
-            "SCHEMAS",
-            "OPTION",
-            "CASCADE",
-            "RESTRICT",
-            "ADD",
-            "ADMIN",
-            "EXISTS",
-            "VALID",
-            "VALIDATE",
-            "ENABLE",
-            "DISABLE",
-            "REPLICA",
-            "ALWAYS",
-            "PASSING",
-            "COLUMNS",
-            "PATH",
-            "REF",
-            "VALUE",
-            "OVERRIDING",
-            "IMMUTABLE",
-            "STABLE",
-            "VOLATILE",
-            "BEFORE",
-            "AFTER",
-            "EACH",
-            "ROW",
-            "PROCEDURAL",
-            "ROUTINE",
-            "NO",
-            "HANDLER",
-            "VALIDATOR",
-            "OPTIONS",
-            "STORAGE",
-            "OIDS",
-            "WITHOUT",
-            "INHERIT",
-            "DEPENDS",
-            "CALLED",
-            "INPUT",
-            "LEAKPROOF",
-            "COST",
-            "ROWS",
-            "NOWAIT",
-            "SEARCH",
-            "UNTIL",
-            "ENCRYPTED",
-            "PASSWORD",
-            "CONFLICT",
-            "INSTEAD",
-            "INHERITS",
-            "CHARACTERISTICS",
-            "WRITE",
-            "CURSOR",
-            "ALSO",
-            "STATEMENT",
-            "SHARE",
-            "EXCLUSIVE",
-            "INLINE",
-            "ISOLATION",
-            "REPEATABLE",
-            "READ",
-            "COMMITTED",
-            "SERIALIZABLE",
-            "UNCOMMITTED",
-            "LOCAL",
-            "GLOBAL",
-            "SQL",
-            "PROCEDURES",
-            "RECURSIVE",
-            "SNAPSHOT",
-            "ROLLUP",
-            "CUBE",
-            "TRUSTED",
-            "INCLUDE",
-            "FOLLOWING",
-            "PRECEDING",
-            "UNBOUNDED",
-            "RANGE",
-            "GROUPS",
-            "UNENCRYPTED",
-            "SYSID",
-            "FORMAT",
-            "DELIMITER",
-            "HEADER",
-            "QUOTE",
-            "ENCODING",
-            "FILTER",
-            "OFF"
-    };
-
-    public static final String[] POSTGRE_RESERVED_KW = new String[]{
-            "ALL",
-            "ANALYSE",
-            "AND",
-            "ANY",
-            "ARRAY",
-            "ASC",
-            "ASYMMETRIC",
-            "BOTH",
-            "CASE",
-            "CHECK",
-            "COLLATE",
-            "COLUMN",
-            "CONCURRENTLY",
-            "CONSTRAINT",
-            "CROSS",
-            "DEFERRABLE",
-            "RANGE",
-            "DESC",
-            "DISTINCT",
-            "ELSE",
-            "EXCEPT",
-            "FOR",
-            "FREEZE",
-            "FROM",
-            "FULL",
-            "HAVING",
-            "ILIKE",
-            "IN",
-            "INITIALLY",
-            "INNER",
-            "INTERSECT",
-            "IS",
-            "ISNULL",
-            "JOIN",
-            "LATERAL",
-            "LEADING",
-            "LIKE",
-            "LIMIT",
-            "NATURAL",
-            "NOT",
-            "NOTNULL",
-            "NULL",
-            "OFFSET",
-            "ON",
-            "ONLY",
-            "OR",
-            "ORDER",
-            "OUTER",
-            "OVERLAPS",
-            "PLACING",
-            "PRIMARY",
-            "REFERENCES",
-            "RETURNING",
-            "SIMILAR",
-            "SOME",
-            "SYMMETRIC",
-            "TABLESAMPLE",
-            "THEN",
-            "TRAILING",
-            "UNION",
-            "UNIQUE",
-            "USING",
-            "VARIADIC",
-            "VERBOSE",
-            "WHEN",
-            "WHERE",
-            "WINDOW",
-            "WITH"
-    };
-
-    //endregion
 
     public PostgreDialect() {
         super("PostgreSQL");
@@ -922,6 +685,10 @@ public class PostgreDialect extends JDBCSQLDialect {
 
     public void addExtraKeywords(String ... keywords) {
         super.addSQLKeywords(Arrays.asList(keywords));
+    }
+
+    public void addExtraFunctions(String ... functions){
+        super.addFunctions(Arrays.asList(functions));
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
@@ -984,7 +751,34 @@ public class PostgreDialect extends JDBCSQLDialect {
             "SQLERROR"
         );
 
+        addExtraKeywords(POSTGRE_EXTRA_KEYWORDS);
+        addExtraKeywords(POSTGRE_ONE_CHAR_KEYWORDS);
+
         addFunctions(Arrays.asList(PostgreConstants.POSTGIS_FUNCTIONS));
+
+        addExtraFunctions(POSTGRE_FUNCTIONS_ADMIN);
+        addExtraFunctions(POSTGRE_FUNCTIONS_AGGREGATE);
+        addExtraFunctions(POSTGRE_FUNCTIONS_ARRAY);
+        addExtraFunctions(POSTGRE_FUNCTIONS_BINARY_STRING);
+        addExtraFunctions(POSTGRE_FUNCTIONS_COMPRASION);
+        addExtraFunctions(POSTGRE_FUNCTIONS_CONDITIONAL);
+        addExtraFunctions(POSTGRE_FUNCTIONS_DATETIME);
+        addExtraFunctions(POSTGRE_FUNCTIONS_ENUM);
+        addExtraFunctions(POSTGRE_FUNCTIONS_FORMATTING);
+        addExtraFunctions(POSTGRE_FUNCTIONS_GEOMETRY);
+        addExtraFunctions(POSTGRE_FUNCTIONS_INFO);
+        addExtraFunctions(POSTGRE_FUNCTIONS_JSON);
+        addExtraFunctions(POSTGRE_FUNCTIONS_LO);
+        addExtraFunctions(POSTGRE_FUNCTIONS_MATH);
+        addExtraFunctions(POSTGRE_FUNCTIONS_NETWROK);
+        addExtraFunctions(POSTGRE_FUNCTIONS_RANGE);
+        addExtraFunctions(POSTGRE_FUNCTIONS_SEQUENCE);
+        addExtraFunctions(POSTGRE_FUNCTIONS_SRF);
+        addExtraFunctions(POSTGRE_FUNCTIONS_STRING);
+        addExtraFunctions(POSTGRE_FUNCTIONS_TEXT_SEARCH);
+        addExtraFunctions(POSTGRE_FUNCTIONS_TRIGGER);
+        addExtraFunctions(POSTGRE_FUNCTIONS_WINDOW);
+        addExtraFunctions(POSTGRE_FUNCTIONS_XML);
 
         removeSQLKeyword("LENGTH");
 
