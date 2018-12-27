@@ -315,7 +315,7 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
-        <page category="org.eclipse.ui.preferencePages.Workbench" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations">
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
     </extension>
