@@ -289,6 +289,16 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return result;
     }
 
+    public List<PostgreProcedureParameter> getParameters(DBSProcedureParameterKind kind) {
+        List<PostgreProcedureParameter> result = new ArrayList<>();
+        for (PostgreProcedureParameter param : params) {
+            if (param.getParameterKind() == kind) {
+                result.add(param);
+            }
+        }
+        return result;
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
@@ -379,17 +389,31 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return procDDL;
     }
 
-    private String generateFunctionDeclaration(DBRProgressMonitor monitor, PostgreLanguage language, String returnType, String functionBody) throws DBException {
+    private String generateFunctionDeclaration(DBRProgressMonitor monitor, PostgreLanguage language, String returnTypeName, String functionBody) throws DBException {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder decl = new StringBuilder();
         decl.append("CREATE OR REPLACE FUNCTION ").append(getFullQualifiedSignature()).append(lineSeparator);
-        if (!CommonUtils.isEmpty(returnType)) {
+        if (!CommonUtils.isEmpty(returnTypeName)) {
             decl.append("\tRETURNS ");
             if (isReturnsSet()) {
-                decl.append("SETOF ");
+                // Check for TABLE parameters and construct
+                List<PostgreProcedureParameter> tableParams = getParameters(DBSProcedureParameterKind.TABLE);
+                if (!tableParams.isEmpty()) {
+                    decl.append("TABLE (");
+                    for (int i = 0; i < tableParams.size(); i++) {
+                        PostgreProcedureParameter tp = tableParams.get(i);
+                        if (i > 0) decl.append(", ");
+                        decl.append(tp.getName()).append(" ").append(tp.getTypeName());
+                    }
+                    decl.append(")");
+                } else {
+                    decl.append("SETOF ").append(returnTypeName);
+                }
+            } else {
+                decl.append(returnTypeName);
             }
-            decl.append(returnType).append(lineSeparator);
+            decl.append(lineSeparator);
         }
         if (language != null) {
             decl.append("\tLANGUAGE ").append(language).append(lineSeparator);
