@@ -674,31 +674,11 @@ public class PostgreDialect extends JDBCSQLDialect {
             "REFRESH"
         );
 
-        addExtraKeywords(
-            "CURRENT_DATABASE",
-            "ARRAY_AGG",
-            "BIT_AND",
-            "BIT_OR",
-            "BOOL_AND",
-            "BOOL_OR",
-            "JSON_AGG",
-            "JSONB_AGG",
-            "JSON_OBJECT_AGG",
-            "JSONB_OBJECT_AGG",
-            "STRING_AGG",
-            "XMLAGG",
-            "BIT_LENGTH",
-            "CURRENT_CATALOG",
-            "CURRENT_SCHEMA",
-            "SQLCODE",
-            "LENGTH",
-            "SQLERROR"
-        );
-
         addExtraKeywords(POSTGRE_EXTRA_KEYWORDS);
-        addExtraKeywords(POSTGRE_ONE_CHAR_KEYWORDS);
+        // Not sure about one char keywords. May confuse users
+        //addExtraKeywords(POSTGRE_ONE_CHAR_KEYWORDS);
 
-        addFunctions(Arrays.asList(PostgreConstants.POSTGIS_FUNCTIONS));
+        addExtraFunctions(PostgreConstants.POSTGIS_FUNCTIONS);
 
         addExtraFunctions(POSTGRE_FUNCTIONS_ADMIN);
         addExtraFunctions(POSTGRE_FUNCTIONS_AGGREGATE);
