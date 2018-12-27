@@ -29,7 +29,7 @@ import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -98,7 +98,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
             UIUtils.launchProgram(filePath);
 
         } catch (Throwable e) {
-            DBUserInterface.getInstance().showError("Save ERD as image", null, e);
+            DBWorkbench.getPlatformUI().showError("Save ERD as image", null, e);
         }
 
     }

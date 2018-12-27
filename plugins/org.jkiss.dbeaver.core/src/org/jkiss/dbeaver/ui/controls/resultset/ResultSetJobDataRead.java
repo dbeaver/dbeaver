@@ -24,6 +24,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -82,6 +83,11 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         DBCExecutionPurpose purpose = dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER;
 
         new PumpVisualizer(visualizer).schedule(PROGRESS_VISUALIZE_PERIOD * 2);
+
+        if (offset > 0 && dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
+            maxRows += offset;
+            offset = 0;
+        }
 
         try (DBCSession session = getExecutionContext().openSession(
             progressMonitor,

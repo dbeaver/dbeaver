@@ -37,8 +37,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -463,7 +463,7 @@ class ResultSetPersister {
                                         DataUpdaterJob.this.deleteStats.getRowsUpdated(),
                                         DataUpdaterJob.this.updateStats.getRowsUpdated()}));
                         } else {
-                            DBUserInterface.getInstance().showError("Data error", "Error synchronizing data with database", error);
+                            DBWorkbench.getPlatformUI().showError("Data error", "Error synchronizing data with database", error);
                             viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                         }
                     }
@@ -473,7 +473,7 @@ class ResultSetPersister {
                     this.listener.onUpdate(error == null);
                 }
             } else if (error != null) {
-                DBUserInterface.getInstance().showError("Data error", "Error generating script", error);
+                DBWorkbench.getPlatformUI().showError("Data error", "Error generating script", error);
             }
 
             return Status.OK_STATUS;

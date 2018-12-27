@@ -32,14 +32,14 @@ import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.part.*;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -147,7 +147,7 @@ public class DiagramLoader
     {
         List<DBPDataSourceContainer> containers = new ArrayList<>();
 
-        final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(resource.getProject());
+        final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(resource.getProject());
         if (dsRegistry == null) {
             return containers;
         }
@@ -181,7 +181,7 @@ public class DiagramLoader
         monitor.beginTask("Parse diagram", 1);
         final EntityDiagram diagram = diagramPart.getDiagram();
 
-        final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+        final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
         if (dsRegistry == null) {
             throw new DBException("Cannot find datasource registry for project '" + project.getName() + "'");
         }

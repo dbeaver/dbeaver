@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -63,7 +64,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
-        if (serverType == PostgreServerType.REDSHIFT) {
+        if (serverType.supportsCustomConnectionURL()) {
             return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
         }
 

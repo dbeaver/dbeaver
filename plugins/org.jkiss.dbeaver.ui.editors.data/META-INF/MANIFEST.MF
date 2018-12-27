@@ -7,12 +7,26 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20181224
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
  org.eclipse.ui,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.base
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.navigator
 Bundle-ClassPath: .
-Export-Package: org.jkiss.dbeaver.ui.editors.data
+Export-Package: org.jkiss.dbeaver.ui.controls,
+ org.jkiss.dbeaver.ui.controls.lightgrid,
+ org.jkiss.dbeaver.ui.data,
+ org.jkiss.dbeaver.ui.data.managers,
+ org.jkiss.dbeaver.ui.data.managers.stream,
+ org.jkiss.dbeaver.ui.data.registry,
+ org.jkiss.dbeaver.ui.editors.content,
+ org.jkiss.dbeaver.ui.editors.data
+

@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
@@ -159,7 +159,7 @@ public class OracleDataSource extends JDBCDataSource
         // Ref: https://stackoverflow.com/questions/21733300/oracle-password-expiry-and-grace-period-handling-using-java-oracle-jdbc
 
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
-        DBAPasswordChangeInfo passwordInfo = DBUserInterface.getInstance().promptUserPasswordChange("Password has expired. Set new password.", connectionInfo.getUserName(), connectionInfo.getUserPassword());
+        DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange("Password has expired. Set new password.", connectionInfo.getUserName(), connectionInfo.getUserPassword());
         if (passwordInfo == null) {
             return false;
         }
@@ -187,7 +187,7 @@ public class OracleDataSource extends JDBCDataSource
             return true;
         }
         catch (Exception e) {
-            DBUserInterface.getInstance().showError("Error changing password", "Error changing expired password", e);
+            DBWorkbench.getPlatformUI().showError("Error changing password", "Error changing expired password", e);
             return false;
         }
     }

@@ -711,6 +711,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         int startPos = 0;
         boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
         final String[] statementDelimiters = syntaxManager.getStatementDelimiters();
+        int lastPos = currentPos >= docLength ? docLength - 1 : currentPos;
 
         try {
             int currentLine = document.getLineOfOffset(currentPos);
@@ -735,17 +736,35 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         isDefaultPartition(partitioner, document.getLineOffset(firstLine))) {
                         break;
                     }
-                } else {
+                }
+                if (currentLine == firstLine) {
                     for (String delim : statementDelimiters) {
                         final int offset = TextUtils.getOffsetOf(document, firstLine, delim);
                         if (offset >= 0 && isDefaultPartition(partitioner, offset)) {
-                            break;
+                            int delimOffset = document.getLineOffset(firstLine) + offset + delim.length();
+                            if (currentPos > startPos) {
+                                if (docLength > delimOffset) {
+                                    boolean hasValuableChars = false;
+                                    for (int i = delimOffset; i <= lastPos; i++) {
+                                        if (!Character.isWhitespace(document.getChar(i))) {
+                                            hasValuableChars = true;
+                                            break;
+                                        }
+                                    }
+                                    if (hasValuableChars) {
+                                        startPos = delimOffset;
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
                 firstLine--;
             }
-            startPos = document.getLineOffset(firstLine);
+            if (startPos == 0) {
+                startPos = document.getLineOffset(firstLine);
+            }
 
             // Move currentPos at line begin
             currentPos = lineOffset;

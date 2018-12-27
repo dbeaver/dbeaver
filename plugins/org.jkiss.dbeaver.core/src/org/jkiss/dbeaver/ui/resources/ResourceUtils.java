@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -133,7 +134,7 @@ public class ResourceUtils {
     		IStatus status = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), "No active project to locate Script Folder");
 			throw new CoreException(status);
 		}
-        return DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
+        return DBWorkbench.getPlatform().getProjectManager().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
     }
 
     @Nullable
@@ -171,7 +172,7 @@ public class ResourceUtils {
             }
             if (container != null) {
                 // Search in external files
-                for (Map.Entry<String, Map<String, Object>> fileEntry : DBeaverCore.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
+                for (Map.Entry<String, Map<String, Object>> fileEntry : DBWorkbench.getPlatform().getExternalFileManager().getAllFiles().entrySet()) {
                     if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID))) {
                         File extFile = new File(fileEntry.getKey());
                         if (extFile.exists()) {
@@ -204,7 +205,7 @@ public class ResourceUtils {
             }
             if (!ArrayUtils.isEmpty(containers)) {
                 // Search in external files
-                for (Map.Entry<String, Map<String, Object>> fileEntry : DBeaverCore.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
+                for (Map.Entry<String, Map<String, Object>> fileEntry : DBWorkbench.getPlatform().getExternalFileManager().getAllFiles().entrySet()) {
                     final Object fileContainerId = fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE_ID);
                     if (fileContainerId != null) {
                         File extFile = new File(fileEntry.getKey());

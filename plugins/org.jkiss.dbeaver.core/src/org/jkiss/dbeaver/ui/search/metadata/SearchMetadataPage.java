@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -266,13 +266,13 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 monitor.beginTask("Load database nodes", 1);
                 try {
                     monitor.subTask("Load tree state");
-                    sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor), DBeaverCore.getGlobalPreferenceStore().getString(PROP_SOURCES));
+                    sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor), DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SOURCES));
                 } finally {
                     monitor.done();
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Data sources load", "Error loading settings", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Data sources load", "Error loading settings", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

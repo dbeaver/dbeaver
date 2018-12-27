@@ -84,8 +84,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -183,7 +183,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     Object value = activeInlineEditor.extractEditorValue();
                     valueController.updateValue(value, true);
                 } catch (DBException e) {
-                    DBUserInterface.getInstance().showError("Error extracting editor value", null, e);
+                    DBWorkbench.getPlatformUI().showError("Error extracting editor value", null, e);
                 }
             }
             spreadsheet.cancelInlineEditor();
@@ -605,7 +605,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             controller.updateEditControls();
         }
         catch (Exception e) {
-            DBUserInterface.getInstance().showError("Cannot replace cell value", null, e);
+            DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
         }
     }
 
@@ -924,7 +924,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             activeInlineEditor = valueController.getValueManager().createEditor(valueController);
         }
         catch (Exception e) {
-            DBUserInterface.getInstance().showError("Cannot edit value", null, e);
+            DBWorkbench.getPlatformUI().showError("Cannot edit value", null, e);
             return null;
         }
         if (activeInlineEditor != null) {

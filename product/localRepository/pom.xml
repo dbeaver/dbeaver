@@ -9,7 +9,7 @@
 	<name>DBeaver - 3rd party dependencies</name>
 
 	<properties>
-		<tycho-version>1.3.0</tycho-version>
+		<tycho-version>1.1.0</tycho-version>
 		<reficio-p2-version>1.2.0</reficio-p2-version>
 		<repo-name>DBeaver CE dependencies</repo-name>
 	</properties>

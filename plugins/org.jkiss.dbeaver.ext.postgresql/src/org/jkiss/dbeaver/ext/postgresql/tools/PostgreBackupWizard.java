@@ -22,14 +22,15 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -58,7 +59,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     public PostgreBackupWizard(Collection<DBSObject> objects) {
         super(objects, PostgreMessages.wizard_backup_title);
 
-        final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         this.outputFilePattern = store.getString("Postgre.export.outputFilePattern");
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.backup";
@@ -139,7 +140,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         } else if (!CommonUtils.isEmpty(arg.getSchemas())) {
             for (PostgreSchema schema : arg.getSchemas()) {
                 cmd.add("-n");
-                cmd.add(schema.getName());
+                cmd.add(DBUtils.getQuotedIdentifier(schema));
             }
         }
     }
@@ -156,7 +157,7 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     public boolean performFinish() {
         objectsPage.saveState();
 
-        final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue("Postgre.export.outputFilePattern", this.outputFilePattern);
         store.setValue("Postgre.export.showViews", showViews);
 

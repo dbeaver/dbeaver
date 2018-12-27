@@ -78,4 +78,5 @@ public interface PostgreServerExtension
     void configureDialect(PostgreDialect dialect);
 
     String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
+
 }

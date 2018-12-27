@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -74,7 +74,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         if (value != null) {
-            DBPPreferenceStore globalPreferenceStore = DBeaverCore.getGlobalPreferenceStore();
+            DBPPreferenceStore globalPreferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             if (!globalPreferenceStore.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
                         DBeaverActivator.getCoreResourceBundle(),

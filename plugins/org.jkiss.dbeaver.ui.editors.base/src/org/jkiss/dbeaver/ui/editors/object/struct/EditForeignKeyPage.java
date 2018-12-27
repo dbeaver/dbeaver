@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
@@ -159,7 +158,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
         }
 
-        final Composite pkGroup = UIUtils.createPlaceholder(panel, 2);
+        final Composite pkGroup = UIUtils.createComposite(panel, 2);
         {
             pkGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             uniqueKeyCombo = UIUtils.createLabelCombo(pkGroup, EditorsMessages.dialog_struct_edit_fk_combo_unik, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -410,7 +409,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
 
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(EditorsMessages.dialog_struct_edit_fk_error_load_constraints_title, EditorsMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(EditorsMessages.dialog_struct_edit_fk_error_load_constraints_title, EditorsMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -460,7 +459,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     item.setData(fkColumnInfo);
                 }
             } catch (DBException e) {
-                DBUserInterface.getInstance().showError(EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_title, EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
+                DBWorkbench.getPlatformUI().showError(EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_title, EditorsMessages.dialog_struct_edit_fk_error_load_constraint_columns_message, e);
             }
         }
         UIUtils.packColumns(columnsTable, true);

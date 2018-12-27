@@ -173,7 +173,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                         }
                     }
                 }
-                if (newConnection) {
+                if (!selectiveExportFromUI && newConnection) {
                     context.close();
                 }
             }

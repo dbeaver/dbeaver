@@ -27,15 +27,15 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -96,7 +96,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             return false;
         }
         catch (InvocationTargetException ex) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Export error",
                 "Cannot export projects",
                 ex.getTargetException());
@@ -127,7 +127,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             meta.startElement(ExportConstants.TAG_ARCHIVE);
             meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
 
-            exportData.initExport(DBeaverCore.getInstance().getProjectRegistry(), meta, archiveStream);
+            exportData.initExport(DBWorkbench.getPlatform().getProjectManager(), meta, archiveStream);
 
             {
                 // Export source info
@@ -142,9 +142,9 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info, exportData.getProjectsToExport().size());
             for (IProject project : exportData.getProjectsToExport()) {
                 // Add used drivers to export data
-                final DataSourceRegistry dataSourceRegistry = exportData.projectRegistry.getDataSourceRegistry(project);
+                final DBPDataSourceRegistry dataSourceRegistry = exportData.projectRegistry.getDataSourceRegistry(project);
                 if (dataSourceRegistry != null) {
-                    for (DataSourceDescriptor dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
+                    for (DBPDataSourceContainer dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
                         exportData.usedDrivers.add(dataSourceDescriptor.getDriver());
                     }
                 }
@@ -158,8 +158,8 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 // Export drivers meta
                 monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_driver_info, 1);
                 exportData.meta.startElement(RegistryConstants.TAG_DRIVERS);
-                for (DriverDescriptor driver : exportData.usedDrivers) {
-                    driver.serialize(exportData.meta, true);
+                for (DBPDriver driver : exportData.usedDrivers) {
+                    ((DriverDescriptor)driver).serialize(exportData.meta, true);
                 }
                 exportData.meta.endElement();
                 monitor.done();
@@ -183,7 +183,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 // Export driver libraries
                 Set<File> libFiles = new HashSet<>();
                 Map<String, File> libPathMap = new HashMap<>();
-                for (DriverDescriptor driver : exportData.usedDrivers) {
+                for (DBPDriver driver : exportData.usedDrivers) {
                     for (DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {
                         final File libraryFile = fileDescriptor.getLocalFile();
                         if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {

@@ -24,12 +24,11 @@ import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -67,16 +66,16 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
 
     @Override
     public void createControl(Composite parent) {
-        loadState(DBeaverCore.getGlobalPreferenceStore());
+        loadState(DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     @Override
     public boolean performAction() {
         try {
-            saveState(DBeaverCore.getGlobalPreferenceStore());
+            saveState(DBWorkbench.getPlatform().getPreferenceStore());
             NewSearchUI.runQueryInBackground(createQuery());
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Search error", "Can't perform search", e);
+            DBWorkbench.getPlatformUI().showError("Search error", "Can't perform search", e);
             return false;
         }
         return true;
@@ -93,12 +92,12 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
             while (st.hasMoreTokens()) {
                 String nodePath = st.nextToken();
                 try {
-                    DBNDataSource dsNode = DBeaverCore.getInstance().getNavigatorModel().getDataSourceByPath(nodePath);
+                    DBNDataSource dsNode = DBWorkbench.getPlatform().getNavigatorModel().getDataSourceByPath(nodePath);
                     if (dsNode == null || brokenDataSources.contains(dsNode)) {
                         continue;
                     }
 
-                    DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, dsNode.getOwnerProject(), nodePath);
+                    DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, dsNode.getOwnerProject(), nodePath);
                     if (node != null) {
                         result.add(node);
                     } else {

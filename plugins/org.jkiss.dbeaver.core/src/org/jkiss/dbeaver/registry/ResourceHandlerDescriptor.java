@@ -29,7 +29,9 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -40,7 +42,7 @@ import java.util.List;
 /**
  * ResourceHandlerDescriptor
  */
-public class ResourceHandlerDescriptor extends AbstractDescriptor
+public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBPResourceHandlerDescriptor
 {
     private static final Log log = Log.getLog(ResourceHandlerDescriptor.class);
 
@@ -103,18 +105,22 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
         this.handlerType = null;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public boolean isManagable() {
         return managable;
     }
 
+    @Override
     public DBPImage getIcon() {
         return icon;
     }
@@ -185,7 +191,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     public String getDefaultRoot(IProject project)
     {
         try {
-            IEclipsePreferences resourceHandlers = ProjectRegistry.getResourceHandlerPreferences(project, ProjectRegistry.RESOURCE_ROOT_FOLDER_NODE);
+            IEclipsePreferences resourceHandlers = RuntimeUtils.getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
             return resourceHandlers.get(id, defaultRoot);
         } catch (Exception e) {
             log.error("Can't obtain resource handler preferences", e);

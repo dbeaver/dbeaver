@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.registry.configurator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 

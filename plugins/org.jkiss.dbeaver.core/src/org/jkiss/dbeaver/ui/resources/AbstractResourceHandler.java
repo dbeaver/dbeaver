@@ -23,14 +23,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 
 import java.util.Collection;
 
@@ -68,7 +68,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     public void openResource(@NotNull IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFolder) {
-            DBNResource node = DBeaverCore.getInstance().getNavigatorModel().getNodeByResource(resource);
+            DBNResource node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByResource(resource);
             if (node != null) {
                 NodeEditorInput nodeInput = new NodeEditorInput(node);
                 UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(
@@ -106,6 +106,6 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     }
 
     protected IFolder getDefaultRoot(IProject project) {
-        return DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, getClass(), false);
+        return DBWorkbench.getPlatform().getProjectManager().getResourceDefaultRoot(project, getClass(), false);
     }
 }

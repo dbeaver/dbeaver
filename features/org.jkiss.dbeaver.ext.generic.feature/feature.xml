@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.ext.generic.feature"
         label="%featureName"
-        version="2.1.85.qualifier"
+        version="2.1.86.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.ext.generic">
 
@@ -29,6 +29,7 @@
     <plugin id="org.jkiss.dbeaver.ext.derby" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.es.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.firebird" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.greenplum" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.generic" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.h2" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.hana" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

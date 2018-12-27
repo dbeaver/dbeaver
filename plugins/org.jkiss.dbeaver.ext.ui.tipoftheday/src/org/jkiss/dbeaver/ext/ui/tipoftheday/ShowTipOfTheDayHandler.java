@@ -25,7 +25,7 @@ import org.eclipse.nebula.widgets.opal.tipoftheday.TipOfTheDay;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.xml.sax.SAXException;
 
@@ -55,7 +55,7 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
     private static void showTipOfTheDayDialog(List<String> tips, IWorkbenchWindow window) {
         final TipOfTheDay tipDialog = new TipOfTheDay();
         tipDialog.setDisplayShowOnStartup(true);
-        tipDialog.setShowOnStartup(DBeaverCore.getGlobalPreferenceStore().getBoolean(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP));
+        tipDialog.setShowOnStartup(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP));
 
         for (String tip : tips) {
             tipDialog.addTip(tip);
@@ -63,7 +63,7 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
 
         tipDialog.open(window.getShell());
 
-        DBeaverCore.getGlobalPreferenceStore().
+        DBWorkbench.getPlatform().getPreferenceStore().
             setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, tipDialog.isShowOnStartup());
     }
 

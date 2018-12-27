@@ -38,12 +38,14 @@
                                         </items>
                                     </items>
                                 </folder>
+<!--
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
                                     <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
+-->
                                 <folder label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
                                     <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
@@ -194,6 +196,7 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaTableColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaProjectionColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn"/>
     </extension>
 
 

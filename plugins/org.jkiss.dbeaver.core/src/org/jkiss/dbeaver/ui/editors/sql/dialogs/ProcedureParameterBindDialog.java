@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
@@ -58,7 +58,7 @@ public class ProcedureParameterBindDialog extends StatusDialog {
         try {
             this.parameters.addAll(procedure.getParameters(new VoidProgressMonitor()));
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Can't get parameters", "Error getting procedure papameters", e);
+            DBWorkbench.getPlatformUI().showError("Can't get parameters", "Error getting procedure papameters", e);
         }
 
         this.values = new HashMap<>(values);

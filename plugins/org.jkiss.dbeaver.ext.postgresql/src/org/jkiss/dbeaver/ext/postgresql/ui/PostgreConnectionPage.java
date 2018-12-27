@@ -25,10 +25,15 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.postgresql.*;
+import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
@@ -52,13 +57,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Button showNonDefault;
     private Button showTemplates;
     private boolean activated = false;
-
-    private static ImageDescriptor PG_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
-    private static ImageDescriptor GP_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/greenplum_logo.png");
-    private static ImageDescriptor TS_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/timescale_logo.png");
-    private static ImageDescriptor YB_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/yellowbrick_logo.png");
-    private static ImageDescriptor RS_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/redshift_logo.png");
-    private static ImageDescriptor CR_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/cockroach_logo.png");
 
     @Override
     public void dispose()
@@ -185,28 +183,10 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
         if (!activated) {
-            ImageDescriptor logo;
-            switch (serverType) {
-                case GREENPLUM:
-                    logo = GP_LOGO_IMG;
-                    break;
-                case TIMESCALE:
-                    logo = TS_LOGO_IMG;
-                    break;
-                case YELLOWBRICK:
-                    logo = YB_LOGO_IMG;
-                    break;
-                case REDSHIFT:
-                    logo = RS_LOGO_IMG;
-                    break;
-                case COCKROACH:
-                    logo = CR_LOGO_IMG;
-                    break;
-                default:
-                    logo = PG_LOGO_IMG;
-                    break;
+            ImageDescriptor logo = DBeaverIcons.getImageDescriptor(serverType.getIcon());
+            if (logo != null) {
+                setImageDescriptor(logo);
             }
-            setImageDescriptor(logo);
         }
 
         // Load values from new connection info
@@ -233,16 +213,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
                 if (getSite().isNew()) {
-                    switch (serverType) {
-                        case REDSHIFT:
-                            databaseName = "dev";
-                            break;
-                        case COCKROACH:
-                            databaseName = "system";
-                            break;
-                        default:
-                            databaseName = PostgreConstants.DEFAULT_DATABASE;
-                            break;
+                    databaseName = serverType.getDefaultDatabase();
+                    if (CommonUtils.isEmpty(databaseName)) {
+                        databaseName = PostgreConstants.DEFAULT_DATABASE;
                     }
                 } else {
                     databaseName = "";
@@ -253,16 +226,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         if (usernameText != null) {
             String userName = CommonUtils.notEmpty(connectionInfo.getUserName());
             if (site.isNew() && CommonUtils.isEmpty(userName)) {
-                switch (serverType) {
-                    case REDSHIFT:
-                        userName = "awsuser";
-                        break;
-                    case COCKROACH:
-                        userName = "root";
-                        break;
-                    default:
-                        userName = PostgreConstants.DEFAULT_DATABASE;
-                        break;
+                userName = serverType.getDefaultUser();
+                if (CommonUtils.isEmpty(userName)) {
+                    userName = PostgreConstants.DEFAULT_DATABASE;
                 }
             }
             usernameText.setText(userName);

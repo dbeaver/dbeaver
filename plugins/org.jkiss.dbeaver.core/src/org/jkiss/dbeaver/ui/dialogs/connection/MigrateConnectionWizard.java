@@ -33,12 +33,12 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,12 +51,12 @@ import java.util.*;
  */
 public class MigrateConnectionWizard extends Wizard
 {
-    private final DataSourceRegistry registry;
+    private final DBPDataSourceRegistry registry;
     private final Set<DBPDataSourceContainer> selectedConnections = new HashSet<>();
     private PageConnections pageConnections;
     private PageDriver pageDriver;
 
-    public MigrateConnectionWizard(DataSourceRegistry registry, IStructuredSelection selection)
+    public MigrateConnectionWizard(DBPDataSourceRegistry registry, IStructuredSelection selection)
     {
         this.registry = registry;
         if (selection != null && !selection.isEmpty()) {
@@ -141,7 +141,7 @@ public class MigrateConnectionWizard extends Wizard
                 }
             });
             if (registry != null) {
-                for (DataSourceDescriptor ds : registry.getDataSources()) {
+                for (DBPDataSourceContainer ds : registry.getDataSources()) {
                     TableItem item = new TableItem(connectionsViewer, SWT.NONE);
                     item.setText(ds.getName());
                     item.setData(ds);

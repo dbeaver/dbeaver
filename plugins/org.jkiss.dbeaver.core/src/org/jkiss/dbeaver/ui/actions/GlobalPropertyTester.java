@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.*;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
@@ -37,11 +37,11 @@ public class GlobalPropertyTester extends PropertyTester {
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         switch (property) {
             case PROP_HAS_MULTI_PROJECTS:
-                return DBeaverCore.getInstance().getLiveProjects().size() > 1;
+                return DBWorkbench.getPlatform().getLiveProjects().size() > 1;
             case PROP_HAS_ACTIVE_PROJECT:
-                return DBeaverCore.getInstance().getProjectRegistry().getActiveProject() != null;
+                return DBWorkbench.getPlatform().getProjectManager().getActiveProject() != null;
             case PROP_STANDALONE:
-                return DBeaverCore.isStandalone();
+                return DBWorkbench.getPlatform().getApplication().isStandalone();
         }
         return false;
     }

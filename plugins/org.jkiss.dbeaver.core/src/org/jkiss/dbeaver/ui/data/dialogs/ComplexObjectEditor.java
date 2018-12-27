@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -49,7 +48,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -311,7 +310,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
             }
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("Cell editor", "Can't open cell editor", e);
+            DBWorkbench.getPlatformUI().showError("Cell editor", "Can't open cell editor", e);
         }
     }
 
@@ -440,7 +439,7 @@ public class ComplexObjectEditor extends TreeViewer {
             }
             this.item.value = value;
             this.item.modified = true;
-            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE)) {
+            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE)) {
                 parentController.updateValue(extractValue(), false);
             }
             refresh(this.item);
