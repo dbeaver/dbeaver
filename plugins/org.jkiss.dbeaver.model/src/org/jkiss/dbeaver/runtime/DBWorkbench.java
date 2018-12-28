@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.runtime;
 import org.eclipse.core.runtime.Adapters;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
@@ -27,6 +28,8 @@ import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
  * Workbench
  */
 public class DBWorkbench {
+
+    private static final Log log = Log.getLog(DBWorkbench.class);
 
     private static final DBWorkbench instance = new DBWorkbench();
 
@@ -66,7 +69,11 @@ public class DBWorkbench {
      */
     @Nullable
     public static <T> T getService(@NotNull Class<T> serviceType) {
-        return ServiceRegistry.getInstance().getService(serviceType);
+        T service = ServiceRegistry.getInstance().getService(serviceType);
+        if (service == null) {
+            log.error("Service '" + serviceType.getName() + "' not found");
+        }
+        return service;
     }
 
 }

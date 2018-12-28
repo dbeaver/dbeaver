@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -3606,13 +3605,13 @@ public class ResultSetViewer extends Viewer
 
     private class ToggleServerSideOrderingAction extends ToggleConnectionPreferenceAction {
         ToggleServerSideOrderingAction() {
-            super(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, CoreMessages.pref_page_database_resultsets_label_server_side_order);
+            super(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, ResultSetMessages.pref_page_database_resultsets_label_server_side_order);
         }
     }
 
     private class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
         ToggleRefreshOnScrollingAction() {
-            super(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling);
+            super(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling);
         }
     }
 

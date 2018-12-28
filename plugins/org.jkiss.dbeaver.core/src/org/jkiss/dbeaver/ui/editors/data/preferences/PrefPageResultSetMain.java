@@ -25,11 +25,11 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -101,26 +101,26 @@ public class PrefPageResultSetMain extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
-            Group queriesGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
+            Group queriesGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
             queriesGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            resultSetSize = UIUtils.createLabelText(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size, "0", SWT.BORDER);
+            resultSetSize = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_max_size, "0", SWT.BORDER);
             resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-            autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment_tip, true, 2);
-            rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
-            resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, CoreMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
-            serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, null, false, 2);
-            readQueryMetadata = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_metadata,
-               CoreMessages.pref_page_database_resultsets_label_read_metadata_tip, false, 2);
-            readQueryReferences = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_read_references,
-                CoreMessages.pref_page_database_resultsets_label_read_references_tip, false, 2);
-            queryCancelTimeout = UIUtils.createLabelText(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, "0");
+            autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment_tip, true, 2);
+            rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
+            resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_use_sql, ResultSetMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
+            serverSideOrderingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_server_side_order, null, false, 2);
+            readQueryMetadata = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_read_metadata,
+               ResultSetMessages.pref_page_database_resultsets_label_read_metadata_tip, false, 2);
+            readQueryReferences = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_read_references,
+                ResultSetMessages.pref_page_database_resultsets_label_read_references_tip, false, 2);
+            queryCancelTimeout = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout, "0");
             queryCancelTimeout.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-            queryCancelTimeout.setToolTipText(CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip);
+            queryCancelTimeout.setToolTipText(ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout_tip);
             queryCancelTimeout.setEnabled(false);
 
-            filterForceSubselect = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_filter_force_subselect,
-                CoreMessages.pref_page_database_resultsets_label_filter_force_subselect_tip, false, 2);
+            filterForceSubselect = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect,
+                ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect_tip, false, 2);
 
             readQueryMetadata.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -132,19 +132,19 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
         // Misc settings
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group miscGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
-            alwaysUseAllColumns = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
-            newRowsAfter = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_new_rows_after, false);
-            refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
-            useNavigatorFilters = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_use_navigator_filters, CoreMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
+            keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_general_checkbox_keep_cursor, false);
+            alwaysUseAllColumns = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
+            newRowsAfter = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_new_rows_after, false);
+            refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
+            useNavigatorFilters = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
         }
 
         {
-            Group advGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group advGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            advUseFetchSize = UIUtils.createCheckbox(advGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, CoreMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
+            advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
         }
 
         return composite;
