@@ -40,7 +40,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
@@ -171,8 +170,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         e.gc.setForeground(shadowColor);
                         e.gc.setFont(hintFont);
                         e.gc.drawText(supportsDataFilter ?
-                                CoreMessages.sql_editor_resultset_filter_panel_text_enter_sql_to_filter:
-                                CoreMessages.sql_editor_resultset_filter_panel_text_enter_filter_not_support,
+                                ResultSetMessages.sql_editor_resultset_filter_panel_text_enter_sql_to_filter:
+                                ResultSetMessages.sql_editor_resultset_filter_panel_text_enter_filter_not_support,
                             2, 0, true);
                         e.gc.setFont(null);
                     }
@@ -270,7 +269,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
             //filtersApplyButton.setText("Apply");
-            filtersApplyButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_apply);
+            filtersApplyButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply);
             filtersApplyButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -281,7 +280,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_RESET));
-            filtersClearButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_remove);
+            filtersClearButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_remove);
             filtersClearButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -292,7 +291,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             filtersSaveButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersSaveButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_SAVE));
-            filtersSaveButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_save);
+            filtersSaveButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_save);
             filtersSaveButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -303,7 +302,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
-            filtersCustomButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_custom);
+            filtersCustomButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_custom);
             filtersCustomButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -564,7 +563,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (activeObjectImage != null) {
             iconLabel.setImage(DBeaverIcons.getImage(activeObjectImage));
         }
-        iconLabel.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_label);
+        iconLabel.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_label);
         iconLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         iconLabel.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
         iconLabel.addMouseListener(new MouseAdapter() {
@@ -692,7 +691,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         ActiveObjectPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
-            setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_open_console);
+            setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_open_console);
 
             this.addMouseListener(new MouseAdapter() {
                 @Override

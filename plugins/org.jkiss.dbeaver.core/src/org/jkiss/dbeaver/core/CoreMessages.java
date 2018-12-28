@@ -1072,26 +1072,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_download_auto_page_driver_security_warning_msg;
 	public static String dialog_driver_download_auto_page_download_rate;
 	public static String dialog_driver_download_auto_page_download_failed_msg;
-	// Driver download
-		
 	// SQL editor resultset filter panel
-	public static String sql_editor_resultset_tool_item_log;
-	public static String sql_editor_resultset_tool_item_output;
 	public static String sql_editor_menu_format;
-	public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
-	public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
-	public static String sql_editor_resultset_filter_panel_btn_apply;
-	public static String sql_editor_resultset_filter_panel_btn_remove;
-	public static String sql_editor_resultset_filter_panel_btn_save;
-	public static String sql_editor_resultset_filter_panel_btn_custom;
-	public static String sql_editor_resultset_filter_panel_label;
-	public static String sql_editor_resultset_filter_panel_btn_open_console;
+	// Driver download
 
-	public static String sql_editor_resultset_filter_panel_control_no_data;
-	public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
-
-    public static String actions_spreadsheet_copy_special;
-    // SQL editor resultset filter panel
+	// SQL editor resultset filter panel
 	
 	static {
 		// initialize resource bundle
