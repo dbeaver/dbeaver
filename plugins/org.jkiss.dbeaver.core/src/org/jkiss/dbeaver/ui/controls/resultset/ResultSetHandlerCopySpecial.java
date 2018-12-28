@@ -27,9 +27,9 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -67,7 +67,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     @Override
     public void updateElement(UIElement element, Map parameters)
     {
-        element.setText(CoreMessages.actions_spreadsheet_copy_special);
+        element.setText(ResultSetMessages.actions_spreadsheet_copy_special);
     }
 
     public static class CopyConfigDialog extends Dialog {

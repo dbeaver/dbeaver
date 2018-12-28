@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IContributionManager;
-import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 /**
  * Decorator for query results
@@ -31,7 +31,7 @@ public class QueryResultsDecorator implements IResultSetDecorator  {
 
     @Override
     public String getEmptyDataMessage() {
-        return CoreMessages.sql_editor_resultset_filter_panel_control_no_data;
+        return ResultSetMessages.sql_editor_resultset_filter_panel_control_no_data;
     }
 
     @Override

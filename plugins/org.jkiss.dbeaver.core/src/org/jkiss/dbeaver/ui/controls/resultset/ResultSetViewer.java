@@ -48,6 +48,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
@@ -1923,7 +1924,7 @@ public class ResultSetViewer extends Viewer
 
                 {
                     MenuManager editMenu = new MenuManager(
-                        CoreMessages.actions_menu_edit,
+                        IDEWorkbenchMessages.Workbench_edit,
                         DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
                         MENU_ID_EDIT); //$NON-NLS-1$
 
