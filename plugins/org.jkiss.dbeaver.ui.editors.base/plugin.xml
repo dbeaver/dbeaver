@@ -3,5 +3,19 @@
 
 <plugin>
 
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.database.editor"
+                properties="active"
+                type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.editors.text"
+                properties="available,canComment,canLoad,canSave"
+                type="org.eclipse.ui.IEditorPart"/>
+    </extension>
 
 </plugin>

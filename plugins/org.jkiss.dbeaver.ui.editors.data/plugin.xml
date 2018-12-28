@@ -3,6 +3,7 @@
 
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.dataManager" name="%extension-point.org.jkiss.dbeaver.dataManager.name" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
 
@@ -13,6 +14,61 @@
     <extension point="org.jkiss.dbeaver.dataManager">
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.TextStreamValueManager" id="plaintext" label="Text" primaryMime="text/plain"
                        description="Plain text" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <!--
+                <manager class="org.jkiss.dbeaver.ui.data.managers.BooleanValueManager" id="org.jkiss.dbeaver.ui.data.managers.BooleanValueManager">
+                    <supports kind="BOOLEAN"/>
+                </manager>
+        -->
+        <manager class="org.jkiss.dbeaver.ui.data.managers.NumericValueManager" id="org.jkiss.dbeaver.ui.data.managers.NumericValueManager">
+            <supports kind="NUMERIC"/>
+            <supports kind="BOOLEAN"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ui.data.managers.StringValueManager">
+            <supports kind="STRING"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.DateTimeValueManager" id="org.jkiss.dbeaver.ui.data.managers.DateTimeValueManager">
+            <supports kind="DATETIME"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ArrayValueManager" id="org.jkiss.dbeaver.ui.data.managers.ArrayValueManager">
+            <supports kind="ARRAY"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ReferenceValueManager" id="org.jkiss.dbeaver.ui.data.managers.ReferenceValueManager">
+            <supports kind="REFERENCE"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ui.data.managers.StructValueManager">
+            <supports kind="STRUCT"/>
+            <supports type="java.util.Map"/>
+            <supports type="java.util.List"/>
+            <supports type="java.util.Set"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ContentValueManager" id="org.jkiss.dbeaver.ui.data.managers.ContentValueManager">
+            <supports kind="CONTENT"/>
+            <supports kind="BINARY"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ObjectValueManager" id="org.jkiss.dbeaver.ui.data.managers.ObjectValueManager">
+            <supports kind="OBJECT"/>
+            <supports kind="DOCUMENT"/>
+            <supports kind="ROWID"/>
+            <supports kind="ANY"/>
+            <supports typeName="REFCURSOR"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager" id="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager">
+            <supports type="java.util.UUID"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.URLPreviewValueManager" id="org.jkiss.dbeaver.ui.data.managers.URLPreviewValueManager">
+            <supports typeName="URL.Preview"/>
+        </manager>
+        <!--
+                <manager class="org.jkiss.dbeaver.ui.data.managers.RowIdValueManager" id="org.jkiss.dbeaver.ui.data.managers.RowIdValueManager">
+                    <supports kind="ROWID"/>
+                </manager>
+        -->
+        <manager class="org.jkiss.dbeaver.ui.data.managers.DefaultValueManager" id="DefaultValueManager">
+        </manager>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.aggregateFunction">
@@ -84,6 +140,44 @@
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingPanel">
         </panel>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+                id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
+                class="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
+                objectType="org.jkiss.dbeaver.model.struct.DBSDataContainer"
+                main="false"
+                label="%editor.dbdata.name"
+                description="%editor.dbdata.description"
+                position="additions_start"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_table.png">
+        </editor>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
+                id="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
+                namespace="org.jkiss.dbeaver.core.resultset"
+                properties="active,hasData,hasMoreData,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount"
+                type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewPropertyTester"
+                id="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewPropertyTester"
+                namespace="org.jkiss.dbeaver.core.resultset.panel.valueView"
+                properties="active"
+                type="org.eclipse.ui.IWorkbenchPart"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="%editor.lob.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/binary.png"
+                contributorClass="org.jkiss.dbeaver.ui.editors.content.ContentEditorContributor"
+                class="org.jkiss.dbeaver.ui.editors.content.ContentEditor"
+                id="org.jkiss.dbeaver.ui.editors.content.ContentEditor">
+        </editor>
     </extension>
 
 </plugin>

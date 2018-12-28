@@ -100,4 +100,19 @@
         <initializer class="org.jkiss.dbeaver.ui.internal.UINavigatorPreferencesInitializer"/>
     </extension>
 
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.editors.entity"
+                properties="dirty,canUndo,canRedo"
+                type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.editors.folder"
+                properties="canNavigate"
+                type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
+    </extension>
+
 </plugin>
