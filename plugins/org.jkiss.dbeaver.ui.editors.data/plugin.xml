@@ -180,4 +180,94 @@
         </editor>
     </extension>
 
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.core.rs" name="%category.rs.name" description="%category.rs.description"/>
+
+        <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="%command.org.jkiss.dbeaver.core.resultset.toggleMode.name" description="%command.org.jkiss.dbeaver.core.resultset.toggleMode.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.focus.filter" name="%command.org.jkiss.dbeaver.core.resultset.focus.filter.name" description="%command.org.jkiss.dbeaver.core.resultset.focus.filter.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.switchPresentation" name="%command.org.jkiss.dbeaver.core.resultset.switchPresentation.name" description="%command.org.jkiss.dbeaver.core.resultset.switchPresentation.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.first" name="%command.org.jkiss.dbeaver.core.resultset.row.first.name" description="%command.org.jkiss.dbeaver.core.resultset.row.first.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="%command.org.jkiss.dbeaver.core.resultset.row.previous.name" description="%command.org.jkiss.dbeaver.core.resultset.row.previous.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.next" name="%command.org.jkiss.dbeaver.core.resultset.row.next.name" description="%command.org.jkiss.dbeaver.core.resultset.row.next.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.last" name="%command.org.jkiss.dbeaver.core.resultset.row.last.name" description="%command.org.jkiss.dbeaver.core.resultset.row.last.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.fetch.page" name="%command.org.jkiss.dbeaver.core.resultset.fetch.page.name" description="%command.org.jkiss.dbeaver.core.resultset.fetch.page.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.fetch.all" name="%command.org.jkiss.dbeaver.core.resultset.fetch.all.name" description="%command.org.jkiss.dbeaver.core.resultset.fetch.all.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.count" name="%command.org.jkiss.dbeaver.core.resultset.count.name" description="%command.org.jkiss.dbeaver.core.resultset.count.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.edit" name="%command.org.jkiss.dbeaver.core.resultset.row.edit.name" description="%command.org.jkiss.dbeaver.core.resultset.row.edit.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.edit.inline" name="%command.org.jkiss.dbeaver.core.resultset.row.edit.inline.name" description="%command.org.jkiss.dbeaver.core.resultset.row.edit.inline.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.add" name="%command.org.jkiss.dbeaver.core.resultset.row.add.name" description="%command.org.jkiss.dbeaver.core.resultset.row.add.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="%command.org.jkiss.dbeaver.core.resultset.row.copy.name" description="%command.org.jkiss.dbeaver.core.resultset.row.copy.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.delete" name="%command.org.jkiss.dbeaver.core.resultset.row.delete.name" description="%command.org.jkiss.dbeaver.core.resultset.row.delete.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.cell.setNull" name="%command.org.jkiss.dbeaver.core.resultset.cell.setNull.name" description="%command.org.jkiss.dbeaver.core.resultset.cell.setNull.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.cell.reset" name="%command.org.jkiss.dbeaver.core.resultset.cell.reset.name" description="%command.org.jkiss.dbeaver.core.resultset.cell.reset.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.applyChanges" name="%command.org.jkiss.dbeaver.core.resultset.applyChanges.name" description="%command.org.jkiss.dbeaver.core.resultset.applyChanges.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.rejectChanges" name="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.name" description="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.generateScript" name="%command.org.jkiss.dbeaver.core.resultset.generateScript.name" description="%command.org.jkiss.dbeaver.core.resultset.generateScript.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.navigateLink" name="%command.org.jkiss.dbeaver.core.resultset.navigateLink.name" description="%command.org.jkiss.dbeaver.core.resultset.navigateLink.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.cell.save" name="%command.org.jkiss.dbeaver.core.resultset.cell.save.name" description="%command.org.jkiss.dbeaver.core.resultset.cell.save.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.togglePreview" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.togglePanel" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.description" categoryId="org.jkiss.dbeaver.core.rs">
+            <commandParameter
+                    id="panelId"
+                    name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.param.panelId.name"
+                    optional="false"
+                    values="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerTogglePanel$PanelIdParameterValues">
+            </commandParameter>
+        </command>
+        <command id="org.jkiss.dbeaver.core.resultset.openWith" name="%command.org.jkiss.dbeaver.core.resultset.openWith.name" description="%command.org.jkiss.dbeaver.core.resultset.openWith.description" categoryId="org.jkiss.dbeaver.core.rs">
+            <commandParameter
+                    id="processorId"
+                    name="%command.org.jkiss.dbeaver.core.resultset.openWith.param.processorId.name"
+                    optional="false"
+                    values="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith$OpenWithParameterValues">
+            </commandParameter>
+        </command>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.toggleLayout" name="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.copyColumnNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.copyRowNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyRowNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyRowNames.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.columnsFitValue" name="%command.org.jkiss.dbeaver.core.resultset.grid.columnsFitValue.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.columnsFitValue.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen" name="%command.org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.columnsFitScreen.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.filterMenu" name="%command.org.jkiss.dbeaver.core.resultset.filterMenu.name" description="%command.org.jkiss.dbeaver.core.resultset.filterMenu.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" name="%command.org.jkiss.dbeaver.core.resultset.filterMenu.distinct.name" description="%command.org.jkiss.dbeaver.core.resultset.filterMenu.distinct.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.referencesMenu" name="%command.org.jkiss.dbeaver.core.resultset.referencesMenu.name" description="%command.org.jkiss.dbeaver.core.resultset.referencesMenu.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.toggleOrder" name="%command.org.jkiss.dbeaver.core.resultset.toggleOrder.name" description="%command.org.jkiss.dbeaver.core.resultset.toggleOrder.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.export" name="%command.org.jkiss.dbeaver.core.resultset.export.name" description="%command.org.jkiss.dbeaver.core.resultset.export.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_first.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_previous.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.next" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_next.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.last" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_last.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.fetch.page" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_fetch_page.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.fetch.all" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_fetch_all.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.count" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_count.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.edit" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/row_edit.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/row_add.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.copy" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/row_copy.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/row_delete.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.applyChanges" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/accept.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/cancel.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.generateScript" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_inspector.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.navigateLink" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/link.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_customize.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.export" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.core.ui.resultset.presentation.control">
+            <with variable="activeFocusControlId">
+                <equals value="org.jkiss.dbeaver.ui.resultset.presentation"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
+            <with variable="activePart">
+                <!-- TODO: Should replace forcePluginActivation with some other non-active way to test property-->
+                <test property="org.jkiss.dbeaver.core.resultset.active" forcePluginActivation="true"/>
+            </with>
+        </definition>
+    </extension>
+
 </plugin>
