@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -241,7 +242,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
                 DBPDataSource dataSource = container.getDataSource();
                 if (dataSource == null) {
-                    throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
+                    throw new DBException(ModelMessages.error_not_connected_to_database);
                 }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
 

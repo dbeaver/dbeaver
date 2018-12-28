@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.internal.DebugMessages;
 import org.jkiss.dbeaver.debug.jdbc.DBGJDBCSession;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.HashMap;
@@ -65,7 +66,7 @@ public abstract class DBGBaseController implements DBGController {
             }
         }
         if (!dataSourceContainer.isConnected()) {
-            throw new DBGException("Not connected to database");
+            throw new DBGException(ModelMessages.error_not_connected_to_database);
         }
         return createSession(monitor, configuration);
     }

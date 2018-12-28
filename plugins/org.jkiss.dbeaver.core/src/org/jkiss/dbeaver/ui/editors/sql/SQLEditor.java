@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -1770,7 +1771,7 @@ public class SQLEditor extends SQLEditorBase implements
             ResultSetViewer rsv = curResultsContainer.getResultSetController();
             if (rsv != null) {
                 if (executionContext == null) {
-                    rsv.setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
+                    rsv.setStatus(ModelMessages.error_not_connected_to_database);
                 } else {
                     rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
                 }
@@ -2251,7 +2252,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (executionContext == null) {
                 DBWorkbench.getPlatformUI().showError(
                         CoreMessages.editors_sql_error_cant_execute_query_title,
-                    CoreMessages.editors_sql_status_not_connected_to_database);
+                    ModelMessages.error_not_connected_to_database);
                 return;
             }
             final boolean isSingleQuery = (queries.size() == 1);

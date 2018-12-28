@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -2348,7 +2349,7 @@ public class ResultSetViewer extends Viewer
         }
 
         if (getExecutionContext() == null) {
-            throw new DBException("Not connected");
+            throw new DBException(ModelMessages.error_not_connected_to_database);
         }
         if (association == null) {
             List<DBSEntityReferrer> referrers = attr.getReferrers();
@@ -2423,7 +2424,7 @@ public class ResultSetViewer extends Viewer
         }
 
         if (getExecutionContext() == null) {
-            throw new DBException("Not connected");
+            throw new DBException(ModelMessages.error_not_connected_to_database);
         }
 
         DBSEntity targetEntity = association.getParentObject();
@@ -2839,7 +2840,7 @@ public class ResultSetViewer extends Viewer
         final DBCExecutionContext executionContext = getExecutionContext();
         DBSDataContainer dataContainer = getDataContainer();
         if (executionContext == null || dataContainer == null) {
-            throw new DBException("Not connected");
+            throw new DBException(ModelMessages.error_not_connected_to_database);
         }
         try (DBCSession session = executionContext.openSession(
             monitor,
