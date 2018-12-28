@@ -20,12 +20,12 @@ import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -45,7 +45,7 @@ public abstract class BaseValueManager implements IValueManager {
         try {
             DBCExecutionContext executionContext = valueController.getExecutionContext();
             if (executionContext == null) {
-                throw new DBCException(CoreMessages.editors_sql_status_not_connected_to_database);
+                throw new DBCException(ModelMessages.error_not_connected_to_database);
             }
             // We are going to create NULL value - it shouldn't result in any DB roundtrips so let's use dummy monitor
             try (DBCSession session = executionContext.openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Set NULL value")) {

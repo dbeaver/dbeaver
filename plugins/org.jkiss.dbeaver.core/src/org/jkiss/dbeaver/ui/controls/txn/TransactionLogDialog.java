@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -82,7 +83,7 @@ public class TransactionLogDialog extends TransactionInfoDialog {
                 "Transaction log is not available.\nOpen database editor.");
         } else if (executionContext == null) {
             DBWorkbench.getPlatformUI().showError(
-                    "Not connected",
+                ModelMessages.error_not_connected_to_database,
                 "Transaction log is not available.\nConnect to a database.");
         } else {
             final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);

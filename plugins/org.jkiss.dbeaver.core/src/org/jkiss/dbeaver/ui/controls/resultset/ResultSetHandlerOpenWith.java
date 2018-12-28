@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -130,7 +131,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
         if (dataContainer.getDataSource() == null) {
-            DBeaverUI.getInstance().showError("Open " + processor.getAppName(), "Not connected to a database");
+            DBeaverUI.getInstance().showError("Open " + processor.getAppName(), ModelMessages.error_not_connected_to_database);
             return;
         }
 

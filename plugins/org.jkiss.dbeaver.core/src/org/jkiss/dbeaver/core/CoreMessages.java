@@ -436,7 +436,6 @@ public class CoreMessages extends NLS {
     public static String editors_sql_save_on_close_text;
 	public static String editors_sql_status_cant_obtain_document;
 	public static String editors_sql_status_empty_query_string;
-	public static String editors_sql_status_not_connected_to_database;
 	public static String editors_sql_status_rows_updated;
 	public static String editors_sql_status_statement_executed;
 	public static String editors_sql_status_statement_executed_no_rows_updated;
