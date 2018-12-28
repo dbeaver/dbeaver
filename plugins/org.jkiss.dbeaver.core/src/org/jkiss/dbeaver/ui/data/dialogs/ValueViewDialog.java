@@ -32,7 +32,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
@@ -248,12 +248,12 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
-        createButton(parent, IDialogConstants.OK_ID, CoreMessages.dialog_value_view_button_save, true)
+        createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_value_view_button_save, true)
             .setEnabled(!valueController.isReadOnly());
         boolean required = false;//valueController.getValueType() instanceof DBSAttributeBase && ((DBSAttributeBase) valueController.getValueType()).isRequired();
-        createButton(parent, IDialogConstants.IGNORE_ID, CoreMessages.dialog_value_view_button_sat_null, false)
+        createButton(parent, IDialogConstants.IGNORE_ID, ResultSetMessages.dialog_value_view_button_sat_null, false)
             .setEnabled(!valueController.isReadOnly() && !DBUtils.isNullValue(valueController.getValue()) && !required);
-        createButton(parent, IDialogConstants.CANCEL_ID, CoreMessages.dialog_value_view_button_cancel, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, ResultSetMessages.dialog_value_view_button_cancel, false);
     }
 
     @Override
@@ -321,7 +321,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             super.okPressed();
         }
         catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_value_view_dialog_error_updating_title, CoreMessages.dialog_value_view_dialog_error_updating_message, e);
+            DBWorkbench.getPlatformUI().showError(ResultSetMessages.dialog_value_view_dialog_error_updating_title, ResultSetMessages.dialog_value_view_dialog_error_updating_message, e);
             super.cancelPressed();
         }
     }

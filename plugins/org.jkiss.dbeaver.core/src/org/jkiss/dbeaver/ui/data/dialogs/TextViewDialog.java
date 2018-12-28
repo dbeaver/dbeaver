@@ -31,7 +31,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
@@ -87,7 +87,7 @@ public class TextViewDialog extends ValueViewDialog {
         boolean isForeignKey = referenceValueEditor.isReferenceValue();
 
         Label label = new Label(dialogGroup, SWT.NONE);
-        label.setText(CoreMessages.dialog_data_label_value);
+        label.setText(ResultSetMessages.dialog_data_label_value);
 
         boolean readOnly = getValueController().isReadOnly();
         boolean useHex = !isForeignKey;
@@ -339,8 +339,8 @@ public class TextViewDialog extends ValueViewDialog {
     protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
         if (getValueController().getValueType().getDataKind() == DBPDataKind.STRING) {
-            Button button = createButton(parent, IDialogConstants.PROCEED_ID, CoreMessages.dialog_text_view_open_editor, false);
-            button.setToolTipText(CoreMessages.dialog_text_view_open_editor_tip);
+            Button button = createButton(parent, IDialogConstants.PROCEED_ID, ResultSetMessages.dialog_text_view_open_editor, false);
+            button.setToolTipText(ResultSetMessages.dialog_text_view_open_editor_tip);
         }
     }
 

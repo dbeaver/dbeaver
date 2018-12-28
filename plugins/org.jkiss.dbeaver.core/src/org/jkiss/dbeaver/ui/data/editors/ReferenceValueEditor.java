@@ -28,7 +28,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
@@ -131,7 +131,7 @@ public class ReferenceValueEditor {
                 labelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 Link dictLabel = UIUtils.createLink(
                     labelGroup,
-                    NLS.bind(CoreMessages.dialog_value_view_label_dictionary, refTable.getName()), new SelectionAdapter() {
+                    NLS.bind(ResultSetMessages.dialog_value_view_label_dictionary, refTable.getName()), new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             // Open
@@ -173,9 +173,9 @@ public class ReferenceValueEditor {
         //gd.grabExcessHorizontalSpace = true;
         editorSelector.setLayoutData(gd);
 
-        TableColumn valueColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_value);
+        TableColumn valueColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_value);
         valueColumn.setData(Boolean.TRUE);
-        TableColumn descColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_description);
+        TableColumn descColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, ResultSetMessages.dialog_value_view_column_description);
         descColumn.setData(Boolean.FALSE);
 
         SortListener sortListener = new SortListener();
@@ -374,7 +374,7 @@ public class ReferenceValueEditor {
         private Object pattern;
 
         private SelectorLoaderService() {
-            super(CoreMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
+            super(ResultSetMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
         }
 
         void setPattern(@Nullable Object pattern)
@@ -452,7 +452,7 @@ public class ReferenceValueEditor {
                     try (DBCSession session = valueController.getExecutionContext().openSession(
                         monitor,
                         DBCExecutionPurpose.UTIL,
-                        NLS.bind(CoreMessages.dialog_value_view_context_name, fkAttribute.getName()))) {
+                        NLS.bind(ResultSetMessages.dialog_value_view_context_name, fkAttribute.getName()))) {
                         Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
                             session,
                             refColumn,

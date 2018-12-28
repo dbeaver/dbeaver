@@ -25,7 +25,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
@@ -72,14 +72,14 @@ public class ContentValueManager extends BaseValueManager {
     {
         if (controller.getValue() instanceof DBDContent) {
             if (!((DBDContent) controller.getValue()).isNull()) {
-                manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS)) {
+                manager.add(new Action(ResultSetMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS)) {
                     @Override
                     public void run() {
                         saveToFile(controller);
                     }
                 });
             }
-            manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
+            manager.add(new Action(ResultSetMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
                 @Override
                 public void run() {
                     if (loadFromFile(controller)) {
@@ -111,7 +111,7 @@ public class ContentValueManager extends BaseValueManager {
         } else if (value instanceof DBDContent) {
             return ContentEditor.openEditor(controller);
         } else {
-            controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, DBPMessageType.ERROR);
+            controller.showMessage(ResultSetMessages.model_jdbc_unsupported_content_value_type_, DBPMessageType.ERROR);
             return null;
         }
     }
@@ -119,7 +119,7 @@ public class ContentValueManager extends BaseValueManager {
     public static boolean loadFromFile(final IValueController controller)
     {
         if (!(controller.getValue() instanceof DBDContent)) {
-            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
+            log.error(ResultSetMessages.model_jdbc_bad_content_value_ + controller.getValue());
             return false;
         }
 
@@ -149,7 +149,7 @@ public class ContentValueManager extends BaseValueManager {
     public static void saveToFile(IValueController controller)
     {
         if (!(controller.getValue() instanceof DBDContent)) {
-            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
+            log.error(ResultSetMessages.model_jdbc_bad_content_value_ + controller.getValue());
             return;
         }
 
@@ -184,8 +184,8 @@ public class ContentValueManager extends BaseValueManager {
         }
         catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.model_jdbc_could_not_save_content,
-                CoreMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
+                    ResultSetMessages.model_jdbc_could_not_save_content,
+                ResultSetMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
                 e.getTargetException());
         }
         catch (InterruptedException e) {
@@ -211,14 +211,14 @@ public class ContentValueManager extends BaseValueManager {
                 propertySource.addProperty(
                     PROP_CATEGORY_CONTENT,
                     "content_type", //$NON-NLS-1$
-                    CoreMessages.model_jdbc_content_type,
+                    ResultSetMessages.model_jdbc_content_type,
                     ((DBDContent)value).getContentType());
                 final long contentLength = ((DBDContent) value).getContentLength();
                 if (contentLength >= 0) {
                     propertySource.addProperty(
                         PROP_CATEGORY_CONTENT,
                         "content_length", //$NON-NLS-1$
-                        CoreMessages.model_jdbc_content_length,
+                        ResultSetMessages.model_jdbc_content_length,
                         contentLength);
                 }
             }

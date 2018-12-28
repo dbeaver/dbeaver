@@ -237,8 +237,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_start_dialog_interrupted_title;
 	public static String dialog_connection_wizard_title;
 
-	public static String dialog_cursor_view_monitor_rows_fetched;
-
 	public static String dialog_data_format_profiles_button_delete_profile;
 	public static String dialog_data_format_profiles_button_new_profile;
 	public static String dialog_data_format_profiles_confirm_delete_message;
@@ -247,10 +245,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_data_format_profiles_error_message;
 	public static String dialog_data_format_profiles_error_title;
 	public static String dialog_data_format_profiles_title;
-	public static String dialog_data_label_value;
-	public static String dialog_text_view_open_editor;
-	public static String dialog_text_view_open_editor_tip;
-	
+
 	public static String dialog_driver_manager_button_delete;
 	public static String dialog_driver_manager_button_edit;
 	public static String dialog_driver_manager_button_new;
@@ -404,16 +399,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_tunnel_checkbox_use_handler;
 	public static String dialog_tunnel_title;
 
-	public static String dialog_value_view_button_cancel;
-	public static String dialog_value_view_button_sat_null;
-	public static String dialog_value_view_button_save;
-	public static String dialog_value_view_column_description;
-	public static String dialog_value_view_column_value;
-	public static String dialog_value_view_context_name;
-	public static String dialog_value_view_dialog_error_updating_message;
-	public static String dialog_value_view_dialog_error_updating_title;
-	public static String dialog_value_view_job_selector_name;
-	public static String dialog_value_view_label_dictionary;
 	public static String dialog_version_update_available_new_version;
 	public static String dialog_version_update_button_more_info;
 	public static String dialog_version_update_current_version;
@@ -460,16 +445,6 @@ public class CoreMessages extends NLS {
 	public static String editors_sql_actions_copy_as_source_code_tip;
 
 	public static String model_html_read_database_meta_data;
-
-	public static String model_jdbc_bad_content_value_;
-	public static String model_jdbc_content_length;
-	public static String model_jdbc_content_type;
-	public static String model_jdbc_could_not_save_content;
-	public static String model_jdbc_could_not_save_content_to_file_;
-	public static String model_jdbc_load_from_file_;
-	public static String model_jdbc_save_to_file_;
-	public static String model_jdbc_set_to_current_time;
-	public static String model_jdbc_unsupported_content_value_type_;
 
 	public static String model_navigator_Description;
 	public static String model_navigator_Name;
@@ -697,10 +672,7 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_page_log_task_started_at;
 	
     public static String ui_actions_exit_emergency_question;
-	public static String ui_common_button_help;
-	public static String ui_properties_name;
-	public static String ui_properties_value;
-	
+
 	public static String dialog_connection_edit_driver_button;
 	public static String dialog_connection_driver;
 	public static String dialog_connection_advanced_settings;
