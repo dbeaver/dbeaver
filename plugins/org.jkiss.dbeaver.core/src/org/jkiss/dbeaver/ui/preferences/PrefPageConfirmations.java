@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -60,6 +62,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     protected Control createContents(Composite parent)
     {
         ResourceBundle coreBundle = DBeaverActivator.getCoreResourceBundle();
+        ResourceBundle rsvBundle = ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME);
         ResourceBundle navigatorBundle = ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME);
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -96,9 +99,9 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         };
 
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_EXIT);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_ORDER_RESULTSET);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_RS_FETCH_ALL);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_ORDER_RESULTSET);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_FETCH_ALL);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_VERSION_CHECK);
@@ -107,7 +110,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_DELETE);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REJECT);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REVERT);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, rsvBundle, ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, DBeaverPreferences.CONFIRM_DANGER_SQL);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL);
 

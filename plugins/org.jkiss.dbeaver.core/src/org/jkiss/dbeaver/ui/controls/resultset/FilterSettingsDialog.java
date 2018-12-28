@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTreeEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -98,7 +98,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(CoreMessages.controls_resultset_filter_title);
+        getShell().setText(ResultSetMessages.controls_resultset_filter_title);
         getShell().setImage(DBeaverIcons.getImage(UIIcon.FILTER));
 
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -138,10 +138,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             columnsTree.setLayoutData(gd);
             columnsTree.setHeaderVisible(true);
             columnsTree.setLinesVisible(true);
-            UIUtils.createTreeColumn(columnsTree, SWT.LEFT, CoreMessages.controls_resultset_filter_column_name);
+            UIUtils.createTreeColumn(columnsTree, SWT.LEFT, ResultSetMessages.controls_resultset_filter_column_name);
             UIUtils.createTreeColumn(columnsTree, SWT.LEFT, "#");
-            UIUtils.createTreeColumn(columnsTree, SWT.LEFT, CoreMessages.controls_resultset_filter_column_order);
-            criteriaColumn = UIUtils.createTreeColumn(columnsTree, SWT.LEFT, CoreMessages.controls_resultset_filter_column_criteria);
+            UIUtils.createTreeColumn(columnsTree, SWT.LEFT, ResultSetMessages.controls_resultset_filter_column_order);
+            criteriaColumn = UIUtils.createTreeColumn(columnsTree, SWT.LEFT, ResultSetMessages.controls_resultset_filter_column_criteria);
 
             new CustomTreeEditor(columnsTree) {
                 {
@@ -272,7 +272,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
             }
             TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
-            libsTab.setText(CoreMessages.controls_resultset_filter_group_columns);
+            libsTab.setText(ResultSetMessages.controls_resultset_filter_group_columns);
             libsTab.setToolTipText("Set criteria and order for individual column(s)");
             libsTab.setControl(columnsGroup);
         }
@@ -293,7 +293,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
         if (!resultSetViewer.supportsDataFilter()) {
             Label warnLabel = new Label(composite, SWT.NONE);
-            warnLabel.setText(CoreMessages.controls_resultset_filter_warning_custom_order_disabled);
+            warnLabel.setText(ResultSetMessages.controls_resultset_filter_warning_custom_order_disabled);
             warnLabel.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_RED));
         }
 
@@ -365,14 +365,14 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         filterGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         filterGroup.setLayout(new GridLayout(1, false));
 
-        UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_where);
+        UIUtils.createControlLabel(filterGroup, ResultSetMessages.controls_resultset_filter_label_where);
         whereText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         whereText.setLayoutData(new GridData(GridData.FILL_BOTH));
         if (dataFilter.getWhere() != null) {
             whereText.setText(dataFilter.getWhere());
         }
 
-        UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_orderby);
+        UIUtils.createControlLabel(filterGroup, ResultSetMessages.controls_resultset_filter_label_orderby);
         orderText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         orderText.setLayoutData(new GridData(GridData.FILL_BOTH));
         if (dataFilter.getOrder() != null) {
@@ -385,7 +385,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         }
 
         TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
-        libsTab.setText(CoreMessages.controls_resultset_filter_group_custom);
+        libsTab.setText(ResultSetMessages.controls_resultset_filter_group_custom);
         libsTab.setToolTipText("Set custom criteria and order for whole query");
         libsTab.setControl(filterGroup);
     }

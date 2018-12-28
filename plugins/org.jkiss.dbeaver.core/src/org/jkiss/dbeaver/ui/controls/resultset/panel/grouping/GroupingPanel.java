@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -171,7 +171,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class EditColumnsAction extends GroupingAction {
         EditColumnsAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, CoreMessages.controls_resultset_grouping_edit, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_edit, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
         }
 
         @Override
@@ -189,7 +189,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class DeleteColumnAction extends GroupingAction {
         DeleteColumnAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, CoreMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.ACTION_OBJECT_DELETE));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.ACTION_OBJECT_DELETE));
         }
 
         @Override
@@ -215,7 +215,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class ClearGroupingAction extends GroupingAction {
         ClearGroupingAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, CoreMessages.controls_resultset_grouping_clear, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ETOOL_CLEAR));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_clear, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ETOOL_CLEAR));
         }
 
         @Override
@@ -232,7 +232,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     class DefaultSortingAction extends Action implements IMenuCreator {
         DefaultSortingAction() {
-            super(CoreMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
+            super(ResultSetMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DROP_DOWN));
         }
 
@@ -306,7 +306,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     class DuplicatesOnlyAction extends Action {
         DuplicatesOnlyAction() {
-            super(CoreMessages.controls_resultset_grouping_show_duplicates_only, Action.AS_CHECK_BOX);
+            super(ResultSetMessages.controls_resultset_grouping_show_duplicates_only, Action.AS_CHECK_BOX);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.GROUP_BY_ATTR));
         }
 

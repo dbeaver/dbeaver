@@ -23,7 +23,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,10 +58,10 @@ public class ResultSetReferenceMenu
     }
 
     static {
-        NOREFS_ACTION = new EmptyAction(CoreMessages.controls_resultset_ref_menu_no_references);
-        REFS_TITLE_ACTION = new EmptyAction(CoreMessages.controls_resultset_ref_menu_references);
-        NOFKS_ACTION = new EmptyAction(CoreMessages.controls_resultset_ref_menu_no_associations);
-        FKS_TITLE_ACTION = new EmptyAction(CoreMessages.controls_resultset_ref_menu_associations);
+        NOREFS_ACTION = new EmptyAction(ResultSetMessages.controls_resultset_ref_menu_no_references);
+        REFS_TITLE_ACTION = new EmptyAction(ResultSetMessages.controls_resultset_ref_menu_references);
+        NOFKS_ACTION = new EmptyAction(ResultSetMessages.controls_resultset_ref_menu_no_associations);
+        FKS_TITLE_ACTION = new EmptyAction(ResultSetMessages.controls_resultset_ref_menu_associations);
     }
 
 

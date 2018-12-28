@@ -66,4 +66,12 @@ public final class ResultSetPreferences {
     public static final String RESULT_TEXT_SHOW_NULLS = "resultset.text.show.nulls"; //$NON-NLS-1$
     public static final String RESULT_TEXT_DELIMITER_LEADING = "resultset.text.delimiter.leading"; //$NON-NLS-1$
     public static final String RESULT_TEXT_DELIMITER_TRAILING = "resultset.text.delimiter.trailing"; //$NON-NLS-1$
+
+    // Confirmations
+    public static final String CONFIRM_ORDER_RESULTSET = "order_resultset"; //$NON-NLS-1$
+    public static final String CONFIRM_RS_FETCH_ALL = "fetch_all_rows"; //$NON-NLS-1$
+    public static final String CONFIRM_RS_EDIT_CLOSE = "close_resultset_edit"; //$NON-NLS-1$
+    public static final String CONFIRM_RS_PANEL_RESET = "reset_panels_content"; //$NON-NLS-1$
+    public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
+
 }

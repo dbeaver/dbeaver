@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -44,9 +43,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.AbstractDataEditor;
+
+import java.util.ResourceBundle;
 
 /**
  * CursorViewDialog
@@ -77,10 +79,11 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
             DBPPreferenceStore globalPreferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             if (!globalPreferenceStore.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
-                        DBeaverActivator.getCoreResourceBundle(),
+                        ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
                         getShell(),
-                        DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN,
-                        ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID) {
+                        ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN,
+                        ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID)
+                {
                     globalPreferenceStore.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, true);
                     if (valueController.getValueSite().getPart() instanceof IResultSetContainer) {
                         IResultSetController rsv = ((IResultSetContainer) valueController.getValueSite().getPart()).getResultSetController();

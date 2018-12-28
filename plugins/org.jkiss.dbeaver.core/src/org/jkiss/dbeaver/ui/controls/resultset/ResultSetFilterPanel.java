@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -1022,7 +1023,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         RefreshPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
-            setToolTipText(CoreMessages.controls_resultset_viewer_action_refresh);
+            setToolTipText(ResultSetMessages.controls_resultset_viewer_action_refresh);
             enabledImage = DBeaverIcons.getImage(UIIcon.RS_REFRESH);
             disabledImage = new Image(enabledImage.getDevice(), enabledImage, SWT.IMAGE_GRAY);
             addDisposeListener(e -> UIUtils.dispose(disabledImage));
