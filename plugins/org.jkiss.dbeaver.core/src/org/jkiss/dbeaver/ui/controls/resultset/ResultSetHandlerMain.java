@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IInputValidator;
@@ -39,12 +40,10 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -61,6 +60,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -362,9 +362,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE:
-                FindReplaceAction action = new FindReplaceAction(
-                    DBeaverActivator.getCoreResourceBundle(),
-                    "Editor.FindReplace.",
+                IAction action = TextEditorUtils.createFindReplaceAction(
                     activeShell,
                     rsv.getAdapter(IFindReplaceTarget.class));
                 action.run();
