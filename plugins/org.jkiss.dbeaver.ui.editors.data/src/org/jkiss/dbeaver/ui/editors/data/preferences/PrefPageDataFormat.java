@@ -95,7 +95,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     protected void createPreferenceHeader(Composite composite)
     {
         if (!isDataSourcePreferencePage()) {
-            Composite profileGroup = UIUtils.createPlaceholder(composite, 3);
+            Composite profileGroup = UIUtils.createComposite(composite, 3);
             profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createControlLabel(profileGroup, ResultSetMessages.pref_page_data_format_label_profile);
             profilesCombo = new Combo(profileGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -124,7 +124,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createComposite(parent, 2);
 
         // Locale
         {
