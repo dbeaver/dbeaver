@@ -3,6 +3,9 @@
 
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
+
     <extension point="org.jkiss.dbeaver.dataManager">
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.TextStreamValueManager" id="plaintext" label="Text" primaryMime="text/plain"
                        description="Plain text" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"/>
@@ -17,6 +20,66 @@
         <function id="max" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMax" type="simple" label="Maximum" description="Maximum value"/>
         <function id="median" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMedian" type="simple" label="Median" description="Median (middle) value"/>
         <function id="mode" class="org.jkiss.dbeaver.model.data.aggregate.FunctionMode" type="simple" label="Mode" description="Mode (most frequent) value"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resultset.presentation">
+        <presentation
+                id="spreadsheet"
+                label="%presentation.spreadsheet.label"
+                description="%presentation.spreadsheet.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.png"
+                class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
+                order="100"
+                type="columns">
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
+        </presentation>
+        <presentation
+                id="plaintext"
+                label="%presentation.plaintext.label"
+                description="%presentation.plaintext.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_text.png"
+                class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation"
+                order="200"
+                type="columns">
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
+        </presentation>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resultset.panel">
+        <panel
+                id="value-view"
+                label="%panel.value-view.label"
+                description="%panel.value-view.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_value.png"
+                default="true"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel">
+            <supports type="columns"/>
+        </panel>
+        <panel
+                id="column-aggregate"
+                label="%panel.column-aggregate.label"
+                description="%panel.column-aggregate.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_aggregate.png"
+                default="false"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.aggregate.AggregateColumnsPanel">
+            <supports type="columns"/>
+        </panel>
+        <panel
+                id="results-metadata"
+                label="%panel.results-metadata.label"
+                description="%panel.results-metadata.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_metadata.png"
+                default="false"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.metadata.MetaDataPanel">
+        </panel>
+        <panel
+                id="results-grouping"
+                label="%panel.results-grouping.label"
+                description="%panel.results-grouping.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_grouping.png"
+                default="false"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingPanel">
+        </panel>
     </extension>
 
 </plugin>

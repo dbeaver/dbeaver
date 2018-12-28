@@ -36,8 +36,6 @@
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataManager" name="%extension-point.org.jkiss.dbeaver.dataManager.name" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sql.covert" name="%extension-point.org.jkiss.dbeaver.sql.covertname" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
@@ -3617,66 +3615,6 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl" uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"/>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.resultset.presentation">
-        <presentation
-                id="spreadsheet"
-                label="%presentation.spreadsheet.label"
-                description="%presentation.spreadsheet.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.png"
-                class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
-                order="100"
-                type="columns">
-            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
-        </presentation>
-        <presentation
-                id="plaintext"
-                label="%presentation.plaintext.label"
-                description="%presentation.plaintext.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_text.png"
-                class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation"
-                order="200"
-                type="columns">
-            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
-        </presentation>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.resultset.panel">
-        <panel
-                id="value-view"
-                label="%panel.value-view.label"
-                description="%panel.value-view.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_value.png"
-                default="true"
-                class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel">
-            <supports type="columns"/>
-        </panel>
-        <panel
-                id="column-aggregate"
-                label="%panel.column-aggregate.label"
-                description="%panel.column-aggregate.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_aggregate.png"
-                default="false"
-                class="org.jkiss.dbeaver.ui.controls.resultset.panel.aggregate.AggregateColumnsPanel">
-            <supports type="columns"/>
-        </panel>
-        <panel
-                id="results-metadata"
-                label="%panel.results-metadata.label"
-                description="%panel.results-metadata.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_metadata.png"
-                default="false"
-                class="org.jkiss.dbeaver.ui.controls.resultset.panel.metadata.MetaDataPanel">
-        </panel>
-        <panel
-                id="results-grouping"
-                label="%panel.results-grouping.label"
-                description="%panel.results-grouping.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_grouping.png"
-                default="false"
-                class="org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingPanel">
-        </panel>
     </extension>
 
     <extension point="org.eclipse.e4.ui.css.swt.theme">

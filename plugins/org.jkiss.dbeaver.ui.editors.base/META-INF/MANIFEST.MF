@@ -25,4 +25,5 @@ Export-Package: org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.editors.object,
  org.jkiss.dbeaver.ui.editors.object.struct,
  org.jkiss.dbeaver.ui.editors.text,
- org.jkiss.dbeaver.ui.editors.text.handlers
+ org.jkiss.dbeaver.ui.editors.text.handlers,
+ org.jkiss.dbeaver.ui.editors.text.parser
