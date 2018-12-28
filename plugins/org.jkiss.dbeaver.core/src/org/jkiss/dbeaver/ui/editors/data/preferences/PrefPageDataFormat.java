@@ -28,7 +28,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
@@ -97,7 +97,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         if (!isDataSourcePreferencePage()) {
             Composite profileGroup = UIUtils.createPlaceholder(composite, 3);
             profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createControlLabel(profileGroup, CoreMessages.pref_page_data_format_label_profile);
+            UIUtils.createControlLabel(profileGroup, ResultSetMessages.pref_page_data_format_label_profile);
             profilesCombo = new Combo(profileGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             profilesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             profilesCombo.addSelectionListener(new SelectionAdapter() {
@@ -108,7 +108,7 @@ public class PrefPageDataFormat extends TargetPrefPage
                 }
             });
             Button editButton = new Button(profileGroup, SWT.PUSH);
-            editButton.setText(CoreMessages.pref_page_data_format_button_manage_profiles);
+            editButton.setText(ResultSetMessages.pref_page_data_format_button_manage_profiles);
             editButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -139,23 +139,23 @@ public class PrefPageDataFormat extends TargetPrefPage
         // Settings
         {
             Group settingsGroup = new Group(composite, SWT.NONE);
-            settingsGroup.setText(CoreMessages.pref_page_data_format_group_settings);
+            settingsGroup.setText(ResultSetMessages.pref_page_data_format_group_settings);
             settingsGroup.setLayout(new GridLayout(2, false));
             settingsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
 
-            useNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.pref_page_data_format_datetime_use_native_formatting, CoreMessages.pref_page_data_format_datetime_use_native_formatting_tip, false, 2);
+            useNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting_tip, false, 2);
         }
 
         // formats
         {
             Group formatGroup = new Group(composite, SWT.NONE);
-            formatGroup.setText(CoreMessages.pref_page_data_format_group_format);
+            formatGroup.setText(ResultSetMessages.pref_page_data_format_group_format);
             formatGroup.setLayout(new GridLayout(2, false));
             GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             formatGroup.setLayoutData(gd);
 
-            UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_type);
+            UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_type);
             typeCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             typeCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -165,12 +165,12 @@ public class PrefPageDataFormat extends TargetPrefPage
                 }
             });
 
-            Label propsLabel = UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_settingt);
+            Label propsLabel = UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_settingt);
             propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             propertiesControl = new PropertyTreeViewer(formatGroup, SWT.BORDER);
             propertiesControl.getControl().addListener(SWT.Modify, event -> saveFormatterProperties());
 
-            UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_sample);
+            UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_sample);
             sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
             sampleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
@@ -430,7 +430,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         @Override
         protected Control createDialogArea(Composite parent)
         {
-            getShell().setText(CoreMessages.dialog_data_format_profiles_title);
+            getShell().setText(ResultSetMessages.dialog_data_format_profiles_title);
 
             Composite group = new Composite(parent, SWT.NONE);
             group.setLayout(new GridLayout(1, false));
@@ -457,8 +457,8 @@ public class PrefPageDataFormat extends TargetPrefPage
         @Override
         protected void createButtonsForButtonBar(Composite parent)
         {
-            createButton(parent, NEW_ID, CoreMessages.dialog_data_format_profiles_button_new_profile, false);
-            createButton(parent, DELETE_ID, CoreMessages.dialog_data_format_profiles_button_delete_profile, false);
+            createButton(parent, NEW_ID, ResultSetMessages.dialog_data_format_profiles_button_new_profile, false);
+            createButton(parent, DELETE_ID, ResultSetMessages.dialog_data_format_profiles_button_delete_profile, false);
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
 
             getButton(DELETE_ID).setEnabled(false);
@@ -469,12 +469,12 @@ public class PrefPageDataFormat extends TargetPrefPage
         {
             DataFormatterRegistry registry = DataFormatterRegistry.getInstance();
             if (buttonId == NEW_ID) {
-                String profileName = EnterNameDialog.chooseName(getShell(), CoreMessages.dialog_data_format_profiles_dialog_name_chooser_title);
+                String profileName = EnterNameDialog.chooseName(getShell(), ResultSetMessages.dialog_data_format_profiles_dialog_name_chooser_title);
                 if (registry.getCustomProfile(profileName) != null) {
                     UIUtils.showMessageBox(
                             getShell(),
-                            CoreMessages.dialog_data_format_profiles_error_title,
-                            NLS.bind(CoreMessages.dialog_data_format_profiles_error_message, profileName), SWT.ICON_ERROR);
+                            ResultSetMessages.dialog_data_format_profiles_error_title,
+                            NLS.bind(ResultSetMessages.dialog_data_format_profiles_error_message, profileName), SWT.ICON_ERROR);
                 } else {
                     registry.createCustomProfile(profileName);
                     loadProfiles();
@@ -486,8 +486,8 @@ public class PrefPageDataFormat extends TargetPrefPage
                     if (profile != null) {
                         if (UIUtils.confirmAction(
                                 getShell(),
-                                CoreMessages.dialog_data_format_profiles_confirm_delete_title,
-                                CoreMessages.dialog_data_format_profiles_confirm_delete_message)) {
+                                ResultSetMessages.dialog_data_format_profiles_confirm_delete_title,
+                                ResultSetMessages.dialog_data_format_profiles_confirm_delete_message)) {
                             registry.deleteCustomProfile(profile);
                             loadProfiles();
                         }

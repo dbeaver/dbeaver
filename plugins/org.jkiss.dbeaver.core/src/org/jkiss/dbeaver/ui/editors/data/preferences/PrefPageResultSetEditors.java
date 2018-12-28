@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -104,66 +104,63 @@ public class PrefPageResultSetEditors extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
-            Group stringGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_string, 2, SWT.NONE, 0);
+            Group stringGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_string, 2, SWT.NONE, 0);
             GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             stringGroup.setLayoutData(gd);
 
             stringUseEditorCheck = UIUtils.createLabelCheckbox(stringGroup,
-                CoreMessages.pref_page_database_resultsets_checkbox_string_use_editor,
-                CoreMessages.pref_page_database_resultsets_checkbox_string_use_editor_tip,
+                ResultSetMessages.pref_page_database_resultsets_checkbox_string_use_editor,
+                ResultSetMessages.pref_page_database_resultsets_checkbox_string_use_editor_tip,
                 true, 2);
         }
 
         {
-            Group binaryGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
+            Group binaryGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
             GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             binaryGroup.setLayoutData(gd);
 
-            //binaryShowStrings = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_use_strings, false);
-
-            binaryPresentationCombo = UIUtils.createLabelCombo(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_presentation, SWT.DROP_DOWN | SWT.READ_ONLY);
+            binaryPresentationCombo = UIUtils.createLabelCombo(binaryGroup, ResultSetMessages.pref_page_database_resultsets_label_binary_presentation, SWT.DROP_DOWN | SWT.READ_ONLY);
             for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
                 binaryPresentationCombo.add(formatter.getTitle());
             }
 
-
-            binaryEditorType = UIUtils.createLabelCombo(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_editor_type, SWT.DROP_DOWN | SWT.READ_ONLY);
+            binaryEditorType = UIUtils.createLabelCombo(binaryGroup, ResultSetMessages.pref_page_database_resultsets_label_binary_editor_type, SWT.DROP_DOWN | SWT.READ_ONLY);
             binaryEditorType.add("Editor");
             binaryEditorType.add("Dialog");
 
-            binaryStringMaxLength = UIUtils.createLabelSpinner(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_strings_max_length, 0, 0, 10000);
+            binaryStringMaxLength = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_resultsets_label_binary_strings_max_length, 0, 0, 10000);
             binaryStringMaxLength.setDigits(0);
             binaryStringMaxLength.setIncrement(1);
 
-            memoryContentSize = UIUtils.createLabelSpinner(binaryGroup, CoreMessages.pref_page_database_general_label_max_lob_length, 0, 0, 1024 * 1024 * 1024);
+            memoryContentSize = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_general_label_max_lob_length, 0, 0, 1024 * 1024 * 1024);
             memoryContentSize.setDigits(0);
             memoryContentSize.setIncrement(1);
 
-            UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_content_editor_hex_encoding);
+            UIUtils.createControlLabel(binaryGroup, ResultSetMessages.pref_page_content_editor_hex_encoding);
             encodingCombo = UIUtils.createEncodingCombo(binaryGroup, GeneralUtils.getDefaultFileEncoding());
 
-            contentCacheClob = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_cache_clob, true);
-            contentCacheBlob = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_cache_blob, true);
-            contentCacheMaxSize = UIUtils.createLabelSpinner(binaryGroup, CoreMessages.pref_page_database_general_label_cache_max_size, 0, 0, Integer.MAX_VALUE);
+            contentCacheClob = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_cache_clob, true);
+            contentCacheBlob = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_cache_blob, true);
+            contentCacheMaxSize = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_general_label_cache_max_size, 0, 0, Integer.MAX_VALUE);
             contentCacheMaxSize.setDigits(0);
             contentCacheMaxSize.setIncrement(100000);
-            editLongAsLobCheck = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_editor_checkbox_edit_long_as_lobs, false);
+            editLongAsLobCheck = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_editor_checkbox_edit_long_as_lobs, false);
         }
 
         // Content
         {
             Group contentGroup = new Group(composite, SWT.NONE);
-            contentGroup.setText(CoreMessages.pref_page_content_editor_group_content);
+            contentGroup.setText(ResultSetMessages.pref_page_content_editor_group_content);
             contentGroup.setLayout(new GridLayout(2, false));
 
-            maxTextContentSize = UIUtils.createLabelSpinner(contentGroup, CoreMessages.pref_page_content_editor_label_max_text_length, 0, 0, Integer.MAX_VALUE);
+            maxTextContentSize = UIUtils.createLabelSpinner(contentGroup, ResultSetMessages.pref_page_content_editor_label_max_text_length, 0, 0, Integer.MAX_VALUE);
             maxTextContentSize.setDigits(0);
             maxTextContentSize.setIncrement(1000000);
 
-            commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
-            commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
+            commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, ResultSetMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
+            commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, ResultSetMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
         }
 
         return composite;

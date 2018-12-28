@@ -28,11 +28,11 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ValueFormatSelector;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.dbeaver.core.CoreMessages;
 
 /**
  * PrefPageResultSetPresentation
@@ -113,43 +113,43 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
             ((GridData)uiGroup.getLayoutData()).horizontalSpan = 2;
-            autoSwitchMode = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
-            showDescription = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_column_description, false);
-            columnWidthByValue = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values, CoreMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
-            showConnectionName = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_connection_name, false);
-            transformComplexTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_structurize_complex_types, CoreMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
-            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 1);
-            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 1);
+            autoSwitchMode = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
+            showDescription = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_column_description, false);
+            columnWidthByValue = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_calc_column_width_by_values, ResultSetMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 1);
+            showConnectionName = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_connection_name, false);
+            transformComplexTypes = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_structurize_complex_types, ResultSetMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 1);
+            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 1);
+            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 1);
         }
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_grid, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            gridShowOddRows = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
-            colorizeDataTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
-            gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_row_batch_size, 1, 1, Short.MAX_VALUE);
-            gridRowBatchSize.setToolTipText(CoreMessages.pref_page_database_resultsets_label_row_batch_size_tip);
-            gridShowCellIcons = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
-            gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_attr_icons, CoreMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
-            gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_attr_filters, CoreMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
-            gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_attr_ordering, CoreMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
-            gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, CoreMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
+            gridShowOddRows = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_mark_odd_rows, null, false, 2);
+            colorizeDataTypes = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
+            gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_row_batch_size, 1, 1, Short.MAX_VALUE);
+            gridRowBatchSize.setToolTipText(ResultSetMessages.pref_page_database_resultsets_label_row_batch_size_tip);
+            gridShowCellIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
+            gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_icons, ResultSetMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
+            gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
+            gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
+            gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
             gridDoubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             gridDoubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
             gridDoubleClickBehavior.add("Inline Editor", Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
         }
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_plain_text, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_plain_text, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            textTabSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_tab_width, 0, 1, 100);
-            textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
+            textTabSize = UIUtils.createLabelSpinner(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_tab_width, 0, 1, 100);
+            textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
             textValueFormat = new ValueFormatSelector(uiGroup);
-            showNulls = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
-            textDelimiterLeading = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
-            textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
+            showNulls = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
+            textDelimiterLeading = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
+            textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
         }
 
         return composite;
