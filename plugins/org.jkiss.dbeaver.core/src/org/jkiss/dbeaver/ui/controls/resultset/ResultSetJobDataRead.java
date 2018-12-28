@@ -24,7 +24,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -49,7 +49,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
     private DBCStatistics statistics;
 
     ResultSetJobDataRead(DBSDataContainer dataContainer, DBDDataFilter dataFilter, ResultSetViewer controller, DBCExecutionContext executionContext, Composite progressControl) {
-        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", dataContainer, controller, executionContext);
+        super(ResultSetMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", dataContainer, controller, executionContext);
         this.dataFilter = dataFilter;
         this.progressControl = progressControl;
     }
@@ -91,7 +91,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         try (DBCSession session = getExecutionContext().openSession(
             progressMonitor,
             purpose,
-            NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
+            NLS.bind(ResultSetMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
             DBUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
                 try {

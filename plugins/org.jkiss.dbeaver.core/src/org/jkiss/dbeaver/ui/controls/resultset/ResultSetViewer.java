@@ -55,12 +55,10 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -84,6 +82,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
@@ -1283,7 +1282,7 @@ public class ResultSetViewer extends Viewer
                     "org.jkiss.dbeaver.core.resultset.panels",
                     ResultSetHandlerMain.CMD_TOGGLE_PANELS,
                     CommandContributionItem.STYLE_PULLDOWN);
-                ciParam.label = CoreMessages.controls_resultset_config_panels;
+                ciParam.label = ResultSetMessages.controls_resultset_config_panels;
                 ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
                 configToolbar.add(new CommandContributionItem(ciParam));
             }
@@ -1347,7 +1346,7 @@ public class ResultSetViewer extends Viewer
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
 
-            rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), CoreMessages.controls_resultset_viewer_calculate_row_count, this) {
+            rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
                 protected boolean isActionEnabled() {
                     return hasData();
@@ -1530,20 +1529,20 @@ public class ResultSetViewer extends Viewer
         String statusMessage;
         if (model.getRowCount() == 0) {
             if (model.getVisibleAttributeCount() == 0) {
-                statusMessage = CoreMessages.controls_resultset_viewer_status_empty + getExecutionTimeMessage();
+                statusMessage = ResultSetMessages.controls_resultset_viewer_status_empty + getExecutionTimeMessage();
             } else {
-                statusMessage = CoreMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage();
+                statusMessage = ResultSetMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage();
             }
         } else {
             if (recordMode) {
                 statusMessage =
-                    CoreMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.getVisualNumber() + 1) +
+                    ResultSetMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.getVisualNumber() + 1) +
                         "/" + model.getRowCount() +
                     (curRow == null ? getExecutionTimeMessage() : "");
             } else {
                 statusMessage =
                     String.valueOf(model.getRowCount()) +
-                    CoreMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
+                    ResultSetMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage();
             }
         }
         boolean hasWarnings = !dataReceiver.getErrorList().isEmpty();
@@ -1610,9 +1609,9 @@ public class ResultSetViewer extends Viewer
         if (constraint.getOrderPosition() == 0) {
             if (ResultSetUtils.isServerSideFiltering(this) && supportsDataFilter()) {
                 if (ConfirmationDialog.showConfirmDialogNoToggle(
-                    DBeaverActivator.getCoreResourceBundle(),
+                    ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
                     viewerPanel.getShell(),
-                    DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
+                    ResultSetPreferences.CONFIRM_ORDER_RESULTSET,
                     ConfirmationDialog.QUESTION,
                     ConfirmationDialog.WARNING,
                     metaColumn.getName()) != IDialogConstants.YES_ID)
@@ -1696,7 +1695,7 @@ public class ResultSetViewer extends Viewer
     {
         model.appendData(rows);
 
-        setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
+        setStatus(NLS.bind(ResultSetMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
         updateEditControls();
     }
@@ -1708,9 +1707,9 @@ public class ResultSetViewer extends Viewer
             return ISaveablePart2.YES;
         }
         int result = ConfirmationDialog.showConfirmDialog(
-            DBeaverActivator.getCoreResourceBundle(),
+            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
             viewerPanel.getShell(),
-            DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE,
+            ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
         if (result == IDialogConstants.YES_ID) {
             return ISaveablePart2.YES;
@@ -1966,7 +1965,7 @@ public class ResultSetViewer extends Viewer
         // Filters and View
         {
             MenuManager filtersMenu = new MenuManager(
-                CoreMessages.controls_resultset_viewer_action_order_filter,
+                ResultSetMessages.controls_resultset_viewer_action_order_filter,
                 DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
                 MENU_ID_FILTERS); //$NON-NLS-1$
             filtersMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_FILTER_MENU);
@@ -1977,7 +1976,7 @@ public class ResultSetViewer extends Viewer
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             {
                 MenuManager viewMenu = new MenuManager(
-                    CoreMessages.controls_resultset_viewer_action_view_format,
+                    ResultSetMessages.controls_resultset_viewer_action_view_format,
                     null,
                     MENU_ID_VIEW); //$NON-NLS-1$
 
@@ -1985,12 +1984,12 @@ public class ResultSetViewer extends Viewer
                     dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
                         dataSource, attr, null);
                 if (!CommonUtils.isEmpty(transformers)) {
-                    MenuManager transformersMenu = new MenuManager(CoreMessages.controls_resultset_viewer_action_view_as);
+                    MenuManager transformersMenu = new MenuManager(ResultSetMessages.controls_resultset_viewer_action_view_as);
                     transformersMenu.setRemoveAllWhenShown(true);
                     transformersMenu.addMenuListener(manager12 -> fillAttributeTransformersMenu(manager12, attr));
                     viewMenu.add(transformersMenu);
                 } else {
-                    final Action customizeAction = new Action(CoreMessages.controls_resultset_viewer_action_view_as) {};
+                    final Action customizeAction = new Action(ResultSetMessages.controls_resultset_viewer_action_view_as) {};
                     customizeAction.setEnabled(false);
                     viewMenu.add(customizeAction);
                 }
@@ -2009,7 +2008,7 @@ public class ResultSetViewer extends Viewer
                     }
                     viewMenu.add(new Separator());
                 }
-                viewMenu.add(new Action(CoreMessages.controls_resultset_viewer_action_data_formats) {
+                viewMenu.add(new Action(ResultSetMessages.controls_resultset_viewer_action_data_formats) {
                     @Override
                     public void run() {
                         UIUtils.showPreferencesFor(
@@ -2025,7 +2024,7 @@ public class ResultSetViewer extends Viewer
             {
                 // Navigate
                 MenuManager navigateMenu = new MenuManager(
-                    CoreMessages.controls_resultset_viewer_action_navigate,
+                    ResultSetMessages.controls_resultset_viewer_action_navigate,
                     null,
                     "navigate"); //$NON-NLS-1$
                 boolean hasNavTables = false;
@@ -2072,7 +2071,7 @@ public class ResultSetViewer extends Viewer
         {
             // Layout
             MenuManager layoutMenu = new MenuManager(
-                CoreMessages.controls_resultset_viewer_action_layout,
+                ResultSetMessages.controls_resultset_viewer_action_layout,
                 null,
                 MENU_ID_LAYOUT); //$NON-NLS-1$
             layoutMenu.add(new ToggleModeAction());
@@ -2081,7 +2080,7 @@ public class ResultSetViewer extends Viewer
             layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_SWITCH_PRESENTATION));
             {
                 MenuManager panelsMenu = new MenuManager(
-                    CoreMessages.controls_resultset_viewer_action_panels,
+                    ResultSetMessages.controls_resultset_viewer_action_panels,
                     DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE),
                     "result_panels"); //$NON-NLS-1$
                 layoutMenu.add(panelsMenu);
@@ -2507,9 +2506,9 @@ public class ResultSetViewer extends Viewer
                 }
                 if (panelsDirty) {
                     int result = ConfirmationDialog.showConfirmDialog(
-                        DBeaverActivator.getCoreResourceBundle(),
+                        ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
                         viewerPanel.getShell(),
-                        DBeaverPreferences.CONFIRM_RS_PANEL_RESET,
+                        ResultSetPreferences.CONFIRM_RS_PANEL_RESET,
                         ConfirmationDialog.CONFIRM);
                     if (result == IDialogConstants.CANCEL_ID) {
                         return false;
@@ -2802,9 +2801,9 @@ public class ResultSetViewer extends Viewer
             return;
         }
         if (ConfirmationDialog.showConfirmDialogEx(
-            DBeaverActivator.getCoreResourceBundle(),
+            ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME),
             viewerPanel.getShell(),
-            DBeaverPreferences.CONFIRM_RS_FETCH_ALL,
+            ResultSetPreferences.CONFIRM_RS_FETCH_ALL,
             ConfirmationDialog.QUESTION,
             ConfirmationDialog.WARNING) != IDialogConstants.YES_ID)
         {
@@ -3110,7 +3109,7 @@ public class ResultSetViewer extends Viewer
 
         // Add new row
         // Copy cell values in new context
-        try (DBCSession session = executionContext.openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name)) {
+        try (DBCSession session = executionContext.openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, ResultSetMessages.controls_resultset_viewer_add_new_row_context_name)) {
 
             final DBDAttributeBinding docAttribute = model.getDocumentAttribute();
             final DBDAttributeBinding[] attributes = model.getAttributes();
@@ -3468,7 +3467,7 @@ public class ResultSetViewer extends Viewer
     private class ConfigAction extends Action implements IMenuCreator {
         ConfigAction()
         {
-            super(CoreMessages.controls_resultset_viewer_action_options, IAction.AS_DROP_DOWN_MENU);
+            super(ResultSetMessages.controls_resultset_viewer_action_options, IAction.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
         }
 

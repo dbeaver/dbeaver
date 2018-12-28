@@ -54,16 +54,11 @@ public final class DBeaverPreferences
     public static final String TEXT_EDIT_UNDO_LEVEL = "text.edit.undo.level"; //$NON-NLS-1$
 
     public static final String CONFIRM_EXIT = "exit"; //$NON-NLS-1$
-    public static final String CONFIRM_ORDER_RESULTSET = "order_resultset"; //$NON-NLS-1$
-    public static final String CONFIRM_RS_FETCH_ALL = "fetch_all_rows"; //$NON-NLS-1$
-    public static final String CONFIRM_RS_EDIT_CLOSE = "close_resultset_edit"; //$NON-NLS-1$
-    public static final String CONFIRM_RS_PANEL_RESET = "reset_panels_content"; //$NON-NLS-1$
     public static final String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
     public static final String CONFIRM_RUNNING_QUERY_CLOSE = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_MANUAL_DOWNLOAD = "driver_download_manual"; //$NON-NLS-1$
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$
-    public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
     public static final String CONFIRM_DANGER_SQL = "dangerous_sql"; //$NON-NLS-1$
     public static final String CONFIRM_MASS_PARALLEL_SQL = "mass_parallel_sql"; //$NON-NLS-1$
 

@@ -70,7 +70,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -91,6 +90,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -781,9 +781,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     String hideTitle;
                     if (selectedColumns.size() == 1) {
                         DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
-                        hideTitle = NLS.bind(CoreMessages.controls_resultset_viewer_hide_column_x, columnToHide.getName());
+                        hideTitle = NLS.bind(ResultSetMessages.controls_resultset_viewer_hide_column_x, columnToHide.getName());
                     } else {
-                        hideTitle = NLS.bind(CoreMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
+                        hideTitle = NLS.bind(ResultSetMessages.controls_resultset_viewer_hide_columns_x, selectedColumns.size());
                     }
                     layoutMenu.insertBefore(IResultSetController.MENU_GROUP_ADDITIONS, new Separator());
                     layoutMenu.insertAfter(IResultSetController.MENU_GROUP_ADDITIONS, new Action(hideTitle) {
@@ -793,8 +793,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
                                 UIUtils.showMessageBox(
                                     getControl().getShell(),
-                                    CoreMessages.controls_resultset_viewer_hide_columns_error_title,
-                                    CoreMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ERROR);
+                                    ResultSetMessages.controls_resultset_viewer_hide_columns_error_title,
+                                    ResultSetMessages.controls_resultset_viewer_hide_columnss_error_text, SWT.ERROR);
                             } else {
                                 for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
                                     model.setAttributeVisibility((DBDAttributeBinding) selectedColumns.get(i), false);
@@ -1829,7 +1829,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (!controller.isRecordMode()) {
                     return String.valueOf(((ResultSetRow)element).getVisualNumber() + 1);
                 } else {
-                    return CoreMessages.controls_resultset_viewer_value;
+                    return ResultSetMessages.controls_resultset_viewer_value;
                 }
             }
         }

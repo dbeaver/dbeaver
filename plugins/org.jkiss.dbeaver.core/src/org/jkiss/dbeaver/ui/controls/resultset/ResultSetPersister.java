@@ -24,7 +24,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -420,7 +420,7 @@ class ResultSetPersister {
 
         protected DataUpdaterJob(boolean generateScript, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext)
         {
-            super(CoreMessages.controls_resultset_viewer_job_update, executionContext);
+            super(ResultSetMessages.controls_resultset_viewer_job_update, executionContext);
             this.generateScript = generateScript;
             this.listener = listener;
         }
@@ -457,7 +457,7 @@ class ResultSetPersister {
                         if (error == null) {
                             viewer.setStatus(
                                 NLS.bind(
-                                    CoreMessages.controls_resultset_viewer_status_inserted_,
+                                    ResultSetMessages.controls_resultset_viewer_status_inserted_,
                                     new Object[]{
                                         DataUpdaterJob.this.insertStats.getRowsUpdated(),
                                         DataUpdaterJob.this.deleteStats.getRowsUpdated(),
@@ -481,9 +481,9 @@ class ResultSetPersister {
 
         private Throwable executeStatements(DBRProgressMonitor monitor)
         {
-            try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, CoreMessages.controls_resultset_viewer_job_update)) {
+            try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, ResultSetMessages.controls_resultset_viewer_job_update)) {
                 monitor.beginTask(
-                    CoreMessages.controls_resultset_viewer_monitor_aply_changes,
+                    ResultSetMessages.controls_resultset_viewer_monitor_aply_changes,
                     ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
                 Throwable[] error = new Throwable[1];
                 DBUtils.tryExecuteRecover(monitor, session.getDataSource(), param -> {
@@ -502,7 +502,7 @@ class ResultSetPersister {
             DBRProgressMonitor monitor = session.getProgressMonitor();
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
             if (!generateScript && txnManager != null) {
-                monitor.subTask(CoreMessages.controls_resultset_check_autocommit_state);
+                monitor.subTask(ResultSetMessages.controls_resultset_check_autocommit_state);
                 try {
                     this.autocommit = txnManager.isAutoCommit();
                 } catch (DBCException e) {

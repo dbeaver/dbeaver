@@ -84,22 +84,6 @@ public class CoreMessages extends NLS {
 	public static String confirm_exit_message;
 	public static String confirm_exit_toggleMessage;
 
-	public static String confirm_order_resultset_title;
-	public static String confirm_order_resultset_message;
-	public static String confirm_order_resultset_toggleMessage;
-
-    public static String confirm_fetch_all_rows_title;
-    public static String confirm_fetch_all_rows_message;
-    public static String confirm_fetch_all_rows_toggleMessage;
-
-	public static String confirm_close_resultset_edit_title;
-	public static String confirm_close_resultset_edit_message;
-	public static String confirm_close_resultset_edit_toggleMessage;
-
-	public static String confirm_reset_panels_content_title;
-	public static String confirm_reset_panels_content_message;
-	public static String confirm_reset_panels_content_toggleMessage;
-
 	public static String confirm_disconnect_txn_title;
 	public static String confirm_disconnect_txn_message;
 	public static String confirm_disconnect_txn_toggleMessage;
@@ -119,10 +103,6 @@ public class CoreMessages extends NLS {
     public static String confirm_version_check_title;
     public static String confirm_version_check_message;
     public static String confirm_version_check_toggleMessage;
-
-	public static String confirm_keep_statement_open_title;
-	public static String confirm_keep_statement_open_message;
-	public static String confirm_keep_statement_open_toggleMessage;
 
 	public static String confirm_dangerous_sql_title;
 	public static String confirm_dangerous_sql_message;
@@ -190,64 +170,6 @@ public class CoreMessages extends NLS {
 	public static String controls_querylog_shell_text;
 	public static String controls_querylog_success;
 	public static String controls_querylog_transaction;
-
-	public static String controls_resultset_filter_button_reset;
-	public static String controls_resultset_filter_column_name;
-	public static String controls_resultset_filter_column_criteria;
-	public static String controls_resultset_filter_column_order;
-	public static String controls_resultset_filter_group_columns;
-	public static String controls_resultset_filter_group_custom;
-	public static String controls_resultset_filter_label_orderby;
-	public static String controls_resultset_filter_label_where;
-	public static String controls_resultset_filter_title;
-	public static String controls_resultset_filter_warning_custom_order_disabled;
-
-	public static String controls_resultset_grouping_edit;
-	public static String controls_resultset_grouping_remove_column;
-	public static String controls_resultset_grouping_clear;
-    public static String controls_resultset_grouping_default_sorting;
-	public static String controls_resultset_grouping_show_duplicates_only;
-
-	public static String controls_resultset_viewer_action_edit;
-	public static String controls_resultset_viewer_action_order_filter;
-    public static String controls_resultset_viewer_action_custom_filter;
-	public static String controls_resultset_viewer_action_view_format;
-	public static String controls_resultset_viewer_action_view_as;
-	public static String controls_resultset_viewer_action_data_formats;
-	public static String controls_resultset_viewer_action_refresh;
-	public static String controls_resultset_viewer_action_panels;
-    public static String controls_resultset_viewer_action_options;
-	public static String controls_resultset_viewer_add_new_row_context_name;
-	public static String controls_resultset_viewer_dialog_status_title;
-	public static String controls_resultset_check_autocommit_state;
-	public static String controls_resultset_viewer_job_update;
-	public static String controls_resultset_viewer_action_navigate;
-	public static String controls_resultset_viewer_action_layout;
-	public static String controls_resultset_viewer_monitor_aply_changes;
-
-	public static String controls_time_ms;
-
-	public static String controls_resultset_viewer_status_inserted_;
-    public static String controls_resultset_viewer_status_empty;
-	public static String controls_resultset_viewer_status_no_data;
-	public static String controls_resultset_viewer_status_row;
-	public static String controls_resultset_viewer_status_rows;
-	public static String controls_resultset_viewer_status_rows_fetched;
-	public static String controls_resultset_viewer_status_rows_size;
-	public static String controls_resultset_viewer_value;
-	public static String controls_resultset_viewer_calculate_row_count;
-	public static String controls_resultset_viewer_hide_column_x;
-	public static String controls_resultset_viewer_hide_columns_x;
-	public static String controls_resultset_viewer_hide_columns_error_title;
-	public static String controls_resultset_viewer_hide_columnss_error_text;
-
-	public static String controls_resultset_ref_menu_no_references;
-	public static String controls_resultset_ref_menu_references;
-	public static String controls_resultset_ref_menu_no_associations;
-	public static String controls_resultset_ref_menu_associations;
-
-	public static String controls_rs_pump_job_context_name;
-	public static String controls_rs_pump_job_name;
 
 	public static String model_navigator__connections;
 	public static String model_navigator_Connection;
@@ -788,12 +710,6 @@ public class CoreMessages extends NLS {
 	public static String editor_file_copy_path;
 	public static String editor_file_rename;
 	public static String editor_sql_preference;
-
-	public static String controls_resultset_edit_save;
-    public static String controls_resultset_edit_cancel;
-	public static String controls_resultset_edit_script;
-	public static String controls_resultset_config_panels;
-	public static String controls_resultset_config_record;
 
 	// New Connection Wizard
 	public static String dialog_setting_connection_wizard_title;
