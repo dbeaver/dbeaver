@@ -43,7 +43,6 @@ import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -209,7 +208,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
             case CMD_ROW_COPY: {
                 boolean copy = actionId.equals(CMD_ROW_COPY);
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
-                boolean insertAfter = rsv.getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER);
+                boolean insertAfter = rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
                 if (shiftPressed) insertAfter = !insertAfter;
                 rsv.addNewRow(copy, insertAfter, true);
                 if (insertAfter) {

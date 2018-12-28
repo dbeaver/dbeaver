@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -210,7 +209,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
 
         DBPDataSource dataSource = dataContainer.getDataSource();
-        boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
+        boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         if (isDefaultGrouping && isShowDuplicatesOnly) {
             sql.append("\nHAVING ").append(DEFAULT_FUNCTION).append(" > 1");
         }
@@ -218,7 +217,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         dataContainer.setGroupingQuery(sql.toString());
         DBDDataFilter dataFilter = new DBDDataFilter();
 
-        String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING);
+        String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
             SQLDialect dialecy = SQLUtils.getDialectFromDataSource(dataSource);
             if (dialecy.supportsOrderByIndex()) {

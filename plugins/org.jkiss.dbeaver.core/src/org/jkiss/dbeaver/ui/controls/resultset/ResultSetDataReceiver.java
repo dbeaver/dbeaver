@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
@@ -182,7 +181,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 resultSetViewer.getActivePresentation().refreshData(true, false, !metadataChanged);
                 resultSetViewer.updateStatusMessage();
             } else {
-                if (resultSetViewer.getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
+                if (resultSetViewer.getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
                     ResultSetRow currentRow = resultSetViewer.getCurrentRow();
                     resultSetViewer.setData(tmpRows, currentRow == null ? 0 : currentRow.getVisualNumber());
                 } else {

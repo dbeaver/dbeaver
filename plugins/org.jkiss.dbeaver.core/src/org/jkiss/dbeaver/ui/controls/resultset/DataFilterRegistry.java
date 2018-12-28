@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
@@ -33,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -113,7 +113,7 @@ class DataFilterRegistry {
     private volatile ConfigSaver saver = null;
 
     public DataFilterRegistry() {
-        File columnsConfig = DBeaverActivator.getConfigurationFile(CONFIG_FILE);
+        File columnsConfig = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE);
         if (columnsConfig.exists()) {
             loadConfiguration(columnsConfig);
         }
@@ -182,7 +182,7 @@ class DataFilterRegistry {
 
         private void flushConfig() {
 
-            File configFile = DBeaverActivator.getConfigurationFile(CONFIG_FILE);
+            File configFile = DBWorkbench.getPlatform().getConfigurationFile(CONFIG_FILE);
             try (OutputStream out = new FileOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
                 xml.setButify(true);

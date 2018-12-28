@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -914,7 +913,7 @@ public class ResultSetModel {
             // Detect column filter
             DBSEntity entity = (DBSEntity) executionSource.getDataContainer();
             DBPDataSourceContainer container = entity.getDataSource().getContainer();
-            if (container.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) && attributes.length > 0) {
+            if (container.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) && attributes.length > 0) {
                 DBSEntityAttribute entityAttribute = attributes[0].getEntityAttribute();
                 if (entityAttribute != null) {
                     columnFilter = container.getObjectFilter(entityAttribute.getClass(), entity, false);

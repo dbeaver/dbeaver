@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -278,7 +277,7 @@ public class GroupingPanel implements IResultSetPanel {
             if (dataSource == null) {
                 return false;
             }
-            String defSorting = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING);
+            String defSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
             if (CommonUtils.isEmpty(defSorting)) {
                 return descending == null;
             } else if (defSorting.equals("ASC")) {
@@ -295,7 +294,7 @@ public class GroupingPanel implements IResultSetPanel {
             if (dataSource == null) {
                 return;
             }
-            dataSource.getContainer().getPreferenceStore().setValue(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING, newValue);
+            dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING, newValue);
             dataSource.getContainer().getRegistry().flushConfig();
             try {
                 resultsContainer.rebuildGrouping();
@@ -314,7 +313,7 @@ public class GroupingPanel implements IResultSetPanel {
         @Override
         public boolean isChecked() {
             DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
-            return dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
+            return dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         }
 
         @Override
@@ -324,7 +323,7 @@ public class GroupingPanel implements IResultSetPanel {
             if (dataSource == null) {
                 return;
             }
-            dataSource.getContainer().getPreferenceStore().setValue(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY, newValue);
+            dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY, newValue);
             try {
                 resultsContainer.rebuildGrouping();
             } catch (DBException e) {

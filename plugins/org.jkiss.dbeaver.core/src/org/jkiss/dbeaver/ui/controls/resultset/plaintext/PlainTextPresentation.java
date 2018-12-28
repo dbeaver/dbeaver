@@ -43,7 +43,6 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -94,7 +93,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         text.setBlockSelection(true);
         text.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_IBEAM));
         text.setMargins(4, 4, 4, 4);
-        text.setTabs(controller.getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_TAB_SIZE));
+        text.setTabs(controller.getPreferenceStore().getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE));
         text.setTabStops(null);
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -113,7 +112,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (verticalBar.getSelection() + verticalBar.getPageIncrement() >= verticalBar.getMaximum()) {
-                    if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
+                    if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
                         !controller.isRecordMode() &&
                         controller.isHasMoreData()) {
                         controller.readNextSegment();
@@ -219,7 +218,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
             if (lineNum == lineCount - 1 &&
                 controller.isHasMoreData() &&
-                controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT)) {
+                controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT)) {
                 controller.readNextSegment();
             }
         }
@@ -236,8 +235,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         colWidths = null;
 
         DBPPreferenceStore prefs = getController().getPreferenceStore();
-        rightJustifyNumbers = prefs.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
-        rightJustifyDateTime = prefs.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
+        rightJustifyNumbers = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
+        rightJustifyDateTime = prefs.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
 
         if (controller.isRecordMode()) {
             printRecord();
@@ -248,12 +247,12 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     private void printGrid(boolean append) {
         DBPPreferenceStore prefs = getController().getPreferenceStore();
-        int maxColumnSize = prefs.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
-        boolean delimLeading = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING);
-        boolean delimTrailing = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING);
-        this.showNulls = getController().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS);
+        int maxColumnSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
+        boolean delimLeading = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
+        boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        this.showNulls = getController().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
 
-        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
+        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
 
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
@@ -365,7 +364,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             for (int i = 0; i < str.length(); i++) {
                 char c = str.charAt(i);
                 if (c == '\t') {
-                    width += controller.getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_TAB_SIZE);
+                    width += controller.getPreferenceStore().getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE);
                 } else {
                     width++;
                 }
@@ -403,9 +402,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     private void printRecord() {
         DBPPreferenceStore prefs = getController().getPreferenceStore();
-        boolean delimLeading = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING);
-        boolean delimTrailing = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING);
-        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
+        boolean delimLeading = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
+        boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
 
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();

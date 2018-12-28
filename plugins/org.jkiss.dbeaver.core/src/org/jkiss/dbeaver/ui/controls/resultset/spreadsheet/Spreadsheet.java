@@ -30,11 +30,11 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 
 /**
  * ResultSetControl
@@ -280,7 +280,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 GridPos focusPos = super.getFocusPos();
                 if (pos != null && focusPos != null && pos.equals(super.getFocusPos())) {
                     DoubleClickBehavior doubleClickBehavior = DoubleClickBehavior.valueOf(
-                        presentation.getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK));
+                        presentation.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_DOUBLE_CLICK));
 
                     switch (doubleClickBehavior) {
                         case NONE:

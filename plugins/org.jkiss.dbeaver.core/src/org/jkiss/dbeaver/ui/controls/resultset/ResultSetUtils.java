@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -73,11 +72,11 @@ public class ResultSetUtils
     {
         final DBRProgressMonitor monitor = session.getProgressMonitor();
         final DBPDataSource dataSource = session.getDataSource();
-        boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA);
+        boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_READ_METADATA);
         if (!readMetaData) {
             return;
         }
-        boolean readReferences = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_READ_REFERENCES);
+        boolean readReferences = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_READ_REFERENCES);
 
         final Map<DBCEntityMetaData, DBSEntity> entityBindingMap = new IdentityHashMap<>();
 
@@ -426,7 +425,7 @@ public class ResultSetUtils
     public static boolean isServerSideFiltering(IResultSetController controller)
     {
         return
-            controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
+            controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
                 (controller.isHasMoreData() || !CommonUtils.isEmpty(controller.getModel().getDataFilter().getOrder()));
     }
 }

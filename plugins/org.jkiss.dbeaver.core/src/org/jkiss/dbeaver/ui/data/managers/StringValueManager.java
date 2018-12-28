@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
@@ -69,7 +69,7 @@ public class StringValueManager extends ContentValueManager {
                     return new ContentPanelEditor(controller);
                 }
             case EDITOR:
-                if (controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR)) {
+                if (controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR)) {
                     return ContentEditor.openEditor(controller);
                 } else {
                     return new TextViewDialog(controller);

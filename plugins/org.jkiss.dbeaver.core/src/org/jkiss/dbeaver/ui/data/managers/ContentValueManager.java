@@ -24,7 +24,6 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
@@ -101,7 +101,7 @@ public class ContentValueManager extends BaseValueManager {
     {
         Object value = controller.getValue();
         IValueController.EditType binaryEditType = IValueController.EditType.valueOf(
-            controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
+            controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
         if (controller.getValueType().getDataKind() == DBPDataKind.STRING) {
             // String
             return new TextViewDialog(controller);
