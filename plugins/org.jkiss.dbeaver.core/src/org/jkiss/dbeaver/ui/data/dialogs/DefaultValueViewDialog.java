@@ -26,8 +26,8 @@ import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
@@ -52,7 +52,7 @@ public class DefaultValueViewDialog extends ValueViewDialog {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         Label label = new Label(dialogGroup, SWT.NONE);
-        label.setText(CoreMessages.dialog_data_label_value);
+        label.setText(ResultSetMessages.dialog_data_label_value);
 
         Composite editorPlaceholder = UIUtils.createPlaceholder(dialogGroup, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);

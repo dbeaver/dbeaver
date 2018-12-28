@@ -115,6 +115,34 @@ public class ResultSetMessages extends NLS {
 
     public static String actions_spreadsheet_copy_special;
 
+    // Data managers (FIXME: model_jdbc_ is a legacy prefix)
+    public static String model_jdbc_bad_content_value_;
+    public static String model_jdbc_content_length;
+    public static String model_jdbc_content_type;
+    public static String model_jdbc_could_not_save_content;
+    public static String model_jdbc_could_not_save_content_to_file_;
+    public static String model_jdbc_load_from_file_;
+    public static String model_jdbc_save_to_file_;
+    public static String model_jdbc_set_to_current_time;
+    public static String model_jdbc_unsupported_content_value_type_;
+
+    public static String dialog_value_view_button_cancel;
+    public static String dialog_value_view_button_sat_null;
+    public static String dialog_value_view_button_save;
+    public static String dialog_value_view_column_description;
+    public static String dialog_value_view_column_value;
+    public static String dialog_value_view_context_name;
+    public static String dialog_value_view_dialog_error_updating_message;
+    public static String dialog_value_view_dialog_error_updating_title;
+    public static String dialog_value_view_job_selector_name;
+    public static String dialog_value_view_label_dictionary;
+
+    public static String dialog_cursor_view_monitor_rows_fetched;
+
+    public static String dialog_data_label_value;
+    public static String dialog_text_view_open_editor;
+    public static String dialog_text_view_open_editor_tip;
+
 
     static {
         // initialize resource bundle

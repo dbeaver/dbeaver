@@ -27,12 +27,12 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -158,7 +159,7 @@ public class ComplexObjectEditor extends TreeViewer {
             TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
             column.getColumn().setWidth(200);
             column.getColumn().setMoveable(true);
-            column.getColumn().setText(CoreMessages.ui_properties_name);
+            column.getColumn().setText(UIMessages.ui_properties_name);
             column.setLabelProvider(new PropsLabelProvider(true));
         }
 
@@ -166,7 +167,7 @@ public class ComplexObjectEditor extends TreeViewer {
             TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
             column.getColumn().setWidth(120);
             column.getColumn().setMoveable(true);
-            column.getColumn().setText(CoreMessages.ui_properties_value);
+            column.getColumn().setText(UIMessages.ui_properties_value);
             column.setLabelProvider(new PropsLabelProvider(false));
         }
 
@@ -672,7 +673,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private class CopyAction extends Action {
         private final boolean isName;
         public CopyAction(boolean isName) {
-            super(CoreMessages.controls_itemlist_action_copy + " " + getTree().getColumn(isName ? 0 : 1).getText());
+            super(WorkbenchMessages.Workbench_copy + " " + getTree().getColumn(isName ? 0 : 1).getText());
             this.isName = isName;
         }
 
