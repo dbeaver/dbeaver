@@ -36,5 +36,6 @@ Export-Package: org.jkiss.dbeaver.registry.functions,
  org.jkiss.dbeaver.ui.data.managers.stream,
  org.jkiss.dbeaver.ui.data.registry,
  org.jkiss.dbeaver.ui.editors.content,
- org.jkiss.dbeaver.ui.editors.data
+ org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.ui.editors.data.preferences
 

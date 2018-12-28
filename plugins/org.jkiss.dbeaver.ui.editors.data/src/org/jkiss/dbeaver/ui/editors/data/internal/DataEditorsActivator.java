@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.editors.data.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
-import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 public class DataEditorsActivator extends AbstractUIPlugin {
@@ -29,6 +29,7 @@ public class DataEditorsActivator extends AbstractUIPlugin {
 
     // The shared instance
     private static DataEditorsActivator plugin;
+    private DBPPreferenceStore preferences;
 
     public DataEditorsActivator() {
     }
@@ -37,6 +38,7 @@ public class DataEditorsActivator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
+        preferences = new BundlePreferenceStore(getBundle());
     }
 
     @Override
@@ -51,5 +53,9 @@ public class DataEditorsActivator extends AbstractUIPlugin {
 
     public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
+
+    public DBPPreferenceStore getPreferences() {
+        return preferences;
     }
 }
