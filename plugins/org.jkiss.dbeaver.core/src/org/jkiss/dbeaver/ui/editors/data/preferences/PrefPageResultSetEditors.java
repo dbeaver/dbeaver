@@ -15,13 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.preferences;
+package org.jkiss.dbeaver.ui.editors.data.preferences;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -40,6 +42,8 @@ import org.jkiss.dbeaver.utils.PrefUtils;
  */
 public class PrefPageResultSetEditors extends TargetPrefPage
 {
+    static final Log log = Log.getLog(PrefPageResultSetEditors.class);
+
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.editors"; //$NON-NLS-1$
 
     private Button stringUseEditorCheck;
