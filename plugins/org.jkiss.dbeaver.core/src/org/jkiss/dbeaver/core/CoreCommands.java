@@ -23,9 +23,6 @@ public interface CoreCommands
 {
 
 
-    String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
-    String CMD_PASTE_SPECIAL = "org.jkiss.dbeaver.core.edit.paste.special"; //$NON-NLS-1$
-
     String CMD_CONNECT = "org.jkiss.dbeaver.core.connect";
     String CMD_DISCONNECT = "org.jkiss.dbeaver.core.disconnect";
     String CMD_DISCONNECT_ALL = "org.jkiss.dbeaver.core.disconnectAll";

@@ -25,7 +25,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.ui.editors.text.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;

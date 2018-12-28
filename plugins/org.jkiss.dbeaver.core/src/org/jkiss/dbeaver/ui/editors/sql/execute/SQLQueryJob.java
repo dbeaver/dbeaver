@@ -769,7 +769,7 @@ public class SQLQueryJob extends DataSourceJob
     {
         // Only in single query mode and if pref option set to true
         return queries.size() == 1 &&
-            getDataSourceContainer().getPreferenceStore().getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN);
+            getDataSourceContainer().getPreferenceStore().getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN);
     }
 
     private void closeStatement()

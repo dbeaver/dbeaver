@@ -62,7 +62,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.parser.SQLWordDetector;
+import org.jkiss.dbeaver.ui.editors.text.parser.SQLWordDetector;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLVariableRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;

@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.ui.IActionConstants;
 
 /**
  * QueryLogViewer command handler
@@ -58,7 +58,7 @@ public class QueryLogCommandHandler extends AbstractHandler {
             case IWorkbenchCommandConstants.EDIT_COPY:
                 logViewer.copySelectionToClipboard(false);
                 return null;
-            case CoreCommands.CMD_COPY_SPECIAL:
+            case IActionConstants.CMD_COPY_SPECIAL:
                 logViewer.copySelectionToClipboard(true);
                 return null;
             case IWorkbenchCommandConstants.FILE_REFRESH:
