@@ -115,4 +115,21 @@
                 type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
     </extension>
 
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="%editor.folder.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/properties.png"
+                contributorClass="org.jkiss.dbeaver.ui.editors.entity.FolderEditorContributor"
+                class="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"
+                id="org.jkiss.dbeaver.ui.editors.entity.FolderEditor">
+        </editor>
+        <editor
+                name="%editor.entity.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/properties.png"
+                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor"
+                class="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
+                id="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+        </editor>
+    </extension>
+
 </plugin>

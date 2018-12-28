@@ -18,4 +18,9 @@
                 type="org.eclipse.ui.IEditorPart"/>
     </extension>
 
+    <extension point="org.eclipse.ui.elementFactories">
+        <factory id="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory"/>
+        <factory id="org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory"/>
+    </extension>
+
 </plugin>
