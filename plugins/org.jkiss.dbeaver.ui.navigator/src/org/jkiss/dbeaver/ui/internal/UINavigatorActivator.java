@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.osgi.framework.BundleContext;
@@ -29,6 +31,7 @@ public class UINavigatorActivator extends AbstractUIPlugin {
 
     // The shared instance
     private static UINavigatorActivator plugin;
+    private DBPPreferenceStore preferences;
 
     public UINavigatorActivator() {
     }
@@ -39,6 +42,7 @@ public class UINavigatorActivator extends AbstractUIPlugin {
         // Set notifications handler
         DBeaverNotifications.setHandler(NotificationUtils::sendNotification);
         plugin = this;
+        preferences = new BundlePreferenceStore(getBundle());
     }
 
     @Override
@@ -53,5 +57,9 @@ public class UINavigatorActivator extends AbstractUIPlugin {
 
     public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
+
+    public DBPPreferenceStore getPreferences() {
+        return preferences;
     }
 }

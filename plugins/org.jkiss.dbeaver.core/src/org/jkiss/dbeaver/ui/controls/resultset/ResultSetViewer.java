@@ -517,7 +517,7 @@ public class ResultSetViewer extends Viewer
                             return;
                         }
                     }
-                    String defaultPresentationId = getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_PRESENTATION);
+                    String defaultPresentationId = getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_PRESENTATION);
                     ResultSetPresentationDescriptor newPresentation = null;
                     if (!CommonUtils.isEmpty(defaultPresentationId)) {
                         for (ResultSetPresentationDescriptor pd : this.availablePresentations) {
@@ -710,7 +710,7 @@ public class ResultSetViewer extends Viewer
             if (activePresentationDescriptor.getPresentationType().isPersistent()) {
                 // Save current presentation (only if it is persistent)
                 DBWorkbench.getPlatform().getPreferenceStore().setValue(
-                    DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
+                    ResultSetPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
             }
             savePresentationSettings();
         } catch (Throwable e1) {
@@ -1550,7 +1550,7 @@ public class ResultSetViewer extends Viewer
         if (hasWarnings) {
             statusMessage += " - " + dataReceiver.getErrorList().size() + " warning(s)";
         }
-        if (getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME)) {
+        if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME)) {
             DBSDataContainer dataContainer = getDataContainer();
             if (dataContainer != null) {
                 DBPDataSource dataSource = dataContainer.getDataSource();
@@ -1683,7 +1683,7 @@ public class ResultSetViewer extends Viewer
 
         {
 
-            if (model.isMetadataChanged() && getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
+            if (model.isMetadataChanged() && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
                 boolean newRecordMode = (rows.size() == 1);
                 if (newRecordMode != recordMode) {
                     toggleMode();
@@ -2861,7 +2861,7 @@ public class ResultSetViewer extends Viewer
         if (getDataContainer() == null) {
             return 0;
         }
-        return getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS);
+        return getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS);
     }
 
     private synchronized boolean runDataPump(
@@ -3024,7 +3024,7 @@ public class ResultSetViewer extends Viewer
                 if (listener != null) {
                     listener.onUpdate(success);
                 }
-                if (success && getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
+                if (success && getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE)) {
                     // Refresh updated rows
                     try {
                         persister.refreshInsertedRows();
@@ -3605,13 +3605,13 @@ public class ResultSetViewer extends Viewer
 
     private class ToggleServerSideOrderingAction extends ToggleConnectionPreferenceAction {
         ToggleServerSideOrderingAction() {
-            super(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, CoreMessages.pref_page_database_resultsets_label_server_side_order);
+            super(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, CoreMessages.pref_page_database_resultsets_label_server_side_order);
         }
     }
 
     private class ToggleRefreshOnScrollingAction extends ToggleConnectionPreferenceAction {
         ToggleRefreshOnScrollingAction() {
-            super(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling);
+            super(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING, CoreMessages.pref_page_database_resultsets_label_reread_on_scrolling);
         }
     }
 
@@ -3849,7 +3849,7 @@ public class ResultSetViewer extends Viewer
         public boolean isChecked() {
             DBPDataSource dataSource = getDataContainer().getDataSource();
             return dataSource != null &&
-                dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
+                dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         }
 
         @Override
@@ -3860,9 +3860,9 @@ public class ResultSetViewer extends Viewer
                 return;
             }
             DBPPreferenceStore dsStore = dataSource.getContainer().getPreferenceStore();
-            boolean curValue = dsStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
+            boolean curValue = dsStore.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
             // Set local setting to default
-            dsStore.setValue(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, !curValue);
+            dsStore.setValue(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES, !curValue);
             refreshData(null);
         }
 

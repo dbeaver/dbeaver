@@ -21,7 +21,6 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -71,7 +70,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     @Override
     protected void buttonPressed(int buttonId)
     {
-        executionContext.getDataSource().getContainer().getPreferenceStore().setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, getToggleState());
+        executionContext.getDataSource().getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, getToggleState());
         switch (buttonId)
         {
             case IDialogConstants.CANCEL_ID:
@@ -144,7 +143,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             return true;
         }
 
-        if (executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS)) {
+        if (executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS)) {
             if (useAllColumns(viewer.getControl().getShell(), viewer)) {
                 return true;
             }

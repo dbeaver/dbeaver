@@ -69,7 +69,6 @@ import org.eclipse.ui.views.properties.IPropertySourceProvider;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
@@ -692,11 +691,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
         // Cache preferences
         DBPPreferenceStore preferenceStore = getPreferenceStore();
-        showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
-        showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
-        colorizeDataTypes = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
-        rightJustifyNumbers = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
-        rightJustifyDateTime = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
+        showOddRows = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS);
+        showCelIcons = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS);
+        colorizeDataTypes = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
+        rightJustifyNumbers = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
+        rightJustifyDateTime = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
 
         spreadsheet.setRedraw(false);
         try {
@@ -1441,7 +1440,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public int getSortOrder(@Nullable Object column)
         {
-            if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ORDERING)) {
+            if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING)) {
                 if (column instanceof DBDAttributeBinding) {
                     DBDAttributeBinding binding = (DBDAttributeBinding) column;
                     if (!binding.hasNestedBindings()) {
@@ -1503,7 +1502,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public boolean isElementSupportsFilter(Object element) {
             if (element instanceof DBDAttributeBinding) {
                 return (controller.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0 &&
-                    controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
+                    controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
             }
             return false;
         }
@@ -1557,7 +1556,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             boolean recordMode = controller.isRecordMode();
             if (rowNum > 0 &&
                 rowNum == controller.getModel().getRowCount() - 1 &&
-                controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
+                controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
                 (recordMode || spreadsheet.isRowVisible(rowNum)) && controller.isHasMoreData())
             {
                 controller.readNextSegment();
@@ -1692,7 +1691,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             if (!recordMode && showOddRows) {
                 // Determine odd/even row
-                int rowBatchSize = getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE);
+                int rowBatchSize = getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
                 if (rowBatchSize < 1) {
                     rowBatchSize = 1;
                 }
@@ -1766,7 +1765,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ICONS)) {
+                if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS)) {
                     return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
                 }
             }
@@ -1776,7 +1775,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public Object getGridOption(String option) {
             if (OPTION_EXCLUDE_COLUMN_NAME_FOR_WIDTH_CALC.equals(option)) {
-                return getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
+                return getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES);
             }
             return null;
         }
@@ -1838,7 +1837,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Nullable
         @Override
         public String getDescription(Object element) {
-            if (!getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION)) {
+            if (!getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION)) {
                 return null;
             }
             if (element instanceof DBDAttributeBinding) {

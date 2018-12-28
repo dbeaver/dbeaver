@@ -9,8 +9,10 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UINavigatorActivator
 Bundle-ClassPath: .
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.equinox.preferences,
+ org.eclipse.core.runtime,
  org.eclipse.core.resources,
+ org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.jface.text,
  org.eclipse.ui,

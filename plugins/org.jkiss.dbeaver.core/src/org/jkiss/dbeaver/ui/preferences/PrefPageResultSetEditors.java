@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -69,21 +70,21 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR) ||
+            store.contains(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR) ||
 
             store.contains(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE) ||
             store.contains(ModelPreferences.RESULT_SET_BINARY_PRESENTATION) ||
-            store.contains(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
+            store.contains(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
             store.contains(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
             store.contains(ModelPreferences.CONTENT_HEX_ENCODING) ||
             store.contains(ModelPreferences.CONTENT_CACHE_CLOB) ||
             store.contains(ModelPreferences.CONTENT_CACHE_BLOB) ||
             store.contains(ModelPreferences.CONTENT_CACHE_MAX_SIZE) ||
-            store.contains(DBeaverPreferences.RS_EDIT_LONG_AS_LOB) ||
+            store.contains(ResultSetPreferences.RS_EDIT_LONG_AS_LOB) ||
 
-            store.contains(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
-            store.contains(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY) ||
-            store.contains(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY)
+            store.contains(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
+            store.contains(ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY) ||
+            store.contains(ResultSetPreferences.RS_COMMIT_ON_CONTENT_APPLY)
             ;
     }
 
@@ -168,7 +169,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
-            stringUseEditorCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR));
+            stringUseEditorCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR));
 
             memoryContentSize.setSelection(store.getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE));
             binaryStringMaxLength.setSelection(store.getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN));
@@ -181,7 +182,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
                 }
             }
 
-            IValueController.EditType editorType = IValueController.EditType.valueOf(store.getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
+            IValueController.EditType editorType = IValueController.EditType.valueOf(store.getString(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
             if (editorType == IValueController.EditType.EDITOR) {
                 binaryEditorType.select(0);
             } else {
@@ -191,11 +192,11 @@ public class PrefPageResultSetEditors extends TargetPrefPage
             contentCacheClob.setSelection(store.getBoolean(ModelPreferences.CONTENT_CACHE_CLOB));
             contentCacheBlob.setSelection(store.getBoolean(ModelPreferences.CONTENT_CACHE_BLOB));
             contentCacheMaxSize.setSelection(store.getInt(ModelPreferences.CONTENT_CACHE_MAX_SIZE));
-            editLongAsLobCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_LONG_AS_LOB));
+            editLongAsLobCheck.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_LONG_AS_LOB));
 
-            maxTextContentSize.setSelection(store.getInt(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE));
-            commitOnEditApplyCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY));
-            commitOnContentApplyCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY));
+            maxTextContentSize.setSelection(store.getInt(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE));
+            commitOnEditApplyCheck.setSelection(store.getBoolean(ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY));
+            commitOnContentApplyCheck.setSelection(store.getBoolean(ResultSetPreferences.RS_COMMIT_ON_CONTENT_APPLY));
 
         } catch (Exception e) {
             log.warn(e);
@@ -206,7 +207,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
-            store.setValue(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR, stringUseEditorCheck.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR, stringUseEditorCheck.getSelection());
 
             store.setValue(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
 
@@ -218,7 +219,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
                 }
             }
             store.setValue(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE,
+            store.setValue(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE,
                 binaryEditorType.getSelectionIndex() == 0 ?
                     IValueController.EditType.EDITOR.name() :
                     IValueController.EditType.PANEL.name());
@@ -226,11 +227,11 @@ public class PrefPageResultSetEditors extends TargetPrefPage
             store.setValue(ModelPreferences.CONTENT_CACHE_CLOB, contentCacheClob.getSelection());
             store.setValue(ModelPreferences.CONTENT_CACHE_BLOB, contentCacheBlob.getSelection());
             store.setValue(ModelPreferences.CONTENT_CACHE_MAX_SIZE, contentCacheMaxSize.getSelection());
-            store.setValue(DBeaverPreferences.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
+            store.setValue(ResultSetPreferences.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
 
-            store.setValue(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, maxTextContentSize.getSelection());
-            store.setValue(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
-            store.setValue(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
+            store.setValue(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE, maxTextContentSize.getSelection());
+            store.setValue(ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
+            store.setValue(ResultSetPreferences.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -240,21 +241,21 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
-        store.setToDefault(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR);
 
         store.setToDefault(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
         store.setToDefault(ModelPreferences.RESULT_SET_BINARY_PRESENTATION);
         store.setToDefault(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE);
         store.setToDefault(ModelPreferences.CONTENT_HEX_ENCODING);
         store.setToDefault(ModelPreferences.CONTENT_CACHE_CLOB);
         store.setToDefault(ModelPreferences.CONTENT_CACHE_BLOB);
         store.setToDefault(ModelPreferences.CONTENT_CACHE_MAX_SIZE);
-        store.setToDefault(DBeaverPreferences.RS_EDIT_LONG_AS_LOB);
+        store.setToDefault(ResultSetPreferences.RS_EDIT_LONG_AS_LOB);
 
-        store.setToDefault(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);
-        store.setToDefault(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY);
-        store.setToDefault(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY);
+        store.setToDefault(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE);
+        store.setToDefault(ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY);
+        store.setToDefault(ResultSetPreferences.RS_COMMIT_ON_CONTENT_APPLY);
     }
 
     @Override

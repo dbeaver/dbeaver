@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
@@ -68,20 +68,20 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
-            store.contains(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING) ||
-            store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
+            store.contains(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
+            store.contains(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING) ||
+            store.contains(ResultSetPreferences.RESULT_SET_MAX_ROWS) ||
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
-            store.contains(DBeaverPreferences.RESULT_SET_READ_METADATA) ||
-            store.contains(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
+            store.contains(ResultSetPreferences.RESULT_SET_READ_METADATA) ||
+            store.contains(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
             store.contains(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT) ||
-            store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
-            store.contains(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
-            store.contains(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
+            store.contains(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
+            store.contains(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
+            store.contains(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
-            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||            
+            store.contains(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
-            store.contains(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS)
+            store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS)
             ;
     }
 
@@ -154,21 +154,21 @@ public class PrefPageResultSetMain extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
-            autoFetchNextSegmentCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
-            rereadOnScrollingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING));
-            resultSetSize.setText(store.getString(DBeaverPreferences.RESULT_SET_MAX_ROWS));
+            autoFetchNextSegmentCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
+            rereadOnScrollingCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING));
+            resultSetSize.setText(store.getString(ResultSetPreferences.RESULT_SET_MAX_ROWS));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
-            serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
-            readQueryMetadata.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA));
-            readQueryReferences.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_REFERENCES));
-            queryCancelTimeout.setText(store.getString(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT));
+            serverSideOrderingCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE));
+            readQueryMetadata.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_READ_METADATA));
+            readQueryReferences.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_READ_REFERENCES));
+            queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
-            alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
-            newRowsAfter.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER));
-            refreshAfterUpdate.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
-            useNavigatorFilters.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
+            alwaysUseAllColumns.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
+            newRowsAfter.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER));
+            refreshAfterUpdate.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
+            useNavigatorFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
 
             advUseFetchSize.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
 
@@ -182,21 +182,21 @@ public class PrefPageResultSetMain extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
-            store.setValue(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, rereadOnScrollingCheck.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
+            store.setValue(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, rereadOnScrollingCheck.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
+            store.setValue(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
 
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
-            store.setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
-            store.setValue(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER, newRowsAfter.getSelection());
-            store.setValue(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, refreshAfterUpdate.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
+            store.setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
+            store.setValue(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER, newRowsAfter.getSelection());
+            store.setValue(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, refreshAfterUpdate.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
 
             store.setValue(ModelPreferences.RESULT_SET_USE_FETCH_SIZE, advUseFetchSize.getSelection());
         } catch (Exception e) {
@@ -208,21 +208,21 @@ public class PrefPageResultSetMain extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
-        store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_REREAD_ON_SCROLLING);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_READ_METADATA);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_READ_REFERENCES);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_READ_METADATA);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_READ_REFERENCES);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
         store.setToDefault(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
 
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
-        store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);
-        store.setToDefault(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER);
-        store.setToDefault(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);
+        store.setToDefault(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
+        store.setToDefault(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
+        store.setToDefault(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);
 
         store.setToDefault(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
 

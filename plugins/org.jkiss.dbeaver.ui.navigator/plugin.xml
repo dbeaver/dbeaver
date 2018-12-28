@@ -96,4 +96,8 @@
         </page>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ui.internal.UINavigatorPreferencesInitializer"/>
+    </extension>
+
 </plugin>
