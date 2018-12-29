@@ -155,7 +155,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Override
     public boolean isSystem() {
-        return name.equals("msdb");
+        return
+            name.equalsIgnoreCase(SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA) ||
+            name.equalsIgnoreCase(SQLServerConstants.INFORMATION_SCHEMA_SCHEMA);
     }
 
     @Override
@@ -292,7 +294,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException, DBException
         {
             String type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
-            if ("U".equals(type) || "S".equals(type)) {
+            if (SQLServerObjectType.U.name().equals(type) || SQLServerObjectType.S.name().equals(type)) {
                 return new SQLServerTable(owner, dbResult);
             } else {
                 return new SQLServerView(owner, dbResult);
