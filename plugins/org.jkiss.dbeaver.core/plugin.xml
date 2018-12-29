@@ -320,11 +320,6 @@
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
-        <definition id="org.jkiss.dbeaver.core.ui.navigator.control">
-            <with variable="activeFocusControlId">
-                <equals value="org.jkiss.dbeaver.ui.navigator"/>
-            </with>
-        </definition>
         <definition id="org.jkiss.dbeaver.core.ui.querylog.control">
             <with variable="activeFocusControlId">
                 <equals value="org.jkiss.dbeaver.ui.qm.log"/>
@@ -351,17 +346,6 @@
                 <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
             </with>
         </definition>
-        <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
-            <with variable="activePart">
-                <!--<instanceof value="org.jkiss.dbeaver.ui.navigator.INavigatorModelView"/>-->
-                <test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>
-            </with>
-        </definition>
-        <definition id="org.jkiss.dbeaver.core.ui.navigator.part.active">
-            <with variable="activePart">
-                <test property="org.jkiss.dbeaver.core.navigator.focused" forcePluginActivation="true"/>
-            </with>
-        </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">
             <with variable="activePart">
                 <instanceof value="org.jkiss.dbeaver.model.DBPContextProvider"/>
@@ -370,11 +354,6 @@
         <definition id="org.jkiss.dbeaver.core.ui.datasource.editor">
             <with variable="activeEditor">
                 <instanceof value="org.jkiss.dbeaver.model.DBPContextProvider"/>
-            </with>
-        </definition>
-        <definition id="org.jkiss.dbeaver.core.ui.folder.editor">
-            <with variable="activeEditor">
-                <instanceof value="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.sql.editor.base">
@@ -533,15 +512,15 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.NavigatorHandlerDriverManager"/>
-        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.NavigatorHandlerConnectionCreate">
+        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.datasource.DriverManagerDialogHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateHandler">
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.NavigatorHandlerConnectionMigrate"/>
+        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceMigrateHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.new.folder" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerLocalFolderCreate">
             <enabledWhen>
                 <with variable="selection">
@@ -589,7 +568,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.NavigatorHandlerAddBookmark">
+        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.AddBookmarkHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>

@@ -31,13 +31,13 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import java.util.Collection;
 import java.util.List;
 
-public class NavigatorActionExecuteTool implements IActionDelegate
+public class ExecuteToolHandler implements IActionDelegate
 {
     private IWorkbenchWindow window;
     private ToolDescriptor tool;
     private ISelection selection;
 
-    public NavigatorActionExecuteTool(IWorkbenchWindow window, ToolDescriptor tool)
+    public ExecuteToolHandler(IWorkbenchWindow window, ToolDescriptor tool)
     {
         this.window = window;
         this.tool = tool;
