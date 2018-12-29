@@ -86,14 +86,14 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     @Override
     protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, SQLServerTableBase parent, Object copyFrom)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
+        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
 
         final SQLServerTableColumn column = new SQLServerTableColumn(parent);
         column.setName(getNewColumnName(monitor, context, parent));
         column.setDataType((SQLServerDataType) columnType);
-        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
+        column.setTypeName(columnType == null ? "varchar" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-        column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
+        column.setValueType(columnType == null ? Types.VARCHAR : columnType.getTypeID());
         column.setOrdinalPosition(-1);
         return column;
     }
