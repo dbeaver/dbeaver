@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectBase;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl;
 
-public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
+public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
 
     private IFolder targetFolder;
 

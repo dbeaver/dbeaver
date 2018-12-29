@@ -5,15 +5,6 @@
 
     <extension-point id="org.jkiss.dbeaver.databaseEditor" name="%extension-point.org.jkiss.dbeaver.databaseEditor.name" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
 
-    <extension point="org.eclipse.core.expressions.propertyTesters">
-        <propertyTester
-                class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
-                id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
-                namespace="org.jkiss.dbeaver.core.navigator"
-                properties="active,focused"
-                type="org.eclipse.ui.IWorkbenchPart"/>
-    </extension>
-
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
@@ -130,6 +121,39 @@
                 class="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
                 id="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
         </editor>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
+                id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
+                namespace="org.jkiss.dbeaver.core.navigator"
+                properties="active,focused"
+                type="org.eclipse.ui.IWorkbenchPart"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.core.ui.navigator.control">
+            <with variable="activeFocusControlId">
+                <equals value="org.jkiss.dbeaver.ui.navigator"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
+            <with variable="activePart">
+                <!--<instanceof value="org.jkiss.dbeaver.ui.navigator.INavigatorModelView"/>-->
+                <test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.navigator.part.active">
+            <with variable="activePart">
+                <test property="org.jkiss.dbeaver.core.navigator.focused" forcePluginActivation="true"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.folder.editor">
+            <with variable="activeEditor">
+                <instanceof value="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
+            </with>
+        </definition>
     </extension>
 
 </plugin>
