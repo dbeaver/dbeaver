@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.EmptyAction;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -49,13 +50,6 @@ public class ResultSetReferenceMenu
 {
 
     static Action NOREFS_ACTION, REFS_TITLE_ACTION, NOFKS_ACTION, FKS_TITLE_ACTION;
-
-    private static class EmptyAction extends Action {
-        public EmptyAction(String text) {
-            super(text);
-            setEnabled(false);
-        }
-    }
 
     static {
         NOREFS_ACTION = new EmptyAction(ResultSetMessages.controls_resultset_ref_menu_no_references);
