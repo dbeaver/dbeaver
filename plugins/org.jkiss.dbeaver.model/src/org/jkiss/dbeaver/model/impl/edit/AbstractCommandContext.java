@@ -85,7 +85,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         // Validate commands
         {
             Map<String, Object> validateOptions = new HashMap<>();
-            for (CommandQueue queue : commandQueues) {
+            for (CommandQueue queue : getCommandQueues()) {
                 for (CommandInfo cmd : queue.commands) {
                     cmd.command.validateCommand(validateOptions);
                 }
