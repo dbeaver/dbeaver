@@ -82,9 +82,14 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
                     return null;
                 }
                 PostgreProcedure newProcedure = new PostgreProcedure(parent);
+                if (editPage.getPredefinedProcedureType() == DBSProcedureType.FUNCTION) {
+                    newProcedure.setKind(PostgreProcedureKind.f);
+                    newProcedure.setReturnType(editPage.getReturnType());
+                } else {
+                    newProcedure.setKind(PostgreProcedureKind.p);
+                }
                 newProcedure.setName(editPage.getProcedureName());
                 newProcedure.setLanguage(editPage.getLanguage());
-                newProcedure.setReturnType(editPage.getReturnType());
                 return newProcedure;
             }
         }.execute();
@@ -161,6 +166,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
         private final DBRProgressMonitor monitor;
         private PostgreLanguage language;
         private PostgreDataType returnType;
+        private Combo returnTypeCombo;
 
         public CreateFunctionPage(PostgreSchema parent, DBRProgressMonitor monitor) {
             super(parent);
@@ -170,7 +176,15 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
 
         @Override
         public DBSProcedureType getPredefinedProcedureType() {
+            if (parent.getDataSource().isServerVersionAtLeast(11, 0)) {
+                return null;
+            }
             return DBSProcedureType.FUNCTION;
+        }
+
+        @Override
+        protected void updateProcedureType(DBSProcedureType type) {
+            returnTypeCombo.setEnabled(type.hasReturnValue());
         }
 
         @Override
@@ -194,20 +208,20 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
             }
             {
                 List<PostgreDataType> dataTypes = new ArrayList<>(parent.getDatabase().getDataSource().getLocalDataTypes());
-                final Combo dataTypeCombo = UIUtils.createLabelCombo(group, "Return type", SWT.DROP_DOWN);
+                returnTypeCombo = UIUtils.createLabelCombo(group, "Return type", SWT.DROP_DOWN);
                 for (PostgreDataType dt : dataTypes) {
-                    dataTypeCombo.add(dt.getName());
+                    returnTypeCombo.add(dt.getName());
                 }
 
-                dataTypeCombo.addModifyListener(e -> {
-                    String dtName = dataTypeCombo.getText();
+                returnTypeCombo.addModifyListener(e -> {
+                    String dtName = returnTypeCombo.getText();
                     if (!CommonUtils.isEmpty(dtName)) {
                         returnType = parent.getDatabase().getDataSource().getLocalDataType(dtName);
                     } else {
                         returnType = null;
                     }
                 });
-                dataTypeCombo.setText("int4");
+                returnTypeCombo.setText("int4");
             }
             
         }
