@@ -22,9 +22,11 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,6 +51,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     private List<DBSEntityAssociation> unresolvedKeys;
 
     private boolean primary = false;
+    private ERDAttributeVisibility attributeVisibility;
 
     /**
      * Special constructore for creating lazy entities.
@@ -73,6 +76,14 @@ public class ERDEntity extends ERDObject<DBSEntity> {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public ERDAttributeVisibility getAttributeVisibility() {
+        return attributeVisibility;
+    }
+
+    public void setAttributeVisibility(ERDAttributeVisibility attributeVisibility) {
+        this.attributeVisibility = attributeVisibility;
     }
 
     public void addAttribute(ERDEntityAttribute attribute, boolean reflect) {
@@ -173,6 +184,11 @@ public class ERDEntity extends ERDObject<DBSEntity> {
             }
         }
         return result;
+    }
+
+    public void reloadAttributes(EntityDiagram diagram) {
+        attributes.clear();
+        diagram.getDecorator().fillEntityFromObject(new VoidProgressMonitor(), diagram, this);
     }
 
     /**
