@@ -509,7 +509,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected PostgreTableColumn fetchChild(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull PostgreTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
             try {
-                return new PostgreTableColumn(session.getProgressMonitor(), table, dbResult);
+                return owner.getDataSource().getServerType().createTableColumn(session.getProgressMonitor(), PostgreSchema.this, table, dbResult);
             } catch (DBException e) {
                 log.warn("Error reading attribute info", e);
                 return null;

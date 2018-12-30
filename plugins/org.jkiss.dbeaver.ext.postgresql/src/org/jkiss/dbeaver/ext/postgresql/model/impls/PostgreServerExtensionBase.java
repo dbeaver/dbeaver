@@ -241,6 +241,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return ddl.toString();
     }
 
+    @Override
+    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
+        return new PostgreTableColumn(monitor, table, dbResult);
+    }
+
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
