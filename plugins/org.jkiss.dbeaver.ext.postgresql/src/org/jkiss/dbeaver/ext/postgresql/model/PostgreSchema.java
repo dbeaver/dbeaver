@@ -70,6 +70,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     public final CollationCache collationCache = new CollationCache();
     public final ExtensionCache extensionCache = new ExtensionCache();
+    public final AggregateCache aggregateCache = new AggregateCache();
     public final TableCache tableCache = new TableCache();
     public final ConstraintCache constraintCache = new ConstraintCache();
     public final ProceduresCache proceduresCache = new ProceduresCache();
@@ -182,6 +183,12 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
         throws DBException {
         return extensionCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreAggregate> getAggregateFunctions(DBRProgressMonitor monitor)
+        throws DBException {
+        return aggregateCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -408,6 +415,29 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected PostgreExtension fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
             return new PostgreExtension(owner, dbResult);
+        }
+    }
+
+    class AggregateCache extends JDBCObjectCache<PostgreSchema, PostgreAggregate> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
+            throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT p.oid AS proc_oid,p.proname AS proc_name,a.*\n" +
+                    "FROM pg_catalog.pg_aggregate a,pg_catalog.pg_proc p\n" +
+                    "WHERE p.oid=a.aggfnoid AND p.pronamespace=?\n" +
+                    "ORDER BY p.proname"
+            );
+            dbStat.setLong(1, PostgreSchema.this.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreAggregate fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreAggregate(owner, dbResult);
         }
     }
 
