@@ -79,4 +79,5 @@ public interface PostgreServerExtension
 
     String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
 
+    PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException;
 }

@@ -151,6 +151,20 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
             throw new DBException(e, table.getDataSource());
         }
     }
+    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+        if (kind == PostgreClass.RelKind.r) {
+            return new RedshiftTable(schema, dbResult);
+        }
+        return super.createRelationOfClass(schema, kind, dbResult);
+    }
+
+    @Override
+    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
+        if (table instanceof RedshiftTable) {
+            return new RedshiftTableColumn(monitor, (RedshiftTable)table, dbResult);
+        }
+        return super.createTableColumn(monitor, schema, table, dbResult);
+    }
 
     @Override
     public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
