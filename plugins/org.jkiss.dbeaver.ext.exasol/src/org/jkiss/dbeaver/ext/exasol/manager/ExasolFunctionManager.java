@@ -47,7 +47,7 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command)
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options)
             throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName()))
         {
