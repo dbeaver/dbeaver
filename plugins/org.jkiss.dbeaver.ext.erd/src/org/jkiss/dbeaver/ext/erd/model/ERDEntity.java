@@ -187,7 +187,9 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     }
 
     public void reloadAttributes(EntityDiagram diagram) {
-        attributes.clear();
+        if (!CommonUtils.isEmpty(attributes)) {
+            attributes.clear();
+        }
         diagram.getDecorator().fillEntityFromObject(new VoidProgressMonitor(), diagram, this);
     }
 
