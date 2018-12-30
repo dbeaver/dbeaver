@@ -97,7 +97,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
     }
 
     @Override
-    public void validateCommand() throws DBException
+    public void validateCommand(Map<String, Object> options) throws DBException
     {
         if (handler instanceof DBEPropertyValidator) {
             ((DBEPropertyValidator<OBJECT_TYPE>)handler).validate(getObject(), newValue);

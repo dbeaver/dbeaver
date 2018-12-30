@@ -56,7 +56,7 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
     }
 
     @Override
-    public void validateCommand() throws DBException
+    public void validateCommand(Map<String, Object> options) throws DBException
     {
         // do nothing by default
     }
