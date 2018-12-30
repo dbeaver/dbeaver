@@ -156,7 +156,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         if (command.hasProperty("defaultEncoding")) {
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET ENCODING " + DBUtils.getQuotedIdentifier(database.getDefaultEncoding(monitor))));
         }
-        if (command.hasProperty("dba")) {
+        if (command.hasProperty("dBA")) {
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "OWNER TO " + DBUtils.getQuotedIdentifier(database.getDBA(monitor))));
         }
     }
