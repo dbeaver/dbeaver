@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -26,11 +28,35 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class RedshiftTableColumn extends PostgreTableColumn
 {
+
+    private String columnEncoding;
+    private boolean distKey;
+    private int sortKey;
+
     public RedshiftTableColumn(RedshiftTable table) {
         super(table);
     }
 
     public RedshiftTableColumn(DBRProgressMonitor monitor, RedshiftTable table, JDBCResultSet dbResult) throws DBException {
         super(monitor, table, dbResult);
+
+        columnEncoding = JDBCUtils.safeGetString(dbResult, "encoding");
+        distKey = JDBCUtils.safeGetBoolean(dbResult, "attisdistkey");
+        sortKey = JDBCUtils.safeGetInt(dbResult, "attsortkeyord");
+    }
+
+    @Property(viewable = true, order = 21)
+    public String getColumnEncoding() {
+        return columnEncoding;
+    }
+
+    @Property(viewable = false, order = 22)
+    public boolean isDistKey() {
+        return distKey;
+    }
+
+    @Property(viewable = false, order = 23)
+    public int getSortKey() {
+        return sortKey;
     }
 }
