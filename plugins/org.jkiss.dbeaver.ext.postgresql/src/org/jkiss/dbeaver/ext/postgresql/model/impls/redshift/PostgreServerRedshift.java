@@ -203,7 +203,10 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
                 // External schema
                 return new RedshiftExternalSchema(owner, name, esOptions, resultSet);
             } else {
-                return super.fetchObject(session, owner, resultSet);
+                if (PostgreSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().isShowUtilityObjects()) {
+                    return null;
+                }
+                return new RedshiftSchema(owner, name, resultSet);
             }
         }
 
