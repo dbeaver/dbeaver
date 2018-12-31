@@ -40,6 +40,8 @@ public interface PostgreServerExtension
 
     boolean supportsTriggers();
 
+    boolean supportsRules();
+
     boolean supportsExtensions();
 
     boolean supportsEncodings();
