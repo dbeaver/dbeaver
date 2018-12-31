@@ -72,6 +72,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsRules() {
+        return true;
+    }
+
+    @Override
     public boolean supportsExtensions() {
         return dataSource.isServerVersionAtLeast(9, 1);
     }

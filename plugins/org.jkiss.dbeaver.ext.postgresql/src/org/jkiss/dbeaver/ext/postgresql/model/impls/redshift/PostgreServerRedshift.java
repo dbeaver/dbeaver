@@ -79,6 +79,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsRules() {
+        return false;
+    }
+
+    @Override
     public boolean supportsExtensions() {
         return false;
     }
