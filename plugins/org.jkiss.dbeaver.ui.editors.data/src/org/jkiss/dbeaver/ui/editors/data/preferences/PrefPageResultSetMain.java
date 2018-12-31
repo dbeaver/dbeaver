@@ -186,7 +186,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, rereadOnScrollingCheck.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING, rereadOnScrollingCheck.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
