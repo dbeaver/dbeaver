@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -465,4 +467,21 @@ public class ContentUtils {
         return file.delete();
     }
 
+    public static void checkFolderExists(IFolder folder)
+            throws DBException
+    {
+        checkFolderExists(folder, new VoidProgressMonitor());
+    }
+
+    public static void checkFolderExists(IFolder folder, DBRProgressMonitor monitor)
+            throws DBException
+    {
+        if (!folder.exists()) {
+            try {
+                folder.create(true, true, monitor.getNestedMonitor());
+            } catch (CoreException e) {
+                throw new DBException("Can't create folder '" + folder.getFullPath() + "'", e);
+            }
+        }
+    }
 }

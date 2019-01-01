@@ -36,4 +36,5 @@ Export-Package: org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.navigator.dialogs,
  org.jkiss.dbeaver.ui.navigator.project,
  org.jkiss.dbeaver.ui.preferences,
+ org.jkiss.dbeaver.ui.resources,
  org.jkiss.dbeaver.tools.project

@@ -50,13 +50,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.controls.ScriptSelectorPanel;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -77,7 +77,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    public static void openResourceEditor(IWorkbenchWindow workbenchWindow, ResourceUtils.ResourceInfo resourceInfo) {
+    public static void openResourceEditor(IWorkbenchWindow workbenchWindow, SQLEditorUtils.ResourceInfo resourceInfo) {
         if (resourceInfo.getResource() != null) {
             openResource(resourceInfo.getResource(), workbenchWindow);
         } else if (resourceInfo.getLocalFile() != null) {
@@ -117,11 +117,11 @@ public class OpenHandler extends AbstractDataSourceHandler {
         checkProjectIsOpen(project);
         final DBPDataSourceContainer[] containerList = containers.toArray(new DBPDataSourceContainer[containers.size()]);
 
-        final IFolder rootFolder = ResourceUtils.getScriptsFolder(project, true);
-        final List<ResourceUtils.ResourceInfo> scriptTree = ResourceUtils.findScriptTree(rootFolder, containerList.length == 0 ? null : containerList);
+        final IFolder rootFolder = SQLEditorUtils.getScriptsFolder(project, true);
+        final List<SQLEditorUtils.ResourceInfo> scriptTree = SQLEditorUtils.findScriptTree(rootFolder, containerList.length == 0 ? null : containerList);
         if (scriptTree.isEmpty() && containerList.length == 1) {
             // Create new script
-            final IFile newScript = ResourceUtils.createNewScript(project, rootFolder, containers.isEmpty() ? null : containers.get(0));
+            final IFile newScript = SQLEditorUtils.createNewScript(project, rootFolder, containers.isEmpty() ? null : containers.get(0));
             openResource(newScript, workbenchWindow);
         } else {
             // Show script chooser
@@ -134,7 +134,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         checkProjectIsOpen(project);
         IFolder folder = getCurrentScriptFolder(selection);
-        IFile scriptFile = ResourceUtils.createNewScript(project, folder, dataSourceContainer);
+        IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, dataSourceContainer);
 
         openResource(scriptFile, workbenchWindow);
     }
@@ -250,11 +250,11 @@ public class OpenHandler extends AbstractDataSourceHandler {
     public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) throws CoreException {
         final IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         checkProjectIsOpen(project);
-        ResourceUtils.ResourceInfo res = ResourceUtils.findRecentScript(project, dataSourceContainer);
+        SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(project, dataSourceContainer);
         if (res != null) {
             openResourceEditor(workbenchWindow, res);
         } else {
-            IFile scriptFile = ResourceUtils.createNewScript(project, scriptFolder, dataSourceContainer);
+            IFile scriptFile = SQLEditorUtils.createNewScript(project, scriptFolder, dataSourceContainer);
             openResource(scriptFile, workbenchWindow);
         }
     }

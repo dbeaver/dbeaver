@@ -43,6 +43,8 @@ import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetEditors;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetPresentation;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute;
 import org.jkiss.dbeaver.ui.preferences.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
