@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.preferences;
+package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurator;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterDescriptor;
+import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -59,6 +61,8 @@ import java.util.Locale;
  */
 public class PrefPageSQLFormat extends TargetPrefPage
 {
+    private static final Log log = Log.getLog(PrefPageSQLFormat.class);
+
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.format"; //$NON-NLS-1$
 
     private final static String FORMAT_FILE_NAME = "format_preview.sql";

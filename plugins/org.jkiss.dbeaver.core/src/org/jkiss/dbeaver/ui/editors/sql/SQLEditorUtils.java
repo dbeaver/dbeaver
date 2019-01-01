@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.resources;
+package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -22,17 +22,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -44,89 +41,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * ResourceUtils
+ * SQLEditor utils
  */
-public class ResourceUtils {
+public class SQLEditorUtils {
 
-    private static final Log log = Log.getLog(ResourceUtils.class);
+    private static final Log log = Log.getLog(SQLEditorUtils.class);
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
-
-    public static class ResourceInfo {
-        private final IResource resource;
-        private final File localFile;
-        private final DBPDataSourceContainer dataSource;
-        private final List<ResourceInfo> children;
-        private String description;
-
-        public ResourceInfo(IFile file, DBPDataSourceContainer dataSource) {
-            this.resource = file;
-            this.localFile = file.getLocation().toFile();
-            this.dataSource = dataSource;
-            this.children = null;
-        }
-        public ResourceInfo(IFolder folder) {
-            this.resource = folder;
-            this.localFile = folder.getLocation().toFile();
-            this.dataSource = null;
-            this.children = new ArrayList<>();
-        }
-        public ResourceInfo(File localFile, DBPDataSourceContainer dataSource) {
-            this.resource = null;
-            this.localFile = localFile;
-            this.dataSource = dataSource;
-            this.children = null;
-        }
-
-        public IResource getResource() {
-            return resource;
-        }
-
-        public File getLocalFile() {
-            return localFile;
-        }
-
-        public String getName() {
-            return resource != null ? resource.getName() : localFile.getName();
-        }
-
-        public DBPDataSourceContainer getDataSource() {
-            return dataSource;
-        }
-
-        public boolean isDirectory() {
-            return resource instanceof IFolder;
-        }
-        public List<ResourceInfo> getChildren() {
-            return children;
-        }
-
-        public String getDescription() {
-            if (description == null) {
-                description = getResourceDescription(resource);
-            }
-            return description;
-        }
-
-        @Override
-        public String toString() {
-            return getName();
-        }
-    }
-
-    public static String getResourceDescription(IResource resource) {
-        if (resource instanceof IFolder) {
-            return "";
-        } else if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-            String description = SQLUtils.getScriptDescription((IFile) resource);
-            if (CommonUtils.isEmptyTrimmed(description)) {
-                description = "<empty>";
-            }
-            return description;
-        } else {
-            return "";
-        }
-    }
 
     public static IFolder getScriptsFolder(IProject project, boolean forceCreate) throws CoreException
     {
@@ -252,7 +173,7 @@ public class ResourceUtils {
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
 
         // Get folder
-        final IFolder scriptsRootFolder = ResourceUtils.getScriptsFolder(project, true);
+        final IFolder scriptsRootFolder = getScriptsFolder(project, true);
         IFolder scriptsFolder = folder;
         if (scriptsFolder == null) {
             scriptsFolder = scriptsRootFolder;
@@ -309,22 +230,79 @@ public class ResourceUtils {
         return tempFile;
     }
 
-    public static void checkFolderExists(IFolder folder)
-            throws DBException
-    {
-        checkFolderExists(folder, new VoidProgressMonitor());
-    }
-
-    public static void checkFolderExists(IFolder folder, DBRProgressMonitor monitor)
-            throws DBException
-    {
-        if (!folder.exists()) {
-            try {
-                folder.create(true, true, monitor.getNestedMonitor());
-            } catch (CoreException e) {
-                throw new DBException("Can't create folder '" + folder.getFullPath() + "'", e);
+    public static String getResourceDescription(IResource resource) {
+        if (resource instanceof IFolder) {
+            return "";
+        } else if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
+            String description = SQLUtils.getScriptDescription((IFile) resource);
+            if (CommonUtils.isEmptyTrimmed(description)) {
+                description = "<empty>";
             }
+            return description;
+        } else {
+            return "";
         }
     }
 
+    public static class ResourceInfo {
+        private final IResource resource;
+        private final File localFile;
+        private final DBPDataSourceContainer dataSource;
+        private final List<ResourceInfo> children;
+        private String description;
+
+        public ResourceInfo(IFile file, DBPDataSourceContainer dataSource) {
+            this.resource = file;
+            this.localFile = file.getLocation().toFile();
+            this.dataSource = dataSource;
+            this.children = null;
+        }
+        public ResourceInfo(IFolder folder) {
+            this.resource = folder;
+            this.localFile = folder.getLocation().toFile();
+            this.dataSource = null;
+            this.children = new ArrayList<>();
+        }
+        public ResourceInfo(File localFile, DBPDataSourceContainer dataSource) {
+            this.resource = null;
+            this.localFile = localFile;
+            this.dataSource = dataSource;
+            this.children = null;
+        }
+
+        public IResource getResource() {
+            return resource;
+        }
+
+        public File getLocalFile() {
+            return localFile;
+        }
+
+        public String getName() {
+            return resource != null ? resource.getName() : localFile.getName();
+        }
+
+        public DBPDataSourceContainer getDataSource() {
+            return dataSource;
+        }
+
+        public boolean isDirectory() {
+            return resource instanceof IFolder;
+        }
+        public List<ResourceInfo> getChildren() {
+            return children;
+        }
+
+        public String getDescription() {
+            if (description == null) {
+                description = getResourceDescription(resource);
+            }
+            return description;
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+    }
 }

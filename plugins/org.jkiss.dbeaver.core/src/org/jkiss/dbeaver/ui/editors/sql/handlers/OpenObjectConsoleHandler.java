@@ -41,9 +41,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -94,7 +94,7 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
         IProject project = ds != null ? ds.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         OpenHandler.checkProjectIsOpen(project);
         IFolder folder = OpenHandler.getCurrentScriptFolder(currentSelection);
-        IFile scriptFile = ResourceUtils.createNewScript(project, folder, ds);
+        IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, ds);
         //InputStream is = new ByteArrayInputStream(sql.getBytes(GeneralUtils.getDefaultFileEncoding()));
         //scriptFile.setContents(is, true, false, new NullProgressMonitor());
 
