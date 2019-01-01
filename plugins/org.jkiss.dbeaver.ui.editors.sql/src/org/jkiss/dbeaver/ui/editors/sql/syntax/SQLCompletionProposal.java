@@ -373,7 +373,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         if (!CommonUtils.isEmpty(wordPart)) {
             boolean matchContains = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
             boolean matched;
-            if (object == null) {
+            if (object == null || !matchContains) {
                 // For keywords use strict matching
                 matched = (matchContains ? replacementFull.contains(wordLower) : replacementFull.startsWith(wordLower)) &&
                     (CommonUtils.isEmpty(event.getText()) || replacementFull.contains(event.getText().toLowerCase(Locale.ENGLISH))) ||
