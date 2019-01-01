@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -74,13 +73,13 @@ public class PrefPageSQLExecute extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE) ||
-            store.contains(DBeaverPreferences.STATEMENT_TIMEOUT) ||
+            store.contains(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.STATEMENT_TIMEOUT) ||
 
-            store.contains(DBeaverPreferences.SCRIPT_COMMIT_TYPE) ||
-            store.contains(DBeaverPreferences.SCRIPT_ERROR_HANDLING) ||
-            store.contains(DBeaverPreferences.SCRIPT_COMMIT_LINES) ||
-            store.contains(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS) ||
+            store.contains(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE) ||
+            store.contains(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING) ||
+            store.contains(SQLPreferenceConstants.SCRIPT_COMMIT_LINES) ||
+            store.contains(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS) ||
 
             store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
             store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
@@ -200,16 +199,16 @@ public class PrefPageSQLExecute extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
-            invalidateBeforeExecuteCheck.setSelection(store.getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
-            executeTimeoutText.setSelection(store.getInt(DBeaverPreferences.STATEMENT_TIMEOUT));
+            invalidateBeforeExecuteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
+            executeTimeoutText.setSelection(store.getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT));
             soundOnQueryEnd.setSelection(store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
             updateDefaultAfterExecute.setSelection(store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
             clearOutputBeforeExecute.setSelection(store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
 
-            commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(DBeaverPreferences.SCRIPT_COMMIT_TYPE)).ordinal());
-            errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING)).ordinal());
-            commitLinesText.setSelection(store.getInt(DBeaverPreferences.SCRIPT_COMMIT_LINES));
-            fetchResultSetsCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS));
+            commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE)).ordinal());
+            errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING)).ordinal());
+            commitLinesText.setSelection(store.getInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES));
+            fetchResultSetsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS));
             resetCursorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
             maxEditorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE));
 
@@ -233,16 +232,16 @@ public class PrefPageSQLExecute extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
-            store.setValue(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
-            store.setValue(DBeaverPreferences.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
+            store.setValue(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
             store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
 
-            store.setValue(DBeaverPreferences.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
-            store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
-            store.setValue(DBeaverPreferences.SCRIPT_ERROR_HANDLING, CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name());
-            store.setValue(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
+            store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
+            store.setValue(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING, CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name());
+            store.setValue(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
             store.setValue(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, resetCursorCheck.getSelection());
             store.setValue(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, maxEditorCheck.getSelection());
 
@@ -266,13 +265,13 @@ public class PrefPageSQLExecute extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
-        store.setToDefault(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE);
-        store.setToDefault(DBeaverPreferences.STATEMENT_TIMEOUT);
+        store.setToDefault(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.STATEMENT_TIMEOUT);
 
-        store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_TYPE);
-        store.setToDefault(DBeaverPreferences.SCRIPT_ERROR_HANDLING);
-        store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_LINES);
-        store.setToDefault(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_COMMIT_LINES);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
 
         store.setToDefault(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE);

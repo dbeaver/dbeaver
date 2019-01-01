@@ -30,7 +30,6 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -49,21 +48,22 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLQueryParameterBindDialog;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLQueryParameterBindDialog;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -131,9 +131,9 @@ public class SQLQueryJob extends DataSourceJob
         {
             // Read config form preference store
             DBPPreferenceStore preferenceStore = getDataSourceContainer().getPreferenceStore();
-            this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(DBeaverPreferences.SCRIPT_COMMIT_TYPE));
-            this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING));
-            this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
+            this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE));
+            this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING));
+            this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
             this.rsMaxRows = preferenceStore.getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS);
         }
     }
@@ -283,14 +283,14 @@ public class SQLQueryJob extends DataSourceJob
                 // Return success
                 return new Status(
                     Status.OK,
-                    DBeaverCore.getCorePluginID(),
+                    DBeaverCore.PLUGIN_ID,
                     "SQL job completed");
             }
         }
         catch (Throwable ex) {
             return new Status(
                 Status.ERROR,
-                DBeaverCore.getCorePluginID(),
+                DBeaverCore.PLUGIN_ID,
                 "Error during SQL job execution: " + ex.getMessage());
         }
         finally {
@@ -371,7 +371,7 @@ public class SQLQueryJob extends DataSourceJob
             closeStatement();
 
             // Check and invalidate connection
-            if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
+            if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
                 executionContext.invalidateContext(session.getProgressMonitor(), true);
                 connectionInvalidated = true;
             }
@@ -439,7 +439,7 @@ public class SQLQueryJob extends DataSourceJob
             rsOffset, rsMaxRows);
         curStatement = dbcStatement;
 
-        int statementTimeout = getDataSourceContainer().getPreferenceStore().getInt(DBeaverPreferences.STATEMENT_TIMEOUT);
+        int statementTimeout = getDataSourceContainer().getPreferenceStore().getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT);
         if (statementTimeout > 0) {
             try {
                 dbcStatement.setStatementTimeout(statementTimeout);

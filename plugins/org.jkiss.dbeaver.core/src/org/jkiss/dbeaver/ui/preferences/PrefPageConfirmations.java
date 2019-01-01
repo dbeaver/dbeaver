@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -111,11 +112,11 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REJECT);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REVERT);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, rsvBundle, ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, DBeaverPreferences.CONFIRM_DANGER_SQL);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, SQLPreferenceConstants.CONFIRM_DANGER_SQL);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL);
 
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_EDITOR_CLOSE);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, DBeaverPreferences.CONFIRM_RUNNING_QUERY_CLOSE);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, coreBundle, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE);
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(confirmTable, true));
 
