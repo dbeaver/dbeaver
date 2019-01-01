@@ -50,26 +50,6 @@ public class CoreMessages extends NLS {
 	public static String action_menu_transactionMonitor_autocommitMode;
 	public static String action_menu_transactionMonitor_uptime;
 	public static String action_menu_transactionMonitor_notConnected;
-	
-	public static String action_popup_sqleditor_layout_horizontal;
-	public static String action_popup_sqleditor_layout_vertical;
-	public static String action_popup_sqleditor_layout_detached;
-	
-	public static String actions_ContentAssistProposal_label;
-	public static String actions_ContentAssistProposal_tooltip;
-	public static String actions_ContentAssistProposal_description;
-
-	public static String actions_ContentAssistTip_label;
-	public static String actions_ContentAssistTip_tooltip;
-	public static String actions_ContentAssistTip_description;
-
-	public static String actions_ContentAssistInfo_label;
-	public static String actions_ContentAssistInfo_tooltip;
-	public static String actions_ContentAssistInfo_description;
-
-	public static String actions_ContentFormatProposal_label;
-	public static String actions_ContentFormatProposal_tooltip;
-	public static String actions_ContentFormatProposal_description;
 
 	public static String actions_navigator_bookmark_error_message;
 	public static String actions_navigator_bookmark_error_title;
@@ -117,44 +97,6 @@ public class CoreMessages extends NLS {
 	public static String controls_driver_tree_column_connections;
 	public static String controls_driver_tree_column_name;
 	public static String controls_itemlist_action_copy;
-
-	public static String controls_querylog__ms;
-	public static String controls_querylog_action_clear_log;
-	public static String controls_querylog_action_copy;
-	public static String controls_querylog_action_copy_all_fields;
-	public static String controls_querylog_action_select_all;
-	public static String controls_querylog_column_duration_name;
-	public static String controls_querylog_column_duration_tooltip;
-	public static String controls_querylog_column_result_name;
-	public static String controls_querylog_column_result_tooltip;
-	public static String controls_querylog_column_rows_name;
-	public static String controls_querylog_column_rows_tooltip;
-	public static String controls_querylog_column_text_name;
-	public static String controls_querylog_column_text_tooltip;
-	public static String controls_querylog_column_time_name;
-	public static String controls_querylog_column_time_tooltip;
-	public static String controls_querylog_column_type_name;
-	public static String controls_querylog_column_type_tooltip;
-    public static String controls_querylog_column_connection_name;
-    public static String controls_querylog_column_connection_tooltip;
-	public static String controls_querylog_column_context_name;
-	public static String controls_querylog_column_context_tooltip;
-    public static String controls_querylog_commit;
-	public static String controls_querylog_connected_to;
-	public static String controls_querylog_disconnected_from;
-	public static String controls_querylog_error;
-	public static String controls_querylog_format_minutes;
-	public static String controls_querylog_job_refresh;
-	public static String controls_querylog_label_result;
-	public static String controls_querylog_label_text;
-	public static String controls_querylog_label_time;
-	public static String controls_querylog_label_type;
-	public static String controls_querylog_rollback;
-	public static String controls_querylog_savepoint;
-	public static String controls_querylog_script;
-	public static String controls_querylog_shell_text;
-	public static String controls_querylog_success;
-	public static String controls_querylog_transaction;
 
 	public static String model_navigator__connections;
 	public static String model_navigator_Connection;

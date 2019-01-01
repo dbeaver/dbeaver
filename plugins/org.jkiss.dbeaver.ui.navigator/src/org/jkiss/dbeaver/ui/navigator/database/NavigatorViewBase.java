@@ -135,9 +135,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                             case CONNECT: {
                                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                                 if (dataSource.isConnected()) {
-                                    serviceConnections.disconectDataSource(dataSource);
+                                    serviceConnections.disconnectDataSource(dataSource);
                                 } else {
-                                    serviceConnections.disconectDataSource(dataSource);
+                                    serviceConnections.disconnectDataSource(dataSource);
                                 }
                                 break;
                             }

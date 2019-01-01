@@ -278,12 +278,7 @@ public class DataSourceHandler
                         }
                     }
                     final boolean commit = commitTxn;
-                    UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            closeActiveTransaction(monitor, context, commit);
-                        }
-                    });
+                    UIUtils.runInProgressService(monitor -> closeActiveTransaction(monitor, context, commit));
                 }
             } catch (Throwable e) {
                 log.warn("Can't rollback active transaction before disconnect", e);

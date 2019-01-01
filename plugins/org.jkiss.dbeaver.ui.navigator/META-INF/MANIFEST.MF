@@ -23,6 +23,7 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base
 Export-Package: org.jkiss.dbeaver.ui.controls,
+ org.jkiss.dbeaver.ui.actions,
  org.jkiss.dbeaver.ui.controls.itemlist,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ui.editors.entity,

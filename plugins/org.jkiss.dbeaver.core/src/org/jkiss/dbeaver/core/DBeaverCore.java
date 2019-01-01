@@ -25,13 +25,13 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -62,7 +62,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.ServiceReference;
 
 import java.io.*;
 import java.net.ProxySelector;
@@ -444,6 +443,11 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public DBNModel getNavigatorModel() {
         return navigatorModel;
+    }
+
+    @Override
+    public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
+        return DataSourceProviderRegistry.getInstance();
     }
 
     @NotNull
