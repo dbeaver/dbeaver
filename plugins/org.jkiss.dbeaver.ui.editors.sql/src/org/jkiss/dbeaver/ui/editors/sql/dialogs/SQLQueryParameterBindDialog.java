@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.dialogs;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -124,6 +123,13 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 Text editor = new Text(table, SWT.BORDER);
                 editor.setText(CommonUtils.notEmpty(param.getValue()));
                 editor.selectAll();
+
+                editor.addTraverseListener(e -> {
+                    if (e.detail == SWT.TRAVERSE_RETURN && (e.stateMask & SWT.CTRL) == SWT.CTRL) {
+                        UIUtils.asyncExec(SQLQueryParameterBindDialog.this::okPressed);
+                    }
+                });
+
                 return editor;
             }
             @Override
