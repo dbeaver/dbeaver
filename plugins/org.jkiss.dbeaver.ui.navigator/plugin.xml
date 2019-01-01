@@ -654,4 +654,57 @@
         </handler>
 
     </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- Database Navigator menu & toolbar -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
+            <separator name="projects" visible="true"/>
+            <menu commandId="org.jkiss.dbeaver.core.project.select" label="%menu.org.jkiss.dbeaver.core.project.select.label">
+                <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
+            </menu>
+            <command commandId="org.jkiss.dbeaver.core.new.folder"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.preferences"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+            <command commandId="org.jkiss.dbeaver.core.new.folder"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+        </menuContribution>
+
+        <!-- Project Navigator menu & toolbar -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.projectNavigator">
+            <command commandId="org.jkiss.dbeaver.core.project.create"/>
+            <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.preferences"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator">
+            <command commandId="org.jkiss.dbeaver.core.project.create"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.preferences"/>
+        </menuContribution>
+
+        <!-- Project explorer menu & toolbar -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
+            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.eclipse.ui.navigate.expandAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+        </menuContribution>
+
+    </extension>
+
 </plugin>

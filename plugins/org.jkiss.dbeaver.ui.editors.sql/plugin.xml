@@ -579,4 +579,130 @@
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+]"/>
     </extension>
 
+    <extension point="org.eclipse.ui.menus">
+        <!-- SQL editor menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="SQLEditorMenu" label="%menu.sqleditor">
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+                <separator name="execute" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <separator name="query" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <separator name="files" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <separator name="misc" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"/>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" style="push"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+            </menu>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute.label" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
+                <separator name="additions_extra" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
+                <separator name="additions_active_object" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"/>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"/>
+            </menu>
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file.label">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.rename"/>
+                <command commandId="org.eclipse.ui.file.revert"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
+            </menu>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.label">
+                <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
+                <separator name="layout_toggles" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+            </menu>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=group.copy">
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special"/>
+        </menuContribution>
+    </extension>
+
 </plugin>
