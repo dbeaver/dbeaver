@@ -598,9 +598,11 @@ public class SQLQueryJob extends DataSourceJob
         if (CommonUtils.isEmpty(parameters)) {
             return true;
         }
-        // Resolve parameters
-        if (!fillStatementParameters(parameters)) {
-            return false;
+        if (rsOffset <= 0) {
+            // Resolve parameters (only if it is the first fetch)
+            if (!fillStatementParameters(parameters)) {
+                return false;
+            }
         }
 
         // Set values for all parameters
