@@ -313,16 +313,6 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.data.forSelection" class="org.jkiss.dbeaver.ui.editors.data.OpenDataEditorHandler">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-                    </iterate>
-                </with>
-            </enabledWhen>
-        </handler>
         <handler commandId="org.jkiss.dbeaver.core.procedure.execute" class="org.jkiss.dbeaver.ui.editors.sql.handlers.RunProcedureConsoleHandler">
             <enabledWhen>
                 <with variable="selection">
