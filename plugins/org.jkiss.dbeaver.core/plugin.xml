@@ -891,15 +891,6 @@
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.core.queryManager"/>
             </command>
         </menuContribution>
-
-        <!-- RSV panels config drop-down menu -->
-        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.panels">
-            <dynamic id="org.jkiss.dbeaver.core.resultset.panels" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer$PanelsMenuContributor"/>
-        </menuContribution>
-        <!-- RSV open-with drop-down menu -->
-        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.openWith">
-            <dynamic id="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith$OpenWithMenuContributor"/>
-        </menuContribution>
     </extension>
 
 
@@ -1115,22 +1106,6 @@
         </factory>
         <factory adaptableType="org.jkiss.dbeaver.model.struct.DBSObject" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
             <adapter type="org.jkiss.dbeaver.runtime.resource.WorkspaceResourceResolver"/>
-        </factory>
-        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
-        </factory>
-        <factory adaptableType="org.eclipse.ui.IEditorInput" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </factory>
     </extension>
 

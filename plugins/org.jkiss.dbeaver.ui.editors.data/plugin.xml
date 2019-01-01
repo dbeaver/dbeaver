@@ -603,4 +603,15 @@
 
     </extension>
 
+    <extension point="org.eclipse.ui.menus">
+        <!-- RSV panels config drop-down menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.panels">
+            <dynamic id="org.jkiss.dbeaver.core.resultset.panels" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer$PanelsMenuContributor"/>
+        </menuContribution>
+        <!-- RSV open-with drop-down menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.openWith">
+            <dynamic id="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith$OpenWithMenuContributor"/>
+        </menuContribution>
+
+    </extension>
 </plugin>
