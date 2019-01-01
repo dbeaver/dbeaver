@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.dbeaver.core.CoreMessages;
 
 /**
  * PrefPageSQLEditor
@@ -108,43 +108,43 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
         // Content assistant
         {
-            Composite assistGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_completion_group_sql_assistant, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite assistGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_completion_group_sql_assistant, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            csAutoActivationCheck = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_enable_auto_activation, CoreMessages.pref_page_sql_completion_label_enable_auto_activation_tip, false, 2);
+            csAutoActivationCheck = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_enable_auto_activation, SQLEditorMessages.pref_page_sql_completion_label_enable_auto_activation_tip, false, 2);
 
-            UIUtils.createControlLabel(assistGroup, CoreMessages.pref_page_sql_completion_label_auto_activation_delay);
+            UIUtils.createControlLabel(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_auto_activation_delay);
             csAutoActivationDelaySpinner = new Spinner(assistGroup, SWT.BORDER);
             csAutoActivationDelaySpinner.setSelection(0);
             csAutoActivationDelaySpinner.setDigits(0);
             csAutoActivationDelaySpinner.setIncrement(50);
             csAutoActivationDelaySpinner.setMinimum(0);
             csAutoActivationDelaySpinner.setMaximum(1000000);
-            csAutoActivationDelaySpinner.setToolTipText(CoreMessages.pref_page_sql_completion_label_set_auto_activation_delay_tip);
+            csAutoActivationDelaySpinner.setToolTipText(SQLEditorMessages.pref_page_sql_completion_label_set_auto_activation_delay_tip);
 
             csAutoActivateOnKeystroke = UIUtils.createCheckbox(
                 assistGroup,
-                CoreMessages.pref_page_sql_completion_label_activate_on_typing,
-                CoreMessages.pref_page_sql_completion_label_activate_on_typing_tip,
+                SQLEditorMessages.pref_page_sql_completion_label_activate_on_typing,
+                SQLEditorMessages.pref_page_sql_completion_label_activate_on_typing_tip,
                 false, 2);
             csAutoInsertCheck = UIUtils.createCheckbox(
                 assistGroup,
-                CoreMessages.pref_page_sql_completion_label_auto_insert_proposal,
-                CoreMessages.pref_page_sql_completion_label_auto_insert_proposal_tip,
+                SQLEditorMessages.pref_page_sql_completion_label_auto_insert_proposal,
+                SQLEditorMessages.pref_page_sql_completion_label_auto_insert_proposal_tip,
                 false, 2);
 
-            UIUtils.createControlLabel(assistGroup, CoreMessages.pref_page_sql_completion_label_insert_case);
+            UIUtils.createControlLabel(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_insert_case);
             csInsertCase = new Combo(assistGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             csInsertCase.add("Default");
             csInsertCase.add("Upper case");
             csInsertCase.add("Lower case");
 
-            csReplaceWordAfter = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_replace_word_after, CoreMessages.pref_page_sql_completion_label_replace_word_after_tip, false, 2);
-            csHideDuplicates = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_hide_duplicate_names, null, false, 2);
-            csShortName = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_short_names, null, false, 2);
-            csLongName = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_long_names, null, false, 2);
-            csInsertSpace = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_insert_space, null, false, 2);
-            csSortAlphabetically = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_sort_alphabetically, null, false, 2);
-            csShowServerHelpTopics = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_show_server_help_topics, CoreMessages.pref_page_sql_completion_label_show_server_help_topics_tip, false, 2);
+            csReplaceWordAfter = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_replace_word_after, SQLEditorMessages.pref_page_sql_completion_label_replace_word_after_tip, false, 2);
+            csHideDuplicates = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_hide_duplicate_names, null, false, 2);
+            csShortName = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_use_short_names, null, false, 2);
+            csLongName = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_use_long_names, null, false, 2);
+            csInsertSpace = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_insert_space, null, false, 2);
+            csSortAlphabetically = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_sort_alphabetically, null, false, 2);
+            csShowServerHelpTopics = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_show_server_help_topics, SQLEditorMessages.pref_page_sql_completion_label_show_server_help_topics_tip, false, 2);
         }
 
         Composite rightPanel = new Composite(composite, SWT.NONE);
@@ -152,33 +152,33 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         rightPanel.setLayout(new GridLayout(1, false));
 
         {
-            Composite assistGroup = UIUtils.createControlGroup(rightPanel, CoreMessages.pref_page_sql_format_group_search, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite assistGroup = UIUtils.createControlGroup(rightPanel, SQLEditorMessages.pref_page_sql_format_group_search, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            csMatchContains = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_match_contains, CoreMessages.pref_page_sql_completion_label_match_contains_tip, false, 2);
-            csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_global_search, CoreMessages.pref_page_sql_completion_label_use_global_search_tip, false, 2);
-            csShowColumnProcedures = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_show_column_procedures, CoreMessages.pref_page_sql_completion_label_show_column_procedures_tip, false, 2);
+            csMatchContains = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_match_contains, SQLEditorMessages.pref_page_sql_completion_label_match_contains_tip, false, 2);
+            csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_use_global_search, SQLEditorMessages.pref_page_sql_completion_label_use_global_search_tip, false, 2);
+            csShowColumnProcedures = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_show_column_procedures, SQLEditorMessages.pref_page_sql_completion_label_show_column_procedures_tip, false, 2);
         }
         // Autoclose
         {
-            Composite acGroup = UIUtils.createControlGroup(rightPanel, CoreMessages.pref_page_sql_format_group_auto_close, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite acGroup = UIUtils.createControlGroup(rightPanel, SQLEditorMessages.pref_page_sql_format_group_auto_close, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_single_quotes, false);
-            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_double_quotes, false);
-            acBracketsCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_brackets, false);
+            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, SQLEditorMessages.pref_page_sql_format_label_single_quotes, false);
+            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, SQLEditorMessages.pref_page_sql_format_label_double_quotes, false);
+            acBracketsCheck = UIUtils.createCheckbox(acGroup, SQLEditorMessages.pref_page_sql_format_label_brackets, false);
         }
 
         {
             // Formatting
-            Composite afGroup = UIUtils.createControlGroup(rightPanel, CoreMessages.pref_page_sql_format_group_auto_format, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite afGroup = UIUtils.createControlGroup(rightPanel, SQLEditorMessages.pref_page_sql_format_group_auto_format, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             afKeywordCase = UIUtils.createCheckbox(
                 afGroup,
-                CoreMessages.pref_page_sql_format_label_convert_keyword_case,
-                CoreMessages.pref_page_sql_format_label_convert_keyword_case_tip,
+                SQLEditorMessages.pref_page_sql_format_label_convert_keyword_case,
+                SQLEditorMessages.pref_page_sql_format_label_convert_keyword_case_tip,
                 false, 1);
             afExtractFromSource = UIUtils.createCheckbox(
                 afGroup,
-                CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code,
-                CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code_tip, false, 1);
+                SQLEditorMessages.pref_page_sql_format_label_extract_sql_from_source_code,
+                SQLEditorMessages.pref_page_sql_format_label_extract_sql_from_source_code_tip, false, 1);
         }
 
         return composite;

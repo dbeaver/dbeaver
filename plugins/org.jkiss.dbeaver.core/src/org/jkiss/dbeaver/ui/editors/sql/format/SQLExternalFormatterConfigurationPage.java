@@ -21,10 +21,10 @@ import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigurationPage {
@@ -38,7 +38,7 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
 
         Group settingsGroup = UIUtils.createControlGroup(parent, "Settings", 4, GridData.FILL_HORIZONTAL, 0);
 
-        externalCmdText = UIUtils.createLabelText(settingsGroup, CoreMessages.pref_page_sql_format_label_external_command_line, "");
+        externalCmdText = UIUtils.createLabelText(settingsGroup, SQLEditorMessages.pref_page_sql_format_label_external_command_line, "");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         externalCmdText.setLayoutData(gd);
@@ -48,16 +48,16 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
                 new SimpleContentProposalProvider(new String[] {
                         GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE)
                 }));
-        UIUtils.setContentProposalToolTip(externalCmdText, CoreMessages.pref_page_sql_format_label_external_set_content_tool_tip, SQLFormatterExternal.VAR_FILE);
+        UIUtils.setContentProposalToolTip(externalCmdText, SQLEditorMessages.pref_page_sql_format_label_external_set_content_tool_tip, SQLFormatterExternal.VAR_FILE);
 
         externalUseFile = UIUtils.createCheckbox(settingsGroup,
-            CoreMessages.pref_page_sql_format_label_external_use_temp_file,
-            CoreMessages.pref_page_sql_format_label_external_use_temp_file_tip + " " + GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE),
+            SQLEditorMessages.pref_page_sql_format_label_external_use_temp_file,
+            SQLEditorMessages.pref_page_sql_format_label_external_use_temp_file_tip + " " + GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE),
             false,
             2);
         externalTimeout = UIUtils.createLabelSpinner(settingsGroup,
-            CoreMessages.pref_page_sql_format_label_external_exec_timeout,
-            CoreMessages.pref_page_sql_format_label_external_exec_timeout_tip,
+            SQLEditorMessages.pref_page_sql_format_label_external_exec_timeout,
+            SQLEditorMessages.pref_page_sql_format_label_external_exec_timeout_tip,
             100, 100, 10000);
 
         return parent;

@@ -47,7 +47,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -58,6 +57,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
@@ -532,7 +532,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         a.setActionDefinitionId(CoreCommands.CMD_CONTENT_FORMAT);
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, a);
 
-        setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new Action(CoreMessages.editor_sql_preference) { //$NON-NLS-1$
+        setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new Action(SQLEditorMessages.editor_sql_preference) { //$NON-NLS-1$
             public void run() {
                 Shell shell = getSourceViewer().getTextWidget().getShell();
                 String[] preferencePages = collectContextMenuPreferencePages();
@@ -561,7 +561,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         menu.insertBefore(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.navigate.object"));
 
         {
-            MenuManager formatMenu = new MenuManager(CoreMessages.sql_editor_menu_format, "format");
+            MenuManager formatMenu = new MenuManager(SQLEditorMessages.sql_editor_menu_format, "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
             if (formatAction != null) {
                 formatMenu.add(formatAction);

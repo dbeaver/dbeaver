@@ -38,10 +38,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLConverterRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLTargetConverterDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -93,8 +93,8 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-        element.setText(CoreMessages.editors_sql_actions_copy_as_source_code);
-        element.setTooltip(CoreMessages.editors_sql_actions_copy_as_source_code_tip);
+        element.setText(SQLEditorMessages.editors_sql_actions_copy_as_source_code);
+        element.setTooltip(SQLEditorMessages.editors_sql_actions_copy_as_source_code_tip);
     }
 
     private static class TargetFormatDialog extends BaseSQLDialog {
@@ -264,7 +264,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
             super.createButtonsForButtonBar(parent);
             Button okButton = getButton(IDialogConstants.OK_ID);
             if (okButton != null) {
-                okButton.setText(CoreMessages.dialog_view_sql_button_copy);
+                okButton.setText(SQLEditorMessages.dialog_view_sql_button_copy);
             }
         }
 
