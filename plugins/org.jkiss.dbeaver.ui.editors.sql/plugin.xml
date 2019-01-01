@@ -8,6 +8,10 @@
     <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorPreferencesInitializer"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.resourceHandler">
         <handler id="scripts" class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl" name="SQL scripts" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png">
             <root folder="Scripts"/>

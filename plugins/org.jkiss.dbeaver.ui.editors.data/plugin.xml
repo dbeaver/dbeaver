@@ -3,6 +3,7 @@
 
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="%extension-point.org.jkiss.dbeaver.aggregateFunction.name" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataManager" name="%extension-point.org.jkiss.dbeaver.dataManager.name" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
