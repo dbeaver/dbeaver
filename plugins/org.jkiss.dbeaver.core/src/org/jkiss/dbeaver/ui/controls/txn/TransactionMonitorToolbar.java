@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
-import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
+import org.jkiss.dbeaver.ui.AbstractPartListener;
 
 /**
  * DataSource Toolbar

@@ -18,13 +18,13 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.jface.text.templates.TemplateContextType;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.meta.*;
@@ -43,7 +43,7 @@ import java.util.Map;
 /**
  * DataSourceProviderDescriptor
  */
-public class DataSourceProviderDescriptor extends AbstractDescriptor
+public class DataSourceProviderDescriptor extends AbstractDescriptor implements DBPDataSourceProviderDescriptor
 {
     private static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
 
@@ -157,21 +157,25 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return parentProvider;
     }
 
+    @Override
     public String getId()
     {
         return id;
     }
 
+    @Override
     public String getName()
     {
         return name;
     }
 
+    @Override
     public String getDescription()
     {
         return description;
     }
 
+    @Override
     public DBPImage getIcon()
     {
         return icon;
@@ -473,11 +477,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private DriverDescriptor loadDriver(IConfigurationElement config)
     {
         return new DriverDescriptor(this, config);
-    }
-
-    public void loadTemplateVariableResolvers(TemplateContextType contextType)
-    {
-        //Collection<TemplateVariableResolver>
     }
 
     @Override

@@ -3,5 +3,188 @@
 
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.sql.covert" name="%extension-point.org.jkiss.dbeaver.sql.covertname" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.resourceHandler">
+        <handler id="scripts" class="org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl" name="SQL scripts" managable="true" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/scripts.png">
+            <root folder="Scripts"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.views">
+        <!--
+                <view
+                        id="org.jkiss.dbeaver.core.sqlResults"
+                        category="org.jkiss.dbeaver.core.category"
+                        class="org.jkiss.dbeaver.ui.views.SQLResultsView"
+                        allowMultiple="true"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_data_grid.png"
+                        name="%view.sql.results.title"/>
+                <view
+                        id="org.jkiss.dbeaver.core.databaseOutput"
+                        category="org.jkiss.dbeaver.core.category"
+                        class="org.jkiss.dbeaver.ui.views.DatabaseOutputView"
+                        allowMultiple="false"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"
+                        name="%view.database.output.title"/>
+        -->
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlFormatter">
+        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="Default formatter" description="Default SQL formatter"/>
+        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="Compact formatter" description="Compact SQL formatter. Similar to default formatter but with more compact output"/>
+        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.SQLExternalFormatterConfigurationPage" label="External formatter" description="External formatter. Uses configurable command-line executable to format SQL queries"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="set" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
+        <command id="echo" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
+        <command id="include" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another SQL script file"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sql.covert">
+        <target id="unformatted"
+                label="%sql.convert.unformatted.text.name"
+                description="%sql.convert.unformatted.text.description"
+                class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.UnformattedSQLConverter"/>
+        <target id="java" label="Java" description="%sql.convert.java.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.JavaSQLConverter">
+            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
+        </target>
+        <target id="cpp" label="C/C++" description="%sql.convert.c.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.CPPSQLConverter">
+            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
+        </target>
+        <target id="delphi" label="Delphi" description="%sql.convert.delphi.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.DelphiSQLConverter">
+            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually #13#10 or space" required="false" defaultValue="#13#10"/>
+        </target>
+        <target id="html"
+                label="HTML"
+                description="%sql.convert.html.description"
+                class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter"/>
+    </extension>
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="sql"
+                id="org.jkiss.dbeaver.sql"
+                name="%content-type.org.jkiss.dbeaver.sql.name"
+                priority="high"
+                describer="org.jkiss.dbeaver.ui.editors.sql.SQLContentTypeDescriber"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor name="%editor.sql.name"
+                extensions="sql"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script.png"
+                contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"
+                matchingStrategy="org.jkiss.dbeaver.ui.editors.sql.SQLEditorMatchingStrategy"
+                id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
+        </editor>
+    </extension>
+
+    <extension point="org.eclipse.ui.workbench.texteditor.rulerColumns">
+        <column class="org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn"
+                enabled="false"
+                global="false"
+                id="org.jkiss.dbeaver.ui.editors.columns.script.position"
+                includeInMenu="true"
+                name="%column.org.jkiss.dbeaver.ui.editors.columns.script.position.name">
+            <placement gravity="0.9"/>
+            <targetClass class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
+        </column>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors.annotationTypes">
+        <type name="org.eclipse.jdt.ui.occurrences"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+        <specification
+                annotationType="org.jkisss.dbeaver.ui.occurrences.underCursor"
+                label="SQL - word (under cursor) occurrences"
+                icon="icons/sql/sql_script.png"
+                textPreferenceKey="occurrenceIndication"
+                textPreferenceValue="false"
+                highlightPreferenceKey="occurrenceHighlighting"
+                highlightPreferenceValue="true"
+                contributesToHeader="false"
+                overviewRulerPreferenceKey="occurrenceIndicationInOverviewRuler"
+                overviewRulerPreferenceValue="true"
+                verticalRulerPreferenceKey="occurrenceIndicationInVerticalRuler"
+                verticalRulerPreferenceValue="false"
+                colorPreferenceKey="occurrenceIndicationColor"
+                colorPreferenceValue="212,212,212"
+                presentationLayer="4"
+                showInNextPrevDropdownToolbarActionKey="showOccurrenceInNextPrevDropdownToolbarAction"
+                showInNextPrevDropdownToolbarAction="true"
+                isGoToNextNavigationTargetKey="isOccurrenceGoToNextNavigationTarget"
+                isGoToNextNavigationTarget="false"
+                isGoToPreviousNavigationTargetKey="isOccurrenceGoToPreviousNavigationTarget"
+                isGoToPreviousNavigationTarget="false"
+                textStylePreferenceKey="occurrenceTextStyle"
+                textStylePreferenceValue="NONE">
+        </specification>
+        <specification
+                annotationType="org.jkisss.dbeaver.ui.occurrences.forSelection"
+                label="SQL - selected word occurrences"
+                icon="icons/sql/sql_script.png"
+                textPreferenceKey="writeOccurrenceIndication"
+                textPreferenceValue="false"
+                highlightPreferenceKey="writeOccurrenceHighlighting"
+                highlightPreferenceValue="true"
+                contributesToHeader="false"
+                overviewRulerPreferenceKey="writeOccurrenceIndicationInOverviewRuler"
+                overviewRulerPreferenceValue="true"
+                verticalRulerPreferenceKey="writeOccurrenceIndicationInVerticalRuler"
+                verticalRulerPreferenceValue="false"
+                colorPreferenceKey="writeOccurrenceIndicationColor"
+                colorPreferenceValue="240,216,168"
+                presentationLayer="4"
+                showInNextPrevDropdownToolbarActionKey="SQLEditor.showOccurrenceInNextPrevDropdownToolbarAction"
+                showInNextPrevDropdownToolbarAction="true"
+                isGoToNextNavigationTargetKey="SQLEditor.isOccurrenceGoToNextNavigationTarget"
+                isGoToNextNavigationTarget="false"
+                isGoToPreviousNavigationTargetKey="SQLEditor.isOccurrenceGoToPreviousNavigationTarget"
+                isGoToPreviousNavigationTarget="false"
+                textStylePreferenceKey="SQLEditor.occurrenceTextStyle"
+                textStylePreferenceValue="NONE">
+        </specification>
+    </extension>
+
+    <extension point="org.eclipse.ui.elementFactories">
+        <factory id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.core.sql" name="%category.sqleditor.name" description="%category.sqleditor.description"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.contexts">
+        <context
+                id="org.jkiss.dbeaver.ui.editors.sql"
+                name="%context.org.jkiss.dbeaver.ui.editors.sql.name"
+                parentId="org.eclipse.ui.textEditorScope">
+        </context>
+        <context
+                id="org.jkiss.dbeaver.ui.editors.sql.script"
+                name="%context.org.jkiss.dbeaver.ui.editors.sql.script.name"
+                parentId="org.jkiss.dbeaver.ui.editors.sql">
+        </context>
+        <context
+                id="org.jkiss.dbeaver.ui.editors.sql.script.focused"
+                name="%context.org.jkiss.dbeaver.ui.editors.sql.script.name"
+                parentId="org.eclipse.ui.textEditorScope">
+        </context>
+
+    </extension>
 
 </plugin>

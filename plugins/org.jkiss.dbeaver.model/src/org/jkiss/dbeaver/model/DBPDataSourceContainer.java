@@ -80,11 +80,21 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isTemporary();
 
+    void setTemporary(boolean temporary);
+
     boolean isShowSystemObjects();
+
+    void setShowSystemObjects(boolean showSystemObjects);
 
     boolean isShowUtilityObjects();
 
+    void setShowUtilityObjects(boolean showUtilityObjects);
+
     boolean isConnectionReadOnly();
+
+    boolean isSavePassword();
+
+    void setSavePassword(boolean savePassword);
 
     boolean isDefaultAutoCommit();
 
@@ -191,4 +201,5 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     Date getConnectTime();
 
     GeneralUtils.IVariableResolver getVariablesResolver();
+
 }
