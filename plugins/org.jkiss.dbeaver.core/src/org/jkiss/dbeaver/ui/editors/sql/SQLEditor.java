@@ -102,6 +102,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
@@ -1012,14 +1013,14 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
-        showExtraView(CoreCommands.CMD_SQL_SHOW_OUTPUT, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
+        showExtraView(CoreCommands.CMD_SQL_SHOW_OUTPUT, SQLEditorMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
     }
 
     public void showExecutionLogPanel() {
         if (resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
-        showExtraView(CoreCommands.CMD_SQL_SHOW_LOG, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
+        showExtraView(CoreCommands.CMD_SQL_SHOW_LOG, SQLEditorMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
     }
 
     public <T> T getExtraPresentationPanel(Class<T> panelClass) {
@@ -1409,7 +1410,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         final SQLScriptElement scriptElement = extractActiveQuery();
         if (scriptElement == null) {
-            setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
+            setStatus(SQLEditorMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
             return;
         }
         if (!(scriptElement instanceof SQLQuery)) {
@@ -1450,8 +1451,8 @@ public class SQLEditor extends SQLEditorBase implements
 
             final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
-            item.setText(CoreMessages.editors_sql_error_execution_plan_title);
-            item.setToolTipText(CoreMessages.editors_sql_error_execution_plan_title);
+            item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title);
+            item.setToolTipText(SQLEditorMessages.editors_sql_error_execution_plan_title);
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
             item.addDisposeListener(resultTabDisposeListener);
@@ -1463,8 +1464,8 @@ public class SQLEditor extends SQLEditorBase implements
             planView.explainQueryPlan(getExecutionContext(), sqlQuery);
         } catch (DBCException e) {
             DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.editors_sql_error_execution_plan_title,
-                CoreMessages.editors_sql_error_execution_plan_message,
+                    SQLEditorMessages.editors_sql_error_execution_plan_title,
+                SQLEditorMessages.editors_sql_error_execution_plan_message,
                 e);
         }
     }
@@ -1493,7 +1494,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         IDocument document = getDocument();
         if (document == null) {
-            setStatus(CoreMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
+            setStatus(SQLEditorMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
             return;
         }
 
@@ -1517,8 +1518,7 @@ public class SQLEditor extends SQLEditorBase implements
             // Execute statement under cursor or selected text (if selection present)
             SQLScriptElement sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
-                //setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
-                DBWorkbench.getPlatformUI().showError(CoreMessages.editors_sql_status_empty_query_string, CoreMessages.editors_sql_status_empty_query_string);
+                DBWorkbench.getPlatformUI().showError(SQLEditorMessages.editors_sql_status_empty_query_string, SQLEditorMessages.editors_sql_status_empty_query_string);
                 return;
             } else {
                 elements = Collections.singletonList(sqlQuery);
@@ -1575,7 +1575,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBRProgressListener connectListener = status -> {
                     if (!status.isOK() || container == null || !container.isConnected()) {
                         DBWorkbench.getPlatformUI().showError(
-                                CoreMessages.editors_sql_error_cant_obtain_session,
+                                SQLEditorMessages.editors_sql_error_cant_obtain_session,
                             null,
                             status);
                         return;
@@ -1592,7 +1592,7 @@ public class SQLEditor extends SQLEditorBase implements
                     viewer.setStatus(ex.getMessage(), DBPMessageType.ERROR);
                 }
                 DBWorkbench.getPlatformUI().showError(
-                        CoreMessages.editors_sql_error_cant_obtain_session,
+                        SQLEditorMessages.editors_sql_error_cant_obtain_session,
                     ex.getMessage());
                 return;
             }
@@ -1772,7 +1772,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (executionContext == null) {
                     rsv.setStatus(ModelMessages.error_not_connected_to_database);
                 } else {
-                    rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
+                    rsv.setStatus(SQLEditorMessages.editors_sql_staus_connected_to + executionContext.getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
                 }
             }
         }
@@ -2243,14 +2243,14 @@ public class SQLEditor extends SQLEditorBase implements
             }
             if (curJobRunning.get() > 0) {
                 DBWorkbench.getPlatformUI().showError(
-                        CoreMessages.editors_sql_error_cant_execute_query_title,
-                    CoreMessages.editors_sql_error_cant_execute_query_message);
+                        SQLEditorMessages.editors_sql_error_cant_execute_query_title,
+                    SQLEditorMessages.editors_sql_error_cant_execute_query_message);
                 return;
             }
             final DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext == null) {
                 DBWorkbench.getPlatformUI().showError(
-                        CoreMessages.editors_sql_error_cant_execute_query_title,
+                        SQLEditorMessages.editors_sql_error_cant_execute_query_title,
                     ModelMessages.error_not_connected_to_database);
                 return;
             }
@@ -2268,7 +2268,7 @@ public class SQLEditor extends SQLEditorBase implements
                 File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
                 final SQLQueryJob job = new SQLQueryJob(
                     getSite(),
-                    isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
+                    isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query : SQLEditorMessages.editors_sql_job_execute_script,
                     executionContext,
                     resultsContainer,
                     queries,
@@ -2660,7 +2660,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (dataContainer != null) {
                 return dataContainer.getDescription();
             } else {
-                return CoreMessages.editors_sql_description;
+                return SQLEditorMessages.editors_sql_description;
             }
         }
 
@@ -2739,7 +2739,7 @@ public class SQLEditor extends SQLEditorBase implements
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
         String tabName = name;
         if (CommonUtils.isEmpty(tabName)) {
-            tabName = CoreMessages.editors_sql_data_grid;
+            tabName = SQLEditorMessages.editors_sql_data_grid;
         }
         if (resultSetNumber > 0) {
             tabName += " - " + (resultSetNumber + 1);

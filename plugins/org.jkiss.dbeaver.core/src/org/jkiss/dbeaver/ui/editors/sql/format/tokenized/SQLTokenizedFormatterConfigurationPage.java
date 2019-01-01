@@ -23,11 +23,11 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.format.BaseFormatterConfigurationPage;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -42,9 +42,9 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
 
     @Override
     protected Composite createFormatSettings(Composite parent) {
-        Group settings = UIUtils.createControlGroup(parent, CoreMessages.pref_page_sql_format_label_settings, 5, GridData.FILL_HORIZONTAL, 0);
+        Group settings = UIUtils.createControlGroup(parent, SQLEditorMessages.pref_page_sql_format_label_settings, 5, GridData.FILL_HORIZONTAL, 0);
 
-        keywordCaseCombo = UIUtils.createLabelCombo(settings, CoreMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
+        keywordCaseCombo = UIUtils.createLabelCombo(settings, SQLEditorMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
         keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         keywordCaseCombo.add("Default");
         for (DBPIdentifierCase c : DBPIdentifierCase.values()) {
@@ -52,17 +52,17 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
         }
 
         this.indentSizeSpinner = UIUtils.createLabelSpinner(settings,
-                CoreMessages.pref_page_sql_format_label_indent_size,
-                CoreMessages.pref_page_sql_format_label_indent_size, 4, 0, 100);
+                SQLEditorMessages.pref_page_sql_format_label_indent_size,
+                SQLEditorMessages.pref_page_sql_format_label_indent_size, 4, 0, 100);
         this.useSpacesCheck = UIUtils.createCheckbox(settings,
-                CoreMessages.pref_page_sql_format_label_insert_spaces_for_tabs,
-                CoreMessages.pref_page_sql_format_label_insert_spaces_for_tabs, true, 1);
+                SQLEditorMessages.pref_page_sql_format_label_insert_spaces_for_tabs,
+                SQLEditorMessages.pref_page_sql_format_label_insert_spaces_for_tabs, true, 1);
         this.lineFeedBeforeCommaCheck = UIUtils.createCheckbox(settings,
-                CoreMessages.pref_page_sql_format_label_insert_line_feed_before_commas,
-                CoreMessages.pref_page_sql_format_label_insert_line_feed_before_commas, true, 5);
+                SQLEditorMessages.pref_page_sql_format_label_insert_line_feed_before_commas,
+                SQLEditorMessages.pref_page_sql_format_label_insert_line_feed_before_commas, true, 5);
         this.breakLineBeforeCloseBracket = UIUtils.createCheckbox(settings,
-                CoreMessages.pref_page_sql_format_label_add_line_feed_before_close_bracket,
-                CoreMessages.pref_page_sql_format_label_add_line_feed_before_close_bracket,
+                SQLEditorMessages.pref_page_sql_format_label_add_line_feed_before_close_bracket,
+                SQLEditorMessages.pref_page_sql_format_label_add_line_feed_before_close_bracket,
                 true, 5);
 
         return parent;

@@ -23,9 +23,9 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -89,7 +89,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(CoreMessages.dialog_sql_param_title);
+        getShell().setText(SQLEditorMessages.dialog_sql_param_title);
         final Composite composite = (Composite)super.createDialogArea(parent);
 
         paramTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -102,9 +102,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         final TableColumn indexColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "#");
         indexColumn.setWidth(40);
-        final TableColumn nameColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, CoreMessages.dialog_sql_param_column_name);
+        final TableColumn nameColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_name);
         nameColumn.setWidth(100);
-        final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, CoreMessages.dialog_sql_param_column_value);
+        final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_value);
         valueColumn.setWidth(200);
 
         fillParameterList(isHideIfSet());
@@ -156,7 +156,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         hideIfSetCheck = UIUtils.createCheckbox(composite,
-            CoreMessages.dialog_sql_param_hide_checkbox, CoreMessages.dialog_sql_param_hide_checkbox_tip,
+            SQLEditorMessages.dialog_sql_param_hide_checkbox, SQLEditorMessages.dialog_sql_param_hide_checkbox_tip,
             isHideIfSet(),
             1);
         hideIfSetCheck.addSelectionListener(new SelectionAdapter() {
@@ -166,7 +166,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
         });
 
-        updateStatus(GeneralUtils.makeInfoStatus(CoreMessages.dialog_sql_param_hint));
+        updateStatus(GeneralUtils.makeInfoStatus(SQLEditorMessages.dialog_sql_param_hint));
         return composite;
     }
 

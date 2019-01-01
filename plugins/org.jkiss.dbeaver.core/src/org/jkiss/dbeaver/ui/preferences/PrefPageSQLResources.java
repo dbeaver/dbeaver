@@ -31,13 +31,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLScriptBindingType;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -71,17 +71,17 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
         // Connection association
         {
-            Composite connGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_connection_association, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite connGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connection_association, 2, GridData.FILL_HORIZONTAL, 0);
 
             Label tipLabel = new Label(connGroup, SWT.WRAP);
-            tipLabel.setText(CoreMessages.pref_page_sql_editor_checkbox_bind_connection_hint);
+            tipLabel.setText(SQLEditorMessages.pref_page_sql_editor_checkbox_bind_connection_hint);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             tipLabel.setLayoutData(gd);
 
-            bindEmbeddedReadCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_read, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_read_tip, false, 2);
+            bindEmbeddedReadCheck = UIUtils.createCheckbox(connGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_bind_embedded_read, SQLEditorMessages.pref_page_sql_editor_checkbox_bind_embedded_read_tip, false, 2);
 
-            bindEmbeddedWriteCheck = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_write, CoreMessages.pref_page_sql_editor_checkbox_bind_embedded_write_tip, false, 2);
+            bindEmbeddedWriteCheck = UIUtils.createCheckbox(connGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_bind_embedded_write, SQLEditorMessages.pref_page_sql_editor_checkbox_bind_embedded_write_tip, false, 2);
             bindEmbeddedWriteCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -101,17 +101,17 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
         // Resources
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
 
-            deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
+            deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
             for (SQLPreferenceConstants.EmptyScriptCloseBehavior escb : SQLPreferenceConstants.EmptyScriptCloseBehavior.values()) {
                 deleteEmptyCombo.add(escb.getTitle());
             }
             deleteEmptyCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             deleteEmptyCombo.select(0);
-            autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
-            connectionFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_create_script_folders, null, false, 2);
-            scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
+            autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
+            connectionFoldersCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_create_script_folders, null, false, 2);
+            scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_title_pattern, "");
             UIUtils.installContentProposal(
                     scriptTitlePattern,
                     new TextContentAdapter(),

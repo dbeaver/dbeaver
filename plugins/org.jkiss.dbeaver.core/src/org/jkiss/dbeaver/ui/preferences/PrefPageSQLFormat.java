@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurator;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterDescriptor;
@@ -100,7 +100,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     {
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
-        formatterSelector = UIUtils.createLabelCombo(composite, CoreMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
+        formatterSelector = UIUtils.createLabelCombo(composite, SQLEditorMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         formatters = SQLFormatterConfigurationRegistry.getInstance().getFormatters();
         for (SQLFormatterDescriptor formatterDesc : formatters) {
@@ -193,8 +193,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
 //            ((GridData)afGroup.getLayoutData()).horizontalSpan = 2;
                 styleBoldKeywords = UIUtils.createCheckbox(
                     composite,
-                    CoreMessages.pref_page_sql_format_label_bold_keywords,
-                    CoreMessages.pref_page_sql_format_label_bold_keywords_tip,
+                    SQLEditorMessages.pref_page_sql_format_label_bold_keywords,
+                    SQLEditorMessages.pref_page_sql_format_label_bold_keywords_tip,
                     false, 2);
                 styleBoldKeywords.addSelectionListener(new SelectionAdapter() {
                     @Override
