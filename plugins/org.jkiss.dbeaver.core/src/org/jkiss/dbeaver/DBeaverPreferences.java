@@ -37,27 +37,13 @@ public final class DBeaverPreferences
     public static final String TOOLBARS_DATABASE_SELECTOR_WIDTH = "toolbars.database.selector.width"; //$NON-NLS-1$
     public static final String TOOLBARS_SCHEMA_SELECTOR_WIDTH = "toolbars.schema.selector.width"; //$NON-NLS-1$
 
-    public static final String SCRIPT_COMMIT_TYPE = "script.commit.type"; //$NON-NLS-1$
-    public static final String SCRIPT_COMMIT_LINES = "script.commit.lines"; //$NON-NLS-1$
-    public static final String SCRIPT_ERROR_HANDLING = "script.error.handling"; //$NON-NLS-1$
-    public static final String SCRIPT_FETCH_RESULT_SETS = "script.fetch.resultset"; //$NON-NLS-1$
-
-    public static final String STATEMENT_INVALIDATE_BEFORE_EXECUTE = "statement.invalidate.before.execute"; //$NON-NLS-1$
-    public static final String STATEMENT_TIMEOUT = "statement.timeout"; //$NON-NLS-1$
-    public static final String EDITOR_SEPARATE_CONNECTION = "database.editor.separate.connection"; //$NON-NLS-1$
-    public static final String EDITOR_CONNECT_ON_ACTIVATE = "database.editor.connect.on.activate"; //$NON-NLS-1$
-    public static final String EDITOR_CONNECT_ON_EXECUTE = "database.editor.connect.on.execute"; //$NON-NLS-1$
-
     public static final String TEXT_EDIT_UNDO_LEVEL = "text.edit.undo.level"; //$NON-NLS-1$
 
     public static final String CONFIRM_EXIT = "exit"; //$NON-NLS-1$
     public static final String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
-    public static final String CONFIRM_RUNNING_QUERY_CLOSE = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_MANUAL_DOWNLOAD = "driver_download_manual"; //$NON-NLS-1$
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$
-    public static final String CONFIRM_DANGER_SQL = "dangerous_sql"; //$NON-NLS-1$
-    public static final String CONFIRM_MASS_PARALLEL_SQL = "mass_parallel_sql"; //$NON-NLS-1$
 
     public static final String NAVIGATOR_EDITOR_FULL_NAME = DatabaseEditorPreferences.PROP_TITLE_SHOW_FULL_NAME; //$NON-NLS-1$
 

@@ -57,7 +57,6 @@ import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.*;
 import org.jkiss.dbeaver.model.*;
@@ -359,14 +358,14 @@ public class SQLEditor extends SQLEditorBase implements
             if (dataSource == null) {
                 releaseExecutionContext();
             } else if (curDataSource != dataSource ||
-                (curDataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION) &&
+                (curDataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) &&
                 executionContext != null &&
                 curDataSource.getDefaultInstance() != executionContext.getOwnerInstance()))
             {
                 // Datasource was changed or instance was changed (PG)
                 releaseExecutionContext();
                 curDataSource = dataSource;
-                if (dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
+                if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION)) {
                     final OpenContextJob job = new OpenContextJob(dataSource);
                     job.addJobChangeListener(new JobChangeAdapter() {
                         @Override
@@ -629,7 +628,7 @@ public class SQLEditor extends SQLEditorBase implements
         // Connect to datasource
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         boolean doConnect = dataSourceContainer != null &&
-            (forceConnect || dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE));
+            (forceConnect || dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
         if (doConnect) {
             if (!dataSourceContainer.isConnected()) {
                 DataSourceHandler.connectToDataSource(null, dataSourceContainer, onFinish);
@@ -1613,7 +1612,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (ConfirmationDialog.showConfirmDialogEx(
                     DBeaverActivator.getCoreResourceBundle(),
                     getSite().getShell(),
-                    DBeaverPreferences.CONFIRM_DANGER_SQL,
+                    SQLPreferenceConstants.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
                     ConfirmationDialog.WARNING,
                     query.getType().name(),
@@ -1626,7 +1625,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (ConfirmationDialog.showConfirmDialogEx(
                 DBeaverActivator.getCoreResourceBundle(),
                 getSite().getShell(),
-                DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL,
+                SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL,
                 ConfirmationDialog.CONFIRM,
                 ConfirmationDialog.WARNING,
                 queries.size()) != IDialogConstants.OK_ID)
@@ -1734,7 +1733,7 @@ public class SQLEditor extends SQLEditorBase implements
             throw new DBException("No active connection");
         }
         if (!ds.isConnected()) {
-            boolean doConnect = ds.getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE);
+            boolean doConnect = ds.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE);
             if (doConnect) {
                 return checkConnected(true, onFinish);
             } else {
@@ -1967,7 +1966,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (ConfirmationDialog.showConfirmDialog(
                 DBeaverActivator.getCoreResourceBundle(),
                 null,
-                DBeaverPreferences.CONFIRM_RUNNING_QUERY_CLOSE,
+                SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE,
                 ConfirmationDialog.QUESTION,
                 jobsRunning) != IDialogConstants.YES_ID)
             {

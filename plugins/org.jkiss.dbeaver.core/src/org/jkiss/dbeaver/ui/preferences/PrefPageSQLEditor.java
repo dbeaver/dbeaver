@@ -22,7 +22,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -64,9 +63,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION) ||
-            store.contains(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE) ||
-            store.contains(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION) ||
+            store.contains(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE) ||
+            store.contains(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE) ||
     
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
@@ -143,9 +142,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
-            editorSeparateConnectionCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION));
-            connectOnActivationCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE));
-            connectOnExecuteCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE));
+            editorSeparateConnectionCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION));
+            connectOnActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
+            connectOnExecuteCheck.setSelection(store.getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE));
 
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
@@ -166,9 +165,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
-            store.setValue(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
-            store.setValue(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
-            store.setValue(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
 
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
@@ -194,9 +193,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
-        store.setToDefault(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION);
-        store.setToDefault(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE);
-        store.setToDefault(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION);
+        store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
+        store.setToDefault(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE);
 
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
