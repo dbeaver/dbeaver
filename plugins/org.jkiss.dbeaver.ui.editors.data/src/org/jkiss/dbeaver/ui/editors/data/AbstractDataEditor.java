@@ -224,7 +224,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     public <T> T getAdapter(Class<T> adapter)
     {
         if (resultSetView != null) {
-            if (adapter == ResultSetViewer.class) {
+            if (adapter == IResultSetController.class || adapter == ResultSetViewer.class) {
                 return adapter.cast(resultSetView);
             }
             T res = resultSetView.getAdapter(adapter);
