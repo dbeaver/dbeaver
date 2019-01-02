@@ -198,7 +198,7 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql.util"
-                properties="canGenerate,hasTools"
+                properties="canGenerate"
                 type="org.eclipse.ui.IWorkbenchPart"/>
     </extension>
 

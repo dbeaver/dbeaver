@@ -172,8 +172,13 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         if (!supportedIsolations.contains(JDBCTransactionIsolation.NONE)) {
             supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
         }
+        addCustomTransactionIsolationLevels(supportedIsolations);
 
         supportsScroll = true;
+    }
+
+    protected void addCustomTransactionIsolationLevels(List<DBPTransactionIsolation> isolations) {
+        // to be overrided in implementors
     }
 
     // Says to ignore DatabaseMetaData.isReadonly() results. It is broken in some drivers (always true), e.g. in Reshift.

@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -30,7 +32,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
+import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * ObjectPropertyTester
@@ -50,6 +56,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_FILTER = "canFilter";
     public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
     public static final String PROP_HAS_FILTER = "hasFilter";
+    public static final String PROP_HAS_TOOLS = "hasTools";
 
     public ObjectPropertyTester() {
         super();
@@ -214,6 +221,14 @@ public class ObjectPropertyTester extends PropertyTester
                     }
                 }
                 break;
+            }
+            case PROP_HAS_TOOLS: {
+                IStructuredSelection structuredSelection = NavigatorUtils.getSelectionFromPart((IWorkbenchPart)receiver);
+                if (structuredSelection == null || structuredSelection.isEmpty()) {
+                    return false;
+                }
+                DBSObject object = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBSObject.class);
+                return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
             }
         }
         return false;

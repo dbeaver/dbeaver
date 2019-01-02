@@ -109,6 +109,7 @@ public class SQLQueryJob extends DataSourceJob
     private SQLQuery lastGoodQuery;
 
     private boolean skipConfirmation;
+    private long readFlags;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -161,10 +162,13 @@ public class SQLQueryJob extends DataSourceJob
         return rsOffset >= 0 && rsMaxRows > 0;
     }
 
-    public void setResultSetLimit(long offset, long maxRows)
-    {
+    public void setResultSetLimit(long offset, long maxRows) {
         this.rsOffset = offset;
         this.rsMaxRows = maxRows;
+    }
+
+    public void setReadFlags(long readFlags) {
+        this.readFlags = readFlags;
     }
 
     @Override
@@ -598,7 +602,8 @@ public class SQLQueryJob extends DataSourceJob
         if (CommonUtils.isEmpty(parameters)) {
             return true;
         }
-        if (rsOffset <= 0) {
+
+        if ((readFlags & DBSDataContainer.FLAG_FETCH_SEGMENT) == 0) {
             // Resolve parameters (only if it is the first fetch)
             if (!fillStatementParameters(parameters)) {
                 return false;
