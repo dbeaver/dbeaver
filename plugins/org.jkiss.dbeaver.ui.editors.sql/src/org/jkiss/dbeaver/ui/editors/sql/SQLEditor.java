@@ -615,7 +615,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         ResultSetViewer resultsView = getActiveResultSetViewer();
         if (resultsView != null) {
-            if (required == ResultSetViewer.class) {
+            if (required == IResultSetController.class || required == ResultSetViewer.class) {
                 return required.cast(resultsView);
             }
             T adapter = resultsView.getAdapter(required);

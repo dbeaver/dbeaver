@@ -159,6 +159,8 @@
         <command id="org.jkiss.dbeaver.ui.tools.menu" name="%command.org.jkiss.dbeaver.ui.tools.menu.name" description="%command.org.jkiss.dbeaver.ui.tools.menu.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.tools.select.connection" name="%command.org.jkiss.dbeaver.ui.tools.select.connection.name" description="%command.org.jkiss.dbeaver.ui.tools.select.connection.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.tools.select.schema" name="%command.org.jkiss.dbeaver.ui.tools.select.schema.name" description="%command.org.jkiss.dbeaver.ui.tools.select.schema.description" categoryId="org.jkiss.dbeaver.core.database"/>
+
+        <command id="org.jkiss.dbeaver.core.generate.uuid" name="%command.org.jkiss.dbeaver.core.generate.uuid.name" description="%command.org.jkiss.dbeaver.core.generate.uuid.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -178,6 +180,8 @@
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
 
         <image commandId="org.jkiss.dbeaver.core.process.stop" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/cancel.png"/>
+
+        <image commandId="org.jkiss.dbeaver.core.generate.uuid" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/uuid.png"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
@@ -253,7 +257,7 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceMigrateHandler"/>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.AddBookmarkHandler">
+        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.common.AddBookmarkHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -471,6 +475,14 @@
             <activeWhen>
                 <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
             </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.generate.uuid" class="org.jkiss.dbeaver.ui.actions.common.GenerateUUIDHandler">
+            <with variable="activePart">
+                <or>
+                    <adapt type="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
+                    <adapt type="org.eclipse.jface.text.ITextViewer"/>
+                </or>
+            </with>
         </handler>
 
     </extension>
@@ -894,6 +906,12 @@
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.core.queryManager"/>
             </command>
         </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:edit?after=transforms">
+            <command commandId="org.jkiss.dbeaver.core.generate.uuid">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
     </extension>
 
 
@@ -954,6 +972,8 @@
         <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+ALT+SHIFT+R"/>
         <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+8"/>
         <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+8"/>
+
+        <key commandId="org.jkiss.dbeaver.core.generate.uuid" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+U"/>
     </extension>
 
     <extension point="org.eclipse.ui.contexts">
