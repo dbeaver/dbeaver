@@ -78,6 +78,12 @@
             properties="canOpen,canCreate,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
             type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
+            namespace="org.jkiss.dbeaver.core.tools"
+            properties="hasTools"
+            type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.resource"
@@ -824,7 +830,7 @@
             <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
                 <visibleWhen>
                     <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.util.hasTools"/>
+                        <test property="org.jkiss.dbeaver.core.tools.hasTools"/>
                     </with>
                 </visibleWhen>
                 <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
