@@ -21,8 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Mockito.mock;
-
 @RunWith(MockitoJUnitRunner.class)
 public class GreenplumExternalTableTest {
     @Mock
@@ -266,7 +264,7 @@ public class GreenplumExternalTableTest {
     }
 
     private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {
-        PostgreTableColumn mockPostgreTableColumn = mock(PostgreTableColumn.class);
+        PostgreTableColumn mockPostgreTableColumn = Mockito.mock(PostgreTableColumn.class);
         Mockito.when(mockPostgreTableColumn.getName()).thenReturn(columnName);
         Mockito.when(mockPostgreTableColumn.getTypeName()).thenReturn(columnType);
         Mockito.when(mockPostgreTableColumn.getOrdinalPosition()).thenReturn(ordinalPosition);
