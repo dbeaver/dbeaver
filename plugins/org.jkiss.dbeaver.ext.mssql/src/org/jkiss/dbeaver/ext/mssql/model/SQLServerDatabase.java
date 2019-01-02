@@ -169,6 +169,11 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return false;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
     ///////////////////////////////////////////////////////
     // Caches
 
