@@ -70,6 +70,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     public final CollationCache collationCache = new CollationCache();
     public final ExtensionCache extensionCache = new ExtensionCache();
+    public final AggregateCache aggregateCache = new AggregateCache();
     public final TableCache tableCache = new TableCache();
     public final ConstraintCache constraintCache = new ConstraintCache();
     public final ProceduresCache proceduresCache = new ProceduresCache();
@@ -182,6 +183,12 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
         throws DBException {
         return extensionCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreAggregate> getAggregateFunctions(DBRProgressMonitor monitor)
+        throws DBException {
+        return aggregateCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -411,6 +418,29 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         }
     }
 
+    class AggregateCache extends JDBCObjectCache<PostgreSchema, PostgreAggregate> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
+            throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT p.oid AS proc_oid,p.proname AS proc_name,a.*\n" +
+                    "FROM pg_catalog.pg_aggregate a,pg_catalog.pg_proc p\n" +
+                    "WHERE p.oid=a.aggfnoid AND p.pronamespace=?\n" +
+                    "ORDER BY p.proname"
+            );
+            dbStat.setLong(1, PostgreSchema.this.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreAggregate fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreAggregate(owner, dbResult);
+        }
+    }
+
     public class TableCache extends JDBCStructLookupCache<PostgreSchema, PostgreTableBase, PostgreTableColumn> {
 
         protected TableCache() {
@@ -446,6 +476,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
             throws SQLException {
             String sql = "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+                getTableColumnsQueryExtraParameters(owner, null) +
                 "\nFROM pg_catalog.pg_attribute a" +
                 "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
@@ -466,6 +497,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT c.relname,a.*,ad.oid as attr_id,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+                    getTableColumnsQueryExtraParameters(owner, forTable) +
                     "\nFROM pg_catalog.pg_attribute a" +
                     "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
                     "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
@@ -479,13 +511,17 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected PostgreTableColumn fetchChild(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull PostgreTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
             try {
-                return new PostgreTableColumn(session.getProgressMonitor(), table, dbResult);
+                return owner.getDataSource().getServerType().createTableColumn(session.getProgressMonitor(), PostgreSchema.this, table, dbResult);
             } catch (DBException e) {
                 log.warn("Error reading attribute info", e);
                 return null;
             }
         }
 
+    }
+
+    protected String getTableColumnsQueryExtraParameters(PostgreSchema owner, PostgreTableBase forTable) {
+        return "";
     }
 
     /**

@@ -196,6 +196,9 @@ public class EntityPart extends NodePart {
             if (this.customBackground != null) {
                 figure.setBackgroundColor(this.customBackground);
             }
+            if (visualInfo.attributeVisibility != null) {
+                getEntity().setAttributeVisibility(visualInfo.attributeVisibility);
+            }
         }
 
         return figure;

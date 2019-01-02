@@ -7,13 +7,43 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20181224
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsActivator
+Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
+ org.eclipse.core.filesystem,
  org.eclipse.ui,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.data.transfer,
  org.jkiss.dbeaver.ui,
- org.jkiss.dbeaver.ui.editors.base
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.ui.navigator,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.workbench.texteditor
+Export-Package: org.jkiss.dbeaver.runtime.sql,
+ org.jkiss.dbeaver.runtime.sql.commands,
+ org.jkiss.dbeaver.ui.controls,
+ org.jkiss.dbeaver.ui.controls.querylog,
+ org.jkiss.dbeaver.ui.editors.sql,
+ org.jkiss.dbeaver.ui.editors.sql.convert,
+ org.jkiss.dbeaver.ui.editors.sql.dialogs,
+ org.jkiss.dbeaver.ui.editors.sql.format,
+ org.jkiss.dbeaver.ui.editors.sql.generator,
+ org.jkiss.dbeaver.ui.editors.sql.handlers,
+ org.jkiss.dbeaver.ui.editors.sql.indent,
+ org.jkiss.dbeaver.ui.editors.sql.log,
+ org.jkiss.dbeaver.ui.editors.sql.preferences,
+ org.jkiss.dbeaver.ui.editors.sql.registry,
+ org.jkiss.dbeaver.ui.editors.sql.scripts,
+ org.jkiss.dbeaver.ui.editors.sql.syntax,
+ org.jkiss.dbeaver.ui.editors.sql.syntax.rules,
+ org.jkiss.dbeaver.ui.editors.sql.syntax.tokens,
+ org.jkiss.dbeaver.ui.editors.sql.templates,
+ org.jkiss.dbeaver.ui.editors.sql.util,
+ org.jkiss.dbeaver.ui.views,
+ org.jkiss.dbeaver.ui.views.plan
 Bundle-ClassPath: .
 

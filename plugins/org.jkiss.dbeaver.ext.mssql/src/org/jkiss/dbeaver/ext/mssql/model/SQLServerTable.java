@@ -59,7 +59,7 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
     }
 
     // Copy constructor
-    public SQLServerTable(DBRProgressMonitor monitor, SQLServerSchema schema, DBSEntity source) throws DBException {
+    public SQLServerTable(DBRProgressMonitor monitor, SQLServerSchema schema, SQLServerTable source) throws DBException {
         super(monitor, schema, source);
 
         DBSObjectCache<SQLServerTableBase, SQLServerTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);

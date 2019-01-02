@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -137,7 +136,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         if (folder == null) {
             throw new DBException("Can't detect folder for diagram");
         }
-        ResourceUtils.checkFolderExists(folder, monitor);
+        ContentUtils.checkFolderExists(folder, monitor);
 
         final IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
 

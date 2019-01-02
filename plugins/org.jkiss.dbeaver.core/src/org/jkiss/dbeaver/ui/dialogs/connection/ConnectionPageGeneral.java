@@ -352,7 +352,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             showUtilityObjects = UIUtils.createCheckbox(
                 miscGroup,
                 CoreMessages.dialog_connection_wizard_final_checkbox_show_util_objects,
-                dataSourceDescriptor == null || dataSourceDescriptor.isShowUtilityObjects());
+                dataSourceDescriptor != null && dataSourceDescriptor.isShowUtilityObjects());
             showUtilityObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             readOnlyConnection = UIUtils.createCheckbox(

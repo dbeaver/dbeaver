@@ -50,7 +50,7 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command)
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options)
         throws DBException
     {
         MySQLTableBase object = command.getObject();

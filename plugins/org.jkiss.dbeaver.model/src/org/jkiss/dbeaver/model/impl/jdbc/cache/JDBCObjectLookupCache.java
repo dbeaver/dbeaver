@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -89,7 +90,7 @@ public abstract class JDBCObjectLookupCache<OWNER extends DBSObject, OBJECT exte
     {
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
-            throw new DBException("Not connected to database");
+            throw new DBException(ModelMessages.error_not_connected_to_database);
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, owner,
             object == null ?

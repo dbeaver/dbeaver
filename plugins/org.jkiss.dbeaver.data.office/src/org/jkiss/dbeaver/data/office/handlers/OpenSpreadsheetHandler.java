@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -76,7 +77,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
         if (dataContainer.getDataSource() == null) {
-            DBeaverUI.getInstance().showError("Open Excel", "Not connected to a database");
+            DBeaverUI.getInstance().showError("Open Excel", ModelMessages.error_not_connected_to_database);
             return null;
         }
 

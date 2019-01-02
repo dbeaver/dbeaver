@@ -7,4 +7,8 @@
                        description="Hex editor" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/binary.png"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.ui.data.IHexEditorService" class="org.jkiss.dbeaver.ui.editors.binary.HexEditorService"/>
+    </extension>
+
 </plugin>

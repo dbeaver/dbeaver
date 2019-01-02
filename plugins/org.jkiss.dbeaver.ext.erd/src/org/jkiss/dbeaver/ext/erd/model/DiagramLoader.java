@@ -33,6 +33,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.part.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -75,6 +76,7 @@ public class DiagramLoader
     private static final String ATTR_VERSION = "version";
     private static final String ATTR_NAME = "name";
     private static final String ATTR_TIME = "time";
+    private static final String ATTR_ALIAS = "alias";
     private static final String ATTR_ID = "id";
     private static final String ATTR_ORDER = "order";
     private static final String ATTR_COLOR_BG = "color-bg";
@@ -83,6 +85,7 @@ public class DiagramLoader
     private static final String ATTR_TYPE = "type";
     private static final String ATTR_PK_REF = "pk-ref";
     private static final String ATTR_FK_REF = "fk-ref";
+    private static final String ATTR_ATTRIBUTE_VISIBILITY = "showAttrs";
     private static final String TAG_COLUMN = "column";
     private static final String ATTR_X = "x";
     private static final String ATTR_Y = "y";
@@ -272,6 +275,8 @@ public class DiagramLoader
                     }
                     String locX = entityElem.getAttribute(ATTR_X);
                     String locY = entityElem.getAttribute(ATTR_Y);
+                    String attrVis = entityElem.getAttribute(ATTR_ATTRIBUTE_VISIBILITY);
+
 
                     DBSEntity table = (DBSEntity) child;
                     EntityDiagram.NodeVisualInfo visualInfo = new EntityDiagram.NodeVisualInfo();
@@ -290,6 +295,9 @@ public class DiagramLoader
                     String orderStr = entityElem.getAttribute(ATTR_ORDER);
                     if (!CommonUtils.isEmpty(orderStr)) {
                         visualInfo.zOrder = Integer.parseInt(orderStr);
+                    }
+                    if (!CommonUtils.isEmpty(attrVis)) {
+                        visualInfo.attributeVisibility = ERDAttributeVisibility.valueOf(attrVis);
                     }
 
                     TableLoadInfo info = new TableLoadInfo(tableId, table, visualInfo);
@@ -497,6 +505,12 @@ public class DiagramLoader
                     xml.addAttribute(ATTR_NAME, table.getName());
                     if (table instanceof DBPQualifiedObject) {
                         xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject)table).getFullyQualifiedName(DBPEvaluationContext.UI));
+                    }
+                    if (!CommonUtils.isEmpty(erdEntity.getAlias())) {
+                        xml.addAttribute(ATTR_ALIAS, erdEntity.getAlias());
+                    }
+                    if (erdEntity.getAttributeVisibility() != null) {
+                        xml.addAttribute(ATTR_ATTRIBUTE_VISIBILITY, erdEntity.getAttributeVisibility().name());
                     }
                     EntityDiagram.NodeVisualInfo visualInfo;
                     if (tablePart != null) {

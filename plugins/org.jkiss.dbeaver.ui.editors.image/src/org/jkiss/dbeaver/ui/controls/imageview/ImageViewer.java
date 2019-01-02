@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.dnd.*;
@@ -26,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.data.IValueManager;
 
 import java.io.InputStream;
 
@@ -137,11 +139,27 @@ public class ImageViewer extends Composite {
     }
 
     public void fillToolBar(IContributionManager toolBar) {
-        toolBar.add(itemZoomIn = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN, ImageViewMessages.controls_imageview_zoom_in, UIIcon.ZOOM_IN));
-        toolBar.add(itemZoomOut = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT, ImageViewMessages.controls_imageview_zoom_out, UIIcon.ZOOM_OUT));
-        toolBar.add(itemRotate = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE, ImageViewMessages.controls_imageview_rotate, UIIcon.ROTATE_LEFT));
-        toolBar.add(itemFit = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT, ImageViewMessages.controls_imageview_fit_window, UIIcon.FIT_WINDOW));
-        toolBar.add(itemOriginal = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL, ImageViewMessages.controls_imageview_original_size, UIIcon.ORIGINAL_SIZE));
+        itemZoomIn = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN, ImageViewMessages.controls_imageview_zoom_in, UIIcon.ZOOM_IN);
+        itemZoomOut = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT, ImageViewMessages.controls_imageview_zoom_out, UIIcon.ZOOM_OUT);
+        itemRotate = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE, ImageViewMessages.controls_imageview_rotate, UIIcon.ROTATE_LEFT);
+        itemFit = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT, ImageViewMessages.controls_imageview_fit_window, UIIcon.FIT_WINDOW);
+        itemOriginal = new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL, ImageViewMessages.controls_imageview_original_size, UIIcon.ORIGINAL_SIZE);
+        if (toolBar.find(IValueManager.GROUP_ACTIONS_ADDITIONAL) != null) {
+            toolBar.insertBefore(IValueManager.GROUP_ACTIONS_ADDITIONAL, itemZoomIn);
+            toolBar.insertBefore(IValueManager.GROUP_ACTIONS_ADDITIONAL, itemZoomOut);
+            toolBar.insertBefore(IValueManager.GROUP_ACTIONS_ADDITIONAL, itemRotate);
+            toolBar.insertBefore(IValueManager.GROUP_ACTIONS_ADDITIONAL, itemFit);
+            toolBar.insertBefore(IValueManager.GROUP_ACTIONS_ADDITIONAL, itemOriginal);
+            toolBar.insertBefore(IValueManager.GROUP_ACTIONS_ADDITIONAL, new Separator());
+        } else {
+            toolBar.add(itemZoomIn);
+            toolBar.add(itemZoomOut);
+            toolBar.add(itemRotate);
+            toolBar.add(itemFit);
+            toolBar.add(itemOriginal);
+            toolBar.add(new Separator());
+
+        }
     }
 
 }

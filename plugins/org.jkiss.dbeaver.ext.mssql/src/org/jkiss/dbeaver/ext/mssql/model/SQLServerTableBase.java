@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -43,13 +40,14 @@ import java.util.*;
  * MySQLTable base
  */
 public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, SQLServerSchema>
-    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject
+    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject, DBPSystemObject
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 
     private static final String CAT_STATISTICS = "Statistics";
 
     private long objectId;
+    private String type;
     private String description;
     private Long rowCount;
 
@@ -59,7 +57,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     }
 
     // Copy constructor
-    protected SQLServerTableBase(DBRProgressMonitor monitor, SQLServerSchema catalog, DBSEntity source) throws DBException {
+    protected SQLServerTableBase(DBRProgressMonitor monitor, SQLServerSchema catalog, SQLServerTableBase source) throws DBException {
         super(catalog, source, false);
     }
 
@@ -71,6 +69,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+        this.type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
     }
 
     public SQLServerDatabase getDatabase() {
@@ -91,6 +90,16 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     @Property(viewable = false, editable = false, order = 5)
     public long getObjectId() {
         return objectId;
+    }
+
+    @Property(order = 6)
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public boolean isSystem() {
+        return SQLServerObjectType.S.name().equals(type);
     }
 
     @Override

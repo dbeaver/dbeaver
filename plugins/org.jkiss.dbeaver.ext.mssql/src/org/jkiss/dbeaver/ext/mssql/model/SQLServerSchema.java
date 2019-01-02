@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -155,7 +156,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Override
     public boolean isSystem() {
-        return name.equals("msdb");
+        return
+            name.equalsIgnoreCase(SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA) ||
+            name.equalsIgnoreCase(SQLServerConstants.INFORMATION_SCHEMA_SCHEMA);
     }
 
     @Override
@@ -292,7 +295,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             throws SQLException, DBException
         {
             String type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
-            if ("U".equals(type) || "S".equals(type)) {
+            if (SQLServerObjectType.U.name().equals(type) || SQLServerObjectType.S.name().equals(type)) {
                 return new SQLServerTable(owner, dbResult);
             } else {
                 return new SQLServerView(owner, dbResult);
@@ -548,7 +551,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 return null;
             }
             long refTableId = JDBCUtils.safeGetLong(dbResult, "referenced_object_id");
-            SQLServerTableBase refTable = refSchema.getTable(monitor, refTableId);
+            SQLServerTable refTable = refSchema.getTable(monitor, refTableId);
             if (refTable == null) {
                 log.debug("Ref table " + refTableId + " not found in schema " + refSchema.getName());
                 return null;
@@ -559,10 +562,18 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 log.debug("Ref index " + refIndexId + " not found in table " + refTable.getFullyQualifiedName(DBPEvaluationContext.UI));
                 return null;
             }
+            DBSEntityConstraint refConstraint = index;
+            for (SQLServerTableUniqueKey refPK : refTable.getConstraints(monitor)) {
+                if (refPK.getIndex() == index) {
+                    refConstraint = refPK;
+                    break;
+                }
+            }
+
             String fkName = JDBCUtils.safeGetString(dbResult, "name");
             DBSForeignKeyModifyRule deleteRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "delete_referential_action"));
             DBSForeignKeyModifyRule updateRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "update_referential_action"));
-            return new SQLServerTableForeignKey(parent, fkName, null, index, deleteRule, updateRule, true);
+            return new SQLServerTableForeignKey(parent, fkName, null, refConstraint, deleteRule, updateRule, true);
         }
 
         @Nullable

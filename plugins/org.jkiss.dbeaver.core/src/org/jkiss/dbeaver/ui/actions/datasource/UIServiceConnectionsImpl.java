@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,12 +44,22 @@ public class UIServiceConnectionsImpl implements UIServiceConnections {
     }
 
     @Override
-    public void conectDataSource(DBPDataSourceContainer dataSourceContainer) {
-        DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
+    public void connectDataSource(DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish) {
+        DataSourceHandler.connectToDataSource(null, dataSourceContainer, onFinish);
     }
 
     @Override
-    public void disconectDataSource(DBPDataSourceContainer dataSourceContainer) {
+    public void disconnectDataSource(DBPDataSourceContainer dataSourceContainer) {
         DataSourceHandler.disconnectDataSource(dataSourceContainer, null);
+    }
+
+    @Override
+    public void closeActiveTransaction(DBRProgressMonitor monitor, DBCExecutionContext context, boolean commitTxn) {
+        DataSourceHandler.closeActiveTransaction(monitor, context, commitTxn);
+    }
+
+    @Override
+    public boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts) {
+        return DataSourceHandler.checkAndCloseActiveTransaction(contexts);
     }
 }

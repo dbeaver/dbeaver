@@ -17,17 +17,21 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -36,6 +40,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * TextEditorUtils
@@ -134,6 +139,15 @@ public class TextEditorUtils {
         });
     }
 
+    public static IAction createFindReplaceAction(Shell shell, IFindReplaceTarget target) {
+        return new FindReplaceAction(
+            ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
+            "Editor.FindReplace.",
+            shell,
+            target);
+
+    }
+
     private static class FakeTextEditor extends AbstractTextEditor {
         static void fillActionMap(Map<String, Integer> map) {
             for (AbstractTextEditor.IdMapEntry entry : AbstractTextEditor.ACTION_MAP) {
@@ -141,5 +155,7 @@ public class TextEditorUtils {
             }
         }
     }
+
+
 
 }

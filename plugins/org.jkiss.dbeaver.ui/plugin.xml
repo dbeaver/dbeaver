@@ -40,4 +40,16 @@
         <category id="org.jkiss.dbeaver.core.new.general" name="%category.org.jkiss.dbeaver.core.new.general.name"/>
     </extension>
 
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.core.database" name="%category.dbconnection.name" description="%category.dbconnection.description"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.contexts">
+        <context
+                id="org.jkiss.dbeaver.ui.perspective"
+                parentId="org.eclipse.ui.contexts.window"
+                name="DBeaver Perspective"
+                description="DBeaver Perspective Context"/>
+    </extension>
+
 </plugin>

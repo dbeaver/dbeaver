@@ -461,6 +461,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
+    @Override
     public boolean isCustom() {
         return custom;
     }

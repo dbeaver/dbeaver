@@ -16,8 +16,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -73,7 +73,7 @@ public class DBeaverStackRenderer extends StackRenderer {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
             String renameText = CoreMessages.editor_file_rename;
             if (workbenchPart instanceof SQLEditor) {
-                renameText += "\t" + ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true);
+                renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true);
             }
             menuItemOthers.setText(renameText);
             menuItemOthers.addSelectionListener(new SelectionAdapter() {
