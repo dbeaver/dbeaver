@@ -6,7 +6,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -16,12 +15,6 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PostgreServerGreenplumTest {
@@ -42,8 +35,8 @@ public class PostgreServerGreenplumTest {
 
     @Before
     public void setup() throws SQLException {
-        when(mockSchema.getDataSource()).thenReturn(mockDataSource);
-        when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
+        Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
+        Mockito.when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
         Mockito.when(mockResults.getString("fmttype")).thenReturn("c");
         Mockito.when(mockResults.getString("urilocation")).thenReturn("gpfdist://filehost:8081/*.txt");
     }
@@ -57,7 +50,7 @@ public class PostgreServerGreenplumTest {
     @Test
     public void createRelationOfClass_whenTableTypeIsRegularAndTableIsANonExternalGreenplumTable_returnsInstanceOfGreenplumTable()
             throws SQLException {
-        when(mockResults.getBoolean("is_ext_table")).thenReturn(false);
+        Mockito.when(mockResults.getBoolean("is_ext_table")).thenReturn(false);
         Assert.assertEquals(GreenplumTable.class,
                 server.createRelationOfClass(mockSchema, PostgreClass.RelKind.r, mockResults).getClass());
     }
@@ -65,7 +58,7 @@ public class PostgreServerGreenplumTest {
     @Test
     public void createRelationOfClass_whenTableTypeIsRegularAndTableIsAnExternalGreenplumTable_returnsInstanceOfGreenplumExternalTable()
             throws SQLException {
-        when(mockResults.getBoolean("is_ext_table")).thenReturn(true);
+        Mockito.when(mockResults.getBoolean("is_ext_table")).thenReturn(true);
         Assert.assertEquals(GreenplumExternalTable.class,
                 server.createRelationOfClass(mockSchema, PostgreClass.RelKind.r, mockResults).getClass());
     }
@@ -74,14 +67,14 @@ public class PostgreServerGreenplumTest {
     public void readTableDDL_whenTableIsNotAnInstanceOfGreenplumExternalTable_delegatesDDLcreationToParentClass()
             throws DBException {
         String expectedDelegatedResultFromParentClass = null;
-        PostgreTableBase table = mock(PostgreTableBase.class);
+        PostgreTableBase table = Mockito.mock(PostgreTableBase.class);
         Assert.assertEquals(expectedDelegatedResultFromParentClass, server.readTableDDL(monitor, table));
     }
 
     @Test
     public void readTableDDL_whenTableIsAnInstanceOfGreenplumExternalTable_delegatesToGpGenerateDDL()
             throws DBException {
-        GreenplumExternalTable table = mock(GreenplumExternalTable.class);
+        GreenplumExternalTable table = Mockito.mock(GreenplumExternalTable.class);
         server.readTableDDL(monitor, table);
         Mockito.verify(table).generateDDL(monitor);
     }

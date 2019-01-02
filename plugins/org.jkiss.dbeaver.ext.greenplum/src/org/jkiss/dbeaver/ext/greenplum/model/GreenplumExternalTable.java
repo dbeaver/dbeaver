@@ -1,3 +1,23 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
+ * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
+ * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
+ * Copyright (C) 2019 Nikhil Pawar (npawar@pivotal.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.DBException;
@@ -11,8 +31,6 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
 
 public class GreenplumExternalTable extends PostgreTableRegular {
     public enum FormatType {
@@ -100,10 +118,8 @@ public class GreenplumExternalTable extends PostgreTableRegular {
     }
 
     public String generateDDL(DBRProgressMonitor monitor) throws DBException {
-        StringBuilder ddlBuilder = new StringBuilder(format("CREATE EXTERNAL TABLE %s.%s.%s (\n",
-                this.getDatabase().getName(),
-                this.getSchema().getName(),
-                this.getName()));
+        StringBuilder ddlBuilder = new StringBuilder("CREATE EXTERNAL TABLE " + this.getDatabase().getName()
+                + "." + this.getSchema().getName() + "." + this.getName() + " (\n");
 
         List<PostgreTableColumn> tableColumns = this.getAttributes(monitor)
                 .stream()
@@ -112,7 +128,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
 
         if (tableColumns.size() == 1) {
             PostgreTableColumn column = tableColumns.get(0);
-            ddlBuilder.append(format("\t%s %s\n)\n", column.getName(), column.getTypeName()));
+            ddlBuilder.append("\t" + column.getName() + " " + column.getTypeName() + "\n)\n");
         } else {
             ddlBuilder.append(tableColumns
                     .stream()
@@ -126,20 +142,20 @@ public class GreenplumExternalTable extends PostgreTableRegular {
 
             ddlBuilder.append(this.getUriLocations()
                     .stream()
-                    .map(location -> "\t'"+location+"'")
+                    .map(location -> "\t'" + location + "'")
                     .collect(Collectors.joining(",\n")));
 
-            ddlBuilder.append(format("\n) %s\n", determineExecutionLocation()));
+            ddlBuilder.append("\n) " + determineExecutionLocation() + "\n");
         }
 
-        ddlBuilder.append(format("FORMAT '%s' ( %s )", this.getFormatType().getValue(), this.getFormatOptions()));
+        ddlBuilder.append("FORMAT '" + this.getFormatType().getValue() + "' ( " + this.getFormatOptions() + " )");
 
         if (this.getEncoding() != null && this.getEncoding().length() > 0) {
-            ddlBuilder.append(format("\nENCODING '%s'", this.getEncoding()));
+            ddlBuilder.append("\nENCODING '" + this.getEncoding() + "'");
         }
 
         if (this.getRejectLimit() > 0 && this.getRejectLimitType() != null) {
-            ddlBuilder.append(format("\nSEGMENT REJECT LIMIT %d %s", this.getRejectLimit(), this.getRejectLimitType().getValue()));
+            ddlBuilder.append("\nSEGMENT REJECT LIMIT " + this.getRejectLimit() + " " + this.getRejectLimitType().getValue());
         }
 
         return ddlBuilder.toString();
