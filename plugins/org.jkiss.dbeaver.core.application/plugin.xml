@@ -120,7 +120,7 @@
             <command commandId="org.eclipse.ui.edit.delete" label="%command.org.jkiss.dbeaver.core.edit.delete.name"/>
             <separator name="find.ext" visible="true"/>
             <command commandId="org.eclipse.ui.edit.findReplace" label="%command.org.jkiss.dbeaver.core.edit.findreplace.name"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" label="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.name"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/>
             <separator name="additions" visible="true"/>
         </menuContribution>
 
@@ -128,21 +128,22 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="edit" label="%menu.edit">
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" label="%command.org.jkiss.dbeaver.core.edit.singlecomment.name">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" label="%command.org.jkiss.dbeaver.core.edit.multicomment.name">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap" label="%command.org.jkiss.dbeaver.core.edit.togglewordwrap.name">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.eclipse.ui.edit.text.upperCase" label="%command.org.jkiss.dbeaver.core.edit.uppercase.name">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.eclipse.ui.edit.text.lowerCase" label="%command.org.jkiss.dbeaver.core.edit.lowercase.name">
-                <visibleWhen checkEnabled="true"/>
-            </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.eclipse.ui.edit.text.upperCase">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.eclipse.ui.edit.text.lowerCase">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <separator name="transforms" visible="true"/>
             </menu>
         </menuContribution>
 
