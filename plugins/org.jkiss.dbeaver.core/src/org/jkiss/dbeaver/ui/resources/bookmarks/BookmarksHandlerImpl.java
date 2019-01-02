@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -192,7 +191,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         if (folder == null) {
             throw new DBException("Can't detect folder for bookmark");
         }
-        ResourceUtils.checkFolderExists(folder);
+        ContentUtils.checkFolderExists(folder);
 
         IFile file = ContentUtils.getUniqueFile(
             folder,

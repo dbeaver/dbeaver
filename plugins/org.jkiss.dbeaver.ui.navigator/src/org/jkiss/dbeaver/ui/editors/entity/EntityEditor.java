@@ -428,10 +428,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
             saveInProgress = true;
             UIUtils.runInProgressService(monitor -> {
                 monitor.beginTask("Generate SQL script", commands.size());
+                Map<String, Object> validateOptions = new HashMap<>();
                 for (DBECommand command : commands) {
                     monitor.subTask(command.getTitle());
                     try {
-                        command.validateCommand();
+                        command.validateCommand(validateOptions);
                     } catch (final DBException e) {
                         throw new InvocationTargetException(e);
                     }

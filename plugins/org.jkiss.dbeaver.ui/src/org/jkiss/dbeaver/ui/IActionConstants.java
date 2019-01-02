@@ -44,4 +44,7 @@ public interface IActionConstants {
 
     String NEW_CONNECTION_POINT = "org.jkiss.dbeaver.ext.ui.newConnectionWizard"; //$NON-NLS-1$
     String EDIT_CONNECTION_POINT = "org.jkiss.dbeaver.ext.ui.editConnectionDialog"; //$NON-NLS-1$
+
+    String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
+    String CMD_PASTE_SPECIAL = "org.jkiss.dbeaver.core.edit.paste.special"; //$NON-NLS-1$
 }

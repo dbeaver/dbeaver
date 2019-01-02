@@ -45,14 +45,16 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
     @Override
     public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) throws DBException
     {
-        String filePath = targetFile.getAbsolutePath().toLowerCase();
         int imageType = SWT.IMAGE_BMP;
-        if (filePath.endsWith(".jpg")) {
-            imageType = SWT.IMAGE_JPEG;
-        } else if (filePath.endsWith(".png")) {
-            imageType = SWT.IMAGE_PNG;
-        } else if (filePath.endsWith(".gif")) {
-            imageType = SWT.IMAGE_GIF;
+        {
+            String filePath = targetFile.getName().toLowerCase();
+            if (filePath.endsWith(".jpg")) {
+                imageType = SWT.IMAGE_JPEG;
+            } else if (filePath.endsWith(".png")) {
+                imageType = SWT.IMAGE_PNG;
+            } else if (filePath.endsWith(".gif")) {
+                imageType = SWT.IMAGE_GIF;
+            }
         }
 
         Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();
@@ -95,7 +97,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                 fos.flush();
             }
 
-            UIUtils.launchProgram(filePath);
+            UIUtils.launchProgram(targetFile.getAbsolutePath());
 
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Save ERD as image", null, e);

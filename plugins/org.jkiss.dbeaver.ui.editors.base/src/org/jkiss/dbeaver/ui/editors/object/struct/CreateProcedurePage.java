@@ -59,20 +59,32 @@ public class CreateProcedurePage extends BaseObjectEditPage {
             name = nameText.getText();
             updatePageState();
         });
+        Combo typeCombo;
         if (getPredefinedProcedureType() == null) {
-            final Combo typeCombo = UIUtils.createLabelCombo(propsGroup, EditorsMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
+            typeCombo = UIUtils.createLabelCombo(propsGroup, EditorsMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
             typeCombo.add(DBSProcedureType.PROCEDURE.name());
             typeCombo.add(DBSProcedureType.FUNCTION.name());
             typeCombo.addModifyListener(e -> {
                 type = typeCombo.getSelectionIndex() == 0 ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION;
+                updateProcedureType(type);
+
             });
-            typeCombo.select(0);
+        } else {
+            typeCombo = null;
         }
         propsGroup.setTabList(ArrayUtils.remove(Control.class, propsGroup.getTabList(), containerText));
 
         createExtraControls(propsGroup);
 
+        if (typeCombo != null) {
+            typeCombo.select(0);
+        }
+
         return propsGroup;
+    }
+
+    protected void updateProcedureType(DBSProcedureType type) {
+
     }
 
     protected void createExtraControls(Composite group) {

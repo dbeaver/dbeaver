@@ -34,12 +34,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
@@ -180,13 +184,30 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     objectNode.getMeta().getEditorId());
             } else if (selectedNode instanceof DBNDatabaseNode) {
                 DBNDatabaseNode dnNode = (DBNDatabaseNode) selectedNode;
-                if (dnNode.getObject() != null) {
-                    if (!dnNode.getObject().isPersisted()) {
+                DBSObject databaseObject = dnNode.getObject();
+                if (databaseObject != null) {
+                    if (!databaseObject.isPersisted()) {
                         return null;
+                    }
+                    if (DBUtils.getDefaultContext(databaseObject, false) == null) {
+                        // Not connected - try to connect
+                        if (databaseObject instanceof DBSInstanceLazy) {
+                            if (!RuntimeUtils.runTask(monitor -> {
+                                try {
+                                    ((DBSInstanceLazy) databaseObject).checkInstanceConnection(monitor);
+                                } catch (DBException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                            }, "Initiate instance connection",
+                                dnNode.getDataSourceContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT))) {
+                                return null;
+                            }
+                        }
+                        //
                     }
                     DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(dnNode);
                     if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
-                        if (dnNode.getObject() instanceof DBSObjectContainer) {
+                        if (databaseObject instanceof DBSObjectContainer) {
                             // do not auto-refresh object containers (too expensive)
                         } else {
                             refreshDatabaseNode(dnNode);

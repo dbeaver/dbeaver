@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -46,7 +47,7 @@ import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
-import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
+import org.jkiss.dbeaver.ui.AbstractPartListener;
 
 /**
  * DataSource Toolbar
@@ -232,7 +233,7 @@ public class TransactionMonitorToolbar {
 
         private void updateToolTipText() {
             if (txnState == null) {
-                setToolTipText("Not connected");
+                setToolTipText(ModelMessages.error_not_connected_to_database);
             } else if (txnState.isTransactionMode()) {
                 final long txnUptime = txnState.getTransactionStartTime() > 0 ?
                     ((System.currentTimeMillis() - txnState.getTransactionStartTime()) / 1000) + 1 : 0;

@@ -31,6 +31,9 @@ import java.util.Map;
  */
 public interface DBECommandContext extends DBPContextProvider {
 
+    // Do not use transactions in conect save
+    String OPTION_AVOID_TRANSACTIONS = "avoidTransactions";
+
     boolean isDirty();
 
     DBECommand getUndoCommand();

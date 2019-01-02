@@ -40,10 +40,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgreProcedure
@@ -93,6 +90,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     private long oid;
+    private PostgreProcedureKind kind;
     private String procSrc;
     private String body;
     private long ownerId;
@@ -248,12 +246,39 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.acl = JDBCUtils.safeGetObject(dbResult, "proacl");
 
         this.config = JDBCUtils.safeGetArray(dbResult, "proconfig");
+
+        if (getDataSource().isServerVersionAtLeast(11, 0)) {
+            String proKind = JDBCUtils.safeGetString(dbResult, "prokind");
+            try {
+                kind = PostgreProcedureKind.valueOf(proKind);
+            } catch (IllegalArgumentException e) {
+                log.warn("Unsupported procedure kind:" + proKind);
+                kind = PostgreProcedureKind.f;
+            }
+        } else {
+            if (isAggregate) {
+                kind = PostgreProcedureKind.a;
+            } else if (isWindow) {
+                kind = PostgreProcedureKind.w;
+            } else {
+                kind = PostgreProcedureKind.f;
+            }
+        }
     }
 
     @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return container.getDatabase();
+    }
+
+    @Property(viewable = false, order = 3)
+    public PostgreProcedureKind getKind() {
+        return kind;
+    }
+
+    public void setKind(PostgreProcedureKind kind) {
+        this.kind = kind;
     }
 
     @Override
@@ -265,7 +290,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Override
     public DBSProcedureType getProcedureType()
     {
-        return DBSProcedureType.FUNCTION;
+        switch (kind) {
+            case f:
+            case a:
+            case w:
+                return DBSProcedureType.FUNCTION;
+            default:
+                return DBSProcedureType.PROCEDURE;
+        }
     }
 
     @Property(hidden = true, editable = true, updatable = true, order = -1)
@@ -352,7 +384,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 if (!isPersisted()) {
                     PostgreDataType returnType = getReturnType();
                     String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
-                    body = generateFunctionDeclaration(monitor, getLanguage(monitor), returnTypeName, "-- Enter function body here");
+                    body = generateFunctionDeclaration(monitor, getLanguage(monitor), returnTypeName, "\n\t-- Enter function body here\n");
                 } else if (oid == 0 || isAggregate) {
                     // No OID so let's use old (bad) way
                     body = this.procSrc;
@@ -393,8 +425,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder decl = new StringBuilder();
-        decl.append("CREATE OR REPLACE FUNCTION ").append(getFullQualifiedSignature()).append(lineSeparator);
-        if (!CommonUtils.isEmpty(returnTypeName)) {
+        decl.append("CREATE OR REPLACE ").append(getProcedureTypeName()).append(" ").append(getFullQualifiedSignature()).append(lineSeparator);
+        if (getProcedureType().hasReturnValue() && !CommonUtils.isEmpty(returnTypeName)) {
             decl.append("\tRETURNS ");
             if (isReturnsSet()) {
                 // Check for TABLE parameters and construct
@@ -448,11 +480,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 }
             }
         }
-        decl.append("AS $function$").append(" ");
+        String delimiter = "$" + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
+        decl.append("AS ").append(delimiter).append(" ");
         if (!CommonUtils.isEmpty(functionBody)) {
             decl.append("\t").append(functionBody).append(" ");
         }
-        decl.append("$function$").append(lineSeparator);
+        decl.append(delimiter).append(lineSeparator);
 
         return decl.toString();
     }
@@ -594,7 +627,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     public String getProcedureTypeName() {
-        return isAggregate ? "AGGREGATE" : "FUNCTION";
+        return kind.getName().toUpperCase(Locale.ENGLISH);
     }
 
     @Override

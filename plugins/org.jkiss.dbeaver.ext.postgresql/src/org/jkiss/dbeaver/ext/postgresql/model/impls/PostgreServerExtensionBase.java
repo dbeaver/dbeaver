@@ -72,6 +72,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsRules() {
+        return true;
+    }
+
+    @Override
     public boolean supportsExtensions() {
         return dataSource.isServerVersionAtLeast(9, 1);
     }
@@ -239,6 +244,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         tableBase.appendTableModifiers(monitor, ddl);
 
         return ddl.toString();
+    }
+
+    @Override
+    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
+        return new PostgreTableColumn(monitor, table, dbResult);
     }
 
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {

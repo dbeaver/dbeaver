@@ -124,7 +124,10 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @Override
     public void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, ERDEntity erdEntity) {
         DBSEntity entity = erdEntity.getObject();
-        ERDAttributeVisibility attributeVisibility = diagram.getAttributeVisibility();
+        ERDAttributeVisibility attributeVisibility = erdEntity.getAttributeVisibility();
+        if (attributeVisibility == null) {
+            attributeVisibility = diagram.getAttributeVisibility();
+        }
         if (attributeVisibility != ERDAttributeVisibility.NONE) {
             Set<DBSEntityAttribute> keyColumns = null;
             if (attributeVisibility == ERDAttributeVisibility.KEYS) {

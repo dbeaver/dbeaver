@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -134,6 +135,38 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         );
     }
 
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    {
+        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
+            try {
+                generateAlterActions(monitor, actionList, command);
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+    }
+
+    private void generateAlterActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
+        final PostgreDatabase database = command.getObject();
+        final String alterPrefix = "ALTER DATABASE " + DBUtils.getQuotedIdentifier(command.getObject()) + " ";
+        if (command.hasProperty("defaultTablespace")) {
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + DBUtils.getQuotedIdentifier(database.getDefaultTablespace(monitor))));
+        }
+        if (command.hasProperty("defaultEncoding")) {
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET ENCODING " + DBUtils.getQuotedIdentifier(database.getDefaultEncoding(monitor))));
+        }
+        if (command.hasProperty("dBA")) {
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "OWNER TO " + DBUtils.getQuotedIdentifier(database.getDBA(monitor))));
+        }
+    }
+
+    @Override
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        super.validateObjectProperties(command, options);
+        options.put(DBECommandContext.OPTION_AVOID_TRANSACTIONS, true);
+    }
+
     private static class DeleteDatabaseAction extends SQLDatabasePersistActionAtomic {
 
         private final PostgreDatabase database;
@@ -169,5 +202,6 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
             }
         }
     }
+
 }
 

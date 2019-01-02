@@ -22,6 +22,8 @@ import org.eclipse.osgi.util.NLS;
 public class ModelMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.messages.ModelResources"; //$NON-NLS-1$
 
+	public static String error_not_connected_to_database;
+
 	public static String error_can_create_temp_dir;
 	public static String error_can_create_temp_file;
 
@@ -143,8 +145,7 @@ public class ModelMessages extends NLS {
 	public static String CreateLinkedFolderRunnable_e_cancelled_link;
 	public static String CreateLinkedFolderRunnable_e_unable_to_link;
 
-
-	static {
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
 	}

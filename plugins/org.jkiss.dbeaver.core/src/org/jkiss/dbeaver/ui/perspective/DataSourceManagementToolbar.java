@@ -58,12 +58,14 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CSmartSelector;
 import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -483,7 +485,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 resultSetSize.setText(""); //$NON-NLS-1$
             } else {
                 resultSetSize.setEnabled(true);
-                resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS)));
+                resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
             }
         }
 
@@ -500,7 +502,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 rsSize = "1"; //$NON-NLS-1$
             }
             DBPPreferenceStore store = dsContainer.getPreferenceStore();
-            store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, rsSize);
+            store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, rsSize);
             PrefUtils.savePreferenceStore(store);
         }
     }
@@ -682,7 +684,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
-        if (event.getProperty().equals(DBeaverPreferences.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
+        if (event.getProperty().equals(ResultSetPreferences.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
             if (event.getNewValue() != null) {
                 resultSetSize.setText(event.getNewValue().toString());
             }
@@ -774,7 +776,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
-            resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS)));
+            resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
         }
         //resultSetSize.setDigits(7);
         resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
