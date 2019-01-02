@@ -2582,6 +2582,7 @@ public class SQLEditor extends SQLEditorBase implements
                     job.setFetchResultSetNumber(-1);
                 }
                 job.setResultSetLimit(firstRow, maxRows);
+                job.setReadFlags(flags);
                 job.setDataFilter(dataFilter);
 
                 job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber);
