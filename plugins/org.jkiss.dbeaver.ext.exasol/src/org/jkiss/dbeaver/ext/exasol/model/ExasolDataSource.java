@@ -51,10 +51,12 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -63,8 +65,10 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,6 +88,8 @@ public class ExasolDataSource extends JDBCDataSource
 	private DBSObjectCache<ExasolDataSource, ExasolRole> roleCache = null;
 	
 	private DBSObjectCache<ExasolDataSource, ExasolConnection> connectionCache = null;
+	
+	private DBSObjectCache<ExasolDataSource, ExasolPriorityGroup> priorityGroupCache = null;
 
 	private DBSObjectCache<ExasolDataSource, ExasolDataType> dataTypeCache = new JDBCObjectSimpleCache<>(
 			ExasolDataType.class, "SELECT * FROM EXA_SQL_TYPES");
@@ -92,6 +98,8 @@ public class ExasolDataSource extends JDBCDataSource
 	private DBSObjectCache<ExasolDataSource, ExasolSystemGrant> systemGrantCache = null;
 	private DBSObjectCache<ExasolDataSource, ExasolConnectionGrant> connectionGrantCache = null;
 	private DBSObjectCache<ExasolDataSource, ExasolBaseObjectGrant> baseTableGrantCache = null;
+	
+	private Properties addMetaProps = new Properties();
 	
 	private int driverMajorVersion = 5;
 	
@@ -120,7 +128,7 @@ public class ExasolDataSource extends JDBCDataSource
 		
 		try (JDBCSession session = DBUtils.openMetaSession(monitor, this,
 				"Load data source meta info")) {
-
+			
 			// First try to get active schema from special register 'CURRENT
 			// SCHEMA'
 			this.activeSchemaName = determineActiveSchema(session);
@@ -182,6 +190,11 @@ public class ExasolDataSource extends JDBCDataSource
 		this.connectionCache = new JDBCObjectSimpleCache<>(
 				ExasolConnection.class, "SELECT * FROM SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_CONNECTIONS ORDER BY CONNECTION_NAME");
 		
+		if (exasolCurrentUserPrivileges.hasPriorityGroups())
+			this.priorityGroupCache = new JDBCObjectSimpleCache<>(
+				ExasolPriorityGroup.class, "SELECT * FROM SYS.EXA_PRIORITY_GROUPS ORDER BY PRIORITY_GROUP_NAME"
+				);
+		
 		if (exasolCurrentUserPrivileges.getUserHasDictionaryAccess())
 		{
 			this.connectionGrantCache =  new JDBCObjectSimpleCache<>(
@@ -235,9 +248,33 @@ public class ExasolDataSource extends JDBCDataSource
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile("(.+)\\[line ([0-9]+), column ([0-9]+)\\]");
 
     
+    
     int getDriverMajorVersion()
     {
     	return this.driverMajorVersion;
+    }
+    
+    @Override
+    protected Properties getAllConnectionProperties(DBRProgressMonitor monitor, String purpose,
+    		DBPConnectionConfiguration connectionInfo) throws DBCException {
+    	
+    	Properties props =  super.getAllConnectionProperties(monitor, purpose, connectionInfo);
+    	
+    	if (addMetaProps == null)
+    		addMetaProps = new Properties();
+    	
+    	if (purpose == "Metadata")
+    	{
+    		addMetaProps.clear();
+    		addMetaProps.put("snapshottransactions", "1");
+    		addMetaProps.put("debug", "1");
+    		addMetaProps.put("logdir", "C:/temp");
+    	} else {
+    		addMetaProps.clear();
+    	}
+    	
+    	return props;
+    	
     }
     
     @Nullable
@@ -556,6 +593,17 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return roleCache.getObject(monitor, this, name);
 	}
+	
+	@Association
+	public Collection<ExasolPriorityGroup> getPriorityGroups(DBRProgressMonitor monitor) throws DBException
+	{
+		return priorityGroupCache.getAllObjects(monitor, this);
+	}
+	
+	public ExasolPriorityGroup getPriorityGroup(DBRProgressMonitor monitor, String name) throws DBException
+	{
+		return priorityGroupCache.getObject(monitor, this, name);
+	}
 
     @Association
 	public Collection<ExasolConnection> getConnections(
@@ -705,6 +753,11 @@ public class ExasolDataSource extends JDBCDataSource
 		return this.exasolCurrentUserPrivileges.getatLeastV5();
 	}
 	
+	public boolean ishasPriorityGroups()
+	{
+		return this.exasolCurrentUserPrivileges.hasPriorityGroups();
+	}
+	
 	public boolean isAuthorizedForConnectionPrivs()
 	{
 		return this.exasolCurrentUserPrivileges.getUserHasDictionaryAccess();
@@ -777,6 +830,9 @@ public class ExasolDataSource extends JDBCDataSource
             Object propClientName = properties.get(ExasolConstants.DRV_CLIENT_NAME);
             if (propClientName != null)
                 clientName = propClientName.toString();
+            if (! addMetaProps.isEmpty())
+            	clientName = clientName + "-Meta";
+            
             url.append(";clientname=").append(clientName);
         }
         
@@ -795,6 +851,17 @@ public class ExasolDataSource extends JDBCDataSource
         Object connecttimeout = properties.get(ExasolConstants.DRV_CONNECT_TIMEOUT);
         if (connecttimeout != null)
             url.append(";").append(ExasolConstants.DRV_CONNECT_TIMEOUT).append("=").append(connecttimeout);
+
+        // append properties if exists -> meta connection using different type
+        /* does not yet work
+        if (! addMetaProps.isEmpty()) {
+        	Set<Entry<Object, Object>> entries = addMetaProps.entrySet();
+        	
+            for (Entry<Object, Object> entry : entries) {
+            	url.append(";").append(entry.getKey()).append("=").append(entry.getValue());
+            }		
+        }
+        */
 
         return url.toString();
     }
@@ -851,7 +918,5 @@ public class ExasolDataSource extends JDBCDataSource
         }
         return super.createQueryTransformer(type);
     }
-
-    
 
 }

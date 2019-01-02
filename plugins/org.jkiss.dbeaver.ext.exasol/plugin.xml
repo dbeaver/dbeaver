@@ -349,6 +349,19 @@
                       </items>
                    </items>
                 </folder>
+                <folder
+                      description="%tree.prioritygroups.node.description"
+                      icon="#folder_database"
+                      label="%tree.prioritygroups.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup"
+                      visibleIf="object.dataSource.hasPriorityGroups">
+                   <items
+                         icon="#database"
+                         label="%tree.prioritygroup.node.name"
+                         path="prioritygroup"
+                         property="priorityGroups">
+                   </items>
+                </folder>
             </tree>
             <drivers managable="true">
                 <driver
@@ -365,7 +378,7 @@
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="600"/>
-                    <property name="connecttimeout" value="40"/>
+                    <property name="connecttimeout" value="1000"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern"
                               value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
                 </driver>
