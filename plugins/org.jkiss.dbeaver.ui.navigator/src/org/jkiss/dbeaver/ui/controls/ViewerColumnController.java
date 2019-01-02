@@ -53,6 +53,8 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     private static final String DATA_KEY = ViewerColumnController.class.getSimpleName();
 
+    private static final int MIN_COLUMN_AUTO_WIDTH = 100;
+
     private final String configId;
     private final ColumnViewer viewer;
     private final List<ColumnInfo> columns = new ArrayList<>();
@@ -256,15 +258,36 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         }
         isPacking = true;
         try {
+            int itemCount = 0;
             if (viewer instanceof TreeViewer) {
+                itemCount = ((TreeViewer) viewer).getTree().getItemCount();
                 float[] ratios = null;
                 if (((TreeViewer) viewer).getTree().getColumnCount() == 2) {
                     ratios = new float[]{0.6f, 0.4f};
                 }
                 UIUtils.packColumns(((TreeViewer) viewer).getTree(), false, ratios);
             } else if (viewer instanceof TableViewer) {
+                itemCount = ((TableViewer) viewer).getTable().getItemCount();
                 UIUtils.packColumns(((TableViewer)viewer).getTable());
             }
+
+            if (itemCount == 0) {
+                // Fix too narrow width for empty lists
+                for (ColumnInfo columnInfo : getVisibleColumns()) {
+                    if (columnInfo.column instanceof TreeColumn) {
+                        if (((TreeColumn) columnInfo.column) .getWidth() < MIN_COLUMN_AUTO_WIDTH) {
+                            ((TreeColumn) columnInfo.column).setWidth(MIN_COLUMN_AUTO_WIDTH);
+                            columnInfo.width = MIN_COLUMN_AUTO_WIDTH;
+                        }
+                    } else if (columnInfo.column instanceof TableColumn) {
+                        if (((TableColumn) columnInfo.column) .getWidth() < MIN_COLUMN_AUTO_WIDTH) {
+                            ((TableColumn) columnInfo.column).setWidth(MIN_COLUMN_AUTO_WIDTH);
+                            columnInfo.width = MIN_COLUMN_AUTO_WIDTH;
+                        }
+                    }
+                }
+            }
+
         } finally {
             isPacking = false;
         }
