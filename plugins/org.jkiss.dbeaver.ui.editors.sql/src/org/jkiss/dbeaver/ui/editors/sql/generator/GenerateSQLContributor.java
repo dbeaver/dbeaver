@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -76,7 +75,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     protected IContributionItem[] getContributionItems()
     {
         IWorkbenchPart part = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
-        IStructuredSelection structuredSelection = GenerateSQLContributor.getSelectionFromPart(part);
+        IStructuredSelection structuredSelection = NavigatorUtils.getSelectionFromPart(part);
         if (structuredSelection == null || structuredSelection.isEmpty()) {
             return new IContributionItem[0];
         }
@@ -670,26 +669,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         }
     }
 
-    @Nullable
-    static IStructuredSelection getSelectionFromPart(IWorkbenchPart part)
-    {
-        if (part == null) {
-            return null;
-        }
-        ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
-        if (selectionProvider == null) {
-            return null;
-        }
-        ISelection selection = selectionProvider.getSelection();
-        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
-            return null;
-        }
-        return (IStructuredSelection)selection;
-    }
-
     ///////////////////////////////////////////////////
     // Generators
-
 
     @NotNull
     public static SQLGenerator<DBSEntity> SELECT_GENERATOR(final List<DBSEntity> entities, final boolean columnList) {

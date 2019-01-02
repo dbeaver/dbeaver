@@ -91,7 +91,7 @@
                                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.serverType.supportsTriggers()">
                                         <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.rules.node.name" icon="#rules" description="Table rules" visibleIf="object.dataSource.serverType.supportsRules()">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRule" label="%tree.rules.node.name" icon="#rules" description="Table rules" visibleIf="object.dataSource.serverType.supportsRules()">
                                         <items label="%tree.rule.node.name" path="rule" property="rules" icon="#rule"/>
                                     </folder>
                                 </items>
@@ -105,7 +105,7 @@
                                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="View triggers" visibleIf="object.dataSource.serverType.supportsTriggers()">
                                         <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.rules.node.name" icon="#rules" description="Table rules" visibleIf="object.dataSource.serverType.supportsRules()">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRule" label="%tree.rules.node.name" icon="#rules" description="Table rules" visibleIf="object.dataSource.serverType.supportsRules()">
                                         <items label="%tree.rule.node.name" path="rule" property="rules" icon="#rule"/>
                                     </folder>
                                 </items>

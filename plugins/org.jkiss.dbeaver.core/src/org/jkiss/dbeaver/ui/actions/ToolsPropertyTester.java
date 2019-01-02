@@ -14,29 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.generator;
+package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
- * SQLUtilsPropertyTester
+ * ToolsPropertyTester
  */
-public class SQLUtilsPropertyTester extends PropertyTester
+public class ToolsPropertyTester extends PropertyTester
 {
-    public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql.util";
-    public static final String PROP_CAN_GENERATE = "canGenerate";
+    public static final String NAMESPACE = "org.jkiss.dbeaver.core.tools";
+    public static final String PROP_HAS_TOOLS = "hasTools";
 
-    public SQLUtilsPropertyTester() {
+    public ToolsPropertyTester() {
         super();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+
         if (!(receiver instanceof IWorkbenchPart)) {
             return false;
         }
@@ -44,21 +48,14 @@ public class SQLUtilsPropertyTester extends PropertyTester
         if (structuredSelection == null || structuredSelection.isEmpty()) {
             return false;
         }
+
         switch (property) {
-            case PROP_CAN_GENERATE:
-                if (structuredSelection instanceof IResultSetSelection) {
-                    // Results
-                    return ((IResultSetSelection) structuredSelection).getController().getModel().isSingleSource();
-                } else {
-                    return GenerateSQLContributor.hasContributions(structuredSelection);
-                }
+            case PROP_HAS_TOOLS: {
+                DBSObject object = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBSObject.class);
+                return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
+            }
         }
         return false;
-    }
-
-    public static void firePropertyChange(String propName)
-    {
-        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
 }

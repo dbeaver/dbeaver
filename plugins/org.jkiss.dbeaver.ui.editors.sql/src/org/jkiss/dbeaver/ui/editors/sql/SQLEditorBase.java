@@ -552,7 +552,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     {
         super.editorContextMenuAboutToShow(menu);
 
-        menu.add(new Separator("content"));//$NON-NLS-1$
+        //menu.add(new Separator("content"));//$NON-NLS-1$
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
@@ -573,6 +573,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.multi"));
             menu.insertAfter(GROUP_SQL_ADDITIONS, formatMenu);
         }
+
+        //menu.remove(IWorkbenchActionConstants.MB_ADDITIONS);
     }
 
     public void reloadSyntaxRules()

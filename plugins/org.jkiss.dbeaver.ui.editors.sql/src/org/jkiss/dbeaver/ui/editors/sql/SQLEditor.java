@@ -615,7 +615,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         ResultSetViewer resultsView = getActiveResultSetViewer();
         if (resultsView != null) {
-            if (required == ResultSetViewer.class) {
+            if (required == IResultSetController.class || required == ResultSetViewer.class) {
                 return required.cast(resultsView);
             }
             T adapter = resultsView.getAdapter(required);
@@ -2582,6 +2582,7 @@ public class SQLEditor extends SQLEditorBase implements
                     job.setFetchResultSetNumber(-1);
                 }
                 job.setResultSetLimit(firstRow, maxRows);
+                job.setReadFlags(flags);
                 job.setDataFilter(dataFilter);
 
                 job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber);
