@@ -45,6 +45,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -68,6 +70,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -93,6 +96,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
     public static final String CMD_ROW_COPY = "org.jkiss.dbeaver.core.resultset.row.copy";
     public static final String CMD_ROW_DELETE = "org.jkiss.dbeaver.core.resultset.row.delete";
     public static final String CMD_CELL_SET_NULL = "org.jkiss.dbeaver.core.resultset.cell.setNull";
+    public static final String CMD_CELL_SET_DEFAULT = "org.jkiss.dbeaver.core.resultset.cell.setDefault";
     public static final String CMD_CELL_RESET = "org.jkiss.dbeaver.core.resultset.cell.reset";
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
@@ -221,6 +225,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 rsv.deleteSelectedRows();
                 break;
             case CMD_CELL_SET_NULL:
+            case CMD_CELL_SET_DEFAULT:
             case CMD_CELL_RESET: {
                 IResultSetSelection selection = rsv.getSelection();
                 for (Object cell : selection.toArray()) {
@@ -236,6 +241,12 @@ public class ResultSetHandlerMain extends AbstractHandler {
                         if (actionId.equals(CMD_CELL_SET_NULL)) {
                             valueController.updateValue(
                                 BaseValueManager.makeNullValue(valueController), false);
+                        } else if (actionId.equals(CMD_CELL_SET_DEFAULT)) {
+                            DBDValueHandler valueHandler = valueController.getValueHandler();
+                            if (valueHandler instanceof DBDValueDefaultGenerator) {
+                                Object defValue = ((DBDValueDefaultGenerator) valueHandler).generateDefaultValue(valueController.getValueType());
+                                valueController.updateValue(defValue, false);
+                            }
                         } else {
                             rsv.getModel().resetCellValue(attr, row);
                         }
