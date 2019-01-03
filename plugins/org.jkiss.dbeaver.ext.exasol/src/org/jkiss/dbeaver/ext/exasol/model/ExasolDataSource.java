@@ -618,6 +618,11 @@ public class ExasolDataSource extends JDBCDataSource
 		return connectionCache.getObject(monitor, this, name);
 	}
 	
+	public DBSObjectCache<ExasolDataSource, ExasolPriorityGroup> getPriorityGroupCache()
+	{
+		return priorityGroupCache;
+	}
+	
 	
 
     @Association

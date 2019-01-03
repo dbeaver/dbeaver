@@ -66,5 +66,14 @@ public class ExasolMessages extends NLS {
 
 	public static String read_table_details;
 	public static String read_schema_details;
+	public static String dialog_create_priority_group;
+	public static String dialog_priority_group_description;
+	public static String dialog_priority_group_name;
+	public static String dialog_priority_group_weight;
+	public static String manager_priority_group_comment;
+	public static String manager_priority_create;
+	public static String manager_priority_drop;
+	public static String manager_priority_alter;
+	public static String manager_priority_rename;
 
 }
