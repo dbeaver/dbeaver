@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
@@ -43,10 +45,18 @@ public class ExasolUser extends ExasolGrantee
 	private String description;
 	private String dn;
 	private String password;
-	private String priority;
 	private Timestamp created;
-
-
+	private String kerberosPrincipal;
+	private String passwordState;
+	private String passwordStateChanged;
+	private Timestamp passwordExpiry; 
+	private BigDecimal passwordExpiryDays;
+	private BigDecimal passwordExpiryGrace;
+	private String passwordExpiryPolicy;
+	private BigDecimal failedLoginAttempts;
+	private Boolean locked;
+	
+	
 	public ExasolUser(ExasolDataSource dataSource, ResultSet resultSet)
 	{
 		super(dataSource, resultSet);
@@ -57,18 +67,98 @@ public class ExasolUser extends ExasolGrantee
 					"USER_COMMENT");
 			this.dn = JDBCUtils.safeGetString(resultSet, "DISTINGUISHED_NAME");
 			this.password = JDBCUtils.safeGetString(resultSet, "PASSWORD");
-			this.priority = JDBCUtils.safeGetString(resultSet, "USER_PRIORITY");
 			this.created = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
+			this.kerberosPrincipal = JDBCUtils.safeGetString(resultSet, "KERBEROS_PRINCIPAL");
+			this.passwordState = JDBCUtils.safeGetString(resultSet, "PASSWORD_STATE");
+			this.passwordStateChanged = JDBCUtils.safeGetString(resultSet, "PASSWORD_STATE_CHANGED");
+			this.passwordExpiry = JDBCUtils.safeGetTimestamp(resultSet, "PASSWORD_EXPIRY");
+			this.passwordExpiryDays = JDBCUtils.safeGetBigDecimal(resultSet, "PASSWORD_EXPIRY_DAYS");
+			this.passwordExpiryGrace = JDBCUtils.safeGetBigDecimal(resultSet, "PASSWORD_GRACE_DAYS");
+			this.passwordExpiryPolicy = JDBCUtils.safeGetString(resultSet, "PASSWORD_EXPIRY_POLICY");
+			this.failedLoginAttempts = JDBCUtils.safeGetBigDecimal(resultSet, "FAILED_LOGIN_ATTEMPTS");
+			
+			if (this.passwordState != null && this.passwordState.equals("EXPIRED"))
+			{
+				this.locked = true;
+			} else {
+				this.locked = false;
+			}
+			
 		} else {
 			this.userName = "user";
 			this.description = "";
 			this.dn = "";
 			this.password = "";
-			this.priority = "";
 			this.created = null;
 		}
 	}
 	
+	@Property(viewable = true, updatable=true, editable=true, order = 35)
+	public String getKerberosPrincipal() {
+		return kerberosPrincipal;
+	}
+
+	public void setKerberosPrincipal(String kerberosPrincipal) {
+		this.kerberosPrincipal = kerberosPrincipal;
+	}
+
+	@Property(viewable = true, order = 50)
+	public String getPasswordState() {
+		return passwordState;
+	}
+
+	public void setPasswordState(String passwordState) {
+		this.passwordState = passwordState;
+	}
+
+	@Property(viewable = true, order = 60)
+	public String getPasswordExpiryPolicy() {
+		return passwordExpiryPolicy;
+	}
+
+	public void setPasswordExpiryPolicy(String passwordExpiryPolicy) {
+		this.passwordExpiryPolicy = passwordExpiryPolicy;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	@Property(viewable = true, order = 70)
+	public String getPasswordStateChanged() {
+		return passwordStateChanged;
+	}
+
+	@Property(viewable = true, order = 80)
+	public Timestamp getPasswordExpiry() {
+		return passwordExpiry;
+	}
+
+	@Property(viewable = true, order = 90)
+	public BigDecimal getPasswordExpiryDays() {
+		return passwordExpiryDays;
+	}
+
+	@Property(viewable = true, order = 100)
+	public BigDecimal getPasswordExpiryGrace() {
+		return passwordExpiryGrace;
+	}
+
+	@Property(viewable = true, order = 110)
+	public BigDecimal getFailedLoginAttempts() {
+		return failedLoginAttempts;
+	}
+
+	@Property(viewable = true, updatable=true, editable=true, order = 120)
+	public Boolean getLocked() {
+		return locked;
+	}
+
+	public void setLocked(Boolean locked) {
+		this.locked = locked;
+	}
+	
+
 	public ExasolUser(ExasolDataSource datasource, String name, String description, String dn, String password)
 	{
 		super(datasource, false);
@@ -77,16 +167,15 @@ public class ExasolUser extends ExasolGrantee
 		this.description = description;
 		this.dn = dn;
 		this.password = password;
-		this.priority = "";
 	}
 
 	@Override
-	@Property(viewable = true, updatable=true, editable=true, multiline = true, order = 100)
+	@Property(viewable = true, updatable=true, editable=true, multiline = true, order = 150)
 	public String getDescription()
 	{
 		return this.description;
 	}
-
+	
 	@Property(viewable = true, editable=true, updatable=true, order = 20)
 	public String getPassword()
 	{
@@ -100,9 +189,9 @@ public class ExasolUser extends ExasolGrantee
 	}
 
 	@Property(viewable = true, order = 40)
-	public String getPriority()
+	public ExasolPriorityGroup getPriority()
 	{
-		return this.priority;
+		return super.getPriority();
 	}
 
 	@Property(viewable = true, order = 50)
