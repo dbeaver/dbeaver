@@ -126,7 +126,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             // No editor found - create new command context
             DBSObject object = ((DBNDatabaseNode) container).getObject();
             if (object != null) {
-                return new CommandTarget(new SimpleCommandContext(DBUtils.getDefaultContext(object, true), !openEditor));
+                return new CommandTarget(new SimpleCommandContext(DBUtils.getDefaultContext(object, false), !openEditor));
             }
         }
         return new CommandTarget();
