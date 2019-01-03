@@ -416,6 +416,10 @@
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager" objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager" objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole"/>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPriorityGroupManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup">
+        </manager>
     </extension>
     
     <extension point="org.jkiss.dbeaver.databaseEditor">
