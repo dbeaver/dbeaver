@@ -1,13 +1,11 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.ResultSet;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -104,6 +102,11 @@ public class ExasolPriorityGroup implements DBPRefreshableObject, DBPNamedObject
 		return groupId;
 	}
 	
+    @Property(viewable = true, editable= false, updatable=false, order = 40)
+    public Date getCreated()
+    {
+    	return created;
+    }
 	
     @Property(viewable = true, editable= true, updatable=true, order = 10)
 	@Override

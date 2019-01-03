@@ -225,23 +225,6 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     }
     
 
-    /*
-     * handling for Distribution key
-     */
-    
-    private Collection<String> removeColumnFromDistKey(ExasolTableColumn exasolColumn) throws DBException
-    {
-    	ExasolTable table = (ExasolTable) exasolColumn.getParentObject();
-    	Collection<ExasolTableColumn> distKey = table.getDistributionKey(new VoidProgressMonitor());
-    	
-    	if (distKey.size() == 1)
-    	{
-    		
-    	}
-    	
-		return null;
-    }
-    
     private SQLDatabasePersistAction generateDropDist(ExasolTableColumn exasolColumn)
     {
     	

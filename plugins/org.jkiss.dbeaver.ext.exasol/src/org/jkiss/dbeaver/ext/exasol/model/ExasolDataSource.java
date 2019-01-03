@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.manager.security.*;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionManager;
+import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolDataTypeCache;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -51,12 +52,10 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -65,7 +64,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -91,8 +89,7 @@ public class ExasolDataSource extends JDBCDataSource
 	
 	private DBSObjectCache<ExasolDataSource, ExasolPriorityGroup> priorityGroupCache = null;
 
-	private DBSObjectCache<ExasolDataSource, ExasolDataType> dataTypeCache = new JDBCObjectSimpleCache<>(
-			ExasolDataType.class, "SELECT * FROM EXA_SQL_TYPES");
+	private ExasolDataTypeCache dataTypeCache = new ExasolDataTypeCache();
 	
 	private DBSObjectCache<ExasolDataSource, ExasolRoleGrant> roleGrantCache = null;
 	private DBSObjectCache<ExasolDataSource, ExasolSystemGrant> systemGrantCache = null;
@@ -140,8 +137,6 @@ public class ExasolDataSource extends JDBCDataSource
 		} catch (SQLException e) {
 			LOG.warn("Error reading active schema", e);
 		}
-
-
 		String schemaSQL = "select schema_name as object_name,schema_owner as OWNER,CAST(NULL AS TIMESTAMP) AS created, schema_comment as OBJECT_COMMENT, SCHEMA_OBJECT_ID from SYS.EXA_SCHEMAS s  ";
 		
 		if (exasolCurrentUserPrivileges.getatLeastV6()) {
@@ -772,6 +767,11 @@ public class ExasolDataSource extends JDBCDataSource
 			throws DBException
 	{
 		return dataTypeCache.getObject(monitor, this, name);
+	}
+	
+	public ExasolDataType getDataTypeId(long id)
+	{
+		return dataTypeCache.getDataTypeId(id);
 	}
 
 	// -----------------------

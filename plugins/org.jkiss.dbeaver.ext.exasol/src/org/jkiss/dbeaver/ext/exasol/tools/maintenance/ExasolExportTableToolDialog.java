@@ -41,6 +41,7 @@ public class ExasolExportTableToolDialog extends ExasolBaseTableToolDialog {
 	// Dialog artifacts
 	private Combo cbRowSep;
 	private Button btInclColNames;
+	@SuppressWarnings("unused")
 	private Button btSelectDirectory;
 	private Button btSelectCompress;
 	private Text txColSep;
