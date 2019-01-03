@@ -18,12 +18,15 @@
 package org.jkiss.dbeaver.ext.exasol.manager.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
@@ -35,7 +38,6 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     private String name;
     private String description;
     private ExasolDataSource dataSource;
-    private String priority;
     private Timestamp created;
 
     public ExasolRole(ExasolDataSource dataSource, ResultSet resultSet) {
@@ -43,7 +45,6 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     	if (resultSet != null) {
 	        this.name = JDBCUtils.safeGetString(resultSet, "ROLE_NAME");
 	        this.description = JDBCUtils.safeGetStringTrimmed(resultSet, "ROLE_COMMENT");
-	        this.priority = JDBCUtils.safeGetString(resultSet, "ROLE_PRIORITY");
 	        this.dataSource = dataSource;
 	        this.created = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
     	} else {
@@ -73,9 +74,9 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     }
     
     @Property(viewable = true, order = 20)
-    public String getPriority()
+    public ExasolPriorityGroup getPriority()
     {
-    	return this.priority;
+    	return super.getPriority();
     }
 
     @Property(viewable = true, order = 20)

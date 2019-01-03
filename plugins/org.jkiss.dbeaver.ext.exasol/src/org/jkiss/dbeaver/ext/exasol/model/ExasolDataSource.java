@@ -185,15 +185,76 @@ public class ExasolDataSource extends JDBCDataSource
 
 		this.userCache = new JDBCObjectSimpleCache<>(ExasolUser.class,
 					"select * from SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.USER)  +"_USERS ORDER BY USER_NAME");
-		this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, "SELECT * FROM SYS." + this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_ROLES ORDER BY ROLE_NAME");
+		this.roleCache = new JDBCObjectSimpleCache<>(ExasolRole.class, "SELECT ROLE_NAME,CREATED,ROLE_PRIORITY AS USER_PRIORITY,ROLE_COMMENT FROM SYS." + this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_ROLES ORDER BY ROLE_NAME");
 		
 		this.connectionCache = new JDBCObjectSimpleCache<>(
 				ExasolConnection.class, "SELECT * FROM SYS."+ this.exasolCurrentUserPrivileges.getTablePrefix(ExasolSysTablePrefix.SESSION)  +"_CONNECTIONS ORDER BY CONNECTION_NAME");
 		
-		if (exasolCurrentUserPrivileges.hasPriorityGroups())
+		if (exasolCurrentUserPrivileges.hasPriorityGroups()) {
 			this.priorityGroupCache = new JDBCObjectSimpleCache<>(
 				ExasolPriorityGroup.class, "SELECT * FROM SYS.EXA_PRIORITY_GROUPS ORDER BY PRIORITY_GROUP_NAME"
 				);
+		} else {
+			this.priorityGroupCache = new DBSObjectCache<ExasolDataSource, ExasolPriorityGroup>() {
+				
+				List<ExasolPriorityGroup> groups;
+				
+				
+				@Override
+				public void setCache(List<ExasolPriorityGroup> objects) {
+				}
+				
+				@Override
+				public void removeObject(ExasolPriorityGroup object, boolean resetFullCache) {
+				}
+				
+				@Override
+				public boolean isFullyCached() {
+					return true;
+				}
+				
+				@Override
+				public ExasolPriorityGroup getObject(DBRProgressMonitor monitor, ExasolDataSource owner, String name) {
+					return getCachedObject(name);
+				}
+				
+				@Override
+				public List<ExasolPriorityGroup> getCachedObjects() {
+					return groups;
+				}
+				
+				@Override
+				public ExasolPriorityGroup getCachedObject(String name) {
+					for(ExasolPriorityGroup p: groups)
+					{
+						if (p.getName().equals(name))
+							return p;
+					}
+					return null;
+				}
+				
+				@Override
+				public Collection<ExasolPriorityGroup> getAllObjects(DBRProgressMonitor monitor, ExasolDataSource owner)
+						throws DBException {
+					groups = new ArrayList<>();
+					groups.add(new ExasolPriorityGroup(owner, "HIGH", "Default High Group", 900));
+					groups.add(new ExasolPriorityGroup(owner, "MEDIUM", "Default Medium Group", 900));
+					groups.add(new ExasolPriorityGroup(owner, "LOW", "Default LOW Group", 900));
+					return groups;
+				}
+				
+				@Override
+				public void clearCache() {
+					groups = new ArrayList<>();
+				}
+				
+				@Override
+				public void cacheObject(ExasolPriorityGroup object) {
+					
+				}
+			};
+			this.priorityGroupCache.getAllObjects(monitor, this);
+		}
 		
 		if (exasolCurrentUserPrivileges.getUserHasDictionaryAccess())
 		{
@@ -858,7 +919,6 @@ public class ExasolDataSource extends JDBCDataSource
             url.append(";").append(ExasolConstants.DRV_CONNECT_TIMEOUT).append("=").append(connecttimeout);
 
         // append properties if exists -> meta connection using different type
-        /* does not yet work
         if (! addMetaProps.isEmpty()) {
         	Set<Entry<Object, Object>> entries = addMetaProps.entrySet();
         	
@@ -866,7 +926,6 @@ public class ExasolDataSource extends JDBCDataSource
             	url.append(";").append(entry.getKey()).append("=").append(entry.getValue());
             }		
         }
-        */
 
         return url.toString();
     }
