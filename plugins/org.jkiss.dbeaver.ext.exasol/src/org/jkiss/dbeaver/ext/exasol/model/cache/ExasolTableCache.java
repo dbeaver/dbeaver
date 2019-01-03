@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.ext.exasol.model.cache;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -36,14 +36,23 @@ import java.sql.SQLException;
 public final class ExasolTableCache
 		extends JDBCStructCache<ExasolSchema, ExasolTable, ExasolTableColumn> {
 
-	private static final String SQL_COLS_TAB = "select " + "	c.* " + "from "
-			+ "		 \"$ODBCJDBC\".\"ALL_COLUMNS\" c " + "where "
-			+ "	table_schem = '%s' and " + "	table_name = '%s' " + "order by "
-			+ "	c.ordinal_position";
-	private static final String SQL_COLS_ALL = "select " + "	c.* " + "from "
-			+ "		 \"$ODBCJDBC\".\"ALL_COLUMNS\" c " + "where "
-			+ "	table_schem = '%s'" + "order by "
-			+ "	table_name,c.ordinal_position";
+	private static final String SQL_COLS_TAB = "SELECT " + 
+			"c.* " + 
+			"FROM " + 
+			"SYS.%s_COLUMNS c " + 
+			"WHERE " + 
+			"COLUMN_SCHEMA = '%s' " + 
+			"AND COLUMN_TABLE = '%s' " + 
+			"ORDER BY " + 
+			"COLUMN_ORDINAL_POSITION ";
+	private static final String SQL_COLS_ALL = "SELECT " + 
+			"c.* " + 
+			"FROM " + 
+			"SYS.%s_COLUMNS c " + 
+			"WHERE " + 
+			"COLUMN_SCHEMA = '%s' AND COLUMN_OBJECT_TYPE = 'TABLE' " + 
+			"ORDER BY " + 
+			"COLUMN_ORDINAL_POSITION ";
 	
 	private static final String SQL_TABLES = "SELECT * FROM \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'TABLE' order by TABLE_NAME";
 
@@ -57,13 +66,11 @@ public final class ExasolTableCache
 			@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema)
 			throws SQLException
 	{
-		JDBCDatabaseMetaData meta = session.getMetaData();
-		
 		String sql = String.format(SQL_TABLES, exasolSchema.getName());
 		
 		JDBCStatement dbstat = session.createStatement();
 		
-		((JDBCStatementImpl) dbstat).setQueryString(sql);
+		dbstat.setQueryString(sql);
 
 		return dbstat;
 
@@ -75,12 +82,14 @@ public final class ExasolTableCache
 			@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema,
 			@Nullable ExasolTable exasolTable) throws SQLException
 	{
+		
+		String tablePrefix = exasolSchema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
 		String sql;
 
 		if (exasolTable != null)
-			sql = String.format(SQL_COLS_TAB,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolTable.getName()));
+			sql = String.format(SQL_COLS_TAB,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolTable.getName()));
 		else
-			sql = String.format(SQL_COLS_ALL,ExasolUtils.quoteString(exasolSchema.getName()));
+			sql = String.format(SQL_COLS_ALL,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()));
 
 		JDBCStatement dbstat = session.createStatement();
 		
