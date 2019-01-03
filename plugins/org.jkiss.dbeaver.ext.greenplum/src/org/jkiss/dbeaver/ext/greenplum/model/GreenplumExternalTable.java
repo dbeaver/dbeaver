@@ -35,7 +35,8 @@ import java.util.stream.Collectors;
 public class GreenplumExternalTable extends PostgreTableRegular {
     public enum FormatType {
         c("CSV"),
-        t("TEXT");
+        t("TEXT"),
+        b("CUSTOM");
 
         private String formatType;
 
@@ -148,7 +149,8 @@ public class GreenplumExternalTable extends PostgreTableRegular {
             ddlBuilder.append("\n) " + determineExecutionLocation() + "\n");
         }
 
-        ddlBuilder.append("FORMAT '" + this.getFormatType().getValue() + "' ( " + this.getFormatOptions() + " )");
+        ddlBuilder.append("FORMAT '" + this.getFormatType().getValue() + "' ( "
+                + generateFormatOptions(this.getFormatType(), this.getFormatOptions()) + " )");
 
         if (this.getEncoding() != null && this.getEncoding().length() > 0) {
             ddlBuilder.append("\nENCODING '" + this.getEncoding() + "'");
@@ -159,6 +161,15 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         }
 
         return ddlBuilder.toString();
+    }
+
+    private String generateFormatOptions(FormatType formatType, String formatOptions) {
+        if(formatType.equals(FormatType.b)){
+            String[] formatSpecTokens = formatOptions.split(" ");
+            String formatterSpec = formatSpecTokens.length >= 2 ? formatSpecTokens[1] : "";
+            return "FORMATTER=" + formatterSpec;
+        }
+        return formatOptions;
     }
 
     private String determineExecutionLocation() {

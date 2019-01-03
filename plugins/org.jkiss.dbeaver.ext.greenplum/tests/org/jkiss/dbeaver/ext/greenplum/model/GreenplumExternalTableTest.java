@@ -263,6 +263,29 @@ public class GreenplumExternalTableTest {
         Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
     }
 
+    @Test
+    public void generateDDL_whenTableHasACustomFormatType_returnsDDLStringWithACustomFormat()
+            throws DBException, SQLException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getString("fmttype")).thenReturn("b");
+        Mockito.when(mockResults.getString("fmtopts")).thenReturn("FORMATTER 'formatter_export_s'");
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'gpfdist://filehost:8081/*.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'CUSTOM' ( FORMATTER='formatter_export_s' )\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
     private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {
         PostgreTableColumn mockPostgreTableColumn = Mockito.mock(PostgreTableColumn.class);
         Mockito.when(mockPostgreTableColumn.getName()).thenReturn(columnName);
