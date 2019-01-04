@@ -78,5 +78,14 @@ public class ExasolMessages extends NLS {
 	public static String manager_schema_owner;
 	public static String manager_schema_raw_limit;
 	public static String manager_schema_create;
+	public static String dialog_create_user_userid;
+	public static String dialog_create_user_comment;
+	public static String dialog_create_user_kerberos;
+	public static String dialog_create_user_ldap;
+	public static String dialog_create_user_local;
+	public static String dialog_create_user_local_password;
+	public static String dialog_create_user_kerberos_principal;
+	public static String dialog_create_user_ldap_dn;
+	
 
 }
