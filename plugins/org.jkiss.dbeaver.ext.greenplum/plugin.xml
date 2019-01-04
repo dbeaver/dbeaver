@@ -16,6 +16,216 @@
                 label="Greenplum"
                 icon="icons/greenplum_icon.png">
 
+            <tree path="postgresql" label="Greenplum data source">
+                <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
+                    <folder type="org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
+                        <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                            <icon if="object.utility || object.external" icon="#schema_util"/>
+                            <icon if="object.system" icon="#schema_system"/>
+                            <folder
+                                  description="Tables"
+                                  icon="#folder_table"
+                                  label="%tree.tables.node.name"
+                                  type="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable">
+                                <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view &amp;&amp; !object.external">
+                                        <items label="%tree.constraint.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                            <items label="%tree.constraint.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                        <items label="%tree.foreign_key.node.name" path="association" property="foreignKeys" icon="#foreign-key">
+                                            <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.serverType.supportsIndexes()">
+                                        <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                            <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                        <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                            <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="Table partitions" virtual="true" visibleIf="object.dataSource.serverType.supportsPartitions()">
+                                        <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition" virtual="true" recursive="../..">
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true" visibleIf="object.hasSubClasses()">
+                                        <items label="%tree.tablechildren.node.name" path="subTables" property="subTables" icon="#table" virtual="true" recursive="../.." >
+                                        </items>
+                                    </folder>
+                                    <!--
+                                                                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" label="%tree.rules.node.name" icon="#triggers" description="Table rules" virtual="true">
+                                                                            <items label="%tree.rules.node.name" path="rules" property="rules" icon="#trigger" virtual="true" >
+                                                                                <items label="%tree.rules_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeRules" navigable="false" inline="true" virtual="true">
+                                                                                </items>
+                                                                            </items>
+                                                                        </folder>
+                                    -->
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.serverType.supportsTriggers()">
+                                        <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable" label="%tree.externaltables.node.name" icon="#folder_table" description="External Tables">
+                                <items label="%tree.externaltable.node.name" path="table" property="externalTables" icon="#table">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view &amp;&amp; !object.external">
+                                        <items label="%tree.constraint.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                            <items label="%tree.constraint.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                        <items label="%tree.foreign_key.node.name" path="association" property="foreignKeys" icon="#foreign-key">
+                                            <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.serverType.supportsIndexes()">
+                                        <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                            <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                        <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                            <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="Table partitions" virtual="true" visibleIf="object.dataSource.serverType.supportsPartitions()">
+                                        <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition" virtual="true" recursive="../..">
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true" visibleIf="object.hasSubClasses()">
+                                        <items label="%tree.tablechildren.node.name" path="subTables" property="subTables" icon="#table" virtual="true" recursive="../.." >
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.serverType.supportsTriggers()">
+                                        <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreView" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                                <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="View triggers" visibleIf="object.dataSource.serverType.supportsTriggers()">
+                                        <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView" label="%tree.mviews.node.name" icon="#folder_view" description="Materialized views" visibleIf="object.dataSource.serverType.supportsMaterializedViews()">
+                                <items label="%tree.mview.node.name" path="view" property="materializedViews" icon="#view">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                        <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                            <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" visibleIf="object.dataSource.serverType.supportsIndexes()">
+                                <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                    <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                                    </items>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.serverType.supportsSequences()">
+                                <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType" label="%tree.types.node.name" icon="#data_types" description="Data types">
+                                <items label="%tree.type.node.name" path="dataType" property="dataTypes" icon="#data_type">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute" label="%tree.attributes.node.name" icon="#attributes" description="Type attributes" visibleIf="object.hasAttributes()">
+                                        <items label="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute"/>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCollation" label="%tree.collations.node.name" icon="#collations" description="Collations" visibleIf="object.dataSource.serverType.supportsCollations()">
+                                    <items label="%tree.collation.node.name" path="collation" property="collations" icon="#collation"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#extensions" description="Extensions" visibleIf="object.dataSource.serverType.supportsExtensions()">
+                                    <items label="%tree.extension.node.name" path="extension" property="extensions" icon="#extension"/>
+                                </folder>
+                            </folder>
+                        </items>
+                    </folder>
+
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="Roles and users" visibleIf="object.dataSource.serverType.supportsRoles()">
+                        <items label="%tree.role.node.name" path="users" property="authIds" icon="#user">
+                            <icon if="!object.canLogin" icon="#user_group"/>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="Members" visibleIf="!object.canLogin"  navigable="false">
+                                <items label="%tree.role.members.node.name" itemLabel="%tree.role.member.node.name" path="members" property="members" visibleIf="!object.canLogin"/>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.belongs.node.name" icon="#folder_user" description="Belongs" navigable="false">
+                                <items label="%tree.role.belongs.node.name" itemLabel="%tree.role.belongs.node.name" path="members" property="belongs" icon="#folder_user"/>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder label="%tree.administer.node.name" icon="#folder_admin" description="Administer">
+                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" visibleIf="object.dataSource.serverType.supportsSessionActivity()"/>
+                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" visibleIf="object.dataSource.serverType.supportsLocks()"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAccessMethod" label="%tree.accessMethods.node.name" icon="#languages" description="Access methods">
+                            <items label="%tree.accessMethod.node.name" path="accessMethod" property="accessMethods" icon="#accessMethod">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreOperatorClass" label="%tree.opClasses.node.name" icon="#operator" description="Operator classes">
+                                    <items label="%tree.opClass.node.name" itemLabel="%tree.opClass.node.name" path="operatorClass" property="operatorClasses" icon="#operator"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreOperatorFamily" label="%tree.opFamilies.node.name" icon="#family" description="Operator families">
+                                    <items label="%tree.opFamily.node.name" itemLabel="%tree.opFamily.node.name" path="operatorFamily" property="operatorFamilies" icon="#family"/>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset" label="%tree.encodings.node.name" icon="#encodings" description="Encodings">
+                            <items label="%tree.encoding.node.name" path="encoding" property="encodings" icon="#encoding"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper" label="%tree.foreignDataWrappers.node.name" description="Foreign data wrappers" visibleIf="object.dataSource.serverType.supportsForeignServers()">
+                            <items label="%tree.foreignDataWrapper.node.name" path="foreignDataWrapper" property="foreignDataWrappers"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignServer" label="%tree.foreignServers.node.name" description="Foreign servers" visibleIf="object.dataSource.serverType.supportsForeignServers()">
+                            <items label="%tree.foreignServer.node.name" path="foreignServer" property="foreignServers">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreUserMapping" label="%tree.userMappings.node.name" icon="#folder_user"  description="User Mappings" >
+                                    <items label="%tree.userMapping.node.name" path="userMapping" property="userMappings" icon="#user" />
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage" label="%tree.languages.node.name" icon="#languages" description="Languages">
+                            <items label="%tree.language.node.name" path="language" property="languages" icon="#language"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces" visibleIf="object.dataSource.serverType.supportsTablespaces()">
+                            <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace"/>
+                        </folder>
+                    </folder>
+                </items>
+            </tree>
+
             <drivers managable="true">
 
                 <driver
