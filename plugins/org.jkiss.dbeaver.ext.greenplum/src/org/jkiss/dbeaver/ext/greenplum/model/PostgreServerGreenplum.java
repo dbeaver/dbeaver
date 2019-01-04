@@ -59,7 +59,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     @Override
     public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r) {
-            if (isExternal(dbResult)) {
+            if (isRelationExternal(dbResult)) {
                 return new GreenplumExternalTable(schema, dbResult);
             }
             return new GreenplumTable(schema, dbResult);
@@ -67,7 +67,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return super.createRelationOfClass(schema, kind, dbResult);
     }
 
-    private boolean isExternal(JDBCResultSet dbResult) {
+    private boolean isRelationExternal(JDBCResultSet dbResult) {
         return JDBCUtils.safeGetBoolean(dbResult, "is_ext_table");
     }
 

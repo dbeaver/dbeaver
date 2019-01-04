@@ -32,7 +32,9 @@ import java.sql.SQLException;
 public class GreenplumSchemaCache extends PostgreDatabase.SchemaCache {
 
     @Override
-    protected GreenplumSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+    protected GreenplumSchema fetchObject(@NotNull JDBCSession session,
+                                          @NotNull PostgreDatabase owner,
+                                          @NotNull JDBCResultSet resultSet) throws SQLException {
         String name = JDBCUtils.safeGetString(resultSet, "nspname");
         if (name == null) {
             return null;

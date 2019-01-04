@@ -37,7 +37,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GreenplumSchema extends PostgreSchema {
     private GreenplumTableCache greenplumTableCache = new GreenplumTableCache();
@@ -48,12 +47,14 @@ public class GreenplumSchema extends PostgreSchema {
 
     @Override
     public Collection<? extends JDBCTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        return Stream.concat(
-                greenplumTableCache.getTypedObjects(monitor, this, GreenplumExternalTable.class).stream(),
-                greenplumTableCache.getTypedObjects(monitor, this, GreenplumTable.class)
-                        .stream()
-                        .filter(table -> !table.isPartition())
-        ).collect(Collectors.toCollection(ArrayList::new));
+        return greenplumTableCache.getTypedObjects(monitor, this, GreenplumTable.class)
+                .stream()
+                .filter(table -> !table.isPartition())
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public Collection<? extends JDBCTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
+        return new ArrayList<>(greenplumTableCache.getTypedObjects(monitor, this, GreenplumExternalTable.class));
     }
 
     public class GreenplumTableCache extends TableCache {
