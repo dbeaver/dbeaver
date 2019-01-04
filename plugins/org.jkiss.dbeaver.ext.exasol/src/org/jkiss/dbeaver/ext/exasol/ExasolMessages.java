@@ -75,5 +75,8 @@ public class ExasolMessages extends NLS {
 	public static String manager_priority_drop;
 	public static String manager_priority_alter;
 	public static String manager_priority_rename;
+	public static String manager_schema_owner;
+	public static String manager_schema_raw_limit;
+	public static String manager_schema_create;
 
 }

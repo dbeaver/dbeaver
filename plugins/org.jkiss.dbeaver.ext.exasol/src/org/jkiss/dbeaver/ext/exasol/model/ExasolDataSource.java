@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -77,10 +78,11 @@ public class ExasolDataSource extends JDBCDataSource
 
 	private static final String GET_CURRENT_SCHEMA = "SELECT CURRENT_SCHEMA";
 	private static final String SET_CURRENT_SCHEMA = "OPEN SCHEMA \"%s\"";
+	private static final String GET_CURRENT_SESSION = "SELECT CURRENT_SESSION";
 
 	private DBSObjectCache<ExasolDataSource, ExasolSchema> schemaCache;
 	private DBSObjectCache<ExasolDataSource, ExasolVirtualSchema> virtualSchemaCache;
-
+	
 	private ExasolCurrentUserPrivileges exasolCurrentUserPrivileges;
 	private DBSObjectCache<ExasolDataSource, ExasolUser> userCache = null;
 	private DBSObjectCache<ExasolDataSource, ExasolRole> roleCache = null;
@@ -323,8 +325,6 @@ public class ExasolDataSource extends JDBCDataSource
     	{
     		addMetaProps.clear();
     		addMetaProps.put("snapshottransactions", "1");
-    		addMetaProps.put("debug", "1");
-    		addMetaProps.put("logdir", "C:/temp");
     	} else {
     		addMetaProps.clear();
     	}
@@ -380,6 +380,16 @@ public class ExasolDataSource extends JDBCDataSource
 		}
 
 		return defSchema.trim();
+	}
+	
+	public BigDecimal getCurrentSessionId(JDBCSession session)
+		throws DBException
+	{
+		try {
+			return (BigDecimal) JDBCUtils.queryObject(session, GET_CURRENT_SESSION);
+		} catch (SQLException e) {
+			throw new DBCException(e, this);
+		}
 	}
 
 	@Override
