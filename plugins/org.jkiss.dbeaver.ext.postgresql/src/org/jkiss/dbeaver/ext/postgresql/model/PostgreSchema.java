@@ -217,6 +217,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return null;
     }
 
+    public TableCache getTableCache() {
+        return this.tableCache;
+    }
+
     @Association
     public Collection<? extends JDBCTable> getTables(DBRProgressMonitor monitor)
         throws DBException {
