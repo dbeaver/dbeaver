@@ -74,6 +74,7 @@ public class GreenplumSchema extends PostgreSchema {
                     "coalesce(x.rejectlimittype, '') AS rejectlimittype,\n" +
                     "array_to_string(x.execlocation, ',') AS execlocation,\n" +
                     "pg_encoding_to_char(x.encoding) AS encoding,\n" +
+                    "x.writable,\n" +
                     "case when c.relstorage = 'x' then true else false end as \"is_ext_table\"\n" +
                     "FROM pg_catalog.pg_class c\n" +
                     "inner join pg_catalog.pg_namespace ns\n" +
