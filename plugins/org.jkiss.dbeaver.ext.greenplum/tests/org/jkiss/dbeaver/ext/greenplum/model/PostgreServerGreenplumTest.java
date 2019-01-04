@@ -78,4 +78,17 @@ public class PostgreServerGreenplumTest {
         server.readTableDDL(monitor, table);
         Mockito.verify(table).generateDDL(monitor);
     }
+
+    @Test
+    public void configureDialect_shouldContainGreenplumSpecificKeywords() {
+        PostgreDialect dialect = new PostgreDialect();
+
+        server.configureDialect(dialect);
+
+        Assert.assertTrue(!dialect.getMatchedKeywords("DISTRIBUTED").isEmpty());
+        Assert.assertTrue(!dialect.getMatchedKeywords("SEGMENT").isEmpty());
+        Assert.assertTrue(!dialect.getMatchedKeywords("REJECT").isEmpty());
+        Assert.assertTrue(!dialect.getMatchedKeywords("FORMAT").isEmpty());
+        Assert.assertTrue(!dialect.getMatchedKeywords("MASTER").isEmpty());
+    }
 }
