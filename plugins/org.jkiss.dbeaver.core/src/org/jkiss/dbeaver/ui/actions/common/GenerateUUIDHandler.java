@@ -70,6 +70,7 @@ public class GenerateUUIDHandler extends NavigatorHandlerObjectBase {
                     }
                 }
                 rsc.redrawData(false, false);
+                rsc.updateEditControls();
             }
         } else {
             ITextViewer textViewer = activePart.getAdapter(ITextViewer.class);

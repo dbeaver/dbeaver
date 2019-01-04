@@ -1444,13 +1444,32 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBSObject[] getSelectedObjects(@NotNull DBSObject object)
-    {
+    public static DBSObject[] getSelectedObjects(DBRProgressMonitor monitor, @NotNull DBSObject object) {
         DBSObjectSelector objectSelector = getAdapter(DBSObjectSelector.class, object);
         if (objectSelector != null) {
+            if (objectSelector instanceof DBSObjectContainer) {
+                // Read children - just in case
+                try {
+                    ((DBSObjectContainer) objectSelector).getChildren(monitor);
+                } catch (DBException e) {
+                    log.debug("Error reading children objects of object selector", e);
+                }
+            }
             DBSObject selectedObject1 = objectSelector.getDefaultObject();
             if (selectedObject1 != null) {
-                DBSObject nestedObject = getSelectedObject(selectedObject1, true);
+                DBSObject nestedObject = null;
+                DBSObjectSelector objectSelector2 = getAdapter(DBSObjectSelector.class, selectedObject1);
+                if (objectSelector2 != null) {
+                    if (objectSelector2 instanceof DBSObjectContainer) {
+                        // Read children - just in case
+                        try {
+                            ((DBSObjectContainer) objectSelector2).getChildren(monitor);
+                        } catch (DBException e) {
+                            log.debug("Error reading children objects of nested object selector", e);
+                        }
+                    }
+                    nestedObject = objectSelector2.getDefaultObject();
+                }
                 if (nestedObject != null) {
                     return new DBSObject[] { selectedObject1, nestedObject };
                 } else {
