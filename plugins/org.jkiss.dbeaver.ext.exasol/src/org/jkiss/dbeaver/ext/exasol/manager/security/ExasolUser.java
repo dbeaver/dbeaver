@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.exasol.ExasolUserType;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -55,6 +57,7 @@ public class ExasolUser extends ExasolGrantee
 	private String passwordExpiryPolicy;
 	private BigDecimal failedLoginAttempts;
 	private Boolean locked;
+	private ExasolUserType type;
 	
 	
 	public ExasolUser(ExasolDataSource dataSource, ResultSet resultSet)
@@ -77,6 +80,16 @@ public class ExasolUser extends ExasolGrantee
 			this.passwordExpiryPolicy = JDBCUtils.safeGetString(resultSet, "PASSWORD_EXPIRY_POLICY");
 			this.failedLoginAttempts = JDBCUtils.safeGetBigDecimal(resultSet, "FAILED_LOGIN_ATTEMPTS");
 			
+			if (CommonUtils.isEmpty(kerberosPrincipal) & CommonUtils.isEmpty(dn))
+			{
+				this.type = ExasolUserType.LOCAL;
+			} else if (CommonUtils.isEmpty(kerberosPrincipal))
+			{
+				this.type = ExasolUserType.LDAP;
+			} else {
+				this.type = ExasolUserType.KERBEROS;
+			}
+			
 			if (this.passwordState != null && this.passwordState.equals("EXPIRED"))
 			{
 				this.locked = true;
@@ -90,7 +103,11 @@ public class ExasolUser extends ExasolGrantee
 			this.dn = "";
 			this.password = "";
 			this.created = null;
+			this.kerberosPrincipal = "";
+			this.type = ExasolUserType.LOCAL;
+					
 		}
+		
 	}
 	
 	@Property(viewable = true, updatable=true, editable=true, order = 35)
@@ -100,6 +117,9 @@ public class ExasolUser extends ExasolGrantee
 
 	public void setKerberosPrincipal(String kerberosPrincipal) {
 		this.kerberosPrincipal = kerberosPrincipal;
+		this.password = null;
+		this.dn = null;
+		this.type = ExasolUserType.KERBEROS;
 	}
 
 	@Property(viewable = true, order = 50)
@@ -159,7 +179,7 @@ public class ExasolUser extends ExasolGrantee
 	}
 	
 
-	public ExasolUser(ExasolDataSource datasource, String name, String description, String dn, String password)
+	public ExasolUser(ExasolDataSource datasource, String name, String description, String dn, String password, String kerberosPrincipal, ExasolUserType type)
 	{
 		super(datasource, false);
 		this.dataSource = datasource;
@@ -167,6 +187,8 @@ public class ExasolUser extends ExasolGrantee
 		this.description = description;
 		this.dn = dn;
 		this.password = password;
+		this.kerberosPrincipal = kerberosPrincipal;
+		this.type =  type;
 	}
 
 	@Override
@@ -234,13 +256,17 @@ public class ExasolUser extends ExasolGrantee
 	public void setPassword(String newPassword)
 	{
 		this.password = newPassword;
-		this.dn = "";
+		this.dn = null;
+		this.kerberosPrincipal = null;
+		this.type = ExasolUserType.LOCAL;
 	}
 	
 	public void setDN(String dn)
 	{
 		this.dn = dn;
-		this.password = "";
+		this.password = null;
+		this.kerberosPrincipal = null;
+		this.type = ExasolUserType.LDAP;
 	}
 	
 	@Override
@@ -248,6 +274,11 @@ public class ExasolUser extends ExasolGrantee
 			throws DBException
 	{
 		return this;
+	}
+	
+	public ExasolUserType getType()
+	{
+		return type;
 	}
 	
 	@Override
