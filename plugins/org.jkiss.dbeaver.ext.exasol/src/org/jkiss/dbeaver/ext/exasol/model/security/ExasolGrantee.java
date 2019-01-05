@@ -15,19 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.manager.security;
+package org.jkiss.dbeaver.ext.exasol.model.security;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -39,7 +40,8 @@ public abstract class ExasolGrantee
 	private ExasolDataSource dataSource;
 	private ExasolPriorityGroup priority;
 	private boolean persisted;
-	
+
+	private static final Log log = Log.getLog(ExasolGrantee.class);
 	
 
 
@@ -79,7 +81,7 @@ public abstract class ExasolGrantee
 	}
 
 	@Override
-	public DBPDataSource getDataSource()
+	public ExasolDataSource getDataSource()
 	{
 		return this.dataSource;
 	}
@@ -201,10 +203,37 @@ public abstract class ExasolGrantee
 		
 	}
 
-    @Property(viewable = true, order = 20)
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = PriorityListProvider.class)
     public ExasolPriorityGroup getPriority()
     {
     	return priority;
+    }
+    
+    public void setPriority(ExasolPriorityGroup priority) {
+		this.priority = priority;
+	}
+    
+    
+    
+    public static class PriorityListProvider implements IPropertyValueListProvider<ExasolGrantee> {
+
+		@Override
+		public boolean allowCustomValue() {
+			return false;
+		}
+
+		@Override
+		public Object[] getPossibleValues(ExasolGrantee object) {
+			ExasolDataSource dataSource = object.getDataSource();
+			try {
+				Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
+				return priorityGroups.toArray(new Object[priorityGroups.size()]);
+			} catch (DBException e) {
+				log.error(e);
+				return new Object[0];
+			}
+		}
+    	
     }
 	
 	

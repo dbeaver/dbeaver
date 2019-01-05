@@ -15,12 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.manager.security;
+package org.jkiss.dbeaver.ext.exasol.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -72,12 +70,6 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     }
     
     @Property(viewable = true, order = 20)
-    public ExasolPriorityGroup getPriority()
-    {
-    	return super.getPriority();
-    }
-
-    @Property(viewable = true, order = 20)
     public Timestamp getCreated()
     {
     	return this.created;
@@ -88,10 +80,6 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
         return dataSource.getContainer();
     }
 
-    @Override
-    public DBPDataSource getDataSource() {
-        return dataSource;
-    }
     
     public void setDescription(String description) {
     	this.description = description;
@@ -108,6 +96,7 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
 	{
 		this.name = newName;
 	}
+	
 
 }
 

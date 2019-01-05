@@ -27,10 +27,22 @@ import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
-import org.jkiss.dbeaver.ext.exasol.manager.security.*;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionManager;
 import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolDataTypeCache;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolBaseObjectGrant;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolConnectionGrant;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolGrantee;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolRoleGrant;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolSchemaGrant;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolScriptGrant;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolSystemGrant;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolTableGrant;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolTableObjectType;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolViewGrant;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -97,6 +109,7 @@ public class ExasolDataSource extends JDBCDataSource
 	private DBSObjectCache<ExasolDataSource, ExasolSystemGrant> systemGrantCache = null;
 	private DBSObjectCache<ExasolDataSource, ExasolConnectionGrant> connectionGrantCache = null;
 	private DBSObjectCache<ExasolDataSource, ExasolBaseObjectGrant> baseTableGrantCache = null;
+	private DBSObjectCache<ExasolDataSource, ExasolSecurityPolicy> securityPolicyCache = null;
 	
 	private Properties addMetaProps = new Properties();
 	
@@ -191,6 +204,10 @@ public class ExasolDataSource extends JDBCDataSource
 			this.priorityGroupCache = new JDBCObjectSimpleCache<>(
 				ExasolPriorityGroup.class, "SELECT * FROM SYS.EXA_PRIORITY_GROUPS ORDER BY PRIORITY_GROUP_NAME"
 				);
+			
+			this.securityPolicyCache = new JDBCObjectSimpleCache<>(ExasolSecurityPolicy.class,
+					"SELECT SYSTEM_VALUE FROM sys.EXA_PARAMETERS WHERE PARAMETER_NAME = 'PASSWORD_SECURITY_POLICY'"
+					);
 		} else {
 			this.priorityGroupCache = new DBSObjectCache<ExasolDataSource, ExasolPriorityGroup>() {
 				
@@ -670,6 +687,17 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return priorityGroupCache.getObject(monitor, this, name);
 	}
+	
+	@Association
+	public Collection<ExasolSecurityPolicy> getSecurityPolicies(DBRProgressMonitor monitor) throws DBException
+	{
+		return securityPolicyCache.getAllObjects(monitor, this);
+	}
+	
+	public ExasolSecurityPolicy getSecurityPolicy(DBRProgressMonitor monitor, String name) throws DBException
+	{
+		return securityPolicyCache.getCachedObject(name);
+	}
 
     @Association
 	public Collection<ExasolConnection> getConnections(
@@ -687,6 +715,11 @@ public class ExasolDataSource extends JDBCDataSource
 	public DBSObjectCache<ExasolDataSource, ExasolPriorityGroup> getPriorityGroupCache()
 	{
 		return priorityGroupCache;
+	}
+	
+	public DBSObjectCache<ExasolDataSource, ExasolSecurityPolicy> getSecurityPolicyCache()
+	{
+		return securityPolicyCache;
 	}
 	
 	

@@ -15,25 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.manager.security;
+package org.jkiss.dbeaver.ext.exasol.model.security;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-public class ExasolViewGrant extends ExasolBaseObjectGrant {
-
-	public ExasolViewGrant(ExasolBaseObjectGrant grant) throws DBException
+public enum ExasolTableObjectType {
+	VIEW("VIEW"),
+	TABLE("TABLE"),
+	SCHEMA("TABLE"),
+	SCRIPT("SCRIPT");
+	
+	private String value;
+	
+	ExasolTableObjectType(String value)
 	{
-		super(grant);
+		this.value = value;
 	}
 	
-	@Property(viewable = true, order = 10)
-	public ExasolView getView(DBRProgressMonitor monitor) throws DBException
+	public String getDescription()
 	{
-		return super.getSchema().getView(monitor, super.getObjectName());
+		return this.value;
 	}
-		
-
 }

@@ -5,8 +5,9 @@ import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
+import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserDialog;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -140,6 +141,11 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 			actionList.add(Comment(obj));
 		}
 		
+		if (command.getProperties().containsKey("priority"))
+		{
+			String script = String.format("GRANT PRIORITY GROUP %s to %s", DBUtils.getQuotedIdentifier(obj.getPriority()), DBUtils.getQuotedIdentifier(obj));
+			actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
+		}
 		
 		if (command.getProperties().containsKey("dn")) 
 		{
