@@ -89,6 +89,8 @@ public class ExasolMessages extends NLS {
 	public static String manager_assign_priority_group;
 	public static String exasol_security_policy_name;
 	public static String exasol_security_policy_description;
+	public static String exasol_partition_name;
+	public static String exasol_partition_description;
 	
 
 }
