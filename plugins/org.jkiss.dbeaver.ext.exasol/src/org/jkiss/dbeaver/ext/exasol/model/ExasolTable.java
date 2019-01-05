@@ -22,8 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -62,6 +61,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private Timestamp createTime;
     private Boolean hasRead;
     private long tablecount;
+    private String tablePrefix;
     private static String readAdditionalInfo =         "SELECT " + 
     		"	* " + 
     		"FROM " + 
@@ -72,6 +72,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		"		table_owner, " + 
     		"		table_has_distribution_key, " + 
     		"		table_comment, " + 
+    		"		table_row_count, " + 
     		"		delete_percentage, " + 
     		"		o.created, " + 
     		"		o.last_commit, " + 
@@ -79,10 +80,10 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		"		s.mem_object_size, " + 
     		"		s.object_type " + 
     		"	FROM " + 
-    		"		EXA_ALL_OBJECTS o " + 
-    		"	INNER JOIN EXA_ALL_TABLES T ON " + 
+    		"		%s_OBJECTS o " + 
+    		"	INNER JOIN %s_TABLES T ON " + 
     		"		o.object_id = t.table_object_id " + 
-    		"	INNER JOIN EXA_ALL_OBJECT_SIZES s ON " + 
+    		"	INNER JOIN %s_OBJECT_SIZES s ON " + 
     		"		o.object_id = s.object_id " + 
     		"	WHERE " + 
     		"		o.object_id = %s AND o.object_id = %s AND t.table_object_id = %s " + 
@@ -92,12 +93,13 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		"		object_name AS table_name, " + 
     		"		'SYS' AS table_owner, " + 
     		"		FALSE AS table_has_distribution_key, " + 
-    		"		object_comment AS table_comment, " + 
-    		"		0 AS delete_percentage, " + 
+    		"		object_comment AS table_comment, " +
+    		"       -1 AS table_row_count," + 
+    		"		-1 AS delete_percentage, " + 
     		"		CAST( NULL AS TIMESTAMP) AS created, " + 
     		"		CAST( NULL AS TIMESTAMP) AS last_commit, " + 
-    		"		0 AS raw_object_size, " + 
-    		"		0 AS mem_object_size, " + 
+    		"		-1 AS raw_object_size, " + 
+    		"		-1 AS mem_object_size, " + 
     		"		object_type " + 
     		"	FROM " + 
     		"		SYS.EXA_SYSCAT " + 
@@ -110,19 +112,18 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		"	o.table_name";
     
     
-    private static String count = "select count(*) as COUNTER from %s";
-    
-    
-    
     public ExasolTable(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
         super(monitor, schema, dbResult);
         hasRead=false;
+        tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
+        
 
     }
 
     public ExasolTable(ExasolSchema schema, String name) {
         super(schema, name, false);
         hasRead=false;
+        tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
     }
 
     private void read(DBRProgressMonitor monitor) throws DBCException
@@ -131,6 +132,9 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	try (JDBCStatement stmt = session.createStatement())
     	{
     		String sql = String.format(readAdditionalInfo,
+    				tablePrefix,
+    				tablePrefix,
+    				tablePrefix,
     				this.getObjectId(),
     				this.getObjectId(),
     				this.getObjectId(),
@@ -147,26 +151,12 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	        this.sizeCompressed = JDBCUtils.safeGetLong(dbResult, "MEM_OBJECT_SIZE");
     	        this.deletePercentage = JDBCUtils.safeGetFloat(dbResult, "DELETE_PERCENTAGE");
     	        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED"); 
+    			this.tablecount = JDBCUtils.safeGetLong(dbResult, "TABLE_ROW_COUNT");
     		}
     		
     	} catch (SQLException e) {
     		throw new DBCException(e,getDataSource());
 		}
-    	
-    	try (JDBCStatement stmt = session.createStatement())
-    	{
-    		String sql = String.format(count, this.getFullyQualifiedName(DBPEvaluationContext.DML));
-    		
-    		try (JDBCResultSet dbResult = stmt.executeQuery(sql))
-    		{
-    			dbResult.next();
-    			this.tablecount = JDBCUtils.safeGetLong(dbResult, "COUNTER");
-    		}
-    		
-		} catch (SQLException e) {
-			throw new DBCException(e,getDataSource());
-		}
-    	
         this.hasRead = true;
     	
     }
@@ -207,14 +197,14 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     public String getRawsize(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
-        return ExasolUtils.humanReadableByteCount(sizeRaw, true);
+        return ExasolUtils.humanReadableByteCount(sizeRaw, false);
     }
 
     @Property(viewable = true, expensive = false, editable = false, order = 200, category = ExasolConstants.CAT_STATS)
     public String getCompressedsize(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
-        return ExasolUtils.humanReadableByteCount(sizeCompressed, true);
+        return ExasolUtils.humanReadableByteCount(sizeCompressed, false);
     }
 
     @Property(viewable = true, expensive = false, editable = false, order = 250, category = ExasolConstants.CAT_STATS)

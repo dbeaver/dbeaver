@@ -15,23 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.manager.security;
+package org.jkiss.dbeaver.ext.exasol.model.security;
 
-public enum ExasolTableObjectType {
-	VIEW("VIEW"),
-	TABLE("TABLE"),
-	SCHEMA("TABLE"),
-	SCRIPT("SCRIPT");
-	
-	private String value;
-	
-	ExasolTableObjectType(String value)
+import org.jkiss.dbeaver.model.meta.Property;
+
+public class ExasolSchemaGrant extends ExasolBaseObjectGrant {
+
+	public ExasolSchemaGrant(ExasolBaseObjectGrant grant)
 	{
-		this.value = value;
+		super(grant);
 	}
 	
+	
+	@Override
 	public String getDescription()
 	{
-		return this.value;
+		return super.getSchema().getDescription();
 	}
+	
+	@Property(viewable = true, order = 100)
+	public Boolean getExecuteAuth()
+	{
+		return super.getExecuteAuth();
+	}
+
+
 }

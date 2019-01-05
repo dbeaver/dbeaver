@@ -15,11 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.manager.security;
+package org.jkiss.dbeaver.ext.exasol.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -35,7 +34,6 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     private String name;
     private String description;
     private ExasolDataSource dataSource;
-    private String priority;
     private Timestamp created;
 
     public ExasolRole(ExasolDataSource dataSource, ResultSet resultSet) {
@@ -43,7 +41,6 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     	if (resultSet != null) {
 	        this.name = JDBCUtils.safeGetString(resultSet, "ROLE_NAME");
 	        this.description = JDBCUtils.safeGetStringTrimmed(resultSet, "ROLE_COMMENT");
-	        this.priority = JDBCUtils.safeGetString(resultSet, "ROLE_PRIORITY");
 	        this.dataSource = dataSource;
 	        this.created = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
     	} else {
@@ -73,12 +70,6 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
     }
     
     @Property(viewable = true, order = 20)
-    public String getPriority()
-    {
-    	return this.priority;
-    }
-
-    @Property(viewable = true, order = 20)
     public Timestamp getCreated()
     {
     	return this.created;
@@ -89,10 +80,6 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
         return dataSource.getContainer();
     }
 
-    @Override
-    public DBPDataSource getDataSource() {
-        return dataSource;
-    }
     
     public void setDescription(String description) {
     	this.description = description;
@@ -109,6 +96,7 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
 	{
 		this.name = newName;
 	}
+	
 
 }
 

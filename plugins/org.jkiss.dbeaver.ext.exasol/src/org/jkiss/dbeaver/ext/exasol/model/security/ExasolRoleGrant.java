@@ -15,52 +15,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.manager.security;
+package org.jkiss.dbeaver.ext.exasol.model.security;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolConnection;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 
-public class ExasolConnectionGrant 
-		implements DBAPrivilege {
+public class ExasolRoleGrant implements DBAPrivilege  {
 
 	private Boolean adminOption;
-	private String connection;
+	private String role;
 	private ExasolDataSource dataSource;
 	private String grantee;
-	private Boolean isPersisted;
-	public ExasolConnectionGrant(ExasolDataSource dataSource,
-			ResultSet dbResult) 
+	
+	public ExasolRoleGrant(ExasolDataSource dataSource, ResultSet resultSet)
 	{
-		this.adminOption = JDBCUtils.safeGetBoolean(dbResult, "ADMIN_OPTION");
-		this.connection = JDBCUtils.safeGetString(dbResult, "CONNECTION_NAME");
-		this.grantee = JDBCUtils.safeGetString(dbResult, "GRANTEE");
+		this.role = JDBCUtils.safeGetString(resultSet, "ROLE_NAME");
+		this.grantee = JDBCUtils.safeGetString(resultSet, "GRANTEE");
 		this.dataSource = dataSource;
-		this.isPersisted = true;
+		this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION");
 	}
 	
 	@Property(viewable = true, order = 10)
-	public ExasolConnection getConnection() throws DBException
+	public ExasolRole getRole(DBRProgressMonitor monitor) throws DBException
 	{
-		return dataSource.getConnection(new VoidProgressMonitor(), connection);
+		return dataSource.getRole(monitor, role);
 	}
 	
-	@Property(viewable = true, order = 90)
+	@Property(viewable = true, order = 20)
 	public Boolean getAdminOption()
 	{
 		return this.adminOption;
 	}
 
 	@Override
-	@Property(hidden = true, multiline = true)
 	public String getDescription()
 	{
 		return null;
@@ -87,7 +82,8 @@ public class ExasolConnectionGrant
 	@Override
 	public boolean isPersisted()
 	{
-		return isPersisted;
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }
