@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -46,11 +47,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * @author Karl
- */
 public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject, DBPNamedObject2, DBPScriptObject {
 
     private Boolean hasDistKey;
@@ -62,6 +62,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private Boolean hasRead;
     private long tablecount;
     private String tablePrefix;
+    private Collection<ExasolTablePartitionColumn> tablePartitionColumns;
     private static String readAdditionalInfo =         "SELECT " + 
     		"	* " + 
     		"FROM " + 
@@ -116,14 +117,14 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
         super(monitor, schema, dbResult);
         hasRead=false;
         tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
-        
-
+        tablePartitionColumns = new ArrayList<ExasolTablePartitionColumn>();
     }
 
     public ExasolTable(ExasolSchema schema, String name) {
         super(schema, name, false);
         hasRead=false;
         tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
+        tablePartitionColumns = new ArrayList<ExasolTablePartitionColumn>();
     }
 
     private void read(DBRProgressMonitor monitor) throws DBCException
@@ -172,21 +173,21 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     // -----------------
     // Properties
     // -----------------
-    @Property(viewable = true, expensive = false,  editable = false, order = 90, category = ExasolConstants.CAT_BASEOBJECT)
+    @Property(viewable = true, expensive = false,  editable = false, order = 90)
     public Boolean getHasDistKey(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return hasDistKey;
     }
 
-    @Property(viewable = true, expensive = false, editable = false, order = 100, category = ExasolConstants.CAT_BASEOBJECT)
+    @Property(viewable = true, expensive = false, editable = false, order = 100)
     public Timestamp getLastCommit(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return lastCommit;
     }
 
-    @Property(viewable = true, expensive = false, editable = false, order = 100, category = ExasolConstants.CAT_DATETIME)
+    @Property(viewable = true, expensive = false, editable = false, order = 100)
     public Timestamp getCreateTime(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
@@ -304,6 +305,64 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	}
     	return distKeyCols;
     }
+    public ExasolTablePartitionColumn getPartition(String name) throws DBException {
+    	getPartitions();
+    	
+		for( ExasolTablePartitionColumn col: tablePartitionColumns)
+		{
+			if (col.getName() == name)
+			{
+				return col;
+			}
+		}
+		return null;
+	}
+    
+    public Collection<ExasolTablePartitionColumn> getPartitions() throws DBException {
+
+    	if (tablePartitionColumns.isEmpty())
+    	{
+	    	for( ExasolTableColumn col: getAttributes(new VoidProgressMonitor()))
+			{
+				if (col.getPartitionKeyOrdinalPosition() != null)
+				{
+					tablePartitionColumns.add(new ExasolTablePartitionColumn(this, col, col.getPartitionKeyOrdinalPosition().intValue()));
+				}
+			}
+			sortPartitionColumns();
+    	}
+    	return tablePartitionColumns;
+    }
+    
+    private void sortPartitionColumns()
+    {
+    	tablePartitionColumns = tablePartitionColumns.stream()
+    			.sorted(Comparator.comparing(ExasolTablePartitionColumn::getOrdinalPosition))
+    			.collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public void setPartitions(Collection<ExasolTablePartitionColumn> tablePartitionColumns) {
+		this.tablePartitionColumns = tablePartitionColumns;
+		sortPartitionColumns();
+	}
+    
+    
+    public void addPartition(ExasolTablePartitionColumn tablePartitionColumn) {
+    	 Collection<ExasolTablePartitionColumn> moveElements = tablePartitionColumns.stream()
+    			 .filter(o -> o.getOrdinalPosition() >= tablePartitionColumn.getOrdinalPosition())
+    			 .collect(Collectors.toCollection(ArrayList::new));
+    	 
+    	 if (moveElements.size()>0)
+    	 {
+    		 for (ExasolTablePartitionColumn c: moveElements)
+    		 {
+    			 c.setOrdinalPosition(c.getOrdinalPosition()+1);
+    		 }
+			sortPartitionColumns();
+    	 }
+    	 tablePartitionColumns.add(tablePartitionColumn);
+    	 
+	}
     
     
 }
