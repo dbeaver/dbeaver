@@ -5,8 +5,9 @@ import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
+import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserDialog;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -54,8 +55,8 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
                 {
                     return null;
                 }
-                
-                return new ExasolUser(parent, dialog.getName(), dialog.getComment(), dialog.getLDAPDN(), dialog.getPassword());
+                ExasolUser user = new ExasolUser(parent, dialog.getName(), dialog.getComment(), dialog.getLDAPDN(), dialog.getPassword(), dialog.getKerberosPrincipal(), dialog.getUserType());
+                return user;
 			}
 		}.execute();
 	}
@@ -67,14 +68,18 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 		ExasolUser obj = command.getObject();
 		
 		StringBuilder script = new StringBuilder("CREATE USER " + DBUtils.getQuotedIdentifier(obj) + " IDENTIFIED ");
-		
-		if (CommonUtils.isEmpty(obj.getDn()))
-		{
+
+		switch (obj.getType()) {
+		case LOCAL:
 			script.append(" BY \"" + obj.getPassword() + "\"");
-		} else {
+			break;
+		case LDAP:
 			script.append(" AT LDAP AS '" + obj.getDn() + "'" );
+			break;
+		default:
+			script.append(" BY KERBEROS PRINCIPAL '" + obj.getKerberosPrincipal() + "'" );
+			break;
 		}
-		
 		actions.add(new SQLDatabasePersistAction("Create User", script.toString()));
 		
 		if (! CommonUtils.isEmpty(obj.getDescription())) {
@@ -136,11 +141,24 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 			actionList.add(Comment(obj));
 		}
 		
+		if (command.getProperties().containsKey("priority"))
+		{
+			String script = String.format("GRANT PRIORITY GROUP %s to %s", DBUtils.getQuotedIdentifier(obj.getPriority()), DBUtils.getQuotedIdentifier(obj));
+			actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_assign_priority_group, script));
+		}
 		
 		if (command.getProperties().containsKey("dn")) 
 		{
 			String script =  String.format("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " IDENTIFIED AT LDAP AS '%s'", obj.getDn());
 			actionList.add(new SQLDatabasePersistAction("alter user", script));
+			return;
+		}
+		
+		if (command.getProperties().containsKey("kerberosPrincipal"))
+		{
+			String script =  String.format("ALTER USER " + DBUtils.getQuotedIdentifier(obj) + " BY KERBEROS PRINCIPAL '%s'", obj.getKerberosPrincipal());
+			actionList.add(new SQLDatabasePersistAction("alter user", script));
+			return;
 		}
 		
 		if (command.getProperties().containsKey("password")) {

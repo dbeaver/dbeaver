@@ -53,6 +53,13 @@ public class ExasolSQLDialect extends JDBCSQLDialect implements SQLRuleProvider 
             for (String kw : metaData.getSQLKeywords().split(",")) {
                 this.addSQLKeyword(kw);
             }
+            
+            this.addSQLKeyword("PRIORITY");
+            this.addSQLKeyword("IDENTIFIED");
+            this.addSQLKeyword("JDBC");
+            this.addSQLKeyword("EXA");
+            this.addSQLKeyword("KERBEROS");
+            this.addSQLKeyword("LDAP");
         } catch (SQLException e) {
             LOG.warn("Could not retrieve reserved keyword list from Exasol dictionary");
         }
