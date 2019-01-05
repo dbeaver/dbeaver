@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.ext.exasol.tools;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableObjectType;
 import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolTableObjectType;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;

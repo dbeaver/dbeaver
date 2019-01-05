@@ -86,6 +86,9 @@ public class ExasolMessages extends NLS {
 	public static String dialog_create_user_local_password;
 	public static String dialog_create_user_kerberos_principal;
 	public static String dialog_create_user_ldap_dn;
+	public static String manager_assign_priority_group;
+	public static String exasol_security_policy_name;
+	public static String exasol_security_policy_description;
 	
 
 }

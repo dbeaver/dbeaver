@@ -15,14 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.manager.security;
+package org.jkiss.dbeaver.ext.exasol.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolUserType;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
-import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -42,7 +40,6 @@ public class ExasolUser extends ExasolGrantee
 		implements DBAUser,  DBPSaveableObject, DBPNamedObject2, DBPRefreshableObject {
 
 
-	private ExasolDataSource dataSource;
 	private String userName;
 	private String description;
 	private String dn;
@@ -63,7 +60,6 @@ public class ExasolUser extends ExasolGrantee
 	public ExasolUser(ExasolDataSource dataSource, ResultSet resultSet)
 	{
 		super(dataSource, resultSet);
-		this.dataSource = dataSource;
 		if (resultSet != null) {
 			this.userName = JDBCUtils.safeGetString(resultSet, "USER_NAME");
 			this.description = JDBCUtils.safeGetString(resultSet,
@@ -182,7 +178,6 @@ public class ExasolUser extends ExasolGrantee
 	public ExasolUser(ExasolDataSource datasource, String name, String description, String dn, String password, String kerberosPrincipal, ExasolUserType type)
 	{
 		super(datasource, false);
-		this.dataSource = datasource;
 		this.userName = name;
 		this.description = description;
 		this.dn = dn;
@@ -210,12 +205,6 @@ public class ExasolUser extends ExasolGrantee
 		return this.dn;
 	}
 
-	@Property(viewable = true, order = 40)
-	public ExasolPriorityGroup getPriority()
-	{
-		return super.getPriority();
-	}
-
 	@Property(viewable = true, order = 50)
 	public Timestamp getCreated()
 	{
@@ -225,18 +214,6 @@ public class ExasolUser extends ExasolGrantee
 	public void setDescription(String description)
 	{
 		this.description = description;
-	}
-
-	@Override
-	public DBSObject getParentObject()
-	{
-		return this.dataSource.getContainer();
-	}
-
-	@Override
-	public DBPDataSource getDataSource()
-	{
-		return this.dataSource;
 	}
 
 	@NotNull

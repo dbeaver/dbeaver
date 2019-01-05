@@ -219,7 +219,7 @@
                       description="%tree.users.node.description"
                       icon="#folder_user"
                       label="%tree.users.node.name"
-                      type="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser">
+                      type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser">
                    <items
                          icon="#user"
                          label="%tree.user.node.name"
@@ -284,9 +284,9 @@
                 </folder>
                 <folder
                       description="%tree.roles.node.description"
-                      icon="#folder_role"
+                      icon="#folder_user"
                       label="%tree.roles.node.name"
-                      type="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole"
+                      type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"
                       visibleIf="object.dataSource.authorizedForRolePrivs">
                    <items
                          icon="icons/role.gif"
@@ -362,6 +362,25 @@
                          property="priorityGroups">
                    </items>
                 </folder>
+                <folder
+                      description="%tree.security.node.description"
+                      icon="#folder_info"
+                      label="%tree.security.node.name"
+                      visibleIf="object.dataSource.hasPriorityGroups">
+                   <folder
+                         description="%tree.security_policy.node.description"
+                         icon="#folder_info"
+                         label="%tree.security_policy.node.name"
+                         type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy"
+                         visibleIf="object.dataSource.hasPriorityGroups">
+                      <items
+                            icon="#database"
+                            label="%tree.security_policy.node.name"
+                            path="securitypolicy"
+                            property="securityPolicies">
+                      </items>
+                   </folder>
+                </folder>
             </tree>
             <drivers managable="true">
                 <driver
@@ -414,11 +433,15 @@
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConnectionManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolForeignKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager" objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser"/>
-        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager" objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager" objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager" objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"/>
         <manager
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPriorityGroupManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSecurityPolicyManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy">
         </manager>
     </extension>
     
