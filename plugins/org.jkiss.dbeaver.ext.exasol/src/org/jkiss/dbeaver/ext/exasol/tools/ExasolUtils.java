@@ -128,6 +128,7 @@ public class ExasolUtils {
             
             //partitioning
             ddlOutput.append(getPartitionDdl(exasolTable, monitor));
+            ddlOutput.append(";\n");
 
             //primary key
             Collection<ExasolTableUniqueKey> pks = exasolTable.getConstraints(monitor);
@@ -172,7 +173,7 @@ public class ExasolUtils {
     	
     	return String.format
     			(
-    					"ALTER TABLE %s PARTITION BY %s\n;",
+    					"ALTER TABLE %s PARTITION BY %s;",
     					DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL),
     					colList
     			);
