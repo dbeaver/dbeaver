@@ -459,6 +459,10 @@
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSecurityPolicyManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy">
         </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTablePartitionColumnManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn">
+        </manager>
     </extension>
     
     <extension point="org.jkiss.dbeaver.databaseEditor">

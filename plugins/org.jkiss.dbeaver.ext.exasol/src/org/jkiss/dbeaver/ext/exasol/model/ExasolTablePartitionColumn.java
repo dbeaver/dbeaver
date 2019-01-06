@@ -17,7 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
@@ -27,6 +30,7 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 	private ExasolTable table;
 	private int ordinalPosition;
 	private ExasolTableColumn tableColumn;
+	private static final Log log = Log.getLog(ExasolTablePartitionColumn.class);
 	
 	
 	public ExasolTablePartitionColumn(ExasolTable table, ExasolTableColumn tableColumn, int ordinalPosition)
@@ -36,13 +40,22 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 		this.ordinalPosition = ordinalPosition;
 	}
 	
+	public ExasolTablePartitionColumn(ExasolTable table) {
+		this.table = table;
+	}
+	
+	public ExasolTable getTable() {
+		return table;
+	}
+	
 	@Override
+	@Property(viewable = false)
 	public DBSTableIndex getIndex() {
 		return null;
 	}
-
+	
 	@Override
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, updatable=true, editable=true, order = 2)
 	public int getOrdinalPosition() {
 		return ordinalPosition;
 	}
@@ -58,14 +71,20 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 	}
 
 	@Override
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, updatable = true, editable = true, order = 1, listProvider = TableColumListProvider.class)
 	public ExasolTableColumn getTableColumn() {
 		return tableColumn;
+	}
+	
+	public void setTableColumn(ExasolTableColumn tableColumn) {
+		this.tableColumn = tableColumn;
 	}
 
 	@Override
     @Property(viewable = false)
 	public String getDescription() {
+		if (tableColumn == null)
+			return null;
 		return tableColumn.getDescription();
 	}
 
@@ -80,9 +99,30 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 	}
 
 	@Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = false)
 	public String getName() {
+		if (tableColumn == null)
+			return null;
 		return tableColumn.getName();
+	}
+	
+	public static class TableColumListProvider implements IPropertyValueListProvider<ExasolTablePartitionColumn> {
+
+		@Override
+		public boolean allowCustomValue() {
+			return true;
+		}
+
+		@Override
+		public Object[] getPossibleValues(ExasolTablePartitionColumn object) {
+			try {
+				return ((ExasolTable) object.getTable()).getAvailableColumns().toArray();
+			} catch (DBException e) {
+				log.error("Failed to get list of available columns",e);
+				return new Object[0];
+			}
+		}
+		
 	}
 
 }
