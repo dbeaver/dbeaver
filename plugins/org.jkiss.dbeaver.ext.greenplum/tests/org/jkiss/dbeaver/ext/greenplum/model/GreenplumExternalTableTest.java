@@ -286,6 +286,28 @@ public class GreenplumExternalTableTest {
         Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
     }
 
+    @Test
+    public void generateDDL_whenTableIsAWebTable_returnsDDLStringForAWebTable()
+            throws DBException, SQLException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getString("urilocation")).thenReturn("http://example.com/test.txt");
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL WEB TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'http://example.com/test.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'CSV' ( DELIMITER ',' )\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
     private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {
         PostgreTableColumn mockPostgreTableColumn = Mockito.mock(PostgreTableColumn.class);
         Mockito.when(mockPostgreTableColumn.getName()).thenReturn(columnName);

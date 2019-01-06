@@ -119,8 +119,17 @@ public class GreenplumExternalTable extends PostgreTableRegular {
     }
 
     public String generateDDL(DBRProgressMonitor monitor) throws DBException {
-        StringBuilder ddlBuilder = new StringBuilder("CREATE EXTERNAL TABLE " + this.getDatabase().getName()
-                + "." + this.getSchema().getName() + "." + this.getName() + " (\n");
+        StringBuilder ddlBuilder = new StringBuilder();
+
+        ddlBuilder.append("CREATE EXTERNAL ")
+                .append(webUriLocationExists() ? "WEB " : "")
+                .append("TABLE ")
+                .append(this.getDatabase().getName())
+                .append(".")
+                .append(this.getSchema().getName())
+                .append(".")
+                .append(this.getName())
+                .append(" (\n");
 
         List<PostgreTableColumn> tableColumns = this.getAttributes(monitor)
                 .stream()
@@ -163,8 +172,12 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         return ddlBuilder.toString();
     }
 
+    private boolean webUriLocationExists() {
+        return this.uriLocations.stream().anyMatch(location -> location.startsWith("http"));
+    }
+
     private String generateFormatOptions(FormatType formatType, String formatOptions) {
-        if(formatType.equals(FormatType.b)){
+        if (formatType.equals(FormatType.b)) {
             String[] formatSpecTokens = formatOptions.split(" ");
             String formatterSpec = formatSpecTokens.length >= 2 ? formatSpecTokens[1] : "";
             return "FORMATTER=" + formatterSpec;
