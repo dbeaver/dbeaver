@@ -71,6 +71,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
     private final RejectLimitType rejectLimitType;
     private final int rejectLimit;
     private final boolean writable;
+    private final boolean temporaryTable;
 
     public GreenplumExternalTable(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
@@ -84,6 +85,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         this.rejectLimit = JDBCUtils.safeGetInt(dbResult, "rejectlimit");
         String rejectlimittype = JDBCUtils.safeGetString(dbResult, "rejectlimittype");
         this.writable = JDBCUtils.safeGetBoolean(dbResult, "writable");
+        this.temporaryTable = JDBCUtils.safeGetBoolean(dbResult, "is_temp_table");
         if (rejectlimittype != null && rejectlimittype.length() > 0) {
             this.rejectLimitType = RejectLimitType.valueOf(rejectlimittype);
         } else {
@@ -124,18 +126,19 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         return this.writable;
     }
 
+    public boolean isTemporaryTable() {
+        return temporaryTable;
+    }
+
     public String generateDDL(DBRProgressMonitor monitor) throws DBException {
         StringBuilder ddlBuilder = new StringBuilder();
-
         ddlBuilder.append("CREATE ")
                 .append(this.isWritable() ? "WRITABLE " : "")
                 .append("EXTERNAL ")
                 .append(webUriLocationExists() ? "WEB " : "")
+                .append(this.isTemporaryTable() ? "TEMPORARY " : "")
                 .append("TABLE ")
-                .append(this.getDatabase().getName())
-                .append(".")
-                .append(this.getSchema().getName())
-                .append(".")
+                .append(addDatabaseQualifier())
                 .append(this.getName())
                 .append(" (\n");
 
@@ -178,6 +181,15 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         }
 
         return ddlBuilder.toString();
+    }
+
+    private CharSequence addDatabaseQualifier() {
+        StringBuilder databaseQualifier = new StringBuilder().append(this.getDatabase().getName())
+                .append(".")
+                .append(this.getSchema().getName())
+                .append(".");
+
+        return this.isTemporaryTable() ? "" : databaseQualifier;
     }
 
     private boolean webUriLocationExists() {

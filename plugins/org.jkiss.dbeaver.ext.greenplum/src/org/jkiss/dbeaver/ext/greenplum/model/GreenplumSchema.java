@@ -75,7 +75,8 @@ public class GreenplumSchema extends PostgreSchema {
                     "array_to_string(x.execlocation, ',') AS execlocation,\n" +
                     "pg_encoding_to_char(x.encoding) AS encoding,\n" +
                     "x.writable,\n" +
-                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\"\n" +
+                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" +
+                    "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
                     "FROM pg_catalog.pg_class c\n" +
                     "inner join pg_catalog.pg_namespace ns\n" +
                     "\ton ns.oid = c.relnamespace\n" +
