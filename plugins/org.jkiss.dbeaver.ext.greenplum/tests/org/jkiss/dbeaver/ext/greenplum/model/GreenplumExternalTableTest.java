@@ -330,6 +330,51 @@ public class GreenplumExternalTableTest {
         Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
     }
 
+    @Test
+    public void generateDDL_whenTableIsAExternalTemporaryTable_returnsDDLStringForAExternalTemporaryTable()
+            throws DBException, SQLException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getBoolean("is_temp_table")).thenReturn(true);
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL TEMPORARY TABLE sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'gpfdist://filehost:8081/*.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'CSV' ( DELIMITER ',' )\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
+    @Test
+    public void generateDDL_whenTableIsAExternalWebTemporaryTable_returnsDDLStringForAExternalWebTemporaryTable()
+            throws DBException, SQLException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getBoolean("is_temp_table")).thenReturn(true);
+        Mockito.when(mockResults.getString("urilocation")).thenReturn("http://example.com/test.txt");
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL WEB TEMPORARY TABLE sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'http://example.com/test.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'CSV' ( DELIMITER ',' )\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
     private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {
         PostgreTableColumn mockPostgreTableColumn = Mockito.mock(PostgreTableColumn.class);
         Mockito.when(mockPostgreTableColumn.getName()).thenReturn(columnName);
