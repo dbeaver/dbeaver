@@ -185,7 +185,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         });
 
         if (dataSource instanceof DBSObjectContainer) {
-            DBSObjectContainer schemaContainer = DBUtils.getSchemaContainer((DBSObjectContainer) dataSource);
+            DBSObjectContainer schemaContainer = DBUtils.getChangeableObjectContainer((DBSObjectContainer) dataSource);
 
             try {
                 final List<String> schemaNames = new ArrayList<>();

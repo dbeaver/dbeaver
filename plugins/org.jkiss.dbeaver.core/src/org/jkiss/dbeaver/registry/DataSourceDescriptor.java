@@ -840,7 +840,7 @@ public class DataSourceDescriptor
         if (dataSource instanceof DBSObjectContainer) {
             String activeObject = getConnectionConfiguration().getBootstrap().getDefaultObjectName();
             if (!CommonUtils.isEmptyTrimmed(activeObject)) {
-                DBSObjectContainer schemaContainer = DBUtils.getSchemaContainer((DBSObjectContainer) dataSource);
+                DBSObjectContainer schemaContainer = DBUtils.getChangeableObjectContainer((DBSObjectContainer) dataSource);
                 if (schemaContainer != null && schemaContainer instanceof DBSObjectSelector) {
                     DBSObject child = schemaContainer.getChild(monitor, activeObject);
                     if (child != null) {
