@@ -286,8 +286,12 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
             sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner)).append(" ep ON ep.class=").append(SQLServerObjectClass.SCHEMA.getClassId())
                 .append(" AND ep.major_id=s.schema_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
             if (!showAllSchemas) {
-                sql.append("\nINNER JOIN ")
-                    .append(sysSchema).append(".sysobjects o ").append("ON s.schema_id=o.uid");
+                sql.append("\nINNER JOIN ").append(sysSchema).append(".");
+                if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
+                    sql.append("all_objects o ").append("ON s.schema_id=o.schema_id");
+                } else {
+                    sql.append("sysobjects o ").append("ON s.schema_id=o.uid");
+                }
             }
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
