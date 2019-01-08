@@ -70,6 +70,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
     private final String encoding;
     private final RejectLimitType rejectLimitType;
     private final int rejectLimit;
+    private final boolean writable;
 
     public GreenplumExternalTable(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
@@ -82,6 +83,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
 
         this.rejectLimit = JDBCUtils.safeGetInt(dbResult, "rejectlimit");
         String rejectlimittype = JDBCUtils.safeGetString(dbResult, "rejectlimittype");
+        this.writable = JDBCUtils.safeGetBoolean(dbResult, "writable");
         if (rejectlimittype != null && rejectlimittype.length() > 0) {
             this.rejectLimitType = RejectLimitType.valueOf(rejectlimittype);
         } else {
@@ -118,10 +120,16 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         return rejectLimit;
     }
 
+    public boolean isWritable() {
+        return this.writable;
+    }
+
     public String generateDDL(DBRProgressMonitor monitor) throws DBException {
         StringBuilder ddlBuilder = new StringBuilder();
 
-        ddlBuilder.append("CREATE EXTERNAL ")
+        ddlBuilder.append("CREATE ")
+                .append(this.isWritable() ? "WRITABLE " : "")
+                .append("EXTERNAL ")
                 .append(webUriLocationExists() ? "WEB " : "")
                 .append("TABLE ")
                 .append(this.getDatabase().getName())
