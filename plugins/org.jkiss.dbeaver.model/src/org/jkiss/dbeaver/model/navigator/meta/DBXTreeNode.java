@@ -346,4 +346,18 @@ public abstract class DBXTreeNode
         };
     }
 
+    public void moveChildAfter(DBXTreeNode child, DBXTreeItem afterItem) {
+        int afterIndex = -1;
+        for (int i = 0; i < children.size(); i++) {
+            DBXTreeNode n = children.get(i);
+            if (n == afterItem || (n instanceof DBXTreeFolder && n.getChildren().size() == 1 && n.getChildren().get(0) == afterItem)) {
+                afterIndex = i;
+                break;
+            }
+        }
+        if (afterIndex >= 0) {
+            children.remove(child);
+            children.add(afterIndex + 1, child);
+        }
+    }
 }

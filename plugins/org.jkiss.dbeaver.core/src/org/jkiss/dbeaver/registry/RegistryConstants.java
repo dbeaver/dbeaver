@@ -71,6 +71,7 @@ public class RegistryConstants {
     public static final String ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
     public static final String ATTR_NOTE = "note"; //$NON-NLS-1$
     public static final String ATTR_PATH = "path"; //$NON-NLS-1$
+    public static final String ATTR_AFTER = "after"; //$NON-NLS-1$
     public static final String ATTR_PROVIDER = "provider"; //$NON-NLS-1$
     public static final String ATTR_COMMENT = "comment"; //$NON-NLS-1$
     public static final String ATTR_ORDER = "order"; //$NON-NLS-1$
