@@ -313,6 +313,7 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="omit-catalog" value="true"/>
+                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
 
                 <driver
