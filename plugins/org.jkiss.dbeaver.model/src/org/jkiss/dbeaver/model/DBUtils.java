@@ -1480,7 +1480,7 @@ public final class DBUtils {
         return new DBSObject[0];
     }
 
-    public static DBSObjectContainer getSchemaContainer(DBSObjectContainer root) {
+    public static DBSObjectContainer getChangeableObjectContainer(DBSObjectContainer root) {
         DBSObjectContainer schemaContainer = root;
         if (root instanceof DBSObjectSelector) {
             DBSObject defaultObject = ((DBSObjectSelector) root).getDefaultObject();
@@ -1488,6 +1488,12 @@ public final class DBUtils {
                 try {
                     Class<? extends DBSObject> childType = ((DBSCatalog) defaultObject).getChildType(new VoidProgressMonitor());
                     if (childType != null && DBSObjectContainer.class.isAssignableFrom(childType)) {
+                        if (defaultObject instanceof DBSObjectSelector) {
+                            if (!((DBSObjectSelector) defaultObject).supportsDefaultChange()) {
+                                // Schema can't be changed - return root
+                                return root;
+                            }
+                        }
                         schemaContainer = (DBSObjectContainer) defaultObject;
                     }
                 } catch (DBException e) {
