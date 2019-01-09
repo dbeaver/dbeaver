@@ -182,7 +182,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         final DBPDriver driver = site.getDriver();
 
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
-        if (!activated) {
+        {
             ImageDescriptor logo = DBeaverIcons.getImageDescriptor(serverType.getIcon());
             if (logo != null) {
                 setImageDescriptor(logo);
