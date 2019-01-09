@@ -18,19 +18,18 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
@@ -235,21 +234,41 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     }
 
     @Override
-    public DBPResourceHandler[] getAllResourceHandlers()
+    public DBPResourceHandlerDescriptor[] getAllResourceHandlers()
     {
-        DBPResourceHandler[] handlers = new DBPResourceHandler[handlerDescriptors.size()];
-        for (int i = 0; i < handlerDescriptors.size(); i++) {
-            handlers[i] = handlerDescriptors.get(i).getHandler();
+        return handlerDescriptors.toArray(new DBPResourceHandlerDescriptor[0]);
+    }
+
+    @Override
+    public IFolder getResourceDefaultRoot(IProject project, DBPResourceHandlerDescriptor rhd, boolean forceCreate)
+    {
+    	if (project == null) {
+			return null;
+		}
+        String defaultRoot = rhd.getDefaultRoot(project);
+        if (defaultRoot == null) {
+            // No root
+            return null;
         }
-        return handlers;
+        final IFolder realFolder = project.getFolder(defaultRoot);
+
+        if (forceCreate && !realFolder.exists()) {
+            try {
+                realFolder.create(true, true, new NullProgressMonitor());
+            } catch (CoreException e) {
+                log.error("Can't create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
+                return realFolder;
+            }
+        }
+        return realFolder;
     }
 
     @Override
     public IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate)
     {
-    	if (project == null) {
-			return null;
-		}
+        if (project == null) {
+            return null;
+        }
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             DBPResourceHandler handler = rhd.getHandler();
             if (handler != null && handler.getClass() == handlerType) {
