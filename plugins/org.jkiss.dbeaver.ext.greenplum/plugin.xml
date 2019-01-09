@@ -63,4 +63,10 @@
             </drivers>
         </datasource>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumTableManager" objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
+        <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumTableManager" objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable"/>
+    </extension>
+
 </plugin>
