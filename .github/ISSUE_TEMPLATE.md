@@ -22,8 +22,7 @@ Please fill in as much of the template as possible.
 #### Connection specification:
 - Database name and version
 - Driver name
-- Do you use security connection (SSH, Proxy, etc)? 
-
+- Do you use tunnels or proxies (SSH, SOCKS, etc)? 
 
 #### Describe the problem you're observing:
 
