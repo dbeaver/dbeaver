@@ -144,11 +144,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "all_objects") + " o " +
                 "WHERE o.type IN (" + objectTypeClause.toString() + ") AND o.name LIKE ?" +
-                (schema == null ? "" : "AND o.schema_id=? ")))
+                (schema == null ? "" : " AND o.schema_id=? ")))
         {
             dbStat.setString(1, objectNameMask);
             if (schema != null) {
-                dbStat.setString(2, schema.getName());
+                dbStat.setLong(2, schema.getObjectId());
             }
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
