@@ -214,7 +214,12 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                                     StreamDataImporterColumnInfo streamColumn = getCurrentEntityMappings().getStreamColumn(srcAttrName);
                                     if (streamColumn == null) {
                                         // Index?
-                                        streamColumn = getCurrentEntityMappings().getStreamColumns().get(sourceCombo.getSelectionIndex() - 1);
+                                        int selectionIndex = sourceCombo.getSelectionIndex();
+                                        if (selectionIndex >=0) {
+                                            streamColumn = getCurrentEntityMappings().getStreamColumns().get(selectionIndex - 1);
+                                        } else {
+                                            return;
+                                        }
                                     }
                                     if (CommonUtils.equalObjects(am.getSourceAttributeName(), streamColumn.getColumnName()) &&
                                         am.getSourceAttributeIndex() == streamColumn.getColumnIndex()) {
