@@ -102,7 +102,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                     try {
                         while (dbResult.next()) {
                             if (monitor.isCanceled()) {
-                                break;
+                                return;
                             }
                             OBJECT object = forObject;
                             if (object == null) {
