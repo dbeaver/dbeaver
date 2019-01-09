@@ -185,7 +185,7 @@ public class GenericMetaModel {
             return tmpSchemas;
         } catch (UnsupportedOperationException | SQLFeatureNotSupportedException e) {
             // Schemas are not supported
-            log.debug(e);
+            log.debug("Can't read schema list: " + e.getMessage());
             return null;
         } catch (Exception ex) {
             // Schemas do not supported - just ignore this error
