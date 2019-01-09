@@ -269,8 +269,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
             <with variable="activePart">
-                <!-- TODO: Should replace forcePluginActivation with some other non-active way to test property-->
-                <test property="org.jkiss.dbeaver.core.resultset.active" forcePluginActivation="true"/>
+                <test property="org.jkiss.dbeaver.core.resultset.active"/>
             </with>
         </definition>
     </extension>

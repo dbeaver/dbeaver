@@ -27,9 +27,11 @@ import org.jkiss.code.Nullable;
  */
 public interface DBPProjectManager
 {
-    DBPResourceHandler[] getAllResourceHandlers();
+    DBPResourceHandlerDescriptor[] getAllResourceHandlers();
     @Nullable
     DBPResourceHandler getResourceHandler(IResource resource);
+    @Nullable
+    IFolder getResourceDefaultRoot(IProject project, DBPResourceHandlerDescriptor handler, boolean forceCreate);
     @Nullable
     IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
 
