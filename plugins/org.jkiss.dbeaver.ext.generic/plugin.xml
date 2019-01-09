@@ -791,6 +791,8 @@
                     <file type="jar" path="drivers/ucanaccess/jackcess.jar" bundle="drivers.ucanaccess"/>
                     <file type="jar" path="drivers/ucanaccess/mockito-core.jar" bundle="drivers.ucanaccess"/>
                     <file type="jar" path="drivers/ucanaccess/objenesis.jar" bundle="drivers.ucanaccess"/>
+
+                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
                 <driver
                     id="netezza"

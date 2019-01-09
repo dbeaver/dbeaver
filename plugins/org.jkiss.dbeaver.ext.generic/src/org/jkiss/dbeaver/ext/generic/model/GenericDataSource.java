@@ -480,7 +480,7 @@ public class GenericDataSource extends JDBCDataSource
                     }
                 } catch (UnsupportedOperationException | SQLFeatureNotSupportedException e) {
                     // Just skip it
-                    log.debug(e);
+                    log.debug("Catalog list not supported: " + e.getMessage());
                 } catch (Throwable e) {
                     // Error reading catalogs - just warn about it
                     log.warn("Can't read catalog list", e);
