@@ -36,8 +36,8 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Scripts handler
@@ -108,11 +108,11 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
     @Nullable
     @Override
-    public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource)
+    public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource)
     {
-        if (resource instanceof IFile) {
-            DBPDataSourceContainer dataSource = EditorUtils.getFileDataSource((IFile) resource);
-            return dataSource == null ? null : Collections.singleton(dataSource);
+        if (resource.getResource() instanceof IFile) {
+            DBPDataSourceContainer dataSource = EditorUtils.getFileDataSource((IFile) resource.getResource());
+            return dataSource == null ? null : Collections.singletonList(dataSource);
         }
         return null;
     }

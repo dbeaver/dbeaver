@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Resource handler
@@ -52,7 +52,7 @@ public interface DBPResourceHandler {
 
     String getResourceDescription(@NotNull IResource resource);
 
-    Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource);
+    List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource);
 
     @NotNull
     String getResourceNodeName(@NotNull IResource resource);

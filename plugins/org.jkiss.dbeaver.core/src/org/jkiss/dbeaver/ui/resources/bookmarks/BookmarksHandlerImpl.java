@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -43,6 +44,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -132,6 +134,20 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         finally {
             storage.dispose();
         }
+    }
+
+    @Override
+    public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
+        if (resource instanceof DBNBookmark) {
+            DBPDataSourceRegistry dataSourceRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(resource.getResource().getProject());
+            if (dataSourceRegistry != null) {
+                DBPDataSourceContainer dataSource = dataSourceRegistry.getDataSource(((DBNBookmark) resource).getStorage().getDataSourceId());
+                if (dataSource != null) {
+                    return Collections.singletonList(dataSource);
+                }
+            }
+        }
+        return super.getAssociatedDataSources(resource);
     }
 
     private static void openNodeByPath(final DBNDataSource dsNode, final IFile file, final BookmarkStorage storage)

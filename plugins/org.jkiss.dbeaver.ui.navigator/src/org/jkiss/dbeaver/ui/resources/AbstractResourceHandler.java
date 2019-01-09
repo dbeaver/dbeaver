@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Abstract resource handler
@@ -94,7 +94,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
     @Nullable
     @Override
-    public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource)
+    public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource)
     {
         return null;
     }
