@@ -62,6 +62,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.text.parser.SQLWordPartDetector;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -117,6 +119,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
         this.viewer = rsv;
+        CSSUtils.setCSSClass(this, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         this.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -140,6 +143,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             gl.verticalSpacing = 0;
             this.filterComposite.setLayout(gl);
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
 
@@ -267,6 +271,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
             filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+            CSSUtils.setCSSClass(filtersApplyButton, DBStyles.COLORED_BY_CONNECTION_TYPE);
             filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
             //filtersApplyButton.setText("Apply");
             filtersApplyButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply);

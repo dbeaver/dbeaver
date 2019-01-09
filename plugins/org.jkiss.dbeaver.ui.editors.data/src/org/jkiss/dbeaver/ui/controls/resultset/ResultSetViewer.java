@@ -88,6 +88,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
@@ -232,6 +234,7 @@ public class ResultSetViewer extends Viewer
 
             if (supportsPanels()) {
                 this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
+                CSSUtils.setCSSClass(panelFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 this.panelFolder.marginWidth = 0;
                 this.panelFolder.marginHeight = 0;
                 this.panelFolder.setMinimizeVisible(true);
@@ -1223,6 +1226,7 @@ public class ResultSetViewer extends Viewer
         statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
+        CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
         RowLayout toolbarsLayout = new RowLayout(SWT.HORIZONTAL);
         toolbarsLayout.marginTop = 0;
         toolbarsLayout.marginBottom = 0;
@@ -1233,47 +1237,48 @@ public class ResultSetViewer extends Viewer
         statusBar.setLayout(toolbarsLayout);
 
         {
-            ToolBarManager editToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
             // handle own commands
-            editToolbar.add(new Separator());
-            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, "Save", null, null, true));
-            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES, "Cancel", null, null, true));
-            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, "Script", null, null, true));
-            editToolbar.add(new Separator());
-            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
-            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
-            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
-            editToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
+            editToolBarManager.add(new Separator());
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES, "Save", null, null, true));
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES, "Cancel", null, null, true));
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT, "Script", null, null, true));
+            editToolBarManager.add(new Separator());
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_EDIT));
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_ADD));
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
+            editToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
 
-            editToolbar.createControl(statusBar);
-            toolbarList.add(editToolbar);
+            ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
+            CSSUtils.setCSSClass(editorToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
+            toolbarList.add(editToolBarManager);
         }
         {
-            ToolBarManager navToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            navToolbar.add(new ToolbarSeparatorContribution(true));
-            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_FIRST));
-            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
-            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
-            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_LAST));
-            navToolbar.add(new Separator());
-            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
-            navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
-            navToolbar.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
-            navToolbar.createControl(statusBar);
+            ToolBarManager navToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            navToolBarManager.add(new ToolbarSeparatorContribution(true));
+            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_FIRST));
+            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_PREVIOUS));
+            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_NEXT));
+            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_LAST));
+            navToolBarManager.add(new Separator());
+            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_PAGE));
+            navToolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FETCH_ALL));
+            navToolBarManager.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
+            ToolBar navToolBar = navToolBarManager.createControl(statusBar);
+            CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-            //filtersMenu.add(new ToggleServerSideOrderingAction());
-
-            toolbarList.add(navToolbar);
+            toolbarList.add(navToolBarManager);
         }
         {
-            ToolBarManager configToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            configToolbar.add(new ToolbarSeparatorContribution(true));
+            ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            configToolBarManager.add(new ToolbarSeparatorContribution(true));
             {
-                //configToolbar.add(new ToggleModeAction());
+                //configToolBarManager.add(new ToggleModeAction());
                 ActionContributionItem item = new ActionContributionItem(new ToggleModeAction());
                 item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-                configToolbar.add(item);
+                configToolBarManager.add(item);
             }
 
             {
@@ -1284,62 +1289,46 @@ public class ResultSetViewer extends Viewer
                     CommandContributionItem.STYLE_PULLDOWN);
                 ciParam.label = ResultSetMessages.controls_resultset_config_panels;
                 ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
-                configToolbar.add(new CommandContributionItem(ciParam));
+                configToolBarManager.add(new CommandContributionItem(ciParam));
             }
-            configToolbar.add(new ToolbarSeparatorContribution(true));
+            configToolBarManager.add(new ToolbarSeparatorContribution(true));
 
-            configToolbar.createControl(statusBar);
-            toolbarList.add(configToolbar);
+            ToolBar configToolBar = configToolBarManager.createControl(statusBar);
+            CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            toolbarList.add(configToolBarManager);
         }
 
         {
             presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            CSSUtils.setCSSClass(presentationSwitchToolbar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             RowData rd = new RowData();
             rd.exclude = true;
             presentationSwitchToolbar.setLayoutData(rd);
         }
 
         {
-            ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            addToolbar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+            ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+            addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
-/*
-            if (false) {
-                CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
-                    site,
-                    "org.jkiss.dbeaver.core.resultset.openWith",
-                    ResultSetHandlerOpenWith.CMD_OPEN_WITH,
-                    CommandContributionItem.STYLE_PULLDOWN);
-                ciParam.mode = CommandContributionItem.MODE_FORCE_TEXT;
-                DataTransferProcessorDescriptor activeProcessor = ResultSetHandlerOpenWith.getDefaultProcessor();
-                if (activeProcessor != null) {
-                    ciParam.label = activeProcessor.getAppName();
-                    ciParam.icon = DBeaverIcons.getImageDescriptor(activeProcessor.getIcon());
-                }
-                Map<String, String> params = new HashMap<>();
-                //params.put(ResultSetHandlerOpenWith.PARAM_PROCESSOR_ID, "stream:stream.xlsx");
-                ciParam.parameters = params;
-                addToolbar.add(new CommandContributionItem(ciParam));
-            }
-*/
-
-            addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
-                menuService.populateContributionManager(addToolbar, TOOLBAR_CONTRIBUTION_ID);
+                menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_CONTRIBUTION_ID);
             }
-            addToolbar.createControl(statusBar);
-            toolbarList.add(addToolbar);
+            ToolBar addToolBar = addToolbBarManagerar.createControl(statusBar);
+            CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            toolbarList.add(addToolbBarManagerar);
         }
 
         {
             // Config toolbar
-            ToolBarManager configToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            configToolbar.add(new ToolbarSeparatorContribution(true));
-            configToolbar.add(new ConfigAction());
-            configToolbar.update(true);
-            configToolbar.createControl(statusBar);
-            toolbarList.add(configToolbar);
+            ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            configToolBarManager.add(new ToolbarSeparatorContribution(true));
+            configToolBarManager.add(new ConfigAction());
+            configToolBarManager.update(true);
+            ToolBar configToolBar = configToolBarManager.createControl(statusBar);
+            CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            toolbarList.add(configToolBarManager);
         }
         {
             final int fontHeight = UIUtils.getFontHeight(statusBar);

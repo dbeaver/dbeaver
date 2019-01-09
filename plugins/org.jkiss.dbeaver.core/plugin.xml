@@ -1575,19 +1575,4 @@
         </perspective>
     </extension>
 
-    <!-- FIXME: Disabled because it breaks dark theme.  -->
-<!--
-    <extension point="org.eclipse.e4.ui.css.core.propertyHandler">
-        <handler adapter="org.eclipse.e4.ui.css.swt.dom.CTabFolderElement" composite="false" handler="org.jkiss.dbeaver.ui.css.EditorFolderElementHandler">
-            <property-name name="swt-selected-tabs-background"/>
-            <property-name name="swt-selected-tabs-foreground"/>
-        </handler>
-        <handler adapter="org.eclipse.e4.ui.css.swt.dom.CTabItemElement" composite="true" handler="org.jkiss.dbeaver.ui.css.EditorItemElementHandler">
-            <property-name name="color"/>
-            <property-name name="background"/>
-            <property-name name="background-color"/>
-        </handler>
-    </extension>
--->
-
 </plugin>
