@@ -58,8 +58,8 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
-    private static ImageDescriptor MYSQL_LOGO_IMG = Activator.getImageDescriptor("icons/mysql_logo.png");
-    private static ImageDescriptor MARIADB_LOGO_IMG = Activator.getImageDescriptor("icons/mariadb_logo.png");
+    //private static ImageDescriptor MYSQL_LOGO_IMG = Activator.getImageDescriptor("icons/mysql_logo.png");
+    //private static ImageDescriptor MARIADB_LOGO_IMG = Activator.getImageDescriptor("icons/mariadb_logo.png");
     private Combo serverTimezoneCombo;
 
 
@@ -176,13 +176,13 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         super.loadSettings();
 
         DBPDriver driver = getSite().getDriver();
-        if (!activated) {
+        {
             // We set image only once at activation
             // There is a bug in Eclipse which leads to SWTException after wizard image change
             if (driver != null && driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
-                setImageDescriptor(MARIADB_LOGO_IMG);
+                setImageDescriptor(Activator.getImageDescriptor("icons/mariadb_logo.png"));
             } else {
-                setImageDescriptor(MYSQL_LOGO_IMG);
+                setImageDescriptor(Activator.getImageDescriptor("icons/mysql_logo.png"));
             }
         }
 
