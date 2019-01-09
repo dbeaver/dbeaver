@@ -78,7 +78,8 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
 
     @Override
     public void configureDialect(PostgreDialect dialect) {
-        dialect.addExtraKeywords("DISTRIBUTED", "SEGMENT", "REJECT", "FORMAT", "MASTER", "WEB", "WRITABLE", "READABLE");
+        dialect.addExtraKeywords("DISTRIBUTED", "SEGMENT", "REJECT", "FORMAT", "MASTER", "WEB", "WRITABLE", "READABLE",
+                "LOG", "ERRORS");
     }
 
     @Override
