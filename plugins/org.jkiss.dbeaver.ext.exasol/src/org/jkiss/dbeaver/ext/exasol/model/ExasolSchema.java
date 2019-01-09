@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -74,8 +75,6 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 
     // ExasolSchema's children
     public final DBSObjectCache<ExasolSchema, ExasolScript> scriptCache;
-    public final DBSObjectCache<ExasolSchema, ExasolScript> udfCache;
-    public final DBSObjectCache<ExasolSchema, ExasolScript> adapterCache;
 
     public final DBSObjectCache<ExasolSchema, ExasolFunction> functionCache;
     private ExasolViewCache viewCache = new ExasolViewCache();
@@ -95,30 +94,10 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         		"select "
         		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
         		+ "from SYS." + tablePrefix + "_SCRIPTS a inner join SYS." + tablePrefix + "_OBJECTS b "
-        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
-        		+ "AND script_Type = 'SCRIPTING' order by script_name",
+        		+ "on a.SCRIPT_OBJECT_ID  = b.object_id and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
+        		+ "order by script_name",
         		name);
-        
-        this.udfCache = new ExasolJDBCObjectSimpleCacheLiterals<>(
-        		ExasolScript.class,
-        		"select "
-        		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
-        		+ "from SYS."+ tablePrefix + "_SCRIPTS a inner join SYS." + tablePrefix + "_OBJECTS b "
-        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
-        		+ "AND script_Type = 'UDF' order by script_name",
-        		name);
-        
-        this.adapterCache = new ExasolJDBCObjectSimpleCacheLiterals<>(
-        		ExasolScript.class,
-        		"select "
-        		+ "script_name,script_owner,script_language,script_type,script_result_type,script_text,script_comment,b.created "
-        		+ "from SYS." + tablePrefix + "_SCRIPTS a inner join SYS." + tablePrefix + "_OBJECTS b "
-        		+ "on a.script_name = b.object_name and a.script_schema = b.root_name and b.object_type = 'SCRIPT' where a.script_schema = '%s' "
-        		+ "AND script_Type = 'ADAPTER' order by script_name",
-        		name);
-        
-        
-        
+
         this.functionCache = new ExasolJDBCObjectSimpleCacheLiterals<>(ExasolFunction.class,
                 "SELECT\n" + 
                 "    F.*,\n" + 
@@ -247,28 +226,35 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     @Override
     public Collection<ExasolScript> getProcedures(DBRProgressMonitor monitor) throws DBException {
 
-        return scriptCache.getAllObjects(monitor, this);
+        return scriptCache.getAllObjects(monitor, this).stream()
+    			.filter(o -> o.getType().equals("SCRIPTING"))
+    			.collect(Collectors.toCollection(ArrayList::new));
     }
     
     public Collection<ExasolScript> getUdfs(DBRProgressMonitor monitor) throws DBException {
-
-        return udfCache.getAllObjects(monitor, this);
+    	
+    	return scriptCache.getAllObjects(monitor, this).stream()
+    			.filter(o -> o.getType().equals("UDF"))
+    			.collect(Collectors.toCollection(ArrayList::new));
     }
 
     public ExasolScript getUdf(DBRProgressMonitor monitor, String name) throws DBException {
 
-        return udfCache.getObject(monitor, this, name);
+        return scriptCache.getObject(monitor, this, name);
     }
 
 
     public Collection<ExasolScript> getAdapter(DBRProgressMonitor monitor) throws DBException {
 
-        return adapterCache.getAllObjects(monitor, this);
+        return scriptCache.getAllObjects(monitor, this).stream()
+    			.filter(o -> o.getType().equals("ADAPTER"))
+    			.collect(Collectors.toCollection(ArrayList::new));
+
     }
 
     public ExasolScript getAdapter(DBRProgressMonitor monitor, String name) throws DBException {
 
-        return adapterCache.getObject(monitor, this, name);
+        return scriptCache.getObject(monitor, this, name);
     }
     
     
