@@ -227,14 +227,14 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     public Collection<ExasolScript> getProcedures(DBRProgressMonitor monitor) throws DBException {
 
         return scriptCache.getAllObjects(monitor, this).stream()
-    			.filter(o -> o.getType() == "SCRIPTING")
+    			.filter(o -> o.getType().equals("SCRIPTING"))
     			.collect(Collectors.toCollection(ArrayList::new));
     }
     
     public Collection<ExasolScript> getUdfs(DBRProgressMonitor monitor) throws DBException {
     	
     	return scriptCache.getAllObjects(monitor, this).stream()
-    			.filter(o -> o.getType() == "UDF")
+    			.filter(o -> o.getType().equals("UDF"))
     			.collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -247,7 +247,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     public Collection<ExasolScript> getAdapter(DBRProgressMonitor monitor) throws DBException {
 
         return scriptCache.getAllObjects(monitor, this).stream()
-    			.filter(o -> o.getType() == "ADAPTER")
+    			.filter(o -> o.getType().equals("ADAPTER"))
     			.collect(Collectors.toCollection(ArrayList::new));
 
     }
