@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferPageDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -105,7 +105,7 @@ public class DataTransferSettings {
                 selectProducer(producerDesc);
                 consumerOptional = true;
             } else {
-                DBUserInterface.getInstance().showError("Can't find producer", "Can't find data propducer descriptor in registry");
+                DBWorkbench.getPlatformUI().showError("Can't find producer", "Can't find data propducer descriptor in registry");
             }
         } else if (!ArrayUtils.isEmpty(consumers)) {
             // Make pipes
@@ -120,7 +120,7 @@ public class DataTransferSettings {
                 selectConsumer(consumerDesc, null, false);
                 consumerOptional = false;
             } else {
-                DBUserInterface.getInstance().showError("Can't find producer", "Can't find data propducer descriptor in registry");
+                DBWorkbench.getPlatformUI().showError("Can't find producer", "Can't find data propducer descriptor in registry");
             }
             producerOptional = true;
         } else {

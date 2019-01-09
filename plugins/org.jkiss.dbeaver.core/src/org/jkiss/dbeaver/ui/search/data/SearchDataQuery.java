@@ -25,7 +25,6 @@ import org.eclipse.search.ui.ISearchResult;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -96,7 +96,7 @@ public class SearchDataQuery implements ISearchQuery {
             }
 
             // Search
-            DBNModel dbnModel = DBeaverCore.getInstance().getNavigatorModel();
+            DBNModel dbnModel = DBWorkbench.getPlatform().getNavigatorModel();
 
             DBRProgressMonitor monitor = new DefaultProgressMonitor(m);
 

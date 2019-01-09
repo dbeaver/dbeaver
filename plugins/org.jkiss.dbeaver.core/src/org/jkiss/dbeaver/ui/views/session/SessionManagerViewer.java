@@ -54,9 +54,9 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
@@ -357,7 +357,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             try {
                 sqlViewer.init(subSite, sqlInput);
             } catch (PartInitException e) {
-                DBUserInterface.getInstance().showError(sessionTable.getShell().getText(), null, e);
+                DBWorkbench.getPlatformUI().showError(sessionTable.getShell().getText(), null, e);
             }
         } else {
             sqlViewer.setInput(sqlInput);

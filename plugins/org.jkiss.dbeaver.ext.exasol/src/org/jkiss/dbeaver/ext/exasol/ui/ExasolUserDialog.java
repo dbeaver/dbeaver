@@ -21,18 +21,17 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ExasolUserType;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.utils.CommonUtils;
 
 
 public class ExasolUserDialog extends BaseDialog {
@@ -41,6 +40,8 @@ public class ExasolUserDialog extends BaseDialog {
     private String password = "";
     private String ldapDN = "";
     private String comment = "";
+    private String kerberosPrincipal;
+    private ExasolUserType selectedType;
 
     
     public ExasolUserDialog(Shell parentShell, ExasolDataSource datasource)
@@ -56,20 +57,67 @@ public class ExasolUserDialog extends BaseDialog {
         final Composite composite = super.createDialogArea(parent);
         
         final Composite group = new Composite(composite, SWT.NONE);
+        final Composite group_text = new Composite(composite, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 250;
-        gd.heightHint = 200;
+        gd.widthHint = 350;
+        gd.heightHint = 150;
         gd.verticalIndent = 0;
         gd.horizontalIndent = 0;
         group.setLayoutData(gd);
-        group.setLayout(new GridLayout(2, true));  
-        final Text nameText = UIUtils.createLabelText(group, "User Name", "");
+        group.setLayout(new GridLayout(2, true));
+        group_text.setLayoutData(gd);
+        group_text.setLayout(new GridLayout(2, true));
+        final Text nameText = UIUtils.createLabelText(group, ExasolMessages.dialog_create_user_userid, "");
 
-        final Text commentText = UIUtils.createLabelText(group,"Comment", "");
-        
-        Text passwordText = UIUtils.createLabelText(group, "Password", "", SWT.PASSWORD);
-        Button ldapDNCheck = UIUtils.createCheckbox(group, "LDAP User", "Create LDAP User", false, 2);
-        final Text urlText = UIUtils.createLabelText(group,"LDAP DN", "");
+        final Text commentText = UIUtils.createLabelText(group,ExasolMessages.dialog_create_user_comment, "", SWT.MULTI);
+        String[] userTypes = new String[] {
+        		ExasolMessages.dialog_create_user_kerberos,
+        		ExasolMessages.dialog_create_user_ldap,
+        		ExasolMessages.dialog_create_user_local
+        		};
+        final Text passwordText = UIUtils.createLabelText(group_text, ExasolMessages.dialog_create_user_local_password, "", SWT.PASSWORD);
+        final Text urlText = UIUtils.createLabelText(group_text,ExasolMessages.dialog_create_user_ldap_dn, "");
+        final Text principalText = UIUtils.createLabelText(group_text,ExasolMessages.dialog_create_user_kerberos_principal, "");
+		passwordText.setEnabled(false);
+		urlText.setEnabled(false);
+		principalText.setEnabled(false);
+        int cnt = 0;
+
+        for (ExasolUserType type: ExasolUserType.values())
+        {
+        	
+	        UIUtils.createRadioButton(
+	        		group,  
+	        		userTypes[cnt], 
+	        		type,
+	        		SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+	        			selectedType = (ExasolUserType)selectionEvent.widget.getData();
+	        			switch (selectedType) {
+						case KERBEROS:
+	        				passwordText.setEnabled(false);
+	        				urlText.setEnabled(false);
+	        				principalText.setEnabled(true);
+							break;
+						case LDAP:
+	        				passwordText.setEnabled(false);
+	        				urlText.setEnabled(true);
+	        				principalText.setEnabled(false);
+							break;
+						case LOCAL:
+	        				passwordText.setEnabled(true);
+	        				urlText.setEnabled(false);
+	        				principalText.setEnabled(false);
+							break;
+						default:
+	        				passwordText.setEnabled(false);
+	        				urlText.setEnabled(false);
+	        				principalText.setEnabled(false);
+						break;
+						}
+	        		}
+	        		));
+	        cnt++;
+        }
         urlText.setEnabled(false);
 
         
@@ -78,43 +126,30 @@ public class ExasolUserDialog extends BaseDialog {
             public void modifyText(ModifyEvent e) {
                 name = nameText.getText();
                 ldapDN  = urlText.getText();
+                kerberosPrincipal = principalText.getText();
                 password = passwordText.getText();
                 comment = commentText.getText();
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
-                //enable/disable OK button   
+                //enable/disable OK button
+                
                 if (
-                        (
-                            ldapDNCheck.getSelection() & CommonUtils.isEmpty(ldapDN) 
-                        ) 
-                        | name.isEmpty() | (!ldapDNCheck.getSelection() & CommonUtils.isEmpty(password) )
-                    )
+                		name.isEmpty() |
+                		(selectedType == ExasolUserType.KERBEROS & kerberosPrincipal.isEmpty()) |
+                		(selectedType == ExasolUserType.LDAP & ldapDN.isEmpty()) |
+                		(selectedType == ExasolUserType.LOCAL & password.isEmpty()) 
+                	)
                 {
                     getButton(IDialogConstants.OK_ID).setEnabled(false);
-                } else {
-                    getButton(IDialogConstants.OK_ID).setEnabled(true);
-                }
+	            } else {
+	                getButton(IDialogConstants.OK_ID).setEnabled(true);
+	            }
             }
         };
         
         nameText.addModifyListener(mod);
         passwordText.addModifyListener(mod);
         urlText.addModifyListener(mod);
-        ldapDNCheck.addSelectionListener(new SelectionAdapter() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-            	if (ldapDNCheck.getSelection()) {
-                	passwordText.setText("");
-            	} else {
-                	urlText.setText("");
-            	}
-            	passwordText.setEnabled(!ldapDNCheck.getSelection());
-            	urlText.setEnabled(ldapDNCheck.getSelection());
-            }
-            
-        });
-        
+        principalText.addModifyListener(mod);
         return composite;
     }
     
@@ -129,6 +164,11 @@ public class ExasolUserDialog extends BaseDialog {
         return password;
     }
     
+    public String getKerberosPrincipal()
+    {
+    	return kerberosPrincipal;
+    }
+    
 
     public String getLDAPDN()
     {
@@ -138,6 +178,10 @@ public class ExasolUserDialog extends BaseDialog {
     public String getComment()
     {
         return comment;
+    }
+    
+    public ExasolUserType getUserType() {
+    	return selectedType;
     }
 
     

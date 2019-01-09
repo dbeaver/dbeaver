@@ -146,7 +146,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
         databaseCache.setCache(dbList);
         // Initiate default context
-        getDefaultInstance().checkDatabaseConnection(monitor);
+        getDefaultInstance().checkInstanceConnection(monitor);
     }
 
     @Override

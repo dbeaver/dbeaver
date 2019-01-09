@@ -80,7 +80,7 @@ public class ExasolConnectionManager
         }.execute();
     }
     
-    private SQLDatabasePersistAction Comment(ExasolConnection con)
+    private SQLDatabasePersistAction getCommentCommand(ExasolConnection con)
     {
     	return new SQLDatabasePersistAction(
                 	"Comment on Connection",
@@ -116,7 +116,7 @@ public class ExasolConnectionManager
         
         if (! con.getDescription().isEmpty())
         {
-            actions.add(Comment(con));
+            actions.add(getCommentCommand(con));
         }
        
         
@@ -156,7 +156,7 @@ public class ExasolConnectionManager
         if (com.containsKey("description"))
         {
             actionList.add(
-                    Comment(con)
+                    getCommentCommand(con)
                     );
         }
         

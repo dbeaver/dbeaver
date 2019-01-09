@@ -91,7 +91,6 @@ public class ExasolLock implements DBAServerLock {
  		return BigInteger.valueOf(holdSessionId);
  	}
 
- 	@SuppressWarnings("unchecked")
  	@Override
  	public void setHoldBy(DBAServerLock lock) {
  		this.hold = lock;

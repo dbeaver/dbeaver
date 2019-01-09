@@ -59,7 +59,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     @Override
-    public void validateCommand() throws DBException
+    public void validateCommand(Map<String, Object> options) throws DBException
     {
         String passValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD));
         String confirmValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD_CONFIRM));

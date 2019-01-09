@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -81,11 +82,19 @@ public class ExasolSchemaManager
         }.execute();
     }
     
+    private void changeLimit(List<DBEPersistAction> actions, ExasolSchema schema, BigDecimal limit)
+    {
+    	String script = String.format("ALTER SCHEMA %s SET RAW_SIZE_LIMIT = %d",DBUtils.getQuotedIdentifier(schema),limit.longValue());
+    	actions.add(
+    			new SQLDatabasePersistAction(ExasolMessages.manager_schema_raw_limit, script)
+    			);
+    }
+    
     private void changeOwner(List<DBEPersistAction> actions, ExasolSchema schema , String owner)
     {
         String script = "ALTER SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " CHANGE OWNER  " + owner;
         actions.add(
-                new SQLDatabasePersistAction("Set schema Owner", script)
+                new SQLDatabasePersistAction(ExasolMessages.manager_schema_owner, script)
                 );
         
     }
@@ -99,12 +108,17 @@ public class ExasolSchemaManager
         String script = "CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema);
         
         actions.add(
-                new SQLDatabasePersistAction("Create schema", script)
+                new SQLDatabasePersistAction(ExasolMessages.manager_schema_create, script)
                 );
         String owner = schema.getOwner();
         if (owner != null)
         {
             changeOwner(actions, schema, owner);
+        }
+        
+        if (schema.getRawObjectSizeLimit() != null)
+        {
+        	changeLimit(actions, schema, schema.getRawObjectSizeLimit());
         }
     }
     
@@ -168,6 +182,11 @@ public class ExasolSchemaManager
                 changeOwner(actionList, schema, schema.getOwner());
             }
             
+            if (command.getProperties().containsKey("rawObjectSizeLimit"))
+            {
+            	changeLimit(actionList, schema, schema.getRawObjectSizeLimit());
+            }
+            
         }
     }
 
@@ -177,5 +196,7 @@ public class ExasolSchemaManager
     {
         processObjectRename(commandContext, object, newName);
     }
+    
+    
     
 }

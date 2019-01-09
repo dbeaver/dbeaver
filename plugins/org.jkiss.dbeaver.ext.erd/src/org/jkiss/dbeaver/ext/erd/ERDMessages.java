@@ -23,7 +23,7 @@ import org.eclipse.osgi.util.NLS;
 public class ERDMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.erd.ERDResources"; //$NON-NLS-1$
 
-	static {
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ERDMessages.class);
 	}
@@ -69,7 +69,12 @@ public class ERDMessages extends NLS {
 	public static String erd_tool_create_note;
 	public static String erd_tool_create_note_tip;
 	public static String erd_tool_create_default;
-	
+
+	public static String menu_view_style;
+	public static String menu_attribute_visibility;
+	public static String menu_attribute_visibility_default;
+	public static String menu_attribute_visibility_entity;
+
 	private ERDMessages() {
 	}
 }

@@ -45,7 +45,7 @@ public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchem
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command) throws DBException
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Queue name cannot be empty");

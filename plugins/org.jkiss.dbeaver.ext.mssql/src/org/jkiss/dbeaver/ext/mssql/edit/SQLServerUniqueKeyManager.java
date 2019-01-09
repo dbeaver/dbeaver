@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.*;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey;
+import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
@@ -31,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
+
+import java.util.Locale;
 
 /**
  * SQL server unique constraint manager
@@ -59,28 +58,33 @@ public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTab
                 if (!editPage.edit()) {
                     return null;
                 }
-
-                return null;
-/*
                 final SQLServerTableUniqueKey primaryKey = new SQLServerTableUniqueKey(
                     parent,
-                    null,
+                    editPage.getConstraintName(),
                     null,
                     editPage.getConstraintType(),
+                    null,
                     false);
                 primaryKey.setName(editPage.getConstraintName());
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     primaryKey.addColumn(
-                        new SQLServerTableConstraintColumn(
+                        new SQLServerTableUniqueKeyColumn(
                             primaryKey,
                             (SQLServerTableColumn) tableColumn,
                             colIndex++));
                 }
                 return primaryKey;
-*/
             }
         }.execute();
+    }
+
+    protected String getAddConstraintTypeClause(SQLServerTableUniqueKey constraint) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
+            return "UNIQUE";
+        } else {
+            return super.getAddConstraintTypeClause(constraint);
+        }
     }
 
 }

@@ -42,6 +42,22 @@
                                         </items>
                                     </items>
                                 </folder>
+                                <folder
+                                      description="%tree.partition_columns.node.description"
+                                      icon="#columns"
+                                      label="%tree.partition_columns.node.name"
+                                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn"
+                                      visibleIf="object.dataSource.hasPriorityGroups"
+                                      >
+                                    <items
+                                         icon="#column"
+                                         label="%tree.partition_column.node.name"
+                                         path="partition"
+                                         property="partitions"
+                                         navigable="true"
+                                         >
+                                   </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolView" label="%tree.views.node.name"
@@ -219,7 +235,7 @@
                       description="%tree.users.node.description"
                       icon="#folder_user"
                       label="%tree.users.node.name"
-                      type="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser">
+                      type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser">
                    <items
                          icon="#user"
                          label="%tree.user.node.name"
@@ -284,9 +300,9 @@
                 </folder>
                 <folder
                       description="%tree.roles.node.description"
-                      icon="#folder_role"
+                      icon="#folder_user"
                       label="%tree.roles.node.name"
-                      type="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole"
+                      type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"
                       visibleIf="object.dataSource.authorizedForRolePrivs">
                    <items
                          icon="icons/role.gif"
@@ -349,6 +365,38 @@
                       </items>
                    </items>
                 </folder>
+                <folder
+                      description="%tree.prioritygroups.node.description"
+                      icon="#folder_database"
+                      label="%tree.prioritygroups.node.name"
+                      type="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup"
+                      visibleIf="object.dataSource.hasPriorityGroups">
+                   <items
+                         icon="#database"
+                         label="%tree.prioritygroup.node.name"
+                         path="prioritygroup"
+                         property="priorityGroups">
+                   </items>
+                </folder>
+                <folder
+                      description="%tree.security.node.description"
+                      icon="#folder_info"
+                      label="%tree.security.node.name"
+                      visibleIf="object.dataSource.hasPriorityGroups">
+                   <folder
+                         description="%tree.security_policy.node.description"
+                         icon="#folder_info"
+                         label="%tree.security_policy.node.name"
+                         type="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy"
+                         visibleIf="object.dataSource.hasPriorityGroups">
+                      <items
+                            icon="#database"
+                            label="%tree.security_policy.node.name"
+                            path="securitypolicy"
+                            property="securityPolicies">
+                      </items>
+                   </folder>
+                </folder>
             </tree>
             <drivers managable="true">
                 <driver
@@ -365,7 +413,7 @@
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="600"/>
-                    <property name="connecttimeout" value="40"/>
+                    <property name="connecttimeout" value="1000"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern"
                               value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
                 </driver>
@@ -401,8 +449,20 @@
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolConnectionManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolConnection"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolForeignKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPrimaryKeyManager" objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager" objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser"/>
-        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager" objectType="org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolUserManager" objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolUser"/>
+        <manager class="org.jkiss.dbeaver.ext.exasol.manager.ExasolRoleManager" objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole"/>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolPriorityGroupManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolSecurityPolicyManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.security.ExasolSecurityPolicy">
+        </manager>
+        <manager
+              class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTablePartitionColumnManager"
+              objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn">
+        </manager>
     </extension>
     
     <extension point="org.jkiss.dbeaver.databaseEditor">

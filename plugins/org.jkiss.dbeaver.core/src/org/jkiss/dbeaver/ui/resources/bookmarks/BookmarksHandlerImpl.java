@@ -25,17 +25,16 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -45,6 +44,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,7 +56,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     public static IFolder getBookmarksFolder(IProject project, boolean forceCreate)
     {
-        return DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, BookmarksHandlerImpl.class, forceCreate);
+        return DBWorkbench.getPlatform().getProjectManager().getResourceDefaultRoot(project, BookmarksHandlerImpl.class, forceCreate);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         if (!(resource instanceof IFile)) {
             return;
         }
-        final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(resource.getProject());
+        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(resource.getProject());
         if (projectNode == null) {
             throw new DBException("Can't find project node for '" + resource.getProject().getName() + "'"); //$NON-NLS-2$
         }
@@ -124,7 +124,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 if (status.isOK()) {
                     UIUtils.syncExec(() -> openNodeByPath(dsNode, (IFile) resource, storage));
                 } else {
-                    DBUserInterface.getInstance().showError(
+                    DBWorkbench.getPlatformUI().showError(
                         "Open bookmark",
                         "Can't open bookmark",
                         status);
@@ -134,6 +134,20 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         finally {
             storage.dispose();
         }
+    }
+
+    @Override
+    public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
+        if (resource instanceof DBNBookmark) {
+            DBPDataSourceRegistry dataSourceRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(resource.getResource().getProject());
+            if (dataSourceRegistry != null) {
+                DBPDataSourceContainer dataSource = dataSourceRegistry.getDataSource(((DBNBookmark) resource).getStorage().getDataSourceId());
+                if (dataSource != null) {
+                    return Collections.singletonList(dataSource);
+                }
+            }
+        }
+        return super.getAssociatedDataSources(resource);
     }
 
     private static void openNodeByPath(final DBNDataSource dsNode, final IFile file, final BookmarkStorage storage)
@@ -146,7 +160,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                     nodeLoader.databaseNode, null, UIUtils.getActiveWorkbenchWindow()));
             }
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                 CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
@@ -156,7 +170,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     static DBNDatabaseNode getTargetBookmarkNode(DBRProgressMonitor monitor, DBNBookmark bookmark)
     {
         IFile resource = (IFile) bookmark.getResource();
-        final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(resource.getProject());
+        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(resource.getProject());
         if (projectNode != null) {
             BookmarkStorage storage = bookmark.getStorage();
             final DBPDataSourceContainer dataSourceContainer = projectNode.getDatabases().getDataSourceRegistry().getDataSource(storage.getDataSourceId());
@@ -193,7 +207,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         if (folder == null) {
             throw new DBException("Can't detect folder for bookmark");
         }
-        ResourceUtils.checkFolderExists(folder);
+        ContentUtils.checkFolderExists(folder);
 
         IFile file = ContentUtils.getUniqueFile(
             folder,

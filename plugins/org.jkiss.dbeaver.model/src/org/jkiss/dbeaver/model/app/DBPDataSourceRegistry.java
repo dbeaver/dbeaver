@@ -22,6 +22,8 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.util.List;
@@ -54,6 +56,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     List<? extends DBPDataSourceContainer> getDataSources();
 
+    DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig);
+
     void addDataSourceListener(DBPEventListener listener);
 
     boolean removeDataSourceListener(DBPEventListener listener);
@@ -67,6 +71,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
     List<? extends DBPDataSourceFolder> getAllFolders();
 
     List<? extends DBPDataSourceFolder> getRootFolders();
+
+    DBPDataSourceFolder getFolder(String path);
 
     DBPDataSourceFolder addFolder(DBPDataSourceFolder parent, String name);
 
@@ -90,4 +96,5 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     @NotNull
     ISecurePreferences getSecurePreferences();
+
 }

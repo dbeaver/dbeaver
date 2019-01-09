@@ -24,7 +24,6 @@ import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -102,7 +102,7 @@ public class SearchMetadataQuery implements ISearchQuery {
             }
 
             int totalObjects = 0;
-            DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+            DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
             DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
             Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
                 localMonitor,

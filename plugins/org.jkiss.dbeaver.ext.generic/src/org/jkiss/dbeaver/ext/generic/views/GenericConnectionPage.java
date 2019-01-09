@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
@@ -529,7 +529,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             });
             MessageDialog.openInformation(getShell(), "Database Create", "Database '" + databaseName + "' created!");
         } catch (InvocationTargetException e1) {
-            DBUserInterface.getInstance().showError("Create database", "Error creating database", e1.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Create database", "Error creating database", e1.getTargetException());
         } catch (InterruptedException e1) {
             // Just ignore
         }

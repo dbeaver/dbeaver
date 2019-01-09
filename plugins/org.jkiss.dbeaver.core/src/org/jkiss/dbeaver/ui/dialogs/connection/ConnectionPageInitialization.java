@@ -56,7 +56,7 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -143,7 +143,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 loadDatabaseSettings(new DefaultProgressMonitor(monitor), dataSource);
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Database info reading", "Error reading information from database", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Database info reading", "Error reading information from database", e.getTargetException());
         } catch (InterruptedException e) {
             //
         }
@@ -185,7 +185,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         });
 
         if (dataSource instanceof DBSObjectContainer) {
-            DBSObjectContainer schemaContainer = DBUtils.getSchemaContainer((DBSObjectContainer) dataSource);
+            DBSObjectContainer schemaContainer = DBUtils.getChangeableObjectContainer((DBSObjectContainer) dataSource);
 
             try {
                 final List<String> schemaNames = new ArrayList<>();
@@ -343,7 +343,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         try {
             loadDatabaseSettings(session.getProgressMonitor(), session.getDataSource());
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Database info reading", "Error reading database settings", e.getTargetException());
+            DBWorkbench.getPlatformUI().showError("Database info reading", "Error reading database settings", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

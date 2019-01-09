@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.utils;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -38,13 +41,17 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * RuntimeUtils
  */
 public class RuntimeUtils {
     private static final Log log = Log.getLog(RuntimeUtils.class);
+
+    private static final Map<IProject, IEclipsePreferences> projectPreferences = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public static <T> T getObjectAdapter(Object adapter, Class<T> objectType) {
@@ -242,6 +249,20 @@ public class RuntimeUtils {
 
     public static void setThreadName(String name) {
         Thread.currentThread().setName("DBeaver: " + name);
+    }
+
+    public static IEclipsePreferences getResourceHandlerPreferences(IProject project, String node) {
+        IEclipsePreferences projectSettings = getProjectPreferences(project);
+        return (IEclipsePreferences) projectSettings.node(node);
+    }
+
+    public static synchronized IEclipsePreferences getProjectPreferences(IProject project) {
+        IEclipsePreferences preferences = projectPreferences.get(project);
+        if (preferences == null) {
+            preferences = new ProjectScope(project).getNode("org.jkiss.dbeaver.project.resources");
+            projectPreferences.put(project, preferences);
+        }
+        return preferences;
     }
 
     private static class MonitoringTask implements DBRRunnableWithProgress {

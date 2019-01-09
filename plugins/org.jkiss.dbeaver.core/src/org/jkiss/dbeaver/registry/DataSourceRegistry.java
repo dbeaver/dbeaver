@@ -26,15 +26,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
-import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,9 +43,11 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.runtime.encode.SimpleStringEncrypter;
+import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -224,6 +222,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     @Override
+    public DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig) {
+        return new DataSourceDescriptor(this, DataSourceDescriptor.generateNewId(driver), (DriverDescriptor) driver, connConfig);
+    }
+
+    @Override
     public List<? extends DBPDataSourceFolder> getAllFolders() {
         return dataSourceFolders;
     }
@@ -279,6 +282,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
+    @Override
     public DBPDataSourceFolder getFolder(String path) {
         return findFolderByPath(path, true);
     }
@@ -451,7 +455,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         List<DBPDataSourceContainer> result = new ArrayList<>();
         for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
             if (project.isOpen()) {
-                DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+                DBPDataSourceRegistry registry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
                 if (registry != null) {
                     result.addAll(registry.getDataSources());
                 }

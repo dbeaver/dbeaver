@@ -26,11 +26,9 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.ActionUtils;
-
-import java.util.ResourceBundle;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 /**
  * StyledTextContentAdapter
@@ -85,11 +83,7 @@ public class StyledTextUtils {
         });
 
         IFindReplaceTarget stFindReplaceTarget = new StyledTextFindReplaceTarget(text);
-        menu.add(new FindReplaceAction(
-            ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
-            "Editor.FindReplace.",
-            text.getShell(),
-            stFindReplaceTarget));
+        menu.add(TextEditorUtils.createFindReplaceAction(text.getShell(), stFindReplaceTarget));
         menu.add(new GroupMarker("styled_text_additions"));
     }
 

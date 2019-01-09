@@ -50,6 +50,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     private Long rowCount;
     private Long diskSpace;
     final TriggerCache triggerCache = new TriggerCache();
+    final RuleCache ruleCache = new RuleCache();
 
     protected PostgreTableReal(PostgreSchema catalog)
     {
@@ -166,6 +167,13 @@ public abstract class PostgreTableReal extends PostgreTableBase
         return triggerCache.getObject(monitor, this, name);
     }
 
+    @Association
+    public Collection<PostgreRule> getRules(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return ruleCache.getAllObjects(monitor, this);
+    }
+
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
         throw new DBException("Table DDL is read-only");
@@ -190,6 +198,26 @@ public abstract class PostgreTableReal extends PostgreTableBase
             throws SQLException, DBException
         {
             return new PostgreTrigger(session.getProgressMonitor(), owner, dbResult);
+        }
+
+    }
+
+    class RuleCache extends JDBCObjectCache<PostgreTableReal, PostgreRule> {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableReal owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT r.oid,r.*, pg_get_ruledef(r.oid) AS definition\n" +
+                    "FROM pg_rewrite r\n" +
+                    "WHERE r.ev_class=" + owner.getObjectId() + " AND r.rulename <> '_RETURN'::name");
+        }
+
+        @Override
+        protected PostgreRule fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableReal owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreRule(session.getProgressMonitor(), owner, dbResult);
         }
 
     }

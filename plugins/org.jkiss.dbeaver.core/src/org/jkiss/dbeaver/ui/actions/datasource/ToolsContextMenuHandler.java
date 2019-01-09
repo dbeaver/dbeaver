@@ -33,6 +33,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.utils.ArrayUtils;
@@ -76,7 +77,7 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
         }
         menuManager.add(new Separator());
         {
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_SQL_EDITOR_OPEN));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), SQLEditorCommands.CMD_SQL_EDITOR_OPEN));
 /*
             final MenuManager toolsMenu = new MenuManager(
                 DBeaverActivator.getPluginResourceBundle().getString("menu.database.tools"));

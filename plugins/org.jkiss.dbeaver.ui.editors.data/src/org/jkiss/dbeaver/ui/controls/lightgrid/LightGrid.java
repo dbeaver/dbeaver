@@ -500,6 +500,9 @@ public abstract class LightGrid extends Canvas {
                 }
             }
         }
+        if (controlWasHidden) {
+            refreshColumns = true;
+        }
         controlWasHidden = getClientArea().height == 0;
 
         if (refreshColumns) {

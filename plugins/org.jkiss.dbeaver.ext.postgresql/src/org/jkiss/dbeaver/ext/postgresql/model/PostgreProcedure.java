@@ -40,10 +40,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgreProcedure
@@ -54,6 +51,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private static final String CAT_FLAGS = "Flags";
     private static final String CAT_PROPS = "Properties";
     private static final String CAT_STATS = "Statistics";
+
+    public static final float DEFAULT_EST_ROWS = 1000.0f;
+    public static final float DEFAULT_COST = 100.0f;
 
     public enum ProcedureVolatile {
         i("IMMUTABLE"),
@@ -90,6 +90,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     private long oid;
+    private PostgreProcedureKind kind;
     private String procSrc;
     private String body;
     private long ownerId;
@@ -243,12 +244,41 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.description = JDBCUtils.safeGetString(dbResult, "description");
 
         this.acl = JDBCUtils.safeGetObject(dbResult, "proacl");
+
+        this.config = JDBCUtils.safeGetArray(dbResult, "proconfig");
+
+        if (getDataSource().isServerVersionAtLeast(11, 0)) {
+            String proKind = JDBCUtils.safeGetString(dbResult, "prokind");
+            try {
+                kind = PostgreProcedureKind.valueOf(proKind);
+            } catch (IllegalArgumentException e) {
+                log.warn("Unsupported procedure kind:" + proKind);
+                kind = PostgreProcedureKind.f;
+            }
+        } else {
+            if (isAggregate) {
+                kind = PostgreProcedureKind.a;
+            } else if (isWindow) {
+                kind = PostgreProcedureKind.w;
+            } else {
+                kind = PostgreProcedureKind.f;
+            }
+        }
     }
 
     @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return container.getDatabase();
+    }
+
+    @Property(viewable = false, order = 3)
+    public PostgreProcedureKind getKind() {
+        return kind;
+    }
+
+    public void setKind(PostgreProcedureKind kind) {
+        this.kind = kind;
     }
 
     @Override
@@ -260,7 +290,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Override
     public DBSProcedureType getProcedureType()
     {
-        return DBSProcedureType.FUNCTION;
+        switch (kind) {
+            case f:
+            case a:
+            case w:
+                return DBSProcedureType.FUNCTION;
+            default:
+                return DBSProcedureType.PROCEDURE;
+        }
     }
 
     @Property(hidden = true, editable = true, updatable = true, order = -1)
@@ -278,6 +315,16 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         List<PostgreProcedureParameter> result = new ArrayList<>();
         for (PostgreProcedureParameter param : params) {
             if (param.getParameterKind().isInput()) {
+                result.add(param);
+            }
+        }
+        return result;
+    }
+
+    public List<PostgreProcedureParameter> getParameters(DBSProcedureParameterKind kind) {
+        List<PostgreProcedureParameter> result = new ArrayList<>();
+        for (PostgreProcedureParameter param : params) {
+            if (param.getParameterKind() == kind) {
                 result.add(param);
             }
         }
@@ -337,7 +384,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 if (!isPersisted()) {
                     PostgreDataType returnType = getReturnType();
                     String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
-                    body = generateFunctionDeclaration(monitor, getLanguage(monitor), returnTypeName, "-- Enter function body here");
+                    body = generateFunctionDeclaration(monitor, getLanguage(monitor), returnTypeName, "\n\t-- Enter function body here\n");
                 } else if (oid == 0 || isAggregate) {
                     // No OID so let's use old (bad) way
                     body = this.procSrc;
@@ -374,17 +421,31 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return procDDL;
     }
 
-    private String generateFunctionDeclaration(DBRProgressMonitor monitor, PostgreLanguage language, String returnType, String functionBody) throws DBException {
+    private String generateFunctionDeclaration(DBRProgressMonitor monitor, PostgreLanguage language, String returnTypeName, String functionBody) throws DBException {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder decl = new StringBuilder();
-        decl.append("CREATE OR REPLACE FUNCTION ").append(getFullQualifiedSignature()).append(lineSeparator);
-        if (!CommonUtils.isEmpty(returnType)) {
+        decl.append("CREATE OR REPLACE ").append(getProcedureTypeName()).append(" ").append(getFullQualifiedSignature()).append(lineSeparator);
+        if (getProcedureType().hasReturnValue() && !CommonUtils.isEmpty(returnTypeName)) {
             decl.append("\tRETURNS ");
             if (isReturnsSet()) {
-                decl.append("SETOF ");
+                // Check for TABLE parameters and construct
+                List<PostgreProcedureParameter> tableParams = getParameters(DBSProcedureParameterKind.TABLE);
+                if (!tableParams.isEmpty()) {
+                    decl.append("TABLE (");
+                    for (int i = 0; i < tableParams.size(); i++) {
+                        PostgreProcedureParameter tp = tableParams.get(i);
+                        if (i > 0) decl.append(", ");
+                        decl.append(tp.getName()).append(" ").append(tp.getTypeName());
+                    }
+                    decl.append(")");
+                } else {
+                    decl.append("SETOF ").append(returnTypeName);
+                }
+            } else {
+                decl.append(returnTypeName);
             }
-            decl.append(returnType).append(lineSeparator);
+            decl.append(lineSeparator);
         }
         if (language != null) {
             decl.append("\tLANGUAGE ").append(language).append(lineSeparator);
@@ -395,20 +456,36 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (procVolatile != null) {
             decl.append("\t").append(procVolatile.getCreateClause()).append(lineSeparator);
         }
-        if (execCost > 0) {
-            decl.append("\tCOST ").append(execCost).append(lineSeparator);
+        if (execCost > 0 && execCost != DEFAULT_COST) {
+            decl.append("\tCOST ").append(CommonUtils.niceFormatFloat(execCost)).append(lineSeparator);
         }
-        if (estRows > 0) {
-            decl.append("\tROWS ").append(estRows).append(lineSeparator);
+        if (estRows > 0 && estRows != DEFAULT_EST_ROWS) {
+            decl.append("\tROWS ").append(CommonUtils.niceFormatFloat(estRows)).append(lineSeparator);
         }
         if (!ArrayUtils.isEmpty(config)) {
-            // ?
+            for (String configLine : config) {
+                int divPos = configLine.indexOf('=');
+                if (divPos != -1) {
+                    String paramName = configLine.substring(0, divPos);
+                    String paramValue = configLine.substring(divPos + 1);
+                    boolean isNumeric = true;
+                    try {
+                        Double.parseDouble(paramValue);
+                    } catch (NumberFormatException e) {
+                        isNumeric = false;
+                    }
+                    decl.append("\tSET ").append(paramName).append(" = ").append(isNumeric ? paramValue : "'" + paramValue + "'").append(lineSeparator);
+                } else {
+                    log.debug("Wrong function configuration parameter [" + configLine + "]");
+                }
+            }
         }
-        decl.append("AS $function$").append(lineSeparator);
+        String delimiter = "$" + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
+        decl.append("AS ").append(delimiter).append(" ");
         if (!CommonUtils.isEmpty(functionBody)) {
-            decl.append("\t").append(functionBody).append(lineSeparator);
+            decl.append("\t").append(functionBody).append(" ");
         }
-        decl.append("$function$").append(lineSeparator);
+        decl.append(delimiter).append(lineSeparator);
 
         return decl.toString();
     }
@@ -550,7 +627,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     public String getProcedureTypeName() {
-        return isAggregate ? "AGGREGATE" : "FUNCTION";
+        return kind.getName().toUpperCase(Locale.ENGLISH);
     }
 
     @Override

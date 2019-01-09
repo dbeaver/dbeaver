@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -48,7 +49,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
         FireBirdDataSource dataSource = (FireBirdDataSource) container.getDataSource();
 
         if (dataSource == null) {
-            throw new DBException("Not connected to database");
+            throw new DBException(ModelMessages.error_not_connected_to_database);
         }
         // Load domain types
         List<FireBirdDataType> tmpObjectList = new ArrayList<>();

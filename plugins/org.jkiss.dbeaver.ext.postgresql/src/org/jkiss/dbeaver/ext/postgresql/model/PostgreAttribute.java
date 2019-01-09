@@ -182,7 +182,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 21)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 25)
     public long getMaxLength()
     {
         return super.getMaxLength();
@@ -195,21 +195,21 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 26)
     public Integer getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 23)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 27)
     public Integer getScale()
     {
         return super.getScale();
     }
 
     @Nullable
-    @Property(viewable = true, editable = true, order = 24)
+    @Property(viewable = true, editable = true, order = 28)
     public PostgreAttributeIdentity getIdentity() {
         return identity;
     }
@@ -218,7 +218,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.identity = identity;
     }
 
-    @Property(order = 25)
+    @Property(order = 29)
     public boolean isLocal() {
         return isLocal;
     }

@@ -266,7 +266,7 @@ public abstract class JDBCCompositeCache<
                 if (dbResult != null) try {
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {
-                            break;
+                            return;
                         }
                         String parentName = forParent != null ?
                             forParent.getName() :

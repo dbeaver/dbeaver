@@ -29,12 +29,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tools.ToolDescriptor;
 import org.jkiss.dbeaver.registry.tools.ToolGroupDescriptor;
 import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorActionExecuteTool;
+import org.jkiss.dbeaver.ui.actions.common.ExecuteToolHandler;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -141,7 +141,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                         }
 
                         IAction action = ActionUtils.makeAction(
-                            new NavigatorActionExecuteTool(workbenchWindow, tool),
+                            new ExecuteToolHandler(workbenchWindow, tool),
                             activePart.getSite(),
                             selection,
                             tool.getLabel(),
@@ -197,7 +197,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                     objectInput,
                     editorMeta.getEditorId());
             } catch (PartInitException e) {
-                DBUserInterface.getInstance().showError("Editor open", "Error opening tool editor '" + editorMeta.getEditorId() + "'", e.getStatus());
+                DBWorkbench.getPlatformUI().showError("Editor open", "Error opening tool editor '" + editorMeta.getEditorId() + "'", e.getStatus());
             }
         }
     }

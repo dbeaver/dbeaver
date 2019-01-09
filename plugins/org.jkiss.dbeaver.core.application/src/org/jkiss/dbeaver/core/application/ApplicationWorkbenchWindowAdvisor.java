@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.perspective.AbstractPageListener;
@@ -61,7 +62,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
             refreshProjects();
         }
 
-        DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
+        DBWorkbench.getPlatform().getProjectManager().addProjectListener(this);
     }
 
     private void refreshProjects() {
@@ -285,7 +286,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         }
 
         if (ps.getBoolean("SHOW_PERSPECTIVE_IN_TITLE")) {
-            IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
             if (activeProject != null) {
                 sj.add(activeProject.getName()); //$NON-NLS-1$
             }
