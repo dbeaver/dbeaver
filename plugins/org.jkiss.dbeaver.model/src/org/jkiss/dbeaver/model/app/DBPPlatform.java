@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * DBPPlatform
@@ -50,6 +49,9 @@ public interface DBPPlatform
 
     @NotNull
     DBNModel getNavigatorModel();
+
+    @NotNull
+    DBPDataSourceProviderRegistry getDataSourceProviderRegistry();
 
     @NotNull
     OSDescriptor getLocalSystem();

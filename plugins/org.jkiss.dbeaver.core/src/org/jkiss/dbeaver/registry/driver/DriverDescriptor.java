@@ -34,8 +34,12 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.NativeClientDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
@@ -50,7 +54,8 @@ import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -456,6 +461,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
+    @Override
     public boolean isCustom() {
         return custom;
     }
@@ -990,7 +996,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         // Now check driver version
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
             // TODO: implement new version check
             if (false) {
                 try {
@@ -1081,7 +1087,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private boolean acceptLicense(String licenseText) {
         // Check registry
-        DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
         String acceptedStr = prefs.getString(LICENSE_ACCEPT_KEY + getId());
         if (!CommonUtils.isEmpty(acceptedStr)) {
             return true;
@@ -1247,7 +1253,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public static File getCustomDriversHome() {
         File homeFolder;
         // Try to use custom drivers path from preferences
-        String driversHome = DBeaverCore.getGlobalPreferenceStore().getString(ModelPreferences.UI_DRIVERS_HOME);
+        String driversHome = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_HOME);
         if (!CommonUtils.isEmpty(driversHome)) {
             homeFolder = new File(driversHome);
         } else {
@@ -1265,13 +1271,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public static String[] getDriversSources() {
-        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
+        String sourcesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
         return pathList.toArray(new String[0]);
     }
 
     public static String getDriversPrimarySource() {
-        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
+        String sourcesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
         int divPos = sourcesString.indexOf('|');
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
     }

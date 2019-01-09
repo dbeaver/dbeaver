@@ -27,12 +27,15 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
@@ -74,7 +77,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
         if (dataContainer.getDataSource() == null) {
-            DBeaverUI.getInstance().showError("Open Excel", "Not connected to a database");
+            DBeaverUI.getInstance().showError("Open Excel", ModelMessages.error_not_connected_to_database);
             return null;
         }
 
@@ -89,12 +92,13 @@ public class OpenSpreadsheetHandler extends AbstractHandler
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    File tempDir = DBeaverCore.getInstance().getTempFolder(monitor, "office-files");
+                    File tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "office-files");
                     File tempFile = new File(tempDir,
                         CommonUtils.escapeFileName(CommonUtils.truncateString(dataContainer.getName(), 32)) +
                             "." + new SimpleDateFormat("yyyyMMdd-HHmmss").format(System.currentTimeMillis()) + ".xlsx");
+                    tempFile.deleteOnExit();
 
-                    DataExporterXLSX exporter = new DataExporterXLSX();
+                    StreamExporterAbstract exporter = new DataExporterXLSX();
 
                     StreamTransferConsumer consumer = new StreamTransferConsumer();
                     StreamConsumerSettings settings = new StreamConsumerSettings();

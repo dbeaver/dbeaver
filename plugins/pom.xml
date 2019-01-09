@@ -21,7 +21,9 @@
         <module>org.jkiss.dbeaver.ui.editors.data</module>
         <module>org.jkiss.dbeaver.ui.editors.entity</module>
         <module>org.jkiss.dbeaver.ui.editors.hex</module>
+        <module>org.jkiss.dbeaver.ui.editors.image</module>
         <module>org.jkiss.dbeaver.ui.editors.sql</module>
+        <module>org.jkiss.dbeaver.ui.editors.xml</module>
         <module>org.jkiss.dbeaver.ui.navigator</module>
 
         <module>org.jkiss.dbeaver.debug.core</module>

@@ -114,12 +114,13 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     {
         // Initially cache only base types (everything but composite and arrays)
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT t.oid,t.* \n" +
-            "FROM pg_catalog.pg_type t WHERE typnamespace=? ");
+        sql.append("SELECT t.oid,t.*,c.relkind \n" +
+            "FROM pg_catalog.pg_type t" +
+            "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
+            "\nWHERE typnamespace=? ");
         if (PostgreUtils.supportsTypeCategory(session.getDataSource())) {
-            sql.append("AND typcategory <> 'A'");
+            sql.append("AND t.typcategory <> 'A'");
         }
-        sql.append(" AND typrelid=0");
         sql.append("\nORDER by t.oid");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         dbStat.setLong(1, owner.getObjectId());
@@ -129,7 +130,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @Override
     protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        return PostgreDataType.readDataType(session, owner, dbResult);
+        return PostgreDataType.readDataType(session, owner, dbResult, true);
     }
 
     @Override
@@ -149,7 +150,10 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     static PostgreDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, long oid) throws SQLException, DBException {
         // Initially cache only base types (everything but composite and arrays)
         try (JDBCSession session = database.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by OID")) {
-            try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT t.oid,t.* FROM pg_catalog.pg_type t WHERE oid=? ")) {
+            try (final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT t.oid,t.*,c.relkind FROM pg_catalog.pg_type t" +
+                    "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
+                    "\nWHERE t.oid=? ")) {
                 dbStat.setLong(1, oid);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
@@ -158,7 +162,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
                         if (schema == null) {
                             throw new DBException("Schema " + schemaOid + " not found for data type " + oid);
                         }
-                        return PostgreDataType.readDataType(session, schema, dbResult);
+                        return PostgreDataType.readDataType(session, schema, dbResult, false);
                     } else {
                         throw new DBException("Data type " + oid + " not found in database " + database.getName());
                     }
@@ -172,7 +176,10 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     static PostgreDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, String name) throws SQLException, DBException {
         // Initially cache only base types (everything but composite and arrays)
         try (JDBCSession session = database.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by name")) {
-            try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT t.oid,t.* FROM pg_catalog.pg_type t WHERE typname=? ")) {
+            try (final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT t.oid,t.* FROM pg_catalog.pg_type t" +
+                    "\nLEFT OUTER JOIN pg_class c ON c.oid=t.typrelid" +
+                    "\nWHERE t.typname=? ")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
@@ -181,7 +188,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
                         if (schema == null) {
                             throw new DBException("Schema " + schemaOid + " not found for data type " + name);
                         }
-                        return PostgreDataType.readDataType(session, schema, dbResult);
+                        return PostgreDataType.readDataType(session, schema, dbResult, false);
                     } else {
                         throw new DBException("Data type " + name + " not found in database " + database.getName());
                     }

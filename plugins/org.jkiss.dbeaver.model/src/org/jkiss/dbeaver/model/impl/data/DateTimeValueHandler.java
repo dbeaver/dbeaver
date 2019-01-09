@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -28,7 +29,7 @@ import java.util.Date;
 /**
  * Date/time value handler
  */
-public abstract class DateTimeValueHandler extends BaseValueHandler {
+public abstract class DateTimeValueHandler extends BaseValueHandler implements DBDValueDefaultGenerator {
 
     protected static final Log log = Log.getLog(DateTimeValueHandler.class);
 
@@ -56,4 +57,23 @@ public abstract class DateTimeValueHandler extends BaseValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         return super.getValueDisplayString(column, value, format);
     }
+
+    ////////////////////////////////////////////////////////
+    // Default generator
+
+    @Override
+    public String getDefaultValueLabel() {
+        return "Current Time";
+    }
+
+    @Override
+    public Object generateDefaultValue(DBSTypedObject type) {
+        try {
+            return getValueFromObject(null, type, new Date(), false);
+        } catch (DBCException e) {
+            log.debug("Error getting current time stamp", e);
+            return null;
+        }
+    }
+
 }

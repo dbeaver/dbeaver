@@ -20,17 +20,14 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAlias;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -106,22 +103,6 @@ public class DBNBookmark extends DBNResource
                 throw new DBException("Can't rename bookmark", e);
             }
         }
-    }
-
-    @Override
-    public Collection<DBPDataSourceContainer> getAssociatedDataSources()
-    {
-        IResource resource = getResource();
-        if (resource != null) {
-            DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(resource.getProject());
-            if (dataSourceRegistry != null) {
-                DBPDataSourceContainer dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
-                if (dataSource != null) {
-                    return Collections.singleton(dataSource);
-                }
-            }
-        }
-        return null;
     }
 
 }

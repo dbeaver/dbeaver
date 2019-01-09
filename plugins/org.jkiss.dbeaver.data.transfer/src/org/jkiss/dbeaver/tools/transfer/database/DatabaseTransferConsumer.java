@@ -93,7 +93,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         initExporter(session.getProgressMonitor());
 
-        if (offset == 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
+        if (offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
             if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
                 targetObject.truncateData(

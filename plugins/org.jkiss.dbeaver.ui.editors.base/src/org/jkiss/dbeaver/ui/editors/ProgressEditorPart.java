@@ -26,7 +26,6 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
@@ -109,7 +108,7 @@ public class ProgressEditorPart extends EditorPart {
             ownerEditor.init(ownerEditor.getEditorSite(), result);
             ownerEditor.recreateEditorControl();
         } catch (Exception e) {
-            DBUserInterface.getInstance().showError("Editor init", "Can't initialize editor", e);
+            DBWorkbench.getPlatformUI().showError("Editor init", "Can't initialize editor", e);
         }
     }
 

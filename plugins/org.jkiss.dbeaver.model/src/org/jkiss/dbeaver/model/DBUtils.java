@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -1445,13 +1444,32 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBSObject[] getSelectedObjects(@NotNull DBSObject object)
-    {
+    public static DBSObject[] getSelectedObjects(DBRProgressMonitor monitor, @NotNull DBSObject object) {
         DBSObjectSelector objectSelector = getAdapter(DBSObjectSelector.class, object);
         if (objectSelector != null) {
+            if (objectSelector instanceof DBSObjectContainer) {
+                // Read children - just in case
+                try {
+                    ((DBSObjectContainer) objectSelector).getChildren(monitor);
+                } catch (DBException e) {
+                    log.debug("Error reading children objects of object selector", e);
+                }
+            }
             DBSObject selectedObject1 = objectSelector.getDefaultObject();
             if (selectedObject1 != null) {
-                DBSObject nestedObject = getSelectedObject(selectedObject1, true);
+                DBSObject nestedObject = null;
+                DBSObjectSelector objectSelector2 = getAdapter(DBSObjectSelector.class, selectedObject1);
+                if (objectSelector2 != null) {
+                    if (objectSelector2 instanceof DBSObjectContainer) {
+                        // Read children - just in case
+                        try {
+                            ((DBSObjectContainer) objectSelector2).getChildren(monitor);
+                        } catch (DBException e) {
+                            log.debug("Error reading children objects of nested object selector", e);
+                        }
+                    }
+                    nestedObject = objectSelector2.getDefaultObject();
+                }
                 if (nestedObject != null) {
                     return new DBSObject[] { selectedObject1, nestedObject };
                 } else {
@@ -1462,7 +1480,7 @@ public final class DBUtils {
         return new DBSObject[0];
     }
 
-    public static DBSObjectContainer getSchemaContainer(DBSObjectContainer root) {
+    public static DBSObjectContainer getChangeableObjectContainer(DBSObjectContainer root) {
         DBSObjectContainer schemaContainer = root;
         if (root instanceof DBSObjectSelector) {
             DBSObject defaultObject = ((DBSObjectSelector) root).getDefaultObject();
@@ -1470,6 +1488,12 @@ public final class DBUtils {
                 try {
                     Class<? extends DBSObject> childType = ((DBSCatalog) defaultObject).getChildType(new VoidProgressMonitor());
                     if (childType != null && DBSObjectContainer.class.isAssignableFrom(childType)) {
+                        if (defaultObject instanceof DBSObjectSelector) {
+                            if (!((DBSObjectSelector) defaultObject).supportsDefaultChange()) {
+                                // Schema can't be changed - return root
+                                return root;
+                            }
+                        }
                         schemaContainer = (DBSObjectContainer) defaultObject;
                     }
                 } catch (DBException e) {
@@ -1627,7 +1651,7 @@ public final class DBUtils {
                 if (!monitor.isCanceled()) {
                     // Do not recover if connection was canceled
                     InvalidateJob.invalidateDataSource(monitor, dataSource, false,
-                        () -> DBUserInterface.getInstance().openConnectionEditor(dataSource.getContainer()));
+                        () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
                     if (i < tryCount - 1) {
                         log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
                     }

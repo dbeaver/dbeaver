@@ -32,7 +32,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command) throws DBException
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Sequence name cannot be empty");

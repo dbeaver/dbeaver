@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 
 import java.util.ArrayList;
 import java.util.HashMap;

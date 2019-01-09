@@ -18,13 +18,13 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.jface.text.templates.TemplateContextType;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.meta.*;
@@ -43,7 +43,7 @@ import java.util.Map;
 /**
  * DataSourceProviderDescriptor
  */
-public class DataSourceProviderDescriptor extends AbstractDescriptor
+public class DataSourceProviderDescriptor extends AbstractDescriptor implements DBPDataSourceProviderDescriptor
 {
     private static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
 
@@ -157,21 +157,25 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return parentProvider;
     }
 
+    @Override
     public String getId()
     {
         return id;
     }
 
+    @Override
     public String getName()
     {
         return name;
     }
 
+    @Override
     public String getDescription()
     {
         return description;
     }
 
+    @Override
     public DBPImage getIcon()
     {
         return icon;
@@ -313,7 +317,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             true, false, false, false,
             config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
             null);
-        loadTreeChildren(config, treeRoot);
+        loadTreeChildren(config, treeRoot, null);
         loadTreeIcon(treeRoot, config);
         return treeRoot;
     }
@@ -337,21 +341,27 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 return;
             }
         }
+        String afterPath = config.getAttribute(RegistryConstants.ATTR_AFTER);
+        DBXTreeItem afterItem = null;
+        if (afterPath != null) {
+            afterItem = baseItem.findChildItemByPath(afterPath);
+        }
+
         // Inject nodes into tree item
-        loadTreeChildren(config, baseItem);
+        loadTreeChildren(config, baseItem, afterItem);
     }
 
-    private void loadTreeChildren(IConfigurationElement config, DBXTreeNode parent)
+    private void loadTreeChildren(IConfigurationElement config, DBXTreeNode parent, DBXTreeItem afterItem)
     {
         IConfigurationElement[] children = config.getChildren();
         if (!ArrayUtils.isEmpty(children)) {
             for (IConfigurationElement child : children) {
-                loadTreeNode(parent, child);
+                loadTreeNode(parent, child, afterItem);
             }
         }
     }
 
-    private void loadTreeNode(DBXTreeNode parent, IConfigurationElement config)
+    private void loadTreeNode(DBXTreeNode parent, IConfigurationElement config, DBXTreeItem afterItem)
     {
         DBXTreeNode child = null;
         final String refId = config.getAttribute(RegistryConstants.ATTR_REF);
@@ -413,8 +423,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 }
                 loadTreeHandlers(child, config);
                 loadTreeIcon(child, config);
-                loadTreeChildren(config, child);
+                loadTreeChildren(config, child, null);
             }
+        }
+        if (child != null && afterItem != null) {
+            parent.moveChildAfter(child, afterItem);
         }
     }
 
@@ -473,11 +486,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private DriverDescriptor loadDriver(IConfigurationElement config)
     {
         return new DriverDescriptor(this, config);
-    }
-
-    public void loadTemplateVariableResolvers(TemplateContextType contextType)
-    {
-        //Collection<TemplateVariableResolver>
     }
 
     @Override

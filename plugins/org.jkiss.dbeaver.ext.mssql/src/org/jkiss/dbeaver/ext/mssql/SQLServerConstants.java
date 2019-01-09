@@ -60,6 +60,7 @@ public class SQLServerConstants {
 
     public static final String SQL_SERVER_SYSTEM_SCHEMA = "sys";
     public static final String SYBASE_SYSTEM_SCHEMA = "dbo";
+    public static final String INFORMATION_SCHEMA_SCHEMA = "information_schema";
 
     public static final DBSIndexType INDEX_TYPE_HEAP = new DBSIndexType("HEAP", SQLServerMessages.index_type_Heap); //$NON-NLS-1$
     public static final DBSIndexType INDEX_TYPE_NON_CLUSTERED = new DBSIndexType("NON_CLUSTERED", SQLServerMessages.index_type_NonClustered); //$NON-NLS-1$
@@ -68,4 +69,5 @@ public class SQLServerConstants {
 
     public static final String SYS_TABLE_EXTENDED_PROPERTIES = "extended_properties";
     public static final String PROP_MS_DESCRIPTION = "MS_Description";
+
 }

@@ -563,4 +563,10 @@ public class CommonUtils {
         return str.regionMatches(true, 0, startPart, 0, startPart.length());
     }
 
+    public static String niceFormatFloat(float val) {
+        if (val == (int) val)
+            return String.valueOf((int)val);
+        else
+            return String.valueOf(val);
+    }
 }

@@ -382,7 +382,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
 
     public Collection<DBPDataSourceContainer> getAssociatedDataSources()
     {
-        return handler == null ? null : handler.getAssociatedDataSources(resource);
+        return handler == null ? null : handler.getAssociatedDataSources(this);
     }
 
     public void refreshResourceState(Object source) {

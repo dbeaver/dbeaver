@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
@@ -57,13 +56,16 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CSmartSelector;
 import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -127,7 +129,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 } else {
                     enabled = true;
 
-                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                    DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
 
                     DBSObject defObject = objectSelector.getDefaultObject();
                     if (defObject instanceof DBSObjectContainer) {
@@ -169,7 +171,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     public DataSourceManagementToolbar(IWorkbenchWindow workbenchWindow) {
         toolBarInstance = this;
         this.workbenchWindow = workbenchWindow;
-        DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+        DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
 
         final ISelectionListener selectionListener = (part, selection) -> {
             if (part == activePart && selection instanceof IStructuredSelection) {
@@ -214,7 +216,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     }
 
     private void dispose() {
-        DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
+        DBWorkbench.getPlatform().getNavigatorModel().removeListener(this);
 
         IWorkbenchPage activePage = workbenchWindow.getActivePage();
         if (activePage != null) {
@@ -306,7 +308,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 if (fileDataSource != null) {
                     return fileDataSource.getRegistry().getDataSources();
                 }
-                final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(curFile.getProject());
+                final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(curFile.getProject());
                 if (dsRegistry != null) {
                     return dsRegistry.getDataSources();
                 }
@@ -333,7 +335,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (dataSourceContainer != null) {
             return dataSourceContainer.getRegistry().getProject();
         } else {
-            return DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            return DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         }
     }
 
@@ -483,7 +485,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 resultSetSize.setText(""); //$NON-NLS-1$
             } else {
                 resultSetSize.setEnabled(true);
-                resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS)));
+                resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
             }
         }
 
@@ -500,7 +502,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 rsSize = "1"; //$NON-NLS-1$
             }
             DBPPreferenceStore store = dsContainer.getPreferenceStore();
-            store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, rsSize);
+            store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, rsSize);
             PrefUtils.savePreferenceStore(store);
         }
     }
@@ -682,7 +684,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
-        if (event.getProperty().equals(DBeaverPreferences.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
+        if (event.getProperty().equals(ResultSetPreferences.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
             if (event.getNewValue() != null) {
                 resultSetSize.setText(event.getNewValue().toString());
             }
@@ -713,7 +715,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         comboGroup.setLayout(layout);
 
         final int fontHeight = UIUtils.getFontHeight(parent);
-        int comboWidth = fontHeight * DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH);
+        int comboWidth = fontHeight * DBWorkbench.getPlatform().getPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH);
 
         connectionCombo = new SelectDataSourceCombo(comboGroup) {
 
@@ -736,7 +738,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.addItem(null);
         connectionCombo.select(0);
 
-        comboWidth = fontHeight * DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH);
+        comboWidth = fontHeight * DBWorkbench.getPlatform().getPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH);
         databaseCombo = new CSmartSelector<DBNDatabaseNode>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER,
             new DatabaseLabelProviders.DatabaseLabelProvider() {
                 @Override
@@ -774,7 +776,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
-            resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS)));
+            resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
         }
         //resultSetSize.setDigits(7);
         resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));

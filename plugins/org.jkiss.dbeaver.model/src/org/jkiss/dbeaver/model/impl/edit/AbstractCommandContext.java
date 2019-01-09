@@ -80,12 +80,25 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
         // Execute commands in transaction
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
+        boolean useAutoCommit = false;
+
+        // Validate commands
+        {
+            Map<String, Object> validateOptions = new HashMap<>();
+            for (CommandQueue queue : getCommandQueues()) {
+                for (CommandInfo cmd : queue.commands) {
+                    cmd.command.validateCommand(validateOptions);
+                }
+            }
+            useAutoCommit = CommonUtils.getOption(validateOptions, OPTION_AVOID_TRANSACTIONS);
+        }
+
         boolean oldAutoCommit = false;
         if (txnManager != null) {
             oldAutoCommit = txnManager.isAutoCommit();
-            if (oldAutoCommit) {
+            if (oldAutoCommit != useAutoCommit) {
                 try {
-                    txnManager.setAutoCommit(monitor, false);
+                    txnManager.setAutoCommit(monitor, useAutoCommit);
                 } catch (DBCException e) {
                     log.warn("Can't switch to transaction mode", e);
                 }
@@ -95,7 +108,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             executeCommands(monitor, options);
 
             // Commit changes
-            if (txnManager != null) {
+            if (txnManager != null && !useAutoCommit) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit script transaction")) {
                     txnManager.commit(session);
                 } catch (DBCException e1) {
@@ -106,7 +119,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             clearCommandQueues();
         } catch (Throwable e) {
             // Rollback changes
-            if (txnManager != null) {
+            if (txnManager != null && !useAutoCommit) {
                 try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback script transaction")) {
                     txnManager.rollback(session, null);
                 } catch (DBCException e1) {
@@ -115,9 +128,9 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             }
             throw e;
         } finally {
-            if (txnManager != null && oldAutoCommit) {
+            if (txnManager != null && oldAutoCommit != useAutoCommit) {
                 try {
-                    txnManager.setAutoCommit(monitor, true);
+                    txnManager.setAutoCommit(monitor, oldAutoCommit);
                 } catch (DBCException e) {
                     log.warn("Can't switch back to auto-commit mode", e);
                 }
@@ -127,13 +140,6 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
     private void executeCommands(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         List<CommandQueue> commandQueues = getCommandQueues();
-
-        // Validate commands
-        for (CommandQueue queue : commandQueues) {
-            for (CommandInfo cmd : queue.commands) {
-                cmd.command.validateCommand();
-            }
-        }
 
         // Execute commands
         List<CommandInfo> executedCommands = new ArrayList<>();

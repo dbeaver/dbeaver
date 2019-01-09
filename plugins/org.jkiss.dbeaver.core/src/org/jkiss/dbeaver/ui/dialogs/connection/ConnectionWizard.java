@@ -39,12 +39,13 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -180,11 +181,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                     message);
             } catch (InterruptedException ex) {
                 if (!"cancel".equals(ex.getMessage())) {
-                    DBUserInterface.getInstance().showError(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
+                    DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
                         CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                 }
             } catch (InvocationTargetException ex) {
-                DBUserInterface.getInstance().showError(
+                DBWorkbench.getPlatformUI().showError(
                         CoreMessages.dialog_connection_wizard_start_dialog_error_title,
                         null,
                         GeneralUtils.makeExceptionStatus(ex.getTargetException()));
@@ -241,7 +242,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
                 DBPDataSource dataSource = container.getDataSource();
                 if (dataSource == null) {
-                    throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
+                    throw new DBException(ModelMessages.error_not_connected_to_database);
                 }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
 

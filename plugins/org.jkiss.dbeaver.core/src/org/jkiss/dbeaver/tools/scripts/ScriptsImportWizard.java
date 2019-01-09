@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -81,7 +81,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             return false;
         }
         catch (InvocationTargetException ex) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_scripts_import_wizard_dialog_error_title,
                 CoreMessages.dialog_scripts_import_wizard_dialog_error_text,
                 ex.getTargetException());
@@ -138,8 +138,8 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
                 }
             }
             String targetName = file.getName();
-            if (!targetName.toLowerCase().endsWith("." + ResourceUtils.SCRIPT_FILE_EXTENSION)) { //$NON-NLS-1$
-                targetName += "." + ResourceUtils.SCRIPT_FILE_EXTENSION; //$NON-NLS-1$
+            if (!targetName.toLowerCase().endsWith("." + SQLEditorUtils.SCRIPT_FILE_EXTENSION)) { //$NON-NLS-1$
+                targetName += "." + SQLEditorUtils.SCRIPT_FILE_EXTENSION; //$NON-NLS-1$
             }
 
             final IFile targetFile = targetDir.getFile(targetName);

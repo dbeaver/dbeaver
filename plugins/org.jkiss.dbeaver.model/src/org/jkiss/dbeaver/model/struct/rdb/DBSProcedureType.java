@@ -22,7 +22,17 @@ package org.jkiss.dbeaver.model.struct.rdb;
  */
 public enum DBSProcedureType
 {
-    UNKNOWN,
-    PROCEDURE,
-    FUNCTION
+    UNKNOWN(false),
+    PROCEDURE(false),
+    FUNCTION(true);
+
+    private final boolean hasReturnValue;
+
+    DBSProcedureType(boolean hasReturnValue) {
+        this.hasReturnValue = hasReturnValue;
+    }
+
+    public boolean hasReturnValue() {
+        return hasReturnValue;
+    }
 }

@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -158,7 +157,7 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
         final DBNNode rootNode = DBWorkbench.getPlatform().getLiveProjects().size() == 1 ?
             navigatorModel.getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject()) : navigatorModel.getRoot();
         boolean chooseConsumer = settings.isConsumerOptional();
-        DBNNode node = DBUserInterface.getInstance().selectObject(
+        DBNNode node = DBWorkbench.getPlatformUI().selectObject(
             UIUtils.getActiveWorkbenchShell(),
             chooseConsumer ?
                 "Select target entity for '" + pipe.getProducer().getDatabaseObject().getName()  + "'" :

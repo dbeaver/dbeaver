@@ -724,7 +724,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
     }
 
-    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult, boolean skipTables) throws SQLException, DBException
     {
         //long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
         long typeId = JDBCUtils.safeGetLong(dbResult, "oid");
@@ -732,6 +732,20 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         if (CommonUtils.isEmpty(name)) {
             log.debug("Empty name for data type " + typeId);
             return null;
+        }
+        if (skipTables) {
+            String relKind = JDBCUtils.safeGetString(dbResult, "relkind");
+            if (relKind != null) {
+                try {
+                    final RelKind tableType = RelKind.valueOf(relKind);
+                    if (tableType != RelKind.c) {
+                        // No a composite data type - skip it
+                        return null;
+                    }
+                } catch (Exception e) {
+                    log.debug(e.getMessage());
+                }
+            }
         }
         int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
         PostgreTypeCategory typeCategory;

@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -150,7 +150,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
             try {
                 launch(launchable, mode);
             } catch (CoreException e) {
-                DBUserInterface.getInstance().showError(DebugUIMessages.DatabaseLaunchShortcut_e_launch, "Cannot launch debug", e.getStatus());
+                DBWorkbench.getPlatformUI().showError(DebugUIMessages.DatabaseLaunchShortcut_e_launch, "Cannot launch debug", e.getStatus());
             }
         }
     }

@@ -46,6 +46,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         public Rectangle initBounds;
         public Color bgColor;
         public int zOrder = 0;
+        public ERDAttributeVisibility attributeVisibility;
     }
 
     private ERDDecorator decorator;

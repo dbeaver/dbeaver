@@ -107,6 +107,15 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
                     return "(" + scale + ')';
                 }
             }
+        } else if (dataKind == DBPDataKind.STRING) {
+            long maxLength = column.getMaxLength();
+            if (maxLength == 0) {
+                return null;
+            } else if (maxLength == -1) {
+                return "(MAX)";
+            } else {
+                return "(" + maxLength + ")";
+            }
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }

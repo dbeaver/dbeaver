@@ -59,7 +59,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     }
 
     @Override
-    protected void validateObjectProperties(ObjectChangeCommand command) throws DBException
+    protected void validateObjectProperties(ObjectChangeCommand command, Map<String, Object> options) throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Sequence name cannot be empty");

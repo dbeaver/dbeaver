@@ -28,12 +28,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -91,7 +95,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             return false;
         }
         catch (InvocationTargetException ex) {
-            DBUserInterface.getInstance().showError(
+            DBWorkbench.getPlatformUI().showError(
                     "Import error",
                 "Cannot import projects",
                 ex.getTargetException());
@@ -341,7 +345,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         if (!CommonUtils.isEmpty(projectDescription)) {
             description.setComment(projectDescription);
         }
-        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
         project.create(description, 0, RuntimeUtils.getNestedMonitor(monitor));
 
         try {

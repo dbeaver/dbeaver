@@ -29,9 +29,10 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -51,9 +52,9 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -839,7 +840,7 @@ public class DataSourceDescriptor
         if (dataSource instanceof DBSObjectContainer) {
             String activeObject = getConnectionConfiguration().getBootstrap().getDefaultObjectName();
             if (!CommonUtils.isEmptyTrimmed(activeObject)) {
-                DBSObjectContainer schemaContainer = DBUtils.getSchemaContainer((DBSObjectContainer) dataSource);
+                DBSObjectContainer schemaContainer = DBUtils.getChangeableObjectContainer((DBSObjectContainer) dataSource);
                 if (schemaContainer != null && schemaContainer instanceof DBSObjectSelector) {
                     DBSObject child = schemaContainer.getChild(monitor, activeObject);
                     if (child != null) {
@@ -865,7 +866,7 @@ public class DataSourceDescriptor
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver());
 
             monitor.subTask("Execute process " + processDescriptor.getName());
-            DBUserInterface.getInstance().executeProcess(processDescriptor);
+            DBWorkbench.getPlatformUI().executeProcess(processDescriptor);
 
             {
                 // Run output grab job
@@ -1171,7 +1172,7 @@ public class DataSourceDescriptor
         // just do nothing
     }
 
-    public static String generateNewId(DriverDescriptor driver)
+    public static String generateNewId(DBPDriver driver)
     {
         long rnd = new Random().nextLong();
         if (rnd < 0) rnd = -rnd;

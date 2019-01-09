@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 1.0.89.qualifier
-Bundle-Release-Date: 20190107
+Bundle-Version: 1.0.90.qualifier
+Bundle-Release-Date: 20190121
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
@@ -65,6 +65,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.struct,
  org.jkiss.dbeaver.model.struct.rdb,
  org.jkiss.dbeaver.model.virtual,
+ org.jkiss.dbeaver.registry.formatter,
  org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.runtime.encode,
  org.jkiss.dbeaver.runtime.jobs,

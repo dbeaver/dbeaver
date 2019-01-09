@@ -57,7 +57,7 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
     }
 
     // Copy constructor
-    public SQLServerView(DBRProgressMonitor monitor, SQLServerSchema schema, DBSEntity source) throws DBException {
+    public SQLServerView(DBRProgressMonitor monitor, SQLServerSchema schema, SQLServerView source) throws DBException {
         super(monitor, schema, source);
     }
 

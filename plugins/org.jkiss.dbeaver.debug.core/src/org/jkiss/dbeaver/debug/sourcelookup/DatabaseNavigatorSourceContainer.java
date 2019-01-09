@@ -25,13 +25,13 @@ import org.eclipse.debug.core.sourcelookup.ISourceContainerType;
 import org.eclipse.debug.core.sourcelookup.containers.CompositeSourceContainer;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
 
@@ -53,7 +53,7 @@ public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
         DBNNode node;
         try {
             VoidProgressMonitor monitor = new VoidProgressMonitor();
-            node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, project, name);
+            node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, project, name);
         } catch (DBException e) {
             String message = NLS.bind(DebugCoreMessages.DatasourceSourceContainer_e_extract_node, name);
             throw new CoreException(DebugUtils.newErrorStatus(message, e));

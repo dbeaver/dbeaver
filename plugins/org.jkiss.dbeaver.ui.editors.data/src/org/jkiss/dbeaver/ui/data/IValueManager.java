@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
  */
 public interface IValueManager
 {
+    String GROUP_ACTIONS_ADDITIONAL = "actions_add";
+
     /**
      * Fills context menu for certain value
      *

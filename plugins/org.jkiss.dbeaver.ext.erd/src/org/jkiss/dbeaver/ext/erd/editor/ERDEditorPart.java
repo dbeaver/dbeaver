@@ -41,6 +41,7 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.printing.PrintDialog;
@@ -76,11 +77,14 @@ import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatRegistry;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
@@ -642,7 +646,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         int divPos = filePath.lastIndexOf('.');
         if (divPos == -1) {
-            DBUserInterface.getInstance().showError("ERD export", "No file extension was specified");
+            DBWorkbench.getPlatformUI().showError("ERD export", "No file extension was specified");
             return;
         }
         String ext = filePath.substring(divPos + 1);
@@ -654,7 +658,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
         }
         if (targetFormat == null) {
-            DBUserInterface.getInstance().showError("ERD export", "No export format correspond to file extension '" + ext + "'");
+            DBWorkbench.getPlatformUI().showError("ERD export", "No export format correspond to file extension '" + ext + "'");
             return;
         }
 
@@ -665,13 +669,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
             formatHandler.exportDiagram(getDiagram(), figure, getDiagramPart(), outFile);
         } catch (DBException e) {
-            DBUserInterface.getInstance().showError("ERD export failed", null, e);
+            DBWorkbench.getPlatformUI().showError("ERD export failed", null, e);
         }
     }
 
     public void fillAttributeVisibilityMenu(IMenuManager menu)
     {
-        MenuManager asMenu = new MenuManager("View Styles");
+        MenuManager asMenu = new MenuManager(ERDMessages.menu_view_style);
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ICONS));
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.TYPES));
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.NULLABILITY));
@@ -679,11 +683,37 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ENTITY_FQN));
         menu.add(asMenu);
 
-        MenuManager avMenu = new MenuManager("Show Attributes");
-        avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.ALL));
-        avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.KEYS));
-        avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.PRIMARY));
-        avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.NONE));
+        MenuManager avMenu = new MenuManager(ERDMessages.menu_attribute_visibility);
+        avMenu.add(new EmptyAction(ERDMessages.menu_attribute_visibility_default));
+        avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.ALL));
+        avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.KEYS));
+        avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.PRIMARY));
+        avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.NONE));
+
+        ISelection selection = getGraphicalViewer().getSelection();
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            int totalEntities = 0;
+            for (Object item : ((IStructuredSelection) selection).toArray()) {
+                if (item instanceof EntityPart) {
+                    totalEntities++;
+                }
+            }
+
+            if (totalEntities > 0) {
+                avMenu.add(new Separator());
+                String avaTitle = ERDMessages.menu_attribute_visibility_entity;
+                if (((IStructuredSelection) selection).size() == 1) {
+                    avaTitle += " (" + ((IStructuredSelection) selection).getFirstElement() + ")";
+                } else {
+                    avaTitle += " (" + totalEntities + ")";
+                }
+                avMenu.add(new EmptyAction(avaTitle));
+                avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.ALL));
+                avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.KEYS));
+                avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.PRIMARY));
+                avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.NONE));
+            }
+        }
         menu.add(avMenu);
     }
 
@@ -883,25 +913,56 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     private class ChangeAttributeVisibilityAction extends Action {
+        private final boolean defStyle;
         private final ERDAttributeVisibility visibility;
 
-        private ChangeAttributeVisibilityAction(ERDAttributeVisibility visibility)
+        private ChangeAttributeVisibilityAction(boolean defStyle, ERDAttributeVisibility visibility)
         {
             super(visibility.getTitle(), IAction.AS_RADIO_BUTTON);
+            this.defStyle = defStyle;
             this.visibility = visibility;
         }
 
         @Override
         public boolean isChecked()
         {
-            return visibility == getDiagram().getAttributeVisibility();
+            if (defStyle) {
+                return visibility == getDiagram().getAttributeVisibility();
+            } else {
+                for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
+                    if (object instanceof EntityPart) {
+                        if (((EntityPart) object).getEntity().getAttributeVisibility() == visibility) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
         }
 
         @Override
         public void run()
         {
-            getDiagram().setAttributeVisibility(visibility);
-            refreshDiagram(true, false);
+            EntityDiagram diagram = getDiagram();
+            if (defStyle) {
+                diagram.setAttributeVisibility(visibility);
+                for (ERDEntity entity : diagram.getEntities()) {
+                    entity.reloadAttributes(diagram);
+                }
+            } else {
+                boolean reset = (visibility == diagram.getAttributeVisibility());
+                for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
+                    if (object instanceof EntityPart) {
+                        if (reset) {
+                            ((EntityPart) object).getEntity().setAttributeVisibility(null);
+                        } else {
+                            ((EntityPart) object).getEntity().setAttributeVisibility(visibility);
+                        }
+                        ((EntityPart) object).getEntity().reloadAttributes(diagram);
+                    }
+                }
+            }
+            UIUtils.asyncExec(() -> getGraphicalViewer().setContents(diagram));
         }
     }
 
@@ -995,7 +1056,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         }
                         MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[messageStatuses.size()]), null, null);
 
-                        DBUserInterface.getInstance().showError(
+                        DBWorkbench.getPlatformUI().showError(
                                 "Diagram loading errors",
                             "Error(s) occurred during diagram loading. If these errors are recoverable then fix errors and then refresh/reopen diagram",
                             status);

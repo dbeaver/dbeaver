@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.ext.exasol.tools;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableObjectType;
 import org.jkiss.dbeaver.ext.exasol.model.*;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession;
+import org.jkiss.dbeaver.ext.exasol.model.security.ExasolTableObjectType;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -34,7 +34,9 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DB2 Utils
@@ -123,6 +125,10 @@ public class ExasolUtils {
 
                 ddlOutput.append("\n);\n");
             }
+            
+            //partitioning
+            ddlOutput.append(getPartitionDdl(exasolTable, monitor));
+            ddlOutput.append(";\n");
 
             //primary key
             Collection<ExasolTableUniqueKey> pks = exasolTable.getConstraints(monitor);
@@ -152,6 +158,25 @@ public class ExasolUtils {
             monitor.done();
         }
 
+    }
+    
+    public static String getPartitionDdl(ExasolTable table, DBRProgressMonitor monitor) throws DBException {
+    	
+    	if (table.getPartitions().size() == 0)
+    		return "";
+    	Collection<String> cols = table.getPartitions().stream()
+    			.sorted(Comparator.comparing(ExasolTablePartitionColumn::getOrdinalPosition))
+    			.map(pc -> DBUtils.getQuotedIdentifier(pc))
+    			.collect(Collectors.toCollection(ArrayList::new));
+    	
+    	String colList = String.join(",", cols);
+    	
+    	return String.format
+    			(
+    					"ALTER TABLE %s PARTITION BY %s;",
+    					DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL),
+    					colList
+    			);
     }
 
     public static String getFKDdl(ExasolTableForeignKey fk, DBRProgressMonitor monitor) throws DBException {

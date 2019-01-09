@@ -87,6 +87,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean isPromoted();
     boolean isInstantiable();
     boolean isInternalDriver();
+    boolean isCustom();
 
     @Nullable
     DBXTreeNode getNavigatorRoot();
@@ -127,4 +128,5 @@ public interface DBPDriver extends DBPNamedObject
     Object getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
+
 }

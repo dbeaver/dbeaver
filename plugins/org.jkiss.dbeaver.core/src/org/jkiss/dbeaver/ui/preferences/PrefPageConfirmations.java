@@ -18,24 +18,31 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -45,7 +52,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations"; //$NON-NLS-1$
 
-    private Map<String, Combo> confirmChecks = new HashMap<>();
+    private Table confirmTable;
 
     @Override
     public void init(IWorkbench workbench)
@@ -56,67 +63,105 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     @Override
     protected Control createContents(Composite parent)
     {
+        ResourceBundle coreBundle = DBeaverActivator.getCoreResourceBundle();
+        ResourceBundle rsvBundle = ResourceBundle.getBundle(ResultSetMessages.BUNDLE_NAME);
+        ResourceBundle navigatorBundle = ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME);
+        ResourceBundle sqlBundle = ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME);
+
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite filterSettings = UIUtils.createPlaceholder(composite, 1, 5);
+        confirmTable = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
+        confirmTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        confirmTable.setHeaderVisible(true);
+        confirmTable.setLinesVisible(true);
+        UIUtils.createTableColumn(confirmTable, SWT.LEFT, "Confirmation");
+        UIUtils.createTableColumn(confirmTable, SWT.LEFT, "Group");
+        UIUtils.createTableColumn(confirmTable, SWT.RIGHT, "Value");
 
-        {
-            Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_confirmations_group_general_actions, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_EXIT);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ORDER_RESULTSET);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_RS_FETCH_ALL);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_VERSION_CHECK);
-        }
+        final CustomTableEditor tableEditor = new CustomTableEditor(confirmTable) {
+            {
+                firstTraverseIndex = 2;
+                lastTraverseIndex = 2;
+                editOnEnter = false;
+            }
+            @Override
+            protected Control createEditor(Table table, int index, TableItem item) {
+                if (index != 2) {
+                    return null;
+                }
+                CCombo editor = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
+                editor.setItems(new String[] { CoreMessages.pref_page_confirmations_combo_always, CoreMessages.pref_page_confirmations_combo_never, CoreMessages.pref_page_confirmations_combo_prompt} );
+                editor.setText(item.getText(2));
+                return editor;
+            }
+            @Override
+            protected void saveEditorValue(Control control, int index, TableItem item) {
+                item.setText(2, ((CCombo) control).getText());
 
-        {
-            Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_confirmations_group_object_editor, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_DELETE);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_REJECT);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_REVERT);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_DANGER_SQL);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL);
+            }
+        };
 
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_EDITOR_CLOSE);
-            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_RUNNING_QUERY_CLOSE);
-        }
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_EXIT);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_ORDER_RESULTSET);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_FETCH_ALL);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_VERSION_CHECK);
 
-        performDefaults();
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_DELETE);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REJECT);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REVERT);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, rsvBundle, ResultSetPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_DANGER_SQL);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL);
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE);
+
+        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_EDITOR_CLOSE);
+
+        UIUtils.asyncExec(() -> UIUtils.packColumns(confirmTable, true));
+
+        //performDefaults();
 
         return composite;
     }
 
-    private void createConfirmCheckbox(Composite parent, String id)
+    private void createConfirmCheckbox(String group, ResourceBundle bundle, String id)
     {
-        ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();
         String labelKey = ConfirmationDialog.getResourceKey(id, ConfirmationDialog.RES_KEY_TITLE);
+        String title = bundle.getString(labelKey);
 
-        UIUtils.createControlLabel(parent, bundle.getString(labelKey));
-        Combo combo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
-            //UIUtils.createCheckbox(parent, bundle.getString(labelKey), false);
-        combo.setItems(new String[] {CoreMessages.pref_page_confirmations_combo_always, CoreMessages.pref_page_confirmations_combo_never, CoreMessages.pref_page_confirmations_combo_prompt} );
-        confirmChecks.put(id, combo);
+        TableItem item = new TableItem(confirmTable, SWT.NONE);
+        item.setData("id", id);
+        item.setData("bundle", bundle);
+
+        item.setText(0, title);
+        item.setText(1, group);
+        item.setText(2, getCurrentConfirmValue(id));
+    }
+
+    private String getCurrentConfirmValue(String id) {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        String value = store.getString(ConfirmationDialog.PREF_KEY_PREFIX + id);
+        if (CommonUtils.isEmpty(value)) {
+            value = ConfirmationDialog.PROMPT;
+        }
+
+        switch (value) {
+            case ConfirmationDialog.ALWAYS: return CoreMessages.pref_page_confirmations_combo_always;
+            case ConfirmationDialog.NEVER: return CoreMessages.pref_page_confirmations_combo_never;
+            default: return CoreMessages.pref_page_confirmations_combo_prompt;
+        }
     }
 
     @Override
     protected void performDefaults()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-
-        for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
-            String id = entry.getKey();
-            String value = store.getString(ConfirmationDialog.PREF_KEY_PREFIX + id);
-            if (ConfirmationDialog.ALWAYS.equals(value)) {
-                entry.getValue().select(0);
-            } else if (ConfirmationDialog.NEVER.equals(value)) {
-                entry.getValue().select(1);
-            } else {
-                entry.getValue().select(2);
-            }
+        for (TableItem item : confirmTable.getItems()) {
+            String id = (String) item.getData("id");
+            item.setText(2, getCurrentConfirmValue(id));
         }
 
         super.performDefaults();
@@ -125,16 +170,20 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
-            String id = entry.getKey();
-            int selectionIndex = entry.getValue().getSelectionIndex();
-            if (selectionIndex == 2) {
-                store.setToDefault(ConfirmationDialog.PREF_KEY_PREFIX + id);
+        for (TableItem item : confirmTable.getItems()) {
+            String id = (String) item.getData("id");
+            String title = item.getText(2);
+            String value;
+            if (title.equals(CoreMessages.pref_page_confirmations_combo_always)) {
+                value = ConfirmationDialog.ALWAYS;
+            } else if (title.equals(CoreMessages.pref_page_confirmations_combo_never)) {
+                value = ConfirmationDialog.NEVER;
             } else {
-                store.setValue(ConfirmationDialog.PREF_KEY_PREFIX + id, selectionIndex == 0 ? ConfirmationDialog.ALWAYS : ConfirmationDialog.NEVER);
+                value = ConfirmationDialog.PROMPT;
             }
+            store.setValue(ConfirmationDialog.PREF_KEY_PREFIX + id, value);
         }
 
         PrefUtils.savePreferenceStore(store);
