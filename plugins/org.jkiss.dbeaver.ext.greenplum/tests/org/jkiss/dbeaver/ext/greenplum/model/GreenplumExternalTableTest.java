@@ -77,12 +77,19 @@ public class GreenplumExternalTableTest {
     }
 
     @Test
-    public void onCreation_readsMultipleUriLocaitonsFromDbResult() throws SQLException {
+    public void onCreation_readsMultipleUriLocationsFromDbResult() throws SQLException {
         Mockito.when(mockResults.getString("urilocation"))
                 .thenReturn("SOME_EXTERNAL_LOCATION,ANOTHER_EXTERNAL_LOCATION");
         GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
         Assert.assertEquals(Arrays.asList("SOME_EXTERNAL_LOCATION", "ANOTHER_EXTERNAL_LOCATION"),
                 table.getUriLocations());
+    }
+
+    @Test
+    public void onCreation_readsNoLocationsFromDbResult() throws SQLException {
+        Mockito.when(mockResults.getString("urilocation")).thenReturn("");
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        Assert.assertTrue(table.getUriLocations().isEmpty());
     }
 
     @Test
