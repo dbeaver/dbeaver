@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -112,6 +113,18 @@ public class ExasolViewManager
         try {
             actions.add(
                 new SQLDatabasePersistAction("Create view", view.getSource()));
+            
+            if (!CommonUtils.isEmpty(view.getDescription()))
+            {
+            	 actions.add(
+            			 new SQLDatabasePersistAction(
+            					 String.format("COMMENT ON VIEW %s is '%s'", 
+            							 view.getFullyQualifiedName(DBPEvaluationContext.DDL),
+            							 ExasolUtils.quoteString(view.getDescription())
+            							 )
+            					 )
+            			 );
+            }
         } catch (DBCException e) {
         }
     }
