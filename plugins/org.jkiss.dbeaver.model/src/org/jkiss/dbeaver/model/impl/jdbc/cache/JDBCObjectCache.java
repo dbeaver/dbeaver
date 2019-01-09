@@ -106,7 +106,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                         try {
                             while (dbResult.next()) {
                                 if (monitor.isCanceled()) {
-                                    break;
+                                    return;
                                 }
 
                                 OBJECT object = fetchObject(session, owner, dbResult);

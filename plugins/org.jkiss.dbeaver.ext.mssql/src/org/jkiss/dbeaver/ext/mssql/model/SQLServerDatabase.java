@@ -238,7 +238,9 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
                 return schema;
             }
         }
-        log.debug("Schema '" + schemaId + "' not found");
+        if (!monitor.isCanceled()) {
+            log.debug("Schema '" + schemaId + "' not found");
+        }
         return null;
     }
 
