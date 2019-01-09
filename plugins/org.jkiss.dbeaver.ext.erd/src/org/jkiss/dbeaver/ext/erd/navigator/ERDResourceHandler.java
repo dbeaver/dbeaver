@@ -45,7 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * ERD resource handler
@@ -174,10 +174,10 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     }
 
     @Override
-    public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource) {
-        if (resource instanceof IFile) {
+    public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
+        if (resource.getResource() instanceof IFile) {
             try {
-                return DiagramLoader.extractContainers((IFile)resource);
+                return DiagramLoader.extractContainers((IFile)resource.getResource());
             } catch (Exception e) {
                 log.error(e);
                 return null;

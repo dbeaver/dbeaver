@@ -105,20 +105,4 @@ public class DBNBookmark extends DBNResource
         }
     }
 
-    @Override
-    public Collection<DBPDataSourceContainer> getAssociatedDataSources()
-    {
-        IResource resource = getResource();
-        if (resource != null) {
-            DBPDataSourceRegistry dataSourceRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(resource.getProject());
-            if (dataSourceRegistry != null) {
-                DBPDataSourceContainer dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
-                if (dataSource != null) {
-                    return Collections.singleton(dataSource);
-                }
-            }
-        }
-        return null;
-    }
-
 }
