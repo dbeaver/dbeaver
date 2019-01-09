@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,8 +76,9 @@ public class GreenplumExternalTable extends PostgreTableRegular {
 
     public GreenplumExternalTable(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
-        this.uriLocations = Arrays.asList(JDBCUtils.safeGetString(dbResult, "urilocation")
-                .trim().split(","));
+        String uriLocations = JDBCUtils.safeGetStringTrimmed(dbResult, "urilocation");
+        this.uriLocations = uriLocations.length() > 0 ?
+                Arrays.asList(uriLocations.split(",")) : Collections.emptyList();
         this.execLocation = JDBCUtils.safeGetString(dbResult, "execlocation");
         this.formatType = FormatType.valueOf(JDBCUtils.safeGetString(dbResult, "fmttype"));
         this.formatOptions = JDBCUtils.safeGetString(dbResult, "fmtopts");
