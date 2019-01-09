@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -165,9 +166,9 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     private DBEPersistAction buildCommentAction(ExasolTableColumn exasolColumn) {
         if (CommonUtils.isNotEmpty(exasolColumn.getDescription())) {
             String tableName = exasolColumn.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
-            String columnName = exasolColumn.getName();
+            String columnName = DBUtils.getObjectFullName(exasolColumn, DBPEvaluationContext.DDL);
             String comment = exasolColumn.getDescription();
-            String commentSQL = String.format(SQL_COMMENT, tableName, columnName, comment);
+            String commentSQL = String.format(SQL_COMMENT, tableName, columnName, ExasolUtils.quoteString(comment));
             return new SQLDatabasePersistAction(CMD_COMMENT, commentSQL);
         } else {
             return null;

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolScript;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -107,7 +108,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction("Comment on Script","COMMENT ON SCRIPT " + 
                             command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " +
-                            SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
+                            SQLUtils.quoteString(command.getObject(), ExasolUtils.quoteString(command.getObject().getDescription()))));
         }
     }
 

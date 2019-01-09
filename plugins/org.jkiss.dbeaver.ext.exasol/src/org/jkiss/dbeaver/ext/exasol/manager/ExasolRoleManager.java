@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.security.ExasolRole;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolRoleDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -114,7 +115,7 @@ public class ExasolRoleManager extends SQLObjectEditor<ExasolRole, ExasolDataSou
 	
 	private SQLDatabasePersistAction Comment(ExasolRole obj)
 	{
-		return new SQLDatabasePersistAction("Comment on Role", "COMMENT ON ROLE " + DBUtils.getQuotedIdentifier(obj) + " IS '" + obj.getDescription() + "'");
+		return new SQLDatabasePersistAction("Comment on Role", "COMMENT ON ROLE " + DBUtils.getQuotedIdentifier(obj) + " IS '" + ExasolUtils.quoteString(obj.getDescription()) + "'");
 	}
 	
 	@Override
