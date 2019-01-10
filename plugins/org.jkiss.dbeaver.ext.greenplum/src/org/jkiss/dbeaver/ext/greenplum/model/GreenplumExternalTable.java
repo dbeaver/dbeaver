@@ -75,6 +75,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
     private final boolean writable;
     private final boolean temporaryTable;
     private final boolean loggingErrors;
+    private final String command;
 
     public GreenplumExternalTable(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
@@ -91,12 +92,12 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         this.writable = JDBCUtils.safeGetBoolean(dbResult, "writable");
         this.temporaryTable = JDBCUtils.safeGetBoolean(dbResult, "is_temp_table");
         this.loggingErrors = JDBCUtils.safeGetBoolean(dbResult, "is_logging_errors");
+        this.command = JDBCUtils.safeGetString(dbResult, "command");
         if (rejectlimittype != null && rejectlimittype.length() > 0) {
             this.rejectLimitType = RejectLimitType.valueOf(rejectlimittype);
         } else {
             this.rejectLimitType = null;
         }
-
     }
 
     public List<String> getUriLocations() {
@@ -128,7 +129,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
     }
 
     public boolean isWritable() {
-        return this.writable;
+        return writable;
     }
 
     public boolean isTemporaryTable() {
@@ -139,12 +140,16 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         return loggingErrors;
     }
 
+    public String getCommand() {
+        return command;
+    }
+
     public String generateDDL(DBRProgressMonitor monitor) throws DBException {
         StringBuilder ddlBuilder = new StringBuilder();
         ddlBuilder.append("CREATE ")
                 .append(this.isWritable() ? "WRITABLE " : "")
                 .append("EXTERNAL ")
-                .append(webUriLocationExists() ? "WEB " : "")
+                .append(isWebTable() ? "WEB " : "")
                 .append(this.isTemporaryTable() ? "TEMPORARY " : "")
                 .append("TABLE ")
                 .append(addDatabaseQualifier())
@@ -176,10 +181,13 @@ public class GreenplumExternalTable extends PostgreTableRegular {
                     .collect(Collectors.joining(",\n")));
 
             ddlBuilder.append("\n) " + determineExecutionLocation() + "\n");
+        } else if (tableHasCommand()) {
+            ddlBuilder.append("EXECUTE '" + this.getCommand() + "'\n");
         }
 
-        ddlBuilder.append("FORMAT '" + this.getFormatType().getValue() + "' ( "
-                + generateFormatOptions(this.getFormatType(), this.getFormatOptions()) + " )");
+        ddlBuilder.append("FORMAT '" +
+                this.getFormatType().getValue() + "'" +
+                generateFormatOptions(this.getFormatType(), this.getFormatOptions()));
 
         if (this.getEncoding() != null && this.getEncoding().length() > 0) {
             ddlBuilder.append("\nENCODING '" + this.getEncoding() + "'");
@@ -209,17 +217,26 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         return this.isTemporaryTable() ? "" : databaseQualifier;
     }
 
-    private boolean webUriLocationExists() {
-        return this.uriLocations.stream().anyMatch(location -> location.startsWith("http"));
+    private boolean tableHasCommand() {
+        return (this.getCommand() != null && !this.getCommand().isEmpty());
+    }
+
+    private boolean isWebTable() {
+        return (this.uriLocations.stream().anyMatch(location -> location.startsWith("http"))
+                || tableHasCommand());
     }
 
     private String generateFormatOptions(FormatType formatType, String formatOptions) {
+        if (formatOptions.isEmpty()){
+            return "";
+        }
+
         if (formatType.equals(FormatType.b)) {
             String[] formatSpecTokens = formatOptions.split(" ");
             String formatterSpec = formatSpecTokens.length >= 2 ? formatSpecTokens[1] : "";
-            return "FORMATTER=" + formatterSpec;
+            return " ( FORMATTER=" + formatterSpec + " )";
         }
-        return formatOptions;
+        return " ( " + formatOptions + " )";
     }
 
     private String determineExecutionLocation() {
