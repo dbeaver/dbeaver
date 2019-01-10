@@ -312,6 +312,10 @@ public class DriverSelectViewer extends Viewer {
         };
     }
 
+    public StructuredViewer getSelectorViewer() {
+        return selectorViewer;
+    }
+
     public Control getControl() {
         return composite;
     }

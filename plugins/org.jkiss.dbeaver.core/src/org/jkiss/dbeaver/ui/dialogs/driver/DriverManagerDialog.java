@@ -22,6 +22,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -52,6 +53,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
     private static final String DEFAULT_DS_PROVIDER = "generic";
+
+    private static final boolean SHOW_EXPORT = false;
 
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
@@ -168,6 +171,15 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 UIUtils.createLabel(legend, CoreMessages.dialog_driver_manager_label_unavailable);
 
             }
+
+            if (SHOW_EXPORT) {
+                UIUtils.createPushButton(buttonBar, "Export", null, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        exportDriverList();
+                    }
+                });
+            }
         }
 
         descText = new Text(group, SWT.READ_ONLY);
@@ -189,6 +201,46 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         setDefaultSelection();
         this.updateButtons();
         return group;
+    }
+
+    private void exportDriverList() {
+        if (!(treeControl.getSelectorViewer() instanceof DriverTreeViewer)) {
+            return;
+        }
+        StringBuilder buf = new StringBuilder();
+        DriverTreeViewer driverTreeViewer = (DriverTreeViewer) treeControl.getSelectorViewer();
+        List<Object> driverList = (List<Object>) driverTreeViewer.getInput();
+
+        for (Object dObj : driverList) {
+            if (dObj instanceof DriverTreeViewer.DriverCategory) {
+                DriverTreeViewer.DriverCategory category = (DriverTreeViewer.DriverCategory) dObj;
+                buf.append(category.getName()).append("\n");
+                for (DriverDescriptor driver : category.getDrivers()) {
+                    buf.append("\t");
+                    printDriverInfo(buf, driver);
+                }
+            } else if (dObj instanceof DriverDescriptor) {
+                DriverDescriptor driver = (DriverDescriptor)dObj;
+                printDriverInfo(buf, driver);
+            }
+        }
+
+        UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), buf.toString());
+    }
+
+    private void printDriverInfo(StringBuilder buf, DriverDescriptor driver) {
+        if (driver.isDisabled() || driver.getReplacedBy() != null || driver.isCustom()) {
+            return;
+        }
+        buf.append(driver.getName());
+
+        if (driver.getIcon() == DBIcon.TREE_DATABASE || driver.getIcon() instanceof DBIcon && driver.getIcon().getLocation().endsWith("database.png")) {
+            buf.append("\tN/A");
+        } else {
+            buf.append("\t+");
+        }
+
+        buf.append("\n");
     }
 
     @Override
