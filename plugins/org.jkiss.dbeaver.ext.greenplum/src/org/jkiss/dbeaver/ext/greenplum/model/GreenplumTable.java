@@ -1,6 +1,10 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
+ * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
+ * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
+ * Copyright (C) 2019 Nikhil Pawar (npawar@pivotal.io)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,12 +54,24 @@ public class GreenplumTable extends PostgreTableRegular {
 
     private int[] distributionColumns;
 
+    private boolean unloggedTable = false;
+
     public GreenplumTable(PostgreSchema catalog) {
         super(catalog);
     }
 
     public GreenplumTable(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
+
+        if (catalog.getDataSource().isServerVersionAtLeast(9, 1)) {
+            if (JDBCUtils.safeGetString(dbResult, "relpersistence").equalsIgnoreCase("u")) {
+                this.unloggedTable = true;
+            }
+        }
+    }
+
+    public boolean isUnloggedTable() {
+        return unloggedTable;
     }
 
     @Property(viewable = false, order = 90)
@@ -141,6 +157,10 @@ public class GreenplumTable extends PostgreTableRegular {
         } catch (DBException e) {
             log.error("Error reading Greenplum table properties", e);
         }
+    }
+
+    public String addUnloggedClause(String tableddl) {
+        return tableddl.replaceFirst("CREATE", "CREATE UNLOGGED");
     }
 }
 

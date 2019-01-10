@@ -67,7 +67,7 @@ public class PostgreServerGreenplumTest {
     public void readTableDDL_whenTableIsNotAnInstanceOfGreenplumExternalTable_delegatesDDLcreationToParentClass()
             throws DBException {
         String expectedDelegatedResultFromParentClass = null;
-        PostgreTableBase table = Mockito.mock(PostgreTableBase.class);
+        GreenplumTable table = Mockito.mock(GreenplumTable.class);
         Assert.assertEquals(expectedDelegatedResultFromParentClass, server.readTableDDL(monitor, table));
     }
 
