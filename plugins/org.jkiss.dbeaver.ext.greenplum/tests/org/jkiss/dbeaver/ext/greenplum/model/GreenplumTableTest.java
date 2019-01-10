@@ -1,19 +1,25 @@
 package org.jkiss.dbeaver.ext.greenplum.model;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.util.ArrayList;
+import java.util.Arrays;
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({GreenplumTable.class, JDBCUtils.class, DBUtils.class})
 public class GreenplumTableTest {
 
     @Mock
@@ -49,7 +55,7 @@ public class GreenplumTableTest {
         Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
         Mockito.when(mockSchema.getName()).thenReturn(exampleSchemaName);
         Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
-        Mockito.when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
+        Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
 
         Mockito.when(mockResults.getString("relname")).thenReturn(exampleTableName);
         Mockito.when(mockResults.getString("fmttype")).thenReturn(exampleFormatType);
@@ -57,13 +63,13 @@ public class GreenplumTableTest {
         Mockito.when(mockResults.getString("fmtopts")).thenReturn(exampleFormatOptions);
         Mockito.when(mockResults.getString("encoding")).thenReturn(exampleEncoding);
         Mockito.when(mockResults.getString("execlocation")).thenReturn(exampleExecLocation);
-
-        table = new GreenplumTable(mockSchema, mockResults);
     }
 
     @Test
     public void addUnloggedClause_whenTableDDLContainsCreateKeyword_itIsReplacedWithCreateUnlogged() {
         String tableDdl = "CREATE TABLE";
+
+        table = new GreenplumTable(mockSchema, mockResults);
 
         Assert.assertEquals(table.addUnloggedClause(tableDdl), "CREATE UNLOGGED TABLE");
     }
@@ -72,6 +78,103 @@ public class GreenplumTableTest {
     public void addUnloggedClause_whenTableDDLDoesNotContainCreateKeyword_itIsReplacedWithCreateUnlogged() {
         String tableDdl = "SOME TABLE";
 
+        table = new GreenplumTable(mockSchema, mockResults);
+
         Assert.assertEquals(table.addUnloggedClause(tableDdl), tableDdl);
+    }
+
+    @Test
+    public void appendTableModifiers_whenServerVersion8_andNoColumnSetForDistribution_resultsInRandom() throws Exception {
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        StringBuilder ddl = new StringBuilder();
+
+        mockSetupForEmptyDistributionColumnList();
+
+        table.appendTableModifiers(monitor, ddl);
+
+        Assert.assertEquals("\nDISTRIBUTED RANDOMLY", ddl.toString());
+    }
+
+    @Test
+    public void appendTableModifiers_whenServerVersion8_andSingleColumnSetForDistribution_resultsInRandom() throws Exception {
+        PowerMockito.spy(DBUtils.class);
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        StringBuilder ddl = new StringBuilder();
+        PostgreTableColumn column = Mockito.mock(PostgreTableColumn.class);
+
+        Mockito.when(DBUtils.getQuotedIdentifier(column)).thenReturn("Column_Name");
+
+        table = PowerMockito.spy(new GreenplumTable(mockSchema, mockResults));
+
+        PowerMockito.doReturn(new ArrayList(Arrays.asList(column))).when(table, "getDistributionPolicy", Mockito.any());
+        PowerMockito.doReturn(new ArrayList<PostgreTableColumn>()).when(table, "getPostgreTableColumns", Mockito.any(), Mockito.any());
+
+        table.appendTableModifiers(monitor, ddl);
+
+        Assert.assertEquals("\nDISTRIBUTED BY (Column_Name)", ddl.toString());
+    }
+
+    @Test
+    public void appendTableModifiers_whenServerVersion8_andMultipleColumnSetForDistribution_resultsInRandom() throws Exception {
+        PowerMockito.spy(DBUtils.class);
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        StringBuilder ddl = new StringBuilder();
+        PostgreTableColumn column1 = Mockito.mock(PostgreTableColumn.class);
+        PostgreTableColumn column2 = Mockito.mock(PostgreTableColumn.class);
+
+        Mockito.when(DBUtils.getQuotedIdentifier(column1)).thenReturn("Column_1");
+        Mockito.when(DBUtils.getQuotedIdentifier(column2)).thenReturn("Column_2");
+
+        table = PowerMockito.spy(new GreenplumTable(mockSchema, mockResults));
+
+        PowerMockito.doReturn(new ArrayList(Arrays.asList(column1, column2))).when(table, "getDistributionPolicy", Mockito.any());
+        PowerMockito.doReturn(new ArrayList<PostgreTableColumn>()).when(table, "getPostgreTableColumns", Mockito.any(), Mockito.any());
+
+        table.appendTableModifiers(monitor, ddl);
+
+        Assert.assertEquals("\nDISTRIBUTED BY (Column_1, Column_2)", ddl.toString());
+    }
+
+    @Test
+    public void appendTableModifiers_whenServerVersion9_andNotReplicated_andNoColumnSetForDistribution_resultsInRandom() throws Exception {
+        PowerMockito.spy(JDBCUtils.class);
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        StringBuilder ddl = new StringBuilder();
+
+        Mockito.when(JDBCUtils.safeGetString(mockResults, "relpersistence")).thenReturn("x");
+        Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
+
+        mockSetupForEmptyDistributionColumnList();
+
+        PowerMockito.doReturn(false).when(table, "isDistributedByReplicated", Mockito.any());
+
+        table.appendTableModifiers(monitor, ddl);
+
+        Assert.assertEquals("\nDISTRIBUTED RANDOMLY", ddl.toString());
+    }
+
+    @Test
+    public void appendTableModifiers_whenServerVersion9_andIsReplicated_andNoColumnSetForDistribution_resultsInReplicated() throws Exception {
+        PowerMockito.spy(JDBCUtils.class);
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        StringBuilder ddl = new StringBuilder();
+
+        Mockito.when(JDBCUtils.safeGetString(mockResults, "relpersistence")).thenReturn("x");
+        Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
+
+        mockSetupForEmptyDistributionColumnList();
+
+        PowerMockito.doReturn(true).when(table, "isDistributedByReplicated", Mockito.any());
+
+        table.appendTableModifiers(monitor, ddl);
+
+        Assert.assertEquals("\nDISTRIBUTED REPLICATED", ddl.toString());
+    }
+
+    private void mockSetupForEmptyDistributionColumnList() throws Exception {
+        table = PowerMockito.spy(new GreenplumTable(mockSchema, mockResults));
+
+        PowerMockito.doReturn(new ArrayList<PostgreTableColumn>()).when(table, "getDistributionPolicy", Mockito.any());
+        PowerMockito.doReturn(new ArrayList<PostgreTableColumn>()).when(table, "getPostgreTableColumns", Mockito.any(), Mockito.any());
     }
 }
