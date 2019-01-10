@@ -64,7 +64,7 @@ public class GreenplumTable extends PostgreTableRegular {
         super(catalog, dbResult);
 
         if (catalog.getDataSource().isServerVersionAtLeast(9, 1)) {
-            if (JDBCUtils.safeGetString(dbResult, "relpersistence").equalsIgnoreCase("u")) {
+            if ("u".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "relpersistence"))) {
                 this.unloggedTable = true;
             }
         }
