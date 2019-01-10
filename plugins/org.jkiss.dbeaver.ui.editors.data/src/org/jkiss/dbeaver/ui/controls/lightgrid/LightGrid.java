@@ -3971,8 +3971,7 @@ public abstract class LightGrid extends Canvas {
         focusColumn = columns.get(0);
         focusItem = 0;
 
-        List<GridPos> cells = new ArrayList<>();
-        getAllCells(cells);
+        List<GridPos> cells = getAllCells();
         Event selectionEvent = updateCellSelection(cells, stateMask, false, true, EventSource.KEYBOARD);
 
         focusColumn = oldFocusColumn;
@@ -4085,13 +4084,18 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    private void getAllCells(List<GridPos> cells)
+    private List<GridPos> getAllCells()
     {
-        for (int i = 0; i < getItemCount(); i++) {
-            for (int k = 0; k < columns.size(); k++) {
+        int itemCount = getItemCount();
+        int columnCount = columns.size();
+        List<GridPos> cells = new ArrayList<>(itemCount * columnCount);
+
+        for (int i = 0; i < itemCount; i++) {
+            for (int k = 0; k < columnCount; k++) {
                 cells.add(new GridPos(k, i));
             }
         }
+        return cells;
     }
 
     private List<GridPos> getCells(int row)
