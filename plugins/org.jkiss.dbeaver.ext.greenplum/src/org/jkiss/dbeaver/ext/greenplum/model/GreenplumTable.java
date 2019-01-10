@@ -103,6 +103,27 @@ public class GreenplumTable extends PostgreTableRegular {
         return columns;
     }
 
+    private List<PostgreTableColumn> getPostgreTableColumns(DBRProgressMonitor monitor, List<PostgreTableColumn> distributionColumns) throws DBException {
+        // Get primary key
+        PostgreTableConstraint pk = null;
+        for (PostgreTableConstraint tc : getConstraints(monitor)) {
+            if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                pk = tc;
+                break;
+            }
+        }
+        if (pk != null) {
+            List<DBSEntityAttribute> pkAttrs = DBUtils.getEntityAttributes(monitor, pk);
+            if (!CommonUtils.isEmpty(pkAttrs)) {
+                distributionColumns = new ArrayList<>(pkAttrs.size());
+                for (DBSEntityAttribute attr : pkAttrs) {
+                    distributionColumns.add((PostgreTableColumn) attr);
+                }
+            }
+        }
+        return distributionColumns;
+    }
+
     @Nullable
     private int[] readDistributedColumns(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table distributed columns")) {
@@ -141,23 +162,7 @@ public class GreenplumTable extends PostgreTableRegular {
         try {
             List<PostgreTableColumn> distributionColumns = getDistributionPolicy(monitor);
             if (CommonUtils.isEmpty(distributionColumns)) {
-                // Get primary key
-                PostgreTableConstraint pk = null;
-                for (PostgreTableConstraint tc : getConstraints(monitor)) {
-                    if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                        pk = tc;
-                        break;
-                    }
-                }
-                if (pk != null) {
-                    List<DBSEntityAttribute> pkAttrs = DBUtils.getEntityAttributes(monitor, pk);
-                    if (!CommonUtils.isEmpty(pkAttrs)) {
-                        distributionColumns = new ArrayList<>(pkAttrs.size());
-                        for (DBSEntityAttribute attr : pkAttrs) {
-                            distributionColumns.add((PostgreTableColumn) attr);
-                        }
-                    }
-                }
+                distributionColumns = getPostgreTableColumns(monitor, distributionColumns);
             }
 
             ddl.append("\nDISTRIBUTED ");
