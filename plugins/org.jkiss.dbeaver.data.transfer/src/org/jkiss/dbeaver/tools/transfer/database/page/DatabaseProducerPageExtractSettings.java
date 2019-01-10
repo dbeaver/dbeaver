@@ -172,6 +172,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
     {
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
+        threadsNumText.setSelection(getWizard().getSettings().getMaxJobCount());
         newConnectionCheckbox.setSelection(settings.isOpenNewConnections());
         rowCountCheckbox.setSelection(settings.isQueryRowCount());
 
