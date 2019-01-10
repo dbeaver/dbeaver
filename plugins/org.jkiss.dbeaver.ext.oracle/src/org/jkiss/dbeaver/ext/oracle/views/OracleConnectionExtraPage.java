@@ -95,7 +95,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         {
             final Group contentGroup = UIUtils.createControlGroup(cfgGroup, "Content", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, "Hide empty schemas", true);
+            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, "Hide empty schemas", false);
             hideEmptySchemasCheckbox.setToolTipText(
                 "Check existence of objects within schema and do not show empty schemas in tree. " + GeneralUtils.getDefaultLineSeparator() +
                 "Enabled by default but it may cause performance problems on databases with very big number of objects.");
