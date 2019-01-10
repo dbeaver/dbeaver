@@ -42,11 +42,6 @@ public class GreenplumTableTest {
     private final String exampleDatabaseName = "sampleDatabase";
     private final String exampleSchemaName = "sampleSchema";
     private final String exampleTableName = "sampleTable";
-    private final String exampleUriLocation = "gpfdist://filehost:8081/*.txt";
-    private final String exampleEncoding = "UTF8";
-    private final String exampleFormatOptions = "DELIMITER ','";
-    private final String exampleFormatType = "c";
-    private final String exampleExecLocation = "ALL_SEGMENTS";
 
     @Before
     public void setUp() throws Exception {
@@ -58,11 +53,7 @@ public class GreenplumTableTest {
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
 
         Mockito.when(mockResults.getString("relname")).thenReturn(exampleTableName);
-        Mockito.when(mockResults.getString("fmttype")).thenReturn(exampleFormatType);
-        Mockito.when(mockResults.getString("urilocation")).thenReturn(exampleUriLocation);
-        Mockito.when(mockResults.getString("fmtopts")).thenReturn(exampleFormatOptions);
-        Mockito.when(mockResults.getString("encoding")).thenReturn(exampleEncoding);
-        Mockito.when(mockResults.getString("execlocation")).thenReturn(exampleExecLocation);
+        Mockito.when(mockResults.getString("relpersistence")).thenReturn("x");
     }
 
     @Test
@@ -141,7 +132,6 @@ public class GreenplumTableTest {
         DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
         StringBuilder ddl = new StringBuilder();
 
-        Mockito.when(JDBCUtils.safeGetString(mockResults, "relpersistence")).thenReturn("x");
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 
         mockSetupForEmptyDistributionColumnList();
@@ -154,12 +144,11 @@ public class GreenplumTableTest {
     }
 
     @Test
-    public void appendTableModifiers_whenServerVersion9_andIsReplicated_andNoColumnSetForDistribution_resultsInReplicated() throws Exception {
+    public void appendTableModifiers_whenServerVersion9_andIsReplicated_resultsInReplicated() throws Exception {
         PowerMockito.spy(JDBCUtils.class);
         DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
         StringBuilder ddl = new StringBuilder();
 
-        Mockito.when(JDBCUtils.safeGetString(mockResults, "relpersistence")).thenReturn("x");
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
 
         mockSetupForEmptyDistributionColumnList();
