@@ -182,7 +182,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
 
             ddlBuilder.append("\n) " + determineExecutionLocation() + "\n");
         } else if (tableHasCommand()) {
-            ddlBuilder.append("EXECUTE '" + this.getCommand() + "'\n");
+            ddlBuilder.append("EXECUTE '" + this.getCommand() + "' " + determineExecutionLocation() + "\n");
         }
 
         ddlBuilder.append("FORMAT '" +
