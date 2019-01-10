@@ -109,7 +109,8 @@ public class GreenplumExternalTableTest {
 
     @Test
     public void onCreation_readsFormatOptionsFromDbResult() throws SQLException {
-        Mockito.when(mockResults.getString("fmtopts")).thenReturn("delimiter ',' null '' escape '\"' quote '\"' header");
+        Mockito.when(mockResults.getString("fmtopts"))
+                .thenReturn("delimiter ',' null '' escape '\"' quote '\"' header");
         GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
         String expectedUriLocation = "delimiter ',' null '' escape '\"' quote '\"' header";
         Assert.assertEquals(expectedUriLocation, table.getFormatOptions());
@@ -137,6 +138,28 @@ public class GreenplumExternalTableTest {
         int expectedUriLocation = 50_000;
         Assert.assertEquals(expectedUriLocation, table.getRejectLimit());
     }
+
+    @Test
+    public void onCreation_readsWritableFlagFromDBResult() throws SQLException {
+        Mockito.when(mockResults.getBoolean("writable")).thenReturn(true);
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        Assert.assertTrue(table.isWritable());
+    }
+
+    @Test
+    public void onCreation_readsTemporaryTableFlagFromDBResult() throws SQLException {
+        Mockito.when(mockResults.getBoolean("is_temp_table")).thenReturn(true);
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        Assert.assertTrue(table.isTemporaryTable());
+    }
+
+    @Test
+    public void onCreation_readsLoggingErrorsFlagFromDBResult() throws SQLException {
+        Mockito.when(mockResults.getBoolean("is_logging_errors")).thenReturn(true);
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        Assert.assertTrue(table.isLoggingErrors());
+    }
+
 
     @Test
     public void generateDDL_whenTableHasASingleColumn_returnsDDLStringForASingleColumn()
@@ -378,6 +401,54 @@ public class GreenplumExternalTableTest {
                         ") ON ALL\n" +
                         "FORMAT 'CSV' ( DELIMITER ',' )\n" +
                         "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
+    @Test
+    public void generateDDL_whenExternalTableIsLoggingErrors_returnsDDLStringWithLoggingErrorsClause()
+            throws DBException, SQLException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getBoolean("is_logging_errors")).thenReturn(true);
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'gpfdist://filehost:8081/*.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'CSV' ( DELIMITER ',' )\n" +
+                        "ENCODING 'UTF8'\n" +
+                        "LOG ERRORS";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
+    @Test
+    public void generateDDL_whenExternalTableIsLoggingErrorsWithSegmentRejectLimit_returnsDDLStringWithLoggingErrorsClauseWithSegmentRejectLimit()
+            throws DBException, SQLException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getInt("rejectlimit")).thenReturn(exampleRejectLimit);
+        Mockito.when(mockResults.getString("rejectlimittype")).thenReturn(exampleRejectLimitType);
+        Mockito.when(mockResults.getBoolean("is_logging_errors")).thenReturn(true);
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'gpfdist://filehost:8081/*.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'CSV' ( DELIMITER ',' )\n" +
+                        "ENCODING 'UTF8'\n" +
+                        "LOG ERRORS SEGMENT REJECT LIMIT 100000 ROWS";
 
         Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
     }
