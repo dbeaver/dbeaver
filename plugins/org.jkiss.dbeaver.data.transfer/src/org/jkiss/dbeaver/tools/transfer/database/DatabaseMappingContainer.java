@@ -202,6 +202,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     public void saveSettings(IDialogSettings settings) {
         if (targetName != null) {
             settings.put("targetName", targetName);
+        } else if (target != null) {
+            settings.put("targetName", target.getName());
         }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
