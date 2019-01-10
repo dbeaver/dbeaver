@@ -93,5 +93,7 @@ public class PostgreServerGreenplumTest {
         Assert.assertTrue(!dialect.getMatchedKeywords("WEB").isEmpty());
         Assert.assertTrue(!dialect.getMatchedKeywords("WRITABLE").isEmpty());
         Assert.assertTrue(!dialect.getMatchedKeywords("READABLE").isEmpty());
+        Assert.assertTrue(!dialect.getMatchedKeywords("ERRORS").isEmpty());
+        Assert.assertTrue(!dialect.getMatchedKeywords("LOG").isEmpty());
     }
 }

@@ -73,6 +73,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
     private final int rejectLimit;
     private final boolean writable;
     private final boolean temporaryTable;
+    private final boolean loggingErrors;
 
     public GreenplumExternalTable(PostgreSchema catalog, ResultSet dbResult) {
         super(catalog, dbResult);
@@ -88,6 +89,7 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         String rejectlimittype = JDBCUtils.safeGetString(dbResult, "rejectlimittype");
         this.writable = JDBCUtils.safeGetBoolean(dbResult, "writable");
         this.temporaryTable = JDBCUtils.safeGetBoolean(dbResult, "is_temp_table");
+        this.loggingErrors = JDBCUtils.safeGetBoolean(dbResult, "is_logging_errors");
         if (rejectlimittype != null && rejectlimittype.length() > 0) {
             this.rejectLimitType = RejectLimitType.valueOf(rejectlimittype);
         } else {
@@ -130,6 +132,10 @@ public class GreenplumExternalTable extends PostgreTableRegular {
 
     public boolean isTemporaryTable() {
         return temporaryTable;
+    }
+
+    public boolean isLoggingErrors() {
+        return loggingErrors;
     }
 
     public String generateDDL(DBRProgressMonitor monitor) throws DBException {
@@ -178,8 +184,16 @@ public class GreenplumExternalTable extends PostgreTableRegular {
             ddlBuilder.append("\nENCODING '" + this.getEncoding() + "'");
         }
 
+        if (this.isLoggingErrors()) {
+            ddlBuilder.append("\nLOG ERRORS");
+        }
+
         if (this.getRejectLimit() > 0 && this.getRejectLimitType() != null) {
-            ddlBuilder.append("\nSEGMENT REJECT LIMIT " + this.getRejectLimit() + " " + this.getRejectLimitType().getValue());
+            ddlBuilder.append(this.isLoggingErrors() ? " " : "\n")
+                    .append("SEGMENT REJECT LIMIT ")
+                    .append(this.getRejectLimit())
+                    .append(" ")
+                    .append(this.getRejectLimitType().getValue());
         }
 
         return ddlBuilder.toString();
