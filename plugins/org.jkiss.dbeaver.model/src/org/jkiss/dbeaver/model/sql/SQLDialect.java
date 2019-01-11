@@ -325,4 +325,7 @@ public interface SQLDialect {
 
     boolean isDisableScriptEscapeProcessing();
 
+    boolean supportsAlterTableConstraint();
+
+
 }
