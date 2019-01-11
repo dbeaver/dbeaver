@@ -26,7 +26,7 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
-        <!-- SQL Server. New conenctor replaces all Generic-based SQL Server drivers -->
+        <!-- SQL Server. New connector replaces all Generic-based SQL Server drivers -->
 
         <datasource
             class="org.jkiss.dbeaver.ext.mssql.SQLServerDataSourceProvider"
@@ -133,6 +133,7 @@
                         id="microsoft"
                         label="Microsoft driver"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -179,6 +180,7 @@
                         id="jtds"
                         label="jTDS driver"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="net.sourceforge.jtds.jdbc.Driver"
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -206,6 +208,7 @@
                     id="mssql_jdbc_jtds"
                     label="jTDS driver (Deprecated)"
                     icon="icons/mssql_icon.png"
+                    iconBig="icons/mssql_icon_big.png"
                     category="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -220,6 +223,7 @@
                     id="mssql_jdbc_ms"
                     label="Microsoft Driver (Deprecated)"
                     icon="icons/mssql_icon.png"
+                    iconBig="icons/mssql_icon_big.png"
                     category="MS SQL Server"
                     class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                     sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -234,6 +238,7 @@
                         id="mssql_jdbc_ms_new"
                         label="Microsoft Driver (Deprecated)"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -264,6 +269,7 @@
                         id="mssql_jdbc_legacy"
                         label="Old driver (Microsoft)"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -295,6 +301,7 @@
                         id="mssql_jtds_legacy"
                         label="Old driver (jTDS)"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="net.sourceforge.jtds.jdbc.Driver"
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
