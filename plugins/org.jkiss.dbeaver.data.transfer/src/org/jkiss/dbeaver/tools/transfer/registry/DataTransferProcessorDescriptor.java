@@ -172,4 +172,9 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     public String getFullId() {
         return node.getId() + ":" + getId();
     }
+
+    @Override
+    public String toString() {
+        return getFullId();
+    }
 }
