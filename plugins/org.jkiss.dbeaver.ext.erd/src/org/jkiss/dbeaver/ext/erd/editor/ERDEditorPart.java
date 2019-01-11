@@ -916,8 +916,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         private ChangeAttributeVisibilityAction(boolean defStyle, ERDAttributeVisibility visibility)
         {
-            super(visibility.getTitle() + (defStyle ? " (Global)" : ""), IAction.AS_CHECK_BOX);
-            setActionDefinitionId(visibility.getTitle() + "." + defStyle);
+            super(visibility.getTitle() + "", IAction.AS_CHECK_BOX);
             this.defStyle = defStyle;
             this.visibility = visibility;
         }
