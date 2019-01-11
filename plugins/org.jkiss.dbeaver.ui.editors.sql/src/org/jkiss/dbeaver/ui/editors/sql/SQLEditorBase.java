@@ -1178,7 +1178,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             if (tokenType == SQLToken.T_PARAMETER && tokenLength > 0) {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
-                    if (execQuery && paramName.equals("?")) {
+                    if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
                         // Skip ? parameters for stored procedures (they have special meaning? [DB2])
                         continue;
                     }
@@ -1188,6 +1188,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     }
 
                     SQLQueryParameter parameter = new SQLQueryParameter(
+                        syntaxManager,
                         parameters.size(),
                         paramName,
                         tokenOffset - queryOffset,
@@ -1235,7 +1236,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         }
 
                         if (param == null) {
-                            param = new SQLQueryParameter(orderPos, matcher.group(0), start, matcher.end() - matcher.start());
+                            param = new SQLQueryParameter(syntaxManager, orderPos, matcher.group(0), start, matcher.end() - matcher.start());
                             if (parameters == null) {
                                 parameters = new ArrayList<>();
                             }
