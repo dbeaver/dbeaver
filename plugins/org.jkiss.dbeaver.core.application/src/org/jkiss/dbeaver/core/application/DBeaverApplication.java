@@ -69,6 +69,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     static final String VERSION_PROP_PRODUCT_NAME = "product-name";
     static final String VERSION_PROP_PRODUCT_VERSION = "product-version";
+
+    private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
+
     static boolean WORKSPACE_MIGRATED = false;
 
     static DBeaverApplication instance;
@@ -154,10 +157,22 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         try {
             log.debug("Run workbench");
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
-            if (returnCode == PlatformUI.RETURN_RESTART) {
-                return IApplication.EXIT_RESTART;
+
+            // Copy-pasted from IDEApplication
+            // Magic with exit codes to let Eclipse starter switcg workspace
+
+            // the workbench doesn't support relaunch yet (bug 61809) so
+            // for now restart is used, and exit data properties are checked
+            // here to substitute in the relaunch return code if needed
+            if (returnCode != PlatformUI.RETURN_RESTART) {
+                return EXIT_OK;
             }
-            return IApplication.EXIT_OK;
+
+            // if the exit code property has been set to the relaunch code, then
+            // return that code now, otherwise this is a normal restart
+            return EXIT_RELAUNCH.equals(Integer.getInteger(PROP_EXIT_CODE)) ? EXIT_RELAUNCH
+                : EXIT_RESTART;
+
         } catch (Throwable e) {
             log.debug("Internal error in workbench lifecycle", e);
             return IApplication.EXIT_OK;
