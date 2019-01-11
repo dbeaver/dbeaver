@@ -160,7 +160,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             }
 
             GalleryItem item = new GalleryItem(group, SWT.NONE);
-            item.setImage(DBeaverIcons.getImage(driver.getIcon()));
+            item.setImage(DBeaverIcons.getImage(driver.getIconBig()));
             item.setText(driver.getName()); //$NON-NLS-1$
             item.setText(0, driver.getName()); //$NON-NLS-1$
             List<DBPDataSourceContainer> usedBy = DriverUtils.getUsedBy(driver, allDataSources);

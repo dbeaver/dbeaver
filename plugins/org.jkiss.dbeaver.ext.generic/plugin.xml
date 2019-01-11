@@ -636,6 +636,7 @@
                     id="sqlite_jdbc"
                     label="SQLite"
                     icon="icons/sqlite_icon.png"
+                    iconBig="icons/sqlite_icon_big.png"
                     class="org.sqlite.JDBC"
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
