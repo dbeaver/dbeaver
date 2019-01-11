@@ -55,7 +55,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
     private Text hostText;
     private Text portText;
 
-    private static ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/google_bigquery_logo.png");
+    private static ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/bigquery_logo.png");
     private DriverPropertiesDialogPage driverPropsPage;
 
     public BigQueryConnectionPage() {

@@ -1049,6 +1049,7 @@
                     id="neo4j_jdbc"
                     label="Neo4j"
                     icon="icons/neo4j_icon.png"
+                    iconBig="icons/neo4j_icon_big.png"
                     class="org.neo4j.jdbc.Driver"
                     sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
                     defaultPort="7687"
@@ -1074,6 +1075,8 @@
                 <driver
                         id="cubrid_jdbc"
                         label="CUBRID"
+                        icon="icons/cubrid_icon.png"
+                        iconBig="icons/cubrid_icon_big.png"
                         class="cubrid.jdbc.driver.CUBRIDDriver"
                         sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
                         defaultPort="33000"
@@ -1100,6 +1103,7 @@
                         id="apache_solrj"
                         label="Solr"
                         icon="icons/solr_icon.png"
+                        iconBig="icons/solr_icon_big.png"
                         class="org.apache.solr.client.solrj.io.sql.DriverImpl"
                         sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
                         defaultPort="9983"
@@ -1113,6 +1117,8 @@
                 <driver
                         id="openedge_generic"
                         label="OpenEdge"
+                        icon="icons/openedge_icon.png"
+                        iconBig="icons/openedge_icon_big.png"
                         class="com.ddtek.jdbc.openedge.OpenEdgeDriver"
                         sampleURL="jdbc:datadirect:openedge://{host}:{port};databaseName={database}"
                         defaultPort="6718"
