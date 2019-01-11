@@ -187,7 +187,7 @@ public class EntityPart extends NodePart {
 
         final EntityFigure figure = createFigureImpl();
 
-        EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(getEntity());
+        EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(getEntity().getObject());
         if (visualInfo != null) {
             if (visualInfo.initBounds != null) {
                 figure.setLocation(visualInfo.initBounds.getLocation());
@@ -196,7 +196,7 @@ public class EntityPart extends NodePart {
             if (this.customBackground != null) {
                 figure.setBackgroundColor(this.customBackground);
             }
-            if (visualInfo.attributeVisibility != null) {
+            if (getEntity().getAttributeVisibility() == null && visualInfo.attributeVisibility != null) {
                 getEntity().setAttributeVisibility(visualInfo.attributeVisibility);
             }
         }

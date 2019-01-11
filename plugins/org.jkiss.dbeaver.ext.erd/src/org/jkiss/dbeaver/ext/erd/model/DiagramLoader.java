@@ -303,6 +303,8 @@ public class DiagramLoader
                     TableLoadInfo info = new TableLoadInfo(tableId, table, visualInfo);
                     tableInfos.add(info);
                     tableMap.put(info.objectId, info);
+
+                    diagram.addVisualInfo(table, info.visualInfo);
                     monitor.worked(1);
                 }
                 monitor.done();
@@ -395,14 +397,6 @@ public class DiagramLoader
             tableList.add(info.table);
         }
         diagram.fillEntities(monitor, tableList, null);
-
-        // Set initial bounds
-        for (TableLoadInfo info : tableInfos) {
-            final ERDEntity erdEntity = diagram.getEntity(info.table);
-            if (erdEntity != null) {
-                diagram.addVisualInfo(erdEntity, info.visualInfo);
-            }
-        }
 
         // Add logical relations
         for (RelationLoadInfo info : relInfos) {
@@ -521,7 +515,7 @@ public class DiagramLoader
                         saveColorAndOrder(allNodeFigures, xml, tablePart);
 
                     } else {
-                        visualInfo = diagram.getVisualInfo(erdEntity);
+                        visualInfo = diagram.getVisualInfo(erdEntity.getObject());
                     }
                     if (visualInfo != null && visualInfo.initBounds != null) {
                         xml.addAttribute(ATTR_X, visualInfo.initBounds.x);

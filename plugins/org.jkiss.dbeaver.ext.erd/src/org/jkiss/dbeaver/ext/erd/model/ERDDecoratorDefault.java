@@ -126,7 +126,13 @@ public class ERDDecoratorDefault implements ERDDecorator {
         DBSEntity entity = erdEntity.getObject();
         ERDAttributeVisibility attributeVisibility = erdEntity.getAttributeVisibility();
         if (attributeVisibility == null) {
-            attributeVisibility = diagram.getAttributeVisibility();
+            EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(erdEntity.getObject());
+            if (visualInfo != null) {
+                attributeVisibility = visualInfo.attributeVisibility;
+            }
+            if (attributeVisibility == null) {
+                attributeVisibility = diagram.getAttributeVisibility();
+            }
         }
         if (attributeVisibility != ERDAttributeVisibility.NONE) {
             Set<DBSEntityAttribute> keyColumns = null;
