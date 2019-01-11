@@ -131,6 +131,9 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             groupRecent.dispose();
         }
         fillDriverGroup(groupAll);
+
+        gallery.setFocus();
+        gallery.setSelection(new GalleryItem[] { gallery.getItem(0) } );
     }
 
     private void fillDriverGroup(GalleryItem group) {
