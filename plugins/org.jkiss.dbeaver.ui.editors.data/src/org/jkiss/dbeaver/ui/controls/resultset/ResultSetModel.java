@@ -656,7 +656,7 @@ public class ResultSetModel {
 //        if (!isSingleSource()) {
 //            return true;
 //        }
-        if (attribute.getMetaAttribute().isReadOnly()) {
+        if (attribute == null || attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
