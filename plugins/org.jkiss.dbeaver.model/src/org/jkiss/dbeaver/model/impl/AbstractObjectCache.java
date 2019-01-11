@@ -251,6 +251,9 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         } else {
             name = object.getName();
         }
+        if (name == null) {
+            return null;
+        }
         if (!caseSensitive) {
             return name.toUpperCase();
         }
