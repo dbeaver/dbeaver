@@ -103,7 +103,7 @@ public class GreenplumTable extends PostgreTableRegular {
         return columns;
     }
 
-    private List<PostgreTableColumn> getPostgreTableColumns(DBRProgressMonitor monitor, List<PostgreTableColumn> distributionColumns) throws DBException {
+    private List<PostgreTableColumn> getDistributionTableColumns(DBRProgressMonitor monitor, List<PostgreTableColumn> distributionColumns) throws DBException {
         // Get primary key
         PostgreTableConstraint pk = null;
         for (PostgreTableConstraint tc : getConstraints(monitor)) {
@@ -162,7 +162,7 @@ public class GreenplumTable extends PostgreTableRegular {
         try {
             List<PostgreTableColumn> distributionColumns = getDistributionPolicy(monitor);
             if (CommonUtils.isEmpty(distributionColumns)) {
-                distributionColumns = getPostgreTableColumns(monitor, distributionColumns);
+                distributionColumns = getDistributionTableColumns(monitor, distributionColumns);
             }
 
             ddl.append("\nDISTRIBUTED ");
