@@ -58,14 +58,9 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         }
 
         if (navigatorView instanceof ProjectExplorerView) {
-            if (activeEditor instanceof AbstractTextEditor) {
-                IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-                if (file != null) {
-                    showResourceInNavigator(navigatorView, file);
-                }
-            } else if (activeEditor.getEditorInput() instanceof ProjectFileEditorInput) {
-                IFile editorFile = ((ProjectFileEditorInput) activeEditor.getEditorInput()).getFile();
-                showResourceInNavigator(navigatorView, editorFile);
+            IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
+            if (file != null) {
+                showResourceInNavigator(navigatorView, file);
             }
         } else if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
                 IDatabaseEditorInput editorInput = (IDatabaseEditorInput) activeEditor.getEditorInput();
