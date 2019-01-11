@@ -52,10 +52,6 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
     private boolean activated;
 
-    private static ImageDescriptor AZURE_LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/azure_logo.png");
-    private static ImageDescriptor MSSQL_LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/mssql_logo.png");
-    private static ImageDescriptor SYBASE_LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/sybase_logo.png");
-
     @Override
     public void dispose()
     {
@@ -193,10 +189,12 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         boolean isSqlServer = SQLServerUtils.isDriverSqlServer(getSite().getDriver());
         boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(getSite().getDriver());
 
-        if (!activated) {
+        {
             setImageDescriptor(isSqlServer ?
-                (isDriverAzure ? AZURE_LOGO_IMG : MSSQL_LOGO_IMG) :
-                SYBASE_LOGO_IMG);
+                (isDriverAzure ?
+                    SQLServerActivator.getImageDescriptor("icons/azure_logo.png") :
+                    SQLServerActivator.getImageDescriptor("icons/mssql_logo.png")) :
+                SQLServerActivator.getImageDescriptor("icons/sybase_logo.png"));
         }
 
         // Load values from new connection info
