@@ -72,6 +72,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     private MySQLCollation collation;
     private KeyType keyType;
     private String extraInfo;
+    private String genExpression;
 
     private String fullTypeName;
     private List<String> enumValues;
@@ -104,6 +105,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
             this.collation = mySource.collation;
             this.keyType = mySource.keyType;
             this.extraInfo = mySource.extraInfo;
+            this.genExpression = mySource.genExpression;
             this.fullTypeName = mySource.fullTypeName;
             if (mySource.enumValues != null) {
                 this.enumValues = new ArrayList<>(mySource.enumValues);
@@ -141,9 +143,9 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
             setMaxLength(this.charLength);
         }
         this.comment = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_COMMENT);
-        setRequired(!"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE)));
-        setScale(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
-        setPrecision(JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
+        this.required = !"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE));
+        this.scale = JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_SCALE);
+        this.precision = JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_NUMERIC_PRECISION);
         String defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
         if (defaultValue != null) {
             switch (getDataKind()) {
@@ -171,6 +173,10 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.fullTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_TYPE);
         if (!CommonUtils.isEmpty(fullTypeName) && (isTypeEnum() || isTypeSet())) {
             enumValues = parseEnumValues(fullTypeName);
+        }
+
+        if (!getDataSource().isMariaDB() && getDataSource().isServerVersionAtLeast(5, 7)) {
+            genExpression = JDBCUtils.safeGetString(dbResult, "GENERATION_EXPRESSION");
         }
     }
 
@@ -294,6 +300,15 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     public void setExtraInfo(String extraInfo) {
         this.extraInfo = extraInfo;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 72)
+    public String getGenExpression() {
+        return genExpression;
+    }
+
+    public void setGenExpression(String genExpression) {
+        this.genExpression = genExpression;
     }
 
     @Override
