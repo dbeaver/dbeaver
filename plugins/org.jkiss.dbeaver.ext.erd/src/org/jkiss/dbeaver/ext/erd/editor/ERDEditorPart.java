@@ -837,6 +837,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
             },
             zoomStrings);
+        zoomCombo.setZoomManager(zoomManager);
+
         toolBarManager.add(zoomCombo);
 
         //toolBarManager.add(new UndoAction(ERDEditorPart.this));
