@@ -86,7 +86,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value == null || value instanceof String) {
+        if (value == null || value instanceof String || value instanceof Number) {
             return super.getValueDisplayString(column, value, format);
         }
         try {
