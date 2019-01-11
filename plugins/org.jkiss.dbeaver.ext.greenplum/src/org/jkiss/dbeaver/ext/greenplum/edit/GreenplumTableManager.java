@@ -21,13 +21,17 @@
 package org.jkiss.dbeaver.ext.greenplum.edit;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeign;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -48,5 +52,23 @@ public class GreenplumTableManager extends PostgreTableManager {
                     new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table,
                             ((GreenplumTable) tableBase).addUnloggedClause(actions.get(0).getScript())));
         }
+    }
+
+    <T extends PostgreTableBase> SQLDatabasePersistAction createDeleteAction(T table, Map<String, Object> options) {
+        StringBuilder dropTableScript = new StringBuilder("DROP ")
+                .append((table instanceof GreenplumExternalTable ? "EXTERNAL " : ""))
+                .append((table instanceof PostgreTableForeign ? "FOREIGN " : ""))
+                .append("TABLE ")
+                .append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
+                .append((CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : ""));
+
+        return new SQLDatabasePersistAction(ModelMessages.model_jdbc_drop_table, dropTableScript.toString());
+    }
+
+    @Override
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+                                          ObjectDeleteCommand command,
+                                          Map<String, Object> options) {
+        actions.add(createDeleteAction(command.getObject(), options));
     }
 }
