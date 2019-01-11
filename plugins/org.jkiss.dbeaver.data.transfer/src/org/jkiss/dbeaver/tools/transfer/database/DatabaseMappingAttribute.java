@@ -289,7 +289,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     newMappingType = DatabaseMappingType.create;
                 }
 
-                setMappingType(newMappingType);
+                mappingType = newMappingType;
             } catch (Exception e) {
                 log.error(e);
             }
