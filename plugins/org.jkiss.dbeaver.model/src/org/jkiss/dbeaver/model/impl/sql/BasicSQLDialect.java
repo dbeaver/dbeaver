@@ -641,4 +641,9 @@ public class BasicSQLDialect implements SQLDialect {
     public boolean isDisableScriptEscapeProcessing() {
         return false;
     }
+
+    @Override
+    public boolean supportsAlterTableConstraint() {
+        return true;
+    }
 }

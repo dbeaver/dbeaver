@@ -41,6 +41,16 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
     }
 
     @Override
+    public boolean canCreateObject(GenericTable parent) {
+        return parent.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericPrimaryKey object) {
+        return object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    }
+
+    @Override
     protected GenericPrimaryKey createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
         Object from)

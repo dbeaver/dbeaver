@@ -43,6 +43,16 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
+    public boolean canCreateObject(GenericTable parent) {
+        return parent.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableForeignKey object) {
+        return object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    }
+
+    @Override
     protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final GenericTable table, Object from)
     {
         return new UITask<GenericTableForeignKey>() {
