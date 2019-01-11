@@ -167,6 +167,14 @@
         </definition>
     </extension>
 
+    <extension point="org.eclipse.ui.contexts">
+        <context
+                id="org.jkiss.dbeaver.ui.context.navigator"
+                parentId="org.eclipse.ui.contexts.window"
+                name="%context.org.jkiss.dbeaver.ui.context.navigator.name"
+                description="%context.org.jkiss.dbeaver.ui.context.navigator.description"/>
+    </extension>
+
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.core.navigator" name="%category.dbnavigator.name" description="%category.dbnavigator.description"/>
 
