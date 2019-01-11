@@ -87,7 +87,7 @@ public class EntityDeleteCommand extends Command {
      */
     private void primExecute() {
         // Put entity's bound in init map - it could be used by EntityPart on undo
-        diagramPart.getDiagram().getVisualInfo(entity, true).initBounds = entityPart.getBounds();
+        diagramPart.getDiagram().getVisualInfo(entity.getObject(), true).initBounds = entityPart.getBounds();
 
         // Zero bounds - to let modifyBounds reflect on undo
         //entityPart.modifyBounds(new Rectangle(0, 0, 0, 0));

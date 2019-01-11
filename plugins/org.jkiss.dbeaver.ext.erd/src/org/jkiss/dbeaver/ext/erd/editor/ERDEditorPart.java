@@ -47,10 +47,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
@@ -83,7 +80,6 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -918,7 +914,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         private ChangeAttributeVisibilityAction(boolean defStyle, ERDAttributeVisibility visibility)
         {
-            super(visibility.getTitle(), IAction.AS_RADIO_BUTTON);
+            super(visibility.getTitle() + (defStyle ? " (Global)" : ""), IAction.AS_CHECK_BOX);
+            setActionDefinitionId(visibility.getTitle() + "." + defStyle);
             this.defStyle = defStyle;
             this.visibility = visibility;
         }
@@ -931,13 +928,21 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             } else {
                 for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
                     if (object instanceof EntityPart) {
-                        if (((EntityPart) object).getEntity().getAttributeVisibility() == visibility) {
+                        ERDAttributeVisibility entityAV = ((EntityPart) object).getEntity().getAttributeVisibility();
+                        if (entityAV == null) {
+                            return visibility == getDiagram().getAttributeVisibility();
+                        } else if (entityAV == visibility) {
                             return true;
                         }
                     }
                 }
                 return false;
             }
+        }
+
+        @Override
+        public void runWithEvent(Event event) {
+            super.runWithEvent(event);
         }
 
         @Override
@@ -950,15 +955,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     entity.reloadAttributes(diagram);
                 }
             } else {
-                boolean reset = (visibility == diagram.getAttributeVisibility());
                 for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
                     if (object instanceof EntityPart) {
-                        if (reset) {
-                            ((EntityPart) object).getEntity().setAttributeVisibility(null);
-                        } else {
-                            ((EntityPart) object).getEntity().setAttributeVisibility(visibility);
-                        }
-                        ((EntityPart) object).getEntity().reloadAttributes(diagram);
+                        ((EntityPart) object).getEntity().setAttributeVisibility(visibility);
+                        UIUtils.asyncExec(() -> ((EntityPart) object).getEntity().reloadAttributes(diagram));
                     }
                 }
             }
