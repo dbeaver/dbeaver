@@ -976,14 +976,6 @@
         <key commandId="org.jkiss.dbeaver.core.generate.uuid" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+U"/>
     </extension>
 
-    <extension point="org.eclipse.ui.contexts">
-        <context
-              id="org.jkiss.dbeaver.ui.context.navigator"
-              parentId="org.eclipse.ui.contexts.window"
-              name="%context.org.jkiss.dbeaver.ui.context.navigator.name"
-              description="%context.org.jkiss.dbeaver.ui.context.navigator.description"/>
-    </extension>
-
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.core.DBeaverPreferencesInitializer"/>
     </extension>
