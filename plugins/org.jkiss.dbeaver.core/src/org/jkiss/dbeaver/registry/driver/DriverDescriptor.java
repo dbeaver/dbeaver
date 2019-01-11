@@ -118,6 +118,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private DBPImage iconPlain;
     private DBPImage iconNormal;
     private DBPImage iconError;
+    private DBPImage iconBig;
     private boolean embedded;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
@@ -181,6 +182,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (this.iconPlain == null) {
             this.iconPlain = DBIcon.TREE_DATABASE;
         }
+        this.iconBig = iconPlain;
+
         makeIconExtensions();
         if (copyFrom != null) {
             // Copy props from source
@@ -263,6 +266,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.iconPlain == null) {
             this.iconPlain = providerDescriptor.getIcon();
+        }
+        this.iconBig = this.iconPlain;
+        if (config.getAttribute(RegistryConstants.ATTR_ICON_BIG) != null) {
+            this.iconBig = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON_BIG));
         }
         makeIconExtensions();
 
@@ -459,6 +466,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         } else {
             return iconNormal;
         }
+    }
+
+    @Override
+    public DBPImage getIconBig() {
+        return iconBig;
     }
 
     @Override
