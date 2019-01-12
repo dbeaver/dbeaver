@@ -145,13 +145,13 @@ public abstract class PostgreTableReal extends PostgreTableBase
 
     @Override
     public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
+        return getSchema().getConstraintCache().getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
     }
 
     public PostgreTableConstraintBase getConstraint(@NotNull DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return getSchema().constraintCache.getObject(monitor, getSchema(), this, ukName);
+        return getSchema().getConstraintCache().getObject(monitor, getSchema(), this, ukName);
     }
 
     @Association
