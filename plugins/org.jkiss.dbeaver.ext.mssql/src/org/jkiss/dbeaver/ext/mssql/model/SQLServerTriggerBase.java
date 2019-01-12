@@ -21,12 +21,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 
 import java.sql.ResultSet;
@@ -35,7 +34,7 @@ import java.util.Map;
 /**
  * SQLServerTriggerBase
  */
-public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements DBSTrigger, DBPScriptObject, DBPQualifiedObject, DBPRefreshableObject, SQLServerObject
+public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements DBSTrigger, DBSObjectWithScript, DBPQualifiedObject, DBPRefreshableObject, SQLServerObject
 {
     private OWNER container;
     private String name;
@@ -162,6 +161,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return body;
     }
 
+    @Override
     public void setObjectDefinitionText(String sourceText) {
         this.body = sourceText;
     }

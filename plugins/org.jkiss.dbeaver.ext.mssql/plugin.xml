@@ -451,11 +451,12 @@
                 embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
         </editor>
-        <editor id="generic.source.view" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+        <editor id="generic.source.view" class="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSourceViewEditor"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
         </editor>
     </extension>

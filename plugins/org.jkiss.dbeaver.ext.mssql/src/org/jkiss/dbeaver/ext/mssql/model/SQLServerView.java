@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -45,7 +46,7 @@ import java.util.*;
 /**
  * SQLServerView
  */
-public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
+public class SQLServerView extends SQLServerTableBase implements DBSObjectWithScript
 {
     private static final Log log = Log.getLog(SQLServerView.class);
 
@@ -147,6 +148,11 @@ public class SQLServerView extends SQLServerTableBase implements DBPScriptObject
             ddl = SQLServerUtils.extractSource(monitor, getDatabase(), getSchema(), getName());
         }
         return ddl;
+    }
+
+    @Override
+    public void setObjectDefinitionText(String source) {
+        this.ddl = source;
     }
 
     @Override
