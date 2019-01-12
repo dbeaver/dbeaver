@@ -679,38 +679,40 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ENTITY_FQN));
         menu.add(asMenu);
 
-        MenuManager avMenu = new MenuManager(ERDMessages.menu_attribute_visibility);
-        avMenu.add(new EmptyAction(ERDMessages.menu_attribute_visibility_default));
-        avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.ALL));
-        avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.KEYS));
-        avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.PRIMARY));
-        avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.NONE));
+        if (getDiagram().getDecorator().supportsAttributeVisibility()) {
+            MenuManager avMenu = new MenuManager(ERDMessages.menu_attribute_visibility);
+            avMenu.add(new EmptyAction(ERDMessages.menu_attribute_visibility_default));
+            avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.ALL));
+            avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.KEYS));
+            avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.PRIMARY));
+            avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.NONE));
 
-        ISelection selection = getGraphicalViewer().getSelection();
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            int totalEntities = 0;
-            for (Object item : ((IStructuredSelection) selection).toArray()) {
-                if (item instanceof EntityPart) {
-                    totalEntities++;
+            ISelection selection = getGraphicalViewer().getSelection();
+            if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+                int totalEntities = 0;
+                for (Object item : ((IStructuredSelection) selection).toArray()) {
+                    if (item instanceof EntityPart) {
+                        totalEntities++;
+                    }
+                }
+
+                if (totalEntities > 0) {
+                    avMenu.add(new Separator());
+                    String avaTitle = ERDMessages.menu_attribute_visibility_entity;
+                    if (((IStructuredSelection) selection).size() == 1) {
+                        avaTitle += " (" + ((IStructuredSelection) selection).getFirstElement() + ")";
+                    } else {
+                        avaTitle += " (" + totalEntities + ")";
+                    }
+                    avMenu.add(new EmptyAction(avaTitle));
+                    avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.ALL));
+                    avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.KEYS));
+                    avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.PRIMARY));
+                    avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.NONE));
                 }
             }
-
-            if (totalEntities > 0) {
-                avMenu.add(new Separator());
-                String avaTitle = ERDMessages.menu_attribute_visibility_entity;
-                if (((IStructuredSelection) selection).size() == 1) {
-                    avaTitle += " (" + ((IStructuredSelection) selection).getFirstElement() + ")";
-                } else {
-                    avaTitle += " (" + totalEntities + ")";
-                }
-                avMenu.add(new EmptyAction(avaTitle));
-                avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.ALL));
-                avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.KEYS));
-                avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.PRIMARY));
-                avMenu.add(new ChangeAttributeVisibilityAction(false, ERDAttributeVisibility.NONE));
-            }
+            menu.add(avMenu);
         }
-        menu.add(avMenu);
     }
 
     public void fillPartContextMenu(IMenuManager menu, IStructuredSelection selection) {

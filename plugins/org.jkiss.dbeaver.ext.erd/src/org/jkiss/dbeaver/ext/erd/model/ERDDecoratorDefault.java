@@ -63,6 +63,11 @@ public class ERDDecoratorDefault implements ERDDecorator {
     }
 
     @Override
+    public boolean supportsAttributeVisibility() {
+        return true;
+    }
+
+    @Override
     public Insets getDefaultEntityInsets() {
         return new Insets(20, 20, 10, 20);
     }
@@ -124,7 +129,8 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @Override
     public void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, ERDEntity erdEntity) {
         DBSEntity entity = erdEntity.getObject();
-        ERDAttributeVisibility attributeVisibility = erdEntity.getAttributeVisibility();
+        ERDAttributeVisibility attributeVisibility = diagram.getDecorator().supportsAttributeVisibility() ?
+            erdEntity.getAttributeVisibility() : ERDAttributeVisibility.ALL;
         if (attributeVisibility == null) {
             EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(erdEntity.getObject());
             if (visualInfo != null) {
