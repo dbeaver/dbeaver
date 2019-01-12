@@ -69,9 +69,12 @@ public class EntityDiagramFigure extends FreeformLayer {
                         TextFlow textFlow = (TextFlow) hintFigure.getChildren().get(0);
                         textFlow.setText(message);
                         Dimension textExtents = FigureUtilities.getTextExtents(message, textFlow.getFont());
-                        hintFigure.setLocation(new Point((clientArea.width - textExtents.width) / 2, (clientArea.height - textExtents.height) / 2));
-                        hintFigure.setVisible(true);
-
+                        int posX = (clientArea.width - textExtents.width) / 2;
+                        int posY = (clientArea.height - textExtents.height) / 2;
+                        if (posX > 0 && posY > 0) {
+                            hintFigure.setLocation(new Point(posX, posY));
+                            hintFigure.setVisible(true);
+                        }
                         //setConstraint(hintFigure, );
                     } else {
                         hintFigure.setVisible(false);
