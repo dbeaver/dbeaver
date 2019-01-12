@@ -41,6 +41,8 @@ public class SQLServerConstants {
     public static final String TYPE_DATETIMEOFFSET = "datetimeoffset";
 
 
+    public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
+
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
     public static final String PROP_CONNECTION_ADP_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-active-directory-auth@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";

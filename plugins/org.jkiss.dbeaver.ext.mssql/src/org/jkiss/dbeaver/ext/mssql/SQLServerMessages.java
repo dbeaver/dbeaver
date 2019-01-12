@@ -23,6 +23,19 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 public class SQLServerMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerMessages"; //$NON-NLS-1$
 
+    public static String authentication_sql_server_title;
+    public static String authentication_sql_server_description;
+    public static String authentication_windows_title;
+    public static String authentication_windows_description;
+    public static String authentication_ad_password_title;
+    public static String authentication_ad_password_description;
+    public static String authentication_ad_integrated_title;
+    public static String authentication_ad_integrated_description;
+    public static String authentication_kerberos_title;
+    public static String authentication_kerberos_description;
+    public static String authentication_other_title;
+    public static String authentication_other_description;
+
     public static String index_type_Heap;
     public static String index_type_NonClustered;
     public static String index_type_XML;
