@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -38,8 +39,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -278,6 +282,29 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
             return adapter.cast(new SQLServerStructureAssistant(this));
         }
         return super.getAdapter(adapter);
+    }
+
+    @Override
+    public ErrorPosition[] getErrorPosition(DBRProgressMonitor monitor, DBCExecutionContext context, String query, Throwable error) {
+        Throwable rootCause = GeneralUtils.getRootCause(error);
+        if (rootCause != null && SQLServerConstants.SQL_SERVER_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
+            // Read line number from SQLServerError class
+            try {
+                Object serverError = rootCause.getClass().getMethod("getSQLServerError").invoke(rootCause);
+                if (serverError != null) {
+                    Object serverErrorLine = BeanUtils.readObjectProperty(serverError, "lineNumber");
+                    if (serverErrorLine instanceof Number) {
+                        ErrorPosition pos = new ErrorPosition();
+                        pos.line = ((Number) serverErrorLine).intValue() - 1;
+                        return new ErrorPosition[] {pos};
+                    }
+                }
+            } catch (Throwable e) {
+                // ignore
+            }
+        }
+
+        return super.getErrorPosition(monitor, context, query, error);
     }
 
     static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {

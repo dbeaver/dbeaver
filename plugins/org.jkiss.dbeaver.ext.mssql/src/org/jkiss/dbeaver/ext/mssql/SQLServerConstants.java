@@ -70,4 +70,5 @@ public class SQLServerConstants {
     public static final String SYS_TABLE_EXTENDED_PROPERTIES = "extended_properties";
     public static final String PROP_MS_DESCRIPTION = "MS_Description";
 
+    public static final String SQL_SERVER_EXCEPTION_CLASS_NAME = "com.microsoft.sqlserver.jdbc.SQLServerException";
 }
