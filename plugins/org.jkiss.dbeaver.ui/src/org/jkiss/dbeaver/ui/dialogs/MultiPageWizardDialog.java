@@ -334,7 +334,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     @Override
     public void updateTitleBar()
     {
-
+        setTitleImage(getCurrentPage().getImage());
     }
 
     @Override
