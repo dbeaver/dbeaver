@@ -21,20 +21,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerResources"; //$NON-NLS-1$
-
-    /* PostgreConnectionPage */
-    public static String dialog_setting_connection_settings;
-
-    public static String dialog_connection_windows_authentication_button;
-    public static String dialog_connection_adp_authentication_button;
-    public static String dialog_connection_database_schema_label;
-    public static String dialog_connection_host_label;
-    public static String dialog_connection_password_label;
-    public static String dialog_connection_port_label;
-    public static String dialog_connection_user_name_label;
-    public static String dialog_setting_show_all_schemas;
-    public static String dialog_setting_show_all_schemas_tip;
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerMessages"; //$NON-NLS-1$
 
     public static String index_type_Heap;
     public static String index_type_NonClustered;

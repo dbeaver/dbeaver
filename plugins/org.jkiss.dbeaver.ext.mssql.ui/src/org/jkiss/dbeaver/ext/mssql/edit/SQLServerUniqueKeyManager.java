@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.*;
-import org.jkiss.dbeaver.ext.mssql.model.*;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKeyColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
@@ -28,8 +30,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
-
-import java.util.Locale;
 
 /**
  * SQL server unique constraint manager

@@ -15,24 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql;
+package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-public class SQLServerActivator extends AbstractUIPlugin {
+public class SQLServerUIActivator extends AbstractUIPlugin {
 
     public static final String IMG_SQL_SERVER = "IMG_SQL_SERVER"; //$NON-NLS-1$
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.mssql"; //$NON-NLS-1$
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.mssql.ui"; //$NON-NLS-1$
 
     // The shared instance
-    private static SQLServerActivator plugin;
+    private static SQLServerUIActivator plugin;
 
-    public SQLServerActivator() {
+    public SQLServerUIActivator() {
     }
 
     @Override
@@ -47,7 +47,7 @@ public class SQLServerActivator extends AbstractUIPlugin {
         super.stop(context);
     }
 
-    public static SQLServerActivator getDefault() {
+    public static SQLServerUIActivator getDefault() {
         return plugin;
     }
 
