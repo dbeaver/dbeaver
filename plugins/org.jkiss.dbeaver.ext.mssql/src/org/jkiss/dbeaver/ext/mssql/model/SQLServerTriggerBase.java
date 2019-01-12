@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -84,6 +85,10 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     @Property(viewable = false, order = 10)
     public long getObjectId() {
@@ -95,14 +100,26 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return insteadOfTrigger;
     }
 
+    public void setInsteadOfTrigger(boolean insteadOfTrigger) {
+        this.insteadOfTrigger = insteadOfTrigger;
+    }
+
     @Property(viewable = false, order = 20)
     public boolean isDisabled() {
         return disabled;
     }
 
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
     public String getBody()
     {
         return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     @Override
@@ -132,7 +149,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        if (body == null) {
+        if (body == null && isPersisted()) {
             OWNER owner = getParentObject();
             SQLServerDatabase database = null;
             if (owner instanceof SQLServerDatabase) {
@@ -145,5 +162,8 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return body;
     }
 
+    public void setObjectDefinitionText(String sourceText) {
+        this.body = sourceText;
+    }
 
 }
