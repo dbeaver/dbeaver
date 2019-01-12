@@ -23,16 +23,31 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate;
+import org.eclipse.debug.ui.actions.ToggleBreakpointAction;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.source.IVerticalRulerInfo;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 public class ToggleBreakpointHandler extends AbstractHandler implements IHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        // FIXME:AF: this is a dirty hack to enable ancient 3.x- actions with
-        // handlers, needs rework
-        RulerToggleBreakpointActionDelegate delegate = new RulerToggleBreakpointActionDelegate();
-        delegate.runWithEvent(null, (Event) event.getTrigger());
+        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+        if (activeEditor != null) {
+            SQLEditorBase sqlEditor = activeEditor.getAdapter(SQLEditorBase.class);
+            if (sqlEditor != null) {
+                ITextViewer textViewer = sqlEditor.getAdapter(ITextViewer.class);
+                if (textViewer != null) {
+                    IVerticalRulerInfo rulerInfo = sqlEditor.getAdapter(IVerticalRulerInfo.class);
+                    ToggleBreakpointAction action = new ToggleBreakpointAction(sqlEditor, textViewer.getDocument(), rulerInfo);
+                    action.runWithEvent(new Event());
+                }
+            }
+        }
         return null;
     }
 
