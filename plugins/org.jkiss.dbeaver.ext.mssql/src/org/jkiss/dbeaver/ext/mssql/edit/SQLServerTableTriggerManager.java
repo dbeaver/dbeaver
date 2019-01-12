@@ -54,7 +54,7 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
             "CREATE OR ALTER TRIGGER " + newTriggerName + " ON " + parent.getFullyQualifiedName(DBPEvaluationContext.DDL) + "\n" +
             "AFTER INSERT\n" +
             "AS\n" +
-            "END;\n"
+            ";\n"
         );
         return newTrigger;
     }
