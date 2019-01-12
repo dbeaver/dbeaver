@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SQL Server UI
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.mssql.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20190121
+Bundle-Activator: org.jkiss.dbeaver.ext.mssql.SQLServerUIActivator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jface.text,
+ org.eclipse.ui.views,
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.workbench.texteditor,
+ org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ext.mssql.core
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Vendor: JKISS
+Bundle-Localization: plugin
