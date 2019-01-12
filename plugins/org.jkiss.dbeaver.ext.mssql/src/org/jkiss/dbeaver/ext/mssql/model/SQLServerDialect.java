@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.eclipse.jface.text.rules.IRule;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -28,14 +26,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider {
+public class SQLServerDialect extends JDBCSQLDialect {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
         /*{
@@ -118,10 +115,6 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
             }
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
-    }
-
-    @Override
-    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
     }
 
     @Override

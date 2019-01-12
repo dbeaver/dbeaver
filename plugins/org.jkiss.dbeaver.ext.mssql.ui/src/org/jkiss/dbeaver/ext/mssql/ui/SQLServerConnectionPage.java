@@ -18,16 +18,13 @@
 package org.jkiss.dbeaver.ext.mssql.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.mssql.SQLServerActivator;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
-import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -74,7 +71,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
-            hostLabel.setText(SQLServerMessages.dialog_connection_host_label);
+            hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             hostText = new Text(settingsGroup, SWT.BORDER);
@@ -87,7 +84,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
                 gd.horizontalSpan = 3;
             } else {
                 Label portLabel = new Label(settingsGroup, SWT.NONE);
-                portLabel.setText(SQLServerMessages.dialog_connection_port_label);
+                portLabel.setText(SQLServerUIMessages.dialog_connection_port_label);
                 portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
                 portText = new Text(settingsGroup, SWT.BORDER);
@@ -99,7 +96,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
         {
             Label dbLabel = new Label(settingsGroup, SWT.NONE);
-            dbLabel.setText(SQLServerMessages.dialog_connection_database_schema_label);
+            dbLabel.setText(SQLServerUIMessages.dialog_connection_database_schema_label);
             dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             dbText = new Text(settingsGroup, SWT.BORDER);
@@ -113,7 +110,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         {
             if (SQLServerUtils.isDriverSqlServer(getSite().getDriver())) {
                 if (!isDriverAzure) {
-                    windowsAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_windows_authentication_button, false);
+                    windowsAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerUIMessages.dialog_connection_windows_authentication_button, false);
                     windowsAuthenticationButton.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -122,13 +119,13 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
                     });
                     UIUtils.createEmptyLabel(settingsGroup, 2, 1);
                 } else {
-                    adpAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_adp_authentication_button, false);
+                    adpAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerUIMessages.dialog_connection_adp_authentication_button, false);
                     UIUtils.createEmptyLabel(settingsGroup, 2, 1);
                 }
             }
 
             userNameLabel = new Label(settingsGroup, SWT.NONE);
-            userNameLabel.setText(SQLServerMessages.dialog_connection_user_name_label);
+            userNameLabel.setText(SQLServerUIMessages.dialog_connection_user_name_label);
             userNameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             userNameText = new Text(settingsGroup, SWT.BORDER);
@@ -139,7 +136,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             passwordLabel = new Label(settingsGroup, SWT.NONE);
-            passwordLabel.setText(SQLServerMessages.dialog_connection_password_label);
+            passwordLabel.setText(SQLServerUIMessages.dialog_connection_password_label);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             passwordText = new Text(settingsGroup, SWT.BORDER | SWT.PASSWORD);
@@ -152,14 +149,14 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
         {
             Group secureGroup = new Group(settingsGroup, SWT.NONE);
-            secureGroup.setText(SQLServerMessages.dialog_setting_connection_settings);
+            secureGroup.setText(SQLServerUIMessages.dialog_setting_connection_settings);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(1, false));
 
             createSavePasswordButton(secureGroup);
-            showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerMessages.dialog_setting_show_all_schemas, SQLServerMessages.dialog_setting_show_all_schemas_tip, true, 2);
+            showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }
 
         createDriverPanel(settingsGroup);
@@ -192,9 +189,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         {
             setImageDescriptor(isSqlServer ?
                 (isDriverAzure ?
-                    SQLServerActivator.getImageDescriptor("icons/azure_logo.png") :
-                    SQLServerActivator.getImageDescriptor("icons/mssql_logo.png")) :
-                SQLServerActivator.getImageDescriptor("icons/sybase_logo.png"));
+                    SQLServerUIActivator.getImageDescriptor("icons/azure_logo.png") :
+                    SQLServerUIActivator.getImageDescriptor("icons/mssql_logo.png")) :
+                SQLServerUIActivator.getImageDescriptor("icons/sybase_logo.png"));
         }
 
         // Load values from new connection info
