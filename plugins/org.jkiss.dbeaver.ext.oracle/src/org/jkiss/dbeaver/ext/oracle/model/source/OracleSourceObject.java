@@ -17,18 +17,16 @@
 
 package org.jkiss.dbeaver.ext.oracle.model.source;
 
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceType;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 
 /**
  * Stored code interface
  */
-public interface OracleSourceObject extends DBPScriptObject, OracleStatefulObject {
+public interface OracleSourceObject extends DBSObjectWithScript, OracleStatefulObject {
 
     void setName(String name);
-
-    void setObjectDefinitionText(String source);
 
     OracleSourceType getSourceType();
 
