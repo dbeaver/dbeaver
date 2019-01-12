@@ -129,7 +129,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
 
         curPropertySource = input.getPropertySource();
-        refreshProperties();
+
         input.getCommandContext().addCommandListener(new DBECommandAdapter() {
             @Override
             public void onCommandChange(DBECommand command) {
@@ -160,7 +160,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         });
 
         propertiesGroup.addDisposeListener(e -> dispose());
-	}
+
+        refreshProperties();
+    }
 
     private void updateEditButtonsState() {
         if (saveButton == null || saveButton.isDisposed()) {
@@ -444,7 +446,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             Control finalEditControl = editControl;
 
             if (finalEditControl instanceof Combo) {
-                ((Combo) finalEditControl).addModifyListener(e -> updatePropertyValue(prop, ((Combo) finalEditControl).getText()));
+                ((Combo) finalEditControl).addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        updatePropertyValue(prop, ((Combo) finalEditControl).getText());
+                    }
+                });
             } else if (finalEditControl instanceof Text) {
                 ((Text) finalEditControl).addModifyListener(e -> updatePropertyValue(prop, ((Text) finalEditControl).getText()));
             } else if (finalEditControl instanceof Button) {
@@ -475,6 +482,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 if (value instanceof String) {
                     value = GeneralUtils.convertString((String) value, dataType);
                 }
+                Object oldPropValue = curPropertySource.getPropertyValue(null, prop.getId());
                 curPropertySource.setPropertyValue(null, prop.getId(), value);
             }
         }
