@@ -33,6 +33,8 @@ public interface ERDDecorator {
 
     boolean allowEntityDuplicates();
 
+    boolean supportsAttributeVisibility();
+
     /**
      * Margin around entity figure. This affects diagram connections layout
      */
