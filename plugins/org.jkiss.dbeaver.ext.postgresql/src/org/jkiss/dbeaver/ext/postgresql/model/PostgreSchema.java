@@ -221,6 +221,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return this.tableCache;
     }
 
+    public ConstraintCache getConstraintCache() {
+        return this.constraintCache;
+    }
+
     @Association
     public Collection<? extends JDBCTable> getTables(DBRProgressMonitor monitor)
         throws DBException {
@@ -531,7 +535,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     /**
      * Constraint cache implementation
      */
-    class ConstraintCache extends JDBCCompositeCache<PostgreSchema, PostgreTableBase, PostgreTableConstraintBase, PostgreTableConstraintColumn> {
+    public class ConstraintCache extends JDBCCompositeCache<PostgreSchema, PostgreTableBase, PostgreTableConstraintBase, PostgreTableConstraintColumn> {
         protected ConstraintCache() {
             super(tableCache, PostgreTableBase.class, "tabrelname", "conname");
         }

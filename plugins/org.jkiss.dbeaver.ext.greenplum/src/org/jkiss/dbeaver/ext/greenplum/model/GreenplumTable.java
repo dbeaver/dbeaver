@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -56,6 +55,8 @@ public class GreenplumTable extends PostgreTableRegular {
 
     private boolean unloggedTable = false;
 
+    private boolean supportsReplicatedDistribution = false;
+
     public GreenplumTable(PostgreSchema catalog) {
         super(catalog);
     }
@@ -64,6 +65,7 @@ public class GreenplumTable extends PostgreTableRegular {
         super(catalog, dbResult);
 
         if (catalog.getDataSource().isServerVersionAtLeast(9, 1)) {
+            supportsReplicatedDistribution = true;
             if ("u".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "relpersistence"))) {
                 this.unloggedTable = true;
             }
@@ -74,8 +76,7 @@ public class GreenplumTable extends PostgreTableRegular {
         return unloggedTable;
     }
 
-    @Property(viewable = false, order = 90)
-    public List<PostgreTableColumn> getDistributionPolicy(DBRProgressMonitor monitor) throws DBException {
+    private List<PostgreTableColumn> getDistributionPolicy(DBRProgressMonitor monitor) throws DBException {
         if (distributionColumns == null) {
             try {
                 distributionColumns = readDistributedColumns(monitor);
@@ -102,6 +103,27 @@ public class GreenplumTable extends PostgreTableRegular {
         return columns;
     }
 
+    private List<PostgreTableColumn> getDistributionTableColumns(DBRProgressMonitor monitor, List<PostgreTableColumn> distributionColumns) throws DBException {
+        // Get primary key
+        PostgreTableConstraint pk = null;
+        for (PostgreTableConstraint tc : getConstraints(monitor)) {
+            if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                pk = tc;
+                break;
+            }
+        }
+        if (pk != null) {
+            List<DBSEntityAttribute> pkAttrs = DBUtils.getEntityAttributes(monitor, pk);
+            if (!CommonUtils.isEmpty(pkAttrs)) {
+                distributionColumns = new ArrayList<>(pkAttrs.size());
+                for (DBSEntityAttribute attr : pkAttrs) {
+                    distributionColumns.add((PostgreTableColumn) attr);
+                }
+            }
+        }
+        return distributionColumns;
+    }
+
     @Nullable
     private int[] readDistributedColumns(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table distributed columns")) {
@@ -119,33 +141,33 @@ public class GreenplumTable extends PostgreTableRegular {
         }
     }
 
+    private boolean isDistributedByReplicated(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Greenplum table distributed columns")) {
+            try (JDBCStatement dbStat = session.createStatement()) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT policytype FROM pg_catalog.gp_distribution_policy WHERE localoid=" + getObjectId())) {
+                    if (dbResult.next()) {
+                        return JDBCUtils.safeGetString(dbResult, 1).equals("r");
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
+    }
+
     @Override
     public void appendTableModifiers(DBRProgressMonitor monitor, StringBuilder ddl) {
         try {
             List<PostgreTableColumn> distributionColumns = getDistributionPolicy(monitor);
             if (CommonUtils.isEmpty(distributionColumns)) {
-                // Get primary key
-                PostgreTableConstraint pk = null;
-                for (PostgreTableConstraint tc : getConstraints(monitor)) {
-                    if (tc.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                        pk = tc;
-                        break;
-                    }
-                }
-                if (pk != null) {
-                    List<DBSEntityAttribute> pkAttrs = DBUtils.getEntityAttributes(monitor, pk);
-                    if (!CommonUtils.isEmpty(pkAttrs)) {
-                        distributionColumns = new ArrayList<>(pkAttrs.size());
-                        for (DBSEntityAttribute attr : pkAttrs) {
-                            distributionColumns.add((PostgreTableColumn) attr);
-                        }
-                    }
-                }
+                distributionColumns = getDistributionTableColumns(monitor, distributionColumns);
             }
 
             ddl.append("\nDISTRIBUTED ");
             if (CommonUtils.isEmpty(distributionColumns)) {
-                ddl.append("RANDOMLY");
+                ddl.append((supportsReplicatedDistribution && isDistributedByReplicated(monitor)) ? "REPLICATED" : "RANDOMLY");
             } else {
                 ddl.append("BY (");
                 for (int i = 0; i < distributionColumns.size(); i++) {
