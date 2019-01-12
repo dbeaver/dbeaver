@@ -100,11 +100,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return foreignKeyCache;
     }
 
-    ProcedureCache getProcedureCache() {
+    public ProcedureCache getProcedureCache() {
         return procedureCache;
     }
 
-    TriggerCache getTriggerCache() {
+    public TriggerCache getTriggerCache() {
         return triggerCache;
     }
 
