@@ -112,6 +112,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
     }
 
     private void createDriverGallery() {
+        int oldItemCount = gallery.getItemCount();
         gallery.removeAll();
 
         GalleryItem groupRecent = new GalleryItem(gallery, SWT.NONE);
@@ -132,8 +133,10 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         }
         fillDriverGroup(groupAll);
 
-        gallery.setFocus();
-        gallery.setSelection(new GalleryItem[] { gallery.getItem(0) } );
+        if (oldItemCount  == 0) {
+            gallery.setFocus();
+            gallery.setSelection(new GalleryItem[]{gallery.getItem(0)});
+        }
     }
 
     private void fillDriverGroup(GalleryItem group) {
