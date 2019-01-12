@@ -11,6 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text,
  org.jkiss.dbeaver.core,
  org.eclipse.ui.workbench.texteditor,
+ org.eclipse.ui.editors,
  org.jkiss.dbeaver.ext.generic,
  com.github.jsqlparser
 Bundle-ActivationPolicy: lazy
