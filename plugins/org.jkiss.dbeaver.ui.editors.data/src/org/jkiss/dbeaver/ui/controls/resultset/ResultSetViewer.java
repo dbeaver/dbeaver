@@ -2220,18 +2220,22 @@ public class ResultSetViewer extends Viewer
                 {
                     @Override
                     public void run() {
-                        if (isChecked()) {
-                            final DBVTransformSettings settings = getTransformSettings();
-                            final String oldCustomTransformer = settings.getCustomTransformer();
-                            settings.setCustomTransformer(descriptor.getId());
-                            TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
-                                ResultSetViewer.this, attr, settings);
-                            if (settingsDialog.open() == IDialogConstants.OK_ID) {
-                                // If there are no options - save settings without opening dialog
-                                saveTransformerSettings();
-                            } else {
-                                settings.setCustomTransformer(oldCustomTransformer);
+                        try {
+                            if (isChecked()) {
+                                final DBVTransformSettings settings = getTransformSettings();
+                                final String oldCustomTransformer = settings.getCustomTransformer();
+                                settings.setCustomTransformer(descriptor.getId());
+                                TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
+                                    ResultSetViewer.this, attr, settings);
+                                if (settingsDialog.open() == IDialogConstants.OK_ID) {
+                                    // If there are no options - save settings without opening dialog
+                                    saveTransformerSettings();
+                                } else {
+                                    settings.setCustomTransformer(oldCustomTransformer);
+                                }
                             }
+                        } catch (Exception e) {
+                            DBWorkbench.getPlatformUI().showError("Transform error", "Error transforming column", e);
                         }
                     }
                 };
