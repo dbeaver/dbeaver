@@ -31,6 +31,7 @@
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerCheckConstraintManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerViewManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
 
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
@@ -38,8 +39,8 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
-                id="generic.table.ddl.view"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                id="mssql.table.ddl.view"
+                class="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSourceViewEditor"
                 main="false"
                 label="DDL"
                 description="DDL"
@@ -49,8 +50,8 @@
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
         </editor>
         <editor
-                id="generic.view.source.view"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                id="mssql.view.source.view"
+                class="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSourceViewEditor"
                 main="false"
                 label="Definition"
                 description="View definition"

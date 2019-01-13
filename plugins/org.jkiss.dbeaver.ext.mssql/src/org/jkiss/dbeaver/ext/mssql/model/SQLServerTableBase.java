@@ -196,10 +196,16 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getDatabase(),
-            getSchema(),
-            this);
+        if (isView() && context == DBPEvaluationContext.DDL) {
+            return DBUtils.getFullQualifiedName(getDataSource(),
+                getSchema(),
+                this);
+        } else {
+            return DBUtils.getFullQualifiedName(getDataSource(),
+                getDatabase(),
+                getSchema(),
+                this);
+        }
     }
 
 }
