@@ -30,11 +30,13 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * MySQLTable base

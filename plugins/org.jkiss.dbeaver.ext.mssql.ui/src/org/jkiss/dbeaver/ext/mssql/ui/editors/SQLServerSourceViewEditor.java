@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.ui.editors;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 

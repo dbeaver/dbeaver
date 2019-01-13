@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.*;
@@ -30,13 +29,11 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.SQLScriptCommand;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
