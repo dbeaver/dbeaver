@@ -33,6 +33,8 @@ public class SQLServerConstants {
     public static final String DRIVER_JTDS = "mssql_jdbc_jtds";
     public static final String DRIVER_MS = "mssql_jdbc_ms";
 
+    public static final boolean USE_GSS = false;
+
     public static final String DEFAULT_SCHEMA_NAME = "dbo";
 
     public static final String TYPE_DATETIME = "datetime";
@@ -42,16 +44,19 @@ public class SQLServerConstants {
 
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
-
-    public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
-    public static final String PROP_CONNECTION_ADP_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-active-directory-auth@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
+
     public static final String PROP_CONNECTION_INTEGRATED_SECURITY = "integratedSecurity";
     public static final String PROP_CONNECTION_AUTHENTICATION = "authentication";
+    public static final String PROP_CONNECTION_AUTHENTICATION_SCHEME = "authenticationScheme";
+
+    public static final String PROP_TRUST_SERVER_CERTIFICATE = "trustServerCertificate";
 
     public static final String AUTH_SQL_SERVER_PASSWORD = "SqlPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_PASSWORD = "ActiveDirectoryPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_INTEGRATED = "ActiveDirectoryIntegrated";
+
+    public static final String AUTH_SCHEME_KERBEROS = "JavaKerberos";
 
     // https://support.microsoft.com/en-us/help/321185/how-to-determine-the-version--edition-and-update-level-of-sql-server-a
     public static final int SQL_SERVER_2016_VERSION_MAJOR = 13;
@@ -60,7 +65,7 @@ public class SQLServerConstants {
     public static final int SQL_SERVER_2000_VERSION_MAJOR = 8;
 
     public static final String APPNAME_CLIENT_PROPERTY = "APPNAME";
-    public static final String APPLICATION_NAME_CLIENT_PROPERTY = JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY;
+    public static final String APPLICATION_NAME_CLIENT_PROPERTY = "applicationName";
 
     public static final String SQL_SERVER_SYSTEM_SCHEMA = "sys";
     public static final String SYBASE_SYSTEM_SCHEMA = "dbo";
@@ -75,4 +80,8 @@ public class SQLServerConstants {
     public static final String PROP_MS_DESCRIPTION = "MS_Description";
 
     public static final String SQL_SERVER_EXCEPTION_CLASS_NAME = "com.microsoft.sqlserver.jdbc.SQLServerException";
+
+    @Deprecated
+    public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
+
 }

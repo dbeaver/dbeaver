@@ -85,7 +85,7 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
                 }
 
                 if (isDriverAzure) {
-                    url.append(";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;");
+                    url.append(";encrypt=true"); // ;hostNameInCertificate=*.database.windows.net
                 }
             }
 /*

@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.ietf.jgss.*;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Properties;
@@ -52,8 +54,23 @@ public enum SQLServerAuthentication {
     AD_INTEGRATED(SQLServerMessages.authentication_ad_integrated_title, SQLServerMessages.authentication_ad_integrated_description, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTEGRATED);
     }),
-    KERBEROS_INTEGRATED(SQLServerMessages.authentication_kerberos_title, SQLServerMessages.authentication_kerberos_description, false, true, (connectionInfo, properties) -> {
+    KERBEROS_INTEGRATED(SQLServerMessages.authentication_kerberos_title, SQLServerMessages.authentication_kerberos_description, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(true));
+        properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION_SCHEME, SQLServerConstants.AUTH_SCHEME_KERBEROS);
+
+        if (SQLServerConstants.USE_GSS) {
+            // Disabled by default. Never really tested
+            if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+                try {
+                    GSSManager gssManager = GSSManager.getInstance();
+                    GSSName name = gssManager.createName(connectionInfo.getUserName(), GSSName.NT_USER_NAME);
+                    GSSCredential impersonatedUserCredential = gssManager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, (Oid)null, GSSCredential.ACCEPT_ONLY);
+                    properties.put("gsscredential", impersonatedUserCredential);
+                } catch (GSSException e) {
+                    throw new DBCException ("Error initializing GSS", e);
+                }
+            }
+        }
     }),
     OTHER(SQLServerMessages.authentication_other_title, SQLServerMessages.authentication_other_description, true, true, (connectionInfo, properties) -> {
         // Set standard JDBC creds
@@ -107,6 +124,6 @@ public enum SQLServerAuthentication {
 
     public interface AuthInitializer {
 
-        void initializeAuthentication(DBPConnectionConfiguration connectionInfo, Properties properties);
+        void initializeAuthentication(DBPConnectionConfiguration connectionInfo, Properties properties) throws DBCException;
     }
 }
