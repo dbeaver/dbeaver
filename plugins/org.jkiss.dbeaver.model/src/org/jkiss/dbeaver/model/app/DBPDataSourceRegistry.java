@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.util.List;
@@ -53,6 +55,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
     DBPDataSourceContainer findDataSourceByName(String name);
 
     List<? extends DBPDataSourceContainer> getDataSources();
+
+    DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig);
 
     void addDataSourceListener(DBPEventListener listener);
 
@@ -92,4 +96,5 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     @NotNull
     ISecurePreferences getSecurePreferences();
+
 }

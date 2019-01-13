@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -278,12 +278,7 @@ public class DataSourceHandler
                         }
                     }
                     final boolean commit = commitTxn;
-                    UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            closeActiveTransaction(monitor, context, commit);
-                        }
-                    });
+                    UIUtils.runInProgressService(monitor -> closeActiveTransaction(monitor, context, commit));
                 }
             } catch (Throwable e) {
                 log.warn("Can't rollback active transaction before disconnect", e);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,10 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
 import org.jkiss.utils.CommonUtils;
@@ -230,6 +232,20 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 dmc.saveSettings(dmcSettings);
             }
         }
+    }
+
+    @Override
+    public String getSettingsSummary() {
+        StringBuilder summary = new StringBuilder();
+
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_new_connection, openNewConnections);
+        DTUtils.addSummary(summary, "Use transactions", useTransactions);
+        if (useTransactions) {
+            DTUtils.addSummary(summary, "Commit after", commitAfterRows);
+        }
+        DTUtils.addSummary(summary, "Truncate before load", truncateBeforeLoad);
+
+        return summary.toString();
     }
 
     private void checkContainerConnection(IRunnableContext runnableContext) {

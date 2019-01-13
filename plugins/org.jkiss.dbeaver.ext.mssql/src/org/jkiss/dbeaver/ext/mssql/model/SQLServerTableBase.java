@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,17 +30,20 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * MySQLTable base
  */
 public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, SQLServerSchema>
-    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject, DBPSystemObject
+    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject, DBSObjectWithScript, DBPSystemObject
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 
@@ -194,10 +197,16 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getDatabase(),
-            getSchema(),
-            this);
+        if (isView() && context == DBPEvaluationContext.DDL) {
+            return DBUtils.getFullQualifiedName(getDataSource(),
+                getSchema(),
+                this);
+        } else {
+            return DBUtils.getFullQualifiedName(getDataSource(),
+                getDatabase(),
+                getSchema(),
+                this);
+        }
     }
 
 }

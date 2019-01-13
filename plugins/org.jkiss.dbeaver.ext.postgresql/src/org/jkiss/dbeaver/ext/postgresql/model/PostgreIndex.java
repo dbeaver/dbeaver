@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     private long amId;
     private long tablespaceId;
     private String predicateExpression;
+    private long indexRelSize;
+    private long indexNumScans;
 
     private transient boolean isPrimaryKeyIndex;
     private transient String indexDDL;
@@ -79,7 +81,13 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         this.amId = JDBCUtils.safeGetLong(dbResult, "relam");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
 
-        this.predicateExpression = JDBCUtils.safeGetString(dbResult, "pred_expr");
+        if (getDataSource().isServerVersionAtLeast(7, 4)) {
+            this.predicateExpression = JDBCUtils.safeGetString(dbResult, "pred_expr");
+        }
+        if (getDataSource().isServerVersionAtLeast(8, 1)) {
+            this.indexRelSize = JDBCUtils.safeGetLong(dbResult, "index_rel_size");
+        }
+        this.indexNumScans = JDBCUtils.safeGetLong(dbResult, "index_num_scans");
 
         // Unique key indexes (including PK) are implicit. We don't want to show them separately
         if (this.isUnique) {
@@ -163,6 +171,16 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     @Property(viewable = true, order = 27)
     public String getPredicateExpression() {
         return predicateExpression;
+    }
+
+    @Property(viewable = true, order = 28)
+    public long getIndexRelSize() {
+        return indexRelSize;
+    }
+
+    @Property(viewable = false, order = 29)
+    public long getIndexNumScans() {
+        return indexNumScans;
     }
 
     @Nullable

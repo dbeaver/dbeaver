@@ -24,6 +24,7 @@
                         id="jaybird"
                         label="Firebird"
                         icon="icons/firebird_icon.png"
+                        iconBig="icons/firebird_icon_big.png"
                         class="org.firebirdsql.jdbc.FBDriver"
                         sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                         defaultPort="3050"

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,22 +103,6 @@ public class DBNBookmark extends DBNResource
                 throw new DBException("Can't rename bookmark", e);
             }
         }
-    }
-
-    @Override
-    public Collection<DBPDataSourceContainer> getAssociatedDataSources()
-    {
-        IResource resource = getResource();
-        if (resource != null) {
-            DBPDataSourceRegistry dataSourceRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(resource.getProject());
-            if (dataSourceRegistry != null) {
-                DBPDataSourceContainer dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
-                if (dataSource != null) {
-                    return Collections.singleton(dataSource);
-                }
-            }
-        }
-        return null;
     }
 
 }

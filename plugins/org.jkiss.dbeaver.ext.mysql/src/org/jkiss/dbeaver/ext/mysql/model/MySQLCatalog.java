@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -224,7 +224,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return null;
     }
 
-    @Property(viewable = true, expensive = true, order = 20)
+    @Property(viewable = true, order = 20)
     public Long getDatabaseSize(DBRProgressMonitor monitor) throws DBException {
         if (databaseSize == null) {
             try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database size")) {

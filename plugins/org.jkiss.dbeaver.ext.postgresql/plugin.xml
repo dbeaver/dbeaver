@@ -3,7 +3,7 @@
 <!--
  * DBeaver - Universal Database Manager
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,16 +88,11 @@
                                         <items label="%tree.tablechildren.node.name" path="subTables" property="subTables" icon="#table" virtual="true" recursive="../.." >
                                         </items>
                                     </folder>
-<!--
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" label="%tree.rules.node.name" icon="#triggers" description="Table rules" virtual="true">
-                                        <items label="%tree.rules.node.name" path="rules" property="rules" icon="#trigger" virtual="true" >
-                                            <items label="%tree.rules_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeRules" navigable="false" inline="true" virtual="true">
-                                            </items>
-                                        </items>
-                                    </folder>
--->
                                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.serverType.supportsTriggers()">
                                         <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRule" label="%tree.rules.node.name" icon="#rules" description="Table rules" visibleIf="object.dataSource.serverType.supportsRules()">
+                                        <items label="%tree.rule.node.name" path="rule" property="rules" icon="#rule"/>
                                     </folder>
                                 </items>
                             </folder>
@@ -109,6 +104,9 @@
                                     </folder>
                                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="View triggers" visibleIf="object.dataSource.serverType.supportsTriggers()">
                                         <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRule" label="%tree.rules.node.name" icon="#rules" description="Table rules" visibleIf="object.dataSource.serverType.supportsRules()">
+                                        <items label="%tree.rule.node.name" path="rule" property="rules" icon="#rule"/>
                                     </folder>
                                 </items>
                             </folder>
@@ -259,6 +257,7 @@
                         id="postgres-timescale-jdbc"
                         label="Timescale"
                         icon="icons/timescale_icon.png"
+                        iconBig="icons/timescale_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -281,6 +280,7 @@
                         id="postgres-yellowbrick-jdbc"
                         label="Yellowbrick"
                         icon="icons/yellowbrick_icon.png"
+                        iconBig="icons/yellowbrick_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -321,6 +321,7 @@
                         id="postgres-redshift-jdbc"
                         label="Redshift"
                         icon="icons/redshift_icon.png"
+                        iconBig="icons/redshift_icon_big.png"
                         category="AWS"
                         class="com.amazon.redshift.jdbc42.Driver"
                         sampleURL="jdbc:redshift://{host}:{port}/{database}"
@@ -444,6 +445,7 @@
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRule"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>

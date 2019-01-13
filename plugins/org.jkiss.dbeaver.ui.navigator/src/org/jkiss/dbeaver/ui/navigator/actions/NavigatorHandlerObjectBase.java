@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             // No editor found - create new command context
             DBSObject object = ((DBNDatabaseNode) container).getObject();
             if (object != null) {
-                return new CommandTarget(new SimpleCommandContext(DBUtils.getDefaultContext(object, true), !openEditor));
+                return new CommandTarget(new SimpleCommandContext(DBUtils.getDefaultContext(object, false), !openEditor));
             }
         }
         return new CommandTarget();

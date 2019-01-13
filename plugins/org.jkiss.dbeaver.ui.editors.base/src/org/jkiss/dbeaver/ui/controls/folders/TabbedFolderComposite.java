@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.eclipse.swt.widgets.Sash;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,9 +38,11 @@ import java.util.List;
 import java.util.Map;
 
 
+
+
 /**
  * Folders composite.
- * Styles:
+ * DBStyles:
  * SWT.LEFT, SWT.RIGHT - tabs orientation
  */
 public class TabbedFolderComposite extends Composite implements ITabbedFolderContainer {
@@ -69,6 +73,8 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
 
         public FolderPane(Composite parent, boolean last) {
             this.folderList = new TabbedFolderList(parent, !last);
+            CSSUtils.setCSSClass(this.folderList, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             if (!last) {
                 gd.verticalSpan = 2;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,14 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -35,6 +38,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -77,7 +81,30 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     @Override
     public String getObjectName() {
-        return inputFile == null ? null : inputFile.getAbsolutePath();
+        return inputFile == null ? null : inputFile.getName();
+    }
+
+    @Override
+    public DBPImage getObjectIcon() {
+        if (defaultProcessor != null) {
+            return defaultProcessor.getIcon();
+        }
+        return null;
+    }
+
+    @Override
+    public String getObjectContainerName() {
+        return inputFile == null ? null : inputFile.getParentFile().getAbsolutePath();
+    }
+
+    @Override
+    public DBPImage getObjectContainerIcon() {
+        return DBIcon.TREE_FOLDER;
+    }
+
+    @Override
+    public Color getObjectColor() {
+        return null;
     }
 
     public File getInputFile() {

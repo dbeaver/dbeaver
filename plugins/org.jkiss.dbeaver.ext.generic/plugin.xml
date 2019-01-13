@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -313,6 +313,7 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="omit-catalog" value="true"/>
+                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
 
                 <driver
@@ -397,6 +398,7 @@
                     id="h2_server"
                     label="Server"
                     icon="icons/h2_icon.png"
+                    iconBig="icons/h2_icon_big.png"
                     category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
@@ -416,6 +418,7 @@
                     id="h2_embedded"
                     label="Embedded"
                     icon="icons/h2_icon.png"
+                    iconBig="icons/h2_icon_big.png"
                     category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:{database}"
@@ -635,6 +638,7 @@
                     id="sqlite_jdbc"
                     label="SQLite"
                     icon="icons/sqlite_icon.png"
+                    iconBig="icons/sqlite_icon_big.png"
                     class="org.sqlite.JDBC"
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
@@ -771,6 +775,7 @@
                     id="msaccess_ucanaccess"
                     label="UCanAccess"
                     icon="icons/msaccess_icon.png"
+                    iconBig="icons/msaccess_icon_big.png"
                     category="MS Access"
                     class="net.ucanaccess.jdbc.UcanaccessDriver"
                     sampleURL="jdbc:ucanaccess://{file}"
@@ -790,6 +795,8 @@
                     <file type="jar" path="drivers/ucanaccess/jackcess.jar" bundle="drivers.ucanaccess"/>
                     <file type="jar" path="drivers/ucanaccess/mockito-core.jar" bundle="drivers.ucanaccess"/>
                     <file type="jar" path="drivers/ucanaccess/objenesis.jar" bundle="drivers.ucanaccess"/>
+
+                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
                 <driver
                     id="netezza"
@@ -842,6 +849,8 @@
                 <driver
                     id="phoenix_hbase"
                     label="Apache Phoenix"
+                    icon="icons/phoenix_icon.png"
+                    iconBig="icons/phoenix_icon_big.png"
                     class="org.apache.phoenix.jdbc.PhoenixDriver"
                     sampleURL="jdbc:phoenix:{host}"
                     webURL="http://phoenix.apache.org/"
@@ -908,6 +917,8 @@
                 <driver
                     id="apache_drill"
                     label="Apache Drill"
+                    icon="icons/drill_icon.png"
+                    iconBig="icons/drill_icon_big.png"
                     class="org.apache.drill.jdbc.Driver"
                     sampleURL="jdbc:drill:zk={host}/{server}[;schema={database}]"
                     description="Apache Drill JDBC"
@@ -1038,6 +1049,7 @@
                     id="neo4j_jdbc"
                     label="Neo4j"
                     icon="icons/neo4j_icon.png"
+                    iconBig="icons/neo4j_icon_big.png"
                     class="org.neo4j.jdbc.Driver"
                     sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
                     defaultPort="7687"
@@ -1063,6 +1075,8 @@
                 <driver
                         id="cubrid_jdbc"
                         label="CUBRID"
+                        icon="icons/cubrid_icon.png"
+                        iconBig="icons/cubrid_icon_big.png"
                         class="cubrid.jdbc.driver.CUBRIDDriver"
                         sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
                         defaultPort="33000"
@@ -1089,6 +1103,7 @@
                         id="apache_solrj"
                         label="Solr"
                         icon="icons/solr_icon.png"
+                        iconBig="icons/solr_icon_big.png"
                         class="org.apache.solr.client.solrj.io.sql.DriverImpl"
                         sampleURL="jdbc:solr://{host}:{port}/[?collection={database}]"
                         defaultPort="9983"
@@ -1102,6 +1117,8 @@
                 <driver
                         id="openedge_generic"
                         label="OpenEdge"
+                        icon="icons/openedge_icon.png"
+                        iconBig="icons/openedge_icon_big.png"
                         class="com.ddtek.jdbc.openedge.OpenEdgeDriver"
                         sampleURL="jdbc:datadirect:openedge://{host}:{port};databaseName={database}"
                         defaultPort="6718"

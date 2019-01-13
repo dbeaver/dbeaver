@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class ResultSetModel {
     private List<DBDAttributeBinding> visibleAttributes = new ArrayList<>();
     private DBDAttributeBinding documentAttribute = null;
     private DBDDataFilter dataFilter;
-    private boolean singleSourceCells;
+    private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
 
     // Data
@@ -150,7 +150,7 @@ public class ResultSetModel {
     }
 
     public boolean isSingleSource() {
-        return singleSourceCells;
+        return singleSourceEntity != null;
     }
 
     /**
@@ -163,16 +163,7 @@ public class ResultSetModel {
      */
     @Nullable
     public DBSEntity getSingleSource() {
-        if (!singleSourceCells) {
-            return null;
-        }
-        for (DBDAttributeBinding attr : attributes) {
-            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
-            if (rowIdentifier != null) {
-                return rowIdentifier.getEntity();
-            }
-        }
-        return null;
+        return singleSourceEntity;
     }
 
     public void resetCellValue(DBDAttributeBinding attr, ResultSetRow row) {
@@ -551,7 +542,6 @@ public class ResultSetModel {
 
         {
             // Check single source flag
-            this.singleSourceCells = true;
             DBSEntity sourceTable = null;
             for (DBDAttributeBinding attribute : visibleAttributes) {
                 if (attribute.isPseudoAttribute()) {
@@ -562,7 +552,7 @@ public class ResultSetModel {
                     if (sourceTable == null) {
                         sourceTable = rowIdentifier.getEntity();
                     } else if (sourceTable != rowIdentifier.getEntity()) {
-                        singleSourceCells = false;
+                        sourceTable = null;
                         break;
                     }
                 } else {
@@ -572,6 +562,7 @@ public class ResultSetModel {
                     //break;
                 }
             }
+            singleSourceEntity = sourceTable;
             updateColorMapping();
         }
 
@@ -665,7 +656,7 @@ public class ResultSetModel {
 //        if (!isSingleSource()) {
 //            return true;
 //        }
-        if (attribute.getMetaAttribute().isReadOnly()) {
+        if (attribute == null || attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();

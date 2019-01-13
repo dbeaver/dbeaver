@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,8 +143,29 @@ public class DiagramObjectCollector {
         }
         ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, table, null);
         if (erdEntity != null) {
+            // Check for alias duplications (this may happen if multiple tables were added at once)
+            String alias = erdEntity.getAlias();
+            if (!CommonUtils.isEmpty(alias)) {
+                for (int i = 2; i < 500; i++) {
+                    if (aliasExist(erdEntity.getAlias())) {
+                        erdEntity.setAlias(alias + i);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
             erdEntities.add(erdEntity);
         }
+    }
+
+    private boolean aliasExist(String alias) {
+        for (ERDEntity entity : erdEntities) {
+            if (CommonUtils.equalObjects(entity.getAlias(), alias)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<ERDEntity> getDiagramEntities()

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,11 @@ public abstract class PostgreTableReal extends PostgreTableBase
     public static final String CAT_STATISTICS = "Statistics";
 
     private long rowCountEstimate;
-    private Long rowCount;
-    private Long diskSpace;
+    private volatile Long rowCount;
+    private volatile Long diskSpace;
+    private volatile long tableRelSize;
     final TriggerCache triggerCache = new TriggerCache();
+    final RuleCache ruleCache = new RuleCache();
 
     protected PostgreTableReal(PostgreSchema catalog)
     {
@@ -85,7 +87,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     }
 
     @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
-    public synchronized Long getRowCount(DBRProgressMonitor monitor)
+    public Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
             return rowCount;
@@ -108,49 +110,67 @@ public abstract class PostgreTableReal extends PostgreTableBase
         return rowCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 24)
-    public synchronized Long getDiskSpace(DBRProgressMonitor monitor)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 24)
+    public Long getDiskSpace(DBRProgressMonitor monitor)
     {
-        if (diskSpace != null) {
-            return diskSpace;
-        }
-        if (!isPersisted() || this instanceof PostgreView || !getDataSource().isServerVersionAtLeast(8, 1)) {
-            // Do not count rows for views
-            return null;
-        }
-        if (!getDataSource().getServerType().supportsRelationSizeCalc()) {
-            return null;
-        }
-
-        // Query disk size
-        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
-            try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement("select pg_total_relation_size(?)")) {
-                dbStat.setLong(1, getObjectId());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        diskSpace = dbResult.getLong(1);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.debug("Can't fetch disk space", e);
-        }
-        if (diskSpace == null) {
-            diskSpace = -1L;
-        }
+        readTableStats(monitor);
 
         return diskSpace;
     }
 
+    @Property(category = CAT_STATISTICS, viewable = false, order = 25)
+    public long getRelationSize(DBRProgressMonitor monitor) {
+        readTableStats(monitor);
+        return tableRelSize;
+    }
+
+    private void readTableStats(DBRProgressMonitor monitor) {
+        if (diskSpace != null) {
+            return;
+        }
+        if (!isPersisted() || this instanceof PostgreView || !getDataSource().isServerVersionAtLeast(8, 1)) {
+            // Do not count rows for views
+            return;
+        }
+        if (!getDataSource().getServerType().supportsRelationSizeCalc()) {
+            return;
+        }
+        try {
+            // Query disk size
+            try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
+                try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
+                    "select " +
+                            "pg_catalog.pg_total_relation_size(?)," +
+                            "pg_catalog.pg_relation_size(?)"))
+                {
+                    dbStat.setLong(1, getObjectId());
+                    dbStat.setLong(2, getObjectId());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.next()) {
+                            diskSpace = dbResult.getLong(1);
+                            tableRelSize = dbResult.getLong(2);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Can't fetch disk space", e);
+            }
+        } finally {
+            if (diskSpace == null) {
+                diskSpace = -1L;
+            }
+        }
+    }
+
     @Override
     public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
+        return getSchema().getConstraintCache().getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
     }
 
     public PostgreTableConstraintBase getConstraint(@NotNull DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return getSchema().constraintCache.getObject(monitor, getSchema(), this, ukName);
+        return getSchema().getConstraintCache().getObject(monitor, getSchema(), this, ukName);
     }
 
     @Association
@@ -164,6 +184,13 @@ public abstract class PostgreTableReal extends PostgreTableBase
         throws DBException
     {
         return triggerCache.getObject(monitor, this, name);
+    }
+
+    @Association
+    public Collection<PostgreRule> getRules(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return ruleCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -190,6 +217,26 @@ public abstract class PostgreTableReal extends PostgreTableBase
             throws SQLException, DBException
         {
             return new PostgreTrigger(session.getProgressMonitor(), owner, dbResult);
+        }
+
+    }
+
+    class RuleCache extends JDBCObjectCache<PostgreTableReal, PostgreRule> {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableReal owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT r.oid,r.*, pg_get_ruledef(r.oid) AS definition\n" +
+                    "FROM pg_rewrite r\n" +
+                    "WHERE r.ev_class=" + owner.getObjectId() + " AND r.rulename <> '_RETURN'::name");
+        }
+
+        @Override
+        protected PostgreRule fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableReal owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreRule(session.getProgressMonitor(), owner, dbResult);
         }
 
     }

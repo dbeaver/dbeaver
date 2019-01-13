@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     private String formatType;
     private Boolean changed = false;
     private Boolean oriRequired;
+    private Integer partitionKey;
 
     // -----------------
     // Constructors
@@ -64,19 +65,20 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
         
         this.formatType = JDBCUtils.safeGetString(dbResult, "COLUMN_TYPE");
         setName(JDBCUtils.safeGetString(dbResult, "COLUMN_NAME"));
-        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "ORDINAL_POSITION"));
+        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLUMN_ORDINAL_POSITION"));
         setRequired(! JDBCUtils.safeGetBoolean(dbResult, "COLUMN_IS_NULLABLE"));
-        setDefaultValue(JDBCUtils.safeGetString(dbResult, "COLUMN_DEF"));
-        setMaxLength(JDBCUtils.safeGetInt(dbResult, "COLUMN_SIZE"));
-        setScale(JDBCUtils.safeGetInteger(dbResult, "DECIMAL_DIGITS"));
+        setDefaultValue(JDBCUtils.safeGetString(dbResult, "COLUMN_DEFAULT"));
+        setMaxLength(JDBCUtils.safeGetInt(dbResult, "COLUMN_MAXSIZE"));
+        setScale(JDBCUtils.safeGetInteger(dbResult, "COLUMN_NUM_SCALE"));
         
-
         this.isInDistKey = JDBCUtils.safeGetBoolean(dbResult, "COLUMN_IS_DISTRIBUTION_KEY");
         this.identity = JDBCUtils.safeGetInteger(dbResult, "COLUMN_IDENTITY") == null ? false : true;
         if (identity)
             this.identityValue = JDBCUtils.safeGetBigDecimal(dbResult, "COLUMN_IDENTITY");
         this.remarks = JDBCUtils.safeGetString(dbResult, "COLUMN_COMMENT");
-        this.dataType = tableBase.getDataSource().getDataType(monitor, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"));
+        this.dataType = tableBase.getDataSource().getDataTypeId(JDBCUtils.safeGetLong(dbResult, "COLUMN_TYPE_ID"));
+        
+        this.partitionKey = JDBCUtils.safeGetInteger(dbResult, "COLUMN_PARTITION_KEY_ORDINAL_POSITION");
 
         this.changed = true;
 
@@ -140,7 +142,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
     }
 
     public void setDataType(ExasolDataType dataType) {
-        if (!this.dataType.getTypeName().equals(dataType))
+        if (!this.dataType.getTypeName().equals(dataType.getTypeName()))
             this.changed = true;
         this.dataType = dataType;
     }
@@ -319,6 +321,16 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 	{
 		// don't need this one
 		return false;
+	}
+	
+	public Integer getPartitionKeyOrdinalPosition()
+	{
+		return partitionKey;
+	}
+	
+	public void setPartitionKeyOrdinalPosition(Integer position)
+	{
+		
 	}
 
 }

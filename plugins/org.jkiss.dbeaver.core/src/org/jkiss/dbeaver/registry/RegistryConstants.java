@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,6 @@ package org.jkiss.dbeaver.registry;
  * Data source descriptors constants
  */
 public class RegistryConstants {
-
-    // Process parameters constants
-    public static final String VARIABLE_HOST = "host";
-    public static final String VARIABLE_PORT = "port";
-    public static final String VARIABLE_SERVER = "server";
-    public static final String VARIABLE_DATABASE = "database";
-    public static final String VARIABLE_USER = "user";
-    public static final String VARIABLE_PASSWORD = "password";
-    public static final String VARIABLE_URL = "url";
 
 
     public static final String DRIVERS_FILE_NAME = "drivers.xml"; //$NON-NLS-1$
@@ -71,6 +62,7 @@ public class RegistryConstants {
     public static final String ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
     public static final String ATTR_NOTE = "note"; //$NON-NLS-1$
     public static final String ATTR_PATH = "path"; //$NON-NLS-1$
+    public static final String ATTR_AFTER = "after"; //$NON-NLS-1$
     public static final String ATTR_PROVIDER = "provider"; //$NON-NLS-1$
     public static final String ATTR_COMMENT = "comment"; //$NON-NLS-1$
     public static final String ATTR_ORDER = "order"; //$NON-NLS-1$
@@ -93,6 +85,7 @@ public class RegistryConstants {
     public static final String ATTR_PROMOTED = "promoted"; //$NON-NLS-1$
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
+    public static final String ATTR_ICON_BIG = "iconBig"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
     public static final String ATTR_KEEP_ALIVE = "keepAlive"; //$NON-NLS-1$

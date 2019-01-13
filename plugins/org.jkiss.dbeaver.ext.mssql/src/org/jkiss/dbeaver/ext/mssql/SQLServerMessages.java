@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2010-2017 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,20 +21,20 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class SQLServerMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerResources"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerMessages"; //$NON-NLS-1$
 
-    /* PostgreConnectionPage */
-    public static String dialog_setting_connection_settings;
-
-    public static String dialog_connection_windows_authentication_button;
-    public static String dialog_connection_adp_authentication_button;
-    public static String dialog_connection_database_schema_label;
-    public static String dialog_connection_host_label;
-    public static String dialog_connection_password_label;
-    public static String dialog_connection_port_label;
-    public static String dialog_connection_user_name_label;
-    public static String dialog_setting_show_all_schemas;
-    public static String dialog_setting_show_all_schemas_tip;
+    public static String authentication_sql_server_title;
+    public static String authentication_sql_server_description;
+    public static String authentication_windows_title;
+    public static String authentication_windows_description;
+    public static String authentication_ad_password_title;
+    public static String authentication_ad_password_description;
+    public static String authentication_ad_integrated_title;
+    public static String authentication_ad_integrated_description;
+    public static String authentication_kerberos_title;
+    public static String authentication_kerberos_description;
+    public static String authentication_other_title;
+    public static String authentication_other_description;
 
     public static String index_type_Heap;
     public static String index_type_NonClustered;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
+
 
 /**
  * MultiPageDatabaseEditor
@@ -71,6 +76,16 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
         super.createPages();
         DatabaseEditorUtils.setPartBackground(this, getContainer());
     }
+
+    @Override
+    protected void setContainerStyles() {
+        super.setContainerStyles();
+        Composite container = getContainer();
+        if (container instanceof CTabFolder && !container.isDisposed()){
+            CSSUtils.setCSSClass(container, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        }
+    }
+
 
     @Override
     public boolean isActiveTask() {

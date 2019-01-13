@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,8 +172,13 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         if (!supportedIsolations.contains(JDBCTransactionIsolation.NONE)) {
             supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
         }
+        addCustomTransactionIsolationLevels(supportedIsolations);
 
         supportsScroll = true;
+    }
+
+    protected void addCustomTransactionIsolationLevels(List<DBPTransactionIsolation> isolations) {
+        // to be overrided in implementors
     }
 
     // Says to ignore DatabaseMetaData.isReadonly() results. It is broken in some drivers (always true), e.g. in Reshift.

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
@@ -93,7 +92,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         initExporter(session.getProgressMonitor());
 
-        if (offset == 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
+        if (offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
             if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
                 targetObject.truncateData(
@@ -521,6 +520,43 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             case skip: return "[Skip]";
             default: return "?";
         }
+    }
+
+    @Override
+    public DBPImage getObjectIcon() {
+        if (targetObject != null) {
+            return DBValueFormatting.getObjectImage(targetObject);
+        }
+        return DBIcon.TREE_TABLE;
+    }
+
+    @Override
+    public String getObjectContainerName() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? container.getName() : "?";
+    }
+
+    @Override
+    public DBPImage getObjectContainerIcon() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? container.getDriver().getIcon() : null;
+    }
+
+    @Override
+    public Color getObjectColor() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? UIUtils.getConnectionColor(container.getConnectionConfiguration()) : null;
+    }
+
+    private DBPDataSourceContainer getDataSourceContainer() {
+        if (targetObject != null) {
+            return targetObject.getDataSource().getContainer();
+        }
+        DBSObjectContainer container = settings.getContainer();
+        if (container != null) {
+            return container.getDataSource().getContainer();
+        }
+        return null;
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -346,4 +346,18 @@ public abstract class DBXTreeNode
         };
     }
 
+    public void moveChildAfter(DBXTreeNode child, DBXTreeItem afterItem) {
+        int afterIndex = -1;
+        for (int i = 0; i < children.size(); i++) {
+            DBXTreeNode n = children.get(i);
+            if (n == afterItem || (n instanceof DBXTreeFolder && n.getChildren().size() == 1 && n.getChildren().get(0) == afterItem)) {
+                afterIndex = i;
+                break;
+            }
+        }
+        if (afterIndex >= 0) {
+            children.remove(child);
+            children.add(afterIndex + 1, child);
+        }
+    }
 }

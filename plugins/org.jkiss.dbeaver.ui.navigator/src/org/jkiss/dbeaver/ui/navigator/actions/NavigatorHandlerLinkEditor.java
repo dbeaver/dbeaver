@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,14 +58,9 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         }
 
         if (navigatorView instanceof ProjectExplorerView) {
-            if (activeEditor instanceof AbstractTextEditor) {
-                IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-                if (file != null) {
-                    showResourceInNavigator(navigatorView, file);
-                }
-            } else if (activeEditor.getEditorInput() instanceof ProjectFileEditorInput) {
-                IFile editorFile = ((ProjectFileEditorInput) activeEditor.getEditorInput()).getFile();
-                showResourceInNavigator(navigatorView, editorFile);
+            IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
+            if (file != null) {
+                showResourceInNavigator(navigatorView, file);
             }
         } else if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
                 IDatabaseEditorInput editorInput = (IDatabaseEditorInput) activeEditor.getEditorInput();

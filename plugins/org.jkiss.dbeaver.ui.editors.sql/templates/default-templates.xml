@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+
+<templates>
+
+    <template id="org.jkiss.dbeaver.templates.scount" autoinsert="true" context="sql" description="select row count" enabled="true" name="scount">select count(*) from ${table};</template>
+
+    <template id="org.jkiss.dbeaver.templates.swhere" autoinsert="true" context="sql" description="select with condition" enabled="true" name="swhere">select * from ${table} where ${column}='${value}';</template>
+
+    <template id="org.jkiss.dbeaver.templates.scgb" autoinsert="true" context="sql" description="select count with group by" enabled="true" name="scgb">select ${col:column(table)},count(*)
+    from ${table} t group by ${col};</template>
+
+    <template id="org.jkiss.dbeaver.templates.scob" autoinsert="true" context="sql" description="select with order by" enabled="true" name="sob">select * from ${table} t order by ${column};</template>
+
+    <template id="org.jkiss.dbeaver.templates.sf" autoinsert="true" context="sql" description="select * from " enabled="true" name="sf">select * from ${table}</template>
+
+</templates>

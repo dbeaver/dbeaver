@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public JDBCStructCache<PostgreSchema, ? extends PostgreClass, ? extends PostgreAttribute> getCache()
     {
-        return getContainer().tableCache;
+        return getContainer().getTableCache();
     }
 
     @NotNull
@@ -152,7 +152,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public List<PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().tableCache.getChildren(monitor, getContainer(), this);
+        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
     public PostgreTableColumn getAttributeByPos(DBRProgressMonitor monitor, int position) throws DBException {
@@ -166,7 +166,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     public List<PostgreTableColumn> getCachedAttributes()
     {
-        final DBSObjectCache<PostgreTableBase, PostgreTableColumn> childrenCache = getContainer().tableCache.getChildrenCache(this);
+        final DBSObjectCache<PostgreTableBase, PostgreTableColumn> childrenCache = getContainer().getTableCache().getChildrenCache(this);
         if (childrenCache != null) {
             return childrenCache.getCachedObjects();
         }
@@ -177,7 +177,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public PostgreTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
-        return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
@@ -212,7 +212,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     {
         getContainer().constraintCache.clearObjectCache(this);
         getContainer().indexCache.clearObjectCache(this);
-        return getContainer().tableCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override

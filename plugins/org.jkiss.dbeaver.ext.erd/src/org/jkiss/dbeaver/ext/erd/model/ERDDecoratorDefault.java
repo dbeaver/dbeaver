@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,11 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @Override
     public boolean allowEntityDuplicates() {
         return false;
+    }
+
+    @Override
+    public boolean supportsAttributeVisibility() {
+        return true;
     }
 
     @Override
@@ -124,9 +129,16 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @Override
     public void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, ERDEntity erdEntity) {
         DBSEntity entity = erdEntity.getObject();
-        ERDAttributeVisibility attributeVisibility = erdEntity.getAttributeVisibility();
+        ERDAttributeVisibility attributeVisibility = diagram.getDecorator().supportsAttributeVisibility() ?
+            erdEntity.getAttributeVisibility() : ERDAttributeVisibility.ALL;
         if (attributeVisibility == null) {
-            attributeVisibility = diagram.getAttributeVisibility();
+            EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(erdEntity.getObject());
+            if (visualInfo != null) {
+                attributeVisibility = visualInfo.attributeVisibility;
+            }
+            if (attributeVisibility == null) {
+                attributeVisibility = diagram.getAttributeVisibility();
+            }
         }
         if (attributeVisibility != ERDAttributeVisibility.NONE) {
             Set<DBSEntityAttribute> keyColumns = null;

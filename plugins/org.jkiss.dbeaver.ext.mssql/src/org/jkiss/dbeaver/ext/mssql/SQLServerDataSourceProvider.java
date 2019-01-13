@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2010-2017 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -85,7 +85,7 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
                 }
 
                 if (isDriverAzure) {
-                    url.append(";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;");
+                    url.append(";encrypt=true"); // ;hostNameInCertificate=*.database.windows.net
                 }
             }
 /*

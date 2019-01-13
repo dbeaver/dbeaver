@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,20 +85,22 @@ public class ToolsRegistry
     public List<ToolDescriptor> getTools(IStructuredSelection selection)
     {
         List<DBSObject> objects = NavigatorUtils.getSelectedObjects(selection);
-        List<ToolDescriptor> result = new ArrayList<ToolDescriptor>();
-        for (ToolDescriptor descriptor : tools) {
-            if (descriptor.isSingleton() && objects.size() > 1) {
-                continue;
-            }
-            boolean applies = true;
-            for (DBSObject object : objects) {
-                if (!descriptor.appliesTo(object)) {
-                    applies = false;
-                    break;
+        List<ToolDescriptor> result = new ArrayList<>();
+        if (!objects.isEmpty()) {
+            for (ToolDescriptor descriptor : tools) {
+                if (descriptor.isSingleton() && objects.size() > 1) {
+                    continue;
                 }
-            }
-            if (applies) {
-                result.add(descriptor);
+                boolean applies = true;
+                for (DBSObject object : objects) {
+                    if (!descriptor.appliesTo(object)) {
+                        applies = false;
+                        break;
+                    }
+                }
+                if (applies) {
+                    result.add(descriptor);
+                }
             }
         }
         return result;

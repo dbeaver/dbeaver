@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -99,11 +100,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return foreignKeyCache;
     }
 
-    ProcedureCache getProcedureCache() {
+    public ProcedureCache getProcedureCache() {
         return procedureCache;
     }
 
-    TriggerCache getTriggerCache() {
+    public TriggerCache getTriggerCache() {
         return triggerCache;
     }
 
@@ -550,7 +551,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 return null;
             }
             long refTableId = JDBCUtils.safeGetLong(dbResult, "referenced_object_id");
-            SQLServerTableBase refTable = refSchema.getTable(monitor, refTableId);
+            SQLServerTable refTable = refSchema.getTable(monitor, refTableId);
             if (refTable == null) {
                 log.debug("Ref table " + refTableId + " not found in schema " + refSchema.getName());
                 return null;
@@ -561,10 +562,18 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 log.debug("Ref index " + refIndexId + " not found in table " + refTable.getFullyQualifiedName(DBPEvaluationContext.UI));
                 return null;
             }
+            DBSEntityConstraint refConstraint = index;
+            for (SQLServerTableUniqueKey refPK : refTable.getConstraints(monitor)) {
+                if (refPK.getIndex() == index) {
+                    refConstraint = refPK;
+                    break;
+                }
+            }
+
             String fkName = JDBCUtils.safeGetString(dbResult, "name");
             DBSForeignKeyModifyRule deleteRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "delete_referential_action"));
             DBSForeignKeyModifyRule updateRule = SQLServerUtils.getForeignKeyModifyRule(JDBCUtils.safeGetInt(dbResult, "update_referential_action"));
-            return new SQLServerTableForeignKey(parent, fkName, null, index, deleteRule, updateRule, true);
+            return new SQLServerTableForeignKey(parent, fkName, null, refConstraint, deleteRule, updateRule, true);
         }
 
         @Nullable
@@ -698,10 +707,14 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 "\nFROM " + SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects") + " p" +
                 "\nLEFT OUTER JOIN " + SQLServerUtils.getExtendedPropsTableName(schema.getDatabase()) + " ep ON ep.class=" + SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId() + " AND ep.major_id=p.object_id AND ep.minor_id=0 AND ep.name='" + SQLServerConstants.PROP_MS_DESCRIPTION + "'" +
                 "\nWHERE p.type IN ('P','PC','X','TF','FN','IF') AND p.schema_id=?" +
+                (object != null || objectName != null ? " AND p.name=?" : "") +
                 "\nORDER BY p.name";
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql);
             dbStat.setLong(1, schema.getObjectId());
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
+            }
             return dbStat;
         }
         @Override

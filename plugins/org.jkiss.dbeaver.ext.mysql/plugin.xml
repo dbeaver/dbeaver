@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,6 +145,7 @@
                         id="mysql5"
                         label="MySQL"
                         icon="icons/mysql_icon.png"
+                        iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -162,6 +163,7 @@
                         id="mysql8"
                         label="MySQL 8.x"
                         icon="icons/mysql_icon.png"
+                        iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
@@ -181,6 +183,7 @@
                     id="mariaDB"
                     label="MariaDB"
                     icon="icons/mariadb_icon.png"
+                    iconBig="icons/mariadb_icon_big.png"
                     class="org.mariadb.jdbc.Driver"
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"

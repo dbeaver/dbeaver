@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -31,6 +32,15 @@ import java.util.*;
  */
 public class DBPConnectionConfiguration implements DBPObject
 {
+    // Variables
+    public static final String VARIABLE_HOST = "host";
+    public static final String VARIABLE_PORT = "port";
+    public static final String VARIABLE_SERVER = "server";
+    public static final String VARIABLE_DATABASE = "database";
+    public static final String VARIABLE_USER = "user";
+    public static final String VARIABLE_PASSWORD = "password";
+    public static final String VARIABLE_URL = "url";
+
     private String hostName;
     private String hostPort;
     private String serverName;
@@ -360,7 +370,7 @@ public class DBPConnectionConfiguration implements DBPObject
             this.keepAliveInterval == source.keepAliveInterval;
     }
 
-    public void resolveSystemEnvironmentVariables() {
+    public void resolveDynamicVariables() {
         hostName = replaceSystemEnvironmentVariables(hostName);
         hostPort = replaceSystemEnvironmentVariables(hostPort);
         serverName = replaceSystemEnvironmentVariables(serverName);
@@ -373,8 +383,24 @@ public class DBPConnectionConfiguration implements DBPObject
         }
     }
 
-    private static String replaceSystemEnvironmentVariables(String value) {
-        return CommonUtils.isEmpty(value) ? value : GeneralUtils.replaceSystemEnvironmentVariables(value);
+    private String replaceSystemEnvironmentVariables(String value) {
+        if (CommonUtils.isEmpty(value)) {
+            return value;
+        }
+        value = GeneralUtils.replaceSystemEnvironmentVariables(value);
+        value = GeneralUtils.replaceVariables(value, name -> {
+            switch (name) {
+                case VARIABLE_HOST: return hostName;
+                case VARIABLE_PORT: return hostPort;
+                case VARIABLE_SERVER: return serverName;
+                case VARIABLE_DATABASE: return databaseName;
+                case VARIABLE_USER: return userName;
+                case VARIABLE_PASSWORD: return userPassword;
+                case VARIABLE_URL: return url;
+                default: return null;
+            }
+        });
+        return value;
     }
 
 }

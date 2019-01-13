@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,6 +169,11 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
         return false;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
     ///////////////////////////////////////////////////////
     // Caches
 
@@ -233,7 +238,9 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
                 return schema;
             }
         }
-        log.debug("Schema '" + schemaId + "' not found");
+        if (!monitor.isCanceled()) {
+            log.debug("Schema '" + schemaId + "' not found");
+        }
         return null;
     }
 
@@ -273,18 +280,25 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
 
             String sysSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, owner.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT s.*,ep.value as description FROM ").append(sysSchema).append(".schemas s");
-            sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner)).append(" ep ON ep.class=").append(SQLServerObjectClass.SCHEMA.getClassId()).append(" AND ep.major_id=s.schema_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
-            sql.append("\nWHERE ");
+            sql.append("SELECT ");
             if (!showAllSchemas) {
-                sql.append("EXISTS (SELECT 1 FROM ")
-                    .append(sysSchema).append(".sysobjects o ").append("WHERE s.schema_id=o.uid)");
-            } else {
-                sql.append("1=1");
+                sql.append("DISTINCT ");
+            }
+            sql.append("s.*,ep.value as description FROM ").append(sysSchema).append(".schemas s");
+            sql.append("\nLEFT OUTER JOIN ").append(SQLServerUtils.getExtendedPropsTableName(owner)).append(" ep ON ep.class=").append(SQLServerObjectClass.SCHEMA.getClassId())
+                .append(" AND ep.major_id=s.schema_id AND ep.minor_id=0 AND ep.name='").append(SQLServerConstants.PROP_MS_DESCRIPTION).append("'");
+            if (!showAllSchemas) {
+                sql.append("\nINNER JOIN ").append(sysSchema).append(".");
+                if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
+                    sql.append("all_objects o ").append("ON s.schema_id=o.schema_id");
+                } else {
+                    sql.append("sysobjects o ").append("ON s.schema_id=o.uid");
+                }
             }
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
-                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", false);
+                sql.append("\nWHERE ");
+                JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true);
             }
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());

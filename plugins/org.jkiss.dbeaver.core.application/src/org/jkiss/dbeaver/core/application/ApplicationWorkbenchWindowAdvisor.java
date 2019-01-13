@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -212,13 +212,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Initialize workbench window");
         super.postWindowCreate();
         recomputeTitle();
-/*
+
         try {
-            ApplicationCSSManager.updateApplicationCSS(window.getShell().getDisplay());
+            ApplicationCSSManager.updateApplicationCSS(Display.getCurrent());
         } catch (Throwable e) {
             log.warn(e);
         }
-*/
+
 
         try {
             DBeaverCommandLine.executeCommandLineCommands(

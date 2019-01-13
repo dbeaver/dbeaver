@@ -20,7 +20,8 @@
                 <driver
                         id="google_bigquery_jdbc_simba"
                         label="BigQuery"
-                        icon="icons/google_bigquery.png"
+                        icon="icons/bigquery_icon.png"
+                        iconBig="icons/bigquery_icon_big.png"
                         class="com.simba.googlebigquery.jdbc42.Driver"
                         sampleURL="jdbc:bigquery://{host}:{port};ProjectId={database};OAuthType=0;OAuthServiceAcctEmail={user};OAuthPvtKeyPath={server};"
                         defaultPort="443"
