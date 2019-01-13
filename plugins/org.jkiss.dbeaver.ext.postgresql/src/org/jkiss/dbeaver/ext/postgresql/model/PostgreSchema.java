@@ -459,13 +459,13 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema postgreSchema, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.oid,c.*,d.description\n" +
-                    "FROM pg_catalog.pg_class c\n" +
-                    "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n" +
-                    "WHERE c.relnamespace=? AND c.relkind not in ('i','c')" +
-                    (object == null && objectName == null ? "" : " AND relname=?")
-            );
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT c.oid,c.*,d.description");
+            sql.append("\nFROM pg_catalog.pg_class c\n")
+                .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n")
+                .append("WHERE c.relnamespace=? AND c.relkind not in ('i','c')")
+                .append(object == null && objectName == null ? "" : " AND relname=?");
+            final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setLong(1, getObjectId());
             if (object != null || objectName != null)
                 dbStat.setString(2, object != null ? object.getName() : objectName);
@@ -705,6 +705,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 sql.append(",pg_catalog.pg_get_expr(i.indpred, i.indrelid) as pred_expr");
                 sql.append(",pg_catalog.pg_get_expr(i.indexprs, i.indrelid, true) as expr");
             }
+            if (getDataSource().isServerVersionAtLeast(8, 1)) {
+                sql.append(",pg_catalog.pg_relation_size(i.indrelid) as index_rel_size");
+            }
+            sql.append(",pg_catalog.pg_stat_get_numscans(i.indrelid) as index_num_scans");
             sql.append(
                 "\nFROM pg_catalog.pg_index i" +
                     "\nINNER JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid" +

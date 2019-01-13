@@ -47,8 +47,9 @@ public abstract class PostgreTableReal extends PostgreTableBase
     public static final String CAT_STATISTICS = "Statistics";
 
     private long rowCountEstimate;
-    private Long rowCount;
-    private Long diskSpace;
+    private volatile Long rowCount;
+    private volatile Long diskSpace;
+    private volatile long tableRelSize;
     final TriggerCache triggerCache = new TriggerCache();
     final RuleCache ruleCache = new RuleCache();
 
@@ -86,7 +87,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     }
 
     @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 23)
-    public synchronized Long getRowCount(DBRProgressMonitor monitor)
+    public Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
             return rowCount;
@@ -109,38 +110,56 @@ public abstract class PostgreTableReal extends PostgreTableBase
         return rowCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, expensive = true, order = 24)
-    public synchronized Long getDiskSpace(DBRProgressMonitor monitor)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 24)
+    public Long getDiskSpace(DBRProgressMonitor monitor)
     {
+        readTableStats(monitor);
+
+        return diskSpace;
+    }
+
+    @Property(category = CAT_STATISTICS, viewable = false, order = 25)
+    public long getRelationSize(DBRProgressMonitor monitor) {
+        readTableStats(monitor);
+        return tableRelSize;
+    }
+
+    private void readTableStats(DBRProgressMonitor monitor) {
         if (diskSpace != null) {
-            return diskSpace;
+            return;
         }
         if (!isPersisted() || this instanceof PostgreView || !getDataSource().isServerVersionAtLeast(8, 1)) {
             // Do not count rows for views
-            return null;
+            return;
         }
         if (!getDataSource().getServerType().supportsRelationSizeCalc()) {
-            return null;
+            return;
         }
-
-        // Query disk size
-        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
-            try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement("select pg_total_relation_size(?)")) {
-                dbStat.setLong(1, getObjectId());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        diskSpace = dbResult.getLong(1);
+        try {
+            // Query disk size
+            try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
+                try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
+                    "select " +
+                            "pg_catalog.pg_total_relation_size(?)," +
+                            "pg_catalog.pg_relation_size(?)"))
+                {
+                    dbStat.setLong(1, getObjectId());
+                    dbStat.setLong(2, getObjectId());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.next()) {
+                            diskSpace = dbResult.getLong(1);
+                            tableRelSize = dbResult.getLong(2);
+                        }
                     }
                 }
+            } catch (Exception e) {
+                log.debug("Can't fetch disk space", e);
             }
-        } catch (Exception e) {
-            log.debug("Can't fetch disk space", e);
+        } finally {
+            if (diskSpace == null) {
+                diskSpace = -1L;
+            }
         }
-        if (diskSpace == null) {
-            diskSpace = -1L;
-        }
-
-        return diskSpace;
     }
 
     @Override
