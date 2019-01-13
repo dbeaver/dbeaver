@@ -24,7 +24,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerAuthentication;
@@ -55,6 +54,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Combo authCombo;
 //    private Button windowsAuthenticationButton;
 //    private Button adpAuthenticationButton;
+    private Button trustServerCertificate;
     private Button showAllSchemas;
 
     private boolean activated;
@@ -194,6 +194,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             secureGroup.setLayout(new GridLayout(1, false));
 
             createSavePasswordButton(secureGroup);
+            trustServerCertificate = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_trust_server_certificate, SQLServerUIMessages.dialog_setting_trust_server_certificate_tip, true, 2);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_show_all_schemas, SQLServerUIMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }
 
@@ -269,6 +270,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             adpAuthenticationButton.setSelection(SQLServerUtils.isActiveDirectoryAuth(connectionInfo));
         }
 */
+        trustServerCertificate.setSelection(CommonUtils.getBoolean(connectionInfo.getProperty(SQLServerConstants.PROP_TRUST_SERVER_CERTIFICATE), true));
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
         activated = true;
@@ -321,6 +323,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             }
         }
 */
+        if (trustServerCertificate != null) {
+            connectionInfo.setProperty(SQLServerConstants.PROP_TRUST_SERVER_CERTIFICATE,
+                String.valueOf(trustServerCertificate.getSelection()));
+        }
         if (showAllSchemas != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,
                 String.valueOf(showAllSchemas.getSelection()));
