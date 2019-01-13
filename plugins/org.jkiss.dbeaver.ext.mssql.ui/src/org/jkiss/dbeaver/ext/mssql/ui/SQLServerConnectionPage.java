@@ -24,7 +24,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
@@ -43,7 +42,6 @@ import java.util.List;
 
 public class SQLServerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
-    private static final Log log = Log.getLog(SQLServerConnectionPage.class);
 
     private Text hostText;
     private Text portText;
@@ -55,8 +53,8 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
     private SQLServerAuthentication[] authSchemas;
     private Combo authCombo;
-    private Button windowsAuthenticationButton;
-    private Button adpAuthenticationButton;
+//    private Button windowsAuthenticationButton;
+//    private Button adpAuthenticationButton;
     private Button showAllSchemas;
 
     private boolean activated;
@@ -137,10 +135,17 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
                     authCombo.add(authentication.getTitle());
                 }
                 authCombo.select(0);
+                authCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        updateSecurityControls();
+                    }
+                });
                 authCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
+/*
                 if (!isDriverAzure) {
                     windowsAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerUIMessages.dialog_connection_windows_authentication_button, false);
                     windowsAuthenticationButton.addSelectionListener(new SelectionAdapter() {
@@ -154,6 +159,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
                     adpAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerUIMessages.dialog_connection_adp_authentication_button, false);
                     UIUtils.createEmptyLabel(settingsGroup, 2, 1);
                 }
+*/
             }
 
             userNameLabel = new Label(settingsGroup, SWT.NONE);
@@ -193,15 +199,6 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
 
         createDriverPanel(settingsGroup);
         setControl(settingsGroup);
-    }
-
-    private void enableTexts() {
-        boolean isWindowsAuth = windowsAuthenticationButton != null && windowsAuthenticationButton.getSelection();
-        userNameLabel.setEnabled(!isWindowsAuth);
-        userNameText.setEnabled(!isWindowsAuth);
-        passwordLabel.setEnabled(!isWindowsAuth);
-        passwordText.setEnabled(!isWindowsAuth);
-        savePasswordCheck.setEnabled(!isWindowsAuth);
     }
 
     @Override
@@ -260,8 +257,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
         if (authCombo != null) {
-            authCombo.select(ArrayUtils.indexOf(authSchemas, detectAuthSchema(connectionInfo)));
+            authCombo.select(ArrayUtils.indexOf(authSchemas, SQLServerUtils.detectAuthSchema(connectionInfo)));
+            updateSecurityControls();
         }
+/*
         if (windowsAuthenticationButton != null) {
             windowsAuthenticationButton.setSelection(SQLServerUtils.isWindowsAuth(connectionInfo));
             enableTexts();
@@ -269,30 +268,21 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (adpAuthenticationButton != null) {
             adpAuthenticationButton.setSelection(SQLServerUtils.isActiveDirectoryAuth(connectionInfo));
         }
+*/
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
         activated = true;
     }
 
-    @NotNull
-    private SQLServerAuthentication detectAuthSchema(DBPConnectionConfiguration connectionInfo) {
-        // Detect auth schema
-        // Now we use only PROP_AUTHENTICATION but here we support all legacy SQL Server configs
-        SQLServerAuthentication auth = SQLServerUtils.isWindowsAuth(connectionInfo) ? SQLServerAuthentication.WINDOWS_INTEGRATED :
-            (SQLServerUtils.isActiveDirectoryAuth(connectionInfo) ? SQLServerAuthentication.AD_PASSWORD : SQLServerAuthentication.SQL_SERVER_PASSWORD);
+    private void updateSecurityControls() {
+        SQLServerAuthentication authSchema = authSchemas[authCombo.getSelectionIndex()];
 
-        {
-            String authProp = connectionInfo.getProviderProperty(SQLServerConstants.PROP_AUTHENTICATION);
-            if (authProp != null) {
-                try {
-                    auth = SQLServerAuthentication.valueOf(authProp);
-                } catch (IllegalArgumentException e) {
-                    log.warn("Bad auth schema: " + authProp);
-                }
-            }
-        }
-
-        return auth;
+        boolean supportsPassword = authSchema.isAllowsPassword();
+        userNameLabel.setEnabled(supportsPassword);
+        userNameText.setEnabled(supportsPassword);
+        passwordLabel.setEnabled(supportsPassword);
+        passwordText.setEnabled(supportsPassword);
+        savePasswordCheck.setEnabled(supportsPassword);
     }
 
     @Override
@@ -318,6 +308,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_AUTHENTICATION,
                 authSchemas[authCombo.getSelectionIndex()].name());
         }
+/*
         if (windowsAuthenticationButton != null) {
             connectionInfo.getProperties().put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY,
                     String.valueOf(windowsAuthenticationButton.getSelection()));
@@ -329,6 +320,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
                 connectionInfo.getProperties().remove(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION);
             }
         }
+*/
         if (showAllSchemas != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,
                 String.valueOf(showAllSchemas.getSelection()));

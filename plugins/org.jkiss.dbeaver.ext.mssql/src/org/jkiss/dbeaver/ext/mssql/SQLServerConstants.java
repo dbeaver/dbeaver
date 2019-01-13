@@ -49,7 +49,9 @@ public class SQLServerConstants {
     public static final String PROP_CONNECTION_INTEGRATED_SECURITY = "integratedSecurity";
     public static final String PROP_CONNECTION_AUTHENTICATION = "authentication";
 
+    public static final String AUTH_SQL_SERVER_PASSWORD = "SqlPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_PASSWORD = "ActiveDirectoryPassword";
+    public static final String AUTH_ACTIVE_DIRECTORY_INTEGRATED = "ActiveDirectoryIntegrated";
 
     // https://support.microsoft.com/en-us/help/321185/how-to-determine-the-version--edition-and-update-level-of-sql-server-a
     public static final int SQL_SERVER_2016_VERSION_MAJOR = 13;

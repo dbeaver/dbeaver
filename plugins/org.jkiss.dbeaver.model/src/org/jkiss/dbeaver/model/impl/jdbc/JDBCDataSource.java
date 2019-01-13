@@ -186,6 +186,20 @@ public abstract class JDBCDataSource
         }
     }
 
+    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+        {
+            // Use driver properties
+            final Map<Object, Object> driverProperties = container.getDriver().getConnectionProperties();
+            for (Map.Entry<Object,Object> prop : driverProperties.entrySet()) {
+                connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+            }
+        }
+
+        for (Map.Entry<String, String> prop : connectionInfo.getProperties().entrySet()) {
+            connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+        }
+    }
+
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         // Set properties
         Properties connectProps = new Properties();
@@ -198,17 +212,8 @@ public abstract class JDBCDataSource
             }
         }
 
-        {
-            // Use driver properties
-            final Map<Object, Object> driverProperties = container.getDriver().getConnectionProperties();
-            for (Map.Entry<Object,Object> prop : driverProperties.entrySet()) {
-                connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-            }
-        }
+        fillConnectionProperties(connectionInfo, connectProps);
 
-        for (Map.Entry<String, String> prop : connectionInfo.getProperties().entrySet()) {
-            connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-        }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
         }

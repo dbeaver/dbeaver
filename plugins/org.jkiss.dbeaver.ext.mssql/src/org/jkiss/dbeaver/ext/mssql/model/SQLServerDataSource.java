@@ -45,10 +45,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, /*DBCQueryPlanner, */IAdaptable {
 
@@ -78,15 +75,23 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
-        Map<String, String> connectionsProps = new HashMap<>();
+    protected Properties getAllConnectionProperties(DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        Properties properties = super.getAllConnectionProperties(monitor, purpose, connectionInfo);
+
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // App name
-            connectionsProps.put(
-                SQLServerUtils.isDriverJtds(driver) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
+            properties.put(
+                SQLServerUtils.isDriverJtds(getContainer().getDriver()) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
                 CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), purpose), 64));
         }
-        return connectionsProps;
+
+        fillConnectionProperties(connectionInfo, properties);
+
+        SQLServerAuthentication authSchema = SQLServerUtils.detectAuthSchema(connectionInfo);
+
+        authSchema.getInitializer().initializeAuthentication(connectionInfo, properties);
+
+        return properties;
     }
 
     @Override
