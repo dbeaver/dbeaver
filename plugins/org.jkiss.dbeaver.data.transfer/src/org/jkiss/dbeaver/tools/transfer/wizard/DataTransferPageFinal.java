@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -97,12 +99,19 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         resultTable.removeAll();
         DataTransferSettings settings = getWizard().getSettings();
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
+
+        IDataTransferSettings producerSettings = null, consumerSettings = null;
         for (DataTransferPipe pipe : dataPipes) {
             IDataTransferConsumer consumer = pipe.getConsumer();
             if (consumer == null || pipe.getProducer() == null) {
                 continue;
             }
-            IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
+            if (consumerSettings == null) {
+                consumerSettings = settings.getNodeSettings(consumer);
+            }
+            if (producerSettings == null) {
+                producerSettings = settings.getNodeSettings(pipe.getProducer());
+            }
             DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
             IDataTransferProcessor processor = null;
             if (processorDescriptor != null) {
@@ -168,7 +177,22 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             }
         }
 
-        sourceSettingsText.setText("Settings:");
+        if (producerSettings != null) {
+            sourceSettingsText.setText(CommonUtils.notEmpty(producerSettings.getSettingsSummary()));
+        } else {
+            sourceSettingsText.setText("No source settings");
+        }
+
+        if (consumerSettings != null) {
+            StringBuilder consumerSummary = new StringBuilder();
+            consumerSummary.append(CommonUtils.notEmpty(consumerSettings.getSettingsSummary()));
+            if (settings.getProcessor() != null) {
+                DTUtils.addSummary(consumerSummary, settings.getProcessorProperties());
+            }
+            targetSettingsText.setText(consumerSummary.toString());
+        } else {
+            targetSettingsText.setText("No target settings");
+        }
 
         activated = true;
         UIUtils.packColumns(resultTable, true);

@@ -29,4 +29,6 @@ public interface IDataTransferSettings {
 
     void saveSettings(IDialogSettings dialogSettings);
 
+    String getSettingsSummary();
+
 }

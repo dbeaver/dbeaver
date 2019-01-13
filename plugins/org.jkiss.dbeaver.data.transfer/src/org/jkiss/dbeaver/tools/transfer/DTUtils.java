@@ -16,25 +16,25 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
-import org.eclipse.swt.graphics.Color;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import java.util.Map;
 
 /**
  * Abstract node
  */
-public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
+public class DTUtils {
 
-    DBSObject getDatabaseObject();
+    public static void addSummary(StringBuilder summary, String option, Object value) {
+        summary.append(option).append(": ").append(value).append("\n");
+    }
 
-    String getObjectName();
+    public static void addSummary(StringBuilder summary, String option, boolean value) {
+        summary.append(option).append(": ").append(value ? "Yes" : "No").append("\n");
+    }
 
-    DBPImage getObjectIcon();
-
-    String getObjectContainerName();
-
-    DBPImage getObjectContainerIcon();
-
-    Color getObjectColor();
+    public static void addSummary(StringBuilder summary, Map<?, ?> props) {
+        for (Map.Entry<?,?> entry : props.entrySet()) {
+            addSummary(summary, entry.getKey().toString(), entry.getValue());
+        }
+    }
 
 }
