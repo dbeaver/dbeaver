@@ -707,10 +707,14 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
                 "\nFROM " + SQLServerUtils.getSystemTableName(schema.getDatabase(), "all_objects") + " p" +
                 "\nLEFT OUTER JOIN " + SQLServerUtils.getExtendedPropsTableName(schema.getDatabase()) + " ep ON ep.class=" + SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId() + " AND ep.major_id=p.object_id AND ep.minor_id=0 AND ep.name='" + SQLServerConstants.PROP_MS_DESCRIPTION + "'" +
                 "\nWHERE p.type IN ('P','PC','X','TF','FN','IF') AND p.schema_id=?" +
+                (object != null || objectName != null ? " AND p.name=?" : "") +
                 "\nORDER BY p.name";
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql);
             dbStat.setLong(1, schema.getObjectId());
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
+            }
             return dbStat;
         }
         @Override

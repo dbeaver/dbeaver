@@ -18,4 +18,4 @@ Require-Bundle: org.eclipse.ui,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
-Bundle-Localization: plugin
+Bundle-Localization: OSGI-INF/l10n/bundle

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.mssql.ui.editors;
 
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -38,7 +39,7 @@ public class SQLServerSourceViewEditor extends SQLSourceViewer<DBSObjectWithScri
     protected boolean isReadOnly()
     {
         DBSObjectWithScript sourceObject = getSourceObject();
-        if (sourceObject instanceof SQLServerView || sourceObject instanceof SQLServerTableTrigger) {
+        if (sourceObject instanceof SQLServerView || sourceObject instanceof SQLServerTableTrigger || sourceObject instanceof SQLServerProcedure) {
             return false;
         }
         return true;
