@@ -78,6 +78,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     }
 
     @Override
+    public DBPImage getObjectContainerIcon() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? container.getDriver().getIcon() : null;
+    }
+
+    @Override
     public Color getObjectColor() {
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? UIUtils.getConnectionColor(container.getConnectionConfiguration()) : null;

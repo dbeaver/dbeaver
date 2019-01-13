@@ -20,13 +20,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -44,6 +39,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
 
     private Table resultTable;
     private boolean activated = false;
+    private Text sourceSettingsText;
+    private Text targetSettingsText;
 
     DataTransferPageFinal() {
         super(DTMessages.data_transfer_wizard_final_name);
@@ -57,14 +54,15 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         initializeDialogUnits(parent);
 
         Composite composite = new Composite(parent, SWT.NULL);
-        GridLayout gl = new GridLayout();
+        GridLayout gl = new GridLayout(2, true);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         composite.setLayout(gl);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group tablesGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_final_group_tables, 3, GridData.FILL_BOTH, 0);
+            Group tablesGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_final_group_objects, 3, GridData.FILL_BOTH, 0);
+            ((GridData)tablesGroup.getLayoutData()).horizontalSpan = 2;
 
             resultTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -77,6 +75,16 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
 
             UIUtils.packColumns(resultTable);
+        }
+
+        {
+            Group sourceSettingsGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_final_group_settings_source, 1, GridData.FILL_BOTH, 0);
+            sourceSettingsText = new Text(sourceSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
+            sourceSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            Group targetSettingsGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_final_group_settings_target, 1, GridData.FILL_BOTH, 0);
+            targetSettingsText = new Text(targetSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
+            targetSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
         setControl(composite);
@@ -117,6 +125,9 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
 
             TableItem item = new TableItem(resultTable, SWT.NONE);
             item.setText(0, pipe.getProducer().getObjectContainerName());
+            if (pipe.getProducer().getObjectContainerIcon() != null) {
+                item.setImage(0, DBeaverIcons.getImage(pipe.getProducer().getObjectContainerIcon()));
+            }
             item.setText(1, pipe.getProducer().getObjectName());
             if (settings.getProducer() != null & settings.getProducer().getIcon() != null) {
                 item.setImage(1, DBeaverIcons.getImage(settings.getProducer().getIcon()));
@@ -128,6 +139,9 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             }
 
             item.setText(2, consumer.getObjectContainerName());
+            if (pipe.getConsumer().getObjectContainerIcon() != null) {
+                item.setImage(2, DBeaverIcons.getImage(pipe.getConsumer().getObjectContainerIcon()));
+            }
             item.setText(3, consumer.getObjectName());
             if (processorDescriptor != null && processorDescriptor.getIcon() != null) {
                 item.setImage(3, DBeaverIcons.getImage(processorDescriptor.getIcon()));
@@ -140,6 +154,9 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 item.setBackground(3, consumerColor);
             }
         }
+
+        sourceSettingsText.setText("Settings:");
+
         activated = true;
         UIUtils.packColumns(resultTable, true);
         updatePageCompletion();

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -30,6 +31,10 @@ public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
 
     String getObjectContainerName();
 
+    DBPImage getObjectContainerIcon();
+
     Color getObjectColor();
+
+    //String getSettingsSummary();
 
 }
