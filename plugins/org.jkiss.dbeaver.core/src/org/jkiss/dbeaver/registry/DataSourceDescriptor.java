@@ -79,13 +79,13 @@ public class DataSourceDescriptor
     private static final Log log = Log.getLog(DataSourceDescriptor.class);
 
     public static final String[] CONNECT_PATTERNS = new String[] {
-        RegistryConstants.VARIABLE_HOST,
-        RegistryConstants.VARIABLE_PORT,
-        RegistryConstants.VARIABLE_SERVER,
-        RegistryConstants.VARIABLE_DATABASE,
-        RegistryConstants.VARIABLE_USER,
-        RegistryConstants.VARIABLE_PASSWORD,
-        RegistryConstants.VARIABLE_URL,
+        DBPConnectionConfiguration.VARIABLE_HOST,
+        DBPConnectionConfiguration.VARIABLE_PORT,
+        DBPConnectionConfiguration.VARIABLE_SERVER,
+        DBPConnectionConfiguration.VARIABLE_DATABASE,
+        DBPConnectionConfiguration.VARIABLE_USER,
+        DBPConnectionConfiguration.VARIABLE_PASSWORD,
+        DBPConnectionConfiguration.VARIABLE_URL,
 
         SystemVariablesResolver.VAR_WORKSPACE,
         SystemVariablesResolver.VAR_HOME,
@@ -96,13 +96,13 @@ public class DataSourceDescriptor
     };
 
     public static final String[][] CONNECT_VARIABLES = new String[][]{
-        {RegistryConstants.VARIABLE_HOST, "target host"},
-        {RegistryConstants.VARIABLE_PORT, "target port"},
-        {RegistryConstants.VARIABLE_SERVER, "target server name"},
-        {RegistryConstants.VARIABLE_DATABASE, "target database"},
-        {RegistryConstants.VARIABLE_USER, "user name"},
-        {RegistryConstants.VARIABLE_PASSWORD, "password (plain)"},
-        {RegistryConstants.VARIABLE_URL, "JDBC URL"},
+        {DBPConnectionConfiguration.VARIABLE_HOST, "target host"},
+        {DBPConnectionConfiguration.VARIABLE_PORT, "target port"},
+        {DBPConnectionConfiguration.VARIABLE_SERVER, "target server name"},
+        {DBPConnectionConfiguration.VARIABLE_DATABASE, "target database"},
+        {DBPConnectionConfiguration.VARIABLE_USER, "user name"},
+        {DBPConnectionConfiguration.VARIABLE_PASSWORD, "password (plain)"},
+        {DBPConnectionConfiguration.VARIABLE_URL, "JDBC URL"},
 
         {SystemVariablesResolver.VAR_WORKSPACE, "workspace path"},
         {SystemVariablesResolver.VAR_HOME, "user home path"},
@@ -764,7 +764,7 @@ public class DataSourceDescriptor
 
             if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
                 this.resolvedConnectionInfo = new DBPConnectionConfiguration(this.tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
-                this.resolvedConnectionInfo.resolveSystemEnvironmentVariables();
+                this.resolvedConnectionInfo.resolveDynamicVariables();
             }
 
             this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
@@ -1335,15 +1335,16 @@ public class DataSourceDescriptor
 
             name = name.toLowerCase(Locale.ENGLISH);
             switch (name) {
-                case RegistryConstants.VARIABLE_HOST: return getActualConnectionConfiguration().getHostName();
-                case RegistryConstants.VARIABLE_PORT: return getActualConnectionConfiguration().getHostPort();
-                case RegistryConstants.VARIABLE_SERVER: return getActualConnectionConfiguration().getServerName();
-                case RegistryConstants.VARIABLE_DATABASE: return getActualConnectionConfiguration().getDatabaseName();
-                case RegistryConstants.VARIABLE_USER: return getActualConnectionConfiguration().getUserName();
-                case RegistryConstants.VARIABLE_PASSWORD: return getActualConnectionConfiguration().getUserPassword();
-                case RegistryConstants.VARIABLE_URL: return getActualConnectionConfiguration().getUrl();
+                case DBPConnectionConfiguration.VARIABLE_HOST: return getActualConnectionConfiguration().getHostName();
+                case DBPConnectionConfiguration.VARIABLE_PORT: return getActualConnectionConfiguration().getHostPort();
+                case DBPConnectionConfiguration.VARIABLE_SERVER: return getActualConnectionConfiguration().getServerName();
+                case DBPConnectionConfiguration.VARIABLE_DATABASE: return getActualConnectionConfiguration().getDatabaseName();
+                case DBPConnectionConfiguration.VARIABLE_USER: return getActualConnectionConfiguration().getUserName();
+                case DBPConnectionConfiguration.VARIABLE_PASSWORD: return getActualConnectionConfiguration().getUserPassword();
+                case DBPConnectionConfiguration.VARIABLE_URL: return getActualConnectionConfiguration().getUrl();
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
     }
+
 }
