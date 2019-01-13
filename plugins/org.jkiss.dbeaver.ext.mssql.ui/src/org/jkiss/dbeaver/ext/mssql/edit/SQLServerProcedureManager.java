@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.ext.mssql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 import org.jkiss.utils.CommonUtils;
@@ -61,7 +61,7 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Procedure name cannot be empty");
         }
-        if (CommonUtils.isEmpty(command.getObject().getBody())) {
+        if (!command.getObject().isPersisted() && CommonUtils.isEmpty(command.getObject().getBody())) {
             throw new DBException("Procedure body cannot be empty");
         }
     }
@@ -90,7 +90,9 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
-        createOrReplaceProcedureQuery(actionList, command.getObject());
+        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
+            createOrReplaceProcedureQuery(actionList, command.getObject());
+        }
     }
 
     @Override
@@ -111,7 +113,6 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
     }
 
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, SQLServerProcedure procedure) {
-
         SQLServerDatabase procDatabase = procedure.getContainer().getDatabase();
         SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultObject();
         if (defaultDatabase != procDatabase) {
@@ -125,6 +126,27 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
 
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$
+        }
+    }
+
+    @Override
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<SQLServerProcedure, PropertyHandler> command, Map<String, Object> options) throws DBException {
+        final SQLServerProcedure procedure = command.getObject();
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+            SQLServerDatabase database = procedure.getContainer().getDatabase();
+            boolean isUpdate = SQLServerUtils.isCommentSet(
+                monitor,
+                database,
+                SQLServerObjectClass.OBJECT_OR_COLUMN,
+                procedure.getObjectId(),
+                0);
+            actions.add(
+                new SQLDatabasePersistAction(
+                    "Add procedure comment",
+                    "EXEC " + SQLServerUtils.getSystemTableName(database, isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
+                        " 'MS_Description', " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
+                        " 'schema', '" + procedure.getContainer().getName() + "'," +
+                        " 'procedure', '" + procedure.getName() + "'"));
         }
     }
 

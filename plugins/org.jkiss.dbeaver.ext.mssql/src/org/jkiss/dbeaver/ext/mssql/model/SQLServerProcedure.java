@@ -39,8 +39,7 @@ import java.util.Map;
 /**
  * SQLServerProcedure
  */
-public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBSObjectWithScript, SQLServerObject
-{
+public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBSObjectWithScript, SQLServerObject {
     private static final Log log = Log.getLog(SQLServerProcedure.class);
 
     private DBSProcedureType procedureType;
@@ -48,22 +47,19 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     private long objectId;
     private SQLServerObjectType objectType;
 
-    public SQLServerProcedure(SQLServerSchema schema)
-    {
+    public SQLServerProcedure(SQLServerSchema schema) {
         super(schema, false);
         this.procedureType = DBSProcedureType.PROCEDURE;
     }
 
     public SQLServerProcedure(
         SQLServerSchema catalog,
-        ResultSet dbResult)
-    {
+        ResultSet dbResult) {
         super(catalog, true);
         loadInfo(dbResult);
     }
 
-    private void loadInfo(ResultSet dbResult)
-    {
+    private void loadInfo(ResultSet dbResult) {
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.name = JDBCUtils.safeGetString(dbResult, "name");
         this.objectType = SQLServerObjectType.P;
@@ -102,27 +98,29 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
 
     @Override
     @Property(order = 5)
-    public DBSProcedureType getProcedureType()
-    {
-        return procedureType ;
+    public DBSProcedureType getProcedureType() {
+        return procedureType;
     }
 
-    public void setProcedureType(DBSProcedureType procedureType)
-    {
+    public void setProcedureType(DBSProcedureType procedureType) {
         this.procedureType = procedureType;
     }
 
     @Override
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    public String getDescription() {
+        return super.getDescription();
+    }
+
+    @Override
     public Collection<SQLServerProcedureParameter> getParameters(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return getContainer().getProcedureCache().getChildren(monitor, getContainer(), this);
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
             this);
@@ -130,8 +128,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
 
 
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
-    {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (body == null) {
             if (!persisted) {
                 this.body =
@@ -147,8 +144,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText)
-    {
+    public void setObjectDefinitionText(String sourceText) {
         this.body = sourceText;
     }
 
