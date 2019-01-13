@@ -42,6 +42,9 @@ import java.sql.Savepoint;
  */
 public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager
 {
+    public static final String TYPE_MAIN = "Main";
+    public static final String TYPE_METADATA = "Metadata";
+
     private static final Log log = Log.getLog(JDBCExecutionContext.class);
 
     // Time to wait for txn level/auto-commit detection
