@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -139,13 +140,22 @@ public class SQLServerView extends SQLServerTableBase implements DBSObjectWithSc
         return null;
     }
 
+    public String getDDL() {
+        return ddl;
+    }
+
     @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
             ddl = null;
         }
         if (ddl == null) {
-            ddl = SQLServerUtils.extractSource(monitor, getDatabase(), getSchema(), getName());
+            if (isPersisted()) {
+                ddl = SQLServerUtils.extractSource(monitor, getDatabase(), getSchema(), getName());
+            } else {
+                ddl = "CREATE VIEW " + DBUtils.getQuotedIdentifier(this) + " AS\n";
+            }
         }
         return ddl;
     }
