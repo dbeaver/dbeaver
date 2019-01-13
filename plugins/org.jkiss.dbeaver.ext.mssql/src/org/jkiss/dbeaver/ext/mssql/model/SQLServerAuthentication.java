@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.ietf.jgss.*;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerGSS;
 import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -60,16 +60,7 @@ public enum SQLServerAuthentication {
 
         if (SQLServerConstants.USE_GSS) {
             // Disabled by default. Never really tested
-            if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-                try {
-                    GSSManager gssManager = GSSManager.getInstance();
-                    GSSName name = gssManager.createName(connectionInfo.getUserName(), GSSName.NT_USER_NAME);
-                    GSSCredential impersonatedUserCredential = gssManager.createCredential(name, GSSCredential.DEFAULT_LIFETIME, (Oid)null, GSSCredential.ACCEPT_ONLY);
-                    properties.put("gsscredential", impersonatedUserCredential);
-                } catch (GSSException e) {
-                    throw new DBCException ("Error initializing GSS", e);
-                }
-            }
+            SQLServerGSS.initCredentials(connectionInfo, properties);
         }
     }),
     OTHER(SQLServerMessages.authentication_other_title, SQLServerMessages.authentication_other_description, true, true, (connectionInfo, properties) -> {
