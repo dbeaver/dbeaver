@@ -72,6 +72,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     }
 
     @Override
+    public DBPImage getObjectIcon() {
+        if (dataContainer instanceof DBPImageProvider) {
+            return DBValueFormatting.getObjectImage(dataContainer);
+        }
+        return DBIcon.TREE_TABLE;
+    }
+
+    @Override
     public String getObjectContainerName() {
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getName() : "?";

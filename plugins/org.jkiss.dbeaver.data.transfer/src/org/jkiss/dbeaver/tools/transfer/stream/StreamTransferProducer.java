@@ -85,6 +85,14 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     }
 
     @Override
+    public DBPImage getObjectIcon() {
+        if (defaultProcessor != null) {
+            return defaultProcessor.getIcon();
+        }
+        return null;
+    }
+
+    @Override
     public String getObjectContainerName() {
         return inputFile == null ? null : inputFile.getParentFile().getAbsolutePath();
     }

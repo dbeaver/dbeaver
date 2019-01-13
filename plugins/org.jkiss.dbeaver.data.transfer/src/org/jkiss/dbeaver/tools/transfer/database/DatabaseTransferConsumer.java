@@ -523,6 +523,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
+    public DBPImage getObjectIcon() {
+        if (targetObject != null) {
+            return DBValueFormatting.getObjectImage(targetObject);
+        }
+        return DBIcon.TREE_TABLE;
+    }
+
+    @Override
     public String getObjectContainerName() {
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getName() : "?";

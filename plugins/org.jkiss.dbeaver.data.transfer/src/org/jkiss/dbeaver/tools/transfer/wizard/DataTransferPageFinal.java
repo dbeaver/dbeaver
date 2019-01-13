@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -124,34 +125,46 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
 
 
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, pipe.getProducer().getObjectContainerName());
-            if (pipe.getProducer().getObjectContainerIcon() != null) {
-                item.setImage(0, DBeaverIcons.getImage(pipe.getProducer().getObjectContainerIcon()));
+            {
+                item.setText(0, pipe.getProducer().getObjectContainerName());
+                if (pipe.getProducer().getObjectContainerIcon() != null) {
+                    item.setImage(0, DBeaverIcons.getImage(pipe.getProducer().getObjectContainerIcon()));
+                }
+                item.setText(1, pipe.getProducer().getObjectName());
+                DBPImage producerObjectIcon = pipe.getProducer().getObjectIcon();
+                if (producerObjectIcon == null) {
+                    producerObjectIcon = settings.getProducer().getIcon();
+                }
+                if (producerObjectIcon != null) {
+                    item.setImage(1, DBeaverIcons.getImage(producerObjectIcon));
+                }
+                Color producerColor = pipe.getProducer().getObjectColor();
+                if (producerColor != null) {
+                    item.setBackground(0, producerColor);
+                    item.setBackground(1, producerColor);
+                }
             }
-            item.setText(1, pipe.getProducer().getObjectName());
-            if (settings.getProducer() != null & settings.getProducer().getIcon() != null) {
-                item.setImage(1, DBeaverIcons.getImage(settings.getProducer().getIcon()));
-            }
-            Color producerColor = pipe.getProducer().getObjectColor();
-            if (producerColor != null) {
-                item.setBackground(0, producerColor);
-                item.setBackground(1, producerColor);
-            }
-
-            item.setText(2, consumer.getObjectContainerName());
-            if (pipe.getConsumer().getObjectContainerIcon() != null) {
-                item.setImage(2, DBeaverIcons.getImage(pipe.getConsumer().getObjectContainerIcon()));
-            }
-            item.setText(3, consumer.getObjectName());
-            if (processorDescriptor != null && processorDescriptor.getIcon() != null) {
-                item.setImage(3, DBeaverIcons.getImage(processorDescriptor.getIcon()));
-            } else if (settings.getConsumer() != null && settings.getConsumer().getIcon() != null) {
-                item.setImage(3, DBeaverIcons.getImage(settings.getConsumer().getIcon()));
-            }
-            Color consumerColor = pipe.getConsumer().getObjectColor();
-            if (consumerColor != null) {
-                item.setBackground(2, consumerColor);
-                item.setBackground(3, consumerColor);
+            {
+                item.setText(2, consumer.getObjectContainerName());
+                if (pipe.getConsumer().getObjectContainerIcon() != null) {
+                    item.setImage(2, DBeaverIcons.getImage(pipe.getConsumer().getObjectContainerIcon()));
+                }
+                item.setText(3, consumer.getObjectName());
+                DBPImage consumerObjectIcon = consumer.getObjectIcon();
+                if (consumerObjectIcon == null && processorDescriptor != null) {
+                    consumerObjectIcon = processorDescriptor.getIcon();
+                }
+                if (consumerObjectIcon == null && settings.getConsumer() != null) {
+                    consumerObjectIcon = settings.getConsumer().getIcon();
+                }
+                if (consumerObjectIcon != null) {
+                    item.setImage(3, DBeaverIcons.getImage(consumerObjectIcon));
+                }
+                Color consumerColor = pipe.getConsumer().getObjectColor();
+                if (consumerColor != null) {
+                    item.setBackground(2, consumerColor);
+                    item.setBackground(3, consumerColor);
+                }
             }
         }
 
