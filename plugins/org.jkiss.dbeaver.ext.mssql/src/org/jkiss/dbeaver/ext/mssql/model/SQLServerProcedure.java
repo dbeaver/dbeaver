@@ -96,6 +96,10 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
         return objectType;
     }
 
+    public String getBody() {
+        return body;
+    }
+
     @Override
     @Property(order = 5)
     public DBSProcedureType getProcedureType()
@@ -106,76 +110,6 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     public void setProcedureType(DBSProcedureType procedureType)
     {
         this.procedureType = procedureType;
-    }
-
-/*
-    @Property(order = 2)
-    public String getResultType()
-    {
-        return resultType;
-    }
-*/
-
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getDeclaration(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (body == null) {
-            if (!persisted) {
-                this.body =
-                    "CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + "()" + GeneralUtils.getDefaultLineSeparator() +
-                        (procedureType == DBSProcedureType.FUNCTION ? "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() : "") +
-                    "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
-                    "END";
-            } else {
-                this.body = SQLServerUtils.extractSource(monitor, getContainer().getDatabase(), getContainer(), getName());
-            }
-/*
-            StringBuilder cb = new StringBuilder(getBody().length() + 100);
-            cb.append("CREATE ").append(procedureType).append(' ').append(getFullyQualifiedName()).append(" (");
-
-            int colIndex = 0;
-            for (SQLServerProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    continue;
-                }
-                if (colIndex > 0) {
-                    cb.append(", ");
-                }
-                if (getProcedureType() == DBSProcedureType.PROCEDURE) {
-                    cb.append(column.getParameterKind()).append(' ');
-                }
-                cb.append(column.getName()).append(' ');
-                appendParameterType(cb, column);
-                colIndex++;
-            }
-            cb.append(")").append(GeneralUtils.getDefaultLineSeparator());
-            for (SQLServerProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    cb.append("RETURNS ");
-                    appendParameterType(cb, column);
-                    cb.append(GeneralUtils.getDefaultLineSeparator());
-                }
-            }
-            if (deterministic) {
-                cb.append("DETERMINISTIC").append(GeneralUtils.getDefaultLineSeparator());
-            }
-            cb.append(getBody());
-            clientBody = cb.toString();
-*/
-        }
-        return body;
-    }
-
-    private String normalizeCreateStatement(String createDDL) {
-        String procType = getProcedureType().name();
-        int divPos = createDDL.indexOf(procType + " `");
-        if (divPos != -1) {
-            return createDDL.substring(0, divPos) + procType +
-                " `" + getContainer().getName() + "`." +
-                createDDL.substring(divPos + procType.length() + 1);
-        }
-        return createDDL;
     }
 
     @Override
@@ -194,11 +128,22 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
             this);
     }
 
-    @Override
-    //@Property(hidden = true, editable = true, updatable = true, order = -1)
+
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        return getDeclaration(monitor);
+        if (body == null) {
+            if (!persisted) {
+                this.body =
+                    "CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + GeneralUtils.getDefaultLineSeparator() +
+                        (procedureType == DBSProcedureType.FUNCTION ? "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() : "") +
+                        "AS " + GeneralUtils.getDefaultLineSeparator() +
+                        "SELECT 1";
+            } else {
+                this.body = SQLServerUtils.extractSource(monitor, getContainer().getDatabase(), getContainer(), getName());
+            }
+        }
+        return body;
     }
 
     @Override
@@ -210,7 +155,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
 
-        return this;//getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getProcedureCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override
