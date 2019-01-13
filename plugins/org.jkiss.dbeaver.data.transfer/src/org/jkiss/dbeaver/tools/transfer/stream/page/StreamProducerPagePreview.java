@@ -21,6 +21,7 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -698,6 +699,16 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         @Override
         public String getObjectName() {
             return DBUtils.getObjectFullName(sampleObject, DBPEvaluationContext.DML);
+        }
+
+        @Override
+        public String getObjectContainerName() {
+            return "N/A";
+        }
+
+        @Override
+        public Color getObjectColor() {
+            return null;
         }
     }
 

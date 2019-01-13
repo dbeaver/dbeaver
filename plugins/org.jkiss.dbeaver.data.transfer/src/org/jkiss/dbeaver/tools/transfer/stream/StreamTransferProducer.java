@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -77,7 +78,17 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     @Override
     public String getObjectName() {
-        return inputFile == null ? null : inputFile.getAbsolutePath();
+        return inputFile == null ? null : inputFile.getName();
+    }
+
+    @Override
+    public String getObjectContainerName() {
+        return inputFile == null ? null : inputFile.getParentFile().getAbsolutePath();
+    }
+
+    @Override
+    public Color getObjectColor() {
+        return null;
     }
 
     public File getInputFile() {

@@ -17,14 +17,12 @@
 
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
@@ -34,6 +32,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Data container transfer producer
@@ -70,6 +69,25 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     @Override
     public String getObjectName() {
         return DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
+    }
+
+    @Override
+    public String getObjectContainerName() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? container.getName() : "?";
+    }
+
+    @Override
+    public Color getObjectColor() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? UIUtils.getConnectionColor(container.getConnectionConfiguration()) : null;
+    }
+
+    private DBPDataSourceContainer getDataSourceContainer() {
+        if (dataContainer != null) {
+            return dataContainer.getDataSource().getContainer();
+        }
+        return null;
     }
 
     @Override
