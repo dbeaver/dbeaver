@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
@@ -142,5 +144,18 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         dialogSettings.put("queryRowCount", queryRowCount);
         dialogSettings.put("selectedColumnsOnly", selectedColumnsOnly);
         dialogSettings.put("selectedRowsOnly", selectedRowsOnly);
+    }
+
+    @Override
+    public String getSettingsSummary() {
+        StringBuilder summary = new StringBuilder();
+
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_new_connection, openNewConnections);
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_extract_type, extractType.name());
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_select_row_count, queryRowCount);
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, selectedRowsOnly);
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, selectedColumnsOnly);
+
+        return summary.toString();
     }
 }
