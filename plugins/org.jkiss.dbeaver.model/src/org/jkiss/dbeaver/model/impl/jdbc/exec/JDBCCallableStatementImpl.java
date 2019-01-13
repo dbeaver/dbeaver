@@ -142,7 +142,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                     }
                 }
             } catch (Throwable e) {
-                log.debug("Error extracting parameters meta data", e);
+                log.debug("Error extracting parameters meta data: " + e.getMessage());
             }
         }
         procResults.addRow();

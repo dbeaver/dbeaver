@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -104,7 +105,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
+        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceProcedureQuery(actionList, command.getObject());
         }
     }
@@ -126,7 +127,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
 
     @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreProcedure, PropertyHandler> command, Map<String, Object> options) {
-        if (command.getProperty("description") != null) {
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment function",
                 "COMMENT ON " + command.getObject().getProcedureTypeName() + " " + command.getObject().getFullQualifiedSignature() +

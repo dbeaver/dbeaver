@@ -17,20 +17,17 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -41,26 +38,17 @@ import java.util.Map;
 /**
  * SQLServerViewManager
  */
-public class SQLServerViewManager extends SQLTableManager<SQLServerView, SQLServerSchema> implements DBEObjectRenamer<SQLServerView> {
+public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerView> {
 
     @Override
     public Class<?>[] getChildTypes() {
         return new Class[0];
     }
 
-    @Nullable
-    @Override
-    public DBSObjectCache<SQLServerSchema, SQLServerView> getObjectsCache(SQLServerView object) {
-        return (DBSObjectCache) object.getSchema().getTableCache();
-    }
-
     @Override
     protected void validateObjectProperty(SQLServerView object, DBPPropertyDescriptor property, Object value) throws DBException {
         if (CommonUtils.isEmpty(object.getName())) {
             throw new DBException("View name cannot be empty");
-        }
-        if (CommonUtils.isEmpty(object.getDDL())) {
-            throw new DBException("View definition cannot be empty");
         }
     }
 
@@ -79,12 +67,14 @@ public class SQLServerViewManager extends SQLTableManager<SQLServerView, SQLServ
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(actions, (SQLServerView) command.getObject());
+        createOrReplaceViewQuery(actions, command.getObject());
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(actionList, (SQLServerView) command.getObject());
+        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
+            createOrReplaceViewQuery(actionList, command.getObject());
+        }
     }
 
     @Override
@@ -115,19 +105,6 @@ public class SQLServerViewManager extends SQLTableManager<SQLServerView, SQLServ
     @Override
     public void renameObject(DBECommandContext commandContext, SQLServerView object, String newName) throws DBException {
         processObjectRename(commandContext, object, newName);
-    }
-
-    @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
-        SQLServerView view = command.getObject();
-        actions.add(
-            new SQLDatabasePersistAction(
-                "Rename table",
-                "EXEC " + SQLServerUtils.getSystemTableName(view.getDatabase(), "sp_rename") +
-                    " '" + view.getSchema().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName()) +
-                    "' , '" + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName()) + "', 'VIEW'")
-        );
     }
 
 

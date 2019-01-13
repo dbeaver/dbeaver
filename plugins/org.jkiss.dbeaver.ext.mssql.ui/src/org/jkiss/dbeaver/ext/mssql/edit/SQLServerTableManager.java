@@ -25,15 +25,11 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,7 +40,7 @@ import java.util.Map;
 /**
  * SQLServer table manager
  */
-public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLServerSchema> implements DBEObjectRenamer<SQLServerTable> {
+public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTable> {
 
     private static final Class<?>[] CHILD_TYPES = {
         SQLServerTableColumn.class,
@@ -53,11 +49,6 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
         SQLServerTableIndex.class,
         SQLServerTableCheckConstraint.class,
     };
-
-    @Override
-    public DBSObjectCache<SQLServerSchema, SQLServerTable> getObjectsCache(SQLServerTable object) {
-        return (DBSObjectCache) object.getSchema().getTableCache();
-    }
 
     @Override
     protected SQLServerTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, SQLServerSchema parent, Object copyFrom)
@@ -83,26 +74,6 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, NestedObjectCommand<SQLServerTable, PropertyHandler> command, Map<String, Object> options) {
-        final SQLServerTable table = command.getObject();
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
-            boolean isUpdate = SQLServerUtils.isCommentSet(
-                monitor,
-                table.getDatabase(),
-                SQLServerObjectClass.OBJECT_OR_COLUMN,
-                table.getObjectId(),
-                0);
-            actionList.add(
-                new SQLDatabasePersistAction(
-                    "Add table comment",
-                    "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), isUpdate ? "sp_updateextendedproperty" : "sp_addextendedproperty") +
-                        " 'MS_Description', " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription()) + "," +
-                        " 'schema', '" + table.getSchema().getName() + "'," +
-                        " 'table', '" + table.getName() + "'"));
-        }
-    }
-
-    @Override
     protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
         // ALTER
@@ -118,19 +89,6 @@ public class SQLServerTableManager extends SQLTableManager<SQLServerTable, SQLSe
             }
         }
 */
-    }
-
-    @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
-        SQLServerTable table = command.getObject();
-        actions.add(
-            new SQLDatabasePersistAction(
-                "Rename table",
-                "EXEC " + SQLServerUtils.getSystemTableName(table.getDatabase(), "sp_rename") +
-                    " '" + table.getSchema().getFullyQualifiedName(DBPEvaluationContext.DML) + "." + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getOldName()) +
-                    "' , '" + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getNewName()) + "', 'TABLE'")
-        );
     }
 
     @Override
