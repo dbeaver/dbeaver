@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * SQLServerTable
  */
-public class SQLServerTable extends SQLServerTableBase implements DBPScriptObject
+public class SQLServerTable extends SQLServerTableBase
 {
     private static final Log log = Log.getLog(SQLServerTable.class);
 
@@ -149,6 +149,11 @@ public class SQLServerTable extends SQLServerTableBase implements DBPScriptObjec
         getContainer().getTriggerCache().clearChildrenOf(this);
 
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
+    }
+
+    @Override
+    public void setObjectDefinitionText(String source) {
+        // Nope
     }
 
     /**

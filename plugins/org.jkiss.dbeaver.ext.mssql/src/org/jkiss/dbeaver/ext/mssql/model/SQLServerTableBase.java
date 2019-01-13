@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -42,7 +43,7 @@ import java.util.List;
  * MySQLTable base
  */
 public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, SQLServerSchema>
-    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject, DBPSystemObject
+    implements SQLServerObject, DBPNamedObject2,DBPRefreshableObject, DBSObjectWithScript, DBPSystemObject
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 

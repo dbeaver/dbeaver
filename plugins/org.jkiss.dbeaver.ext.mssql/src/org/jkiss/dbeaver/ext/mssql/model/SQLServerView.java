@@ -47,7 +47,7 @@ import java.util.*;
 /**
  * SQLServerView
  */
-public class SQLServerView extends SQLServerTableBase implements DBSObjectWithScript
+public class SQLServerView extends SQLServerTableBase
 {
     private static final Log log = Log.getLog(SQLServerView.class);
 
