@@ -190,7 +190,7 @@ public class ExasolDataSource extends JDBCDataSource
 		} catch (DBException e) {
 			LOG.warn("Error reading types info", e);
 			this.dataTypeCache
-					.setCache(Collections.<ExasolDataType> emptyList());
+					.setCache(Collections.emptyList());
 		}
 
 		this.userCache = new JDBCObjectSimpleCache<>(ExasolUser.class,
@@ -338,8 +338,7 @@ public class ExasolDataSource extends JDBCDataSource
     	if (addMetaProps == null)
     		addMetaProps = new Properties();
     	
-    	if (purpose == "Metadata")
-    	{
+    	if (JDBCExecutionContext.TYPE_METADATA.equals(purpose)) {
     		addMetaProps.clear();
     		addMetaProps.put("snapshottransactions", "1");
     	} else {
@@ -636,18 +635,10 @@ public class ExasolDataSource extends JDBCDataSource
 	
 	public Collection<ExasolGrantee> getAllGrantees(DBRProgressMonitor monitor) throws DBException
 	{
-	   ArrayList<ExasolGrantee> grantees = new ArrayList<>();
-	   
-	   for (ExasolUser user : this.getUsers(monitor)) {
-	       grantees.add((ExasolGrantee) user);
-	   }
-	   
-	   for (ExasolRole role : this.getRoles(monitor))
-	   {
-	       grantees.add((ExasolGrantee) role);
-	   }
-	   
-	   return grantees;
+	   	List<ExasolGrantee> grantees = new ArrayList<>();
+		grantees.addAll(this.getUsers(monitor));
+		grantees.addAll(this.getRoles(monitor));
+	   	return grantees;
 	}
 	
     @Association
