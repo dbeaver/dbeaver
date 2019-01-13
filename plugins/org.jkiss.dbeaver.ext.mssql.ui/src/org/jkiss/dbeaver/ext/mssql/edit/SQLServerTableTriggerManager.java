@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -59,14 +60,18 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
         return newTrigger;
     }
 
-    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, SQLServerTableTrigger trigger) {
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, SQLServerTableTrigger trigger, boolean create) {
         DBSObject defaultDatabase = trigger.getDataSource().getDefaultObject();
         if (defaultDatabase != trigger.getTable().getDatabase()) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(trigger.getTable().getDatabase()), false)); //$NON-NLS-2$
         }
 
-        actions.add(new SQLDatabasePersistAction("Create trigger",
-            trigger.getBody(), true)); //$NON-NLS-2$
+        if (create) {
+            actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getBody(), true)); //$NON-NLS-2$
+        } else {
+            actions.add(new SQLDatabasePersistAction("Alter trigger",
+                SQLServerUtils.changeCreateToAlterDDL(trigger.getDataSource().getSQLDialect(), trigger.getBody()), true)); //$NON-NLS-2$
+        }
 
         if (defaultDatabase != trigger.getTable().getDatabase()) {
             actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$

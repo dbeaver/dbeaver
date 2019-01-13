@@ -61,7 +61,7 @@ public class SQLServerGenericTriggerManager extends SQLTriggerManager<SQLServerG
         return null;
     }
 
-    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, SQLServerGenericTrigger trigger) {
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, SQLServerGenericTrigger trigger, boolean create) {
 
     }
 

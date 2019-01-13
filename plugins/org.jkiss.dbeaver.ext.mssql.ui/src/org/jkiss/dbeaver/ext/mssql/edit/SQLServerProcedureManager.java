@@ -88,13 +88,13 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-        createOrReplaceProcedureQuery(actions, command.getObject());
+        createOrReplaceProcedureQuery(actions, command.getObject(), true);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceProcedureQuery(actionList, command.getObject());
+            createOrReplaceProcedureQuery(actionList, command.getObject(), false);
         }
     }
 
@@ -115,17 +115,18 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
         }
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, SQLServerProcedure procedure) {
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, SQLServerProcedure procedure, boolean create) {
         SQLServerDatabase procDatabase = procedure.getContainer().getDatabase();
         SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultObject();
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }
 
-        actions.add(
-            new SQLDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$ //$NON-NLS-3$
-        actions.add(
-            new SQLDatabasePersistAction("Create procedure", procedure.getBody()));
+        if (create) {
+            actions.add(new SQLDatabasePersistAction("Create procedure", procedure.getBody()));
+        } else {
+            actions.add(new SQLDatabasePersistAction("Alter procedure", SQLServerUtils.changeCreateToAlterDDL(procedure.getDataSource().getSQLDialect(), procedure.getBody())));
+        }
 
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$

@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
@@ -192,4 +194,11 @@ public class SQLServerUtils {
         return auth;
     }
 
+    public static String changeCreateToAlterDDL(SQLDialect sqlDialect, String ddl) {
+        String firstKeyword = SQLUtils.getFirstKeyword(sqlDialect, ddl);
+        if ("CREATE".equalsIgnoreCase(firstKeyword)) {
+            return ddl.replaceFirst(firstKeyword, "ALTER");
+        }
+        return ddl;
+    }
 }
