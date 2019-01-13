@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.ext.mssql.model.*;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -90,7 +93,7 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
-        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
+        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceProcedureQuery(actionList, command.getObject());
         }
     }
