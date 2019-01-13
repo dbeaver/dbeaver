@@ -69,7 +69,7 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
         }.execute();
     }
 
-    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger) {
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger, boolean create) {
         if (trigger.isPersisted()) {
             actions.add(
                 new SQLDatabasePersistAction("Drop trigger",

@@ -75,7 +75,7 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
         );
     }
 
-    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, OracleTableTrigger trigger)
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, OracleTableTrigger trigger, boolean create)
     {
         String source = OracleUtils.normalizeSourceName(trigger, false);
         if (source == null) {

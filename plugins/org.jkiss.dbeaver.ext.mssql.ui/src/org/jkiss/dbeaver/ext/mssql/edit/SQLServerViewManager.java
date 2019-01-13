@@ -67,13 +67,13 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(actions, command.getObject());
+        createOrReplaceViewQuery(actions, command.getObject(), true);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceViewQuery(actionList, command.getObject());
+            createOrReplaceViewQuery(actionList, command.getObject(), false);
         }
     }
 
@@ -84,7 +84,7 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
         );
     }
 
-    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, SQLServerView view)
+    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, SQLServerView view, boolean create)
     {
         SQLServerDatabase procDatabase = view.getContainer().getDatabase();
         SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultObject();
@@ -92,10 +92,11 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }
 
-        actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP VIEW IF EXISTS " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$ //$NON-NLS-3$
-        actions.add(
-            new SQLDatabasePersistAction("Create view", view.getDDL()));
+        if (create) {
+            actions.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
+        } else {
+            actions.add(new SQLDatabasePersistAction("Alter view", SQLServerUtils.changeCreateToAlterDDL(view.getDataSource().getSQLDialect(), view.getDDL())));
+        }
 
         if (defaultDatabase != procDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$
