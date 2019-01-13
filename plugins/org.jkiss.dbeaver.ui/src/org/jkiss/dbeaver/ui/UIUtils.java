@@ -1588,6 +1588,10 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
+        return getColorByRGB(rgbString);
+    }
+
+    public static Color getColorByRGB(String rgbString) {
         Color connectionColor = sharedTextColors.getColor(rgbString);
         if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
             // For white color return just null to avoid explicit color set.

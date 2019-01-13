@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -70,7 +71,9 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             resultTable.setHeaderVisible(true);
             resultTable.setLinesVisible(true);
 
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source_container);
             UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target_container);
             UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
 
             UIUtils.packColumns(resultTable);
@@ -110,16 +113,31 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 processor == null ?
                     null :
                     settings.getProcessorProperties());
+
+
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, pipe.getProducer().getObjectName());
-            if (settings.getProducer() != null && settings.getProducer().getIcon() != null) {
-                item.setImage(0, DBeaverIcons.getImage(settings.getProducer().getIcon()));
+            item.setText(0, pipe.getProducer().getObjectContainerName());
+            item.setText(1, pipe.getProducer().getObjectName());
+            if (settings.getProducer() != null & settings.getProducer().getIcon() != null) {
+                item.setImage(1, DBeaverIcons.getImage(settings.getProducer().getIcon()));
             }
-            item.setText(1, consumer.getObjectName());
+            Color producerColor = pipe.getProducer().getObjectColor();
+            if (producerColor != null) {
+                item.setBackground(0, producerColor);
+                item.setBackground(1, producerColor);
+            }
+
+            item.setText(2, consumer.getObjectContainerName());
+            item.setText(3, consumer.getObjectName());
             if (processorDescriptor != null && processorDescriptor.getIcon() != null) {
-                item.setImage(1, DBeaverIcons.getImage(processorDescriptor.getIcon()));
+                item.setImage(3, DBeaverIcons.getImage(processorDescriptor.getIcon()));
             } else if (settings.getConsumer() != null && settings.getConsumer().getIcon() != null) {
-                item.setImage(1, DBeaverIcons.getImage(settings.getConsumer().getIcon()));
+                item.setImage(3, DBeaverIcons.getImage(settings.getConsumer().getIcon()));
+            }
+            Color consumerColor = pipe.getConsumer().getObjectColor();
+            if (consumerColor != null) {
+                item.setBackground(2, consumerColor);
+                item.setBackground(3, consumerColor);
             }
         }
         activated = true;

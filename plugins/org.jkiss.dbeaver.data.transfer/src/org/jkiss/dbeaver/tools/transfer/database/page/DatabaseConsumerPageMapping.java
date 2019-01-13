@@ -699,7 +699,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         if (containerNode != null) {
             DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(containerNode);
             containerIcon.setImage(DBeaverIcons.getImage(dataSourceNode == null ? containerNode.getNodeIconDefault() : dataSourceNode.getNodeIcon()));
-            containerName.setText(containerNode.getNodeFullName());
+            containerName.setText(settings.getContainerFullName());
         }
 
         if (mappingViewer.getInput() == null) {

@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -353,7 +354,17 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public String getObjectName() {
-        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getAbsolutePath();
+        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getName();
+    }
+
+    @Override
+    public String getObjectContainerName() {
+        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getParentFile().getAbsolutePath();
+    }
+
+    @Override
+    public Color getObjectColor() {
+        return null;
     }
 
     public String getOutputFileName() {
