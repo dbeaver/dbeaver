@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
@@ -529,6 +526,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public String getObjectContainerName() {
         DBPDataSourceContainer container = getDataSourceContainer();
         return container != null ? container.getName() : "?";
+    }
+
+    @Override
+    public DBPImage getObjectContainerIcon() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? container.getDriver().getIcon() : null;
     }
 
     @Override

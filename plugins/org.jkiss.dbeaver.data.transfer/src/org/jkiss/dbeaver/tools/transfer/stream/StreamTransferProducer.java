@@ -21,8 +21,10 @@ import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -36,6 +38,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,6 +87,11 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     @Override
     public String getObjectContainerName() {
         return inputFile == null ? null : inputFile.getParentFile().getAbsolutePath();
+    }
+
+    @Override
+    public DBPImage getObjectContainerIcon() {
+        return DBIcon.TREE_FOLDER;
     }
 
     @Override

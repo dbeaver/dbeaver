@@ -29,6 +29,9 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_final_column_target_container;
 	public static String data_transfer_wizard_final_description;
 	public static String data_transfer_wizard_final_group_tables;
+	public static String data_transfer_wizard_final_group_objects;
+	public static String data_transfer_wizard_final_group_settings_source;
+	public static String data_transfer_wizard_final_group_settings_target;
 	public static String data_transfer_wizard_final_name;
 	public static String data_transfer_wizard_final_title;
 	public static String data_transfer_wizard_init_column_description;
