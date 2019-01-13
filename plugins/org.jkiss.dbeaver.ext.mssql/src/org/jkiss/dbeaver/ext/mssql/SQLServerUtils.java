@@ -173,4 +173,26 @@ public class SQLServerUtils {
             return false;
         }
     }
+
+    @NotNull
+    public static SQLServerAuthentication detectAuthSchema(DBPConnectionConfiguration connectionInfo) {
+        // Detect auth schema
+        // Now we use only PROP_AUTHENTICATION but here we support all legacy SQL Server configs
+        SQLServerAuthentication auth = isWindowsAuth(connectionInfo) ? SQLServerAuthentication.WINDOWS_INTEGRATED :
+            (isActiveDirectoryAuth(connectionInfo) ? SQLServerAuthentication.AD_PASSWORD : SQLServerAuthentication.SQL_SERVER_PASSWORD);
+
+        {
+            String authProp = connectionInfo.getProviderProperty(SQLServerConstants.PROP_AUTHENTICATION);
+            if (authProp != null) {
+                try {
+                    auth = SQLServerAuthentication.valueOf(authProp);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Bad auth schema: " + authProp);
+                }
+            }
+        }
+
+        return auth;
+    }
+
 }
