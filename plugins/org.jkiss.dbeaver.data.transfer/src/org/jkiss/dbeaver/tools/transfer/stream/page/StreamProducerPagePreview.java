@@ -704,6 +704,11 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
 
         @Override
+        public DBPImage getObjectIcon() {
+            return null;
+        }
+
+        @Override
         public String getObjectContainerName() {
             return "N/A";
         }

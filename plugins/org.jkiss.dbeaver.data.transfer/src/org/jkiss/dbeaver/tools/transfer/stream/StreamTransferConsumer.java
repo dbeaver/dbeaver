@@ -357,6 +357,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
+    public DBPImage getObjectIcon() {
+        return null;
+    }
+
+    @Override
     public String getObjectContainerName() {
         return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getParentFile().getAbsolutePath();
     }

@@ -29,6 +29,8 @@ public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
 
     String getObjectName();
 
+    DBPImage getObjectIcon();
+
     String getObjectContainerName();
 
     DBPImage getObjectContainerIcon();
