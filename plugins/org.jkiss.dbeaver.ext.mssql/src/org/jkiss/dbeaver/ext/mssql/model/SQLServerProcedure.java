@@ -22,13 +22,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * SQLServerProcedure
  */
-public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBPScriptObject, SQLServerObject
+public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBSObjectWithScript, SQLServerObject
 {
     private static final Log log = Log.getLog(SQLServerProcedure.class);
 
@@ -201,8 +201,8 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
         return getDeclaration(monitor);
     }
 
-    //@Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
+    @Override
+    public void setObjectDefinitionText(String sourceText)
     {
         this.body = sourceText;
     }
