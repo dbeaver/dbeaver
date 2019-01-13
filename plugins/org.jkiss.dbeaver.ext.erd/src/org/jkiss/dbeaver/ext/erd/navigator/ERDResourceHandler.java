@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -46,7 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * ERD resource handler
@@ -137,7 +136,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         if (folder == null) {
             throw new DBException("Can't detect folder for diagram");
         }
-        ResourceUtils.checkFolderExists(folder, monitor);
+        ContentUtils.checkFolderExists(folder, monitor);
 
         final IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
 
@@ -175,10 +174,10 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     }
 
     @Override
-    public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource) {
-        if (resource instanceof IFile) {
+    public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
+        if (resource.getResource() instanceof IFile) {
             try {
-                return DiagramLoader.extractContainers((IFile)resource);
+                return DiagramLoader.extractContainers((IFile)resource.getResource());
             } catch (Exception e) {
                 log.error(e);
                 return null;

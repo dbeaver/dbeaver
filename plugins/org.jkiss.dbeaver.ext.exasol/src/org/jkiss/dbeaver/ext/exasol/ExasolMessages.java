@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,5 +66,31 @@ public class ExasolMessages extends NLS {
 
 	public static String read_table_details;
 	public static String read_schema_details;
+	public static String dialog_create_priority_group;
+	public static String dialog_priority_group_description;
+	public static String dialog_priority_group_name;
+	public static String dialog_priority_group_weight;
+	public static String manager_priority_group_comment;
+	public static String manager_priority_create;
+	public static String manager_priority_drop;
+	public static String manager_priority_alter;
+	public static String manager_priority_rename;
+	public static String manager_schema_owner;
+	public static String manager_schema_raw_limit;
+	public static String manager_schema_create;
+	public static String dialog_create_user_userid;
+	public static String dialog_create_user_comment;
+	public static String dialog_create_user_kerberos;
+	public static String dialog_create_user_ldap;
+	public static String dialog_create_user_local;
+	public static String dialog_create_user_local_password;
+	public static String dialog_create_user_kerberos_principal;
+	public static String dialog_create_user_ldap_dn;
+	public static String manager_assign_priority_group;
+	public static String exasol_security_policy_name;
+	public static String exasol_security_policy_description;
+	public static String exasol_partition_name;
+	public static String exasol_partition_description;
+	
 
 }

@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
-        <!-- SQL Server. New conenctor replaces all Generic-based SQL Server drivers -->
+        <!-- SQL Server. New connector replaces all Generic-based SQL Server drivers -->
 
         <datasource
             class="org.jkiss.dbeaver.ext.mssql.SQLServerDataSourceProvider"
@@ -105,8 +105,8 @@
                             <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms">
                                 <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers">
-                                <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                            <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" virtual="true">
+                                <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" virtual="true"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
                                 <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
@@ -133,6 +133,7 @@
                         id="microsoft"
                         label="Microsoft driver"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -143,11 +144,13 @@
 
                     <replace provider="mssql" driver="mssql_jdbc_ms_new"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.0.0.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.1.4.jre8-preview]" bundle="!drivers.mssql.new"/>
+                    <!--<file type="jar" path="maven:/com.microsoft.azure:adal4j:RELEASE" optional="true" />-->
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
 
                     <file type="jar" path="drivers/mssql/new/mssql-jdbc.jar" bundle="drivers.mssql.new"/>
+                    <!--<file type="jar" path="drivers/mssql/new/adal4j.jar" optional="true" />-->
                     <file type="lib" os="win32" arch="x86" path="drivers/mssql/new/auth/x86/sqljdbc_auth.dll" bundle="drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64/sqljdbc_auth.dll" bundle="drivers.mssql.new"/>
                     <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
@@ -167,11 +170,11 @@
 
                     <replace provider="mssql" driver="mssql_jdbc_azure"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.0.0.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.1.4.jre8-preview]" bundle="!drivers.mssql.new"/>
                     <file type="jar" path="drivers/mssql/new/mssql-jdbc.jar" bundle="drivers.mssql.new"/>
 
                     <!-- Active directory auth -->
-                    <file type="jar" path="maven:/com.microsoft.azure:adal4j:RELEASE" optional="true" />
+                    <file type="jar" path="maven:/com.microsoft.azure:adal4j:RELEASE[1.6.0]" optional="true" />
                 </driver>
 
                 <!-- jTDS driver - deprecated -->
@@ -179,6 +182,7 @@
                         id="jtds"
                         label="jTDS driver"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="net.sourceforge.jtds.jdbc.Driver"
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -206,6 +210,7 @@
                     id="mssql_jdbc_jtds"
                     label="jTDS driver (Deprecated)"
                     icon="icons/mssql_icon.png"
+                    iconBig="icons/mssql_icon_big.png"
                     category="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -220,6 +225,7 @@
                     id="mssql_jdbc_ms"
                     label="Microsoft Driver (Deprecated)"
                     icon="icons/mssql_icon.png"
+                    iconBig="icons/mssql_icon_big.png"
                     category="MS SQL Server"
                     class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                     sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -234,6 +240,7 @@
                         id="mssql_jdbc_ms_new"
                         label="Microsoft Driver (Deprecated)"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -264,6 +271,7 @@
                         id="mssql_jdbc_legacy"
                         label="Old driver (Microsoft)"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -295,6 +303,7 @@
                         id="mssql_jtds_legacy"
                         label="Old driver (jTDS)"
                         icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
                         class="net.sourceforge.jtds.jdbc.Driver"
                         sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -386,70 +395,6 @@
 
             </drivers>
         </datasource>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.mssql.dataSourceWizardView"
-                dataSource="sqlserver,mssql"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%sqlserver.dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
-                icon="icons/database.png">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
-                icon="icons/database.png"
-                id="org.jkiss.dbeaver.ext.mssql.dataSourceEditorView"
-                dataSource="sqlserver,mssql"
-                label="%sqlserver.dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.objectManager">
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerUniqueKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerIndexManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerCheckConstraintManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint"/>
-
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
-        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor
-                id="generic.table.ddl.view"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                main="false"
-                label="DDL"
-                description="DDL"
-                position="additions_end"
-                icon="#sql_text"
-                type="folder">
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
-        </editor>
-        <editor
-                id="generic.view.source.view"
-                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                main="false"
-                label="Definition"
-                description="View definition"
-                position="additions_end"
-                icon="#sql_text"
-                type="folder"
-                embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
-        </editor>
-        <editor id="generic.source.view" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
-                label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
-            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger"/>
-        </editor>
     </extension>
 
 </plugin>

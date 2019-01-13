@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -39,8 +39,7 @@ import java.util.Map;
 /**
  * SQLServerProcedure
  */
-public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBPScriptObject, SQLServerObject
-{
+public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, SQLServerSchema> implements DBPRefreshableObject, DBSObjectWithScript, SQLServerObject {
     private static final Log log = Log.getLog(SQLServerProcedure.class);
 
     private DBSProcedureType procedureType;
@@ -48,22 +47,19 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     private long objectId;
     private SQLServerObjectType objectType;
 
-    public SQLServerProcedure(SQLServerSchema schema)
-    {
+    public SQLServerProcedure(SQLServerSchema schema) {
         super(schema, false);
         this.procedureType = DBSProcedureType.PROCEDURE;
     }
 
     public SQLServerProcedure(
         SQLServerSchema catalog,
-        ResultSet dbResult)
-    {
+        ResultSet dbResult) {
         super(catalog, true);
         loadInfo(dbResult);
     }
 
-    private void loadInfo(ResultSet dbResult)
-    {
+    private void loadInfo(ResultSet dbResult) {
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.name = JDBCUtils.safeGetString(dbResult, "name");
         this.objectType = SQLServerObjectType.P;
@@ -96,121 +92,66 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
         return objectType;
     }
 
-    @Override
-    @Property(order = 5)
-    public DBSProcedureType getProcedureType()
-    {
-        return procedureType ;
-    }
-
-    public void setProcedureType(DBSProcedureType procedureType)
-    {
-        this.procedureType = procedureType;
-    }
-
-/*
-    @Property(order = 2)
-    public String getResultType()
-    {
-        return resultType;
-    }
-*/
-
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getDeclaration(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (body == null) {
-            if (!persisted) {
-                this.body =
-                    "CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + "()" + GeneralUtils.getDefaultLineSeparator() +
-                        (procedureType == DBSProcedureType.FUNCTION ? "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() : "") +
-                    "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
-                    "END";
-            } else {
-                this.body = SQLServerUtils.extractSource(monitor, getContainer().getDatabase(), getContainer(), getName());
-            }
-/*
-            StringBuilder cb = new StringBuilder(getBody().length() + 100);
-            cb.append("CREATE ").append(procedureType).append(' ').append(getFullyQualifiedName()).append(" (");
-
-            int colIndex = 0;
-            for (SQLServerProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    continue;
-                }
-                if (colIndex > 0) {
-                    cb.append(", ");
-                }
-                if (getProcedureType() == DBSProcedureType.PROCEDURE) {
-                    cb.append(column.getParameterKind()).append(' ');
-                }
-                cb.append(column.getName()).append(' ');
-                appendParameterType(cb, column);
-                colIndex++;
-            }
-            cb.append(")").append(GeneralUtils.getDefaultLineSeparator());
-            for (SQLServerProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    cb.append("RETURNS ");
-                    appendParameterType(cb, column);
-                    cb.append(GeneralUtils.getDefaultLineSeparator());
-                }
-            }
-            if (deterministic) {
-                cb.append("DETERMINISTIC").append(GeneralUtils.getDefaultLineSeparator());
-            }
-            cb.append(getBody());
-            clientBody = cb.toString();
-*/
-        }
+    public String getBody() {
         return body;
     }
 
-    private String normalizeCreateStatement(String createDDL) {
-        String procType = getProcedureType().name();
-        int divPos = createDDL.indexOf(procType + " `");
-        if (divPos != -1) {
-            return createDDL.substring(0, divPos) + procType +
-                " `" + getContainer().getName() + "`." +
-                createDDL.substring(divPos + procType.length() + 1);
-        }
-        return createDDL;
+    @Override
+    @Property(order = 5)
+    public DBSProcedureType getProcedureType() {
+        return procedureType;
+    }
+
+    public void setProcedureType(DBSProcedureType procedureType) {
+        this.procedureType = procedureType;
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
+    public String getDescription() {
+        return super.getDescription();
     }
 
     @Override
     public Collection<SQLServerProcedureParameter> getParameters(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return getContainer().getProcedureCache().getChildren(monitor, getContainer(), this);
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
             this);
     }
 
-    @Override
-    //@Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
-    {
-        return getDeclaration(monitor);
+
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (body == null) {
+            if (!persisted) {
+                this.body =
+                    "CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + GeneralUtils.getDefaultLineSeparator() +
+                        (procedureType == DBSProcedureType.FUNCTION ? "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() : "") +
+                        "AS " + GeneralUtils.getDefaultLineSeparator() +
+                        "SELECT 1";
+            } else {
+                this.body = SQLServerUtils.extractSource(monitor, getContainer().getDatabase(), getContainer(), getName());
+            }
+        }
+        return body;
     }
 
-    //@Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
-    {
+    @Override
+    public void setObjectDefinitionText(String sourceText) {
         this.body = sourceText;
     }
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
 
-        return this;//getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getProcedureCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override

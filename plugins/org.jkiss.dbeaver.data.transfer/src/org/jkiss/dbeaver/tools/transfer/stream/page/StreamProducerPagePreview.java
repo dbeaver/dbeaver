@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -49,6 +51,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -214,7 +217,12 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                                     StreamDataImporterColumnInfo streamColumn = getCurrentEntityMappings().getStreamColumn(srcAttrName);
                                     if (streamColumn == null) {
                                         // Index?
-                                        streamColumn = getCurrentEntityMappings().getStreamColumns().get(sourceCombo.getSelectionIndex() - 1);
+                                        int selectionIndex = sourceCombo.getSelectionIndex();
+                                        if (selectionIndex >=0) {
+                                            streamColumn = getCurrentEntityMappings().getStreamColumns().get(selectionIndex - 1);
+                                        } else {
+                                            return;
+                                        }
                                     }
                                     if (CommonUtils.equalObjects(am.getSourceAttributeName(), streamColumn.getColumnName()) &&
                                         am.getSourceAttributeIndex() == streamColumn.getColumnIndex()) {
@@ -693,6 +701,26 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         @Override
         public String getObjectName() {
             return DBUtils.getObjectFullName(sampleObject, DBPEvaluationContext.DML);
+        }
+
+        @Override
+        public DBPImage getObjectIcon() {
+            return null;
+        }
+
+        @Override
+        public String getObjectContainerName() {
+            return "N/A";
+        }
+
+        @Override
+        public DBPImage getObjectContainerIcon() {
+            return UIIcon.SQL_PREVIEW;
+        }
+
+        @Override
+        public Color getObjectColor() {
+            return null;
         }
     }
 

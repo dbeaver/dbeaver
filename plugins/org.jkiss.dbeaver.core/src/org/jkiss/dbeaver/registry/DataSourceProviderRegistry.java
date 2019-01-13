@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -40,7 +41,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
-public class DataSourceProviderRegistry
+public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 {
     private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
@@ -301,6 +302,7 @@ public class DataSourceProviderRegistry
         this.connectionTypes.remove(connectionType.getId());
     }
 
+    @Override
     public void saveConnectionTypes()
     {
         File ctConfig = DBeaverActivator.getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);

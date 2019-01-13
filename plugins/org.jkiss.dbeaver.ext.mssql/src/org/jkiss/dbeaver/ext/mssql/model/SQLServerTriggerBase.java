@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 
 import java.sql.ResultSet;
@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * SQLServerTriggerBase
  */
-public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements DBSTrigger, DBPScriptObject, DBPQualifiedObject, DBPRefreshableObject, SQLServerObject
+public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements DBSTrigger, DBSObjectWithScript, DBPQualifiedObject, DBPRefreshableObject, SQLServerObject
 {
     private OWNER container;
     private String name;
@@ -84,6 +84,10 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     @Property(viewable = false, order = 10)
     public long getObjectId() {
@@ -95,14 +99,26 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return insteadOfTrigger;
     }
 
+    public void setInsteadOfTrigger(boolean insteadOfTrigger) {
+        this.insteadOfTrigger = insteadOfTrigger;
+    }
+
     @Property(viewable = false, order = 20)
     public boolean isDisabled() {
         return disabled;
     }
 
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
     public String getBody()
     {
         return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     @Override
@@ -132,7 +148,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        if (body == null) {
+        if (body == null && isPersisted()) {
             OWNER owner = getParentObject();
             SQLServerDatabase database = null;
             if (owner instanceof SQLServerDatabase) {
@@ -145,5 +161,9 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return body;
     }
 
+    @Override
+    public void setObjectDefinitionText(String sourceText) {
+        this.body = sourceText;
+    }
 
 }

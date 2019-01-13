@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,11 +54,11 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
         super.createEditorControl(parent);
     }
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
         return new SessionManagerViewer<ExasolServerSession>(this, parent, new ExasolServerSessionManager((ExasolDataSource) executionContext.getDataSource())) {
             @Override
-            @SuppressWarnings("rawtypes")
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager) {
                 contributionManager.add(killSessionAction);
                 contributionManager.add(terminateQueryAction);
@@ -86,7 +86,8 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
 
         }
 
-        @Override
+        @SuppressWarnings("unchecked")
+		@Override
         public void run() {
             final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
             final String action = ExasolMessages.editors_exasol_session_editor_action_kill;

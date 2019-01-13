@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,6 +112,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
     }
 
     private void createDriverGallery() {
+        int oldItemCount = gallery.getItemCount();
         gallery.removeAll();
 
         GalleryItem groupRecent = new GalleryItem(gallery, SWT.NONE);
@@ -131,6 +132,11 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             groupRecent.dispose();
         }
         fillDriverGroup(groupAll);
+
+        if (oldItemCount  == 0) {
+            gallery.setFocus();
+            gallery.setSelection(new GalleryItem[]{gallery.getItem(0)});
+        }
     }
 
     private void fillDriverGroup(GalleryItem group) {
@@ -160,7 +166,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             }
 
             GalleryItem item = new GalleryItem(group, SWT.NONE);
-            item.setImage(DBeaverIcons.getImage(driver.getIcon()));
+            item.setImage(DBeaverIcons.getImage(driver.getIconBig()));
             item.setText(driver.getName()); //$NON-NLS-1$
             item.setText(0, driver.getName()); //$NON-NLS-1$
             List<DBPDataSourceContainer> usedBy = DriverUtils.getUsedBy(driver, allDataSources);

@@ -13,13 +13,14 @@
                 id="db2_zos"
                 parent="generic"
                 label="DB2 for z/OS"
-                icon="icons/db2_zos.png">
+                icon="icons/db2_zos_icon.png">
             <drivers managable="true">
 
                 <driver
                         id="db2_zos"
                         label="DB2 z/OS"
-                        icon="icons/db2_zos.png"
+                        icon="icons/db2_zos_icon.png"
+                        iconBig="icons/db2_zos_icon_big.png"
                         category="DB2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"

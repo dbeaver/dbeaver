@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,7 @@ public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTable>
     private SQLServerTableIndex index;
     private List<SQLServerTableUniqueKeyColumn> columns;
 
-    public SQLServerTableUniqueKey(SQLServerTable table, String name, String remarks, DBSEntityConstraintType constraintType, SQLServerTableIndex index, boolean persisted)
-    {
+    public SQLServerTableUniqueKey(SQLServerTable table, String name, String remarks, DBSEntityConstraintType constraintType, SQLServerTableIndex index, boolean persisted) {
         super(table, name, remarks, constraintType, persisted);
         this.index = index;
     }
@@ -56,15 +55,16 @@ public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTable>
     }
 
     @Override
-    public List<SQLServerTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
-    {
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) {
+        if (columns != null) {
+            return columns;
+        }
         return index.getAttributeReferences(monitor);
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getDatabase(),
             getTable().getSchema(),
@@ -74,9 +74,19 @@ public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTable>
 
     @NotNull
     @Override
-    public SQLServerDataSource getDataSource()
-    {
+    public SQLServerDataSource getDataSource() {
         return getTable().getDataSource();
+    }
+
+    public void addColumn(SQLServerTableUniqueKeyColumn column) {
+        if (columns == null) {
+            columns = new ArrayList<>();
+        }
+        this.columns.add(column);
+    }
+
+    void setColumns(List<SQLServerTableUniqueKeyColumn> columns) {
+        this.columns = columns;
     }
 
 }

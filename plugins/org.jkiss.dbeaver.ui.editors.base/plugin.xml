@@ -23,4 +23,23 @@
         <factory id="org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory"/>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </factory>
+        <factory adaptableType="org.eclipse.ui.IEditorInput" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </factory>
+    </extension>
+
 </plugin>

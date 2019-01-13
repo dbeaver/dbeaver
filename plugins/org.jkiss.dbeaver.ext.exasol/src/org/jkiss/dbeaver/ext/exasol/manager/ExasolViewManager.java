@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -112,6 +113,18 @@ public class ExasolViewManager
         try {
             actions.add(
                 new SQLDatabasePersistAction("Create view", view.getSource()));
+            
+            if (!CommonUtils.isEmpty(view.getDescription()))
+            {
+            	 actions.add(
+            			 new SQLDatabasePersistAction(
+            					 String.format("COMMENT ON VIEW %s is '%s'", 
+            							 view.getFullyQualifiedName(DBPEvaluationContext.DDL),
+            							 ExasolUtils.quoteString(view.getDescription())
+            							 )
+            					 )
+            			 );
+            }
         } catch (DBCException e) {
         }
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,7 +83,10 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
 
         new PumpVisualizer(visualizer).schedule(PROGRESS_VISUALIZE_PERIOD * 2);
 
-        if (offset > 0 && dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
+        long flags = DBSDataContainer.FLAG_READ_PSEUDO |
+            (offset > 0 ? DBSDataContainer.FLAG_FETCH_SEGMENT : DBSDataContainer.FLAG_NONE);
+
+        if (offset > 0 && maxRows > 0 && dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
             maxRows += offset;
             offset = 0;
         }
@@ -102,7 +105,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
                         dataFilter,
                         offset,
                         maxRows,
-                        DBSDataContainer.FLAG_READ_PSEUDO
+                        flags
                     );
                 } catch (Throwable e) {
                     throw new InvocationTargetException(e);

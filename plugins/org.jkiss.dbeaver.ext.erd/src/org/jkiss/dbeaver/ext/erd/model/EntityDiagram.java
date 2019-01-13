@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,8 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     private boolean needsAutoLayout;
 
     private final Map<DBSEntity, ERDEntity> entityMap = new IdentityHashMap<>();
-    private final Map<ERDObject, NodeVisualInfo> nodeVisuals = new IdentityHashMap<>();
+    private final Map<ERDNote, NodeVisualInfo> noteVisuals = new IdentityHashMap<>();
+    private final Map<DBSEntity, NodeVisualInfo> entityVisuals = new IdentityHashMap<>();
 
     private final List<ERDNote> notes = new ArrayList<>();
 
@@ -248,7 +249,8 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         copy.entityMap.putAll(this.entityMap);
         copy.layoutManualDesired = this.layoutManualDesired;
         copy.layoutManualAllowed = this.layoutManualAllowed;
-        copy.nodeVisuals.putAll(this.nodeVisuals);
+        copy.noteVisuals.putAll(this.noteVisuals);
+        copy.entityVisuals.putAll(this.entityVisuals);
         return copy;
     }
 
@@ -317,24 +319,42 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     public void clear() {
         this.entities.clear();
         this.entityMap.clear();
-        this.nodeVisuals.clear();
+        this.noteVisuals.clear();
+        this.entityVisuals.clear();
     }
 
-    public NodeVisualInfo getVisualInfo(ERDObject erdObject) {
+    public NodeVisualInfo getVisualInfo(ERDNote erdObject) {
         return getVisualInfo(erdObject, false);
     }
 
-    public NodeVisualInfo getVisualInfo(ERDObject erdObject, boolean create) {
-        NodeVisualInfo visualInfo = nodeVisuals.get(erdObject);
+    public NodeVisualInfo getVisualInfo(ERDNote erdObject, boolean create) {
+        NodeVisualInfo visualInfo = noteVisuals.get(erdObject);
         if (visualInfo == null && create) {
             visualInfo = new NodeVisualInfo();
-            nodeVisuals.put(erdObject, visualInfo);
+            noteVisuals.put(erdObject, visualInfo);
         }
         return visualInfo;
     }
 
-    public void addVisualInfo(ERDObject erdTable, NodeVisualInfo visualInfo) {
-        nodeVisuals.put(erdTable, visualInfo);
+    public NodeVisualInfo getVisualInfo(DBSEntity entity) {
+        return getVisualInfo(entity, false);
+    }
+
+    public NodeVisualInfo getVisualInfo(DBSEntity entity, boolean create) {
+        NodeVisualInfo visualInfo = entityVisuals.get(entity);
+        if (visualInfo == null && create) {
+            visualInfo = new NodeVisualInfo();
+            entityVisuals.put(entity, visualInfo);
+        }
+        return visualInfo;
+    }
+
+    public void addVisualInfo(ERDNote note, NodeVisualInfo visualInfo) {
+        noteVisuals.put(note, visualInfo);
+    }
+
+    public void addVisualInfo(DBSEntity entity, NodeVisualInfo visualInfo) {
+        entityVisuals.put(entity, visualInfo);
     }
 
     public boolean isNeedsAutoLayout() {
@@ -358,8 +378,8 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         children.addAll(entities);
         children.addAll(notes);
         children.sort((o1, o2) -> {
-            NodeVisualInfo vi1 = getVisualInfo(o1);
-            NodeVisualInfo vi2 = getVisualInfo(o2);
+            NodeVisualInfo vi1 = o1 instanceof ERDNote ? noteVisuals.get(o1) : entityVisuals.get(o1);
+            NodeVisualInfo vi2 = o2 instanceof ERDNote ? noteVisuals.get(o2) : entityVisuals.get(o2);
             return vi1 != null && vi2 != null ? vi1.zOrder - vi2.zOrder : 0;
         });
         return children;

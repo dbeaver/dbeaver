@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,8 @@ public class ResultSetUtils
         final DBRProgressMonitor monitor = session.getProgressMonitor();
         final DBPDataSource dataSource = session.getDataSource();
         boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_READ_METADATA);
-        if (!readMetaData) {
+        if (!readMetaData && sourceEntity == null) {
+            // Do not read metadata if source entity is not known
             return;
         }
         boolean readReferences = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_READ_REFERENCES);
@@ -196,38 +197,47 @@ public class ResultSetUtils
             }
             monitor.worked(1);
 
-            // Init row identifiers
-            monitor.subTask("Detect unique identifiers");
-            for (DBDAttributeBindingMeta binding : bindings) {
-                //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
-                DBSEntityAttribute attr = binding.getEntityAttribute();
-                if (attr == null) {
-                    continue;
-                }
-                DBSEntity attrEntity = attr.getParentObject();
-                if (attrEntity != null) {
-                    DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
-                    if (rowIdentifier == null) {
-                        DBSEntityReferrer entityIdentifier = getBestIdentifier(monitor, attrEntity, bindings);
-                        if (entityIdentifier != null) {
-                            rowIdentifier = new DBDRowIdentifier(
-                                attrEntity,
-                                entityIdentifier);
-                            locatorMap.put(attrEntity, rowIdentifier);
-                        }
+            {
+                // Init row identifiers
+                monitor.subTask("Detect unique identifiers");
+                for (DBDAttributeBindingMeta binding : bindings) {
+                    //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
+                    DBSEntityAttribute attr = binding.getEntityAttribute();
+                    if (attr == null) {
+                        continue;
                     }
-                    binding.setRowIdentifier(rowIdentifier);
+                    DBSEntity attrEntity = attr.getParentObject();
+                    if (attrEntity != null) {
+                        DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
+                        if (rowIdentifier == null) {
+                            DBSEntityReferrer entityIdentifier = getBestIdentifier(monitor, attrEntity, bindings, readMetaData);
+                            if (entityIdentifier != null) {
+                                rowIdentifier = new DBDRowIdentifier(
+                                    attrEntity,
+                                    entityIdentifier);
+                                locatorMap.put(attrEntity, rowIdentifier);
+                            }
+                        }
+                        binding.setRowIdentifier(rowIdentifier);
+                    }
                 }
+                monitor.worked(1);
             }
-            monitor.worked(1);
 
-            if (readReferences && rows != null) {
+            if (readMetaData && readReferences && rows != null) {
                 monitor.subTask("Read results metadata");
                 // Read nested bindings
                 for (DBDAttributeBinding binding : bindings) {
                     binding.lateBinding(session, rows);
                 }
             }
+
+            monitor.subTask("Load transformers");
+            // Load transformers
+            for (DBDAttributeBinding binding : bindings) {
+                binding.loadTransformers(session, rows);
+            }
+
             monitor.subTask("Complete metadata load");
             // Reload attributes in row identifiers
             for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
@@ -276,53 +286,55 @@ public class ResultSetUtils
         }
     }
 
-    private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBindingMeta[] bindings)
+    private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBindingMeta[] bindings, boolean readMetaData)
         throws DBException
     {
         List<DBSEntityReferrer> identifiers = new ArrayList<>(2);
 
-        if (table instanceof DBSTable && ((DBSTable) table).isView()) {
-            // Skip physical identifiers for views. There are nothing anyway
+        if (readMetaData) {
+            if (table instanceof DBSTable && ((DBSTable) table).isView()) {
+                // Skip physical identifiers for views. There are nothing anyway
 
-        } else {
-            // Check indexes first.
-            if (table instanceof DBSTable) {
-                try {
-                    Collection<? extends DBSTableIndex> indexes = ((DBSTable)table).getIndexes(monitor);
-                    if (!CommonUtils.isEmpty(indexes)) {
-                        // First search for primary index
-                        for (DBSTableIndex index : indexes) {
-                            if (index.isPrimary() && DBUtils.isIdentifierIndex(monitor, index)) {
-                                identifiers.add(index);
-                                break;
+            } else {
+                // Check indexes first.
+                if (table instanceof DBSTable) {
+                    try {
+                        Collection<? extends DBSTableIndex> indexes = ((DBSTable) table).getIndexes(monitor);
+                        if (!CommonUtils.isEmpty(indexes)) {
+                            // First search for primary index
+                            for (DBSTableIndex index : indexes) {
+                                if (index.isPrimary() && DBUtils.isIdentifierIndex(monitor, index)) {
+                                    identifiers.add(index);
+                                    break;
+                                }
+                            }
+                            // Then search for unique index
+                            for (DBSTableIndex index : indexes) {
+                                if (DBUtils.isIdentifierIndex(monitor, index)) {
+                                    identifiers.add(index);
+                                    break;
+                                }
                             }
                         }
-                        // Then search for unique index
-                        for (DBSTableIndex index : indexes) {
-                            if (DBUtils.isIdentifierIndex(monitor, index)) {
-                                identifiers.add(index);
-                                break;
+                    } catch (Exception e) {
+                        // Indexes are not supported or not available
+                        // Just skip them
+                        log.debug(e);
+                    }
+                }
+                {
+                    // Check constraints
+                    Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
+                    if (constraints != null) {
+                        for (DBSEntityConstraint constraint : constraints) {
+                            if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
+                                identifiers.add((DBSEntityReferrer) constraint);
                             }
                         }
                     }
-                } catch (Exception e) {
-                    // Indexes are not supported or not available
-                    // Just skip them
-                    log.debug(e);
                 }
-            }
-            {
-                // Check constraints
-                Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
-                if (constraints != null) {
-                    for (DBSEntityConstraint constraint : constraints) {
-                        if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
-                            identifiers.add((DBSEntityReferrer) constraint);
-                        }
-                    }
-                }
-            }
 
+            }
         }
         if (CommonUtils.isEmpty(identifiers)) {
             // Check for pseudo attrs (ROWID)

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
+import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
+import org.jkiss.dbeaver.ext.exasol.model.cache.ExasolTablePartitionColumnCache;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -49,9 +50,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-/**
- * @author Karl
- */
 public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject, DBPNamedObject2, DBPScriptObject {
 
     private Boolean hasDistKey;
@@ -62,6 +60,9 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private Timestamp createTime;
     private Boolean hasRead;
     private long tablecount;
+    private String tablePrefix;
+    private Boolean hasPartitionKey;
+    private ExasolTablePartitionColumnCache tablePartitionColumnCache = new ExasolTablePartitionColumnCache();
     private static String readAdditionalInfo =         "SELECT " + 
     		"	* " + 
     		"FROM " + 
@@ -70,8 +71,9 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		"		table_schema, " + 
     		"		table_name, " + 
     		"		table_owner, " + 
-    		"		table_has_distribution_key, " + 
+    		"		table_has_distribution_key, %s" + 
     		"		table_comment, " + 
+    		"		table_row_count, " + 
     		"		delete_percentage, " + 
     		"		o.created, " + 
     		"		o.last_commit, " + 
@@ -79,10 +81,10 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		"		s.mem_object_size, " + 
     		"		s.object_type " + 
     		"	FROM " + 
-    		"		EXA_ALL_OBJECTS o " + 
-    		"	INNER JOIN EXA_ALL_TABLES T ON " + 
+    		"		%s_OBJECTS o " + 
+    		"	INNER JOIN %s_TABLES T ON " + 
     		"		o.object_id = t.table_object_id " + 
-    		"	INNER JOIN EXA_ALL_OBJECT_SIZES s ON " + 
+    		"	INNER JOIN %s_OBJECT_SIZES s ON " + 
     		"		o.object_id = s.object_id " + 
     		"	WHERE " + 
     		"		o.object_id = %s AND o.object_id = %s AND t.table_object_id = %s " + 
@@ -91,13 +93,14 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		"		schema_name AS table_schema, " + 
     		"		object_name AS table_name, " + 
     		"		'SYS' AS table_owner, " + 
-    		"		FALSE AS table_has_distribution_key, " + 
-    		"		object_comment AS table_comment, " + 
-    		"		0 AS delete_percentage, " + 
+    		"		FALSE AS table_has_distribution_key, false as table_has_partition_key," + 
+    		"		object_comment AS table_comment, " +
+    		"       -1 AS table_row_count," + 
+    		"		-1 AS delete_percentage, " + 
     		"		CAST( NULL AS TIMESTAMP) AS created, " + 
     		"		CAST( NULL AS TIMESTAMP) AS last_commit, " + 
-    		"		0 AS raw_object_size, " + 
-    		"		0 AS mem_object_size, " + 
+    		"		-1 AS raw_object_size, " + 
+    		"		-1 AS mem_object_size, " + 
     		"		object_type " + 
     		"	FROM " + 
     		"		SYS.EXA_SYSCAT " + 
@@ -110,19 +113,16 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		"	o.table_name";
     
     
-    private static String count = "select count(*) as COUNTER from %s";
-    
-    
-    
     public ExasolTable(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
         super(monitor, schema, dbResult);
         hasRead=false;
-
+        tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
     }
 
     public ExasolTable(ExasolSchema schema, String name) {
         super(schema, name, false);
         hasRead=false;
+        tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
     }
 
     private void read(DBRProgressMonitor monitor) throws DBCException
@@ -131,6 +131,10 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	try (JDBCStatement stmt = session.createStatement())
     	{
     		String sql = String.format(readAdditionalInfo,
+    				getDataSource().ishasPriorityGroups() ? "table_has_partition_key,"  : "false as table_has_partition_key,",
+    				tablePrefix,
+    				tablePrefix,
+    				tablePrefix,
     				this.getObjectId(),
     				this.getObjectId(),
     				this.getObjectId(),
@@ -142,31 +146,20 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		{
     			dbResult.next();
 				this.hasDistKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_DISTRIBUTION_KEY");
+				this.hasPartitionKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_PARTITION_KEY");
+				if (this.hasPartitionKey == null)
+					this.hasPartitionKey = false;
     	        this.lastCommit = JDBCUtils.safeGetTimestamp(dbResult, "LAST_COMMIT");
     	        this.sizeRaw = JDBCUtils.safeGetLong(dbResult, "RAW_OBJECT_SIZE");
     	        this.sizeCompressed = JDBCUtils.safeGetLong(dbResult, "MEM_OBJECT_SIZE");
     	        this.deletePercentage = JDBCUtils.safeGetFloat(dbResult, "DELETE_PERCENTAGE");
     	        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED"); 
+    			this.tablecount = JDBCUtils.safeGetLong(dbResult, "TABLE_ROW_COUNT");
     		}
     		
     	} catch (SQLException e) {
     		throw new DBCException(e,getDataSource());
 		}
-    	
-    	try (JDBCStatement stmt = session.createStatement())
-    	{
-    		String sql = String.format(count, this.getFullyQualifiedName(DBPEvaluationContext.DML));
-    		
-    		try (JDBCResultSet dbResult = stmt.executeQuery(sql))
-    		{
-    			dbResult.next();
-    			this.tablecount = JDBCUtils.safeGetLong(dbResult, "COUNTER");
-    		}
-    		
-		} catch (SQLException e) {
-			throw new DBCException(e,getDataSource());
-		}
-    	
         this.hasRead = true;
     	
     }
@@ -176,27 +169,48 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		throws DBCException
     {
     	this.read(monitor);
+    	this.tablePartitionColumnCache.clearCache();
     	super.refreshObjectState(monitor);
     }
     
     // -----------------
     // Properties
     // -----------------
-    @Property(viewable = true, expensive = false,  editable = false, order = 90, category = ExasolConstants.CAT_BASEOBJECT)
+    @Property(viewable = true, expensive = false,  editable = false, order = 90)
     public Boolean getHasDistKey(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return hasDistKey;
     }
+    
+    @Property(viewable = true, expensive = false,  updatable = true, order = 95)
+    public Boolean getHasPartitionKey(DBRProgressMonitor monitor) throws DBCException {
+    	if (! hasRead)
+    		read(monitor);
+		return hasPartitionKey;
+	}
+    public void setHasPartitionKey(Boolean hasPartitionKey) {
+    	if (this.hasPartitionKey == false && hasPartitionKey == true)
+    		return;
+		this.hasPartitionKey = hasPartitionKey;
+		tablePartitionColumnCache.setCache(new ArrayList<ExasolTablePartitionColumn>());
+	}
+    
+    public void setHasPartitionKey(Boolean hasPartitionKey, Boolean force) {
+    	if (force)
+    		this.hasPartitionKey = hasPartitionKey;
+    	setHasPartitionKey(hasPartitionKey);
+	}
+    
 
-    @Property(viewable = true, expensive = false, editable = false, order = 100, category = ExasolConstants.CAT_BASEOBJECT)
+    @Property(viewable = true, expensive = false, editable = false, order = 100)
     public Timestamp getLastCommit(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
         return lastCommit;
     }
 
-    @Property(viewable = true, expensive = false, editable = false, order = 100, category = ExasolConstants.CAT_DATETIME)
+    @Property(viewable = true, expensive = false, editable = false, order = 100)
     public Timestamp getCreateTime(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
@@ -207,14 +221,14 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     public String getRawsize(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
-        return ExasolUtils.humanReadableByteCount(sizeRaw, true);
+        return ExasolUtils.humanReadableByteCount(sizeRaw, false);
     }
 
     @Property(viewable = true, expensive = false, editable = false, order = 200, category = ExasolConstants.CAT_STATS)
     public String getCompressedsize(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
-        return ExasolUtils.humanReadableByteCount(sizeCompressed, true);
+        return ExasolUtils.humanReadableByteCount(sizeCompressed, false);
     }
 
     @Property(viewable = true, expensive = false, editable = false, order = 250, category = ExasolConstants.CAT_STATS)
@@ -313,6 +327,23 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		}
     	}
     	return distKeyCols;
+    }
+    public ExasolTablePartitionColumn getPartition(String name) throws DBException {
+    	return tablePartitionColumnCache.getCachedObject(name);
+	}
+    
+    public Collection<ExasolTablePartitionColumn> getPartitions() throws DBException {
+    	return tablePartitionColumnCache.getAllObjects(new VoidProgressMonitor(), this);
+    }
+    
+    public ExasolTablePartitionColumnCache getPartitionCache()
+    {
+    	return tablePartitionColumnCache;
+    }
+    
+    public Collection<ExasolTableColumn> getAvailableColumns() throws DBException
+    {
+    	return tablePartitionColumnCache.getAvailableTableColumns(this);
     }
     
     

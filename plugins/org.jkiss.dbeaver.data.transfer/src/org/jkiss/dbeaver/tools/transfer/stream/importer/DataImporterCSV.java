@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
+    private static final String PROP_ESCAPE_CHAR = "escapeChar";
 
     enum HeaderPosition {
         none,
@@ -105,7 +106,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
         if (CommonUtils.isEmpty(quoteChar)) {
             quoteChar = "'";
         }
-        return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0));
+        String escapeChar = CommonUtils.toString(processorProperties.get(PROP_ESCAPE_CHAR));
+        if (CommonUtils.isEmpty(escapeChar)) {
+            escapeChar = "\\";
+        }
+        return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0));
     }
 
     private InputStreamReader openStreamReader(InputStream inputStream, Map<Object, Object> processorProperties) throws UnsupportedEncodingException {

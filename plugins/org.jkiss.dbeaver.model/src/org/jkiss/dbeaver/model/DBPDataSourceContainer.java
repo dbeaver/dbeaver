@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,11 +80,21 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isTemporary();
 
+    void setTemporary(boolean temporary);
+
     boolean isShowSystemObjects();
+
+    void setShowSystemObjects(boolean showSystemObjects);
 
     boolean isShowUtilityObjects();
 
+    void setShowUtilityObjects(boolean showUtilityObjects);
+
     boolean isConnectionReadOnly();
+
+    boolean isSavePassword();
+
+    void setSavePassword(boolean savePassword);
 
     boolean isDefaultAutoCommit();
 
@@ -191,4 +201,5 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     Date getConnectTime();
 
     GeneralUtils.IVariableResolver getVariablesResolver();
+
 }

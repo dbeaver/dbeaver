@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -210,8 +211,6 @@ public class NavigatorUtils {
                 manager.add(new Separator());
             }
 
-            manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-
             manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
 
             manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
@@ -232,6 +231,7 @@ public class NavigatorUtils {
                     manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
                 }
             }
+            manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
             if (menuListener != null) {
                 menuListener.menuAboutToShow(manager);
@@ -629,6 +629,23 @@ public class NavigatorUtils {
                 fileNode.refreshResourceState(source);
             }
         }
+    }
+
+    @Nullable
+    public static IStructuredSelection getSelectionFromPart(IWorkbenchPart part)
+    {
+        if (part == null) {
+            return null;
+        }
+        ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
+        if (selectionProvider == null) {
+            return null;
+        }
+        ISelection selection = selectionProvider.getSelection();
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+            return null;
+        }
+        return (IStructuredSelection)selection;
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {

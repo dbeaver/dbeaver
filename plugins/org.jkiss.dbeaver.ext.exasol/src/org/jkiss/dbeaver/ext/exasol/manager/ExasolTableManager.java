@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,15 +112,23 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     public void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         ExasolTable exasolTable = command.getObject();
 
-        if (command.getProperties().size() > 1) {
-            StringBuilder sb = new StringBuilder(128);
-            sb.append(SQL_ALTER);
-            sb.append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
-            sb.append(" ");
+        if (command.getProperties().size() > 0) {
+        	
+			if (command.getProperties().containsKey("hasPartitionKey") 
+					&& ((command.getProperties().get("hasPartitionKey").toString()).equals("false")) )
+			{
+				actionList.add(new SQLDatabasePersistAction("ALTER TABLE " + exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + " DROP PARTITION KEYS"));
+			} else if (command.getProperties().size() > 1) {
+			
+			StringBuilder sb = new StringBuilder(128);
+			sb.append(SQL_ALTER);
+			sb.append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
+			sb.append(" ");
 
-            appendTableModifiers(monitor, command.getObject(), command, sb, true);
+			appendTableModifiers(monitor, command.getObject(), command, sb, true);
 
-            actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
+			actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
+			}
         }
 
         DBEPersistAction commentAction = buildCommentAction(exasolTable);
@@ -158,4 +166,5 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
             return null;
         }
     }
+    
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -699,7 +699,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         if (containerNode != null) {
             DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(containerNode);
             containerIcon.setImage(DBeaverIcons.getImage(dataSourceNode == null ? containerNode.getNodeIconDefault() : dataSourceNode.getNodeIcon()));
-            containerName.setText(containerNode.getNodeFullName());
+            containerName.setText(settings.getContainerFullName());
         }
 
         if (mappingViewer.getInput() == null) {

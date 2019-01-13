@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  * SQL statement parameter info
  */
 public class SQLQueryParameter {
+    private final SQLSyntaxManager syntaxManager;
     private int ordinalPosition;
     private String name;
     private String value;
@@ -30,13 +31,14 @@ public class SQLQueryParameter {
     private final int tokenLength;
     private SQLQueryParameter previous;
 
-    public SQLQueryParameter(int ordinalPosition, String name)
+    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name)
     {
-        this(ordinalPosition, name, 0, 0);
+        this(syntaxManager, ordinalPosition, name, 0, 0);
     }
 
-    public SQLQueryParameter(int ordinalPosition, String name, int tokenOffset, int tokenLength)
+    public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, int tokenOffset, int tokenLength)
     {
+        this.syntaxManager = syntaxManager;
         if (tokenOffset < 0) {
             throw new IndexOutOfBoundsException("Bad parameter offset: " + tokenOffset);
         }
@@ -50,7 +52,7 @@ public class SQLQueryParameter {
     }
 
     public boolean isNamed() {
-        return !"?".equals(name);
+        return !String.valueOf(syntaxManager.getAnonymousParameterMark()).equals(name);
     }
 
     public int getTokenOffset() {
@@ -100,7 +102,7 @@ public class SQLQueryParameter {
     public String getTitle() {
         if (GeneralUtils.isVariablePattern(name)) {
             return GeneralUtils.stripVariablePattern(name);
-        } else if (name.startsWith(":")) {
+        } else if (!name.isEmpty() && name.charAt(0) == syntaxManager.getNamedParameterPrefix()) {
             return name.substring(1);
         } else {
             return name;

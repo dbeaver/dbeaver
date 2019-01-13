@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -426,6 +426,14 @@ public class DataTransferSettings {
             for (IDialogSettings procSection : ArrayUtils.safeArray(processorsSection.getSections())) {
                 String processorId = procSection.getName();
                 String nodeId = procSection.get("@node");
+                if (CommonUtils.isEmpty(nodeId)) {
+                    // Legacy code support
+                    int divPos = processorId.indexOf(':');
+                    if (divPos != -1) {
+                        nodeId = processorId.substring(0, divPos);
+                        processorId = processorId.substring(divPos + 1);
+                    }
+                }
                 String propNamesId = procSection.get("@propNames");
                 DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
                 if (node != null) {
@@ -466,12 +474,11 @@ public class DataTransferSettings {
         }
 
         // Save processors' properties
-        IDialogSettings processorsSection = DialogSettings.getOrCreateSection(dialogSettings, "processors");
+        IDialogSettings processorsSection = dialogSettings.addNewSection("processors");
         for (DataTransferProcessorDescriptor procDescriptor : processorPropsHistory.keySet()) {
-            IDialogSettings procSettings = DialogSettings.getOrCreateSection(processorsSection, procDescriptor.getId());
-            procSettings.put("@node", procDescriptor.getNode().getId());
+            IDialogSettings procSettings = processorsSection.addNewSection(procDescriptor.getFullId());
             Map<Object, Object> props = processorPropsHistory.get(procDescriptor);
-            if (props != null) {
+            if (!CommonUtils.isEmpty(props)) {
                 StringBuilder propNames = new StringBuilder();
                 for (Map.Entry<Object, Object> prop : props.entrySet()) {
                     propNames.append(prop.getKey()).append(',');

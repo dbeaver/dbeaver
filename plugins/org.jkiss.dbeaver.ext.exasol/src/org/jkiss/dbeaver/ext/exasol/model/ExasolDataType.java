@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
 
     private TypeDesc typeDesc;
 
-    private Integer exasolTypeId;
+    private long exasolTypeId;
 
 
     private Integer length;
@@ -76,7 +76,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     public ExasolDataType(DBSObject owner, ResultSet dbResult) throws DBException {
         super(owner, JDBCUtils.safeGetString(dbResult, "TYPE_NAME"), true);
 
-        this.exasolTypeId = JDBCUtils.safeGetInt(dbResult, "TYPE_ID");
+        this.exasolTypeId = JDBCUtils.safeGetLong(dbResult, "TYPE_ID");
         this.length = JDBCUtils.safeGetInt(dbResult, "PRECISION");
         this.scale = JDBCUtils.safeGetInt(dbResult, "MINIMUM_SCALE");
 
@@ -249,7 +249,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     }
 
     @Property(viewable = false, editable = false, order = 11)
-    public Integer getExasolTypeId() {
+    public long getExasolTypeId() {
         return exasolTypeId;
     }
 

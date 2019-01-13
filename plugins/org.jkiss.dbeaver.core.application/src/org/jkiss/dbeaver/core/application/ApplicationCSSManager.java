@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,15 +33,7 @@ import java.util.List;
 class ApplicationCSSManager {
 
     private static final Log log = Log.getLog(ApplicationCSSManager.class);
-    private static final String EXTRA_CSS = "\n" +
-        ".MPartStack {\n" +
-//        "  swt-tab-renderer: null;\n" +
-        "  swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core.application/org.jkiss.dbeaver.core.application.ApplicationTabRenderer');\n" +
-        "  border-visible: false;\n" +
-//        "  swt-selected-tabs-background: #FFFFFF #ECE9D8 100%;\n" +
-//        "  swt-simple: true;\n" +
-//        "  swt-mru-visible: true;\n" +
-        "}\n";
+    private static final String TABBED_FOLDER_STYLE = "TabbedFolderList { background-color: inherit; }";
 
     static void updateApplicationCSS(Display display) {
 
@@ -58,7 +50,7 @@ class ApplicationCSSManager {
         }
 
         try {
-            Reader reader = new StringReader(EXTRA_CSS);
+            Reader reader = new StringReader(TABBED_FOLDER_STYLE);
             sheets.add(engine.parseStyleSheet(reader));
             doc.removeAllStyleSheets();
             for (StyleSheet sheet : sheets) {

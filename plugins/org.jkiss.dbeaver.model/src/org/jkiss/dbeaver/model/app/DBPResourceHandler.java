@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Resource handler
@@ -52,7 +52,7 @@ public interface DBPResourceHandler {
 
     String getResourceDescription(@NotNull IResource resource);
 
-    Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource);
+    List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource);
 
     @NotNull
     String getResourceNodeName(@NotNull IResource resource);

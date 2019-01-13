@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,16 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     public DBSObjectCache<? extends DBSObject, GenericTableForeignKey> getObjectsCache(GenericTableForeignKey object)
     {
         return object.getParentObject().getContainer().getForeignKeysCache();
+    }
+
+    @Override
+    public boolean canCreateObject(GenericTable parent) {
+        return parent.getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableForeignKey object) {
+        return object.getDataSource().getSQLDialect().supportsAlterTableConstraint();
     }
 
     @Override

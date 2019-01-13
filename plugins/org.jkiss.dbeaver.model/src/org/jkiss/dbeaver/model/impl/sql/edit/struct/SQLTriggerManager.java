@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,13 +56,13 @@ public abstract class SQLTriggerManager<OBJECT_TYPE extends DBSTrigger, CONTAINE
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
-        createOrReplaceTriggerQuery(actions, command.getObject());
+        createOrReplaceTriggerQuery(actions, command.getObject(), true);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        createOrReplaceTriggerQuery(actionList, command.getObject());
+        createOrReplaceTriggerQuery(actionList, command.getObject(), false);
     }
 
     @Override
@@ -74,7 +74,7 @@ public abstract class SQLTriggerManager<OBJECT_TYPE extends DBSTrigger, CONTAINE
         );
     }
 
-    protected abstract void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, OBJECT_TYPE trigger);
+    protected abstract void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, OBJECT_TYPE trigger, boolean create);
 
 }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
@@ -172,5 +171,34 @@ public class SQLServerUtils {
             log.debug("Error checking extended property in dictionary", e);
             return false;
         }
+    }
+
+    @NotNull
+    public static SQLServerAuthentication detectAuthSchema(DBPConnectionConfiguration connectionInfo) {
+        // Detect auth schema
+        // Now we use only PROP_AUTHENTICATION but here we support all legacy SQL Server configs
+        SQLServerAuthentication auth = isWindowsAuth(connectionInfo) ? SQLServerAuthentication.WINDOWS_INTEGRATED :
+            (isActiveDirectoryAuth(connectionInfo) ? SQLServerAuthentication.AD_PASSWORD : SQLServerAuthentication.SQL_SERVER_PASSWORD);
+
+        {
+            String authProp = connectionInfo.getProviderProperty(SQLServerConstants.PROP_AUTHENTICATION);
+            if (authProp != null) {
+                try {
+                    auth = SQLServerAuthentication.valueOf(authProp);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Bad auth schema: " + authProp);
+                }
+            }
+        }
+
+        return auth;
+    }
+
+    public static String changeCreateToAlterDDL(SQLDialect sqlDialect, String ddl) {
+        String firstKeyword = SQLUtils.getFirstKeyword(sqlDialect, ddl);
+        if ("CREATE".equalsIgnoreCase(firstKeyword)) {
+            return ddl.replaceFirst(firstKeyword, "ALTER");
+        }
+        return ddl;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.eclipse.jface.text.rules.IRule;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -28,14 +26,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider {
+public class SQLServerDialect extends JDBCSQLDialect {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
         /*{
@@ -107,12 +104,17 @@ public class SQLServerDialect extends JDBCSQLDialect implements SQLRuleProvider 
                     return "(" + scale + ')';
                 }
             }
+        } else if (dataKind == DBPDataKind.STRING) {
+            long maxLength = column.getMaxLength();
+            if (maxLength == 0) {
+                return null;
+            } else if (maxLength == -1) {
+                return "(MAX)";
+            } else {
+                return "(" + maxLength + ")";
+            }
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
-    }
-
-    @Override
-    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
 
 import java.util.ArrayList;
@@ -258,6 +260,15 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     @Override
     public void saveSettings(IDialogSettings dialogSettings) {
+    }
+
+    @Override
+    public String getSettingsSummary() {
+        StringBuilder summary = new StringBuilder();
+
+        DTUtils.addSummary(summary, processorProperties);
+
+        return summary.toString();
     }
 
 }

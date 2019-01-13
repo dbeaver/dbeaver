@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
@@ -25,7 +32,12 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -51,6 +63,8 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -102,6 +116,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 //        scrolled.setLayout(new GridLayout(1, false));
 
         propertiesGroup = new Composite(parent, SWT.NONE);
+        CSSUtils.setCSSClass(propertiesGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
         //propertiesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 //        scrolled.setContent(propertiesGroup);
 //        scrolled.setExpandHorizontal(true);
@@ -114,7 +129,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
 
         curPropertySource = input.getPropertySource();
-        refreshProperties();
+
         input.getCommandContext().addCommandListener(new DBECommandAdapter() {
             @Override
             public void onCommandChange(DBECommand command) {
@@ -145,7 +160,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         });
 
         propertiesGroup.addDisposeListener(e -> dispose());
-	}
+
+        refreshProperties();
+    }
 
     private void updateEditButtonsState() {
         if (saveButton == null || saveButton.isDisposed()) {
@@ -227,6 +244,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
 
             Composite primaryGroup = new Composite(propertiesGroup, SWT.BORDER);
+            CSSUtils.setCSSClass(primaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
             primaryGroup.setLayout(new GridLayout(2, false));
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = maxGroupWidth;
@@ -237,6 +255,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (hasSecondaryProps) {
                 secondaryGroup = new Composite(propertiesGroup, SWT.BORDER);
                 secondaryGroup.setLayout(new GridLayout(2, false));
+                CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 gd = new GridData(GridData.FILL_BOTH);
                 gd.widthHint = maxGroupWidth;
                 secondaryGroup.setLayoutData(gd);
@@ -427,7 +446,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             Control finalEditControl = editControl;
 
             if (finalEditControl instanceof Combo) {
-                ((Combo) finalEditControl).addModifyListener(e -> updatePropertyValue(prop, ((Combo) finalEditControl).getText()));
+                ((Combo) finalEditControl).addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        updatePropertyValue(prop, ((Combo) finalEditControl).getText());
+                    }
+                });
             } else if (finalEditControl instanceof Text) {
                 ((Text) finalEditControl).addModifyListener(e -> updatePropertyValue(prop, ((Text) finalEditControl).getText()));
             } else if (finalEditControl instanceof Button) {
@@ -458,6 +482,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 if (value instanceof String) {
                     value = GeneralUtils.convertString((String) value, dataType);
                 }
+                Object oldPropValue = curPropertySource.getPropertyValue(null, prop.getId());
                 curPropertySource.setPropertyValue(null, prop.getId(), value);
             }
         }

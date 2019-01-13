@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,9 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     DBPImage getIcon();
 
+    @NotNull
+    DBPImage getIconBig();
+
     @Nullable
     String getDriverClassName();
 
@@ -87,6 +90,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean isPromoted();
     boolean isInstantiable();
     boolean isInternalDriver();
+    boolean isCustom();
 
     @Nullable
     DBXTreeNode getNavigatorRoot();
@@ -127,4 +131,5 @@ public interface DBPDriver extends DBPNamedObject
     Object getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
+
 }

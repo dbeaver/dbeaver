@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,6 +202,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     public void saveSettings(IDialogSettings settings) {
         if (targetName != null) {
             settings.put("targetName", targetName);
+        } else if (target != null) {
+            settings.put("targetName", target.getName());
         }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
