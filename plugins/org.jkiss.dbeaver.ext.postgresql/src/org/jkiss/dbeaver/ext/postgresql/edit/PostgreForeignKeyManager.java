@@ -16,6 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -29,7 +34,9 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -59,14 +66,9 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
         return new UITask<PostgreTableForeignKey>() {
             @Override
             protected PostgreTableForeignKey runTask() {
-                EditForeignKeyPage editPage = new EditForeignKeyPage(
+                EditPGForeignKeyPage editPage = new EditPGForeignKeyPage(
                     "Edit foreign key",
-                    table,
-                    new DBSForeignKeyModifyRule[] {
-                        DBSForeignKeyModifyRule.NO_ACTION,
-                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                        DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT });
+                    table);
                 if (!editPage.edit()) {
                     return null;
                 }
@@ -86,6 +88,8 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
                             colIndex++,
                             (PostgreTableColumn) tableColumn.getRefColumn()));
                 }
+                foreignKey.setDeferrable(editPage.isDeferrable);
+                foreignKey.setDeferred(editPage.isDeferred);
                 return foreignKey;
             }
         }.execute();
@@ -106,7 +110,16 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
                 log.warn("Can't extract FK DDL", e);
             }
         }
-        return super.getNestedDeclaration(monitor, owner, command, options);
+        StringBuilder sql = super.getNestedDeclaration(monitor, owner, command, options);
+
+        if (fk.isDeferrable()) {
+            sql.append(" DEFERRABLE");
+        }
+        if (fk.isDeferred()) {
+            sql.append(" INITIALLY DEFERRED");
+        }
+
+        return sql;
     }
 
     @Override
@@ -121,6 +134,47 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     protected String getDropForeignKeyPattern(PostgreTableForeignKey foreignKey)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    private static class EditPGForeignKeyPage extends EditForeignKeyPage {
+
+        private boolean isDeferrable;
+        private boolean isDeferred;
+
+        public EditPGForeignKeyPage(String title, DBSTable table) {
+            super(title, table, new DBSForeignKeyModifyRule[] {
+                DBSForeignKeyModifyRule.NO_ACTION,
+                DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                DBSForeignKeyModifyRule.SET_NULL,
+                DBSForeignKeyModifyRule.SET_DEFAULT });
+        }
+
+        @Override
+        protected Composite createPageContents(Composite parent) {
+            Composite panel = super.createPageContents(parent);
+
+            final Composite defGroup = UIUtils.createComposite(panel, 2);
+            {
+                // Cascades
+                defGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                final Button deferrableCheck = UIUtils.createCheckbox(defGroup, "Deferrable", false);
+                deferrableCheck.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        isDeferrable = deferrableCheck.getSelection();
+                    }
+                });
+                final Button deferredCheck = UIUtils.createCheckbox(defGroup, "Deferred", false);
+                deferredCheck.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        isDeferred = deferredCheck.getSelection();
+                    }
+                });
+            }
+
+            return panel;
+        }
     }
 
 }

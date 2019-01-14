@@ -103,9 +103,17 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         return deferrable;
     }
 
+    public void setDeferrable(boolean deferrable) {
+        this.deferrable = deferrable;
+    }
+
     @Property(viewable = false, order = 12)
     public boolean isDeferred() {
         return deferred;
+    }
+
+    public void setDeferred(boolean deferred) {
+        this.deferred = deferred;
     }
 
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
