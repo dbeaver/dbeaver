@@ -399,7 +399,7 @@
                 </driver>
                 <driver
                     id="h2_server"
-                    label="Server"
+                    label="H2 Server"
                     icon="icons/h2_icon.png"
                     iconBig="icons/h2_icon_big.png"
                     category="H2"
@@ -419,7 +419,7 @@
                 </driver>
                 <driver
                     id="h2_embedded"
-                    label="Embedded"
+                    label="H2 Embedded"
                     icon="icons/h2_icon.png"
                     iconBig="icons/h2_icon_big.png"
                     category="H2"
@@ -457,7 +457,7 @@
                 </driver>
                 <driver
                     id="derby"
-                    label="Embedded"
+                    label="Derby Embedded"
                     icon="icons/derby_icon.png"
                     iconBig="icons/derby_icon_big.png"
                     category="Derby"
@@ -482,7 +482,7 @@
                 </driver>
                 <driver
                     id="derby_server"
-                    label="Server"
+                    label="Derby Server"
                     icon="icons/derby_icon.png"
                     iconBig="icons/derby_icon_big.png"
                     category="Derby"
@@ -515,7 +515,7 @@
                 </driver>
                 <driver
                     id="hsqldb_server"
-                    label="Server"
+                    label="HSQL Server"
                     icon="icons/hsqldb_icon.png"
                     category="HSQLDB"
                     class="org.hsqldb.jdbcDriver"
@@ -537,7 +537,7 @@
                 </driver>
                 <driver
                     id="hsqldb_embedded"
-                    label="Embedded"
+                    label="HSQL Embedded"
                     icon="icons/hsqldb_icon.png"
                     category="HSQLDB"
                     class="org.hsqldb.jdbc.JDBCDriver"
