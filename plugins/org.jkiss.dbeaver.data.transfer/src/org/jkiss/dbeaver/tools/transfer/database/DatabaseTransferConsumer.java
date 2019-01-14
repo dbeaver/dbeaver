@@ -532,7 +532,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         return targetName + " [Alter]";
                     }
                 }
-                return targetName + " [No changes]";
+                return targetName;// + " [No changes]";
             case skip:
                 return "[Skip]";
             default: return "?";
