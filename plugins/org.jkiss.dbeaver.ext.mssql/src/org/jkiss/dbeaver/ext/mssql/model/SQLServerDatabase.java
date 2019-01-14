@@ -297,7 +297,7 @@ public class SQLServerDatabase implements DBSCatalog, DBPSaveableObject, DBPRefr
             }
             final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(SQLServerSchema.class, owner, false);
             if (schemaFilters != null && schemaFilters.isEnabled()) {
-                sql.append("\nWHERE ");
+                sql.append("\n");
                 JDBCUtils.appendFilterClause(sql, schemaFilters, "s.name", true);
             }
 
