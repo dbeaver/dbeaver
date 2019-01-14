@@ -941,6 +941,8 @@
                 <driver
                     id="cloudera_impala"
                     label="Cloudera Impala"
+                    icon="icons/impala_icon.png"
+                    iconBig="icons/impala_icon_big.png"
                     class="com.cloudera.impala.jdbc41.Driver"
                     sampleURL="jdbc:impala://{host}:{port}/{database}"
                     defaultPort="21050"
