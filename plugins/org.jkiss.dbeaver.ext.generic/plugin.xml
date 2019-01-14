@@ -787,6 +787,8 @@
                 <driver
                     id="netezza"
                     label="Netezza"
+                    icon="icons/netezza_icon.png"
+                    iconBig="icons/netezza_icon_big.png"
                     class="org.netezza.Driver"
                     sampleURL="jdbc:netezza://{host}:{port}/{database}"
                     defaultPort="5480"
