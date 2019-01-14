@@ -511,6 +511,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (targetObject != null) {
             targetName = DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);
         }
+        if (settings == null) {
+            return targetName;
+        }
         DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
         if (dataMapping == null) {
             return "?";
