@@ -123,33 +123,33 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     }
 
     @Override
-    @Property(viewable = true, order = 50)
+    @Property(viewable = true, specific = true, order = 50)
     public PostgreTableBase getAssociatedEntity() {
         return refTable;
     }
 
     @Nullable
     @Override
-    @Property(id = "reference", viewable = true, order = 51)
+    @Property(id = "reference", viewable = true, specific = true, order = 51)
     public DBSEntityConstraint getReferencedConstraint() {
         return refConstraint;
     }
 
-    @Property(viewable = true, order = 54)
+    @Property(viewable = true, specific = true, order = 54)
     public MatchType getMatchType() {
         return matchType;
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 55)
+    @Property(viewable = true, specific = true, order = 55)
     public DBSForeignKeyModifyRule getDeleteRule() {
         return deleteRule;
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 56)
+    @Property(viewable = true, specific = true, order = 56)
     public DBSForeignKeyModifyRule getUpdateRule() {
         return updateRule;
     }

@@ -139,6 +139,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.multiline();
     }
 
+    public boolean isSpecific() {
+        return propInfo.specific();
+    }
+
     public boolean isOptional() {
         return propInfo.optional();
     }
