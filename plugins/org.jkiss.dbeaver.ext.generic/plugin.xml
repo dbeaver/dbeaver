@@ -319,7 +319,6 @@
                 <driver
                     id="mssql"
                     label="jTDS driver"
-                    icon="icons/sqlserver_icon.png"
                     category="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -332,7 +331,6 @@
                 <driver
                     id="mssql_ms"
                     label="Microsoft Driver"
-                    icon="icons/sqlserver_icon.png"
                     category="MS SQL Server"
                     class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                     sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -345,7 +343,6 @@
                 <driver
                     id="sybase"
                     label="Sybase"
-                    icon="icons/sybase_icon.png"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
                     defaultPort="5000"
@@ -699,25 +696,12 @@
                 <driver
                     id="vertica"
                     label="Vertica"
-                    icon="icons/vertica_icon.png"
                     class="com.vertica.jdbc.Driver"
                     sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                     defaultPort="5433"
                     webURL="http://www.vertica.com/"
                     propertiesURL="https://my.vertica.com/docs/9.0.x/HTML/index.htm#Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm"
                     description="Driver for Vertica Database">
-
-                    <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
-
-                    <file type="license" path="drivers/vertica/LICENSE.txt" bundle="drivers.vertica"/>
-                    <file type="jar" path="drivers/vertica/vertica.jar" bundle="drivers.vertica"/>
-
-                    <parameter name="query-get-active-db" value="select current_schema()"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
-                    <parameter name="active-entity-type" value="schema"/>
-
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="supports-scroll" value="false"/>
                 </driver>
 
                 <driver
