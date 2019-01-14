@@ -95,10 +95,9 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             GenericDataSource dataSource = container.getDataSource();
             try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Synase procedure list")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "select distinct so.name as proc_name,su.name as schema_name,so.loginame as login_name,sc.text as definition\n" +
-                        "from syscomments sc, sysobjects so, sysusers su\n" +
-                        "where so.id = sc.id \n" +
-                        "and so.type = 'P'\n" +
+                    "select distinct so.name as proc_name,su.name as schema_name,so.loginame as login_name\n" +
+                        "from sysobjects so, sysusers su\n" +
+                        "where so.type = 'P'\n" +
                         "and su.uid = so.uid\n" +
                         "and su.name=?"))
                 {
