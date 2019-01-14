@@ -196,6 +196,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
             driverNameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_driver_name + "*", driver.getName(), SWT.BORDER | advStyle, gd);
+            driverNameText.setEnabled(driver == null || driver.isCustom());
             driverNameText.addModifyListener(e -> onChangeProperty());
 
             UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_type_label);

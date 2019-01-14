@@ -1357,7 +1357,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         if (!CommonUtils.isEmpty(category)) {
                             curDriver.setCategory(category);
                         }
-                        curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                        if (curDriver.isCustom()) {
+                            curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                        }
                         curDriver.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
                         curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
                         curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
