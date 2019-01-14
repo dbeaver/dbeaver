@@ -54,7 +54,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
     private final List<DBPDriver> allDrivers = new ArrayList<>();;
 
     public DriverGalleryViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
-        super(new Gallery(parent, SWT.V_SCROLL | SWT.MULTI | SWT.BORDER));
+        super(new Gallery(parent, SWT.V_SCROLL | SWT.SINGLE | SWT.BORDER));
         setContentProvider(new FlatTreeContentProvider(new ListContentProvider()));
         gallery.setBackground(TextEditorUtils.getDefaultTextBackground());
         gallery.setForeground(TextEditorUtils.getDefaultTextForeground());
