@@ -159,7 +159,8 @@
                 <driver
                         id="azure"
                         label="Azure SQL Database"
-                        icon="icons/azure_sql_icon.png"
+                        icon="icons/azure_icon.png"
+                        iconBig="icons/azure_icon_big.png"
                         category="Azure"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
@@ -255,7 +256,8 @@
                 <driver
                         id="mssql_jdbc_azure"
                         label="Azure SQL Database (Deprecated)"
-                        icon="icons/azure_sql_icon.png"
+                        icon="icons/azure_icon.png"
+                        iconBig="icons/azure_icon_big.png"
                         category="Azure"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
