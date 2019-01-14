@@ -1058,7 +1058,6 @@
                         id="snowflake_generic"
                         label="Snowflake"
                         class="net.snowflake.client.jdbc.SnowflakeDriver"
-                        icon="icons/snowflake_icon.png"
                         sampleURL="jdbc:snowflake://{host}/?[db={database}]"
                         defaultPort=""
                         description="Snowflake JDBC driver"
