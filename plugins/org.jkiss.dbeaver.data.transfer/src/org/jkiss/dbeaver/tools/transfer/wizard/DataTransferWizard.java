@@ -23,8 +23,6 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -146,8 +144,8 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     @Override
     public boolean performCancel() {
-        // Save settings anyway
-        saveSettings();
+        // Save settings anyway?
+        //saveSettings();
 
         return super.performCancel();
     }
@@ -160,16 +158,13 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
         // Start consumers
         try {
-            UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        for (DataTransferPipe pipe : settings.getDataPipes()) {
-                            pipe.getConsumer().startTransfer(monitor);
-                        }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+            UIUtils.run(getContainer(), true, true, monitor -> {
+                try {
+                    for (DataTransferPipe pipe : settings.getDataPipes()) {
+                        pipe.getConsumer().startTransfer(monitor);
                     }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
