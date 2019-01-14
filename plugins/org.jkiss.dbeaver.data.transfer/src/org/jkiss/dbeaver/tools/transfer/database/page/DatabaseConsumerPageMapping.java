@@ -63,6 +63,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     private TreeViewer mappingViewer;
     private Label containerIcon;
     private Text containerName;
+    private Button autoAssignButton;
 
     private static abstract class MappingLabelProvider extends CellLabelProvider {
         @Override
@@ -169,8 +170,19 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         {
             // Control buttons
             Composite buttonsPanel = new Composite(composite, SWT.NONE);
-            buttonsPanel.setLayout(new GridLayout(4, false));
+            buttonsPanel.setLayout(new GridLayout(5, false));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            autoAssignButton = new Button(buttonsPanel, SWT.PUSH);
+            autoAssignButton.setImage(DBeaverIcons.getImage(UIIcon.ASTERISK));
+            autoAssignButton.setText(DTMessages.data_transfer_db_consumer_auto_assign);
+            autoAssignButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    autoAssignMappings();
+                }
+            });
 
             final Button mapTableButton = new Button(buttonsPanel, SWT.PUSH);
             mapTableButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
@@ -579,6 +591,34 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
     }
 
+    private void autoAssignMappings() {
+        for (TreeItem item : mappingViewer.getTree().getItems()) {
+            Object element = item.getData();
+            if (element instanceof DatabaseMappingContainer) {
+                DatabaseMappingContainer container = (DatabaseMappingContainer) element;
+                try {
+                    setMappingTarget(container, container.getSource().getName());
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Mapping error", "Error auto mapping source table '" + container.getSource().getName() + "'", e);
+                }
+            }
+        }
+        mappingViewer.refresh();
+        updatePageCompletion();
+    }
+
+    private void updateAutoAssign() {
+        boolean hasUnassigned = false;
+        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
+        for (DatabaseMappingContainer mapping : settings.getDataMappings().values()) {
+            if (mapping.getMappingType() != DatabaseMappingType.create && mapping.getMappingType() != DatabaseMappingType.existing) {
+                hasUnassigned = true;
+                break;
+            }
+        }
+        autoAssignButton.setEnabled(hasUnassigned);
+    }
+
     private void mapExistingTable(DatabaseMappingContainer mapping)
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
@@ -753,6 +793,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             setErrorMessage(null);
             return true;
         }
+    }
+
+    @Override
+    protected void updatePageCompletion() {
+        super.updatePageCompletion();
+        updateAutoAssign();
     }
 
 }
