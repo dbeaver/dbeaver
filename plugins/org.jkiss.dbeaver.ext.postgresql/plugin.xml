@@ -241,6 +241,30 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
+                <driver
+                    id="postgresql"
+                    label="PostgreSQL (Old)"
+                    icon="icons/postgresql_icon.png"
+                    iconBig="icons/postgresql_icon_big.png"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    defaultPort="5432"
+                    webURL="http://jdbc.postgresql.org/"
+                    description="PostgreSQL generic driver. Can be used for old (7.x) or non-standard PostgreSQL servers.">
+                    <replace provider="generic" driver="postgresql_generic"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]" bundle="!drivers.postgresql"/>
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db" value="select current_schema()"/>
+                    <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                    <parameter name="supports-scroll" value="true"/>
+                </driver>
 
                 <driver
                         id="postgres-greenplum-jdbc"
