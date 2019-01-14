@@ -119,7 +119,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     @Override
-    protected Control createPageContents(Composite parent) {
+    protected Composite createPageContents(Composite parent) {
         final Composite panel = UIUtils.createPlaceholder(parent, 1, 5);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
