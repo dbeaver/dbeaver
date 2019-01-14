@@ -103,13 +103,13 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
 
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_EXIT);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_ORDER_RESULTSET);
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE);
+        //createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_EDIT_CLOSE);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, rsvBundle, ResultSetPreferences.CONFIRM_RS_FETCH_ALL);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_general_actions, coreBundle, DBeaverPreferences.CONFIRM_VERSION_CHECK);
 
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
+        //createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_DELETE);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REJECT);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_ENTITY_REVERT);
@@ -118,7 +118,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL);
         createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, sqlBundle, SQLPreferenceConstants.CONFIRM_RUNNING_QUERY_CLOSE);
 
-        createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_EDITOR_CLOSE);
+        //createConfirmCheckbox(CoreMessages.pref_page_confirmations_group_object_editor, navigatorBundle, NavigatorPreferences.CONFIRM_EDITOR_CLOSE);
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(confirmTable, true));
 

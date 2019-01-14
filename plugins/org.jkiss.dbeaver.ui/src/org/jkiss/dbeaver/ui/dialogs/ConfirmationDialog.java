@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -41,6 +43,8 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     public static final String RES_KEY_TOGGLE_MESSAGE = "toggleMessage"; //$NON-NLS-1$
     public static final String RES_CONFIRM_PREFIX = "confirm_"; //$NON-NLS-1$
 
+    private boolean hideToggle;
+
     public ConfirmationDialog(
         Shell parentShell,
         String dialogTitle,
@@ -53,6 +57,16 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         boolean toggleState)
     {
         super(parentShell, dialogTitle, image, message, dialogImageType, dialogButtonLabels, defaultIndex, toggleMessage, toggleState);
+        this.hideToggle = toggleMessage == null;
+    }
+
+    @Override
+    protected Control createDialogArea(Composite parent) {
+        Control dialogArea = super.createDialogArea(parent);
+        if (hideToggle) {
+            getToggleButton().setVisible(false);
+        }
+        return dialogArea;
     }
 
     public static int open(
@@ -66,17 +80,19 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         String key)
     {
         DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
-        if (ConfirmationDialog.ALWAYS.equals(prefStore.getString(key))) {
-            if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
-                return IDialogConstants.YES_ID;
-            } else {
-                return IDialogConstants.OK_ID;
-            }
-        } else if (ConfirmationDialog.NEVER.equals(prefStore.getString(key))) {
-            if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
-                return IDialogConstants.NO_ID;
-            } else {
-                return IDialogConstants.CANCEL_ID;
+        if (toggleMessage != null) {
+            if (ConfirmationDialog.ALWAYS.equals(prefStore.getString(key))) {
+                if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
+                    return IDialogConstants.YES_ID;
+                } else {
+                    return IDialogConstants.OK_ID;
+                }
+            } else if (ConfirmationDialog.NEVER.equals(prefStore.getString(key))) {
+                if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
+                    return IDialogConstants.NO_ID;
+                } else {
+                    return IDialogConstants.CANCEL_ID;
+                }
             }
         }
         ConfirmationDialog dialog = new ConfirmationDialog(
@@ -163,13 +179,20 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         String toggleKey = getResourceKey(id, RES_KEY_TOGGLE_MESSAGE);
         String prefKey = PREF_KEY_PREFIX + id;
 
+        String toggleMessage;
+        try {
+            toggleMessage = bundle.getString(toggleKey);
+        } catch (Exception e) {
+            toggleMessage = null;
+        }
+
         return open(
             type,
             imageType,
             shell,
             UIUtils.formatMessage(bundle.getString(titleKey), args),
             UIUtils.formatMessage(bundle.getString(messageKey), args),
-            UIUtils.formatMessage(bundle.getString(toggleKey), args),
+            toggleMessage == null ? null : UIUtils.formatMessage(toggleMessage, args),
             false,
             prefKey);
     }
