@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+
 import java.util.Map;
 
 /**
@@ -24,16 +27,23 @@ import java.util.Map;
 public class DTUtils {
 
     public static void addSummary(StringBuilder summary, String option, Object value) {
-        summary.append(option).append(": ").append(value).append("\n");
+        summary.append("\t").append(option).append(": ").append(value).append("\n");
     }
 
     public static void addSummary(StringBuilder summary, String option, boolean value) {
-        summary.append(option).append(": ").append(value ? "Yes" : "No").append("\n");
+        summary.append("\t").append(option).append(": ").append(value ? "Yes" : "No").append("\n");
     }
 
-    public static void addSummary(StringBuilder summary, Map<?, ?> props) {
-        for (Map.Entry<?,?> entry : props.entrySet()) {
-            addSummary(summary, entry.getKey().toString(), entry.getValue());
+    public static void addSummary(StringBuilder summary, DataTransferProcessorDescriptor processor, Map<?, ?> props) {
+        summary.append(processor.getName()).append(" settings:\n");
+        for (DBPPropertyDescriptor prop : processor.getProperties()) {
+            Object propValue = props.get(prop.getId());
+            if (propValue == null) {
+                propValue = prop.getDefaultValue();
+            }
+            if (propValue != null) {
+                addSummary(summary, prop.getDisplayName(), propValue);
+            }
         }
     }
 

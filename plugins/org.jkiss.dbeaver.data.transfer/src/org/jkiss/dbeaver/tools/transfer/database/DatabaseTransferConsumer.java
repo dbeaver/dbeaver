@@ -20,6 +20,7 @@ import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
@@ -506,25 +507,38 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public String getObjectName()
     {
+        String targetName = null;
         if (targetObject != null) {
-            return DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);
+            targetName = DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);
         }
         DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
         if (dataMapping == null) {
             return "?";
         }
 
+        if (targetName == null) {
+            targetName = dataMapping.getTargetName();
+        }
+
         switch (dataMapping.getMappingType()) {
-            case create: return dataMapping.getTargetName() + " [Create]";
-            case existing: return dataMapping.getTargetName() + " [Insert]";
-            case skip: return "[Skip]";
+            case create:
+                return targetName + " [Create]";
+            case existing:
+                for (DatabaseMappingAttribute attr : dataMapping.getAttributeMappings(new VoidProgressMonitor())) {
+                    if (attr.getMappingType() == DatabaseMappingType.create) {
+                        return targetName + " [Alter]";
+                    }
+                }
+                return targetName + " [No changes]";
+            case skip:
+                return "[Skip]";
             default: return "?";
         }
     }
 
     @Override
     public DBPImage getObjectIcon() {
-        if (targetObject != null) {
+        if (targetObject instanceof DBPImageProvider) {
             return DBValueFormatting.getObjectImage(targetObject);
         }
         return DBIcon.TREE_TABLE;

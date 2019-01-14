@@ -25,10 +25,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -177,26 +178,32 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             }
         }
 
-        if (producerSettings != null) {
-            sourceSettingsText.setText(CommonUtils.notEmpty(producerSettings.getSettingsSummary()));
-        } else {
-            sourceSettingsText.setText("No source settings");
-        }
-
-        if (consumerSettings != null) {
-            StringBuilder consumerSummary = new StringBuilder();
-            consumerSummary.append(CommonUtils.notEmpty(consumerSettings.getSettingsSummary()));
-            if (settings.getProcessor() != null) {
-                DTUtils.addSummary(consumerSummary, settings.getProcessorProperties());
-            }
-            targetSettingsText.setText(consumerSummary.toString());
-        } else {
-            targetSettingsText.setText("No target settings");
-        }
+        printSummary(sourceSettingsText,
+            settings.getProducer(),
+            producerSettings,
+            settings.isProducerProcessor() ? settings.getProcessor() : null);
+        printSummary(targetSettingsText,
+            settings.getConsumer(),
+            consumerSettings,
+            settings.isProducerProcessor() ? null : settings.getProcessor());
 
         activated = true;
         UIUtils.packColumns(resultTable, true);
         updatePageCompletion();
+    }
+
+    private void printSummary(Text text, DataTransferNodeDescriptor node, IDataTransferSettings settings, DataTransferProcessorDescriptor processor) {
+        StringBuilder summary = new StringBuilder();
+        if (settings != null) {
+            if (node != null) {
+                summary.append(node.getName()).append(" settings:\n");
+            }
+            summary.append(CommonUtils.notEmpty(settings.getSettingsSummary()));
+        }
+        if (processor != null) {
+            DTUtils.addSummary(summary, processor, getWizard().getSettings().getProcessorProperties());
+        }
+        text.setText(summary.toString());
     }
 
     public boolean isActivated()
