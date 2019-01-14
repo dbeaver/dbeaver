@@ -16,13 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
@@ -195,6 +188,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             // Prepare property lists
             List<DBPPropertyDescriptor> primaryProps = new ArrayList<>();
             List<DBPPropertyDescriptor> secondaryProps = new ArrayList<>();
+            List<DBPPropertyDescriptor> specificProps = new ArrayList<>();
 
             if (isEditableObject()) {
                 for (DBPPropertyDescriptor prop : allProps) {
@@ -203,7 +197,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                         prop.isEditable(curPropertySource.getEditableValue())) {
                         primaryProps.add(prop);
                     } else {
-                        secondaryProps.add(prop);
+                        if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isSpecific()) {
+                            specificProps.add(prop);
+                        } else {
+                            secondaryProps.add(prop);
+                        }
                     }
                 }
                 if (primaryProps.isEmpty()) {
@@ -217,9 +215,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             // Create edit panels
             boolean hasEditButtons = false;//isEditableObject();
             boolean hasSecondaryProps = !secondaryProps.isEmpty();
+            boolean hasSpecificProps = !specificProps.isEmpty();
             int colCount = 1;
             if (hasEditButtons) colCount++;
             if (hasSecondaryProps) colCount++;
+            if (hasSpecificProps) colCount++;
             GridLayout propsLayout = new GridLayout(colCount, true);
             propertiesGroup.setLayout(propsLayout);
 
@@ -254,6 +254,16 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 gd = new GridData(GridData.FILL_BOTH);
                 gd.widthHint = maxGroupWidth;
                 secondaryGroup.setLayoutData(gd);
+            }
+
+            Composite specificGroup = null;
+            if (hasSpecificProps) {
+                specificGroup = new Composite(propertiesGroup, SWT.BORDER);
+                specificGroup.setLayout(new GridLayout(2, false));
+                CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                gd = new GridData(GridData.FILL_BOTH);
+                gd.widthHint = maxGroupWidth;
+                specificGroup.setLayoutData(gd);
             }
 
             if (hasEditButtons) {
@@ -304,6 +314,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 if (secondaryGroup != null) {
                     for (DBPPropertyDescriptor secondaryProp : secondaryProps) {
                         createPropertyEditor(secondaryGroup, secondaryProp);
+                    }
+                }
+                if (specificGroup != null) {
+                    for (DBPPropertyDescriptor specProps : specificProps) {
+                        createPropertyEditor(specificGroup, specProps);
                     }
                 }
             } finally {

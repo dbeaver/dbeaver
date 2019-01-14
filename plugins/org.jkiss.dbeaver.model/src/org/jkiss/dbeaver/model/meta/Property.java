@@ -86,6 +86,11 @@ public @interface Property
     boolean multiline() default false;
 
     /**
+     * Specific properties ae rendered separate from others
+     */
+    boolean specific() default false;
+
+    /**
      * Optional property. Won't be rendered at all if value is null.
      */
     boolean optional() default false;
