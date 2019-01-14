@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -42,6 +43,25 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 {
     private static final Log log = Log.getLog(PostgreTableForeignKey.class);
 
+    public enum MatchType implements DBPNamedObject {
+        f("FULL"),
+        p("PARTIAL"),
+        s("SIMPLE"),
+        u("UNKNOWN");
+
+        private final String title;
+
+        MatchType(String title) {
+            this.title = title;
+        }
+
+        @Override
+        public String getName() {
+            return title;
+        }
+    }
+
+    private MatchType matchType;
     private DBSForeignKeyModifyRule updateRule;
     private DBSForeignKeyModifyRule deleteRule;
     private DBSEntityConstraint refConstraint;
@@ -54,8 +74,13 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         @NotNull JDBCResultSet resultSet) throws DBException
     {
         super(table, name, DBSEntityConstraintType.FOREIGN_KEY, resultSet);
-        updateRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confupdtype"));
-        deleteRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confdeltype"));
+        try {
+            this.matchType = MatchType.valueOf(JDBCUtils.safeGetString(resultSet, "confmatchtype"));
+        } catch (Throwable e) {
+            log.debug("Error reading FK match type: " + e.getMessage());
+        }
+        this.updateRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confupdtype"));
+        this.deleteRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confdeltype"));
 
         final DBRProgressMonitor monitor = resultSet.getSession().getProgressMonitor();
         final long refSchemaId = JDBCUtils.safeGetLong(resultSet, "refnamespace");
@@ -78,6 +103,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         super(table, null, DBSEntityConstraintType.FOREIGN_KEY);
         this.refConstraint = refConstraint;
         this.refTable = (PostgreTableBase) refConstraint.getParentObject();
+        this.matchType = MatchType.s;
         this.updateRule = updateRule;
         this.deleteRule = deleteRule;
     }
@@ -107,6 +133,11 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     @Property(id = "reference", viewable = true, order = 51)
     public DBSEntityConstraint getReferencedConstraint() {
         return refConstraint;
+    }
+
+    @Property(viewable = true, order = 54)
+    public MatchType getMatchType() {
+        return matchType;
     }
 
     @NotNull
