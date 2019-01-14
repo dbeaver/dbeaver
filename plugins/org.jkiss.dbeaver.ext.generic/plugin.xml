@@ -480,7 +480,8 @@
                 <driver
                     id="derby_server"
                     label="Server"
-                    icon="icons/apache_icon.png"
+                    icon="icons/derby_icon.png"
+                    iconBig="icons/derby_icon_big.png"
                     category="Derby"
                     class="org.apache.derby.jdbc.ClientDriver"
                     sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
@@ -890,6 +891,7 @@
                     id="apache_hive2"
                     label="Apache Hive"
                     icon="icons/hive_icon.png"
+                    iconBig="icons/hive_icon_big.png"
                     class="org.apache.hive.jdbc.HiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
