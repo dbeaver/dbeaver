@@ -217,6 +217,7 @@
                     id="postgres-jdbc"
                     label="PostgreSQL"
                     icon="icons/postgresql_icon.png"
+                    iconBig="icons/postgresql_icon_big.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="false"
