@@ -1030,6 +1030,7 @@
                     id="orientdb_jdbc"
                     label="OrientDB"
                     icon="icons/orientdb_icon.png"
+                    iconBig="icons/orientdb_icon_big.png"
                     class="com.orientechnologies.orient.jdbc.OrientJdbcDriver"
                     sampleURL="jdbc:orient:remote:{host}/{database}"
                     defaultPort=""
