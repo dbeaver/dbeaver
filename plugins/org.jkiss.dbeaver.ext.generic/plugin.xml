@@ -455,7 +455,8 @@
                 <driver
                     id="derby"
                     label="Embedded"
-                    icon="icons/apache_icon.png"
+                    icon="icons/derby_icon.png"
+                    iconBig="icons/derby_icon_big.png"
                     category="Derby"
                     class="org.apache.derby.jdbc.EmbeddedDriver"
                     sampleURL="jdbc:derby:{folder}"
