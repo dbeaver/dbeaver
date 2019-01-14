@@ -907,6 +907,8 @@
                 <driver
                     id="spark_hive"
                     label="Spark Hive"
+                    icon="icons/spark_hive_icon.png"
+                    iconBig="icons/spark_hive_icon_big.png"
                     class="org.apache.hive.jdbc.HiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
