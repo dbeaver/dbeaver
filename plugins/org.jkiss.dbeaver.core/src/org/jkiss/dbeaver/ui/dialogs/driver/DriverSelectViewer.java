@@ -76,6 +76,7 @@ public class DriverSelectViewer extends Viewer {
     private final Object site;
     private final List<DataSourceProviderDescriptor> providers;
     private final boolean expandRecent;
+    private final boolean forceClassic;
 
     private final Composite composite;
     private StructuredViewer selectorViewer;
@@ -111,9 +112,14 @@ public class DriverSelectViewer extends Viewer {
     }
 
     public DriverSelectViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
+        this(parent, site, providers, expandRecent, false);
+    }
+
+    public DriverSelectViewer(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent, boolean forceClassic) {
         this.site = site;
         this.providers = providers;
         this.expandRecent = expandRecent;
+        this.forceClassic = forceClassic;
 
         composite = new Composite(parent, SWT.NONE);
         if (parent.getLayout() instanceof GridLayout) {
@@ -190,15 +196,17 @@ public class DriverSelectViewer extends Viewer {
             activeImage.dispose();
         });
 
-        switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
-        switchItem.setText("Toggle view");
-        switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-        switchItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                switchSelectorControl();
-            }
-        });
+        if (!forceClassic) {
+            switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
+            switchItem.setText("Toggle view");
+            switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+            switchItem.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    switchSelectorControl();
+                }
+            });
+        }
         switcherToolbar.setBackground(filterText.getBackground());
     }
 
@@ -220,9 +228,11 @@ public class DriverSelectViewer extends Viewer {
 
     private void createSelectorControl() {
 
-        if (getCurrentSelectorViewType() == SelectorViewType.tree) {
-            switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-            switchItem.setSelection(true);
+        if (forceClassic || getCurrentSelectorViewType() == SelectorViewType.tree) {
+            if (!forceClassic) {
+                switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+                switchItem.setSelection(true);
+            }
 
             selectorViewer = new DriverTreeViewer(selectorComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
             selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -367,7 +377,8 @@ public class DriverSelectViewer extends Viewer {
         protected boolean isLeafMatch(Viewer viewer, Object element) {
             if (element instanceof DriverDescriptor) {
                 return wordMatches(((DriverDescriptor) element).getName()) ||
-                    wordMatches(((DriverDescriptor) element).getDescription());
+                    wordMatches(((DriverDescriptor) element).getDescription()) ||
+                    wordMatches(((DriverDescriptor) element).getCategory());
             }
             return super.isLeafMatch(viewer, element);
         }
