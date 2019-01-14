@@ -266,8 +266,6 @@ public class StreamProducerSettings implements IDataTransferSettings {
     public String getSettingsSummary() {
         StringBuilder summary = new StringBuilder();
 
-        DTUtils.addSummary(summary, processorProperties);
-
         return summary.toString();
     }
 

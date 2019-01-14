@@ -749,7 +749,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     {
         List<DBXTreeNode> childMetas = useMeta == null ? getMeta().getChildren(this) : Collections.singletonList(useMeta);
         if (CommonUtils.isEmpty(childMetas)) {
-            return null;
+            return Collections.emptyList();
         } else {
             List<Class<?>> result = new ArrayList<>();
             for (DBXTreeNode childMeta : childMetas) {

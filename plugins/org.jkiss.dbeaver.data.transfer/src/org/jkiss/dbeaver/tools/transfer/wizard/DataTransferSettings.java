@@ -68,6 +68,7 @@ public class DataTransferSettings {
 
     private DataTransferProcessorDescriptor processor;
     private Map<DataTransferProcessorDescriptor, Map<Object, Object>> processorPropsHistory = new HashMap<>();
+    private boolean producerProcessor;
 
     private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<>();
     private List<DBSObject> initObjects = new ArrayList<>();
@@ -285,6 +286,10 @@ public class DataTransferSettings {
         return processor;
     }
 
+    public boolean isProducerProcessor() {
+        return producerProcessor;
+    }
+
     private void selectProducer(DataTransferNodeDescriptor producer) {
         this.producer = producer;
     }
@@ -292,6 +297,7 @@ public class DataTransferSettings {
     void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor, boolean rewrite) {
         this.consumer = consumer;
         this.processor = processor;
+        this.producerProcessor = false;
         if (consumer != null && processor != null) {
             if (!processorPropsHistory.containsKey(processor)) {
                 processorPropsHistory.put(processor, new HashMap<>());
@@ -328,6 +334,7 @@ public class DataTransferSettings {
         this.producer = producer;
         this.processor = processor;
         if (producer != null && processor != null) {
+            this.producerProcessor = true;
             if (!processorPropsHistory.containsKey(processor)) {
                 processorPropsHistory.put(processor, new HashMap<>());
             }
