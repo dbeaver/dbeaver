@@ -20,7 +20,8 @@
                 <driver
                         id="aws_athena_jdbc_simba"
                         label="Athena"
-                        icon="icons/aws_athena.png"
+                        icon="icons/athena_icon.png"
+                        iconBig="icons/athena_icon_big.png"
                         class="com.simba.athena.jdbc.Driver"
                         sampleURL="jdbc:athena://AWSRegion=region;"
                         defaultPort=""
