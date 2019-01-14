@@ -112,7 +112,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            treeControl = new DriverSelectViewer(group, this, enabledProviders, false);
+            treeControl = new DriverSelectViewer(group, this, enabledProviders, false, true);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 300;
