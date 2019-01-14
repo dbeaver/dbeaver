@@ -587,52 +587,21 @@
                 <driver
                     id="firebird_jaybird"
                     label="Firebird 2.x"
-                    icon="icons/firebird_icon.png"
                     class="org.firebirdsql.jdbc.FBDriver"
                     sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                     defaultPort="3050"
                     webURL=""
                     description="Firebird 2.x JayBird driver">
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[2.2.13]" bundle="!drivers.firebird"/>
-
-                    <file type="license" path="drivers/firebird/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird/jaybird-full.jar" bundle="drivers.firebird"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird.dll" bundle="drivers.firebird"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird_x64.dll" bundle="drivers.firebird"/>
-                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird.so" bundle="drivers.firebird"/>
-                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird_x64.so" bundle="drivers.firebird"/>
-
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
-                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <driver
                     id="firebird_jaybird3"
                     label="Firebird"
-                    icon="icons/firebird_icon.png"
                     class="org.firebirdsql.jdbc.FBDriver"
                     sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
                     <replace provider="generic" driver="firebird_jaybird"/>
-
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[3.0.3]" bundle="!drivers.firebird"/>
-
-                    <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird.dll" bundle="drivers.firebird"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird_x64.dll" bundle="drivers.firebird"/>
-                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird.so" bundle="drivers.firebird"/>
-                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird_x64.so" bundle="drivers.firebird"/>
-
-                    <property name="encoding" value="UTF8"/>
-
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
-                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <driver
                     id="sqlite_jdbc"
