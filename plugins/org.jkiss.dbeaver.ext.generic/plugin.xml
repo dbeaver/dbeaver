@@ -169,7 +169,6 @@
                 <driver
                     id="postgresql"
                     label="PostgreSQL (Old)"
-                    icon="icons/postgresql_icon.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
@@ -230,7 +229,9 @@
                 </driver>
                 <driver
                     id="db2"
-                    label="DB2"
+                    label="DB2 LUW"
+                    icon="icons/db2_icon.png"
+                    iconBig="icons/db2_icon_big.png"
                     category="DB2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
@@ -257,7 +258,9 @@
 
                 <driver
                         id="db2_luw_old"
-                        label="DB2 LUW 8.x"
+                        label="DB2 LUW (Old 8.x)"
+                        icon="icons/db2_icon.png"
+                        iconBig="icons/db2_icon_big.png"
                         category="DB2"
                         class="com.ibm.db2.jcc.DB2Driver"
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
@@ -299,6 +302,8 @@
                 <driver
                     id="db2_iseries"
                     label="DB2 iSeries/AS 400"
+                    icon="icons/db2_icon.png"
+                    iconBig="icons/db2_icon_big.png"
                     category="DB2"
                     class="com.ibm.as400.access.AS400JDBCDriver"
                     sampleURL="jdbc:as400://{host};[libraries={database};]"
