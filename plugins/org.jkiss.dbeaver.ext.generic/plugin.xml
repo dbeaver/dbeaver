@@ -873,6 +873,8 @@
                 <driver
                     id="snappydata_store_client"
                     label="SnappyData"
+                    icon="icons/snappy_icon.png"
+                    iconBig="icons/snappy_icon_big.png"
                     class="io.snappydata.jdbc.ClientDriver"
                     sampleURL="jdbc:snappydata://{host}[:{port}]/"
                     defaultPort="1528"
