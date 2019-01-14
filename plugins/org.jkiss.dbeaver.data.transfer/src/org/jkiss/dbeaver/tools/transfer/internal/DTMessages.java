@@ -98,6 +98,7 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_settings_column_mapping_type;
 	public static String data_transfer_db_consumer_target_container;
 	public static String data_transfer_db_consumer_choose_container;
+	public static String data_transfer_db_consumer_auto_assign;
 	public static String data_transfer_db_consumer_existing_table;
 	public static String data_transfer_db_consumer_new_table;
 	public static String data_transfer_db_consumer_column_mappings;
