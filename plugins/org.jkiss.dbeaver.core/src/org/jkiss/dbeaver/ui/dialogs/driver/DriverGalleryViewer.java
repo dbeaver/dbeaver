@@ -190,8 +190,8 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             int ub1 = DriverUtils.getUsedBy(o1, allDataSources).size();
             int ub2 = DriverUtils.getUsedBy(o2, allDataSources).size();
             if (ub1 == ub2) {
-                if (o1.isPromoted()) return 1;
-                else if (o2.isPromoted()) return -1;
+                if (o1.isPromoted()) return -1;
+                else if (o2.isPromoted()) return 1;
                 else return o1.getName().compareTo(o2.getName());
             } else {
                 return ub2 - ub1;

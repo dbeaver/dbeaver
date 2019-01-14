@@ -36,6 +36,7 @@
                         id="greenplum-jdbc"
                         label="Greenplum"
                         icon="icons/greenplum_icon.png"
+                        iconBig="icons/greenplum_icon_big.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         useURL="false"
