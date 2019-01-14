@@ -32,12 +32,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -519,14 +514,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         Class<?> propType = property.getDataType();
         if (isTextPropertyType(propType)) {
             if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
-                Text editor = UIUtils.createLabelText(
-                    parent,
-                    property.getDisplayName(),
-                    objectValueToString(value),
-                    SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
-                GridData gd = new GridData(GridData.FILL_BOTH);
-                gd.heightHint = UIUtils.getFontHeight(editor) * 4;
-                editor.setLayoutData(gd);
+                Label label = UIUtils.createControlLabel(parent, property.getDisplayName());
+                label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+                Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                editor.setText(objectValueToString(value));
+                editor.setLayoutData(new GridData(GridData.FILL_BOTH));
                 return editor;
             } else {
                 Text text = UIUtils.createLabelText(
