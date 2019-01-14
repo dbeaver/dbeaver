@@ -47,6 +47,8 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
     private String constrDDL;
     private long indexId;
     private boolean isLocal;
+    private boolean deferrable;
+    private boolean deferred;
 
     public PostgreTableConstraintBase(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
         super(table, name, null, constraintType, true);
@@ -57,6 +59,8 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
             !getDataSource().getServerType().supportsInheritance() ||
             this instanceof PostgreTableInheritance ||
             JDBCUtils.safeGetBoolean(resultSet, "conislocal", true);
+        this.deferrable = JDBCUtils.safeGetBoolean(resultSet, "condeferrable");
+        this.deferred = JDBCUtils.safeGetBoolean(resultSet, "condeferred");
 
         this.description = JDBCUtils.safeGetString(resultSet, "description");
     }
@@ -88,12 +92,23 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         return getParentObject().getDatabase();
     }
 
+    @Property(viewable = false, order = 10)
     @Override
     public long getObjectId() {
         return oid;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(viewable = false, order = 11)
+    public boolean isDeferrable() {
+        return deferrable;
+    }
+
+    @Property(viewable = false, order = 12)
+    public boolean isDeferred() {
+        return deferred;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Nullable
     @Override
     public String getDescription()
