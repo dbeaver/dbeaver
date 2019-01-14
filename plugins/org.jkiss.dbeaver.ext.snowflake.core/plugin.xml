@@ -25,6 +25,7 @@
                         label="Snowflake"
                         class="net.snowflake.client.jdbc.SnowflakeDriver"
                         icon="icons/snowflake_icon.png"
+                        iconBig="icons/snowflake_icon_big.png"
                         sampleURL="jdbc:snowflake://{host}[:port]/?[db={database}]"
                         defaultPort="443"
                         description="Snowflake JDBC driver"
