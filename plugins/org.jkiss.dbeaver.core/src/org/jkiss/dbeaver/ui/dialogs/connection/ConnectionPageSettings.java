@@ -34,6 +34,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -276,7 +277,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public DriverDescriptor getDriver()
+    public DBPDriver getDriver()
     {
         return wizard.getSelectedDriver();
     }
@@ -300,7 +301,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public boolean openDriverEditor()
     {
-        DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), this.getDriver());
+        DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), (DriverDescriptor) this.getDriver());
         return dialog.open() == IDialogConstants.OK_ID;
     }
 

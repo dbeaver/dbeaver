@@ -148,7 +148,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
         if (GROUP_ALL.equals(group.getData())) {
             drivers = this.allDrivers;
         } else if (GROUP_RECENT.equals(group.getData())) {
-            drivers = getRecentDrivers(allDataSources, 6);
+            drivers = DriverUtils.getRecentDrivers(allDrivers, 6);
         } else {
             drivers = Collections.emptyList();
         }
@@ -178,33 +178,6 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             }
             item.setData(driver);
         }
-    }
-
-    private List<DBPDriver> getRecentDrivers(List<DBPDataSourceContainer> allDataSources, int total) {
-        Map<DBPDriver, Integer> connCountMap = new HashMap<>();
-        for (DBPDriver driver : allDrivers) {
-            connCountMap.put(driver, DriverUtils.getUsedBy(driver, allDataSources).size());
-        }
-        List<DBPDriver> recentDrivers = new ArrayList<>(allDrivers);
-        try {
-            recentDrivers.sort((o1, o2) -> {
-                int ub1 = DriverUtils.getUsedBy(o1, allDataSources).size();
-                int ub2 = DriverUtils.getUsedBy(o2, allDataSources).size();
-                if (ub1 == ub2) {
-                    if (o1.isPromoted()) return -1;
-                    else if (o2.isPromoted()) return 1;
-                    else return o1.getName().compareTo(o2.getName());
-                } else {
-                    return ub2 - ub1;
-                }
-            });
-        } catch (Throwable e) {
-            // ignore
-        }
-        if (recentDrivers.size() > total) {
-            return recentDrivers.subList(0, total);
-        }
-        return recentDrivers;
     }
 
     public Control getControl() {

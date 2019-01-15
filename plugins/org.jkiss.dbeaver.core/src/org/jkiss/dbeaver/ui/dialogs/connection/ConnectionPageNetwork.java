@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -138,7 +139,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     @Override
     public void activatePage() {
         DataSourceDescriptor dataSource = wizard.getPageSettings().getActiveDataSource();
-        DriverDescriptor driver = wizard.getSelectedDriver();
+        DBPDriver driver = wizard.getSelectedDriver();
         NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
 
         if (prevDataSource == null || prevDataSource != dataSource) {

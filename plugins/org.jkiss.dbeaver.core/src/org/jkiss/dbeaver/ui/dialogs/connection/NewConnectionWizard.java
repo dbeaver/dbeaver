@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -39,6 +40,7 @@ import java.util.Map;
 
 public class NewConnectionWizard extends ConnectionWizard
 {
+    private DBPDriver initialDriver;
     private IStructuredSelection selection;
     private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<>();
     private ConnectionPageDriver pageDrivers;
@@ -46,15 +48,19 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
 
-    public NewConnectionWizard()
-    {
+    public NewConnectionWizard() {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
+    }
+
+    public NewConnectionWizard(DBPDriver initialDriver) {
+        this();
+        this.initialDriver = initialDriver;
     }
 
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         return DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(
-            pageDrivers.getConnectionProject());
+            initialDriver == null ? pageDrivers.getConnectionProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject());
     }
 
     List<DataSourceProviderDescriptor> getAvailableProvides()
@@ -73,18 +79,19 @@ public class NewConnectionWizard extends ConnectionWizard
     }
 
     @Override
-    public DriverDescriptor getSelectedDriver()
+    public DBPDriver getSelectedDriver()
     {
-        return getPageDrivers().getSelectedDriver();
+        return initialDriver != null ? initialDriver : getPageDrivers().getSelectedDriver();
     }
 
     @Override
     public ConnectionPageSettings getPageSettings()
     {
-        if (pageDrivers.getSelectedDriver() == null) {
+        DriverDescriptor selectedDriver = (DriverDescriptor) getSelectedDriver();
+        if (selectedDriver == null) {
             return null;
         }
-        return this.settingsPages.get(pageDrivers.getSelectedDriver().getProviderDescriptor());
+        return this.settingsPages.get(selectedDriver.getProviderDescriptor());
     }
 
     /**
@@ -93,8 +100,10 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public void addPages()
     {
-        pageDrivers = new ConnectionPageDriver(this);
-        addPage(pageDrivers);
+        if (initialDriver == null) {
+            pageDrivers = new ConnectionPageDriver(this);
+            addPage(pageDrivers);
+        }
 
         for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
@@ -122,12 +131,21 @@ public class NewConnectionWizard extends ConnectionWizard
         }
     }
 
+    @Override
+    public IWizardPage getStartingPage() {
+        if (initialDriver == null) {
+            return super.getStartingPage();
+        } else {
+            return getPageSettings((DriverDescriptor) getSelectedDriver());
+        }
+    }
+
     @Nullable
     @Override
     public IWizardPage getNextPage(IWizardPage page)
     {
         if (page == pageDrivers) {
-            ConnectionPageSettings pageSettings = getPageSettings(pageDrivers.getSelectedDriver());
+            ConnectionPageSettings pageSettings = getPageSettings((DriverDescriptor) getSelectedDriver());
             if (pageSettings == null) {
                 return pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
             } else {
@@ -150,7 +168,7 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish()
     {
-        DriverDescriptor driver = getSelectedDriver();
+        DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
         ConnectionPageSettings pageSettings = getPageSettings();
         DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
         DBPDataSourceRegistry dataSourceRegistry = getDataSourceRegistry();

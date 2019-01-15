@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -92,7 +93,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
     abstract public DBPDataSourceRegistry getDataSourceRegistry();
 
-    abstract DriverDescriptor getSelectedDriver();
+    abstract DBPDriver getSelectedDriver();
 
     public abstract ConnectionPageSettings getPageSettings();
 
@@ -101,14 +102,14 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     @NotNull
     public DataSourceDescriptor getActiveDataSource()
     {
-        DriverDescriptor driver = getSelectedDriver();
+        DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
         DataSourceDescriptor info = infoMap.get(driver);
         if (info == null) {
             DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
             info = new DataSourceDescriptor(
                 getDataSourceRegistry(),
                 DataSourceDescriptor.generateNewId(getSelectedDriver()),
-                getSelectedDriver(),
+                driver,
                 connectionInfo);
             DBPNativeClientLocation defaultClientLocation = driver.getDefaultClientLocation();
             if (defaultClientLocation != null) {
