@@ -23,6 +23,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
@@ -36,6 +37,7 @@ public class AdvancedListItem extends Canvas {
 
     private static final Log log = Log.getLog(AdvancedListItem.class);
 
+    private String text;
     private final Image icon;
     private boolean hover;
 
@@ -43,8 +45,10 @@ public class AdvancedListItem extends Canvas {
         super(list, SWT.NONE);
 
         this.setBackground(list.getBackground());
+        this.text = text;
         this.icon = icon;
 
+/*
         GridLayout gl = new GridLayout(1, true);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -69,6 +73,7 @@ public class AdvancedListItem extends Canvas {
         Label textLabel = new Label(this, SWT.CENTER);
         textLabel.setText(text);
         textLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+*/
 
         this.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
@@ -95,15 +100,29 @@ public class AdvancedListItem extends Canvas {
         GC gc = e.gc;
         if (hover) {
             gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
-            gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
-            gc.drawLine(
-                e.x + e.width - 4, e.y,
-                e.x + e.width - 4, e.y + e.height);
+            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+            gc.fillRoundRectangle(e.x + 5, e.y + 5, e.width - 10, e.height - 10, 5, 5);
         } else {
-            gc.drawLine(
-                e.x + e.width - 4, e.y + 2,
-                e.x + e.width - 4, e.y + e.height - 4);
+            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         }
+
+        Rectangle itemBounds = getBounds();
+        Rectangle iconBounds = icon.getBounds();
+        Point imageSize = getList().getImageSize();
+
+        int imgPosX = (itemBounds.width - imageSize.x) / 2;
+        int imgPosY = e.y + 5;//(itemBounds.height - iconBounds.height) / 2 ;
+
+        gc.setAntialias(SWT.ON);
+        gc.setInterpolation(SWT.HIGH);
+        gc.drawImage(icon, 0, 0, iconBounds.width, iconBounds.height,
+            imgPosX - e.x, imgPosY - e.y, imageSize.x, imageSize.y);
+
+        Point textSize = gc.stringExtent(text);
+        if (textSize.x > itemBounds.width) textSize.x = itemBounds.width;
+
+        gc.drawText(text, (itemBounds.width - textSize.x) / 2 - e.x, e.height - 25 + e.y);
     }
 
     private AdvancedList getList() {
