@@ -21,11 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.ProductBundleRegistry;
-import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -201,6 +199,48 @@ public class DriverUtils {
             }
         }
         return usedBy;
+    }
+
+    public static List<DBPDriver> getRecentDrivers(List<DBPDriver> allDrivers, int total) {
+        List<DBPDataSourceContainer> allDataSources = DataSourceRegistry.getAllDataSources();
+
+        Map<DBPDriver, Integer> connCountMap = new HashMap<>();
+        for (DBPDriver driver : allDrivers) {
+            connCountMap.put(driver, getUsedBy(driver, allDataSources).size());
+        }
+
+        List<DBPDriver> recentDrivers = new ArrayList<>(allDrivers);
+        try {
+            recentDrivers.sort((o1, o2) -> {
+                int ub1 = getUsedBy(o1, allDataSources).size();
+                int ub2 = getUsedBy(o2, allDataSources).size();
+                if (ub1 == ub2) {
+                    if (o1.isPromoted()) return 1;
+                    else if (o2.isPromoted()) return -1;
+                    else return o1.getName().compareTo(o2.getName());
+                } else {
+                    return ub2 - ub1;
+                }
+            });
+        } catch (Throwable e) {
+            // ignore
+        }
+        if (recentDrivers.size() > total) {
+            return recentDrivers.subList(0, total);
+        }
+        return recentDrivers;
+    }
+
+    public static List<DBPDriver> getAllDrivers() {
+        List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
+
+        List<DBPDriver> allDrivers = new ArrayList<>();
+        for (DataSourceProviderDescriptor dpd : providers) {
+            allDrivers.addAll(dpd.getEnabledDrivers());
+        }
+        allDrivers.sort(Comparator.comparing(DBPNamedObject::getName));
+
+        return allDrivers;
     }
 
 }
