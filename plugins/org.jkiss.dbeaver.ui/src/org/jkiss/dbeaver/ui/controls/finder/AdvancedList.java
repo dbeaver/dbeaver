@@ -17,9 +17,18 @@
 package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
@@ -28,20 +37,38 @@ import java.util.List;
 /**
  * AdvancedList
  */
-public class AdvancedList extends Composite {
+public class AdvancedList extends Canvas {
     private static final Log log = Log.getLog(AdvancedList.class);
 
-    private Point itemSize = new Point(100, 100);
+    private Point itemSize = new Point(80, 80);
 
     private List<AdvancedListItem> items = new ArrayList<>();
 
     public AdvancedList(Composite parent, int style) {
-        super(parent, style);
+        super(parent, style | SWT.V_SCROLL);
 
+        setBackground(getDisplay().getSystemColor(SWT.COLOR_RED));
         RowLayout layout = new RowLayout(SWT.HORIZONTAL);
         layout.wrap = true;
         layout.fill = true;
         setLayout(layout);
+
+        ScrollBar verticalBar = getVerticalBar();
+        if (verticalBar != null) {
+            verticalBar.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent event) {
+                    scrollVertical();
+                }
+            });
+        }
+    }
+
+    public Point getImageSize() {
+        return itemSize;
+    }
+
+    public void setItemSize(Point itemSize) {
+        this.itemSize = itemSize;
     }
 
     void addItem(AdvancedListItem item) {
@@ -52,4 +79,27 @@ public class AdvancedList extends Composite {
         return items.toArray(new AdvancedListItem[0]);
     }
 
+    protected void scrollVertical() {
+/*
+        int areaHeight = getClientArea().height;
+
+        if (gHeight > areaHeight) {
+            // image is higher than client area
+            ScrollBar bar = getVerticalBar();
+            scroll(0, translate - bar.getSelection(), 0, 0,
+                getClientArea().width, areaHeight, false);
+            translate = bar.getSelection();
+        } else {
+            translate = 0;
+        }
+*/
+    }
+
+    void paintIcon(GC gc, int x, int y, int width, int height, Label iconLabel, Image icon) {
+        Rectangle bounds = icon.getBounds();
+
+        gc.setAntialias(SWT.ON);
+        gc.setInterpolation(SWT.HIGH);
+        gc.drawImage(icon, 0, 0, bounds.width, bounds.height, 0, 0, itemSize.x, itemSize.y);
+    }
 }

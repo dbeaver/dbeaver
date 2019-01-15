@@ -49,8 +49,10 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.finder.viewer.AdvancedListViewer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -245,7 +247,24 @@ public class DriverSelectViewer extends Viewer {
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             switchItem.setSelection(false);
 
-            selectorViewer = new DriverGalleryViewer(selectorComposite, site, providers, expandRecent);
+            selectorViewer = new AdvancedListViewer(selectorComposite, SWT.NONE);
+            selectorViewer.setContentProvider((IStructuredContentProvider) inputElement -> {
+                List<DataSourceProviderDescriptor> provs = (List<DataSourceProviderDescriptor>) inputElement;
+                return collectDrivers(provs);
+            });
+            selectorViewer.setLabelProvider(new LabelProvider() {
+                @Override
+                public Image getImage(Object element) {
+                    return DBeaverIcons.getImage(((DBPDriver)element).getIconBig());
+                }
+
+                @Override
+                public String getText(Object element) {
+                    return ((DBPDriver)element).getName();
+                }
+            });
+            selectorViewer.setInput(providers);
+            //selectorViewer = new DriverGalleryViewer(selectorComposite, site, providers, expandRecent);
             selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
             selectorViewer.getControl().addTraverseListener(e -> {
@@ -259,6 +278,17 @@ public class DriverSelectViewer extends Viewer {
                 }
             });
         }
+    }
+
+    private Object[] collectDrivers(List<DataSourceProviderDescriptor> provs) {
+        List<DBPDriver> drivers = new ArrayList<>();
+        if (provs != null) {
+            for (DataSourceProviderDescriptor provider : provs) {
+                drivers.addAll(provider.getEnabledDrivers());
+            }
+        }
+
+        return drivers.toArray(new Object[0]);
     }
 
     private void switchSelectorControl() {
