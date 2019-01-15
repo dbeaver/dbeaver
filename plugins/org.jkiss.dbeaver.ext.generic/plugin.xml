@@ -508,6 +508,8 @@
                 <driver
                     id="mimer"
                     label="Mimer SQL"
+                    icon="icons/mimer_icon.png"
+                    iconBig="icons/mimer_icon_big.png"
                     class="com.mimer.jdbc.Driver"
                     sampleURL="jdbc:mimer:tcp://{host}:{port}/{database}"
                     defaultPort="1360"
@@ -1113,7 +1115,8 @@
                 <driver
                         id="monetdb"
                         label="MonetDB"
-                        icon="icons/monetdb.png"
+                        icon="icons/monetdb_icon.png"
+                        iconBig="icons/monetdb_icon_big.png"
                         class="nl.cwi.monetdb.jdbc.MonetDriver"
                         sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
                         defaultPort="50000"
