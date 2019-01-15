@@ -335,7 +335,7 @@
 
                 <driver
                     id="mssql_ms"
-                    label="Microsoft Driver"
+                    label="SQL Server"
                     category="MS SQL Server"
                     class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                     sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
