@@ -13,14 +13,15 @@
                 id="elasticsearch"
                 parent="generic"
                 label="Elasticsearch"
-                icon="icons/elastic_search_icon.png">
+                icon="icons/elasticsearch_icon.png">
             <drivers managable="true">
 
                 <driver
                         id="elastic_search_jdbc"
                         label="Elasticsearch"
                         class="org.elasticsearch.xpack.sql.jdbc.jdbc.JdbcDriver"
-                        icon="icons/elastic_search_icon.png"
+                        icon="icons/elasticsearch_icon.png"
+                        iconBig="icons/elasticsearch_icon_big.png"
                         sampleURL="jdbc:es://{host}:{port}/"
                         defaultPort="9200"
                         description="Elasticsearch JDBC driver"
