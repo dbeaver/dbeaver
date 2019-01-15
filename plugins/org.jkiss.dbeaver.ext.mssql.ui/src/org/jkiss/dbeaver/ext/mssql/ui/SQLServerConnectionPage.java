@@ -307,9 +307,20 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             connectionInfo.setUserPassword(passwordText.getText());
         }
         if (authCombo != null) {
+            SQLServerAuthentication authSchema = authSchemas[authCombo.getSelectionIndex()];
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_AUTHENTICATION,
-                authSchemas[authCombo.getSelectionIndex()].name());
+                authSchema.name());
+
+            if (SQLServerConstants.PROVIDER_GENERIC.equals(getSite().getDriver().getProviderId())) {
+                if (authSchema == SQLServerAuthentication.WINDOWS_INTEGRATED) {
+                    connectionInfo.getProperties().put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY,
+                        String.valueOf(true));
+                } else {
+                    connectionInfo.getProperties().remove(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY);
+                }
+            }
         }
+
 /*
         if (windowsAuthenticationButton != null) {
             connectionInfo.getProperties().put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY,
