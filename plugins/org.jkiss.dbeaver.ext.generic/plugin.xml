@@ -786,6 +786,8 @@
                 <driver
                     id="nuodb"
                     label="NuoDB"
+                    icon="icons/nuodb_icon.png"
+                    iconBig="icons/nuodb_icon_big.png"
                     class="com.nuodb.jdbc.Driver"
                     sampleURL="jdbc:com.nuodb://{host}[:{port}]/[{database}]"
                     defaultPort=""
@@ -1049,6 +1051,8 @@
                 <driver
                         id="presto_jdbc"
                         label="PrestoDB"
+                        icon="icons/presto_icon.png"
+                        iconBig="icons/presto_icon_big.png"
                         class="com.facebook.presto.jdbc.PrestoDriver"
                         sampleURL="jdbc:presto://{host}:{port}/{database}"
                         defaultPort="8080"
