@@ -51,7 +51,7 @@ public class AdvancedList extends Canvas {
         RowLayout layout = new RowLayout(SWT.HORIZONTAL);
         layout.wrap = true;
         layout.fill = true;
-        layout.marginHeight = 10;
+        layout.marginHeight = 0;
         layout.spacing = 10;
         setLayout(layout);
 

@@ -287,7 +287,7 @@ public class DriverSelectViewer extends Viewer {
                 drivers.addAll(provider.getEnabledDrivers());
             }
         }
-
+        drivers.sort((o1, o2) -> { return o1.getName().compareToIgnoreCase(o2.getName()); });
         return drivers.toArray(new Object[0]);
     }
 
