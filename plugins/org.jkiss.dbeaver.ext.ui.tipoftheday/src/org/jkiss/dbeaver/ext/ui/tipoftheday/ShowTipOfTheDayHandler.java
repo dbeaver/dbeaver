@@ -55,7 +55,9 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
     private static void showTipOfTheDayDialog(List<String> tips, IWorkbenchWindow window) {
         final TipOfTheDay tipDialog = new TipOfTheDay();
         tipDialog.setDisplayShowOnStartup(true);
-        tipDialog.setShowOnStartup(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP));
+        tipDialog.setShowOnStartup(
+            CommonUtils.getBoolean(
+                DBWorkbench.getPlatform().getPreferenceStore().getString(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP), true));
 
         for (String tip : tips) {
             tipDialog.addTip(tip);
@@ -64,7 +66,7 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
         tipDialog.open(window.getShell());
 
         DBWorkbench.getPlatform().getPreferenceStore().
-            setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, tipDialog.isShowOnStartup());
+            setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, String.valueOf(tipDialog.isShowOnStartup()));
     }
 
     private static List<String> loadTips() {
