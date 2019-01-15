@@ -154,7 +154,7 @@ public class SQLServerView extends SQLServerTableBase
             if (isPersisted()) {
                 ddl = SQLServerUtils.extractSource(monitor, getDatabase(), getSchema(), getName());
             } else {
-                ddl = "CREATE VIEW " + DBUtils.getQuotedIdentifier(this) + " AS\n";
+                ddl = "CREATE VIEW " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n";
             }
         }
         return ddl;
