@@ -45,8 +45,7 @@ public class AdvancedListViewer extends StructuredViewer {
 
     public AdvancedListViewer(Composite parent, int style) {
 
-
-        scrolledComposite = new ScrolledComposite( parent, SWT.V_SCROLL | SWT.BORDER);
+        scrolledComposite = new ScrolledComposite( parent, SWT.V_SCROLL );
         if (parent.getLayout() instanceof GridLayout) {
             scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
@@ -56,6 +55,7 @@ public class AdvancedListViewer extends StructuredViewer {
         scrolledComposite.setContent(this.control);
         scrolledComposite.setExpandHorizontal( true );
         scrolledComposite.setExpandVertical( true );
+        //scrolledComposite.setAlwaysShowScrollBars(true);
         scrolledComposite.setMinSize( 10, 10 );
 
 

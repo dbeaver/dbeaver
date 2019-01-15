@@ -102,7 +102,6 @@ public class AdvancedList extends Canvas {
 
         gc.setAntialias(SWT.ON);
         gc.setInterpolation(SWT.HIGH);
-        gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         gc.drawImage(icon, 0, 0, bounds.width, bounds.height, 0, 0, itemSize.x, itemSize.y);
     }
 }
