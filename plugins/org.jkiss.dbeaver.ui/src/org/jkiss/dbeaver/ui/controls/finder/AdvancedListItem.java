@@ -43,8 +43,8 @@ public class AdvancedListItem extends Canvas {
         this.icon = icon;
 
         GridLayout gl = new GridLayout(1, true);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
         setLayout(gl);
 
         Point itemSize = list.getImageSize();
