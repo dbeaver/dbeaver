@@ -19,10 +19,13 @@ package org.jkiss.dbeaver.ui.controls.finder.viewer;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.controls.finder.AdvancedList;
@@ -38,17 +41,33 @@ public class AdvancedListViewer extends StructuredViewer {
     private static final Log log = Log.getLog(AdvancedListViewer.class);
 
     private AdvancedList control;
+    private final ScrolledComposite scrolledComposite;
 
     public AdvancedListViewer(Composite parent, int style) {
-        this.control = new AdvancedList(parent, style);
+
+
+        scrolledComposite = new ScrolledComposite( parent, SWT.V_SCROLL | SWT.BORDER);
         if (parent.getLayout() instanceof GridLayout) {
-            this.control.setLayoutData(new GridData(GridData.FILL_BOTH));
+            scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
+
+        this.control = new AdvancedList(scrolledComposite, style);
+
+        scrolledComposite.setContent(this.control);
+        scrolledComposite.setExpandHorizontal( true );
+        scrolledComposite.setExpandVertical( true );
+        scrolledComposite.setMinSize( 10, 10 );
+
+
+        scrolledComposite.addListener( SWT.Resize, event -> {
+            int width = scrolledComposite.getClientArea().width;
+            scrolledComposite.setMinSize( parent.computeSize( width, SWT.DEFAULT ) );
+        } );
     }
 
     @Override
-    public AdvancedList getControl() {
-        return control;
+    public Control getControl() {
+        return scrolledComposite;
     }
 
     @Override
@@ -82,6 +101,8 @@ public class AdvancedListViewer extends StructuredViewer {
             AdvancedListItem listItem = new AdvancedListItem(control, text, icon);
             listItem.setData(item);
         }
+
+        scrolledComposite.layout(true);
     }
 
     @Override

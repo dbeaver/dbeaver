@@ -45,12 +45,14 @@ public class AdvancedList extends Canvas {
     private List<AdvancedListItem> items = new ArrayList<>();
 
     public AdvancedList(Composite parent, int style) {
-        super(parent, style | SWT.V_SCROLL);
+        super(parent, style);
 
-        setBackground(getDisplay().getSystemColor(SWT.COLOR_RED));
+        setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         RowLayout layout = new RowLayout(SWT.HORIZONTAL);
         layout.wrap = true;
         layout.fill = true;
+        layout.marginHeight = 10;
+        layout.spacing = 10;
         setLayout(layout);
 
         ScrollBar verticalBar = getVerticalBar();
@@ -100,6 +102,7 @@ public class AdvancedList extends Canvas {
 
         gc.setAntialias(SWT.ON);
         gc.setInterpolation(SWT.HIGH);
+        gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         gc.drawImage(icon, 0, 0, bounds.width, bounds.height, 0, 0, itemSize.x, itemSize.y);
     }
 }
