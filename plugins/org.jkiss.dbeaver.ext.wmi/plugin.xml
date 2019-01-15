@@ -65,6 +65,7 @@
                     id="wmi"
                     label="WMI"
                     icon="icons/wmi_icon.png"
+                    iconBig="icons/wmi_icon_big.png"
                     description="WMI Native driver"
                     class="org.jkiss.wmi.service.WMIServiceNative"
                     customDriverLoader="true">
