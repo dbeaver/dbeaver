@@ -17,15 +17,14 @@
 package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
  * AdvancedListItem
@@ -34,17 +33,57 @@ public class AdvancedListItem extends Composite
 {
     private static final Log log = Log.getLog(AdvancedListItem.class);
 
-    public AdvancedListItem(AdvancedList list, String text, DBPImage icon) {
+    private final Image icon;
+
+    public AdvancedListItem(AdvancedList list, String text, Image icon) {
         super(list, SWT.NONE);
 
-        setLayout(new GridLayout(1, true));
+        this.icon = icon;
 
+        GridLayout gl = new GridLayout(1, true);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        setLayout(gl);
+
+        Point itemSize = list.getImageSize();
         Label iconLabel = new Label(this, SWT.NONE);
-        iconLabel.setImage(DBeaverIcons.getImage(icon));
-        iconLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        iconLabel.setSize(itemSize);
+        GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
+        gd.widthHint = itemSize.x;
+        gd.heightHint = itemSize.y;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        iconLabel.setLayoutData(gd);
+        iconLabel.addPaintListener(e -> {
+            Point size = iconLabel.getSize();
+            list.paintIcon(e.gc, e.x, e.y, size.x, size.y, iconLabel, icon);
+        });
+
         Label textLabel = new Label(this, SWT.CENTER);
         textLabel.setText(text);
         textLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
     }
 
+    private AdvancedList getList() {
+        return (AdvancedList) getParent();
+    }
+
+    @Override
+    public Point computeSize(int wHint, int hHint, boolean changed) {
+        Point imageSize = getList().getImageSize();
+        return new Point(imageSize.x + 20, imageSize.y + 20);
+        //return super.computeSize(wHint, hHint, changed);//getList().getImageSize();
+    }
+
+    private Image resize(Image image, int width, int height) {
+        Image scaled = new Image(getDisplay().getDefault(), width, height);
+        GC gc = new GC(scaled);
+        gc.setAntialias(SWT.ON);
+        gc.setInterpolation(SWT.HIGH);
+        gc.drawImage(image, 0,  0,
+            image.getBounds().width, image.getBounds().height,
+            0, 0, width, height);
+        gc.dispose();
+        return scaled;
+    }
 }

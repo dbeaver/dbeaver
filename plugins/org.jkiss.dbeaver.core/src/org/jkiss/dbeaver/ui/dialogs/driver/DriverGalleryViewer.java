@@ -186,17 +186,21 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
             connCountMap.put(driver, DriverUtils.getUsedBy(driver, allDataSources).size());
         }
         List<DBPDriver> recentDrivers = new ArrayList<>(allDrivers);
-        recentDrivers.sort((o1, o2) -> {
-            int ub1 = DriverUtils.getUsedBy(o1, allDataSources).size();
-            int ub2 = DriverUtils.getUsedBy(o2, allDataSources).size();
-            if (ub1 == ub2) {
-                if (o1.isPromoted()) return -1;
-                else if (o2.isPromoted()) return 1;
-                else return o1.getName().compareTo(o2.getName());
-            } else {
-                return ub2 - ub1;
-            }
-        });
+        try {
+            recentDrivers.sort((o1, o2) -> {
+                int ub1 = DriverUtils.getUsedBy(o1, allDataSources).size();
+                int ub2 = DriverUtils.getUsedBy(o2, allDataSources).size();
+                if (ub1 == ub2) {
+                    if (o1.isPromoted()) return -1;
+                    else if (o2.isPromoted()) return 1;
+                    else return o1.getName().compareTo(o2.getName());
+                } else {
+                    return ub2 - ub1;
+                }
+            });
+        } catch (Exception e) {
+            // ignore
+        }
         if (recentDrivers.size() > total) {
             return recentDrivers.subList(0, total);
         }
