@@ -17,13 +17,15 @@
 package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackAdapter;
+import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.Log;
 
@@ -35,21 +37,23 @@ public class AdvancedListItem extends Canvas {
     private static final Log log = Log.getLog(AdvancedListItem.class);
 
     private final Image icon;
+    private boolean hover;
 
     public AdvancedListItem(AdvancedList list, String text, Image icon) {
         super(list, SWT.NONE);
 
-        this.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        this.setBackground(list.getBackground());
         this.icon = icon;
 
         GridLayout gl = new GridLayout(1, true);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
+        gl.verticalSpacing = 0;
         setLayout(gl);
 
         Point itemSize = list.getImageSize();
         Label iconLabel = new Label(this, SWT.NONE);
-        iconLabel.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        iconLabel.setBackground(list.getBackground());
         iconLabel.setSize(itemSize);
         GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
         gd.widthHint = itemSize.x;
@@ -59,16 +63,59 @@ public class AdvancedListItem extends Canvas {
         iconLabel.setLayoutData(gd);
         iconLabel.addPaintListener(e -> {
             Point size = iconLabel.getSize();
-            list.paintIcon(e.gc, e.x, e.y, size.x, size.y, iconLabel, icon);
+            list.paintIcon(e.gc, e.x, e.y, size.x, size.y, this);
         });
 
         Label textLabel = new Label(this, SWT.CENTER);
         textLabel.setText(text);
         textLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+
+        this.addMouseTrackListener(new MouseTrackAdapter() {
+            @Override
+            public void mouseEnter(MouseEvent e) {
+                hover = true;
+                redraw();
+            }
+
+            @Override
+            public void mouseExit(MouseEvent e) {
+                hover = false;
+                redraw();
+            }
+
+            @Override
+            public void mouseHover(MouseEvent e) {
+                //redraw();
+            }
+        });
+        this.addPaintListener(this::painItem);
+    }
+
+    private void painItem(PaintEvent e) {
+        GC gc = e.gc;
+        if (hover) {
+            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
+            gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
+            gc.drawLine(
+                e.x + e.width - 4, e.y,
+                e.x + e.width - 4, e.y + e.height);
+        } else {
+            gc.drawLine(
+                e.x + e.width - 4, e.y + 2,
+                e.x + e.width - 4, e.y + e.height - 4);
+        }
     }
 
     private AdvancedList getList() {
         return (AdvancedList) getParent();
+    }
+
+    public Image getIcon() {
+        return icon;
+    }
+
+    public boolean isHover() {
+        return hover;
     }
 
     @Override
@@ -89,4 +136,5 @@ public class AdvancedListItem extends Canvas {
         gc.dispose();
         return scaled;
     }
+
 }

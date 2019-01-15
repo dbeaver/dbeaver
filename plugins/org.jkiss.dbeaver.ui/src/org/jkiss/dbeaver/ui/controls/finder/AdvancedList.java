@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
@@ -97,11 +98,16 @@ public class AdvancedList extends Canvas {
 */
     }
 
-    void paintIcon(GC gc, int x, int y, int width, int height, Label iconLabel, Image icon) {
-        Rectangle bounds = icon.getBounds();
+    void paintIcon(GC gc, int x, int y, int width, int height, AdvancedListItem item) {
+        Rectangle bounds = item.getIcon().getBounds();
 
         gc.setAntialias(SWT.ON);
         gc.setInterpolation(SWT.HIGH);
-        gc.drawImage(icon, 0, 0, bounds.width, bounds.height, 0, 0, itemSize.x, itemSize.y);
+        gc.drawImage(item.getIcon(), 0, 0, bounds.width, bounds.height, 0, 0, itemSize.x, itemSize.y);
     }
+
+    void onMouseMove(MouseEvent e, AdvancedListItem item) {
+
+    }
+
 }
