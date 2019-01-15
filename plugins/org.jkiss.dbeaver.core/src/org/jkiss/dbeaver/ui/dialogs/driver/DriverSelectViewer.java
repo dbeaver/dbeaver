@@ -247,7 +247,7 @@ public class DriverSelectViewer extends Viewer {
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             switchItem.setSelection(false);
 
-            selectorViewer = new AdvancedListViewer(selectorComposite, SWT.NONE);
+            selectorViewer = new AdvancedListViewer(selectorComposite, SWT.BORDER);
             selectorViewer.setContentProvider((IStructuredContentProvider) inputElement -> {
                 List<DataSourceProviderDescriptor> provs = (List<DataSourceProviderDescriptor>) inputElement;
                 return collectDrivers(provs);

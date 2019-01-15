@@ -37,13 +37,15 @@ public class AdvancedListItem extends Canvas {
 
     private static final Log log = Log.getLog(AdvancedListItem.class);
 
+    private final AdvancedList list;
     private String text;
     private final Image icon;
     private boolean hover;
 
     public AdvancedListItem(AdvancedList list, String text, Image icon) {
-        super(list, SWT.NONE);
+        super(list.getContainer(), SWT.NONE);
 
+        this.list = list;
         this.setBackground(list.getBackground());
         this.text = text;
         this.icon = icon;
@@ -107,11 +109,11 @@ public class AdvancedListItem extends Canvas {
             gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         }
 
-        Rectangle itemBounds = getBounds();
+        Point itemSize = getSize();
         Rectangle iconBounds = icon.getBounds();
         Point imageSize = getList().getImageSize();
 
-        int imgPosX = (itemBounds.width - imageSize.x) / 2;
+        int imgPosX = (itemSize.x - imageSize.x) / 2;
         int imgPosY = e.y + 5;//(itemBounds.height - iconBounds.height) / 2 ;
 
         gc.setAntialias(SWT.ON);
@@ -120,13 +122,13 @@ public class AdvancedListItem extends Canvas {
             imgPosX - e.x, imgPosY - e.y, imageSize.x, imageSize.y);
 
         Point textSize = gc.stringExtent(text);
-        if (textSize.x > itemBounds.width) textSize.x = itemBounds.width;
+        if (textSize.x > itemSize.x) textSize.x = itemSize.x;
 
-        gc.drawText(text, (itemBounds.width - textSize.x) / 2 - e.x, e.height - 25 + e.y);
+        gc.drawText(text, (itemSize.x - textSize.x) / 2 - e.x, e.height - 25 + e.y);
     }
 
     private AdvancedList getList() {
-        return (AdvancedList) getParent();
+        return list;
     }
 
     public Image getIcon() {
