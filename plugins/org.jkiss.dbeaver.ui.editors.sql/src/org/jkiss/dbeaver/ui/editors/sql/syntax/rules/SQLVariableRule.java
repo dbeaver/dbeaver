@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 */
 public class SQLVariableRule implements IRule {
 
-    public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{[^\\s]+\\}");
+    public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{[a-z0-9_]+\\}");
 
     private final IToken parameterToken;
 
