@@ -377,6 +377,8 @@
                 <driver
                     id="informix"
                     label="Informix"
+                    icon="icons/informix_icon.png"
+                    iconBig="icons/informix_icon_big.png"
                     class="com.informix.jdbc.IfxDriver"
                     sampleURL="jdbc:informix-sqli://{host}:{port}/{database}:INFORMIXSERVER={server}"
                     defaultPort="1533"
@@ -517,6 +519,7 @@
                     id="hsqldb_server"
                     label="HSQL Server"
                     icon="icons/hsqldb_icon.png"
+                    iconBig="icons/hsqldb_icon_big.png"
                     category="HSQLDB"
                     class="org.hsqldb.jdbcDriver"
                     sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
@@ -539,6 +542,7 @@
                     id="hsqldb_embedded"
                     label="HSQL Embedded"
                     icon="icons/hsqldb_icon.png"
+                    iconBig="icons/hsqldb_icon_big.png"
                     category="HSQLDB"
                     class="org.hsqldb.jdbc.JDBCDriver"
                     sampleURL="jdbc:hsqldb:file:{folder}"
@@ -831,6 +835,8 @@
                 <driver
                     id="gemfire_xd"
                     label="Gemfire XD"
+                    icon="icons/gemfire_icon.png"
+                    iconBig="icons/gemfire_icon_big.png"
                     class="com.pivotal.gemfirexd.jdbc.ClientDriver"
                     sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
                     defaultPort="1527"
