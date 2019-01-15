@@ -131,7 +131,7 @@
 
                 <driver
                         id="microsoft"
-                        label="Microsoft driver"
+                        label="SQL Server"
                         icon="icons/mssql_icon.png"
                         iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
@@ -158,7 +158,7 @@
 
                 <driver
                         id="azure"
-                        label="Azure SQL Database"
+                        label="Azure SQL Server"
                         icon="icons/azure_icon.png"
                         iconBig="icons/azure_icon_big.png"
                         category="Azure"
@@ -224,7 +224,7 @@
 
                 <driver
                     id="mssql_jdbc_ms"
-                    label="Microsoft Driver (Deprecated)"
+                    label="SQL Server (Deprecated)"
                     icon="icons/mssql_icon.png"
                     iconBig="icons/mssql_icon_big.png"
                     category="MS SQL Server"
@@ -239,7 +239,7 @@
 
                 <driver
                         id="mssql_jdbc_ms_new"
-                        label="Microsoft Driver (Deprecated)"
+                        label="SQL Server (Deprecated)"
                         icon="icons/mssql_icon.png"
                         iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
@@ -255,7 +255,7 @@
 
                 <driver
                         id="mssql_jdbc_azure"
-                        label="Azure SQL Database (Deprecated)"
+                        label="Azure SQL Server (Deprecated)"
                         icon="icons/azure_icon.png"
                         iconBig="icons/azure_icon_big.png"
                         category="Azure"
@@ -271,7 +271,7 @@
 
                 <driver
                         id="mssql_jdbc_legacy"
-                        label="Old driver (Microsoft)"
+                        label="SQL Server (Old driver, Microsoft)"
                         icon="icons/mssql_icon.png"
                         iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
@@ -303,7 +303,7 @@
 
                 <driver
                         id="mssql_jtds_legacy"
-                        label="Old driver (jTDS)"
+                        label="SQL Server (Old driver, jTDS)"
                         icon="icons/mssql_icon.png"
                         iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
