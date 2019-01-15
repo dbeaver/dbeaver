@@ -37,8 +37,9 @@ public class AdvancedListItem extends Canvas {
     private final Image icon;
 
     public AdvancedListItem(AdvancedList list, String text, Image icon) {
-        super(list, SWT.TRANSPARENT);
+        super(list, SWT.NONE);
 
+        this.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         this.icon = icon;
 
         GridLayout gl = new GridLayout(1, true);
