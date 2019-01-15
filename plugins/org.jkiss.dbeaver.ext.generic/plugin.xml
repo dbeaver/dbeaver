@@ -443,6 +443,8 @@
                 <driver
                     id="odbc"
                     label="ODBC"
+                    icon="icons/odbc_icon.png"
+                    iconBig="icons/odbc_icon_big.png"
                     class="sun.jdbc.odbc.JdbcOdbcDriver"
                     sampleURL="jdbc:odbc:{database}"
                     webURL="http://sun.com"
@@ -647,6 +649,8 @@
                 <driver
                     id="teradata"
                     label="Teradata"
+                    icon="icons/teradata_icon.png"
+                    iconBig="icons/teradata_icon_big.png"
                     class="com.ncr.teradata.TeraDriver"
                     sampleURL="jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}"
                     defaultPort="1025"
@@ -977,6 +981,8 @@
                 <driver
                     id="virtuoso_opensource"
                     label="Virtuoso"
+                    icon="icons/virtuoso_icon.png"
+                    iconBig="icons/virtuoso_icon_big.png"
                     class="virtuoso.jdbc4.Driver"
                     sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
                     defaultPort="1111"
