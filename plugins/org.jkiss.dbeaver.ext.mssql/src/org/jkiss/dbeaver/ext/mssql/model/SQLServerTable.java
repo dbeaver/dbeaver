@@ -126,7 +126,8 @@ public class SQLServerTable extends SQLServerTableBase
                         SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " t, " +
                         SQLServerUtils.getSystemTableName(getDatabase(), "foreign_keys") +" fk, " +
                         SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " tr\n" +
-                    "WHERE t.object_id = fk.parent_object_id AND tr.object_id=fk.referenced_object_id AND fk.referenced_object_id=?"))
+                    "WHERE t.object_id = fk.parent_object_id AND tr.object_id=fk.referenced_object_id AND fk.referenced_object_id=?\n" +
+                    "ORDER BY 1,2,3"))
             {
                 dbStat.setLong(1, getObjectId());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -186,6 +187,7 @@ public class SQLServerTable extends SQLServerTableBase
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        references = null;
         getContainer().getIndexCache().clearObjectCache(this);
         getContainer().getUniqueConstraintCache().clearObjectCache(this);
         getContainer().getForeignKeyCache().clearObjectCache(this);

@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 public class OpenSpreadsheetHandler extends AbstractHandler
 {
     @Override
