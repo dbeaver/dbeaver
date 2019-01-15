@@ -19,7 +19,7 @@
 
 <plugin>
     <extension point="org.eclipse.ui.importWizards">
-        <category id="org.jkiss.dbeaver.import_config.third-party" name="Third Party Configuration"/>
+        <category id="org.jkiss.dbeaver.import_config.third-party" name="%category.org.jkiss.dbeaver.import_config.third-party.name"/>
         <wizard
             category="org.jkiss.dbeaver.import_config.third-party"
             class="org.jkiss.dbeaver.ext.import_config.wizards.squirrel.ConfigImportWizardSquirrel"
