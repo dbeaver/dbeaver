@@ -122,7 +122,10 @@ public class SQLServerTable extends SQLServerTableBase
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this,  "Read table references")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.schema_id as schema_id,t.name as table_name,fk.name as key_name\n" +
-                    "FROM pubs.sys.tables t,pubs.sys.foreign_keys fk, pubs.sys.tables tr\n" +
+                    "FROM "+
+                        SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " t, " +
+                        SQLServerUtils.getSystemTableName(getDatabase(), "foreign_keys") +" fk, " +
+                        SQLServerUtils.getSystemTableName(getDatabase(), "tables") + " tr\n" +
                     "WHERE t.object_id = fk.parent_object_id AND tr.object_id=fk.referenced_object_id AND fk.referenced_object_id=?"))
             {
                 dbStat.setLong(1, getObjectId());
