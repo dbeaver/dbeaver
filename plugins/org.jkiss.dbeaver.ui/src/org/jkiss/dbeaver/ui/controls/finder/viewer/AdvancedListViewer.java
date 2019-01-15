@@ -41,33 +41,14 @@ public class AdvancedListViewer extends StructuredViewer {
     private static final Log log = Log.getLog(AdvancedListViewer.class);
 
     private AdvancedList control;
-    private final ScrolledComposite scrolledComposite;
 
     public AdvancedListViewer(Composite parent, int style) {
-
-        scrolledComposite = new ScrolledComposite( parent, SWT.V_SCROLL );
-        if (parent.getLayout() instanceof GridLayout) {
-            scrolledComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        }
-
-        this.control = new AdvancedList(scrolledComposite, style);
-
-        scrolledComposite.setContent(this.control);
-        scrolledComposite.setExpandHorizontal( true );
-        scrolledComposite.setExpandVertical( true );
-        //scrolledComposite.setAlwaysShowScrollBars(true);
-        scrolledComposite.setMinSize( 10, 10 );
-
-
-        scrolledComposite.addListener( SWT.Resize, event -> {
-            int width = scrolledComposite.getClientArea().width;
-            scrolledComposite.setMinSize( parent.computeSize( width, SWT.DEFAULT ) );
-        } );
+        this.control = new AdvancedList(parent, style);
     }
 
     @Override
     public Control getControl() {
-        return scrolledComposite;
+        return control;
     }
 
     @Override
@@ -102,7 +83,7 @@ public class AdvancedListViewer extends StructuredViewer {
             listItem.setData(item);
         }
 
-        scrolledComposite.layout(true);
+        control.layout(true);
     }
 
     @Override

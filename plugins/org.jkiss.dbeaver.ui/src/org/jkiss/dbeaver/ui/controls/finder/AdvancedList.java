@@ -25,6 +25,8 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
@@ -38,32 +40,48 @@ import java.util.List;
 /**
  * AdvancedList
  */
-public class AdvancedList extends Canvas {
+public class AdvancedList extends ScrolledComposite {
     private static final Log log = Log.getLog(AdvancedList.class);
 
     private Point itemSize = new Point(80, 80);
 
+    private Canvas container;
     private List<AdvancedListItem> items = new ArrayList<>();
 
     public AdvancedList(Composite parent, int style) {
-        super(parent, style);
+        super(parent, SWT.V_SCROLL);
 
-        setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        if (parent.getLayout() instanceof GridLayout) {
+            setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
+
+        this.container = new Canvas(this, style);
+
+        this.setContent(this.container);
+        this.setExpandHorizontal( true );
+        this.setExpandVertical( true );
+        //scrolledComposite.setAlwaysShowScrollBars(true);
+        this.setMinSize( 10, 10 );
+
+
+        this.addListener( SWT.Resize, event -> {
+            int width = this.getClientArea().width;
+            this.setMinSize( parent.computeSize( width, SWT.DEFAULT ) );
+        } );
+
+        this.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        this.container.setBackground(getBackground());
+
         RowLayout layout = new RowLayout(SWT.HORIZONTAL);
         layout.wrap = true;
         layout.fill = true;
         layout.marginHeight = 0;
         layout.spacing = 10;
-        setLayout(layout);
+        this.container.setLayout(layout);
+    }
 
-        ScrollBar verticalBar = getVerticalBar();
-        if (verticalBar != null) {
-            verticalBar.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent event) {
-                    scrollVertical();
-                }
-            });
-        }
+    public Canvas getContainer() {
+        return container;
     }
 
     public Point getImageSize() {
