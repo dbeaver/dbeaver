@@ -140,6 +140,14 @@ public class NewConnectionWizard extends ConnectionWizard
         }
     }
 
+    @Override
+    public IWizardPage getPreviousPage(IWizardPage page) {
+        if (initialDriver != null && page instanceof ConnectionPageSettings) {
+            return null;
+        }
+        return super.getPreviousPage(page);
+    }
+
     @Nullable
     @Override
     public IWizardPage getNextPage(IWizardPage page)
