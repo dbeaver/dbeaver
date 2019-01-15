@@ -214,6 +214,11 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return null;
     }
 
+    public SQLServerTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
+        return tableCache.getObject(monitor, this, name);
+    }
+
+
     @Association
     public Collection<SQLServerView> getViews(DBRProgressMonitor monitor) throws DBException {
         return tableCache.getTypedObjects(monitor, this, SQLServerView.class);
