@@ -198,7 +198,7 @@ public class DriverGalleryViewer extends GalleryTreeViewer {
                     return ub2 - ub1;
                 }
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             // ignore
         }
         if (recentDrivers.size() > total) {

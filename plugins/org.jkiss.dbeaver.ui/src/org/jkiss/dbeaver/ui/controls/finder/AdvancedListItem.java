@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.Log;
@@ -29,24 +30,25 @@ import org.jkiss.dbeaver.Log;
 /**
  * AdvancedListItem
  */
-public class AdvancedListItem extends Composite
-{
+public class AdvancedListItem extends Canvas {
+
     private static final Log log = Log.getLog(AdvancedListItem.class);
 
     private final Image icon;
 
     public AdvancedListItem(AdvancedList list, String text, Image icon) {
-        super(list, SWT.NONE);
+        super(list, SWT.TRANSPARENT);
 
         this.icon = icon;
 
         GridLayout gl = new GridLayout(1, true);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
+        gl.marginHeight = 10;
+        gl.marginWidth = 10;
         setLayout(gl);
 
         Point itemSize = list.getImageSize();
         Label iconLabel = new Label(this, SWT.NONE);
+        iconLabel.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         iconLabel.setSize(itemSize);
         GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
         gd.widthHint = itemSize.x;
@@ -71,7 +73,7 @@ public class AdvancedListItem extends Composite
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
         Point imageSize = getList().getImageSize();
-        return new Point(imageSize.x + 20, imageSize.y + 20);
+        return new Point(imageSize.x + 40, imageSize.y + 40);
         //return super.computeSize(wHint, hHint, changed);//getList().getImageSize();
     }
 
