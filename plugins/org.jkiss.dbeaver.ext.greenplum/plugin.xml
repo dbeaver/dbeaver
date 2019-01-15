@@ -69,6 +69,7 @@
         <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumTableManager"
                  objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
         <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumTableManager"
+                 containerType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema"
                  objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable"/>
     </extension>
 </plugin>
