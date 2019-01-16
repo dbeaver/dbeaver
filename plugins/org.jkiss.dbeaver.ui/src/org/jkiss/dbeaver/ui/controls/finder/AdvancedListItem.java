@@ -44,9 +44,11 @@ public class AdvancedListItem extends Canvas {
         super(list.getContainer(), SWT.NONE);
 
         this.list = list;
-        this.setBackground(list.getBackground());
+        this.list.addItem(this);
         this.text = text;
         this.icon = icon;
+
+        this.setBackground(list.getBackground());
 
         this.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
@@ -78,6 +80,7 @@ public class AdvancedListItem extends Canvas {
             }
         });
         this.addPaintListener(this::painItem);
+        this.addDisposeListener(e -> list.removeItem(this));
     }
 
     private void painItem(PaintEvent e) {
