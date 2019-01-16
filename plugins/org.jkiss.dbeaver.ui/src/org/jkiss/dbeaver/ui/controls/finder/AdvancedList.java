@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -25,6 +26,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.TypedListener;
 import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
@@ -45,7 +48,7 @@ public class AdvancedList extends ScrolledComposite {
     private Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
 
     public AdvancedList(Composite parent, int style) {
-        super(parent, SWT.V_SCROLL);
+        super(parent, SWT.V_SCROLL | style);
 
         //CSSUtils.setCSSClass(this, "Table");
         this.backgroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
@@ -58,7 +61,7 @@ public class AdvancedList extends ScrolledComposite {
             setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
-        this.container = new Canvas(this, style);
+        this.container = new Canvas(this, SWT.NONE);
 
         this.setContent(this.container);
         this.setExpandHorizontal( true );
@@ -102,6 +105,27 @@ public class AdvancedList extends ScrolledComposite {
         return hoverBackgroundColor;
     }
 
+    @Override
+    public Point computeSize(int wHint, int hHint) {
+        return computeSize(wHint, hHint, false);
+    }
+
+    @Override
+    public Point computeSize(int wHint, int hHint, boolean changed) {
+        if (wHint == SWT.DEFAULT && hHint == SWT.DEFAULT) {
+            return new Point(100, 100);
+        }
+        return super.computeSize(wHint, hHint, changed);
+/*
+        // Do not calc real size because RowLayout will fill to maximum screen width
+        if (wHint == SWT.DEFAULT && hHint == SWT.DEFAULT) {
+            //return getParent().getSize();
+            return super.computeSize(wHint, hHint, changed);
+        }
+        return new Point(wHint, hHint);
+*/
+    }
+
     public Canvas getContainer() {
         return container;
     }
@@ -136,6 +160,31 @@ public class AdvancedList extends ScrolledComposite {
             oldSelection.redraw();
         }
         item.redraw();
+
+        Event event = new Event();
+        event.widget = item;
+        notifyListeners(SWT.Selection, event);
     }
 
+    void notifyDefaultSelection() {
+        Event event = new Event();
+        event.widget = selectedItem;
+        notifyListeners(SWT.DefaultSelection, event);
+    }
+
+    public void addSelectionListener(SelectionListener listener) {
+        checkWidget ();
+        if (listener == null) {
+            return;
+        }
+        TypedListener typedListener = new TypedListener (listener);
+        addListener (SWT.Selection,typedListener);
+        addListener (SWT.DefaultSelection,typedListener);
+    }
+
+    public void removeAll() {
+        checkWidget ();
+        setSelection(null);
+        items.clear();
+    }
 }

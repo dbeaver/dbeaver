@@ -46,9 +46,8 @@ import java.util.*;
  *
  * @author Serge Rider
  */
-public class DriverTreeViewer extends TreeViewer implements ISelectionChangedListener, IDoubleClickListener {
+public class DriverTreeViewer extends TreeViewer {
 
-    private Object site;
     private List<DataSourceProviderDescriptor> providers;
     private Font boldFont;
     private final Map<String,DriverCategory> categories = new HashMap<>();
@@ -116,10 +115,9 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         parent.addDisposeListener(e -> UIUtils.dispose(boldFont));
     }
 
-    public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent)
+    public void initDrivers(List<DataSourceProviderDescriptor> providers, boolean expandRecent)
     {
         getTree().setHeaderVisible(true);
-        this.site = site;
         this.providers = providers;
         if (this.providers == null) {
             this.providers = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
@@ -136,8 +134,6 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         this.setContentProvider(new ViewContentProvider());
         this.setLabelProvider(new ViewLabelProvider());
 
-        this.addSelectionChangedListener(this);
-        this.addDoubleClickListener(this);
         this.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Collection<Object> drivers = collectDrivers();
@@ -157,6 +153,20 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         } else {
             this.collapseAll();
         }
+
+        addDoubleClickListener(event -> {
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            if (!selection.isEmpty()) {
+                Object element = selection.getFirstElement();
+                if (element instanceof DriverCategory || element instanceof DataSourceProviderDescriptor) {
+                    if (Boolean.TRUE.equals(getExpandedState(element))) {
+                        super.collapseToLevel(element, 1);
+                    } else {
+                        super.expandToLevel(element, 1);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -361,33 +371,6 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         }
     }
 
-
-    @Override
-    public void selectionChanged(SelectionChangedEvent event)
-    {
-        if (site instanceof ISelectionChangedListener) {
-            ((ISelectionChangedListener)site).selectionChanged(event);
-        }
-    }
-
-    @Override
-    public void doubleClick(DoubleClickEvent event)
-    {
-        if (site instanceof IDoubleClickListener) {
-            ((IDoubleClickListener)site).doubleClick(event);
-        }
-        IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-        if (!selection.isEmpty()) {
-            Object element = selection.getFirstElement();
-            if (element instanceof DriverCategory || element instanceof DataSourceProviderDescriptor) {
-                if (Boolean.TRUE.equals(getExpandedState(element))) {
-                    super.collapseToLevel(element, 1);
-                } else {
-                    super.expandToLevel(element, 1);
-                }
-            }
-        }
-    }
 
     @Override
     public void setSelection(ISelection selection, boolean reveal) {
