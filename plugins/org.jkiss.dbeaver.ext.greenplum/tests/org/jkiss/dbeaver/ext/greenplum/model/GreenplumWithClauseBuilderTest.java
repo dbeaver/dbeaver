@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GreenplumWithClauseBuilderTest {
-
     @Mock
     private GreenplumTable table;
 

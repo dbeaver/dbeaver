@@ -57,6 +57,11 @@ public class GreenplumSchema extends PostgreSchema {
         return new ArrayList<>(greenplumTableCache.getTypedObjects(monitor, this, GreenplumExternalTable.class));
     }
 
+    @Override
+    public TableCache getTableCache() {
+        return this.greenplumTableCache;
+    }
+
     public class GreenplumTableCache extends TableCache {
         protected GreenplumTableCache() {
             super();

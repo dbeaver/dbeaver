@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeign;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -41,23 +40,20 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Greenplum table manager
- */
-public class GreenplumTableManager extends PostgreTableManager {
+public class GreenplumExternalTableManager extends PostgreTableManager {
     @Override
-    protected GreenplumTable createDatabaseObject(DBRProgressMonitor monitor,
+    protected GreenplumExternalTable createDatabaseObject(DBRProgressMonitor monitor,
                                                 DBECommandContext context,
                                                 PostgreSchema parent,
                                                 Object copyFrom) {
-        GreenplumTable greenplumTable = new GreenplumTable(parent);
+        GreenplumExternalTable externalTable = new GreenplumExternalTable(parent);
         try {
-            setTableName(monitor, parent, greenplumTable);
+            setTableName(monitor, parent, externalTable);
         } catch (DBException e) {
             log.error(e);
         }
 
-        return greenplumTable;
+        return externalTable;
     }
 
     @Override
@@ -65,31 +61,20 @@ public class GreenplumTableManager extends PostgreTableManager {
                                                 List<DBEPersistAction> actions,
                                                 StructCreateCommand command,
                                                 Map<String, Object> options) throws DBException {
-        GreenplumTable table = (GreenplumTable) command.getObject();
+        GreenplumExternalTable table = (GreenplumExternalTable) command.getObject();
 
-        super.addStructObjectCreateActions(monitor, actions, command, options);
-
-        if (table.isUnloggedTable()) {
-            actions.set(0,
-                    new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table,
-                            table.addUnloggedClause(actions.get(0).getScript())));
-        }
+        actions.add(new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, table.generateDDL(monitor)));
     }
 
-    <T extends PostgreTableBase> SQLDatabasePersistAction createDeleteAction(T table, Map<String, Object> options) {
-        StringBuilder dropTableScript = new StringBuilder("DROP ")
-                .append((table instanceof PostgreTableForeign ? "FOREIGN " : ""))
-                .append("TABLE ")
-                .append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
-                .append((CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : ""));
-
-        return new SQLDatabasePersistAction(ModelMessages.model_jdbc_drop_table, dropTableScript.toString());
+    @Override
+    protected String getCreateTableType(PostgreTableBase table) {
+        return "EXTERNAL TABLE";
     }
 
     @Nullable
     @Override
     public DBSObjectCache<PostgreSchema, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
-        return object.getContainer().getTableCache();
+        return ((GreenplumSchema)object.getContainer()).getTableCache();
     }
 
     @Override
@@ -97,5 +82,13 @@ public class GreenplumTableManager extends PostgreTableManager {
                                           ObjectDeleteCommand command,
                                           Map<String, Object> options) {
         actions.add(createDeleteAction(command.getObject(), options));
+    }
+
+    <T extends PostgreTableBase> SQLDatabasePersistAction createDeleteAction(T table, Map<String, Object> options) {
+        StringBuilder dropTableScript = new StringBuilder("DROP EXTERNAL TABLE ")
+                .append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
+                .append((CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : ""));
+
+        return new SQLDatabasePersistAction(ModelMessages.model_jdbc_drop_table, dropTableScript.toString());
     }
 }

@@ -2,11 +2,10 @@ package org.jkiss.dbeaver.ext.greenplum.edit;
 
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema;
-import org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeign;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,7 +21,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GreenplumTableManagerTest {
+public class GreenplumExternalTableManagerTest {
     @Mock
     private GreenplumSchema mockSchema;
 
@@ -35,7 +34,7 @@ public class GreenplumTableManagerTest {
     @Mock
     private PostgreDataSource mockDataSource;
 
-    private GreenplumTableManager greenplumTableManager;
+    private GreenplumExternalTableManager greenplumExternalTableManager;
 
     @Before
     public void setUp() {
@@ -44,57 +43,52 @@ public class GreenplumTableManagerTest {
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
         Mockito.when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
 
-        greenplumTableManager = new GreenplumTableManager();
+        greenplumExternalTableManager = new GreenplumExternalTableManager();
     }
 
     @Test
-    public void addObjectDeleteActions_whenObjectIsARegularTable_thenRegularTableDropActionIsReturned() throws SQLException {
+    public void createDeleteAction_whenObjectIsAnExternalTable_thenExternalTableDropActionIsReturned() throws SQLException {
         SQLDatabasePersistAction regularTableDropTableQuery =
-                new SQLDatabasePersistAction("Drop table", "DROP TABLE foo.bar");
+                new SQLDatabasePersistAction("Drop table", "DROP EXTERNAL TABLE foo.bar");
 
         Mockito.when(mockSchema.getName()).thenReturn("foo");
         Mockito.when(mockResults.getString("relname")).thenReturn("bar");
-        GreenplumTable greenplumTable = new GreenplumTable(mockSchema, mockResults);
+
+        GreenplumExternalTable greenplumExternalTable = newGreenplumExternalTableFixture();
 
         SQLDatabasePersistAction sqlDatabasePersistAction =
-                greenplumTableManager.createDeleteAction(greenplumTable, Collections.emptyMap());
+                greenplumExternalTableManager.createDeleteAction(greenplumExternalTable, Collections.emptyMap());
 
         Assert.assertEquals(regularTableDropTableQuery.getScript(), sqlDatabasePersistAction.getScript());
         Assert.assertEquals(regularTableDropTableQuery.getTitle(), sqlDatabasePersistAction.getTitle());
     }
 
     @Test
-    public void addObjectDeleteActions_whenObjectIsAForeignTable_thenForeignTableDropActionIsReturned() throws SQLException {
+    public void createDeleteAction_whenCascadeOptionIsProvided_thenExternalTableDropActionIsReturnedWithCascadeOption()
+            throws SQLException {
         SQLDatabasePersistAction regularTableDropTableQuery =
-                new SQLDatabasePersistAction("Drop table", "DROP FOREIGN TABLE foo.bar");
+                new SQLDatabasePersistAction("Drop table", "DROP EXTERNAL TABLE foo.bar CASCADE");
 
         Mockito.when(mockSchema.getName()).thenReturn("foo");
         Mockito.when(mockResults.getString("relname")).thenReturn("bar");
 
-        PostgreTableForeign postgreForeignTable = new PostgreTableForeign(mockSchema, mockResults);
+        GreenplumExternalTable greenplumExternalTable = newGreenplumExternalTableFixture();
 
         SQLDatabasePersistAction sqlDatabasePersistAction =
-                greenplumTableManager.createDeleteAction(postgreForeignTable, Collections.emptyMap());
-
-        Assert.assertEquals(regularTableDropTableQuery.getScript(), sqlDatabasePersistAction.getScript());
-        Assert.assertEquals(regularTableDropTableQuery.getTitle(), sqlDatabasePersistAction.getTitle());
-    }
-
-    @Test
-    public void addObjectDeleteActions_whenObjectIsATableWithCascadeOption_thenTableDropActionWithCascadeOptionIsReturned() throws SQLException {
-        SQLDatabasePersistAction regularTableDropTableQuery =
-                new SQLDatabasePersistAction("Drop table", "DROP TABLE foo.bar CASCADE");
-
-        Mockito.when(mockSchema.getName()).thenReturn("foo");
-        Mockito.when(mockResults.getString("relname")).thenReturn("bar");
-
-        GreenplumTable greenplumTable = new GreenplumTable(mockSchema, mockResults);
-
-        SQLDatabasePersistAction sqlDatabasePersistAction =
-                greenplumTableManager.createDeleteAction(greenplumTable,
+                greenplumExternalTableManager.createDeleteAction(greenplumExternalTable,
                         Collections.singletonMap("deleteCascade", true));
 
         Assert.assertEquals(regularTableDropTableQuery.getScript(), sqlDatabasePersistAction.getScript());
         Assert.assertEquals(regularTableDropTableQuery.getTitle(), sqlDatabasePersistAction.getTitle());
     }
+
+    private GreenplumExternalTable newGreenplumExternalTableFixture() throws SQLException {
+        Mockito.when(mockResults.getString("fmttype")).thenReturn("b");
+        Mockito.when(mockResults.getString("urilocation")).thenReturn("some_location");
+        Mockito.when(mockResults.getString("fmtopts")).thenReturn("\n");
+        Mockito.when(mockResults.getString("encoding")).thenReturn("UTF8");
+        Mockito.when(mockResults.getString("execlocation")).thenReturn("some_location");
+        return new GreenplumExternalTable(mockSchema, mockResults);
+    }
+
 }
