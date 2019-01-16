@@ -99,32 +99,33 @@ public class AdvancedListItem extends Canvas {
     }
 
     private void painItem(PaintEvent e) {
+        Point itemSize = getSize();
+
         GC gc = e.gc;
         if (hover) {
             gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
             gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
-            gc.fillRoundRectangle(e.x + 5, e.y + 5, e.width - 10, e.height - 10, 5, 5);
+            gc.fillRoundRectangle(5, 5, itemSize.x - 10, itemSize.y - 10, 5, 5);
         } else {
             gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
             gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         }
 
-        Point itemSize = getSize();
         Rectangle iconBounds = icon.getBounds();
         Point imageSize = getList().getImageSize();
 
         int imgPosX = (itemSize.x - imageSize.x) / 2;
-        int imgPosY = e.y + 5;//(itemBounds.height - iconBounds.height) / 2 ;
+        int imgPosY = 5;//(itemBounds.height - iconBounds.height) / 2 ;
 
         gc.setAntialias(SWT.ON);
         gc.setInterpolation(SWT.HIGH);
         gc.drawImage(icon, 0, 0, iconBounds.width, iconBounds.height,
-            imgPosX - e.x, imgPosY - e.y, imageSize.x, imageSize.y);
+            imgPosX - e.x, imgPosY, imageSize.x, imageSize.y);
 
         Point textSize = gc.stringExtent(text);
         if (textSize.x > itemSize.x) textSize.x = itemSize.x;
 
-        gc.drawText(text, (itemSize.x - textSize.x) / 2 - e.x, e.height - 25 + e.y);
+        gc.drawText(text, (itemSize.x - textSize.x) / 2 - e.x, itemSize.y - 25);
     }
 
     private AdvancedList getList() {
