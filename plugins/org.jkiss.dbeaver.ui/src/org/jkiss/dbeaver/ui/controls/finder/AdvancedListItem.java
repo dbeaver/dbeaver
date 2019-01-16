@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseTrackAdapter;
-import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -41,7 +38,7 @@ public class AdvancedListItem extends Canvas {
     private boolean isHover;
 
     public AdvancedListItem(AdvancedList list, String text, Image icon) {
-        super(list.getContainer(), SWT.NONE);
+        super(list.getContainer(), SWT.DOUBLE_BUFFERED);
 
         this.list = list;
         this.list.addItem(this);
@@ -77,10 +74,36 @@ public class AdvancedListItem extends Canvas {
             @Override
             public void mouseDown(MouseEvent e) {
                 getList().setSelection(AdvancedListItem.this);
+                setFocus();
             }
         });
         this.addPaintListener(this::painItem);
         this.addDisposeListener(e -> list.removeItem(this));
+
+        this.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (getList().getSelectedItem() == null) {
+                    getList().setSelection(AdvancedListItem.this);
+                }
+            }
+        });
+        this.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.keyCode) {
+                    case SWT.ARROW_LEFT:
+                    case SWT.ARROW_RIGHT:
+                    case SWT.ARROW_UP:
+                    case SWT.ARROW_DOWN:
+                        if (getList().getSelectedItem() != null) {
+                            getList().navigateByKey(e);
+                        }
+                        break;
+                }
+            }
+        });
+
     }
 
     private void painItem(PaintEvent e) {
