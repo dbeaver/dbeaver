@@ -69,7 +69,7 @@ public class AdvancedListItem extends Canvas {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
-                super.mouseDoubleClick(e);
+                getList().notifyDefaultSelection();
             }
 
             @Override
@@ -87,7 +87,7 @@ public class AdvancedListItem extends Canvas {
         GC gc = e.gc;
         if (isSelected) {
             gc.setBackground(getList().getSelectionBackgroundColor());
-            gc.setForeground(getList().getForegroundColor());
+            gc.setForeground(getList().getSelectionForegroundColor());
         } else if (isHover) {
             gc.setBackground(getList().getHoverBackgroundColor());
             gc.setForeground(getList().getForegroundColor());

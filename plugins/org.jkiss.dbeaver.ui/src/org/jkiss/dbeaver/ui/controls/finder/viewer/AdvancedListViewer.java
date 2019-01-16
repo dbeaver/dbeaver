@@ -16,14 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.controls.finder.viewer;
 
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
@@ -44,6 +40,18 @@ public class AdvancedListViewer extends StructuredViewer {
 
     public AdvancedListViewer(Composite parent, int style) {
         this.control = new AdvancedList(parent, style);
+
+        this.control.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                fireSelectionChanged(new SelectionChangedEvent(AdvancedListViewer.this, getSelection()));
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                fireDoubleClick(new DoubleClickEvent(AdvancedListViewer.this, getSelection()));
+            }
+        });
     }
 
     @Override
@@ -68,14 +76,24 @@ public class AdvancedListViewer extends StructuredViewer {
 
     @Override
     protected List getSelectionFromWidget() {
-        return new ArrayList();
+        List list = new ArrayList();
+        AdvancedListItem item = this.control.getSelectedItem();
+        if (item != null) {
+            list.add(item.getData());
+        }
+        return list;
     }
 
     @Override
     protected void internalRefresh(Object element) {
+        control.removeAll();
+
         IStructuredContentProvider contentProvider = (IStructuredContentProvider) getContentProvider();
         ILabelProvider labelProvider = (ILabelProvider) getLabelProvider();
         Object[] elements = contentProvider.getElements(element);
+        for (ViewerFilter filter : getFilters()) {
+            elements = filter.filter(this, (Object)null, elements);
+        }
         for (Object item : elements) {
             String text = labelProvider.getText(item);
             Image icon = labelProvider.getImage(item);

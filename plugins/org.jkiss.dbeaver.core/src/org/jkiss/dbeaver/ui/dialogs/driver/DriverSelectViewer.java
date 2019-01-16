@@ -240,7 +240,7 @@ public class DriverSelectViewer extends Viewer {
             selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.asyncExec(() -> {
                 if (selectorViewer instanceof DriverTreeViewer) {
-                    ((DriverTreeViewer) selectorViewer).initDrivers(site, providers, expandRecent);
+                    ((DriverTreeViewer) selectorViewer).initDrivers(providers, expandRecent);
                 }
             });
         } else {
@@ -278,6 +278,17 @@ public class DriverSelectViewer extends Viewer {
                 }
             });
         }
+
+        selectorViewer.addSelectionChangedListener(event -> {
+            if (site instanceof ISelectionChangedListener) {
+                ((ISelectionChangedListener)site).selectionChanged(event);
+            }
+        });
+        selectorViewer.addDoubleClickListener(event -> {
+            if (site instanceof IDoubleClickListener) {
+                ((IDoubleClickListener)site).doubleClick(event);
+            }
+        });
     }
 
     private Object[] collectDrivers(List<DataSourceProviderDescriptor> provs) {
