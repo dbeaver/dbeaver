@@ -96,6 +96,7 @@ public class AdvancedListItem extends Canvas {
                     case SWT.ARROW_RIGHT:
                     case SWT.ARROW_UP:
                     case SWT.ARROW_DOWN:
+                    case SWT.CR:
                         if (getList().getSelectedItem() != null) {
                             getList().navigateByKey(e);
                         }
