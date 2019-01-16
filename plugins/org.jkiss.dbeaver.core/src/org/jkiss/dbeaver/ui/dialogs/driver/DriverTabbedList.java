@@ -27,10 +27,12 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.finder.viewer.AdvancedListViewer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderComposite;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderInfo;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -46,6 +48,10 @@ import java.util.List;
  */
 public class DriverTabbedList extends StructuredViewer {
     private static final Log log = Log.getLog(DriverTabbedList.class);
+
+    private static final String DIALOG_ID = "DBeaver.DriverTabbedList";//$NON-NLS-1$
+    private static final String PARAM_LAST_FOLDER = "folder";
+
     private final TabbedFolderComposite folderComposite;
 
     public DriverTabbedList(Composite parent, int style) {
@@ -72,8 +78,15 @@ public class DriverTabbedList extends StructuredViewer {
             new TabbedFolderInfo("popular", "Popular", DBIcon.TREE_DATABASE, "Recent drivers", false, new DriverListFolder(recentDrivers)),
             new TabbedFolderInfo("all", "All", DBIcon.TREE_DATABASE, "All drivers", false, new DriverListFolder(allDrivers))
         };
+
+
+        String folderId = UIUtils.getDialogSettings(DIALOG_ID).get(PARAM_LAST_FOLDER);
+        if (CommonUtils.isEmpty(folderId)) {
+            folderId = "popular";
+        }
         folderComposite.setFolders(getClass().getSimpleName(), folders);
-        folderComposite.switchFolder("popular", false);
+        folderComposite.switchFolder(folderId, false);
+        folderComposite.addFolderListener(folderId1 -> UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1));
     }
 
     public TabbedFolderComposite getFolderComposite() {
