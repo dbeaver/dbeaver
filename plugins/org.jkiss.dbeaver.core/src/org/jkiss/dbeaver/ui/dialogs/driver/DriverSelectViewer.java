@@ -413,8 +413,9 @@ public class DriverSelectViewer extends Viewer {
                 if (parent != null && isLeafMatch(viewer, parent)) {
                     return true;
                 }
+                return isParentMatch(viewer, element) || isLeafMatch(viewer, element);
             }
-            return isParentMatch(viewer, element) || isLeafMatch(viewer, element);
+            return isLeafMatch(viewer, element);
         }
 
         protected boolean isLeafMatch(Viewer viewer, Object element) {

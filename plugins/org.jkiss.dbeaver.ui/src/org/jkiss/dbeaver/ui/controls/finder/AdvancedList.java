@@ -140,7 +140,8 @@ public class AdvancedList extends ScrolledComposite {
 
     public void updateSize() {
         int width = this.getClientArea().width;
-        this.setMinSize( getParent().computeSize( width, SWT.DEFAULT ) );
+        this.setMinHeight( getParent().computeSize( width, SWT.DEFAULT ).y );
+        this.layout(true, true);
     }
 
     Color getBackgroundColor() {
