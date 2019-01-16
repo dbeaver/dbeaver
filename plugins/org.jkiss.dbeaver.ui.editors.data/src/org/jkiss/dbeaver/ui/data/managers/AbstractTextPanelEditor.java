@@ -134,12 +134,20 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     private void applyEditorStyle() {
         BaseTextEditor textEditor = getTextEditor();
         if (textEditor != null && getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
+            boolean oldEditable = textEditor.getTextViewer().isEditable();
+            if (!oldEditable) {
+                textEditor.getTextViewer().setEditable(true);
+            }
             try {
                 if (textEditor.getViewer().canDoOperation(ISourceViewer.FORMAT)) {
                     textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
                 }
             } catch (Exception e) {
                 log.debug("Error formatting text", e);
+            } finally {
+                if (!oldEditable) {
+                    textEditor.getTextViewer().setEditable(false);
+                }
             }
         }
     }
