@@ -22,19 +22,29 @@ package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.text.Format;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class GreenplumExternalTable extends PostgreTableRegular {
+public class GreenplumExternalTable extends PostgreTable {
+    private static final String DEFAULT_FORMAT_OPTIONS = "delimiter ',' null '' escape '\"' quote '\"' header";
+
     public enum FormatType {
         c("CSV"),
         t("TEXT"),
@@ -48,6 +58,14 @@ public class GreenplumExternalTable extends PostgreTableRegular {
 
         public String getValue() {
             return formatType;
+        }
+
+        public static FormatType fromValue(String formatTypeString) throws IllegalArgumentException {
+            return Arrays
+                    .stream(values())
+                    .filter(formatType -> formatType.getValue().equalsIgnoreCase(formatTypeString))
+                    .findFirst()
+                    .orElseThrow(IllegalArgumentException::new);
         }
     }
 
@@ -63,25 +81,34 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         public String getValue() {
             return rejectLimitType;
         }
+
     }
 
-    private final List<String> uriLocations;
-    private final String execLocation;
-    private final FormatType formatType;
-    private final String formatOptions;
-    private final String encoding;
-    private final RejectLimitType rejectLimitType;
-    private final int rejectLimit;
-    private final boolean writable;
-    private final boolean temporaryTable;
-    private final boolean loggingErrors;
-    private final String command;
+    private GreenplumExternalTableUriLocationsHandler uriLocationsHandler;
+    private String execLocation;
+    private FormatType formatType;
+    private String formatOptions;
+    private String encoding;
+    private RejectLimitType rejectLimitType;
+    private int rejectLimit;
+    private boolean writable;
+    private boolean temporaryTable;
+    private boolean loggingErrors;
+    private String command;
 
-    public GreenplumExternalTable(PostgreSchema catalog, ResultSet dbResult) {
+    public GreenplumExternalTable(PostgreSchema catalog) {
+        super(catalog);
+        this.uriLocationsHandler = new GreenplumExternalTableUriLocationsHandler("", '\n');
+        this.encoding = GreenplumCharacterSet.UNICODE_8BIT.getCharacterSetValue();
+        this.formatType = FormatType.t;
+        this.formatOptions = DEFAULT_FORMAT_OPTIONS;
+    }
+
+    public GreenplumExternalTable(PostgreSchema catalog,
+                                  ResultSet dbResult) {
         super(catalog, dbResult);
-        String uriLocations = JDBCUtils.safeGetStringTrimmed(dbResult, "urilocation");
-        this.uriLocations = !CommonUtils.isEmpty(uriLocations) ?
-                Arrays.asList(uriLocations.split(",")) : Collections.emptyList();
+        this.uriLocationsHandler = new GreenplumExternalTableUriLocationsHandler(
+                JDBCUtils.safeGetStringTrimmed(dbResult, "urilocation"), ',');
         this.execLocation = JDBCUtils.safeGetString(dbResult, "execlocation");
         this.formatType = FormatType.valueOf(JDBCUtils.safeGetString(dbResult, "fmttype"));
         this.formatOptions = JDBCUtils.safeGetString(dbResult, "fmtopts");
@@ -101,24 +128,52 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         }
     }
 
-    public List<String> getUriLocations() {
-        return uriLocations;
+    @Property(viewable = true, editable = true, updatable = true, order = 24,
+            multiline = true, valueRenderer = ExternalTableUriLocationsRenderer.class)
+    public String getUriLocations() {
+        return this.uriLocationsHandler.getCommaSeparatedList();
+    }
+
+    public void setUriLocations(String lineFeedSeparatedUriLocations) {
+        this.uriLocationsHandler =
+                new GreenplumExternalTableUriLocationsHandler(lineFeedSeparatedUriLocations, '\n');
     }
 
     public String getExecLocation() {
         return execLocation;
     }
 
-    public FormatType getFormatType() {
-        return formatType;
+    @Property(viewable = true, editable = true, updatable = true, order = 26,
+            listProvider = ExternalTableFormatTypeProvider.class)
+    public String getFormatType() {
+        if (this.formatType == null) {
+            return null;
+        } else {
+            return this.formatType.getValue();
+        }
     }
 
+    public void setFormatType(String formatType) {
+        this.formatType = FormatType.fromValue(formatType);
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 27)
     public String getFormatOptions() {
         return formatOptions;
     }
 
+    public void setFormatOptions(String formatOptions) {
+        this.formatOptions = formatOptions;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 25,
+            listProvider = GreenplumCharacterSetProvider.class)
     public String getEncoding() {
         return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
     }
 
     public RejectLimitType getRejectLimitType() {
@@ -157,12 +212,11 @@ public class GreenplumExternalTable extends PostgreTableRegular {
                 .append(this.getName())
                 .append(" (\n");
 
-        List<PostgreTableColumn> tableColumns = this.getAttributes(monitor)
-                .stream()
-                .filter(field -> field.getOrdinalPosition() >= 0)
-                .collect(Collectors.toList());
+        List<PostgreTableColumn> tableColumns = filterOutNonMetadataColumns(monitor);
 
-        if (tableColumns.size() == 1) {
+        if (tableColumns.size() == 0) {
+            ddlBuilder.append("\n)\n");
+        } else if (tableColumns.size() == 1) {
             PostgreTableColumn column = tableColumns.get(0);
             ddlBuilder.append("\t" + column.getName() + " " + column.getTypeName() + "\n)\n");
         } else {
@@ -173,10 +227,10 @@ public class GreenplumExternalTable extends PostgreTableRegular {
             ddlBuilder.append("\n)\n");
         }
 
-        if (this.getUriLocations() != null && !this.getUriLocations().isEmpty()) {
+        if (CommonUtils.isNotEmpty(this.getUriLocations())) {
             ddlBuilder.append("LOCATION (\n");
 
-            ddlBuilder.append(this.getUriLocations()
+            ddlBuilder.append(this.uriLocationsHandler
                     .stream()
                     .map(location -> "\t'" + location + "'")
                     .collect(Collectors.joining(",\n")));
@@ -186,9 +240,11 @@ public class GreenplumExternalTable extends PostgreTableRegular {
             ddlBuilder.append("EXECUTE '" + this.getCommand() + "' " + determineExecutionLocation() + "\n");
         }
 
-        ddlBuilder.append("FORMAT '" +
-                this.getFormatType().getValue() + "'" +
-                generateFormatOptions(this.getFormatType(), this.getFormatOptions()));
+        ddlBuilder.append("FORMAT '").append(this.getFormatType()).append("'");
+
+        if(this.getFormatOptions() != null) {
+            ddlBuilder.append(generateFormatOptions(this.formatType, this.getFormatOptions()));
+        }
 
         if (this.getEncoding() != null && this.getEncoding().length() > 0) {
             ddlBuilder.append("\nENCODING '" + this.getEncoding() + "'");
@@ -209,6 +265,25 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         return ddlBuilder.toString();
     }
 
+    private List<PostgreTableColumn> filterOutNonMetadataColumns(DBRProgressMonitor monitor) throws DBException {
+        List<PostgreTableColumn> tableColumns;
+        Stream<PostgreTableColumn> tableColumnsStream = Optional.ofNullable(this.getAttributes(monitor))
+                .orElse(Collections.emptyList())
+                .stream();
+
+        if(this.isPersisted()) {
+            tableColumns = tableColumnsStream
+                    .filter(field -> field.getOrdinalPosition() >= 0)
+                    .collect(Collectors.toList());
+        } else {
+            final int TEMPORARY_COLUMN_ORDINAL_POSITION = -1;
+            tableColumns = tableColumnsStream
+                    .filter(field -> field.getOrdinalPosition() == TEMPORARY_COLUMN_ORDINAL_POSITION)
+                    .collect(Collectors.toList());
+        }
+        return tableColumns;
+    }
+
     private CharSequence addDatabaseQualifier() {
         StringBuilder databaseQualifier = new StringBuilder().append(this.getDatabase().getName())
                 .append(".")
@@ -223,12 +298,12 @@ public class GreenplumExternalTable extends PostgreTableRegular {
     }
 
     private boolean isWebTable() {
-        return (this.uriLocations.stream().anyMatch(location -> location.startsWith("http"))
+        return (this.uriLocationsHandler.stream().anyMatch(location -> location.startsWith("http"))
                 || tableHasCommand());
     }
 
     private String generateFormatOptions(FormatType formatType, String formatOptions) {
-        if (formatOptions.isEmpty()){
+        if (formatType == null || formatOptions.isEmpty()){
             return "";
         }
 
@@ -247,4 +322,39 @@ public class GreenplumExternalTable extends PostgreTableRegular {
 
         return "ON ALL";
     }
+
+    public static class ExternalTableFormatTypeProvider implements IPropertyValueListProvider<GreenplumExternalTable> {
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        public Object[] getPossibleValues(GreenplumExternalTable object) {
+            Predicate<FormatType> excludeCustomTypes = formatType -> !formatType.equals(FormatType.b);
+
+            return Arrays.stream(GreenplumExternalTable.FormatType.values())
+                    .filter(excludeCustomTypes)
+                    .map(GreenplumExternalTable.FormatType::getValue).toArray();
+        }
+    }
+
+    public static class GreenplumCharacterSetProvider implements IPropertyValueListProvider<GreenplumExternalTable> {
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        public Object[] getPossibleValues(GreenplumExternalTable object) {
+            return Arrays.stream(GreenplumCharacterSet.values())
+                    .map(GreenplumCharacterSet::getCharacterSetValue).toArray();
+        }
+    }
+
+    public static class ExternalTableUriLocationsRenderer
+            implements IPropertyValueTransformer<GreenplumExternalTable, String> {
+        @Override
+        public String transform(GreenplumExternalTable greenplumExternalTable,
+                                String commaSeparatedListUriLocations) throws IllegalArgumentException {
+            return greenplumExternalTable.uriLocationsHandler.getLineFeedSeparatedList();
+        }
+    }
 }
+

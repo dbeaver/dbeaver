@@ -70,10 +70,28 @@ public class GreenplumExternalTableTest {
     }
 
     @Test
+    public void onCreation_whenNoInitialDbResultIsProvided_thenDefaultEncodingIsSetToUTF8() {
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema);
+        Assert.assertEquals("UTF8", table.getEncoding());
+    }
+
+    @Test
+    public void onCreation_whenNoInitialDbResultIsProvided_thenDefaultFormatIsText() {
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema);
+        Assert.assertEquals("TEXT", table.getFormatType());
+    }
+
+    @Test
+    public void onCreation_whenNoInitialDbResultIsProvided_thenDefaultFormatOptionsAreBasedOnTextFormatType() {
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema);
+        Assert.assertEquals("delimiter ',' null '' escape '\"' quote '\"' header", table.getFormatOptions());
+    }
+
+    @Test
     public void onCreation_readsASingleUriLocationFromDbResult() throws SQLException {
         Mockito.when(mockResults.getString("urilocation")).thenReturn("SOME_EXTERNAL_LOCATION");
         GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
-        Assert.assertEquals(Collections.singletonList("SOME_EXTERNAL_LOCATION"), table.getUriLocations());
+        Assert.assertEquals("SOME_EXTERNAL_LOCATION", table.getUriLocations());
     }
 
     @Test
@@ -81,7 +99,7 @@ public class GreenplumExternalTableTest {
         Mockito.when(mockResults.getString("urilocation"))
                 .thenReturn("SOME_EXTERNAL_LOCATION,ANOTHER_EXTERNAL_LOCATION");
         GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
-        Assert.assertEquals(Arrays.asList("SOME_EXTERNAL_LOCATION", "ANOTHER_EXTERNAL_LOCATION"),
+        Assert.assertEquals("SOME_EXTERNAL_LOCATION,ANOTHER_EXTERNAL_LOCATION",
                 table.getUriLocations());
     }
 
@@ -104,7 +122,7 @@ public class GreenplumExternalTableTest {
     public void onCreation_readsFormatTypeFromDbResult() throws SQLException {
         Mockito.when(mockResults.getString("fmttype")).thenReturn("t");
         GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
-        Assert.assertEquals(GreenplumExternalTable.FormatType.t, table.getFormatType());
+        Assert.assertEquals("TEXT", table.getFormatType());
     }
 
     @Test
@@ -462,6 +480,71 @@ public class GreenplumExternalTableTest {
     }
 
     @Test
+    public void generateDDL_whenExternalTableHasNoFormatOptionsSet_returnsDDLStringWithOmittedFormatOptions()
+            throws DBException, SQLException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getString("fmtopts")).thenReturn(null);
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'gpfdist://filehost:8081/*.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'CSV'\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
+    @Test
+    public void generateDDL_whenTableHasNoColumns_returnsDDLStringForATableWithNoColumns()
+            throws DBException {
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(null, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL TABLE sampleDatabase.sampleSchema.sampleTable (\n\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'gpfdist://filehost:8081/*.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'CSV' ( DELIMITER ',' )\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
+    @Test
+    public void generateDDL_whenTableIsNotYetPersisted_returnsDDLStringForColumnsToBeCreated()
+            throws DBException {
+        // Ordinal Position of -1 is applied to all non-persisted table columns
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", -1);
+        PostgreTableColumn mockPostgreTableColumn2 = mockDbColumn("column2", "int2", -1);
+        List<PostgreTableColumn> tableColumns = Arrays.asList(mockPostgreTableColumn, mockPostgreTableColumn2);
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema);
+        table.setName("sampleTable");
+        table.setUriLocations(exampleUriLocation);
+        table.setPersisted(false);
+
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4,\n\tcolumn2 int2\n)\n" +
+                        "LOCATION (\n" +
+                        "\t'gpfdist://filehost:8081/*.txt'\n" +
+                        ") ON ALL\n" +
+                        "FORMAT 'TEXT' ( delimiter ',' null '' escape '\"' quote '\"' header )\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
+    @Test
     public void generateDDL_whenAWebTableHasExecuteClause_returnsDDLWithTheExecuteClauseAndDefaultExecLocation() throws SQLException, DBException {
         PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
         List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
@@ -504,6 +587,13 @@ public class GreenplumExternalTableTest {
                         "ENCODING 'UTF8'";
 
         Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
+    @Test
+    public void setFormatType_whenProvidedAValidStringRepresentationOfFormatType_setsFormatTypeEnumSuccessfully() {
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema);
+        table.setFormatType("CUSTOM");
+        Assert.assertEquals("CUSTOM", table.getFormatType());
     }
 
     private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {

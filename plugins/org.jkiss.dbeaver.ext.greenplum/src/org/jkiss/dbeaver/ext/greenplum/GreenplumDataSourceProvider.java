@@ -16,16 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.greenplum;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 
 public class GreenplumDataSourceProvider extends PostgreDataSourceProvider {
-
-    private static final Log log = Log.getLog(GreenplumDataSourceProvider.class);
-
-    public GreenplumDataSourceProvider()
-    {
+    public GreenplumDataSourceProvider() {
     }
-
-
 }
