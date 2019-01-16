@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -252,6 +253,11 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                 folderDescription.getContents().dispose();
             }
         });
+    }
+
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
     }
 
     /**

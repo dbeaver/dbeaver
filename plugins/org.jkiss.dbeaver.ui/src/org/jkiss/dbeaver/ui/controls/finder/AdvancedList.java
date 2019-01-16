@@ -22,11 +22,15 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +54,13 @@ public class AdvancedList extends ScrolledComposite {
     public AdvancedList(Composite parent, int style) {
         super(parent, SWT.V_SCROLL | style);
 
-        //CSSUtils.setCSSClass(this, "Table");
-        this.backgroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-        this.selectionBackgroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
-        this.foregroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
-        this.selectionForegroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
-        this.hoverBackgroundColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
+        CSSUtils.setCSSClass(this, "List");
+        this.backgroundColor = UIStyles.getDefaultTextBackground();
+        this.foregroundColor = UIStyles.getDefaultTextForeground();
+        this.selectionBackgroundColor = UIStyles.getDefaultTextSelectionBackground();
+        this.selectionForegroundColor = UIStyles.getDefaultTextSelectionForeground();
+        this.hoverBackgroundColor = UIUtils.getSharedTextColors().getColor(
+            UIUtils.blend(this.selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 70));
 
         if (parent.getLayout() instanceof GridLayout) {
             setLayoutData(new GridData(GridData.FILL_BOTH));

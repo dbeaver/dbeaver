@@ -20,7 +20,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.controls,
- org.jkiss.dbeaver.ui.controls.folders,
  org.jkiss.dbeaver.ui.editors,
  org.jkiss.dbeaver.ui.editors.object,
  org.jkiss.dbeaver.ui.editors.object.struct,

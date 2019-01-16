@@ -16,25 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IFindReplaceTarget;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -50,22 +42,6 @@ public class TextEditorUtils {
     private static final Log log = Log.getLog(TextEditorUtils.class);
 
     private static Map<String, Integer> ACTION_TRANSLATE_MAP;
-
-    public static IPreferenceStore getEditorsPreferenceStore() {
-        return new ScopedPreferenceStore(InstanceScope.INSTANCE, "org.eclipse.ui.editors");
-    }
-
-    public static Color getDefaultTextBackground() {
-        IPreferenceStore preferenceStore = getEditorsPreferenceStore();
-        String bgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-        return CommonUtils.isEmpty(bgRGB) ? Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
-    }
-
-    public static Color getDefaultTextForeground() {
-        IPreferenceStore preferenceStore = getEditorsPreferenceStore();
-        String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
-        return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
-    }
 
     public static Map<String, Integer> getTextEditorActionMap()
     {
@@ -145,7 +121,6 @@ public class TextEditorUtils {
             "Editor.FindReplace.",
             shell,
             target);
-
     }
 
     private static class FakeTextEditor extends AbstractTextEditor {
