@@ -67,6 +67,14 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return super.createRelationOfClass(schema, kind, dbResult);
     }
 
+    @Override
+    public PostgreTableBase createNewRelation(PostgreSchema schema, PostgreClass.RelKind kind) {
+        if (kind == PostgreClass.RelKind.r) {
+            return new GreenplumTable(schema);
+        }
+        return super.createNewRelation(schema, kind);
+    }
+
     private boolean isRelationExternal(JDBCResultSet dbResult) {
         return JDBCUtils.safeGetBoolean(dbResult, "is_ext_table");
     }
