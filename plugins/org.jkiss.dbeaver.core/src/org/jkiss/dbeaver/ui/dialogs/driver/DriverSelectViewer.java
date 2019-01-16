@@ -246,7 +246,7 @@ public class DriverSelectViewer extends Viewer {
             switchItem.setText("Classic");
             switchItem.setSelection(false);
 
-            selectorViewer = new DriverTabbedList(selectorComposite, SWT.NONE);
+            selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE);
             selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
 /*

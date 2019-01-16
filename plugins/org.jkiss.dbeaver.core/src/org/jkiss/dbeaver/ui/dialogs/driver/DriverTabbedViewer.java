@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 
 /**
- * DriverTabbedList
+ * DriverTabbedViewer
  *
  // Tabs:
  // - Recent
@@ -46,15 +46,15 @@ import java.util.List;
  // - All
 
  */
-public class DriverTabbedList extends StructuredViewer {
-    private static final Log log = Log.getLog(DriverTabbedList.class);
+public class DriverTabbedViewer extends StructuredViewer {
+    private static final Log log = Log.getLog(DriverTabbedViewer.class);
 
-    private static final String DIALOG_ID = "DBeaver.DriverTabbedList";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.DriverTabbedViewer";//$NON-NLS-1$
     private static final String PARAM_LAST_FOLDER = "folder";
 
     private final TabbedFolderComposite folderComposite;
 
-    public DriverTabbedList(Composite parent, int style) {
+    public DriverTabbedViewer(Composite parent, int style) {
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
         allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
@@ -211,17 +211,7 @@ public class DriverTabbedList extends StructuredViewer {
             viewer = new AdvancedListViewer(parent, SWT.NONE);
 
             viewer.setContentProvider((IStructuredContentProvider) inputElement -> drivers.toArray());
-            viewer.setLabelProvider(new LabelProvider() {
-                @Override
-                public Image getImage(Object element) {
-                    return DBeaverIcons.getImage(((DBPDriver)element).getIconBig());
-                }
-
-                @Override
-                public String getText(Object element) {
-                    return ((DBPDriver)element).getName();
-                }
-            });
+            viewer.setLabelProvider(new DriverLabelProvider());
             registerViewer(viewer);
         }
 
@@ -245,6 +235,33 @@ public class DriverTabbedList extends StructuredViewer {
 
         @Override
         public void dispose() {
+        }
+
+        private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {
+            @Override
+            public Image getImage(Object element) {
+                return DBeaverIcons.getImage(((DBPDriver)element).getIconBig());
+            }
+
+            @Override
+            public String getText(Object element) {
+                return ((DBPDriver)element).getName();
+            }
+
+            @Override
+            public String getToolTipText(Object element) {
+                DBPDriver driver = (DBPDriver) element;
+
+                StringBuilder toolTip = new StringBuilder();
+                toolTip.append(driver.getFullName());
+                if (!CommonUtils.isEmpty(driver.getDescription())) {
+                    if (toolTip.length() > 0) {
+                        toolTip.append("\n\n");
+                    }
+                    toolTip.append(driver.getDescription());
+                }
+                return toolTip.toString();
+            }
         }
     }
 
