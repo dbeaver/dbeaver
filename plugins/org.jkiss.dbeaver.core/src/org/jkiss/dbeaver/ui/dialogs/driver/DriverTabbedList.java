@@ -55,7 +55,7 @@ public class DriverTabbedList extends StructuredViewer {
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 6);
 
 
-        folderComposite = new TabbedFolderComposite(parent, SWT.NONE) {
+        folderComposite = new TabbedFolderComposite(parent, style) {
             @Override
             public boolean setFocus() {
                 ITabbedFolder activeFolder = getActiveFolder();
@@ -73,7 +73,7 @@ public class DriverTabbedList extends StructuredViewer {
             new TabbedFolderInfo("all", "All", DBIcon.TREE_DATABASE, "All drivers", false, new DriverListFolder(allDrivers))
         };
         folderComposite.setFolders(getClass().getSimpleName(), folders);
-        folderComposite.switchFolder("recent", false);
+        folderComposite.switchFolder("popular", false);
     }
 
     public TabbedFolderComposite getFolderComposite() {
