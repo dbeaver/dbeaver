@@ -92,7 +92,6 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
@@ -209,8 +208,8 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        this.defaultBackground = TextEditorUtils.getDefaultTextBackground();
-        this.defaultForeground = TextEditorUtils.getDefaultTextForeground();
+        this.defaultBackground = UIStyles.getDefaultTextBackground();
+        this.defaultForeground = UIStyles.getDefaultTextForeground();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         this.viewerPanel.setData(CONTROL_ID, this);

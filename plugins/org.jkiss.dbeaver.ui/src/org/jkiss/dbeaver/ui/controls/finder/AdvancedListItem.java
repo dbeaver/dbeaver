@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 /**
  * AdvancedListItem
@@ -47,7 +48,8 @@ public class AdvancedListItem extends Canvas {
         this.text = text;
         this.icon = icon;
 
-        this.setBackground(list.getBackground());
+        CSSUtils.setCSSClass(this, "Composite");
+        this.setBackground(list.getContainer().getBackground());
 
         this.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
@@ -121,7 +123,7 @@ public class AdvancedListItem extends Canvas {
             gc.setBackground(getList().getHoverBackgroundColor());
             gc.setForeground(getList().getForegroundColor());
         } else {
-            gc.setBackground(getList().getBackgroundColor());
+            gc.setBackground(getList().getContainer().getBackground());
             gc.setForeground(getList().getForegroundColor());
         }
 

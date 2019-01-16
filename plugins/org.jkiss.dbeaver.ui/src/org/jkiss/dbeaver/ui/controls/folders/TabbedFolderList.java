@@ -41,8 +41,9 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -456,6 +457,7 @@ public class TabbedFolderList extends Composite {
 
     public TabbedFolderList(Composite parent, boolean section) {
         super(parent, SWT.NO_FOCUS);
+        CSSUtils.setCSSClass(this, "Composite");
         this.section = section;
         removeAll();
         setLayout(new FormLayout());
@@ -723,9 +725,9 @@ public class TabbedFolderList extends Composite {
 
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
-        listBackground = TextEditorUtils.getDefaultTextBackground();;
+        listBackground = UIStyles.getDefaultTextBackground();
         widgetBackground = getBackground();
-        widgetForeground = TextEditorUtils.getDefaultTextForeground();
+        widgetForeground = UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
