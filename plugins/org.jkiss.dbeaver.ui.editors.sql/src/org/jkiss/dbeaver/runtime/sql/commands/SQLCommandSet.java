@@ -20,8 +20,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.SQLControlCommand;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
-import org.jkiss.dbeaver.model.sql.eval.ScriptEvaluateEngine;
 import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Control command handler
@@ -37,6 +38,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         }
         String varName = parameter.substring(0, divPos).trim();
         String varValue = parameter.substring(divPos + 1).trim();
+        varValue = GeneralUtils.replaceVariables(varValue, name -> CommonUtils.toString(scriptContext.getVariable(name)));
         scriptContext.setVariable(varName, varValue);
 
         return true;
