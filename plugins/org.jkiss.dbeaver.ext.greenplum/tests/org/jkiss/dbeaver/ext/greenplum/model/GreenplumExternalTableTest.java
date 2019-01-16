@@ -453,6 +453,51 @@ public class GreenplumExternalTableTest {
         Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
     }
 
+    @Test
+    public void generateDDL_whenAWebTableHasExecuteClause_returnsDDLWithTheExecuteClauseAndDefaultExecLocation() throws SQLException, DBException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getString("command")).thenReturn("execute something");
+        Mockito.when(mockResults.getString("urilocation")).thenReturn("");
+        Mockito.when(mockResults.getString("fmttype")).thenReturn("t");
+        Mockito.when(mockResults.getString("fmtopts")).thenReturn("");
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL WEB TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "EXECUTE 'execute something' ON ALL\n" +
+                        "FORMAT 'TEXT'\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
+    @Test
+    public void generateDDL_whenAWebTableHasExecuteClauseAndExecLocationIsMasterOnly_returnsDDLWithTheExecuteClauseAndMasterOnlyExecLocation() throws SQLException, DBException {
+        PostgreTableColumn mockPostgreTableColumn = mockDbColumn("column1", "int4", 1);
+        List<PostgreTableColumn> tableColumns = Collections.singletonList(mockPostgreTableColumn);
+
+        Mockito.when(mockResults.getString("command")).thenReturn("execute something");
+        Mockito.when(mockResults.getString("urilocation")).thenReturn("");
+        Mockito.when(mockResults.getString("fmttype")).thenReturn("t");
+        Mockito.when(mockResults.getString("fmtopts")).thenReturn("");
+        Mockito.when(mockResults.getString("execlocation")).thenReturn("MASTER_ONLY");
+
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        addMockColumnsToTableCache(tableColumns, table);
+
+        String expectedDDL =
+                "CREATE EXTERNAL WEB TABLE sampleDatabase.sampleSchema.sampleTable (\n\tcolumn1 int4\n)\n" +
+                        "EXECUTE 'execute something' ON MASTER\n" +
+                        "FORMAT 'TEXT'\n" +
+                        "ENCODING 'UTF8'";
+
+        Assert.assertEquals(expectedDDL, table.generateDDL(monitor));
+    }
+
     private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {
         PostgreTableColumn mockPostgreTableColumn = Mockito.mock(PostgreTableColumn.class);
         Mockito.when(mockPostgreTableColumn.getName()).thenReturn(columnName);
