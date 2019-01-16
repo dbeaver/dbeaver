@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -35,34 +36,154 @@ import java.util.List;
 
 /**
  * DriverTabbedList
- */
-public class DriverTabbedList extends Composite {
-    private static final Log log = Log.getLog(DriverTabbedList.class);
+ *
+ // Tabs:
+ // - Recent
+ // - Cloud
+ // - Embedded
+ // - All
 
-    // Tabs:
-    // - Recent
-    // - Cloud
-    // - Embedded
-    // - All
+ */
+public class DriverTabbedList extends StructuredViewer {
+    private static final Log log = Log.getLog(DriverTabbedList.class);
+    private final TabbedFolderComposite folderComposite;
 
     public DriverTabbedList(Composite parent, int style) {
-        super(parent, style);
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
-        allDrivers.sort((o1, o2) -> { return o1.getName().compareToIgnoreCase(o2.getName()); });
+        allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 6);
 
 
-        TabbedFolderComposite folderComposite = new TabbedFolderComposite(this, SWT.NONE);
+        folderComposite = new TabbedFolderComposite(parent, SWT.NONE) {
+            @Override
+            public boolean setFocus() {
+                ITabbedFolder activeFolder = getActiveFolder();
+                if (activeFolder != null) {
+                    activeFolder.setFocus();
+                    return true;
+                } else {
+                    return super.setFocus();
+                }
+            }
+        };
 
         TabbedFolderInfo[] folders = new TabbedFolderInfo[] {
-            new TabbedFolderInfo("recent", "Recent", DBIcon.TREE_DATABASE, "Recent drivers", false, new DriverListFolder(recentDrivers)),
+            new TabbedFolderInfo("popular", "Popular", DBIcon.TREE_DATABASE, "Recent drivers", false, new DriverListFolder(recentDrivers)),
             new TabbedFolderInfo("all", "All", DBIcon.TREE_DATABASE, "All drivers", false, new DriverListFolder(allDrivers))
         };
         folderComposite.setFolders(getClass().getSimpleName(), folders);
+        folderComposite.switchFolder("recent", false);
     }
 
-    private static class DriverListFolder implements ITabbedFolder {
+    public TabbedFolderComposite getFolderComposite() {
+        return folderComposite;
+    }
+
+    private StructuredViewer getCurrentViewer() {
+        ITabbedFolder activeFolder = folderComposite.getActiveFolder();
+        if (activeFolder instanceof DriverListFolder) {
+            return ((DriverListFolder) activeFolder).viewer;
+        }
+        return null;
+    }
+
+    @Override
+    public Control getControl() {
+        return folderComposite;
+    }
+
+    @Override
+    public Object getInput() {
+        StructuredViewer viewer = getCurrentViewer();
+        return viewer == null ? null : viewer.getInput();
+    }
+
+    @Override
+    public ISelection getSelection() {
+        StructuredViewer viewer = getCurrentViewer();
+        return viewer == null ? null : viewer.getSelection();
+    }
+
+    @Override
+    public void refresh() {
+        StructuredViewer viewer = getCurrentViewer();
+        if (viewer != null) {
+            viewer.refresh();
+        }
+    }
+
+    @Override
+    public void setSelection(ISelection selection, boolean reveal) {
+        StructuredViewer viewer = getCurrentViewer();
+        if (viewer != null) {
+            viewer.setSelection(selection, reveal);
+        }
+    }
+
+    @Override
+    public void setFilters(ViewerFilter... filters) {
+        StructuredViewer viewer = getCurrentViewer();
+        if (viewer != null) {
+            viewer.setFilters(filters);
+        }
+    }
+
+    @Override
+    public void resetFilters() {
+        StructuredViewer viewer = getCurrentViewer();
+        if (viewer != null) {
+            viewer.resetFilters();
+        }
+    }
+
+    /////////////////////////////////////////
+    // Internal stuff
+
+    @Override
+    protected Widget doFindInputItem(Object element) {
+        return null;
+    }
+
+    @Override
+    protected Widget doFindItem(Object element) {
+        return null;
+    }
+
+    @Override
+    protected void doUpdateItem(Widget item, Object element, boolean fullMap) {
+
+    }
+
+    @Override
+    protected List getSelectionFromWidget() {
+        return null;
+    }
+
+    @Override
+    protected void internalRefresh(Object element) {
+
+    }
+
+    @Override
+    public void reveal(Object element) {
+        StructuredViewer viewer = getCurrentViewer();
+        if (viewer != null) {
+            viewer.reveal(element);
+        }
+    }
+
+    @Override
+    protected void setSelectionToWidget(List l, boolean reveal) {
+
+    }
+
+    private void registerViewer(AdvancedListViewer viewer) {
+        viewer.addSelectionChangedListener(this::fireSelectionChanged);
+        viewer.addDoubleClickListener(this::fireDoubleClick);
+    }
+
+    private class DriverListFolder implements ITabbedFolder {
 
         private AdvancedListViewer viewer;
         private List<DBPDriver> drivers;
@@ -88,6 +209,7 @@ public class DriverTabbedList extends Composite {
                     return ((DBPDriver)element).getName();
                 }
             });
+            registerViewer(viewer);
         }
 
         @Override
