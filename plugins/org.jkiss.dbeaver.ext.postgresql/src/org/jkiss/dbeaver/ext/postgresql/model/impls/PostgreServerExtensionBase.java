@@ -169,6 +169,27 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public PostgreTableBase createNewRelation(PostgreSchema schema, PostgreClass.RelKind kind) {
+        if (kind == PostgreClass.RelKind.r) {
+            return new PostgreTableRegular(schema);
+        } else if (kind == PostgreClass.RelKind.v) {
+            return new PostgreView(schema);
+        } else if (kind == PostgreClass.RelKind.m) {
+            return new PostgreMaterializedView(schema);
+        } else if (kind == PostgreClass.RelKind.f) {
+            return new PostgreTableForeign(schema);
+        } else if (kind == PostgreClass.RelKind.S) {
+            return new PostgreSequence(schema);
+        } else if (kind == PostgreClass.RelKind.t) {
+            return new PostgreTableRegular(schema);
+        } else if (kind == PostgreClass.RelKind.p) {
+            return new PostgreTableRegular(schema);
+        } else {
+            return new PostgreTableRegular(schema);
+        }
+    }
+
+    @Override
     public boolean supportsRelationSizeCalc() {
         return true;
     }
