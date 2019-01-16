@@ -107,7 +107,7 @@ public class AdvancedListViewer extends StructuredViewer {
 
     @Override
     public void reveal(Object element) {
-
+        //control.showControl();
     }
 
     @Override
@@ -120,4 +120,5 @@ public class AdvancedListViewer extends StructuredViewer {
         super.inputChanged(input, oldInput);
         internalRefresh(getInput());
     }
+
 }
