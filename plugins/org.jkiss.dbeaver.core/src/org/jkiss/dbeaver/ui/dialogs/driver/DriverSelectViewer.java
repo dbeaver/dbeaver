@@ -407,10 +407,12 @@ public class DriverSelectViewer extends Viewer {
 
         @Override
         public boolean isElementVisible(Viewer viewer, Object element) {
-            Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) viewer)
-                .getContentProvider()).getParent(element);
-            if (parent != null && isLeafMatch(viewer, parent)) {
-                return true;
+            if (viewer instanceof AbstractTreeViewer) {
+                Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) viewer)
+                    .getContentProvider()).getParent(element);
+                if (parent != null && isLeafMatch(viewer, parent)) {
+                    return true;
+                }
             }
             return isParentMatch(viewer, element) || isLeafMatch(viewer, element);
         }

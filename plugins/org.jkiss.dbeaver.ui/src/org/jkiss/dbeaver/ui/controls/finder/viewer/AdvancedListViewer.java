@@ -101,7 +101,8 @@ public class AdvancedListViewer extends StructuredViewer {
             listItem.setData(item);
         }
 
-        control.layout(true);
+        control.layout(true, true);
+        control.updateSize();
     }
 
     @Override

@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -70,8 +72,7 @@ public class AdvancedList extends ScrolledComposite {
         this.setMinSize( 10, 10 );
 
         this.addListener( SWT.Resize, event -> {
-            int width = this.getClientArea().width;
-            this.setMinSize( parent.computeSize( width, SWT.DEFAULT ) );
+            updateSize();
         } );
 
         this.setBackground(backgroundColor);
@@ -83,6 +84,20 @@ public class AdvancedList extends ScrolledComposite {
         layout.marginHeight = 0;
         layout.spacing = 10;
         this.container.setLayout(layout);
+
+/*
+        container.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+            }
+        });
+*/
+    }
+
+    public void updateSize() {
+        int width = this.getClientArea().width;
+        this.setMinSize( getParent().computeSize( width, SWT.DEFAULT ) );
     }
 
     Color getBackgroundColor() {
@@ -142,6 +157,10 @@ public class AdvancedList extends ScrolledComposite {
         items.add(item);
     }
 
+    void removeItem(AdvancedListItem item) {
+        this.items.remove(item);
+    }
+
     public AdvancedListItem[] getItems() {
         return items.toArray(new AdvancedListItem[0]);
     }
@@ -159,7 +178,9 @@ public class AdvancedList extends ScrolledComposite {
         if (oldSelection != null) {
             oldSelection.redraw();
         }
-        item.redraw();
+        if (item != null) {
+            item.redraw();
+        }
 
         Event event = new Event();
         event.widget = item;
@@ -185,6 +206,11 @@ public class AdvancedList extends ScrolledComposite {
     public void removeAll() {
         checkWidget ();
         setSelection(null);
-        items.clear();
+        for (AdvancedListItem item : items.toArray(new AdvancedListItem[0])) {
+            item.dispose();
+        }
+        items.clear(); // Just in case
+        this.setMinSize( 10, 10 );
     }
+
 }
