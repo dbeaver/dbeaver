@@ -24,9 +24,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.IWizardContainer;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -49,7 +46,6 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.finder.viewer.AdvancedListViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -247,26 +243,10 @@ public class DriverSelectViewer extends Viewer {
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             switchItem.setSelection(false);
 
-            selectorViewer = new AdvancedListViewer(selectorComposite, SWT.BORDER);
-            selectorViewer.setContentProvider((IStructuredContentProvider) inputElement -> {
-                List<DataSourceProviderDescriptor> provs = (List<DataSourceProviderDescriptor>) inputElement;
-                return collectDrivers(provs);
-            });
-            selectorViewer.setLabelProvider(new LabelProvider() {
-                @Override
-                public Image getImage(Object element) {
-                    return DBeaverIcons.getImage(((DBPDriver)element).getIconBig());
-                }
-
-                @Override
-                public String getText(Object element) {
-                    return ((DBPDriver)element).getName();
-                }
-            });
-            selectorViewer.setInput(providers);
-            //selectorViewer = new DriverGalleryViewer(selectorComposite, site, providers, expandRecent);
+            selectorViewer = new DriverTabbedList(selectorComposite, SWT.BORDER);
             selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
+/*
             selectorViewer.getControl().addTraverseListener(e -> {
                 if (e.detail == SWT.TRAVERSE_ESCAPE) {
                     if (site instanceof IWizardPage) {
@@ -277,6 +257,7 @@ public class DriverSelectViewer extends Viewer {
                     }
                 }
             });
+*/
         }
 
         selectorViewer.addSelectionChangedListener(event -> {

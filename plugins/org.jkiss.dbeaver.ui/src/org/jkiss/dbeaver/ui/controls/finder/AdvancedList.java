@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class AdvancedList extends ScrolledComposite {
     private static final Log log = Log.getLog(AdvancedList.class);
-    public static final int ITEM_SPACING = 10;
+    public static final int ITEM_SPACING = 5;
 
     private Point itemSize = new Point(64, 64);
 
@@ -131,11 +131,7 @@ public class AdvancedList extends ScrolledComposite {
     private int getItemsPerRow() {
         Point itemSize = selectedItem.getSize();
         Point containerSize = container.getSize();
-        int itemsPerRow = containerSize.x / itemSize.x;
-        if (containerSize.x < (itemsPerRow + 1) * itemSize.x) {
-            itemsPerRow--;
-        }
-        return itemsPerRow;
+        return Math.floorDiv(containerSize.x, itemSize.x);
     }
 
     public void updateSize() {

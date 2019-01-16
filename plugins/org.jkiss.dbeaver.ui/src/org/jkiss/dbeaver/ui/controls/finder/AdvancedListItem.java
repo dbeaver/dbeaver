@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 public class AdvancedListItem extends Canvas {
 
     private static final Log log = Log.getLog(AdvancedListItem.class);
+    public static final int BORDER_MARGIN = 5;
 
     private final AdvancedList list;
     private String text;
@@ -124,14 +125,14 @@ public class AdvancedListItem extends Canvas {
         }
 
         if (isSelected || isHover) {
-            gc.fillRoundRectangle(5, 5, itemSize.x - 10, itemSize.y - 10, 5, 5);
+            gc.fillRoundRectangle(BORDER_MARGIN, BORDER_MARGIN, itemSize.x - BORDER_MARGIN * 2, itemSize.y - BORDER_MARGIN * 2, 5, 5);
         }
 
         Rectangle iconBounds = icon.getBounds();
         Point imageSize = getList().getImageSize();
 
         int imgPosX = (itemSize.x - imageSize.x) / 2;
-        int imgPosY = 5;//(itemBounds.height - iconBounds.height) / 2 ;
+        int imgPosY = BORDER_MARGIN;//(itemBounds.height - iconBounds.height) / 2 ;
 
         gc.setAntialias(SWT.ON);
         gc.setInterpolation(SWT.HIGH);
@@ -141,7 +142,7 @@ public class AdvancedListItem extends Canvas {
         Point textSize = gc.stringExtent(text);
         if (textSize.x > itemSize.x) textSize.x = itemSize.x;
 
-        gc.drawText(text, (itemSize.x - textSize.x) / 2 - e.x, itemSize.y - 25);
+        gc.drawText(text, (itemSize.x - textSize.x) / 2 - e.x, itemSize.y - textSize.y - BORDER_MARGIN * 2);
     }
 
     private AdvancedList getList() {
@@ -159,7 +160,7 @@ public class AdvancedListItem extends Canvas {
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
         Point imageSize = getList().getImageSize();
-        return new Point(imageSize.x + 40, imageSize.y + 40);
+        return new Point(imageSize.x + 30, imageSize.y + 30);
         //return super.computeSize(wHint, hHint, changed);//getList().getImageSize();
     }
 
