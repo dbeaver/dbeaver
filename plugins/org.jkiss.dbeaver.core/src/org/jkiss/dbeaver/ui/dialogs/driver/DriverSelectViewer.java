@@ -196,7 +196,8 @@ public class DriverSelectViewer extends Viewer {
 
         if (!forceClassic) {
             switchItem = new ToolItem(switcherToolbar, SWT.CHECK | SWT.DROP_DOWN);
-            switchItem.setText("Toggle view");
+            switchItem.setText("Switch view");
+            switchItem.setWidth(UIUtils.getFontHeight(switcherToolbar) * 15);
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
             switchItem.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -229,6 +230,7 @@ public class DriverSelectViewer extends Viewer {
         if (forceClassic || getCurrentSelectorViewType() == SelectorViewType.tree) {
             if (!forceClassic) {
                 switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+                switchItem.setText("Gallery");
                 switchItem.setSelection(true);
             }
 
@@ -241,9 +243,10 @@ public class DriverSelectViewer extends Viewer {
             });
         } else {
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
+            switchItem.setText("Classic");
             switchItem.setSelection(false);
 
-            selectorViewer = new DriverTabbedList(selectorComposite, SWT.BORDER);
+            selectorViewer = new DriverTabbedList(selectorComposite, SWT.NONE);
             selectorViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
 /*
