@@ -63,7 +63,7 @@ public class DriverSelectViewer extends Viewer {
     private static final String CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.CLEAR_ICON"; //$NON-NLS-1$
     private static final String DISABLED_CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.DCLEAR_ICON"; //$NON-NLS-1$
 
-    private static final String PROP_SELECTOR_VIEW_TYPE = "driver.selector.view.type"; //$NON-NLS-1$
+    private static final String PROP_SELECTOR_VIEW_TYPE = "driver.selector.view.mode"; //$NON-NLS-1$
     private ToolItem switchItem;
 
     private enum SelectorViewType {
@@ -96,12 +96,12 @@ public class DriverSelectViewer extends Viewer {
     private static SelectorViewType getCurrentSelectorViewType() {
         String viewTypeStr = DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_SELECTOR_VIEW_TYPE);
         if (viewTypeStr == null) {
-            return SelectorViewType.tree;
+            return SelectorViewType.browser;
         }
         try {
             return SelectorViewType.valueOf(viewTypeStr);
         } catch (IllegalArgumentException e) {
-            return SelectorViewType.tree;
+            return SelectorViewType.browser;
         }
     }
 

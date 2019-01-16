@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,6 +45,7 @@ public class AdvancedList extends ScrolledComposite {
     private AdvancedListItem selectedItem;
 
     private Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
+    private final Point textSize;
 
     public AdvancedList(Composite parent, int style) {
         super(parent, SWT.V_SCROLL | style);
@@ -69,7 +71,7 @@ public class AdvancedList extends ScrolledComposite {
         this.setMinSize( 10, 10 );
 
         this.addListener( SWT.Resize, event -> {
-            updateSize();
+            updateSize(false);
         } );
 
         this.setBackground(backgroundColor);
@@ -81,6 +83,10 @@ public class AdvancedList extends ScrolledComposite {
         layout.marginHeight = 0;
         layout.spacing = ITEM_SPACING;
         this.container.setLayout(layout);
+
+        GC gc = new GC(getDisplay());
+        textSize = gc.stringExtent("X");
+        gc.dispose();
 
         container.addFocusListener(new FocusAdapter() {
             @Override
@@ -134,10 +140,13 @@ public class AdvancedList extends ScrolledComposite {
         return Math.floorDiv(containerSize.x, itemSize.x);
     }
 
-    public void updateSize() {
+    public void updateSize(boolean layout) {
+        this.setMinHeight(10);
         int width = this.getClientArea().width;
         this.setMinHeight( getParent().computeSize( width, SWT.DEFAULT ).y );
-        this.layout(true, true);
+        if (layout) {
+            this.layout(true, true);
+        }
     }
 
     Color getBackgroundColor() {
@@ -158,6 +167,10 @@ public class AdvancedList extends ScrolledComposite {
 
     Color getHoverBackgroundColor() {
         return hoverBackgroundColor;
+    }
+
+    Point getTextSize() {
+        return textSize;
     }
 
     @Override
