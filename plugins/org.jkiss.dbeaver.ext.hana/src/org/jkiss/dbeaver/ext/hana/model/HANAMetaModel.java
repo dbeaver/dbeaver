@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -37,6 +38,8 @@ import java.util.Map;
  */
 public class HANAMetaModel extends GenericMetaModel
 {
+    private static final Log log = Log.getLog(HANAMetaModel.class);
+
     public HANAMetaModel() {
         super();
     }
@@ -93,4 +96,29 @@ public class HANAMetaModel extends GenericMetaModel
         }
     }
 
+    @Override
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+        GenericDataSource dataSource = sourceObject.getDataSource();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HANA table DDL")) {
+            try (JDBCPreparedStatement dbStat = session.prepareCall(
+                "CALL get_object_definition(?,?"))
+            {
+                dbStat.setString(1, sourceObject.getContainer().getName());
+                dbStat.setString(2, sourceObject.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder ddl = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        ddl.append(dbResult.getString(1));
+                    }
+                    if (ddl.length() > 0) {
+                        return ddl.toString();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Error reading DDL from HANA server", e);
+        }
+
+        return super.getTableDDL(monitor, sourceObject, options);
+    }
 }
