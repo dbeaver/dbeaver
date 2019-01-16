@@ -18,18 +18,13 @@ package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.TypedListener;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
@@ -40,6 +35,7 @@ import java.util.List;
  */
 public class AdvancedList extends ScrolledComposite {
     private static final Log log = Log.getLog(AdvancedList.class);
+    public static final int ITEM_SPACING = 10;
 
     private Point itemSize = new Point(64, 64);
 
@@ -68,6 +64,7 @@ public class AdvancedList extends ScrolledComposite {
         this.setContent(this.container);
         this.setExpandHorizontal( true );
         this.setExpandVertical( true );
+        //this.setShowFocusedControl( true );
         //scrolledComposite.setAlwaysShowScrollBars(true);
         this.setMinSize( 10, 10 );
 
@@ -82,17 +79,60 @@ public class AdvancedList extends ScrolledComposite {
         layout.wrap = true;
         layout.fill = true;
         layout.marginHeight = 0;
-        layout.spacing = 10;
+        layout.spacing = ITEM_SPACING;
         this.container.setLayout(layout);
 
-/*
         container.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
                 super.focusGained(e);
             }
         });
-*/
+    }
+
+    void navigateByKey(KeyEvent e) {
+        if (selectedItem == null) {
+            return;
+        }
+        int itemIndex = items.indexOf(selectedItem);
+        int itemsPerRow = getItemsPerRow();
+        switch (e.keyCode) {
+            case SWT.ARROW_LEFT:
+                if (itemIndex > 0) {
+                    setSelection(items.get(itemIndex - 1));
+                }
+                break;
+            case SWT.ARROW_RIGHT:
+                if (itemIndex < items.size() - 1) {
+                    setSelection(items.get(itemIndex + 1));
+                }
+                break;
+            case SWT.ARROW_UP:
+                if (itemIndex >= itemsPerRow) {
+                    setSelection(items.get(itemIndex - itemsPerRow));
+                }
+                break;
+            case SWT.ARROW_DOWN:
+                if (itemIndex < items.size() - 1) {
+                    int nextIndex = itemIndex + itemsPerRow;
+                    if (nextIndex >= items.size() - 1) {
+                        nextIndex = items.size() - 1;
+                    }
+                    setSelection(items.get(nextIndex));
+                }
+                break;
+        }
+        showItem(selectedItem);
+    }
+
+    private int getItemsPerRow() {
+        Point itemSize = selectedItem.getSize();
+        Point containerSize = container.getSize();
+        int itemsPerRow = containerSize.x / itemSize.x;
+        if (containerSize.x < (itemsPerRow + 1) * itemSize.x) {
+            itemsPerRow--;
+        }
+        return itemsPerRow;
     }
 
     public void updateSize() {
@@ -211,6 +251,23 @@ public class AdvancedList extends ScrolledComposite {
         }
         items.clear(); // Just in case
         this.setMinSize( 10, 10 );
+    }
+
+    private void showItem(AdvancedListItem item) {
+        showControl(item);
+/*
+        Point itemSize = item.getSize();
+
+        int itemsPerRow = getItemsPerRow();
+        int itemIndex = items.indexOf(item);
+        int rowNumber = itemIndex / itemsPerRow;
+
+        int vertOffset = (itemSize.y + ITEM_SPACING) * rowNumber;
+
+        ScrollBar verticalBar = getVerticalBar();
+        verticalBar.setSelection(vertOffset);
+        layout(true);
+*/
     }
 
 }
