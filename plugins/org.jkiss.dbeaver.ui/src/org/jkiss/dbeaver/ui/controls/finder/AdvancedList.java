@@ -121,6 +121,9 @@ public class AdvancedList extends ScrolledComposite {
                     setSelection(items.get(nextIndex));
                 }
                 break;
+            case SWT.CR:
+                notifyDefaultSelection();
+                break;
         }
         showItem(selectedItem);
     }
