@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.events.PaintEvent;
@@ -24,10 +25,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.Log;
 
 /**
@@ -40,7 +38,7 @@ public class AdvancedListItem extends Canvas {
     private final AdvancedList list;
     private String text;
     private final Image icon;
-    private boolean hover;
+    private boolean isHover;
 
     public AdvancedListItem(AdvancedList list, String text, Image icon) {
         super(list.getContainer(), SWT.NONE);
@@ -50,43 +48,16 @@ public class AdvancedListItem extends Canvas {
         this.text = text;
         this.icon = icon;
 
-/*
-        GridLayout gl = new GridLayout(1, true);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        gl.verticalSpacing = 0;
-        setLayout(gl);
-
-        Point itemSize = list.getImageSize();
-        Label iconLabel = new Label(this, SWT.NONE);
-        iconLabel.setBackground(list.getBackground());
-        iconLabel.setSize(itemSize);
-        GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER);
-        gd.widthHint = itemSize.x;
-        gd.heightHint = itemSize.y;
-        gd.grabExcessHorizontalSpace = true;
-        gd.grabExcessVerticalSpace = true;
-        iconLabel.setLayoutData(gd);
-        iconLabel.addPaintListener(e -> {
-            Point size = iconLabel.getSize();
-            list.paintIcon(e.gc, e.x, e.y, size.x, size.y, this);
-        });
-
-        Label textLabel = new Label(this, SWT.CENTER);
-        textLabel.setText(text);
-        textLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-*/
-
         this.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
             public void mouseEnter(MouseEvent e) {
-                hover = true;
+                isHover = true;
                 redraw();
             }
 
             @Override
             public void mouseExit(MouseEvent e) {
-                hover = false;
+                isHover = false;
                 redraw();
             }
 
@@ -95,20 +66,38 @@ public class AdvancedListItem extends Canvas {
                 //redraw();
             }
         });
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                super.mouseDoubleClick(e);
+            }
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+                getList().setSelection(AdvancedListItem.this);
+            }
+        });
         this.addPaintListener(this::painItem);
     }
 
     private void painItem(PaintEvent e) {
         Point itemSize = getSize();
+        boolean isSelected = getList().getSelectedItem() == this;
 
         GC gc = e.gc;
-        if (hover) {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
-            gc.fillRoundRectangle(5, 5, itemSize.x - 10, itemSize.y - 10, 5, 5);
+        if (isSelected) {
+            gc.setBackground(getList().getSelectionBackgroundColor());
+            gc.setForeground(getList().getForegroundColor());
+        } else if (isHover) {
+            gc.setBackground(getList().getHoverBackgroundColor());
+            gc.setForeground(getList().getForegroundColor());
         } else {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+            gc.setBackground(getList().getBackgroundColor());
+            gc.setForeground(getList().getForegroundColor());
+        }
+
+        if (isSelected || isHover) {
+            gc.fillRoundRectangle(5, 5, itemSize.x - 10, itemSize.y - 10, 5, 5);
         }
 
         Rectangle iconBounds = icon.getBounds();
@@ -137,7 +126,7 @@ public class AdvancedListItem extends Canvas {
     }
 
     public boolean isHover() {
-        return hover;
+        return isHover;
     }
 
     @Override

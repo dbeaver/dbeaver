@@ -18,20 +18,13 @@ package org.jkiss.dbeaver.ui.controls.finder;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.ScrollBar;
 import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
@@ -43,13 +36,23 @@ import java.util.List;
 public class AdvancedList extends ScrolledComposite {
     private static final Log log = Log.getLog(AdvancedList.class);
 
-    private Point itemSize = new Point(80, 80);
+    private Point itemSize = new Point(64, 64);
 
     private Canvas container;
     private List<AdvancedListItem> items = new ArrayList<>();
+    private AdvancedListItem selectedItem;
+
+    private Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
 
     public AdvancedList(Composite parent, int style) {
         super(parent, SWT.V_SCROLL);
+
+        //CSSUtils.setCSSClass(this, "Table");
+        this.backgroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        this.selectionBackgroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        this.foregroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
+        this.selectionForegroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+        this.hoverBackgroundColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
 
         if (parent.getLayout() instanceof GridLayout) {
             setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -63,13 +66,12 @@ public class AdvancedList extends ScrolledComposite {
         //scrolledComposite.setAlwaysShowScrollBars(true);
         this.setMinSize( 10, 10 );
 
-
         this.addListener( SWT.Resize, event -> {
             int width = this.getClientArea().width;
             this.setMinSize( parent.computeSize( width, SWT.DEFAULT ) );
         } );
 
-        this.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        this.setBackground(backgroundColor);
         this.container.setBackground(getBackground());
 
         RowLayout layout = new RowLayout(SWT.HORIZONTAL);
@@ -78,6 +80,26 @@ public class AdvancedList extends ScrolledComposite {
         layout.marginHeight = 0;
         layout.spacing = 10;
         this.container.setLayout(layout);
+    }
+
+    Color getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    Color getSelectionBackgroundColor() {
+        return selectionBackgroundColor;
+    }
+
+    Color getForegroundColor() {
+        return foregroundColor;
+    }
+
+    Color getSelectionForegroundColor() {
+        return selectionForegroundColor;
+    }
+
+    Color getHoverBackgroundColor() {
+        return hoverBackgroundColor;
     }
 
     public Canvas getContainer() {
@@ -100,32 +122,20 @@ public class AdvancedList extends ScrolledComposite {
         return items.toArray(new AdvancedListItem[0]);
     }
 
-    protected void scrollVertical() {
-/*
-        int areaHeight = getClientArea().height;
+    public AdvancedListItem getSelectedItem() {
+        return selectedItem;
+    }
 
-        if (gHeight > areaHeight) {
-            // image is higher than client area
-            ScrollBar bar = getVerticalBar();
-            scroll(0, translate - bar.getSelection(), 0, 0,
-                getClientArea().width, areaHeight, false);
-            translate = bar.getSelection();
-        } else {
-            translate = 0;
+    void setSelection(AdvancedListItem item) {
+        if (this.selectedItem == item) {
+            return;
         }
-*/
-    }
-
-    void paintIcon(GC gc, int x, int y, int width, int height, AdvancedListItem item) {
-        Rectangle bounds = item.getIcon().getBounds();
-
-        gc.setAntialias(SWT.ON);
-        gc.setInterpolation(SWT.HIGH);
-        gc.drawImage(item.getIcon(), 0, 0, bounds.width, bounds.height, 0, 0, itemSize.x, itemSize.y);
-    }
-
-    void onMouseMove(MouseEvent e, AdvancedListItem item) {
-
+        AdvancedListItem oldSelection = this.selectedItem;
+        this.selectedItem = item;
+        if (oldSelection != null) {
+            oldSelection.redraw();
+        }
+        item.redraw();
     }
 
 }
