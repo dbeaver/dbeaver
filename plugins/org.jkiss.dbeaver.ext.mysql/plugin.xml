@@ -171,7 +171,7 @@
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 8.x and later"
-                        promoted="true">
+                        promoted="1">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.11]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>

@@ -212,12 +212,10 @@ public class DriverUtils {
         List<DBPDriver> recentDrivers = new ArrayList<>(allDrivers);
         try {
             recentDrivers.sort((o1, o2) -> {
-                int ub1 = getUsedBy(o1, allDataSources).size();
-                int ub2 = getUsedBy(o2, allDataSources).size();
+                int ub1 = getUsedBy(o1, allDataSources).size() + o1.getPromotedScore();
+                int ub2 = getUsedBy(o2, allDataSources).size() + o2.getPromotedScore();
                 if (ub1 == ub2) {
-                    if (o1.isPromoted()) return 1;
-                    else if (o2.isPromoted()) return -1;
-                    else return o1.getName().compareTo(o2.getName());
+                    return o1.getName().compareTo(o2.getName());
                 } else {
                     return ub2 - ub1;
                 }

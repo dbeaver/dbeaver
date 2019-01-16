@@ -140,7 +140,8 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
-                        description="Microsoft JDBC Driver for SQL Server (MSSQL)">
+                        description="Microsoft JDBC Driver for SQL Server (MSSQL)"
+                        promoted="1">
 
                     <replace provider="mssql" driver="mssql_jdbc_ms_new"/>
 
