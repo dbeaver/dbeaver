@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.finder.AdvancedList;
 import org.jkiss.dbeaver.ui.controls.finder.AdvancedListItem;
 
@@ -101,8 +102,11 @@ public class AdvancedListViewer extends StructuredViewer {
             listItem.setData(item);
         }
 
-        control.layout(true, true);
-        control.updateSize();
+        if (control.getSize().y <= 0) {
+            UIUtils.asyncExec(() -> control.updateSize());
+        } else {
+            control.updateSize();
+        }
     }
 
     @Override
