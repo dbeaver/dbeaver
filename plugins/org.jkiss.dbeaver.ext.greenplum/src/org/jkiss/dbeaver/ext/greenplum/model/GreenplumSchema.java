@@ -70,6 +70,7 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @Nullable String objectName) throws SQLException {
             String sqlQuery = "SELECT c.oid,d.description, c.*,\n" +
                     "CASE WHEN x.urilocation IS NOT NULL THEN array_to_string(x.urilocation, ',') ELSE '' END AS urilocation,\n" +
+                    "CASE WHEN x.command IS NOT NULL THEN x.command ELSE '' END AS command,\n" +
                     "x.fmttype, x.fmtopts,\n" +
                     "coalesce(x.rejectlimit, 0) AS rejectlimit,\n" +
                     "coalesce(x.rejectlimittype, '') AS rejectlimittype,\n" +
