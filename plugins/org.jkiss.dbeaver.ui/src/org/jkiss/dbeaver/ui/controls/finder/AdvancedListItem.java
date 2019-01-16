@@ -40,13 +40,16 @@ public class AdvancedListItem extends Canvas {
     private final Image icon;
     private boolean isHover;
 
-    public AdvancedListItem(AdvancedList list, String text, Image icon) {
+    public AdvancedListItem(AdvancedList list, String text, Image icon, String toolTip) {
         super(list.getContainer(), SWT.DOUBLE_BUFFERED);
 
         this.list = list;
         this.list.addItem(this);
         this.text = text;
         this.icon = icon;
+        if (toolTip != null) {
+            setToolTipText(toolTip);
+        }
 
         CSSUtils.setCSSClass(this, "Composite");
         this.setBackground(list.getContainer().getBackground());
