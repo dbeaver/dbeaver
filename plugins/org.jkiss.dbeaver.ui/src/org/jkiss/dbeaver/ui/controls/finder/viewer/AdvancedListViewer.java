@@ -102,10 +102,10 @@ public class AdvancedListViewer extends StructuredViewer {
             listItem.setData(item);
         }
 
-        if (control.getSize().y <= 0) {
-            UIUtils.asyncExec(() -> control.updateSize());
+        if (true) {
+            UIUtils.asyncExec(() -> control.updateSize(true));
         } else {
-            control.updateSize();
+            control.updateSize(true);
         }
     }
 

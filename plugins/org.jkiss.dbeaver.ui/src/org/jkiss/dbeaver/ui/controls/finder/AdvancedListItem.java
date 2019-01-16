@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * AdvancedListItem
@@ -125,7 +126,7 @@ public class AdvancedListItem extends Canvas {
         }
 
         if (isSelected || isHover) {
-            gc.fillRoundRectangle(BORDER_MARGIN, BORDER_MARGIN, itemSize.x - BORDER_MARGIN * 2, itemSize.y - BORDER_MARGIN * 2, 5, 5);
+            gc.fillRoundRectangle(0, 0, itemSize.x, itemSize.y, 5, 5);
         }
 
         Rectangle iconBounds = icon.getBounds();
@@ -160,7 +161,8 @@ public class AdvancedListItem extends Canvas {
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
         Point imageSize = getList().getImageSize();
-        return new Point(imageSize.x + 30, imageSize.y + 30);
+        int itemLength = imageSize.x + BORDER_MARGIN * 4 + getList().getTextSize().y;
+        return new Point(itemLength, itemLength);
         //return super.computeSize(wHint, hHint, changed);//getList().getImageSize();
     }
 

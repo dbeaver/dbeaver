@@ -69,14 +69,17 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
         setControl(placeholder);
 
-        Composite projectGroup = UIUtils.createComposite(placeholder, 2);
-        projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.createControlLabel(projectGroup, CoreMessages.dialog_connection_driver_project);
-        final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-        projectCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         final List<IProject> projects = DBeaverCore.getInstance().getLiveProjects();
-        if (!projects.isEmpty()) {
+        if (projects.size() == 1) {
+            connectionProject = projects.get(0);
+        } else if (projects.size() > 1) {
+
+            Composite projectGroup = UIUtils.createComposite(placeholder, 2);
+            projectGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            UIUtils.createControlLabel(projectGroup, CoreMessages.dialog_connection_driver_project);
+
+            final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            projectCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             final IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
             for (IProject project : projects) {
