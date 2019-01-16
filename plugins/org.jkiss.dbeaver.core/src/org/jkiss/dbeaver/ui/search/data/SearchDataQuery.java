@@ -223,9 +223,10 @@ public class SearchDataQuery implements ISearchQuery {
                             continue;
                         }
                     case STRING:
-                        if (attribute.getMaxLength() > 0 && attribute.getMaxLength() < params.searchString.length()) {
-                            continue;
-                        }
+                        // Do not check value length. Some columns may be compressed/compacted/have special data type and thus have length < than value length.
+//                        if (attribute.getMaxLength() > 0 && attribute.getMaxLength() < params.searchString.length()) {
+//                            continue;
+//                        }
                         if (ArrayUtils.contains(supportedOperators, DBCLogicalOperator.LIKE)) {
                             operator = DBCLogicalOperator.LIKE;
                             value = "%" + params.searchString + "%";
