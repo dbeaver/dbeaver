@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -36,6 +37,8 @@ import java.util.Map;
  * SQLServer session manager
  */
 public class SQLServerSessionManager implements DBAServerSessionManager<SQLServerSession> {
+
+    public static final String OPTION_SHOW_ONLY_CONNECTIONS = "showOnlyConnections";
 
     private final SQLServerDataSource dataSource;
 
@@ -54,11 +57,13 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
     public Collection<SQLServerSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
+            boolean onlyConnections = CommonUtils.getOption(options, OPTION_SHOW_ONLY_CONNECTIONS);
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
-                "select s.*,db.name as database_name,r.sql_handle,(select text from sys.dm_exec_sql_text(r.sql_handle)) as sql_text\n" +
-                    "from sys.dm_exec_sessions s\n" +
-                    "left outer join sys.sysdatabases db on db.dbid=s.database_id\n" +
-                    "left outer join sys.dm_exec_requests r on r.session_id=s.session_id")) {
+                "SELECT s.*,db.name as database_name,c.connection_id,(select text from sys.dm_exec_sql_text(c.most_recent_sql_handle)) as sql_text\n" +
+                    "FROM sys.dm_exec_sessions s\n" +
+                    (onlyConnections ? "" : "LEFT OUTER ") + "JOIN sys.dm_exec_connections c ON c.session_id=s.session_id\n" +
+                    "LEFT OUTER JOIN sys.sysdatabases db on db.dbid=s.database_id\n" +
+                    "ORDER BY s.session_id DESC")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<SQLServerSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
