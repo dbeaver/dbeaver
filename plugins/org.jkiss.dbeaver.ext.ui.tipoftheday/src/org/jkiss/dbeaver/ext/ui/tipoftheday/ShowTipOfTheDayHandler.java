@@ -34,6 +34,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,22 +78,31 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
             return result;
         }
 
-        try (InputStream tipsInputStream = FileLocator.find(new URL(pathToTipsFile)).openConnection().getInputStream()) {
-
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser saxParser = factory.newSAXParser();
-
-            TipsXmlHandler handler = new TipsXmlHandler();
-            saxParser.parse(tipsInputStream, handler);
-            result.addAll(handler.getTips());
-
-        } catch (SAXException | ParserConfigurationException e) {
-            log.error("Unable to parse tips file:", e);
-        } catch (IOException ioe) {
-            log.error("Tips file wasn't found", ioe);
+        URL url;
+        try {
+            url = FileLocator.find(new URL(pathToTipsFile));
+        } catch (MalformedURLException e) {
+            log.debug(e);
+            return null;
         }
-        if (!result.isEmpty() && result.size() > 1) {
-            Collections.shuffle(result);
+        if (url != null) {
+            try (InputStream tipsInputStream = url.openConnection().getInputStream()) {
+
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser saxParser = factory.newSAXParser();
+
+                TipsXmlHandler handler = new TipsXmlHandler();
+                saxParser.parse(tipsInputStream, handler);
+                result.addAll(handler.getTips());
+
+            } catch (SAXException | ParserConfigurationException e) {
+                log.error("Unable to parse tips file:", e);
+            } catch (IOException ioe) {
+                log.error("Tips file wasn't found", ioe);
+            }
+            if (!result.isEmpty() && result.size() > 1) {
+                Collections.shuffle(result);
+            }
         }
         return result;
     }
