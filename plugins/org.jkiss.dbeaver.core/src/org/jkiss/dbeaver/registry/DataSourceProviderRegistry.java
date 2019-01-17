@@ -85,6 +85,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
                         dataSourceProviders.add(provider);
                         break;
+                }
+            }
+
+            for (IConfigurationElement ext : extElements) {
+                switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE_PATCH: {
                         String dsId = ext.getAttribute(RegistryConstants.ATTR_ID);
                         DataSourceProviderDescriptor dataSourceProvider = getDataSourceProvider(dsId);
@@ -97,6 +102,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     }
                 }
             }
+
             dataSourceProviders.sort((o1, o2) -> {
                 if (o1.isDriversManagable() && !o2.isDriversManagable()) {
                     return 1;
