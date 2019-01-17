@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Map;
 
 /**
  * PostgreServerExtension
@@ -84,4 +87,7 @@ public interface PostgreServerExtension
     String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
 
     PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException;
+
+    // Initializes SSL config if SSL wasn't enabled explicitly. By default disables SSL explicitly.
+    void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
 }
