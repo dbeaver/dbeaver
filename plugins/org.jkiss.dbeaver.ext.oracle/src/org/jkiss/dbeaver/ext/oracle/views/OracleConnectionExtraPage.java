@@ -98,8 +98,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_hide_empty_schemas, false);
             hideEmptySchemasCheckbox.setToolTipText(
-            		OracleMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text + GeneralUtils.getDefaultLineSeparator() +
-            		OracleMessages.edit_create_checkbox_hide_empty_schemas_default_line_separator);
+            		OracleMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text);
 
             showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_show, OracleMessages.edit_create_checkbox_content_group_show_discription, false, 1);
             useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use,  OracleMessages.edit_create_checkbox_content_group_use_discription, false, 1);
@@ -110,8 +109,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             useRuleHint = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_group_use_rule, true);
             useRuleHint.setToolTipText(
-            		OracleMessages.edit_create_checkbox_adds_rule_tool_tip_text + GeneralUtils.getDefaultLineSeparator() +
-            		OracleMessages.edit_create_checkbox_significantly_increases_performance_tool_tip_text);
+            		OracleMessages.edit_create_checkbox_adds_rule_tool_tip_text);
         }
 
         setControl(cfgGroup);
