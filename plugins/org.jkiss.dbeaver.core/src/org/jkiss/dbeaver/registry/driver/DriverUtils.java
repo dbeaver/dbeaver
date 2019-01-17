@@ -215,7 +215,7 @@ public class DriverUtils {
                 int ub1 = getUsedBy(o1, allDataSources).size() + o1.getPromotedScore();
                 int ub2 = getUsedBy(o2, allDataSources).size() + o2.getPromotedScore();
                 if (ub1 == ub2) {
-                    return o1.getName().compareTo(o2.getName());
+                    return o1.getName().compareToIgnoreCase(o2.getName());
                 } else {
                     return ub2 - ub1;
                 }
