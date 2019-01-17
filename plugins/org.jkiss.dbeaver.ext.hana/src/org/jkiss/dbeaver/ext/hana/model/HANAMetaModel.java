@@ -101,7 +101,7 @@ public class HANAMetaModel extends GenericMetaModel
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HANA table DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareCall(
-                "CALL get_object_definition(?,?"))
+                "CALL get_object_definition(?,?)"))
             {
                 dbStat.setString(1, sourceObject.getContainer().getName());
                 dbStat.setString(2, sourceObject.getName());
