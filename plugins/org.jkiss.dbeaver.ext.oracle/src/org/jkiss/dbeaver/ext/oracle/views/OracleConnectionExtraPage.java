@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 
 import java.util.Map;
 
@@ -49,8 +50,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
     public OracleConnectionExtraPage()
     {
-        setTitle("Oracle properties");
-        setDescription("Regional settings and performance");
+        setTitle(OracleMessages.dialog_connection_oracle_properties);
+        setDescription(OracleMessages.dialog_connection_oracle_properties_discription);
     }
 
     @Override
@@ -71,46 +72,46 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         cfgGroup.setLayoutData(gd);
 
         {
-            final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, "Session settings", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, OracleMessages.dialog_controlgroup_session_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            languageCombo = UIUtils.createLabelCombo(sessionGroup, "Language", SWT.DROP_DOWN);
-            languageCombo.setToolTipText("Session language");
+            languageCombo = UIUtils.createLabelCombo(sessionGroup, OracleMessages.edit_label_combo_language, SWT.DROP_DOWN);
+            languageCombo.setToolTipText(OracleMessages.edit_label_combo_language_tool_tip_text);
             languageCombo.add(OracleConstants.NLS_DEFAULT_VALUE);
             for (OracleLanguage language : OracleLanguage.values()) {
                 languageCombo.add(language.getLanguage());
             }
             languageCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
 
-            territoryCombo = UIUtils.createLabelCombo(sessionGroup, "Territory", SWT.DROP_DOWN);
-            territoryCombo.setToolTipText("Session territory");
+            territoryCombo = UIUtils.createLabelCombo(sessionGroup, OracleMessages.edit_label_combo_territory, SWT.DROP_DOWN);
+            territoryCombo.setToolTipText(OracleMessages.edit_label_combo_territory_tool_tip_text);
             territoryCombo.add(OracleConstants.NLS_DEFAULT_VALUE);
             for (OracleTerritory territory : OracleTerritory.values()) {
                 territoryCombo.add(territory.getTerritory());
             }
             territoryCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
 
-            nlsDateFormat = UIUtils.createLabelText(sessionGroup, "NLS Date Format", "");
+            nlsDateFormat = UIUtils.createLabelText(sessionGroup, OracleMessages.edit_label_text_date_format, "");
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, "Content", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleMessages.dialog_controlgroup_content, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, "Hide empty schemas", false);
+            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_hide_empty_schemas, false);
             hideEmptySchemasCheckbox.setToolTipText(
-                "Check existence of objects within schema and do not show empty schemas in tree. " + GeneralUtils.getDefaultLineSeparator() +
-                "Enabled by default but it may cause performance problems on databases with very big number of objects.");
+            		OracleMessages.edit_create_checkbox_hide_empty_schemas_tool_tip_text + GeneralUtils.getDefaultLineSeparator() +
+            		OracleMessages.edit_create_checkbox_hide_empty_schemas_default_line_separator);
 
-            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, "Always show DBA objects", "Always shows DBA-related metadata objects in tree even if user do not has DBA role.", false, 1);
-            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, "Always use DBA_* views", "Use DBA_* views instead of ALL_* views wherever it is possible", false, 1);
+            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_show, OracleMessages.edit_create_checkbox_content_group_show_discription, false, 1);
+            useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use,  OracleMessages.edit_create_checkbox_content_group_use_discription, false, 1);
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, "Performance", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
-            useRuleHint = UIUtils.createCheckbox(contentGroup, "Use RULE hint for system catalog queries", true);
+            useRuleHint = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_group_use_rule, true);
             useRuleHint.setToolTipText(
-                "Adds RULE hint for some system catalog queries (like columns and constraints reading)." + GeneralUtils.getDefaultLineSeparator() +
-                "It significantly increases performance on some Oracle databases (and decreases on others).");
+            		OracleMessages.edit_create_checkbox_adds_rule_tool_tip_text + GeneralUtils.getDefaultLineSeparator() +
+            		OracleMessages.edit_create_checkbox_significantly_increases_performance_tool_tip_text);
         }
 
         setControl(cfgGroup);
