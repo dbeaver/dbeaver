@@ -265,7 +265,7 @@
 
                 <driver
                         id="mssql_jdbc_legacy"
-                        label="SQL Server (Old driver, Microsoft)"
+                        label="SQL Server (Old driver, MS)"
                         icon="icons/mssql_icon.png"
                         iconBig="icons/mssql_icon_big.png"
                         category="MS SQL Server"
