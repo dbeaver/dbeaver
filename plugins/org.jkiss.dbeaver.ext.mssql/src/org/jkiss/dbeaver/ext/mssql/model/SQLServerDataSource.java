@@ -24,9 +24,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -43,9 +44,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, /*DBCQueryPlanner, */IAdaptable {
 
@@ -300,6 +302,8 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new SQLServerStructureAssistant(this));
+        } else if (adapter == DBAServerSessionManager .class) {
+            return adapter.cast(new SQLServerSessionManager(this));
         }
         return super.getAdapter(adapter);
     }

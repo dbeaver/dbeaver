@@ -71,4 +71,26 @@
         </editor>
     </extension>
 
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasourcePatch id="sqlserver">
+            <treeInjection path="sqlserver/database" after="trigger">
+                <folder label="%tree.databaseInfo.node.name" icon="#folder_info" description="Database system information">
+                    <object type="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"/>
+                </folder>
+            </treeInjection>
+        </datasourcePatch>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="%editor.session_manager.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
+                class="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"
+                id="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"
+                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
+    </extension>
+
+
 </plugin>
