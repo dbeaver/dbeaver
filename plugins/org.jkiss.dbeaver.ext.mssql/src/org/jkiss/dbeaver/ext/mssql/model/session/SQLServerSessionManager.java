@@ -55,7 +55,7 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
-                "select *,db.name as database_name,r.sql_handle,(select text from sys.dm_exec_sql_text(r.sql_handle)) as sql_text\n" +
+                "select s.*,db.name as database_name,r.sql_handle,(select text from sys.dm_exec_sql_text(r.sql_handle)) as sql_text\n" +
                     "from sys.dm_exec_sessions s\n" +
                     "left outer join sys.sysdatabases db on db.dbid=s.database_id\n" +
                     "left outer join sys.dm_exec_requests r on r.session_id=s.session_id")) {
