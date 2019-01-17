@@ -142,6 +142,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
+    void patchConfigurationFrom(IConfigurationElement config) {
+        // Load tree injections
+        IConfigurationElement[] injections = config.getChildren(RegistryConstants.TAG_TREE_INJECTION);
+        if (!ArrayUtils.isEmpty(injections)) {
+            for (IConfigurationElement treeInject : injections) {
+                this.injectTreeNodes(treeInject);
+            }
+        }
+    }
+
     public void dispose()
     {
         drivers.clear();
@@ -509,4 +519,5 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
         return null;
     }
+
 }

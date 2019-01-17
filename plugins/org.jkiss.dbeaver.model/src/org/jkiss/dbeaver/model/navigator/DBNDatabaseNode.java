@@ -404,13 +404,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (CommonUtils.isEmpty(childMetas)) {
             return;
         }
+        DBSObject object = getObject();
+        if (object == null) {
+            // disposed?
+            return;
+        }
         monitor.beginTask(ModelMessages.model_navigator_load_items_, childMetas.size());
 
         for (DBXTreeNode child : childMetas) {
             if (monitor.isCanceled()) {
                 break;
             }
-            monitor.subTask(ModelMessages.model_navigator_load_ + " " + child.getChildrenType(getObject().getDataSource()));
+            monitor.subTask(ModelMessages.model_navigator_load_ + " " + child.getChildrenType(object.getDataSource()));
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
                 boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, reflect);

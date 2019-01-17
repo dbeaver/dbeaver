@@ -44,6 +44,7 @@ public class RegistryConstants {
     public static final String TAG_TYPES = "types"; //$NON-NLS-1$
     public static final String TAG_TYPE = "type"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE = "datasource"; //$NON-NLS-1$
+    public static final String TAG_DATASOURCE_PATCH = "datasourcePatch"; //$NON-NLS-1$
     public static final String TAG_OS = "os"; //NON-NLS-1
 
     public static final String ATTR_ID = "id"; //$NON-NLS-1$
