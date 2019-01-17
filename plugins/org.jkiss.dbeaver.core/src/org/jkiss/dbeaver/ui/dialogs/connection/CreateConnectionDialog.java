@@ -79,6 +79,11 @@ public class CreateConnectionDialog extends ActiveWizardDialog
             DBWorkbench.getPlatformUI().showError("No active project", "No active project, can't create new connection.\nActivate or create new project.");
             return IDialogConstants.CANCEL_ID;
         }
-        return super.open();
+        try {
+            return super.open();
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Internal error", "Internal error when opening new connection wizard", e);
+            return IDialogConstants.CANCEL_ID;
+        }
     }
 }

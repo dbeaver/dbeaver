@@ -102,6 +102,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
     private String category;
+    private List<String> categories;
     private final String origName;
     private final String origDescription;
     private final String origClassName;
@@ -188,6 +189,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (copyFrom != null) {
             // Copy props from source
             this.category = copyFrom.category;
+            this.categories = new ArrayList<>(copyFrom.categories);
             this.name = copyFrom.name;
             this.description = copyFrom.description;
             this.driverClassName = copyFrom.driverClassName;
@@ -221,6 +223,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
             this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
             this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
+        } else {
+            this.categories = new ArrayList<>();
         }
     }
 
@@ -230,6 +234,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_ID));
         this.category = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_CATEGORY));
+        this.categories = Arrays.asList(CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_CATEGORIES)).split(","));
         this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
@@ -411,6 +416,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    @Override
+    public List<String> getCategories() {
+        return new ArrayList<>(categories);
     }
 
     @NotNull
@@ -1172,6 +1182,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (!CommonUtils.isEmpty(this.getCategory())) {
                 xml.addAttribute(RegistryConstants.ATTR_CATEGORY, this.getCategory());
             }
+            xml.addAttribute(RegistryConstants.ATTR_CATEGORIES, String.join(",", this.getCategories()));
             xml.addAttribute(RegistryConstants.ATTR_CUSTOM, this.isCustom());
             xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, this.isEmbedded());
             xml.addAttribute(RegistryConstants.ATTR_NAME, this.getName());

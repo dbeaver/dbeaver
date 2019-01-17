@@ -24,6 +24,7 @@
     <!-- Non UI extensions -->
     <extension-point id="org.jkiss.dbeaver.mavenRepository" name="%extension-point.org.jkiss.dbeaver.mavenRepository.name" schema="schema/org.jkiss.dbeaver.mavenRepository.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="%extension-point.org.jkiss.dbeaver.dataSourceProvider.name" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.driverManager" name="%extension-point.org.jkiss.dbeaver.driverManager.name" schema="schema/org.jkiss.dbeaver.driverManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.objectManager" name="%extension-point.org.jkiss.dbeaver.objectManager.name" schema="schema/org.jkiss.dbeaver.objectManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="%extension-point.org.jkiss.dbeaver.networkHandler.name" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
@@ -1517,6 +1518,16 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager" objectType="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.driverManager">
+        <category id="sql" name="SQL" description="SQL (relational) databases" icon="#folder_database" rank="4" promoted="true"/>
+        <category id="nosql" name="NoSQL" description="NoSQL / BigData databases" icon="#folder_database" rank="5" promoted="true"/>
+        <category id="analytic" name="Analytical" description="Analytical databases, column-oriented databases" icon="#folder_database" rank="10" promoted="true"/>
+        <category id="timeseries" name="Timeseries" description="Timeseries databases" icon="#folder_database" rank="11" promoted="true"/>
+        <category id="fulltext" name="Full-text search" description="Full-text search databases" icon="#folder_database" rank="12" promoted="true"/>
+        <category id="embedded" name="Embedded" description="Embedded (serverless) databases" icon="#folder_database" rank="15" promoted="true"/>
+        <category id="hadoop" name="Hadoop / BigData" description="Hadoop based BigData databases" icon="#folder_database" rank="20" promoted="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
