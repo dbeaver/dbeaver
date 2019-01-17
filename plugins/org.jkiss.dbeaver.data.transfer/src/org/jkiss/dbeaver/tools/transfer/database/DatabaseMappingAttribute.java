@@ -210,7 +210,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 if (!possibleTypes.isEmpty()) {
                     // Try to get any partial match
                     for (DBSDataType type : possibleTypes) {
-                        if (type.getName().contains(typeName) || typeName.contains(type.getName())) {
+                        if (type.getName().equalsIgnoreCase(typeName)) {
                             targetType = type;
                             break;
                         }
