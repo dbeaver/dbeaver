@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.eclipse.core.runtime.Adapters;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -91,7 +91,7 @@ public class QMControllerImpl implements QMController {
             return defaultEventBrowser;
         }
         if (eventBrowser == null) {
-            eventBrowser = Adapters.adapt(this, QMEventBrowser.class);
+            eventBrowser = GeneralUtils.adapt(this, QMEventBrowser.class);
             if (eventBrowser == null) {
                 // Default browser
                 this.eventBrowser = defaultEventBrowser;

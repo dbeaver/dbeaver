@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.debug.core;
 
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -60,7 +59,7 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
     protected DBGController createController(DBPDataSourceContainer dataSourceContainer, Map<String, Object> attributes) throws CoreException {
         try {
-            DBGControllerFactory controllerFactory = Adapters.adapt(dataSourceContainer, DBGControllerFactory.class);
+            DBGControllerFactory controllerFactory = GeneralUtils.adapt(dataSourceContainer, DBGControllerFactory.class);
             if (controllerFactory != null) {
                 return controllerFactory.createController(dataSourceContainer, attributes);
             }

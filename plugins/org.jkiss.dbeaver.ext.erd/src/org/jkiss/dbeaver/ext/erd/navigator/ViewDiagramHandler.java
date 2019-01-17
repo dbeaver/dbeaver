@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.erd.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class ViewDiagramHandler extends AbstractDataSourceHandler {
 
@@ -39,9 +39,9 @@ public class ViewDiagramHandler extends AbstractDataSourceHandler {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (selection instanceof IStructuredSelection) {
             for (Object item : ((IStructuredSelection) selection).toList()) {
-                DBSObject object = Adapters.adapt(item, DBSEntity.class);
+                DBSObject object = GeneralUtils.adapt(item, DBSEntity.class);
                 if (object == null) {
-                    object = Adapters.adapt(item, DBSObjectContainer.class);
+                    object = GeneralUtils.adapt(item, DBSObjectContainer.class);
                 }
                 if (object != null) {
                     DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject(object);

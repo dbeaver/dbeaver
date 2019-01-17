@@ -17,12 +17,12 @@
 
 package org.jkiss.dbeaver.runtime;
 
-import org.eclipse.core.runtime.Adapters;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * Workbench
@@ -40,7 +40,7 @@ public class DBWorkbench {
         if (platformInstance == null) {
             synchronized (DBWorkbench.class) {
                 if (platformInstance == null) {
-                    platformInstance = Adapters.adapt(instance, DBPPlatform.class);
+                    platformInstance = GeneralUtils.adapt(instance, DBPPlatform.class);
                     if (platformInstance == null) {
                         throw new IllegalStateException("Internal configuration error. Platform not instantiated.");
                     }
@@ -54,7 +54,7 @@ public class DBWorkbench {
         if (platformUIInstance == null) {
             synchronized (DBWorkbench.class) {
                 if (platformUIInstance == null) {
-                    platformUIInstance = Adapters.adapt(instance, DBPPlatformUI.class);
+                    platformUIInstance = GeneralUtils.adapt(instance, DBPPlatformUI.class);
                     if (platformUIInstance == null) {
                         throw new IllegalStateException("Internal configuration error. Platform UI not instantiated.");
                     }

@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.debug.ui.actions;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.IBreakpoint;
@@ -91,7 +90,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         }
         int charstart = -1, charend = -1;
 
-        DBGBreakpointDescriptor breakpointDescriptor = Adapters.adapt(databaseObject, DBGBreakpointDescriptor.class);
+        DBGBreakpointDescriptor breakpointDescriptor = GeneralUtils.adapt(databaseObject, DBGBreakpointDescriptor.class);
         if (breakpointDescriptor == null) {
             throw new CoreException(GeneralUtils.makeErrorStatus(
                 "Object '" + DBUtils.getObjectFullName(databaseObject, DBPEvaluationContext.UI) + "' doesn't support breakpoints"));

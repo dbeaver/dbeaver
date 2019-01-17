@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.eclipse.core.internal.runtime.AdapterManager;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -623,4 +624,66 @@ public class GeneralUtils {
     public static boolean isWindows() {
         return Platform.getOS().contains("win32");
     }
+
+    /////////////////////////////////////////////////////////////////////////
+    // Adapters
+    // Copy-pasted from org.eclipse.core.runtime.Adapters to support Eclipse Mars (#46667)
+
+    public static <T> T adapt(Object sourceObject, Class<T> adapter, boolean allowActivation) {
+        if (sourceObject == null) {
+            return null;
+        }
+        if (adapter.isInstance(sourceObject)) {
+            return (T) sourceObject;
+        }
+
+        if (sourceObject instanceof IAdaptable) {
+            IAdaptable adaptable = (IAdaptable) sourceObject;
+
+            Object result = adaptable.getAdapter(adapter);
+            if (result != null) {
+                // Sanity-check
+                if (!adapter.isInstance(result)) {
+                    throw new AssertionFailedException(adaptable.getClass().getName() + ".getAdapter(" + adapter.getName() + ".class) returned " //$NON-NLS-1$//$NON-NLS-2$
+                        + result.getClass().getName() + " that is not an instance the requested type"); //$NON-NLS-1$
+                }
+                return (T) result;
+            }
+        }
+
+        // If the source object is a platform object then it's already tried calling AdapterManager.getAdapter,
+        // so there's no need to try it again.
+        if ((sourceObject instanceof PlatformObject) && !allowActivation) {
+            return null;
+        }
+
+        String adapterId = adapter.getName();
+        Object result = queryAdapterManager(sourceObject, adapterId, allowActivation);
+        if (result != null) {
+            // Sanity-check
+            if (!adapter.isInstance(result)) {
+                throw new AssertionFailedException("An adapter factory for " //$NON-NLS-1$
+                    + sourceObject.getClass().getName() + " returned " + result.getClass().getName() //$NON-NLS-1$
+                    + " that is not an instance of " + adapter.getName()); //$NON-NLS-1$
+            }
+            return (T) result;
+        }
+
+        return null;
+    }
+
+    public static <T> T adapt(Object sourceObject, Class<T> adapter) {
+        return adapt(sourceObject, adapter, true);
+    }
+
+    private static Object queryAdapterManager(Object sourceObject, String adapterId, boolean allowActivation) {
+        Object result;
+        if (allowActivation) {
+            result = AdapterManager.getDefault().loadAdapter(sourceObject, adapterId);
+        } else {
+            result = AdapterManager.getDefault().getAdapter(sourceObject, adapterId);
+        }
+        return result;
+    }
+
 }
