@@ -91,4 +91,25 @@ public class OracleMessages extends NLS {
 	public static String views_oracle_compiler_log_viewer_column_line;
 	public static String views_oracle_compiler_log_viewer_column_message;
 	public static String views_oracle_compiler_log_viewer_column_pos;
+	
+	public static String dialog_connection_oracle_properties;
+	public static String dialog_connection_oracle_properties_discription;
+	public static String dialog_controlgroup_session_settings;
+	public static String edit_label_combo_language;
+	public static String edit_label_combo_language_tool_tip_text;
+	public static String edit_label_combo_territory;
+	public static String edit_label_combo_territory_tool_tip_text;
+	public static String edit_label_text_date_format;
+	public static String dialog_controlgroup_content;
+	public static String edit_create_checkbox_hide_empty_schemas;
+	public static String edit_create_checkbox_hide_empty_schemas_tool_tip_text;
+	public static String edit_create_checkbox_hide_empty_schemas_default_line_separator;
+	public static String edit_create_checkbox_content_group_show;
+	public static String edit_create_checkbox_content_group_show_discription;
+	public static String edit_create_checkbox_content_group_use;
+	public static String edit_create_checkbox_content_group_use_discription;
+	public static String dialog_controlgroup_performance;
+	public static String edit_create_checkbox_group_use_rule;
+	public static String edit_create_checkbox_adds_rule_tool_tip_text;
+	public static String edit_create_checkbox_significantly_increases_performance_tool_tip_text;
 }
