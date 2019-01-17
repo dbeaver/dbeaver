@@ -150,7 +150,7 @@
                     <property id="active-entity-type" label="Active object type" description="Type of selectable object (schema, catalog)" type="string" required="false" defaultValue="" validValues="catalog,schema"/>
                     <property id="supports-scroll" label="Driver supports results scrolling" description="Driver supports resultset scrolling" type="boolean" required="false" defaultValue="false"/>
                     <property id="quote-reserved-words" label="Quote reserved words" description="Quote columns/table names if they conflicts with reserved SQL keywords" type="boolean" required="false" defaultValue="true"/>
-                    <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) driverss" type="boolean" required="false" defaultValue="true"/>
+                    <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) driverss" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
@@ -318,7 +318,6 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="omit-catalog" value="true"/>
-                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
 
                 <driver
@@ -714,7 +713,6 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
-                    <parameter name="use-search-string-escape" value="false"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
 
@@ -771,8 +769,6 @@
                     <file type="jar" path="drivers/ucanaccess/jackcess.jar" bundle="drivers.ucanaccess"/>
                     <file type="jar" path="drivers/ucanaccess/mockito-core.jar" bundle="drivers.ucanaccess"/>
                     <file type="jar" path="drivers/ucanaccess/objenesis.jar" bundle="drivers.ucanaccess"/>
-
-                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
                 <driver
                     id="netezza"
@@ -1065,6 +1061,8 @@
                         description="PrestoDB JDBC driver"
                         webURL="https://prestodb.io/">
                     <file type="jar" path="maven:/com.facebook.presto:presto-jdbc:RELEASE"/>
+
+                    <parameter name="use-search-string-escape" value="true"/>
                 </driver>
 
                 <!-- CUBRID -->
@@ -1133,8 +1131,6 @@
                         description="MonetDB JDBC driver"
                         webURL="https://www.monetdb.org/Documentation/Manuals/SQLreference/Programming/JDBC">
                     <file type="jar" path="maven:/monetdb:monetdb-jdbc:RELEASE"/>
-
-                    <parameter name="use-search-string-escape" value="false"/>
                 </driver>
 
             </drivers>
