@@ -18,15 +18,18 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreServerExtensionBase
@@ -270,6 +273,14 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
         return new PostgreTableColumn(monitor, table, dbResult);
+    }
+
+    @Override
+    public void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props) {
+        if (connectionInfo.getProperty(PostgreConstants.PROP_SSL) == null) {
+            // We need to disable SSL explicitly (see #4928)
+            props.put(PostgreConstants.PROP_SSL, "false");
+        }
     }
 
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {

@@ -161,12 +161,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 throw new DBCException("Error configuring SSL certificates", e);
             }
         } else {
-            if (getServerType() instanceof PostgreServerRedshift) {
-                if (!props.containsKey(PostgreConstants.PROP_SSL)) {
-                    // We need to disable SSL explicitly
-                    props.put(PostgreConstants.PROP_SSL, "false");
-                }
-            }
+            getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
         return props;
     }
