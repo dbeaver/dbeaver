@@ -48,8 +48,12 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     String getProviderId();
 
+    @Deprecated
     @Nullable
     String getCategory();
+
+    @NotNull
+    List<String> getCategories();
 
     @NotNull
     String getFullName();

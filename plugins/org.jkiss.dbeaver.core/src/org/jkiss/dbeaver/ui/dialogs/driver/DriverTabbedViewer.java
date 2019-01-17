@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DriverCategoryDescriptor;
+import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,6 +38,7 @@ import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderComposite;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderInfo;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -77,19 +80,42 @@ public class DriverTabbedViewer extends StructuredViewer {
             }
         };
 
-        TabbedFolderInfo[] folders = new TabbedFolderInfo[] {
-            new TabbedFolderInfo("popular", "Popular", DBIcon.TREE_DATABASE, "Recent drivers", false, new DriverListFolder(recentDrivers)),
-            new TabbedFolderInfo("all", "All", DBIcon.TREE_DATABASE, "All drivers", false, new DriverListFolder(allDrivers))
-        };
+        List<TabbedFolderInfo> folders = new ArrayList<>();
+        folders.add(
+            new TabbedFolderInfo(
+                "all", "All", DBIcon.TREE_DATABASE, "All drivers", false,
+                new DriverListFolder(allDrivers)));
+        folders.add(
+            new TabbedFolderInfo(
+                "popular", "Popular", DBIcon.TREE_DATABASE, "Popular and recently used drivers", false,
+                new DriverListFolder(recentDrivers)));
 
+        for (DriverCategoryDescriptor category : DriverManagerRegistry.getInstance().getCategories()) {
+            if (category.isPromoted()) {
+                folders.add(
+                    new TabbedFolderInfo(
+                        category.getId(), category.getName(), category.getIcon(), category.getDescription(), false,
+                        new DriverListFolder(getCategoryDrivers(category, allDrivers))));
+            }
+        }
 
         String folderId = UIUtils.getDialogSettings(DIALOG_ID).get(PARAM_LAST_FOLDER);
         if (CommonUtils.isEmpty(folderId)) {
             folderId = "popular";
         }
-        folderComposite.setFolders(getClass().getSimpleName(), folders);
+        folderComposite.setFolders(getClass().getSimpleName(), folders.toArray(new TabbedFolderInfo[0]));
         folderComposite.switchFolder(folderId, false);
         folderComposite.addFolderListener(folderId1 -> UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1));
+    }
+
+    private List<DBPDriver> getCategoryDrivers(DriverCategoryDescriptor category, List<DBPDriver> allDrivers) {
+        List<DBPDriver> drivers = new ArrayList<>();
+        for (DBPDriver driver : allDrivers) {
+            if (driver.getCategories().contains(category.getId())) {
+                drivers.add(driver);
+            }
+        }
+        return drivers;
     }
 
     public TabbedFolderComposite getFolderComposite() {

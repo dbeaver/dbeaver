@@ -409,7 +409,8 @@
                         useURL="false"
                         defaultPort="8563"
                         description="%driver.exasol.description"
-                        webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">
+                        webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section"
+                        categories="sql,analytic,columns">
                     <file path="maven:/com.exasol:exasol-jdbc:RELEASE" type="jar" bundle="!drivers.exasol"/>
                     <file type="jar" path="drivers/exasol/exasol-jdbc.jar" bundle="drivers.exasol"/>
 

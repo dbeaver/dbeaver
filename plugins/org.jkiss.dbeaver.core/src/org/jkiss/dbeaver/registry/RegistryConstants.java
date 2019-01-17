@@ -50,6 +50,7 @@ public class RegistryConstants {
     public static final String ATTR_ID = "id"; //$NON-NLS-1$
     public static final String ATTR_VERSION = "version"; //$NON-NLS-1$
     public static final String ATTR_CATEGORY = "category"; //$NON-NLS-1$
+    public static final String ATTR_CATEGORIES = "categories"; //$NON-NLS-1$
     public static final String ATTR_DISABLED = "disabled"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM = "custom"; //$NON-NLS-1$
     public static final String ATTR_NAME = "name"; //$NON-NLS-1$

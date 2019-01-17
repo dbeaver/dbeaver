@@ -113,7 +113,8 @@
                     sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                     defaultPort="5433"
                     webURL="https://my.vertica.com/download/vertica/client-drivers/"
-                    description="Driver for Vertica Database">
+                    description="Driver for Vertica Database"
+                    categories="sql,analytic,columns">
                     <parameter name="query-get-active-db" value="select current_schema()"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?,&quot;$user&quot;,public,v_catalog,v_monitor,v_internal"/>
                     <parameter name="active-entity-type" value="schema"/>
@@ -131,7 +132,8 @@
                         sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                         defaultPort="5433"
                         webURL="http://www.vertica.com/"
-                        description="Driver for Vertica Database">
+                        description="Driver for Vertica Database"
+                        categories="sql,analytic,columns">
                     <replace provider="generic" driver="vertica"/>
                     <replace provider="vertica" driver="vertica-jdbc"/>
 
@@ -154,7 +156,8 @@
                     sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                     defaultPort="5433"
                     webURL="https://my.vertica.com/download/vertica/client-drivers/"
-                    description="JDBC driver for Vertica 8+ Database">
+                    description="JDBC driver for Vertica 8+ Database"
+                    categories="sql,analytic,columns">
                     <replace provider="generic" driver="vertica"/>
                     <replace provider="vertica" driver="vertica-jdbc"/>
                     <replace provider="vertica" driver="vertica-jdbc-6"/>

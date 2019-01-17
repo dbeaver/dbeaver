@@ -29,7 +29,8 @@
                         sampleURL="jdbc:snowflake://{host}[:port]/?[db={database}]"
                         defaultPort="443"
                         description="Snowflake JDBC driver"
-                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
+                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html"
+                        categories="sql,analytic">
                     <replace provider="generic" driver="snowflake_generic"/>
                     <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>

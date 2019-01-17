@@ -26,7 +26,8 @@
                         sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                         defaultPort="50000"
                         description="DB2 z/OS driver"
-                        note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library.">
+                        note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library."
+                        categories="sql,legacy,mainframe">
 
                     <replace provider="generic" driver="db2_zos"/>
 

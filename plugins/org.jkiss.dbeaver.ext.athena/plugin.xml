@@ -28,7 +28,8 @@
                         description="Simba AWS Athena driver"
                         category="AWS"
                         webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
-                        propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.5/docs/Simba+Athena+JDBC+Driver+Install+and+Configuration+Guide.pdf">
+                        propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.5/docs/Simba+Athena+JDBC+Driver+Install+and+Configuration+Guide.pdf"
+                        categories="bigdata">
                     <replace provider="generic" driver="aws_athena_42"/>
                     <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.5/AthenaJDBC42_2.0.5.jar"/>
 
