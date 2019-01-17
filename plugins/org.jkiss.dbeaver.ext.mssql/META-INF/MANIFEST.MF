@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.ui,
  com.github.jsqlparser
 Export-Package: org.jkiss.dbeaver.ext.mssql,
  org.jkiss.dbeaver.ext.mssql.model,
- org.jkiss.dbeaver.ext.mssql.model.generic
+ org.jkiss.dbeaver.ext.mssql.model.generic,
+ org.jkiss.dbeaver.ext.mssql.model.session
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
