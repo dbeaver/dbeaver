@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages; 
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         this.context = context;
         this.container = container;
 
-        setTitle("Goto Database Object in '" + context.getDataSource().getContainer().getName() + "'");
+        setTitle(UINavigatorMessages.dialog_project_goto_object_title + " '" + context.getDataSource().getContainer().getName() + "'");
         setListLabelProvider(new ObjectLabelProvider());
         setDetailsLabelProvider(new DetailsLabelProvider());
     }
