@@ -64,7 +64,8 @@ public class UINavigatorMessages extends NLS {
     public static String dialog_project_create_wizard_error_cannot_create;
     public static String dialog_project_create_wizard_error_cannot_create_message;
     public static String dialog_project_create_wizard_title;
-
+    public static String dialog_project_goto_object_title;
+    
     public static String registry_entity_editor_descriptor_description;
     public static String registry_entity_editor_descriptor_name;
     public static String pref_page_database_general_group_navigator;
