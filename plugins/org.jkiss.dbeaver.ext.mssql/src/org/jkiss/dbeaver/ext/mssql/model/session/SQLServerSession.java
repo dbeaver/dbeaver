@@ -46,6 +46,7 @@ public class SQLServerSession implements DBAServerSession {
     private String loginName;
     private String ntDomain;
     private String ntUserName;
+    private String command;
     private String status;
 
     private long cpuTime;
@@ -58,7 +59,6 @@ public class SQLServerSession implements DBAServerSession {
 
     private String language;
     private long rowCount;
-    private String fileName;
     private String databaseName;
 
     private String sqlText;
@@ -67,18 +67,19 @@ public class SQLServerSession implements DBAServerSession {
         this.id = JDBCUtils.safeGetInt(dbResult, "session_id");
 
         loginTime = JDBCUtils.safeGetTimestamp(dbResult, "login_time");;
-        lastRequestStart = JDBCUtils.safeGetTimestamp(dbResult, "last_request_start");
-        lastRequestEnd = JDBCUtils.safeGetTimestamp(dbResult, "last_request_end");
+        lastRequestStart = JDBCUtils.safeGetTimestamp(dbResult, "last_request_start_time");
+        lastRequestEnd = JDBCUtils.safeGetTimestamp(dbResult, "last_request_end_time");
 
         hostName = JDBCUtils.safeGetString(dbResult, "host_name");
         programName = JDBCUtils.safeGetString(dbResult, "program_name");
         hostPID = JDBCUtils.safeGetString(dbResult, "host_process_id");
         clientVersion = JDBCUtils.safeGetString(dbResult, "client_version");
-        clientInterface = JDBCUtils.safeGetString(dbResult, "client_interface");
+        clientInterface = JDBCUtils.safeGetString(dbResult, "client_interface_name");
         loginName = JDBCUtils.safeGetString(dbResult, "login_name");
         ntDomain = JDBCUtils.safeGetString(dbResult, "nt_domain");
         ntUserName = JDBCUtils.safeGetString(dbResult, "nt_user_name");
         status = JDBCUtils.safeGetString(dbResult, "status");
+        command = JDBCUtils.safeGetString(dbResult, "command");
 
         cpuTime = JDBCUtils.safeGetLong(dbResult, "cpu_time");
         memoryUsage = JDBCUtils.safeGetLong(dbResult, "memory_usage");
@@ -90,7 +91,6 @@ public class SQLServerSession implements DBAServerSession {
 
         language = JDBCUtils.safeGetString(dbResult, "language");
         rowCount = JDBCUtils.safeGetLong(dbResult, "row_count");
-        fileName = JDBCUtils.safeGetString(dbResult, "file_name");
         databaseName = JDBCUtils.safeGetString(dbResult, "database_name");
 
         sqlText = JDBCUtils.safeGetString(dbResult, "sql_text");
@@ -99,6 +99,16 @@ public class SQLServerSession implements DBAServerSession {
     @Property(viewable = true, order = 1)
     public long getId() {
         return id;
+    }
+
+    @Property(viewable = false, category = CAT_CLIENT, order = 5)
+    public String getCommand() {
+        return command;
+    }
+
+    @Property(viewable = true, order = 6)
+    public String getStatus() {
+        return status;
     }
 
     @Property(viewable = false, category = CAT_TIMING, order = 10)
@@ -156,11 +166,6 @@ public class SQLServerSession implements DBAServerSession {
         return ntUserName;
     }
 
-    @Property(viewable = true, order = 5)
-    public String getStatus() {
-        return status;
-    }
-
     @Property(viewable = true, category = CAT_STATISTICS, order = 40)
     public long getCpuTime() {
         return cpuTime;
@@ -194,11 +199,6 @@ public class SQLServerSession implements DBAServerSession {
     @Property(viewable = false, category = CAT_STATISTICS, order = 46)
     public long getRowCount() {
         return rowCount;
-    }
-
-    @Property(viewable = false, category = CAT_CLIENT, order = 30)
-    public String getFileName() {
-        return fileName;
     }
 
     @Property(viewable = false, category = CAT_CLIENT, order = 31)
