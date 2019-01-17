@@ -75,7 +75,7 @@ public class WorkspaceResources {
     }
 
     public static IResource resolveWorkspaceResource(DBSObject dbsObject) {
-        WorkspaceResourceResolver resolver = Adapters.adapt(dbsObject, WorkspaceResourceResolver.class, true);
+        WorkspaceResourceResolver resolver = GeneralUtils.adapt(dbsObject, WorkspaceResourceResolver.class, true);
         if (resolver != null) {
             return resolver.resolveResource(dbsObject);
         }

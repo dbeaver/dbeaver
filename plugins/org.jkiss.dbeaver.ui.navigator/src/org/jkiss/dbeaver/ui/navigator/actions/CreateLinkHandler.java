@@ -23,7 +23,10 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
@@ -51,7 +54,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
             return null;
         }
         Object first = structured.getFirstElement();
-        IResource resource = Adapters.adapt(first, IResource.class);
+        IResource resource = GeneralUtils.adapt(first, IResource.class);
         IContainer container = extractContainer(resource);
         if (container == null) {
             IStatus error = GeneralUtils.makeErrorStatus(NLS.bind(UINavigatorMessages.CreateLinkHandler_e_create_link_validation, resource));

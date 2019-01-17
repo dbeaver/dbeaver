@@ -18,13 +18,13 @@
 
 package org.jkiss.dbeaver.debug.ui;
 
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class DebugUI {
 
@@ -33,7 +33,7 @@ public class DebugUI {
     public static final String DEBUG_OPEN_CONFIGURATION_COMMAND_ID = "org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu"; //$NON-NLS-1$
 
     public static DBGEditorAdvisor findEditorAdvisor(DBPDataSourceContainer dataSourceContainer) {
-        DBGEditorAdvisor advisor = Adapters.adapt(dataSourceContainer, DBGEditorAdvisor.class);
+        DBGEditorAdvisor advisor = GeneralUtils.adapt(dataSourceContainer, DBGEditorAdvisor.class);
         if (advisor != null) {
             return advisor;
         }

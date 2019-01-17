@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.debug.core.*;
@@ -44,6 +43,7 @@ import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -290,7 +290,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
     }
 
     protected IResource getLaunchableResource(IAdaptable adaptable) {
-        return Adapters.adapt(adaptable, IResource.class);
+        return GeneralUtils.adapt(adaptable, IResource.class);
     }
 
 }
