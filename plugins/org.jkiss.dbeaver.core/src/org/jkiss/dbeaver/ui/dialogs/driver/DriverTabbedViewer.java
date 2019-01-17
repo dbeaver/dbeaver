@@ -24,7 +24,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -53,13 +55,14 @@ public class DriverTabbedViewer extends StructuredViewer {
     private static final String PARAM_LAST_FOLDER = "folder";
 
     private final TabbedFolderComposite folderComposite;
+    private final List<DBPDataSourceContainer> dataSources;
 
     public DriverTabbedViewer(Composite parent, int style) {
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
         allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 6);
-
+        dataSources = DataSourceRegistry.getAllDataSources();
 
         folderComposite = new TabbedFolderComposite(parent, style) {
             @Override
@@ -251,9 +254,16 @@ public class DriverTabbedViewer extends StructuredViewer {
             @Override
             public String getToolTipText(Object element) {
                 DBPDriver driver = (DBPDriver) element;
+                List<DBPDataSourceContainer> usedBy = DriverUtils.getUsedBy(driver, dataSources);
 
                 StringBuilder toolTip = new StringBuilder();
                 toolTip.append(driver.getFullName());
+                toolTip.append("\n");
+                if (!usedBy.isEmpty()) {
+                    toolTip.append("Saved connections: ").append(usedBy.size());
+                } else {
+                    toolTip.append("No saved connections yet");
+                }
                 if (!CommonUtils.isEmpty(driver.getDescription())) {
                     if (toolTip.length() > 0) {
                         toolTip.append("\n\n");
