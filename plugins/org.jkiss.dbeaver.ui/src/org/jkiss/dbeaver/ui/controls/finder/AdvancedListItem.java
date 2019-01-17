@@ -145,10 +145,26 @@ public class AdvancedListItem extends Canvas {
         gc.drawImage(icon, 0, 0, iconBounds.width, iconBounds.height,
             imgPosX - e.x, imgPosY, imageSize.x, imageSize.y);
 
-        Point textSize = gc.stringExtent(text);
-        if (textSize.x > itemSize.x) textSize.x = itemSize.x;
+        String theText = text;
+        int divPos = theText.indexOf('(');
+        if (divPos != -1 && text.endsWith(")")) {
+            // Draw in two lines
+            String mainTitle = text.substring(0, divPos);
+            String subTitle = text.substring(divPos, text.length());
+            drawItemText(e, itemSize, gc, mainTitle, 0);
+            drawItemText(e, itemSize, gc, subTitle, getList().getTextSize().y + 1);
+        } else {
+            drawItemText(e, itemSize, gc, text, BORDER_MARGIN * 2);
+        }
+    }
 
-        gc.drawText(text, (itemSize.x - textSize.x) / 2 - e.x, itemSize.y - textSize.y - BORDER_MARGIN * 2);
+    private void drawItemText(PaintEvent e, Point itemSize, GC gc, String theText, int topIndent) {
+        Point textSize = gc.stringExtent(theText);
+        if (textSize.x > itemSize.x - BORDER_MARGIN * 2) textSize.x = itemSize.x - BORDER_MARGIN * 2;
+
+        gc.setClipping(BORDER_MARGIN, itemSize.y - BORDER_MARGIN * 4 - textSize.y + topIndent, itemSize.x - BORDER_MARGIN * 2, textSize.y * 2);
+
+        gc.drawText(theText, (itemSize.x - textSize.x) / 2 - e.x, itemSize.y - textSize.y - BORDER_MARGIN * 4 + topIndent);
     }
 
     private AdvancedList getList() {
