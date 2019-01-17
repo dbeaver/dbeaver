@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class ERDUtils
 {
@@ -60,10 +61,10 @@ public class ERDUtils
         return attributeLabel;
 	}
 
-    public static ERDEntity makeEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, DBSEntity entity, Object userData) {
+    public static ERDEntity makeEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, List<ERDEntity> otherEntities, DBSEntity entity, Object userData) {
         ERDEntity erdEntity = new ERDEntity(entity);
         erdEntity.setUserData(userData);
-        diagram.getDecorator().fillEntityFromObject(monitor, diagram, erdEntity);
+        diagram.getDecorator().fillEntityFromObject(monitor, diagram, otherEntities, erdEntity);
         return erdEntity;
     }
 

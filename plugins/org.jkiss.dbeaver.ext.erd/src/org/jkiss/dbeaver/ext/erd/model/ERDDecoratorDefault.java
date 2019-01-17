@@ -37,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -127,7 +128,7 @@ public class ERDDecoratorDefault implements ERDDecorator {
     }
 
     @Override
-    public void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, ERDEntity erdEntity) {
+    public void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, List<ERDEntity> otherEntities, ERDEntity erdEntity) {
         DBSEntity entity = erdEntity.getObject();
         ERDAttributeVisibility attributeVisibility = diagram.getDecorator().supportsAttributeVisibility() ?
             erdEntity.getAttributeVisibility() : ERDAttributeVisibility.ALL;
