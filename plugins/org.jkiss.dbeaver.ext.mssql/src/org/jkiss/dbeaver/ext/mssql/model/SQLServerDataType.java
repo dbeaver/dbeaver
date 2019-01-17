@@ -278,13 +278,13 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             case "datetime2":
             case "smalldatetime":
             case "time":
-            case "timestamp":
                 return DBPDataKind.DATETIME;
 
             case "datetimeoffset":
                 return DBPDataKind.STRING;
 
             case "binary":
+            case "timestamp":
                 return DBPDataKind.BINARY;
 
             case "image":

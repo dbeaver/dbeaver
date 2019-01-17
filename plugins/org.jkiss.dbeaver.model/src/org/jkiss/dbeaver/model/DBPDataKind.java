@@ -50,6 +50,8 @@ public enum DBPDataKind
     public static boolean canConsume(DBPDataKind sourceKind, DBPDataKind targetKind) {
         if (targetKind == CONTENT) {
             return sourceKind == STRING || sourceKind == BINARY || sourceKind == CONTENT;
+        } else if (targetKind == STRING) {
+            return sourceKind == STRING;// || sourceKind == NUMERIC || sourceKind == BOOLEAN || sourceKind == DATETIME;
         } else {
             return sourceKind == targetKind;
         }

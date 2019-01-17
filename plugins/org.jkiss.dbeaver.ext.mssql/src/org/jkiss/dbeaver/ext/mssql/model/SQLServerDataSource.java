@@ -157,6 +157,21 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
         return (SQLServerDataType) dt;
     }
 
+    @Override
+    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+        switch (dataKind) {
+            case BOOLEAN: return "bit";
+            case NUMERIC: return "int";
+            case STRING: return "varchar";
+            case DATETIME: return SQLServerConstants.TYPE_DATETIME;
+            case BINARY: return "binary";
+            case CONTENT: return "varbinary";
+            case ROWID: return "uniqueidentifier";
+            default:
+                return super.getDefaultDataTypeName(dataKind);
+        }
+    }
+
     //////////////////////////////////////////////////////////
     // Databases
 
