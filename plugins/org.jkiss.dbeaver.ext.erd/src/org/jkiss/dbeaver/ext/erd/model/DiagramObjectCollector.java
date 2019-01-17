@@ -141,20 +141,8 @@ public class DiagramObjectCollector {
             // Avoid duplicates
             return;
         }
-        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, table, null);
+        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, erdEntities, table, null);
         if (erdEntity != null) {
-            // Check for alias duplications (this may happen if multiple tables were added at once)
-            String alias = erdEntity.getAlias();
-            if (!CommonUtils.isEmpty(alias)) {
-                for (int i = 2; i < 500; i++) {
-                    if (aliasExist(erdEntity.getAlias())) {
-                        erdEntity.setAlias(alias + i);
-                    } else {
-                        break;
-                    }
-                }
-            }
-
             erdEntities.add(erdEntity);
         }
     }

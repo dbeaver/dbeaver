@@ -24,6 +24,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
+import java.util.List;
+
 /**
  * ERD object adapter
  */
@@ -46,9 +48,11 @@ public interface ERDDecorator {
     void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
 
     /**
-     * Create default entity attributes
+     * Create default entity attributes.
+     * @param diagram Diagram
+     * @param otherEntities list of entities if they are added as a batch
      */
-    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull EntityDiagram diagram, @NotNull ERDEntity erdEntity);
+    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull EntityDiagram diagram, List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity);
 
     @Nullable
     ERDAssociation createAutoAssociation(ERDContainer diagram, @NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect);

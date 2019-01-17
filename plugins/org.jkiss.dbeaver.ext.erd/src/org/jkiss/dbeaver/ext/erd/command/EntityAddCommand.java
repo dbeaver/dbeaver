@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -81,9 +82,10 @@ public class EntityAddCommand extends Command
                                 new Class[]{DBSTable.class}, null);
                         if (tableNode instanceof DBNDatabaseNode && ((DBNDatabaseNode) tableNode).getObject() instanceof DBSEntity) {
                             entity = ERDUtils.makeEntityFromObject(
-                                    monitor,
-                                    diagramPart.getDiagram(),
-                                    (DBSEntity)((DBNDatabaseNode) tableNode).getObject(),
+                                monitor,
+                                diagramPart.getDiagram(),
+                                Collections.emptyList(),
+                                (DBSEntity)((DBNDatabaseNode) tableNode).getObject(),
                                 null);
                             // This actually only loads unresolved relations.
                             // This happens only with entities added on diagram during editing

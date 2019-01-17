@@ -257,16 +257,18 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     public void fillEntities(DBRProgressMonitor monitor, Collection<DBSEntity> entities, DBSObject dbObject) {
         // Load entities
         monitor.beginTask("Load entities metadata", entities.size());
+        List<ERDEntity> entityCache = new ArrayList<>();
         for (DBSEntity table : entities) {
             if (monitor.isCanceled()) {
                 break;
             }
             monitor.subTask("Load " + table.getName());
-            ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, this, table, null);
+            ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, this, entityCache, table, null);
             erdEntity.setPrimary(table == dbObject);
 
             addEntity(erdEntity, false);
             entityMap.put(table, erdEntity);
+            entityCache.add(erdEntity);
 
             monitor.worked(1);
         }

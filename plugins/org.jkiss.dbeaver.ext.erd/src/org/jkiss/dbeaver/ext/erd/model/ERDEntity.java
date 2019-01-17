@@ -190,7 +190,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
         if (!CommonUtils.isEmpty(attributes)) {
             attributes.clear();
         }
-        diagram.getDecorator().fillEntityFromObject(new VoidProgressMonitor(), diagram, this);
+        diagram.getDecorator().fillEntityFromObject(new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
     }
 
     /**
