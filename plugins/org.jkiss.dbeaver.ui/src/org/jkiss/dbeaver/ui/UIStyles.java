@@ -22,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,28 +42,28 @@ public class UIStyles {
     }
 
     public static Color getDefaultWidgetBackground() {
-        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND, SWT.COLOR_WIDGET_BACKGROUND);
+        return getDefaultTextColor("AbstractTextEditor.Color.Background", SWT.COLOR_WIDGET_BACKGROUND);
     }
 
     public static Color getDefaultTextBackground() {
-        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND, SWT.COLOR_LIST_BACKGROUND);
+        return getDefaultTextColor("AbstractTextEditor.Color.Background", SWT.COLOR_LIST_BACKGROUND);
     }
 
     public static Color getDefaultTextForeground() {
-        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND, SWT.COLOR_LIST_FOREGROUND);
+        return getDefaultTextColor("AbstractTextEditor.Color.Foreground", SWT.COLOR_LIST_FOREGROUND);
     }
 
     public static Color getDefaultTextSelectionBackground() {
-        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_SELECTION_BACKGROUND, SWT.COLOR_LIST_SELECTION);
+        return getDefaultTextColor("AbstractTextEditor.Color.SelectionBackground", SWT.COLOR_LIST_SELECTION);
     }
 
     public static Color getDefaultTextSelectionForeground() {
-        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_SELECTION_FOREGROUND, SWT.COLOR_LIST_SELECTION_TEXT);
+        return getDefaultTextColor("AbstractTextEditor.Color.SelectionForeground", SWT.COLOR_LIST_SELECTION_TEXT);
     }
 
     public static Color getDefaultTextColor(String id, int defSWT) {
         IPreferenceStore preferenceStore = getEditorsPreferenceStore();
-        String fgRGB = preferenceStore.getString(id);
+        String fgRGB = preferenceStore == null ? null : preferenceStore.getString(id);
         return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(defSWT) : UIUtils.getSharedColor(fgRGB);
     }
 }
