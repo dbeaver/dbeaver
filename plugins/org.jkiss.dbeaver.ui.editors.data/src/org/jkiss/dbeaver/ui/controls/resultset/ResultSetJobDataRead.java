@@ -86,8 +86,10 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         long flags = DBSDataContainer.FLAG_READ_PSEUDO |
             (offset > 0 ? DBSDataContainer.FLAG_FETCH_SEGMENT : DBSDataContainer.FLAG_NONE);
 
-        if (offset > 0 && maxRows > 0 && dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
-            maxRows += offset;
+        if (offset > 0 && dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_REREAD_ON_SCROLLING)) {
+            if (maxRows > 0) {
+                maxRows += offset;
+            }
             offset = 0;
         }
 
