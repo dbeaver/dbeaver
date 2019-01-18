@@ -148,6 +148,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_format_label_insert_spaces_for_tabs;
     public static String pref_page_sql_format_label_insert_line_feed_before_commas;
     public static String pref_page_sql_format_label_settings;
+    public static String  pref_page_sql_format_label_SQLPreview;
     // SQLCompletion
     public static String pref_page_sql_completion_group_sql_assistant;
     public static String pref_page_sql_completion_label_enable_auto_activation;
@@ -258,7 +259,8 @@ public class SQLEditorMessages extends NLS {
     public static String controls_querylog_shell_text;
     public static String controls_querylog_success;
     public static String controls_querylog_transaction;
-
+    public static String sql_editor_menu_choose_format;
+    
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);
