@@ -514,14 +514,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (settings == null) {
             return targetName;
         }
+
+        if (targetName != null) {
+            return targetName;
+        }
+
         DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
         if (dataMapping == null) {
             return "?";
         }
 
-        if (targetName == null) {
-            targetName = dataMapping.getTargetName();
-        }
+        targetName = dataMapping.getTargetName();
 
         switch (dataMapping.getMappingType()) {
             case create:
