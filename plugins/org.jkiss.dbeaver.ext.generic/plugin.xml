@@ -584,11 +584,12 @@
                     sampleURL="jdbc:ingres://{host}:{port}/{database}"
                     defaultPort="II7"
                     webURL="http://www.ingres.com/products/ingres-database/"
-                    description="Ingres Database">
+                    description="Ingres Database"
+                    iconBig="icons/ingres_icon_big.png">
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
-                <driver
+                <!--driver
                     id="linter"
                     label="Linter"
                     class="com.relx.jdbc.LinterDriver"
@@ -596,7 +597,7 @@
                     defaultPort="1070"
                     webURL="http://linter.ru/"
                     description="Linter Database">
-                </driver>
+                </driver-->
                 <driver
                     id="firebird_jaybird"
                     label="Firebird 2.x"
@@ -674,9 +675,6 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="Driver for MySQL 3.x and earlier">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
-                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
                 </driver>
                 <driver
                     id="vertica"
@@ -995,7 +993,8 @@
                     sampleURL="jdbc:machbase://{host}/mhdb"
                     defaultPort="5656"
                     description="MACHBASE standard driver"
-                    webURL="http://www.machbase.com">
+                    webURL="http://www.machbase.com"
+                    iconBig="icons/machbase_icon_big.png">
                     <file type="jar" path="http://www.machbase.com/dist/machbase.jar"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
