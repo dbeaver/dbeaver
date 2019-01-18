@@ -108,7 +108,7 @@ public class HANAMetaModel extends GenericMetaModel
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder ddl = new StringBuilder();
                     while (dbResult.nextRow()) {
-                        ddl.append(dbResult.getString(1));
+                        ddl.append(dbResult.getString("OBJECT_CREATION_STATEMENT"));
                     }
                     if (ddl.length() > 0) {
                         return ddl.toString();
