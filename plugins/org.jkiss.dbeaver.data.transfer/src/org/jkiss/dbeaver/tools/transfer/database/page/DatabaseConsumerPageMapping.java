@@ -149,7 +149,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             containerName.setText(settings.getContainerFullName());
                             // Reset mappings
                             for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
-                                if (mappingContainer.getMappingType() == DatabaseMappingType.create) {
+                                if (mappingContainer.getMappingType() != DatabaseMappingType.unspecified) {
                                     try {
                                         mappingContainer.refreshMappingType(getContainer(), DatabaseMappingType.create);
                                     } catch (DBException e1) {
