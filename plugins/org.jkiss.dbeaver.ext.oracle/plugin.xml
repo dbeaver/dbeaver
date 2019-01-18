@@ -281,7 +281,8 @@
                     iconBig="icons/oracle_icon_big.png"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
                     description="Oracle thin driver. Doesn't require Oracle client."
-                    promoted="1">
+                    promoted="1"
+                    categories="sql">
                     <replace provider="generic" driver="oracle"/>
                     <replace provider="oracle" driver="oracle"/>
                     <replace provider="oracle" driver="oracle_oci"/>

@@ -68,7 +68,8 @@
                     iconBig="icons/wmi_icon_big.png"
                     description="WMI Native driver"
                     class="org.jkiss.wmi.service.WMIServiceNative"
-                    customDriverLoader="true">
+                    customDriverLoader="true"
+                    categories="embedded">
                     <file type="lib" os="win32" arch="x86" path="platform:/plugin/org.jkiss.wmi/native/x86/jkiss_wmi.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="platform:/plugin/org.jkiss.wmi/native/x64/jkiss_wmi.dll"/>
                 </driver>
