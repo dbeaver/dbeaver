@@ -1525,9 +1525,10 @@
         <category id="nosql" name="NoSQL" description="NoSQL / BigData databases" icon="#folder_database" rank="5" promoted="true"/>
         <category id="analytic" name="Analytical" description="Analytical databases, column-oriented databases" icon="#folder_database" rank="10" promoted="true"/>
         <category id="timeseries" name="Timeseries" description="Timeseries databases" icon="#folder_database" rank="11" promoted="true"/>
-        <category id="fulltext" name="Full-text search" description="Full-text search databases" icon="#folder_database" rank="12" promoted="true"/>
         <category id="embedded" name="Embedded" description="Embedded (serverless) databases" icon="#folder_database" rank="15" promoted="true"/>
         <category id="hadoop" name="Hadoop / BigData" description="Hadoop based BigData databases" icon="#folder_database" rank="20" promoted="true"/>
+        <category id="fulltext" name="Full-text search" description="Full-text search databases" icon="#folder_database" rank="22" promoted="true"/>
+        <category id="graph" name="Graph databases" description="Graph databases" icon="#folder_database" rank="23" promoted="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">

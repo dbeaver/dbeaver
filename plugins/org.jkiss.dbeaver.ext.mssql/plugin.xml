@@ -134,7 +134,8 @@
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="Microsoft JDBC Driver for SQL Server (MSSQL)"
-                        promoted="1">
+                        promoted="1"
+                        categories="sql">
 
                     <replace provider="mssql" driver="mssql_jdbc_ms_new"/>
 
@@ -161,7 +162,8 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
-                        description="Microsoft JDBC Driver for SQL Server (MSSQL)">
+                        description="Microsoft JDBC Driver for SQL Server (MSSQL)"
+                        categories="sql">
 
                     <replace provider="mssql" driver="mssql_jdbc_azure"/>
 
@@ -184,7 +186,8 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="http://jtds.sourceforge.net/"
-                        description="jTDS SQL Server (MSSQL) driver">
+                        description="jTDS SQL Server (MSSQL) driver"
+                        categories="sql">
                 </driver>
 
             </drivers>
@@ -274,7 +277,8 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
-                        description="Legacy Microsoft JDBC Driver for SQL Server (MSSQL). Use it for SQL server older than 2005 or if standard drivers don't work.">
+                        description="Legacy Microsoft JDBC Driver for SQL Server (MSSQL). Use it for SQL server older than 2005 or if standard drivers don't work."
+                        categories="sql">
 
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
@@ -306,7 +310,8 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="http://jtds.sourceforge.net/"
-                        description="jTDS SQL Server (MSSQL) driver">
+                        description="jTDS SQL Server (MSSQL) driver"
+                        categories="sql">
 
                     <replace provider="mssql" driver="mssql_jdbc_jtds"/>
                     <replace provider="sqlserver" driver="jtds"/>
@@ -342,7 +347,8 @@
                         useURL="false"
                         defaultPort="5000"
                         webURL="http://jtds.sourceforge.net/"
-                        description="Sybase jTDS driver">
+                        description="Sybase jTDS driver"
+                        categories="sql">
 
                     <replace provider="generic" driver="sybase"/>
                     <property name="loginTimeout" value="20"/>
@@ -371,7 +377,8 @@
                         useURL="false"
                         defaultPort="5000"
                         webURL="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc01776.1604/doc/html/san1357754912881.html"
-                        description="Sybase jConnect driver">
+                        description="Sybase jConnect driver"
+                        categories="sql">
 
                     <property name="loginTimeout" value="20"/>
 

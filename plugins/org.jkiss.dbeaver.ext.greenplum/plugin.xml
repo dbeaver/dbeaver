@@ -43,7 +43,8 @@
                         defaultPort="5432"
                         webURL="https://greenplum.org/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
-                        description="%driver.greenplum.description">
+                        description="%driver.greenplum.description"
+                        categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
 
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.5]"

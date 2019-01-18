@@ -150,7 +150,8 @@
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="3306"
                         webURL="http://www.mysql.com/products/connector/"
-                        description="Driver for MySQL 3.x and earlier">
+                        description="Driver for MySQL 3.x and earlier"
+                        categories="sql">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
