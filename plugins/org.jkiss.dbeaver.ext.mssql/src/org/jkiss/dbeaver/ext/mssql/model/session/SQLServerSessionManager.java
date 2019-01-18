@@ -82,7 +82,7 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
     {
         try {
             try (Statement dbStat = ((JDBCSession) session).createStatement()) {
-                dbStat.execute("KILL " + sessionType.getId() + ")");
+                dbStat.execute("KILL " + sessionType.getId() + "");
             }
         }
         catch (SQLException e) {
