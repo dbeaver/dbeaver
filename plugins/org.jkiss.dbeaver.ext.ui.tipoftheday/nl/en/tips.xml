@@ -19,14 +19,16 @@
  * limitations under the License.
   -->
 <tips>
-	<tip>You can execute current query using <b>Ctrl+Enter</b> shortcut.<br/>
+	<tip>
+		You can execute current query using <b>Ctrl+Enter</b> shortcut.<br/>
 		Queries are separated by delimiters or empty lines.
 	</tip>
 	<tip>You can select any part of SQL script and run it with <b>Ctrl+Enter</b></tip>
 	<tip>You can run SQL script using <b>Alt+X</b> shortcut. Script queries are separated with delimiters (like ";" or "go").</tip>
 	<tip>You can filter table rows by column value (use <b>F11</b> or <b>Ctrl+F11</b>) or by typing SQL expression in filter edit field</tip>
 	<tip>New version of DBeaver Community released once per two weeks (usually at Monday)</tip>
-	<tip>You can navigate over foreign keys in data view by pressing <b>Ctrl+1</b> or using context menu.<br/>
+	<tip>
+		You can navigate over foreign keys in data view by pressing <b>Ctrl+1</b> or using context menu.<br/>
 		Back/Forward buttons (<b>Alt+Left/Right</b>) near to the filter panel allow to jump to previous tables/filter values.<br/>
 		<b>Ctrl+Shift+1</b> will open links in a new editor.
 	</tip>
@@ -34,5 +36,5 @@
 	<tip>You can assign your own shortcuts for almost any DBeaver operations. And you can change most of existing shortcuts.</tip>
 	<tip>You can debug PostgreSQL functions. Use debug tool (in the main toolbar) to initiate debug session.</tip>
 	<tip>Data editor supports copy/paste of multiple cells. Use <b>Ctrl+Shift+V</b> to paste multiple rows/columns (separated by tabs and line feeds)</tip>
-	<tip>DBeaver documentation can be found in our WIKI (<a href="https://github.com/dbeaver/dbeaver/wiki" target="_bank">https://github.com/dbeaver/dbeaver/wiki</a>)</tip>
+	<tip>DBeaver documentation can be found in our WIKI (<a href="https://github.com/dbeaver/dbeaver/wiki">https://github.com/dbeaver/dbeaver/wiki</a>)</tip>
 </tips>
