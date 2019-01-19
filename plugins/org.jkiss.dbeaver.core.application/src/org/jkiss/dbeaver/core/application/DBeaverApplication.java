@@ -147,6 +147,8 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         // Write version info
         writeWorkspaceInfo();
 
+        initializeApplication();
+
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer();
 
@@ -189,6 +191,13 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             display.dispose();
             display = null;
         }
+    }
+
+    /**
+     * May be overrided in implementors
+     */
+    protected void initializeApplication() {
+
     }
 
     private Display getDisplay() {

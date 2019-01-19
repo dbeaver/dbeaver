@@ -84,7 +84,7 @@ public class DBeaverWorkspace implements DBPWorkspace {
 
     @Override
     public File getAbsolutePath() {
-        return eclipseWorkspace.getRoot().getFullPath().toFile();
+        return eclipseWorkspace.getRoot().getLocation().toFile();
     }
 
     public void save(DBRProgressMonitor monitor) throws DBException {
