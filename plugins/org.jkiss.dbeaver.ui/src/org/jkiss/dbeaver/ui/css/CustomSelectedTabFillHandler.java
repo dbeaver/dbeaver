@@ -26,6 +26,8 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -64,12 +66,18 @@ public class CustomSelectedTabFillHandler extends CSSPropertye4SelectedTabFillHa
     static Color getCurrentConnectionColor() {
         Color color = null;
         try {
-            IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-            if (activeEditor instanceof DBPContextProvider) {
-                DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
-                if (context != null) {
-                    color = UIUtils.getConnectionColor(context.getDataSource().getContainer()
-                            .getConnectionConfiguration());
+            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+            if (workbenchWindow != null) {
+                IWorkbenchPage activePage = workbenchWindow.getActivePage();
+                if (activePage != null) {
+                    IEditorPart activeEditor = activePage.getActiveEditor();
+                    if (activeEditor instanceof DBPContextProvider) {
+                        DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
+                        if (context != null) {
+                            color = UIUtils.getConnectionColor(context.getDataSource().getContainer()
+                                .getConnectionConfiguration());
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
