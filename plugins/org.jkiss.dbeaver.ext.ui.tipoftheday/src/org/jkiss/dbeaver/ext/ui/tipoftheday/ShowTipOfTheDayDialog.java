@@ -30,15 +30,19 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -148,6 +152,25 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
             String linkURL = href.toString();
             if (linkURL.startsWith("http:") || linkURL.startsWith("https:")) {
                 UIUtils.launchProgram(linkURL);
+            } else if (linkURL.startsWith("prefs:")) {
+                String prefPageId = linkURL.substring(linkURL.indexOf("//") + 2);
+                buttonPressed(IDialogConstants.OK_ID);
+                UIUtils.asyncExec(() -> {
+                    UIUtils.showPreferencesFor(
+                        UIUtils.getActiveWorkbenchShell(),
+                        null,
+                        prefPageId);
+                });
+            } else if (linkURL.startsWith("view:")) {
+                String viewId = linkURL.substring(linkURL.indexOf("//") + 2);
+                buttonPressed(IDialogConstants.OK_ID);
+                UIUtils.asyncExec(() -> {
+                    try {
+                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(viewId);
+                    } catch (PartInitException e1) {
+                        DBWorkbench.getPlatformUI().showError("Open view", "Error opening view " + viewId, e1);
+                    }
+                });
             }
         }
     }
