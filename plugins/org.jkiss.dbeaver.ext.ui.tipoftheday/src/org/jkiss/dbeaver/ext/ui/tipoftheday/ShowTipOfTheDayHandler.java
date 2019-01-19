@@ -21,7 +21,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.nebula.widgets.opal.tipoftheday.TipOfTheDay;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
@@ -54,7 +53,7 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
     }
 
     private static void showTipOfTheDayDialog(List<String> tips, IWorkbenchWindow window) {
-        final TipOfTheDay tipDialog = new TipOfTheDay();
+        final ShowTipOfTheDayDialog tipDialog = new ShowTipOfTheDayDialog(window.getShell());
         tipDialog.setDisplayShowOnStartup(true);
         tipDialog.setShowOnStartup(
             CommonUtils.getBoolean(
@@ -64,7 +63,7 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
             tipDialog.addTip(tip);
         }
 
-        tipDialog.open(window.getShell());
+        tipDialog.open();
 
         DBWorkbench.getPlatform().getPreferenceStore().
             setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, String.valueOf(tipDialog.isShowOnStartup()));
