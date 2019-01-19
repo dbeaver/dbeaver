@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -111,7 +112,8 @@ public class HANAMetaModel extends GenericMetaModel
                         ddl.append(dbResult.getString("OBJECT_CREATION_STATEMENT"));
                     }
                     if (ddl.length() > 0) {
-                        return ddl.toString();
+                        // Format DDL
+                        return SQLUtils.formatSQL(sourceObject.getDataSource(), ddl.toString());
                     }
                 }
             }
