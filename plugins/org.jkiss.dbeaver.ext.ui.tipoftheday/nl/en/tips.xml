@@ -29,7 +29,7 @@
 	<tip>You can filter table rows by column value (use <b>F11</b> or <b>Ctrl+F11</b>) or by typing SQL expression in filter edit field</tip>
 	<tip>
 		In order to format SQL use <b>Ctrl+Shift+F</b>.<br/>
-		You can <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.format">configure</a> SQL formatter (globally or for particular database).
+		You can <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.format">configure</a> SQL formatter (globally or for the particular database).
 	</tip>
 	<tip>
 		New version of DBeaver Community is released once per two weeks (usually at Monday).<br/>
