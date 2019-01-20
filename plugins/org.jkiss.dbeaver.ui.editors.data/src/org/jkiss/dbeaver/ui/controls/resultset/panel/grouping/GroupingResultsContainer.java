@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -178,6 +179,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (statistics == null) {
             throw new DBException("No main query - can't perform grouping");
         }
+        DBPDataSource dataSource = dataContainer.getDataSource();
+        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(dialect, presentation.getController().getPreferenceStore());
         String queryText = statistics.getQueryText();
         if (queryText == null || queryText.isEmpty()) {
             DBSDataContainer dataContainer = presentation.getController().getDataContainer();
@@ -185,6 +190,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
                 queryText = dataContainer.getName();
             } else {
                 throw new DBException("Empty data container");
+            }
+        }
+        for (String delimiter : syntaxManager.getStatementDelimiters()) {
+            while (queryText.endsWith(delimiter)) {
+                queryText = queryText.substring(0, queryText.length() - delimiter.length());
             }
         }
 
@@ -208,7 +218,6 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
         boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
 
-        DBPDataSource dataSource = dataContainer.getDataSource();
         boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         if (isDefaultGrouping && isShowDuplicatesOnly) {
             sql.append("\nHAVING ").append(DEFAULT_FUNCTION).append(" > 1");
@@ -219,8 +228,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
         String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
-            SQLDialect dialecy = SQLUtils.getDialectFromDataSource(dataSource);
-            if (dialecy.supportsOrderByIndex()) {
+            if (dialect.supportsOrderByIndex()) {
                 // By default sort by count in desc order
                 int countPosition = groupAttributes.size() + 1;
                 dataFilter.setOrder(String.valueOf(countPosition) + " " + defaultSorting);
