@@ -111,6 +111,7 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
         tipArea.setLayout(gl);
 
         FormToolkit toolkit = new FormToolkit(parent.getDisplay());
+        toolkit.setBorderStyle(SWT.NULL);
         Form form = toolkit.createForm(tipArea);
         form.setLayoutData(new GridData(GridData.FILL_BOTH));
         form.setLayout(new GridLayout(1, true));
