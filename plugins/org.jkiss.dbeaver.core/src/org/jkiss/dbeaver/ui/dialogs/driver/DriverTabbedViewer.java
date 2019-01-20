@@ -105,7 +105,9 @@ public class DriverTabbedViewer extends StructuredViewer {
         }
         folderComposite.setFolders(getClass().getSimpleName(), folders.toArray(new TabbedFolderInfo[0]));
         folderComposite.switchFolder(folderId, false);
-        folderComposite.addFolderListener(folderId1 -> UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1));
+        folderComposite.addFolderListener(folderId1 -> {
+            UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1);
+        });
     }
 
     private List<DBPDriver> getCategoryDrivers(DriverCategoryDescriptor category, List<DBPDriver> allDrivers) {
