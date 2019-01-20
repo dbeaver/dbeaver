@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -234,7 +233,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         }
         buf.append(driver.getName());
 
-        if (driver.getIcon() == DBIcon.TREE_DATABASE || driver.getIcon() instanceof DBIcon && driver.getIcon().getLocation().endsWith("database.png")) {
+        if (driver.getIcon() == DBIcon.DATABASE_DEFAULT || driver.getIcon() instanceof DBIcon && driver.getIcon().getLocation().endsWith("database.png")) {
             buf.append("\tN/A");
         } else {
             buf.append("\t+");
