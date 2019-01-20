@@ -858,6 +858,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Path
         ToolBar breadcrumbsPanel = new ToolBar(composite, SWT.HORIZONTAL | SWT.RIGHT);
         breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        breadcrumbsPanel.setForeground(UIStyles.getDefaultTextForeground());
 
         // Make base node path
         DBNDatabaseNode node = getEditorInput().getNavigatorNode();
