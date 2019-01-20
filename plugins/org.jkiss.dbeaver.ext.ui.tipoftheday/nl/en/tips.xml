@@ -27,6 +27,7 @@
 <tip>DBeaver documentation can be found in our WIKI (<a href="https://github.com/dbeaver/dbeaver/wiki">https://github.com/dbeaver/dbeaver/wiki</a>).
 	<br/>Just press <b>F1</b>.
 </tip>
+<tip>Panels in Data viewer are extremely useful.<br/>You can open cell value viewer, statistics calculator, columns aggregator and others.<br/>Use <b>F7</b> to toggle panels.</tip>
 <tip>You can view queries executed in DBeaver in <a href="view://org.jkiss.dbeaver.core.queryManager">Query Manager</a> view.
 	<br/>There you can see even all internal queries which DBeaver runs to read metadata.
 </tip>
