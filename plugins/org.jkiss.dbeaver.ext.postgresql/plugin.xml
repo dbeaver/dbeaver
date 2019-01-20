@@ -25,9 +25,9 @@
     <extension point="org.jkiss.dbeaver.postgresql.serverType">
         <serverType id="postgresql" name="PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL" logo="icons/postgresql_logo.png"/>
         <serverType id="redshift" name="Redshift" class="org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift" logo="icons/redshift_logo.png" defaultDatbase="dev" defaultUser="awsuser" customURL="true"/>
-        <serverType id="timescale" name="Timescale" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTimescale" logo="icons/timescale_logo.png"/>
+        <serverType id="timescale" name="TimescaleDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTimescale" logo="icons/timescale_logo.png"/>
         <serverType id="yellowbrick" name="Yellowbrick" class="org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick" logo="icons/yellowbrick_logo.png"/>
-        <serverType id="cockroach" name="Cockroach" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" defaultDatbase="system" defaultUser="root"/>
+        <serverType id="cockroach" name="CockroachDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerCockroachDB" logo="icons/cockroach_logo.png" defaultDatbase="system" defaultUser="root"/>
     </extension>
 
     <!--
@@ -282,7 +282,7 @@
 
                 <driver
                         id="postgres-timescale-jdbc"
-                        label="Timescale"
+                        label="TimescaleDB"
                         icon="icons/timescale_icon.png"
                         iconBig="icons/timescale_icon_big.png"
                         class="org.postgresql.Driver"
