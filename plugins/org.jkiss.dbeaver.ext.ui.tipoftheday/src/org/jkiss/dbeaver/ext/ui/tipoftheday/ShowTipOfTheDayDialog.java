@@ -37,12 +37,10 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -58,7 +56,6 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
     private boolean showOnStartup;
     private FormText formText;
     private int tipIndex;
-    private Font largeFont;
 
     public ShowTipOfTheDayDialog(Shell parentShell) {
         super(parentShell, "Tip of the day", DBIcon.TREE_INFO);
@@ -92,14 +89,15 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
 
         tipIndex = new Random(System.currentTimeMillis()).nextInt(tips.size());
 
-        {
-            Font dialogFont = JFaceResources.getDialogFont();
-            FontData[] fontData = dialogFont.getFontData();
-            //fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
-            fontData[0].setHeight(fontData[0].getHeight() + 2);
-            largeFont = new Font(dialogFont.getDevice(), fontData[0]);
-            parent.addDisposeListener(e -> largeFont.dispose());
+
+        Font dialogFont = JFaceResources.getDialogFont();
+        FontData[] fontData = dialogFont.getFontData();
+        for (FontData fd : fontData) {
+            fd.setHeight(fd.getHeight() + 1);
         }
+        //fontData[0].setHeight(fontData[0].getHeight() + 2);
+        Font largeFont = new Font(dialogFont.getDevice(), fontData[0]);
+        parent.addDisposeListener(e -> largeFont.dispose());
 
         Composite dialogArea = super.createDialogArea(parent);
 
@@ -119,7 +117,14 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
         form.getBody().setLayoutData(new GridData(GridData.FILL_BOTH));
         form.getBody().setLayout(new GridLayout(1, true));
 
-        formText = toolkit.createFormText(form.getBody(), false);
+        formText = new FormText(form.getBody(), SWT.WRAP | SWT.NO_FOCUS);
+        formText.marginWidth = 1;
+        formText.marginHeight = 0;
+        formText.setHyperlinkSettings(toolkit.getHyperlinkGroup());
+        toolkit.adapt(formText, false, false);
+        formText.setMenu(form.getBody().getMenu());
+
+            //toolkit.createFormText(form.getBody(), false);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 300;
         gd.heightHint = 100;
@@ -191,7 +196,7 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
         createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, false);
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
 
-        getButton(IDialogConstants.OK_ID).setFocus();
+        UIUtils.asyncExec(() -> getButton(IDialogConstants.OK_ID).setFocus());
     }
 
     @Override
