@@ -53,6 +53,13 @@ public class AdvancedListViewer extends StructuredViewer {
                 fireDoubleClick(new DoubleClickEvent(AdvancedListViewer.this, getSelection()));
             }
         });
+
+        control.getContainer().addPaintListener(e -> {
+            ViewerFilter[] filters = getFilters();
+            if (control.getItems().length == 0 && filters != null && filters.length > 0) {
+                UIUtils.drawMessageOverControl(control.getContainer(), e, "No items found", 0);
+            }
+        });
     }
 
     @Override

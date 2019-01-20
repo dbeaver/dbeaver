@@ -59,6 +59,7 @@ public class DriverTabbedViewer extends StructuredViewer {
 
     private final TabbedFolderComposite folderComposite;
     private final List<DBPDataSourceContainer> dataSources;
+    private ViewerFilter[] curFilters;
 
     public DriverTabbedViewer(Composite parent, int style) {
 
@@ -106,6 +107,9 @@ public class DriverTabbedViewer extends StructuredViewer {
         folderComposite.setFolders(getClass().getSimpleName(), folders.toArray(new TabbedFolderInfo[0]));
         folderComposite.switchFolder(folderId, false);
         folderComposite.addFolderListener(folderId1 -> {
+            if (curFilters != null) {
+                ((DriverListFolder) folderComposite.getActiveFolder()).viewer.setFilters(curFilters);
+            }
             UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1);
         });
     }
@@ -171,6 +175,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         if (viewer != null) {
             viewer.setFilters(filters);
         }
+        curFilters = filters;
     }
 
     @Override
