@@ -149,6 +149,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             this.filtersTextViewer = new TextViewer(filterComposite, SWT.MULTI);
             this.filtersTextViewer.setDocument(new Document());
+            this.filtersTextViewer.getTextWidget().setForeground(UIStyles.getDefaultTextForeground());
             TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
             undoManager.connect(filtersTextViewer);
             this.filtersTextViewer.setUndoManager(undoManager);
