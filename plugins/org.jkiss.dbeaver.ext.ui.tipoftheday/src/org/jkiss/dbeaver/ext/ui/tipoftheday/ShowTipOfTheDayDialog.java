@@ -147,6 +147,8 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
                     showOnStartup = showTipButton.getSelection();
                 }
             });
+
+            form.getBody().setTabList(new Control[] { showTipButton });
         }
 
         return dialogArea;
