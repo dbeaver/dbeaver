@@ -27,7 +27,7 @@
             description="Generic JDBC connector"
             id="generic"
             label="Generic"
-            icon="icons/database.png">
+            icon="#database_icon_default">
             <tree path="generic" label="Generic data source">
                 <items label="#catalog" path="catalog" property="catalogs" icon="#database" optional="true">
                     <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
@@ -1192,11 +1192,11 @@
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                 label="%dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                icon="icons/database.png">
+                icon="#database_icon_default">
         </view>
         <view
                 class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                icon="icons/database.png"
+                icon="#database_icon_default"
                 id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
                 dataSource="generic"
                 label="%dialog.connection.header"

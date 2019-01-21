@@ -41,7 +41,7 @@ public class DatabaseLabelProviders {
         @Override
         public Image getImage(Object element) {
             if (element == null) {
-                return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
+                return DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT);
             }
             DBNModel nm = DBWorkbench.getPlatform().getNavigatorModel();
             nm.ensureProjectLoaded(((DBPDataSourceContainer) element).getRegistry().getProject());
@@ -72,7 +72,7 @@ public class DatabaseLabelProviders {
         @Override
         public Image getImage(Object element) {
             if (element == null) {
-                return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
+                return DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT);
             }
             return DBeaverIcons.getImage(((DBNDatabaseNode)element).getNodeIconDefault());
         }

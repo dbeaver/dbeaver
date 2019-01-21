@@ -59,12 +59,13 @@ public class DriverTabbedViewer extends StructuredViewer {
 
     private final TabbedFolderComposite folderComposite;
     private final List<DBPDataSourceContainer> dataSources;
+    private ViewerFilter[] curFilters;
 
     public DriverTabbedViewer(Composite parent, int style) {
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
         allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
-        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 6);
+        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 8);
         dataSources = DataSourceRegistry.getAllDataSources();
 
         folderComposite = new TabbedFolderComposite(parent, style) {
@@ -105,7 +106,12 @@ public class DriverTabbedViewer extends StructuredViewer {
         }
         folderComposite.setFolders(getClass().getSimpleName(), folders.toArray(new TabbedFolderInfo[0]));
         folderComposite.switchFolder(folderId, false);
-        folderComposite.addFolderListener(folderId1 -> UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1));
+        folderComposite.addFolderListener(folderId1 -> {
+            if (curFilters != null) {
+                ((DriverListFolder) folderComposite.getActiveFolder()).viewer.setFilters(curFilters);
+            }
+            UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1);
+        });
     }
 
     private List<DBPDriver> getCategoryDrivers(DriverCategoryDescriptor category, List<DBPDriver> allDrivers) {
@@ -169,6 +175,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         if (viewer != null) {
             viewer.setFilters(filters);
         }
+        curFilters = filters;
     }
 
     @Override

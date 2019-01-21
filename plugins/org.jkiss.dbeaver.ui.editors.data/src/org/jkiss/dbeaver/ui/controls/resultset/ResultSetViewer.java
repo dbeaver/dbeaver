@@ -437,7 +437,7 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null) {
             return defaultBackground;
         }
-        return filtersPanel.getEditControl().getBackground();
+        return UIStyles.getDefaultTextBackground();
     }
 
     @NotNull
@@ -446,7 +446,7 @@ public class ResultSetViewer extends Viewer
         if (filtersPanel == null) {
             return defaultForeground;
         }
-        return filtersPanel.getEditControl().getForeground();
+        return UIStyles.getDefaultTextForeground();
     }
 
     private void persistConfig() {

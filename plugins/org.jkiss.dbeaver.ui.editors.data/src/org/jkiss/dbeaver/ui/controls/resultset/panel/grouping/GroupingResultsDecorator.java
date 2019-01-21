@@ -55,7 +55,11 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
 
     @Override
     public String getEmptyDataMessage() {
-        return "No Groupings";
+        if (container.getGroupAttributes().isEmpty()) {
+            return "No Groupings";
+        } else {
+            return "Grouping failed";
+        }
     }
 
     @Override
@@ -68,7 +72,11 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
         if (dialect == null || !dialect.supportsSubqueries()) {
             return "Grouping is not supported\nby datasource '" + dataSource.getContainer().getDriver().getFullName() + "'";
         } else {
-            return "Drag-and-drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
+            if (container.getGroupAttributes().isEmpty()) {
+                return "Drag-and-drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
+            } else {
+                return "Grouping attempt failed. Clear grouping to proceed.";
+            }
         }
     }
 

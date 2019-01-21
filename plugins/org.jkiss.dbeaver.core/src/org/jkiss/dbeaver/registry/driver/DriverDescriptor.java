@@ -181,9 +181,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         this.iconPlain = providerDescriptor.getIcon();
         if (this.iconPlain == null) {
-            this.iconPlain = DBIcon.TREE_DATABASE;
+            this.iconPlain = DBIcon.DATABASE_DEFAULT;
         }
-        this.iconBig = iconPlain;
+        this.iconBig = DBIcon.DATABASE_BIG_DEFAULT;
 
         makeIconExtensions();
         if (copyFrom != null) {
