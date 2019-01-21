@@ -111,7 +111,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
         private PropertySourceCustom propertySource;
 
         TargetFormatDialog(SQLEditor editor, TextSelection selection) {
-            super(editor.getSite(), "Choose format", null);
+            super(editor.getSite(), SQLEditorMessages.sql_editor_menu_choose_format, null);
             this.editor = editor;
             this.selection = selection;
         }
@@ -155,7 +155,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.minimumWidth = 200;
                 formatPanel.setLayoutData(gd);
-                Group formatsGroup = UIUtils.createControlGroup(formatPanel, "Format", 1, GridData.FILL_HORIZONTAL, 0);
+                Group formatsGroup = UIUtils.createControlGroup(formatPanel, SQLEditorMessages.sql_editor_panel_format, 1, GridData.FILL_HORIZONTAL, 0);
                 for (SQLTargetConverterDescriptor converter : SQLConverterRegistry.getInstance().getTargetConverters()) {
                     Button formatButton = new Button(formatsGroup, SWT.RADIO);
                     formatButton.setText(converter.getLabel());
@@ -167,7 +167,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                     formatButton.addSelectionListener(formatChangeListener);
                 }
 
-                Group settingsGroup = UIUtils.createControlGroup(formatPanel, "Settings", 1, GridData.FILL_HORIZONTAL, 0);
+                Group settingsGroup = UIUtils.createControlGroup(formatPanel, SQLEditorMessages.pref_page_sql_format_label_settings, 1, GridData.FILL_HORIZONTAL, 0);
                 settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
                 propsViewer = new PropertyTreeViewer(settingsGroup, SWT.BORDER);
                 propsViewer.getTree().addListener(SWT.Modify, new Listener() {
@@ -189,7 +189,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                 createSQLPanel(sash);
                 Composite targetGroup = UIUtils.createPlaceholder(sash, 1, 5);
                 targetGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-                UIUtils.createControlLabel(targetGroup, "Result");
+                UIUtils.createControlLabel(targetGroup, SQLEditorMessages.controls_querylog_column_result_name);
                 targetText = new StyledText(targetGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
                 targetText.setLayoutData(new GridData(GridData.FILL_BOTH));
                 targetText.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
