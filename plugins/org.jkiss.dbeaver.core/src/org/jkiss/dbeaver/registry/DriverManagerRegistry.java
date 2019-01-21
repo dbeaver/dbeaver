@@ -51,4 +51,14 @@ public class DriverManagerRegistry {
     public List<DriverCategoryDescriptor> getCategories() {
         return new ArrayList<>(categories);
     }
+
+    public DriverCategoryDescriptor getCategory(String id) {
+        for (DriverCategoryDescriptor categoryDescriptor : categories) {
+            if (id.equalsIgnoreCase(categoryDescriptor.getId())) {
+                return categoryDescriptor;
+            }
+        }
+        return null;
+    }
+
 }
