@@ -56,16 +56,16 @@
                 description="%sql.convert.unformatted.text.description"
                 class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.UnformattedSQLConverter"/>
         <target id="java" label="Java" description="%sql.convert.java.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.JavaSQLConverter">
-            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
-            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
+            <property id="keep-formatting" label="%sql.convert.label.keep.formatting.name" type="boolean" description="%sql.convert.label.keep.formatting.discription" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="%sql.convert.label.line.delimiter.name" type="string" description="%sql.convert.label.line.delimiter.discription" required="false" defaultValue=" "/>
         </target>
         <target id="cpp" label="C/C++" description="%sql.convert.c.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.CPPSQLConverter">
-            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
-            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually \n or space" required="false" defaultValue=" "/>
+            <property id="keep-formatting" label="%sql.convert.label.keep.formatting.name" type="boolean" description="%sql.convert.label.keep.formatting.discription" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="%sql.convert.label.line.delimiter.name" type="string" description="%sql.convert.label.line.delimiter.discription" required="false" defaultValue=" "/>
         </target>
         <target id="delphi" label="Delphi" description="%sql.convert.delphi.description" class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.DelphiSQLConverter">
-            <property id="keep-formatting" label="Keep formatting" type="boolean" description="Keeps original formatting (whitespaces)" required="false" defaultValue="false"/>
-            <property id="line-delimiter" label="Line delimiter" type="string" description="Delimiter for source code lines. Usually #13#10 or space" required="false" defaultValue="#13#10"/>
+            <property id="keep-formatting" label="%sql.convert.label.keep.formatting.name" type="boolean" description="%sql.convert.label.keep.formatting.discription" required="false" defaultValue="false"/>
+            <property id="line-delimiter" label="%sql.convert.label.line.delimiter.name" type="string" description="%sql.convert.label.line.delimiter.delphi.discription" required="false" defaultValue="#13#10"/>
         </target>
         <target id="html"
                 label="HTML"
