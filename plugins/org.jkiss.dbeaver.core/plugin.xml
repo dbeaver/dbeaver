@@ -99,7 +99,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.views">
-        <category id="org.jkiss.dbeaver.core.category" name="%category.org.jkiss.dbeaver.core.category.name"/>
         <view
                 id="org.jkiss.dbeaver.core.queryManager"
                 category="org.jkiss.dbeaver.core.category"
