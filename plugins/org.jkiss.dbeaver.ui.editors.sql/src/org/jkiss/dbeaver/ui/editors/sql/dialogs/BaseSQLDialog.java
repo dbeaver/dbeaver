@@ -77,7 +77,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         if (isLabelVisible()) {
-            UIUtils.createControlLabel(panel, "SQL Preview");
+            UIUtils.createControlLabel(panel, SQLEditorMessages.pref_page_sql_format_label_SQLPreview);
         }
 //        new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
