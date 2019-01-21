@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.finder.viewer.AdvancedListViewer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderComposite;
@@ -246,7 +247,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         public void createControl(Composite parent) {
             viewer = new AdvancedListViewer(parent, SWT.NONE);
 
-            viewer.setContentProvider((IStructuredContentProvider) inputElement -> drivers.toArray());
+            viewer.setContentProvider(new ListContentProvider());
             viewer.setLabelProvider(new DriverLabelProvider());
             registerViewer(viewer);
         }

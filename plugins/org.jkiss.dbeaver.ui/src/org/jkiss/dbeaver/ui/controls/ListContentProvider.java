@@ -39,6 +39,9 @@ public class ListContentProvider implements IStructuredContentProvider {
     @Override
     public Object[] getElements(Object inputElement)
     {
+        if (inputElement == null) {
+            return new Object[0];
+        }
         if (inputElement instanceof Collection) {
             return ((Collection<?>)inputElement).toArray();
         } else if (inputElement.getClass().isArray()) {
