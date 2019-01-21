@@ -18,15 +18,9 @@ package org.jkiss.dbeaver.ui.help;
 
 import org.eclipse.help.IContext;
 import org.eclipse.help.IHelpResource;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.help.AbstractHelpUI;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-
-import java.net.MalformedURLException;
-import java.net.URL;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Lightweight help UI
@@ -67,24 +61,8 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
         }
     }
 
-    private void showHelpPage(String fileURL)
-    {
-        try {
-            showHelpPage(new URL(fileURL));
-        } catch (MalformedURLException e) {
-            log.error("Bad help page URL", e);
-        }
-    }
-
-    private void showHelpPage(URL fileURL)
-    {
-        IWorkbenchBrowserSupport support = PlatformUI.getWorkbench().getBrowserSupport();
-        try {
-            support.getExternalBrowser().openURL(fileURL);
-        } catch (PartInitException e) {
-            DBWorkbench.getPlatformUI().showError("Help system", "Can't open help in external browser", e);
-        }
-//        }
+    private void showHelpPage(String fileURL) {
+        UIUtils.launchProgram(fileURL);
     }
 
     @Override

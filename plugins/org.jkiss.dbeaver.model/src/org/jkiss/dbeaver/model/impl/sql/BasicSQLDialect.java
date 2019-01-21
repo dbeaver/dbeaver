@@ -70,7 +70,7 @@ public class BasicSQLDialect implements SQLDialect {
     private final TreeSet<String> functions = new TreeSet<>();
     protected final TreeSet<String> types = new TreeSet<>();
     protected final TreeSet<String> tableQueryWords = new TreeSet<>();
-    private final TreeSet<String> columnQueryWords = new TreeSet<>();
+    protected final TreeSet<String> columnQueryWords = new TreeSet<>();
     // Comments
     private Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
 

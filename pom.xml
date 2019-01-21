@@ -20,8 +20,6 @@
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/2018-09/</eclipse-p2-repo.url>
         <!-- Orbit. From Photon because we need com.ibm.icu.base -->
         <orbit-p2-repo.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180330011457/repository</orbit-p2-repo.url>
-        <!-- Nebula -->
-        <nebula-p2-repo.url>http://download.eclipse.org/nebula/releases/latest</nebula-p2-repo.url>
         <!-- DBeaver Maven dependencies -->
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
 
@@ -52,11 +50,6 @@
         <repository>
             <id>eclipse-orbit-repo</id>
             <url>${orbit-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
-        <repository>
-            <id>nebula-repo</id>
-            <url>${nebula-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
         <repository>

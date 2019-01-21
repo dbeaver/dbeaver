@@ -135,8 +135,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
     /**
      * Hooks the listeners needed on the window
-     *
-     * @param configurer
      */
     private void hookTitleUpdateListeners(IWorkbenchWindowConfigurer configurer) {
         // hook up the listeners to update the window title
@@ -237,12 +235,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
         if (isRunWorkbenchInitializers()) {
             // Open New Connection wizard
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    for (IWorkbenchWindowInitializer wwInit : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
-                        wwInit.initializeWorkbenchWindow(getWindowConfigurer().getWindow());
-                    }
+            UIUtils.asyncExec(() -> {
+                for (IWorkbenchWindowInitializer wwInit : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
+                    wwInit.initializeWorkbenchWindow(getWindowConfigurer().getWindow());
                 }
             });
         }

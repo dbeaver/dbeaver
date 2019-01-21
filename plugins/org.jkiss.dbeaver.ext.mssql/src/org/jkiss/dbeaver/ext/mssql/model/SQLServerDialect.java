@@ -74,6 +74,11 @@ public class SQLServerDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean supportsSubqueries() {
+        return true;
+    }
+
     public String[][] getIdentifierQuoteStrings() {
         return SQLSERVER_QUOTE_STRINGS;
     }

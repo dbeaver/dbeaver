@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -64,6 +65,7 @@ public class EmptyPresentation extends AbstractPresentation {
                 return;
             }
             e.gc.setFont(largeFont);
+            e.gc.setForeground(UIStyles.getDefaultTextForeground());
             //int fontSize = largeFont.getFontData()[0].getHeight();
             String emptyDataMessage = controller.getDecorator().getEmptyDataMessage();
             Point emSize = e.gc.textExtent(emptyDataMessage);
