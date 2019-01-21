@@ -24,6 +24,7 @@ import org.eclipse.e4.ui.css.swt.properties.custom.CSSPropertye4SelectedTabFillH
 import org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -45,11 +46,11 @@ public class CustomSelectedTabFillHandler extends CSSPropertye4SelectedTabFillHa
             throws Exception {
 
         Widget widget = SWTElementHelpers.getWidget(element);
-        if (widget == null) {
+        if (widget == null || (widget instanceof Control && UIUtils.isInDialog((Control)widget))) {
             return false;
         }
 
-        Color newColor = getCurrentConnectionColor();
+        Color newColor = getCurrentEditorConnectionColor();
         if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
             CTabFolder nativeWidget = (CTabFolder) ((CTabFolderElement) element).getNativeWidget();
             if (nativeWidget.getRenderer() instanceof CTabRendering) {
@@ -63,12 +64,9 @@ public class CustomSelectedTabFillHandler extends CSSPropertye4SelectedTabFillHa
 
     }
 
-    static Color getCurrentConnectionColor() {
+    static Color getCurrentEditorConnectionColor() {
         Color color = null;
         try {
-            if (UIUtils.isInDialog()) {
-                return null;
-            }
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             if (workbenchWindow != null) {
                 IWorkbenchPage activePage = workbenchWindow.getActivePage();

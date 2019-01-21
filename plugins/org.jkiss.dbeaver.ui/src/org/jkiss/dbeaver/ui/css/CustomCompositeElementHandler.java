@@ -23,7 +23,9 @@ import org.eclipse.e4.ui.css.swt.helpers.SWTElementHelpers;
 import org.eclipse.e4.ui.css.swt.properties.css2.CSSPropertyBackgroundSWTHandler;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.w3c.dom.css.CSSValue;
 
 
@@ -37,11 +39,11 @@ public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandl
     public void applyCSSPropertyBackgroundColor(Object element, CSSValue value, String pseudo, CSSEngine engine)
             throws Exception {
         Widget widget = SWTElementHelpers.getWidget(element);
-        if (widget == null) {
+        if (widget == null || (widget instanceof Control && UIUtils.isInDialog((Control)widget))) {
             return;
         }
 
-        Color newColor = CustomSelectedTabFillHandler.getCurrentConnectionColor();
+        Color newColor = CustomSelectedTabFillHandler.getCurrentEditorConnectionColor();
         if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
             applyCustomBackground(element, newColor);
         } else {
