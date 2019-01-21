@@ -247,8 +247,11 @@ public class SearchMetadataPage extends AbstractSearchPage {
             typesTable.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseDoubleClick(MouseEvent e) {
-                    TableItem tableItem = typesTable.getSelection()[0];
-                    tableItem.setChecked(!tableItem.getChecked());
+                    TableItem[] selection = typesTable.getSelection();
+                    if (selection.length > 0) {
+                        TableItem tableItem = selection[0];
+                        tableItem.setChecked(!tableItem.getChecked());
+                    }
                 }
             });
             typesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
