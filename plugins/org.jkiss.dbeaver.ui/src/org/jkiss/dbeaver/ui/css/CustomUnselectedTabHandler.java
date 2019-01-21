@@ -24,7 +24,9 @@ import org.eclipse.e4.ui.css.swt.properties.custom.CSSPropertyUnselectedTabsSWTH
 import org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.w3c.dom.css.CSSValue;
 
 /**
@@ -36,11 +38,11 @@ public class CustomUnselectedTabHandler extends CSSPropertyUnselectedTabsSWTHand
     @Override
     public boolean applyCSSProperty(Object element, String property, CSSValue value, String pseudo, CSSEngine engine) throws Exception {
         Widget widget = SWTElementHelpers.getWidget(element);
-        if (widget == null) {
+        if (widget == null || (widget instanceof Control && UIUtils.isInDialog((Control)widget))) {
             return false;
         }
 
-        Color newColor = CustomSelectedTabFillHandler.getCurrentConnectionColor();
+        Color newColor = CustomSelectedTabFillHandler.getCurrentEditorConnectionColor();
         if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
             CTabFolder nativeWidget = (CTabFolder) ((CTabFolderElement) element).getNativeWidget();
             if (nativeWidget.getRenderer() instanceof CTabRendering) {
