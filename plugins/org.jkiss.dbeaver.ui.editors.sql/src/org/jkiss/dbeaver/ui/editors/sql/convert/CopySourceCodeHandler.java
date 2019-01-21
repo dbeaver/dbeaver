@@ -124,7 +124,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
 
         @Override
         protected Composite createDialogArea(Composite parent) {
-            String formatId = getDialogBoundsSettings().get(SQLEditorMessages.sql_editor_menu_format);
+            String formatId = getDialogBoundsSettings().get("format");
             if (formatId != null) {
                 curFormat = SQLConverterRegistry.getInstance().getTargetConverter(formatId);
                 if (curFormat == null) {
@@ -155,7 +155,7 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.minimumWidth = 200;
                 formatPanel.setLayoutData(gd);
-                Group formatsGroup = UIUtils.createControlGroup(formatPanel, SQLEditorMessages.sql_editor_menu_format, 1, GridData.FILL_HORIZONTAL, 0);
+                Group formatsGroup = UIUtils.createControlGroup(formatPanel, SQLEditorMessages.sql_editor_panel_format, 1, GridData.FILL_HORIZONTAL, 0);
                 for (SQLTargetConverterDescriptor converter : SQLConverterRegistry.getInstance().getTargetConverters()) {
                     Button formatButton = new Button(formatsGroup, SWT.RADIO);
                     formatButton.setText(converter.getLabel());

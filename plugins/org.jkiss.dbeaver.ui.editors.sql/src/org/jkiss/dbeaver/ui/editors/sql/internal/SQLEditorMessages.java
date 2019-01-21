@@ -260,6 +260,7 @@ public class SQLEditorMessages extends NLS {
     public static String controls_querylog_success;
     public static String controls_querylog_transaction;
     public static String sql_editor_menu_choose_format;
+    public static String  sql_editor_panel_format;
     
     static {
         // initialize resource bundle
