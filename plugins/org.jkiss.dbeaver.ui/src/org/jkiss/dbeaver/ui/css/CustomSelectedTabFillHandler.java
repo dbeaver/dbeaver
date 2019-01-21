@@ -66,6 +66,9 @@ public class CustomSelectedTabFillHandler extends CSSPropertye4SelectedTabFillHa
     static Color getCurrentConnectionColor() {
         Color color = null;
         try {
+            if (UIUtils.isInDialog()) {
+                return null;
+            }
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             if (workbenchWindow != null) {
                 IWorkbenchPage activePage = workbenchWindow.getActivePage();
