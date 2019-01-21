@@ -112,6 +112,18 @@ public class DriverTabbedViewer extends StructuredViewer {
                 ((DriverListFolder) folderComposite.getActiveFolder()).viewer.setFilters(curFilters);
             }
             UIUtils.getDialogSettings(DIALOG_ID).put(PARAM_LAST_FOLDER, folderId1);
+            StructuredViewer currentViewer = getCurrentViewer();
+            if (currentViewer != null) {
+                ISelection selection = currentViewer.getSelection();
+                if (selection.isEmpty()) {
+                    DriverCategoryDescriptor category = DriverManagerRegistry.getInstance().getCategory(folderId1);
+                    if (category != null) {
+                        //fireSelectionChanged(new SelectionChangedEvent(currentViewer, new StructuredSelection(category)));
+                    }
+                } else {
+                    fireSelectionChanged(new SelectionChangedEvent(currentViewer, selection));
+                }
+            }
         });
     }
 
