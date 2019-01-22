@@ -47,8 +47,8 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
  */
 public class SelectDataSourceDialog extends AbstractPopupPanel {
 
-    private static final String PARAM_SHOW_CONNECTED = "showConnected";
-    private static final String PARAM_SHOW_ALL_PROJECTS = "showAllProjects";
+    private static final String PARAM_SHOW_CONNECTED = "showConnected"; //$NON-NLS-1$
+    private static final String PARAM_SHOW_ALL_PROJECTS = "showAllProjects"; //$NON-NLS-1$
 
     @Nullable
     private final IProject project;
@@ -126,7 +126,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         descriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Button showConnectedCheck = new Button(group, SWT.CHECK);
-        showConnectedCheck.setText("Show &connected databases only");
+        showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
         showConnectedCheck.setSelection(showConnected);
         showConnectedCheck.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -145,7 +145,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
         });
         final Button showAllProjectsCheck = new Button(group, SWT.CHECK);
-        showAllProjectsCheck.setText("Show &all projects");
+        showAllProjectsCheck.setText(UINavigatorMessages.label_show_all_projects);
         showAllProjectsCheck.setSelection(showAllProjects);
         showAllProjectsCheck.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -278,8 +278,8 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         composite.setFont(parent.getFont());
 
         // Add the buttons to the button bar.
-        createButton(composite, IDialogConstants.OK_ID, "&Select", true);
-        createButton(composite, IDialogConstants.IGNORE_ID, "&None", false);
+        createButton(composite, IDialogConstants.OK_ID, "&Select", true); //$NON-NLS-1$
+        createButton(composite, IDialogConstants.IGNORE_ID, "&None", false); //$NON-NLS-1$
 //        if (!isModeless()) {
 //            createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
 //        }
