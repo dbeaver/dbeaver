@@ -20,8 +20,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class VerticalButton extends Canvas {
@@ -40,10 +40,17 @@ public class VerticalButton extends Canvas {
     //float[] angles = {0, 90, 180, 270};
     //int index = 0;
 
-    public VerticalButton(Composite parent, int style) {
+    public VerticalButton(VerticalFolder parent, int style) {
         super(parent, style);
+        parent.addItem(this);
 
         this.addPaintListener(this::paint);
+        addMouseMoveListener(e -> {
+            if (!isHover) {
+                isHover = true;
+                redraw();
+            }
+        });
         this.addMouseTrackListener(new MouseTrackAdapter() {
             public void mouseEnter(MouseEvent e) {
                 isHover = true;
@@ -54,19 +61,31 @@ public class VerticalButton extends Canvas {
                 isHover = false;
                 redraw();
             }
+
+            @Override
+            public void mouseHover(MouseEvent e) {
+                if (!isHover) {
+                    isHover = true;
+                    redraw();
+                }
+            }
         });
         this.addMouseListener(new MouseAdapter() {
             public void mouseDown(MouseEvent e) {
+                isHover = true;
                 hit = true;
                 redraw();
             }
 
             public void mouseUp(MouseEvent e) {
-                hit = false;
+                isHover = true;
                 redraw();
                 if (hit) {
-                    notifyListeners(SWT.Selection, new Event());
+                    Event event = new Event();
+                    event.widget = VerticalButton.this;
+                    notifyListeners(SWT.Selection, event);
                 }
+                hit = false;
             }
         });
         this.addKeyListener(new KeyAdapter() {
@@ -77,6 +96,10 @@ public class VerticalButton extends Canvas {
                 }
             }
         });
+    }
+
+    public VerticalFolder getFolder() {
+        return (VerticalFolder) getParent();
     }
 
     public void setText(String string) {
@@ -109,13 +132,27 @@ public class VerticalButton extends Canvas {
     }
 
     public void paint(PaintEvent e) {
-        if (isHover) {
+        boolean selected = isSelected();
+        if (selected || isHover) {
             Color curBackground = e.gc.getBackground();
+
             // Make bg a bit darker
-            RGB buttonHoverRGB = UIUtils.blend(curBackground.getRGB(), new RGB(0, 0, 0), 90);
-            Color buttonHoverColor = UIUtils.getSharedTextColors().getColor(buttonHoverRGB);
-            e.gc.setBackground(buttonHoverColor);
-            e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+            if (isHover) {
+                RGB buttonHoverRGB = UIUtils.blend(curBackground.getRGB(), new RGB(0, 0, 0), 90);
+                Color buttonHoverColor = UIUtils.getSharedTextColors().getColor(buttonHoverRGB);
+                e.gc.setBackground(buttonHoverColor);
+                e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+            }
+            if (selected) {
+                if (!isHover) {
+                    RGB selectedBackRGB = UIUtils.blend(curBackground.getRGB(), new RGB(0, 0, 0), 95);
+                    Color selectedBackColor = UIUtils.getSharedTextColors().getColor(selectedBackRGB);
+                    e.gc.setBackground(selectedBackColor);
+                    e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+                }
+                e.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                e.gc.drawRectangle(e.x, e.y, e.width - 1, e.height - 1);
+            }
         }
         Transform tr = new Transform(e.display);
 
@@ -130,7 +167,12 @@ public class VerticalButton extends Canvas {
             x += image.getBounds().width + BORDER_MARGIN;
         }
 
+        e.gc.setForeground(UIStyles.getDefaultTextForeground());
         e.gc.drawString(text, x, e.y + BORDER_MARGIN);
+    }
+
+    private boolean isSelected() {
+        return getFolder().getSelection() == this;
     }
 
 }
