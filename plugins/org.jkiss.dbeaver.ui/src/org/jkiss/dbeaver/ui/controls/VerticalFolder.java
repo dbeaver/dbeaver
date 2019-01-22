@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.*;
 
 public class VerticalFolder extends Canvas {
 
     private boolean isLeft;
+    private VerticalButton selectedItem;
 
     public VerticalFolder(Composite parent, int style) {
         super(parent, style);
@@ -33,7 +33,8 @@ public class VerticalFolder extends Canvas {
 
         GridLayout gl = new GridLayout(1, true);
         gl.horizontalSpacing = 0;
-        gl.marginWidth = 0;
+        gl.verticalSpacing = 0;
+        gl.marginWidth = 2;
         this.setLayout(gl);
     }
 
@@ -45,5 +46,22 @@ public class VerticalFolder extends Canvas {
     public Point computeSize(int wHint, int hHint, boolean changed) {
         Point size = super.computeSize(wHint, hHint, changed);
         return size;
+    }
+
+    public void addItem(VerticalButton item) {
+        item.addListener(SWT.Selection, event -> {
+            setSelection((VerticalButton)event.widget);
+        });
+    }
+
+    private void setSelection(VerticalButton item) {
+        selectedItem =  item;
+        for (Control child : getChildren()) {
+            child.redraw();
+        }
+    }
+
+    public VerticalButton getSelection() {
+        return selectedItem;
     }
 }
