@@ -42,8 +42,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.VerticalButton;
-import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
@@ -60,7 +58,6 @@ public class SQLPlanTreeViewer extends Viewer
     private PlanNodesTree planTree;
     private PropertyTreeViewer planProperties;
 
-    private DBCExecutionContext executionContext;
     private SQLQuery query;
     private DBCQueryPlanner planner;
     private RefreshPlanAction refreshPlanAction;
@@ -74,21 +71,7 @@ public class SQLPlanTreeViewer extends Viewer
         super();
         createActions();
 
-        Composite planPresentationContainer = UIUtils.createPlaceholder(parent, 2);
-        planPresentationContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        {
-            VerticalFolder tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
-            tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-            VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT);
-            treeViewButton.setText("Simple");
-            treeViewButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
-            treeViewButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            //Composite ph = new Composite(tabViewFolder, SWT.NONE);
-            //ph.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        }
-
-        Composite composite = UIUtils.createPlaceholder(planPresentationContainer, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         this.planPanel = UIUtils.createPartDivider(workbenchPart, composite, SWT.HORIZONTAL);
@@ -188,7 +171,7 @@ public class SQLPlanTreeViewer extends Viewer
 
     public Control getControl()
     {
-        return planPanel.getParent().getParent();
+        return planPanel.getParent();
     }
 
     public Viewer getViewer()
@@ -198,9 +181,8 @@ public class SQLPlanTreeViewer extends Viewer
 
     public void explainQueryPlan(DBCExecutionContext executionContext, SQLQuery query) throws DBCException
     {
-        this.executionContext = executionContext;
         this.query = query;
-        if (this.executionContext != null) {
+        if (executionContext != null) {
             DBPDataSource dataSource = executionContext.getDataSource();
             planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
         } else {
@@ -221,7 +203,7 @@ public class SQLPlanTreeViewer extends Viewer
             return;
         }
         sqlText.setText(query.getText());
-        planTree.init(this.executionContext, planner, query.getText());
+        planTree.init(executionContext, planner, query.getText());
         planTree.loadData();
 
         refreshPlanAction.setEnabled(true);

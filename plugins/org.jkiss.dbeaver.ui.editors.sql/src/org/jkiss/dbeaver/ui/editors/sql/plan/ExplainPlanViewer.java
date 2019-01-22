@@ -16,72 +16,64 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.plan;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.plan.simple.PlanNodesTree;
-import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * ResultSetViewer
  */
-public class ExplainPlanViewer
+public class ExplainPlanViewer extends Viewer
 {
-    //static final Log log = Log.getLog(ResultSetViewer.class);
+    static final Log log = Log.getLog(ExplainPlanViewer.class);
 
-    private SashForm planPanel;
-    private Text sqlText;
-    private PlanNodesTree planTree;
-    private PropertyTreeViewer planProperties;
+    private final IWorkbenchPart workbenchPart;
+    private final Composite planPresentationContainer;
+    private final VerticalFolder tabViewFolder;
+    private final Composite planViewComposite;
 
-    private DBCExecutionContext executionContext;
-    private SQLQuery query;
-    private DBCQueryPlanner planner;
-    private RefreshPlanAction refreshPlanAction;
-    private ToggleViewAction toggleViewAction;
-    private final SashForm leftPanel;
+    private static class PlanViewInfo {
+        private SQLPlanViewDescriptor descriptor;
+        private ISQLPlanViewer planViewer;
+        private Viewer viewer;
 
-    private transient Object selectedElement;
+        public PlanViewInfo(SQLPlanViewDescriptor descriptor) {
+            this.descriptor = descriptor;
+        }
+    };
+
+    private PlanViewInfo activeViewInfo;
+    private SQLQuery lastQuery;
 
     public ExplainPlanViewer(final IWorkbenchPart workbenchPart, Composite parent)
     {
-        super();
-        createActions();
+        this.workbenchPart = workbenchPart;
 
-        Composite planPresentationContainer = UIUtils.createPlaceholder(parent, 2);
+        planPresentationContainer = UIUtils.createPlaceholder(parent, 2);
         planPresentationContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            VerticalFolder tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
+            tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
             tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
             for (SQLPlanViewDescriptor viewDesc : SQLPlanViewRegistry.getInstance().getPlanViewDescriptors()) {
@@ -93,183 +85,116 @@ public class ExplainPlanViewer
                         treeViewButton.setImage(DBeaverIcons.getImage(viewDesc.getIcon()));
                     }
                 }
+                treeViewButton.setData(new PlanViewInfo(viewDesc));
                 treeViewButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             }
-            //Composite ph = new Composite(tabViewFolder, SWT.NONE);
-            //ph.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        }
-
-        Composite composite = UIUtils.createPlaceholder(planPresentationContainer, 1);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        this.planPanel = UIUtils.createPartDivider(workbenchPart, composite, SWT.HORIZONTAL);
-        this.planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-        this.planPanel.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-        final GridLayout gl = new GridLayout(1, false);
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        this.planPanel.setLayout(gl);
-        {
-            leftPanel = UIUtils.createPartDivider(workbenchPart, planPanel, SWT.VERTICAL);
-            leftPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET, workbenchPart.getSite()) {
-                @Override
-                public void fillCustomActions(IContributionManager contributionManager) {
-                    contributionManager.add(toggleViewAction);
-                    contributionManager.add(refreshPlanAction);
+            tabViewFolder.addListener(SWT.Selection, event -> {
+                try {
+                    changeActiveView(tabViewFolder.getSelection());
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Plan view", "Error activating plan view '" + activeViewInfo.descriptor.getLabel() + "'", e);
                 }
-            };
-            this.planTree.setShowDivider(true);
-            this.planTree.createProgressPanel(composite);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalIndent = 0;
-            gd.verticalIndent = 0;
-            planTree.setLayoutData(gd);
-
-            sqlText = new Text(leftPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
-
-            leftPanel.setWeights(new int[] {80, 20});
-            //leftPanel.setMaximizedControl(planTree);
+            });
         }
         {
-            planProperties = new PropertyTreeViewer(planPanel, SWT.H_SCROLL | SWT.V_SCROLL);
+            planViewComposite = new Composite(planPresentationContainer, SWT.NONE);
+            planViewComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            planViewComposite.setLayout(new StackLayout());
         }
 
-        planPanel.setWeights(new int[] {70, 30});
-        //planPanel.setMaximizedControl(planTree);
-
-        planTree.getControl().addPaintListener(e -> {
-            String message = null;
-            if (planner == null) {
-                message = "No connection or data source doesn't support execution plan";
-            } else if (CommonUtils.isEmpty(sqlText.getText())) {
-
-                message = "Select a query and run " + ActionUtils.findCommandDescription(
-                    SQLEditorCommands.CMD_EXPLAIN_PLAN,
-                    workbenchPart.getSite(), false);
+        IDialogSettings settings = getPlanViewSettings();
+        VerticalButton curItem = null;
+        String activeViewId = settings.get("activeView");
+        for (VerticalButton item : tabViewFolder.getItems()) {
+            PlanViewInfo data = (PlanViewInfo) item.getData();
+            if (curItem == null) {
+                curItem = item;
+            } else if (activeViewId != null && activeViewId.equals(data.descriptor.getId())) {
+                curItem = item;
             }
-            if (message != null) {
-                Rectangle bounds = planTree.getBounds();
-                Point ext = e.gc.textExtent(message);
-                e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
-            }
-        });
-        planTree.getItemsViewer().addSelectionChangedListener(event -> showPlanNode());
-
-        this.planTree.getControl().addTraverseListener(e -> {
-            if (toggleViewAction.isEnabled() &&
-                (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS))
-            {
-                toggleViewAction.run();
-                e.doit = false;
-                e.detail = SWT.TRAVERSE_NONE;
-            }
-        });
+        }
+        tabViewFolder.setSelection(curItem);
     }
 
     public SQLQuery getQuery() {
-        return query;
+        return lastQuery;
     }
 
-    private void showPlanNode()
-    {
-        ISelection selection = planTree.getItemsViewer().getSelection();
-        if (selection.isEmpty()) {
-            planProperties.clearProperties();
-        } else if (selection instanceof IStructuredSelection) {
-            Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element != selectedElement) {
-                PropertyCollector propertySource = new PropertyCollector(element, true);
-                propertySource.collectProperties();
-                planProperties.loadProperties(propertySource);
-                selectedElement = element;
+    public void explainQueryPlan(DBCExecutionContext executionContext, SQLQuery query) throws DBCException {
+        this.lastQuery = query;
+        for (PlanViewInfo viewInfo : getPlanViews()) {
+            if (viewInfo.viewer != null) {
+                viewInfo.planViewer.explainQueryPlan(viewInfo.viewer, executionContext, query);
             }
         }
     }
 
-    private void createActions()
-    {
-        this.toggleViewAction = new ToggleViewAction();
-        this.toggleViewAction.setEnabled(false);
-
-        this.refreshPlanAction = new RefreshPlanAction();
-        this.refreshPlanAction.setEnabled(false);
+    private PlanViewInfo[] getPlanViews() {
+        VerticalButton[] items = tabViewFolder.getItems();
+        PlanViewInfo[] infos = new PlanViewInfo[items.length];
+        for (int i = 0; i < items.length; i++) {
+            infos[i] = (PlanViewInfo) items[i].getData();
+        }
+        return infos;
     }
 
-    public Control getControl()
-    {
-        return planPanel.getParent().getParent();
-    }
+    private void changeActiveView(VerticalButton viewButton) throws DBException {
+        activeViewInfo = (PlanViewInfo) viewButton.getData();
+        if (activeViewInfo.planViewer == null) {
+            activeViewInfo.planViewer = activeViewInfo.descriptor.createInstance();
+            activeViewInfo.viewer = activeViewInfo.planViewer.createPlanViewer(workbenchPart, planViewComposite);
+        }
+        if (activeViewInfo.planViewer != null) {
+            ((StackLayout) planViewComposite.getLayout()).topControl = activeViewInfo.viewer.getControl();
+            planViewComposite.layout();
 
-    public Viewer getViewer()
-    {
-        return planTree.getItemsViewer();
-    }
+            getPlanViewSettings().put("activeView", activeViewInfo.descriptor.getId());
 
-    public void explainQueryPlan(DBCExecutionContext executionContext, SQLQuery query) throws DBCException
-    {
-        this.executionContext = executionContext;
-        this.query = query;
-        if (this.executionContext != null) {
-            DBPDataSource dataSource = executionContext.getDataSource();
-            planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
         } else {
-            planner = null;
-        }
-        planTree.clearListData();
-        refreshPlanAction.setEnabled(false);
-
-        if (planner == null) {
-            throw new DBCException("This datasource doesn't support execution plans");
-        }
-        if (planTree.isLoading()) {
-            UIUtils.showMessageBox(
-                getControl().getShell(),
-                "Can't explain plan",
-                "Explain plan already running",
-                SWT.ICON_ERROR);
-            return;
-        }
-        sqlText.setText(query.getText());
-        planTree.init(this.executionContext, planner, query.getText());
-        planTree.loadData();
-
-        refreshPlanAction.setEnabled(true);
-        toggleViewAction.setEnabled(true);
-    }
-
-    private class RefreshPlanAction extends Action {
-        private RefreshPlanAction()
-        {
-            super("Reevaluate", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
-        }
-
-        @Override
-        public void run()
-        {
-            if (planTree != null) {
-                planTree.loadData();
-            }
+            activeViewInfo = null;
         }
     }
 
-    private class ToggleViewAction extends Action {
-        private ToggleViewAction()
-        {
-            super("View Source", DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
-        }
+    private IDialogSettings getPlanViewSettings() {
+        return UIUtils.getSettingsSection(SQLEditorActivator.getDefault().getDialogSettings(), getClass().getSimpleName());
+    }
 
-        @Override
-        public void run()
-        {
-            final Control maxControl = leftPanel.getMaximizedControl();
-            if (maxControl == null) {
-                leftPanel.setMaximizedControl(planTree);
-            } else {
-                leftPanel.setMaximizedControl(null);
-            }
+    /////////////////////////////////////////////////////////
+    // Viewer
+
+    @Override
+    public Control getControl() {
+        return planPresentationContainer;
+    }
+
+    @Override
+    public Object getInput() {
+        return activeViewInfo == null ? null : activeViewInfo.viewer.getInput();
+    }
+
+    @Override
+    public ISelection getSelection() {
+        return activeViewInfo == null ? null : activeViewInfo.viewer.getSelection();
+    }
+
+    @Override
+    public void refresh() {
+        if (activeViewInfo != null) {
+            activeViewInfo.viewer.refresh();
         }
     }
 
+    @Override
+    public void setInput(Object input) {
+        if (activeViewInfo != null) {
+            activeViewInfo.viewer.setInput(input);
+        }
+    }
+
+    @Override
+    public void setSelection(ISelection selection, boolean reveal) {
+        if (activeViewInfo != null) {
+            activeViewInfo.viewer.setSelection(selection, reveal);
+        }
+    }
 }
