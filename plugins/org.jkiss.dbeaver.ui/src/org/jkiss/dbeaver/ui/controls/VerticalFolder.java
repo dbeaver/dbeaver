@@ -54,14 +54,26 @@ public class VerticalFolder extends Canvas {
         });
     }
 
-    private void setSelection(VerticalButton item) {
+    public void setSelection(VerticalButton item) {
         selectedItem =  item;
         for (Control child : getChildren()) {
             child.redraw();
         }
+        Event event = new Event();
+        event.widget = this;
+        notifyListeners(SWT.Selection, event);
     }
 
     public VerticalButton getSelection() {
         return selectedItem;
+    }
+
+    public VerticalButton[] getItems() {
+        Control[] children = getChildren();
+        VerticalButton[] items = new VerticalButton[children.length];
+        for (int i = 0; i < children.length; i++) {
+            items[i] = (VerticalButton) children[i];
+        }
+        return items;
     }
 }

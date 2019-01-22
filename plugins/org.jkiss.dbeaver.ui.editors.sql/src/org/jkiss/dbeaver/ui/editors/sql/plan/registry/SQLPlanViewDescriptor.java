@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.plan.ISQLPlanViewer;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -66,8 +67,8 @@ public class SQLPlanViewDescriptor extends AbstractContextDescriptor {
         return priority;
     }
 
-    public <T> T createInstance(Class<T> type) throws DBException {
-        return implClass.createInstance(type);
+    public ISQLPlanViewer createInstance() throws DBException {
+        return implClass.createInstance(ISQLPlanViewer.class);
     }
 
     @Override
