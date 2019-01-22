@@ -31,11 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -59,7 +55,6 @@ public class SQLPlanTreeViewer extends Viewer
     private PropertyTreeViewer planProperties;
 
     private SQLQuery query;
-    private DBCQueryPlanner planner;
     private RefreshPlanAction refreshPlanAction;
     private ToggleViewAction toggleViewAction;
     private final SashForm leftPanel;
@@ -113,10 +108,9 @@ public class SQLPlanTreeViewer extends Viewer
 
         planTree.getControl().addPaintListener(e -> {
             String message = null;
-            if (planner == null) {
+            if (query == null) {
                 message = "No connection or data source doesn't support execution plan";
             } else if (CommonUtils.isEmpty(sqlText.getText())) {
-
                 message = "Select a query and run " + ActionUtils.findCommandDescription(
                     SQLEditorCommands.CMD_EXPLAIN_PLAN,
                     workbenchPart.getSite(), false);
@@ -178,6 +172,7 @@ public class SQLPlanTreeViewer extends Viewer
     {
         return planTree.getItemsViewer();
     }
+/*
 
     public void explainQueryPlan(DBCExecutionContext executionContext, SQLQuery query) throws DBCException
     {
@@ -209,6 +204,7 @@ public class SQLPlanTreeViewer extends Viewer
         refreshPlanAction.setEnabled(true);
         toggleViewAction.setEnabled(true);
     }
+*/
 
     /////////////////////////////////////////////////
     // Viewer
@@ -236,6 +232,12 @@ public class SQLPlanTreeViewer extends Viewer
     @Override
     public void setSelection(ISelection selection, boolean reveal) {
 
+    }
+
+    public void showPlan(SQLQuery query, DBCPlan plan) {
+        this.query = query;
+        this.sqlText.setText(query.getText());
+        planTree.showPlan(query.getDataSource(), plan);
     }
 
     /////////////////////////////////////////////////

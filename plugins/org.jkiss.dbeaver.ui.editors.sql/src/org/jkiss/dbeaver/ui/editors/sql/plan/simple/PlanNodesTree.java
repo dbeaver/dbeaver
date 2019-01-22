@@ -22,22 +22,17 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,9 +41,8 @@ import java.util.List;
  */
 public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
-    private DBCExecutionContext context;
-    private DBCQueryPlanner planner;
     private String query;
+    private DBPDataSource dataSource;
 
     public PlanNodesTree(Composite parent, int style, IWorkbenchSite site)
     {
@@ -65,27 +59,29 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
     @NotNull
     @Override
     protected String getListConfigId(List<Class<?>> classList) {
-        return "ExecutionPlan/" + context.getDataSource().getContainer().getDriver().getId();
+        return "ExecutionPlan/" + dataSource.getContainer().getDriver().getId();
     }
 
     @Override
     protected LoadingJob<Collection<DBCPlanNode>> createLoadService()
     {
-        return LoadingJob.createService(
-            new ExplainPlanService(),
-            new PlanLoadVisualizer());
+        return null;
     }
 
-    public boolean isInitialized()
-    {
-        return planner != null;
-    }
+    public void showPlan(DBPDataSource dataSource, DBCPlan plan) {
+        this.dataSource = dataSource;
+        List<DBCPlanNode> nodes = new ArrayList<>(plan.getPlanNodes());
 
-    public void init(DBCExecutionContext context, DBCQueryPlanner planner, String query)
-    {
-        this.context = context;
-        this.planner = planner;
-        this.query = query;
+        final TreeViewer itemsViewer = (TreeViewer) PlanNodesTree.this.getItemsViewer();
+        itemsViewer.getControl().setRedraw(false);
+        try {
+            clearListData();
+            setListData(nodes, false);
+            itemsViewer.expandToLevel(10);
+        } finally {
+            itemsViewer.getControl().setRedraw(true);
+        }
+
     }
 
     private static ITreeContentProvider CONTENT_PROVIDER = new ITreeContentProvider() {
@@ -135,11 +131,19 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
     };
 
-    private class ExplainPlanService extends DatabaseLoadService<Collection<DBCPlanNode>> {
+/*
+    public static class ExplainPlanService extends DatabaseLoadService<Collection<DBCPlanNode>> {
 
-        protected ExplainPlanService()
+        private final DBCQueryPlanner planner;
+        private final DBCExecutionContext executionContext;
+        private final String query;
+
+        protected ExplainPlanService(DBCQueryPlanner planner, DBCExecutionContext executionContext, String query)
         {
             super("Explain plan", planner.getDataSource());
+            this.planner = planner;
+            this.executionContext = executionContext;
+            this.query = query;
         }
 
         @Override
@@ -147,7 +151,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
+                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
                     DBCPlan plan = planner.planQueryExecution(session, query);
                     return (Collection<DBCPlanNode>) plan.getPlanNodes();
                 }
@@ -172,6 +176,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             }
         }
     }
+*/
 
     private class PlanTreeRenderer extends ViewerRenderer {
         @Override

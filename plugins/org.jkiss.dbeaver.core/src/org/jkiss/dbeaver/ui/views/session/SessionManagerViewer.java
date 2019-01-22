@@ -64,8 +64,8 @@ import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.ui.editors.sql.plan.simple.PlanNodesTree;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -243,8 +243,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             String sqlText = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
             if (!CommonUtils.isEmpty(sqlText)) {
                 DBPDataSource dataSource = sessionManager.getDataSource();
-                planTree.init(DBUtils.getDefaultContext(dataSource, false), planner, sqlText);
-                planTree.loadData();
+                planTree.showPlan(dataSource, null);
             }
         }
         if (detailsFolder.getSelectionIndex() > 0) {
