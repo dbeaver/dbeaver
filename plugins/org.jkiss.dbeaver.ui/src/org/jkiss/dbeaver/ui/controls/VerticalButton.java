@@ -18,73 +18,55 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.Transform;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.dbeaver.ui.UIUtils;
 
-public class RotatingButton extends Canvas {
+public class VerticalButton extends Canvas {
+
+    public static final int BORDER_MARGIN = 2;
+    public static final int VERT_INDENT = 8;
+
     private int mouse = 0;
     private boolean hit = false;
-    private String text = "Button";
-    float rotatingAngle = 0f;
-    float[] angles = {0, 90, 180, 270};
-    int index = 0;
 
-    public RotatingButton(Composite parent, int style) {
+    private String text = "";
+    private Image image = null;
+
+    private float rotatingAngle = -90;
+    private boolean isHover;
+    //float[] angles = {0, 90, 180, 270};
+    //int index = 0;
+
+    public VerticalButton(Composite parent, int style) {
         super(parent, style);
 
-        this.addListener(SWT.MouseUp, e -> {
-            index++;
-            index = index > 3 ? 0 : index;
-            Rectangle r = getBounds();
-
-            setBounds(r.x, r.y, r.height, r.width);
-
-            rotatingAngle = angles[index];
-            redraw();
-        });
         this.addPaintListener(this::paint);
-        this.addMouseMoveListener(e -> {
-            if (!hit)
-                return;
-            mouse = 2;
-            if (e.x < 0 || e.y < 0 || e.x > getBounds().width
-                || e.y > getBounds().height) {
-                mouse = 0;
-            }
-            redraw();
-        });
         this.addMouseTrackListener(new MouseTrackAdapter() {
             public void mouseEnter(MouseEvent e) {
-                mouse = 1;
+                isHover = true;
                 redraw();
             }
 
             public void mouseExit(MouseEvent e) {
-                mouse = 0;
+                isHover = false;
                 redraw();
             }
         });
         this.addMouseListener(new MouseAdapter() {
             public void mouseDown(MouseEvent e) {
                 hit = true;
-                mouse = 2;
                 redraw();
             }
 
             public void mouseUp(MouseEvent e) {
                 hit = false;
-                mouse = 1;
-                if (e.x < 0 || e.y < 0 || e.x > getBounds().width
-                    || e.y > getBounds().height) {
-                    mouse = 0;
-                }
                 redraw();
-                if (mouse == 1)
+                if (hit) {
                     notifyListeners(SWT.Selection, new Event());
+                }
             }
         });
         this.addKeyListener(new KeyAdapter() {
@@ -102,19 +84,53 @@ public class RotatingButton extends Canvas {
         redraw();
     }
 
+    public void setImage(Image image) {
+        this.image = image;
+        redraw();
+    }
+
+
+    @Override
+    public Point computeSize(int wHint, int hHint, boolean changed) {
+        GC gc = new GC(this);
+        Point textSize = gc.stringExtent(text);
+        gc.dispose();
+
+        Point iconSize = new Point(0, 0);
+        if (image != null) {
+            Rectangle imageBounds = image.getBounds();
+            iconSize.x = imageBounds.width + BORDER_MARGIN;
+            iconSize.y = imageBounds.height + BORDER_MARGIN * 2;
+        }
+
+        return new Point(
+            Math.max(iconSize.y, textSize.y + BORDER_MARGIN * 2),
+            textSize.x + (BORDER_MARGIN + VERT_INDENT) * 2 + iconSize.x);
+    }
+
     public void paint(PaintEvent e) {
+        if (isHover) {
+            Color curBackground = e.gc.getBackground();
+            // Make bg a bit darker
+            RGB buttonHoverRGB = UIUtils.blend(curBackground.getRGB(), new RGB(0, 0, 0), 90);
+            Color buttonHoverColor = UIUtils.getSharedTextColors().getColor(buttonHoverRGB);
+            e.gc.setBackground(buttonHoverColor);
+            e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+        }
         Transform tr = new Transform(e.display);
 
-        Rectangle r = getBounds();
-        text = e.gc.stringExtent(text) + "";
         e.gc.setAntialias(SWT.ON);
-        Point p = e.gc.stringExtent(text);
-        int w = e.width;
-        int h = e.height;
-        tr.translate(w / 2, h / 2);
+        tr.translate(0, e.height);
         tr.rotate(rotatingAngle);
         e.gc.setTransform(tr);
-        e.gc.drawString(text, r.x - (p.x / 3) * 2, r.y - p.y);
+
+        int x = e.x + VERT_INDENT;
+        if (image != null) {
+            e.gc.drawImage(image, x, e.y + BORDER_MARGIN);
+            x += image.getBounds().width + BORDER_MARGIN;
+        }
+
+        e.gc.drawString(text, x, e.y + BORDER_MARGIN);
     }
 
 }
