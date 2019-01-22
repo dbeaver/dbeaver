@@ -1455,7 +1455,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (planView == null) {
-            planView = new ExplainPlanViewer(this, resultTabs);
+            planView = new ExplainPlanViewer(this, this, resultTabs);
 
             final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
@@ -1469,7 +1469,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         try {
-            planView.explainQueryPlan(getExecutionContext(), sqlQuery);
+            planView.explainQueryPlan(sqlQuery);
         } catch (DBCException e) {
             DBWorkbench.getPlatformUI().showError(
                     SQLEditorMessages.editors_sql_error_execution_plan_title,

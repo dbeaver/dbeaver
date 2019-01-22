@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 
 /**
@@ -30,6 +31,6 @@ public interface SQLPlanViewer {
 
     Viewer createPlanViewer(IWorkbenchPart workbenchPart, Composite parent);
 
-    void explainQueryPlan(Viewer viewer, DBCExecutionContext executionContext, SQLQuery query) throws DBCException;
+    void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan);
 
 }

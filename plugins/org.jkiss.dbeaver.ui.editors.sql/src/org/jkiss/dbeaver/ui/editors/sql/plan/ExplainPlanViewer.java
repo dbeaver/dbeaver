@@ -27,8 +27,15 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -41,6 +48,8 @@ import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * ResultSetViewer
  */
@@ -49,6 +58,7 @@ public class ExplainPlanViewer extends Viewer
     static final Log log = Log.getLog(ExplainPlanViewer.class);
 
     private final IWorkbenchPart workbenchPart;
+    private final DBPContextProvider contextProvider;
     private final Composite planPresentationContainer;
     private final VerticalFolder tabViewFolder;
     private final Composite planViewComposite;
@@ -66,9 +76,10 @@ public class ExplainPlanViewer extends Viewer
     private PlanViewInfo activeViewInfo;
     private SQLQuery lastQuery;
 
-    public ExplainPlanViewer(final IWorkbenchPart workbenchPart, Composite parent)
+    public ExplainPlanViewer(final IWorkbenchPart workbenchPart, DBPContextProvider contextProvider, Composite parent)
     {
         this.workbenchPart = workbenchPart;
+        this.contextProvider = contextProvider;
 
         planPresentationContainer = UIUtils.createPlaceholder(parent, 2);
         planPresentationContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -121,13 +132,10 @@ public class ExplainPlanViewer extends Viewer
         return lastQuery;
     }
 
-    public void explainQueryPlan(DBCExecutionContext executionContext, SQLQuery query) throws DBCException {
+    public void explainQueryPlan(SQLQuery query) throws DBCException {
         this.lastQuery = query;
-        for (PlanViewInfo viewInfo : getPlanViews()) {
-            if (viewInfo.viewer != null) {
-                viewInfo.planViewer.explainQueryPlan(viewInfo.viewer, executionContext, query);
-            }
-        }
+
+        refresh();
     }
 
     private PlanViewInfo[] getPlanViews() {
@@ -180,8 +188,40 @@ public class ExplainPlanViewer extends Viewer
 
     @Override
     public void refresh() {
-        if (activeViewInfo != null) {
-            activeViewInfo.viewer.refresh();
+        DBCQueryPlanner planner;
+        DBCExecutionContext executionContext = contextProvider.getExecutionContext();
+        if (executionContext != null) {
+            DBPDataSource dataSource = executionContext.getDataSource();
+            planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
+        } else {
+            planner = null;
+        }
+
+        if (planner == null) {
+            DBWorkbench.getPlatformUI().showError("No SQL Plan","This datasource doesn't support execution plans");
+        } else {
+            try {
+                UIUtils.runInProgressDialog(monitor -> {
+                    try {
+                        try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + lastQuery.getText() + "'")) {
+                            DBCPlan plan = planner.planQueryExecution(session, lastQuery.getText());
+                            UIUtils.asyncExec(() -> visualizePlan(plan));
+                        }
+                    } catch (Throwable ex) {
+                        throw new InvocationTargetException(ex);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Explain Plan error","Error explaining SQL execution plan", e.getTargetException());
+            }
+        }
+    }
+
+    private void visualizePlan(DBCPlan plan) {
+        for (PlanViewInfo viewInfo : getPlanViews()) {
+            if (viewInfo.viewer != null) {
+                viewInfo.planViewer.visualizeQueryPlan(viewInfo.viewer, lastQuery, plan);
+            }
         }
     }
 

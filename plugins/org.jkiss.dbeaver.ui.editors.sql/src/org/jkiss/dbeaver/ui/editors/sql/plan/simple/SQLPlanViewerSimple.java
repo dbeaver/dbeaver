@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewer;
 
@@ -37,8 +38,9 @@ public class SQLPlanViewerSimple implements SQLPlanViewer {
     }
 
     @Override
-    public void explainQueryPlan(Viewer viewer, DBCExecutionContext executionContext, SQLQuery query) throws DBCException {
+    public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
         SQLPlanTreeViewer treeViewer = (SQLPlanTreeViewer) viewer;
-        treeViewer.explainQueryPlan(executionContext, query);
+        treeViewer.showPlan(query, plan);
     }
+
 }
