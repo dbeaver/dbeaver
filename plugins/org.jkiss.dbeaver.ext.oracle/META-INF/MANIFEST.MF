@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.oracle;singleton:=true
-Bundle-Version: 2.1.86.qualifier
-Bundle-Release-Date: 20190121
+Bundle-Version: 2.1.87.qualifier
+Bundle-Release-Date: 20190203
 Bundle-Activator: org.jkiss.dbeaver.ext.oracle.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
