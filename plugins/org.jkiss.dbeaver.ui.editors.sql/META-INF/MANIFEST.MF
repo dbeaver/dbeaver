@@ -44,6 +44,7 @@ Export-Package: org.jkiss.dbeaver.runtime.sql,
  org.jkiss.dbeaver.ui.editors.sql.syntax.tokens,
  org.jkiss.dbeaver.ui.editors.sql.templates,
  org.jkiss.dbeaver.ui.editors.sql.util,
- org.jkiss.dbeaver.ui.editors.sql.plan
+ org.jkiss.dbeaver.ui.editors.sql.plan,
+ org.jkiss.dbeaver.ui.editors.sql.plan.simple
 Bundle-ClassPath: .
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.plan;
+package org.jkiss.dbeaver.ui.editors.sql.plan.simple;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
@@ -45,16 +45,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
-import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.plan.simple.PlanNodesTree;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * ResultSetViewer
  */
-public class ExplainPlanViewer
+public class SQLPlanTreeViewer extends Viewer
 {
     //static final Log log = Log.getLog(ResultSetViewer.class);
 
@@ -72,7 +69,7 @@ public class ExplainPlanViewer
 
     private transient Object selectedElement;
 
-    public ExplainPlanViewer(final IWorkbenchPart workbenchPart, Composite parent)
+    public SQLPlanTreeViewer(final IWorkbenchPart workbenchPart, Composite parent)
     {
         super();
         createActions();
@@ -83,18 +80,10 @@ public class ExplainPlanViewer
         {
             VerticalFolder tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
             tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-
-            for (SQLPlanViewDescriptor viewDesc : SQLPlanViewRegistry.getInstance().getPlanViewDescriptors()) {
-                VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT);
-                treeViewButton.setText(viewDesc.getLabel());
-                if (!CommonUtils.isEmpty(viewDesc.getDescription())) {
-                    treeViewButton.setToolTipText(viewDesc.getDescription());
-                    if (viewDesc.getIcon() != null) {
-                        treeViewButton.setImage(DBeaverIcons.getImage(viewDesc.getIcon()));
-                    }
-                }
-                treeViewButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            }
+            VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT);
+            treeViewButton.setText("Simple");
+            treeViewButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
+            treeViewButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             //Composite ph = new Composite(tabViewFolder, SWT.NONE);
             //ph.setLayoutData(new GridData(GridData.FILL_VERTICAL));
         }
@@ -238,6 +227,37 @@ public class ExplainPlanViewer
         refreshPlanAction.setEnabled(true);
         toggleViewAction.setEnabled(true);
     }
+
+    /////////////////////////////////////////////////
+    // Viewer
+
+    @Override
+    public Object getInput() {
+        return null;
+    }
+
+    @Override
+    public ISelection getSelection() {
+        return null;
+    }
+
+    @Override
+    public void refresh() {
+
+    }
+
+    @Override
+    public void setInput(Object input) {
+
+    }
+
+    @Override
+    public void setSelection(ISelection selection, boolean reveal) {
+
+    }
+
+    /////////////////////////////////////////////////
+    // Actions
 
     private class RefreshPlanAction extends Action {
         private RefreshPlanAction()
