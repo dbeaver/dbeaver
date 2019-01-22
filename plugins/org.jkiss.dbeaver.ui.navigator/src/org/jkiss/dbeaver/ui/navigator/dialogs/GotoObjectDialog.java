@@ -24,10 +24,11 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.eclipse.ui.dialogs.SearchPattern;
 import org.jkiss.dbeaver.DBException;
@@ -43,14 +44,13 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages; 
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -61,6 +61,8 @@ import java.util.regex.Pattern;
 public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     private static final String DIALOG_ID = "GotoObjectDialog";
+
+    private static final boolean SHOW_OBJECT_TYPES = false;
 
     private final DBCExecutionContext context;
     private DBSObject container;
@@ -77,6 +79,39 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     @Override
     protected Control createExtendedContentArea(Composite parent) {
+        if (!SHOW_OBJECT_TYPES) {
+            return null;
+        }
+        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, context.getDataSource());
+        if (structureAssistant == null) {
+            return null;
+        }
+
+        List<DBSObjectType> typesToSearch = new ArrayList<>();
+        for (DBSObjectType type : structureAssistant.getSupportedObjectTypes()) {
+            Class<? extends DBSObject> typeClass = type.getTypeClass();
+            if (DBSEntityElement.class.isAssignableFrom(typeClass)) {
+                // Skipp attributes (columns), methods, etc
+                continue;
+            }
+            typesToSearch.add(type);
+        }
+        if (!CommonUtils.isEmpty(typesToSearch)) {
+            Group cbGroup = new Group(parent, SWT.NONE);
+            cbGroup.setText("Objects:");
+            RowLayout rowLayout = new RowLayout(SWT.HORIZONTAL);
+            rowLayout.wrap = true;
+            cbGroup.setLayout(rowLayout);
+            cbGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            for (DBSObjectType type : typesToSearch) {
+                Button cb = new Button(cbGroup, SWT.CHECK);
+                cb.setText(type.getDescription());
+                cb.setSelection(true);
+            }
+
+            return cbGroup;
+        }
+
         return null;
     }
 
