@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 
 /**
- * SQLPlanViewer
+ * SQLPlanViewProvider
  */
-public interface SQLPlanViewer {
+public interface SQLPlanViewProvider {
 
     Viewer createPlanViewer(IWorkbenchPart workbenchPart, Composite parent);
 

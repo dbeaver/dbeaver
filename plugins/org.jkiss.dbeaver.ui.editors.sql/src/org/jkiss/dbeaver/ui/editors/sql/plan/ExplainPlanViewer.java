@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.plan;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -42,7 +43,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewer;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
@@ -53,19 +54,13 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * ResultSetViewer
  */
-public class ExplainPlanViewer extends Viewer
+public class ExplainPlanViewer extends Viewer implements IAdaptable
 {
     static final Log log = Log.getLog(ExplainPlanViewer.class);
 
-    private final IWorkbenchPart workbenchPart;
-    private final DBPContextProvider contextProvider;
-    private final Composite planPresentationContainer;
-    private final VerticalFolder tabViewFolder;
-    private final Composite planViewComposite;
-
     private static class PlanViewInfo {
         private SQLPlanViewDescriptor descriptor;
-        private SQLPlanViewer planViewer;
+        private SQLPlanViewProvider planViewer;
         private Viewer viewer;
 
         public PlanViewInfo(SQLPlanViewDescriptor descriptor) {
@@ -73,8 +68,16 @@ public class ExplainPlanViewer extends Viewer
         }
     };
 
+
+    private final IWorkbenchPart workbenchPart;
+    private final DBPContextProvider contextProvider;
+    private final Composite planPresentationContainer;
+    private final VerticalFolder tabViewFolder;
+    private final Composite planViewComposite;
+
     private PlanViewInfo activeViewInfo;
     private SQLQuery lastQuery;
+    private DBCPlan lastPlan;
 
     public ExplainPlanViewer(final IWorkbenchPart workbenchPart, DBPContextProvider contextProvider, Composite parent)
     {
@@ -152,6 +155,9 @@ public class ExplainPlanViewer extends Viewer
         if (activeViewInfo.planViewer == null) {
             activeViewInfo.planViewer = activeViewInfo.descriptor.createInstance();
             activeViewInfo.viewer = activeViewInfo.planViewer.createPlanViewer(workbenchPart, planViewComposite);
+            if (lastPlan != null) {
+                activeViewInfo.planViewer.visualizeQueryPlan(activeViewInfo.viewer, lastQuery, lastPlan);
+            }
         }
         if (activeViewInfo.planViewer != null) {
             ((StackLayout) planViewComposite.getLayout()).topControl = activeViewInfo.viewer.getControl();
@@ -218,6 +224,7 @@ public class ExplainPlanViewer extends Viewer
     }
 
     private void visualizePlan(DBCPlan plan) {
+        lastPlan = plan;
         for (PlanViewInfo viewInfo : getPlanViews()) {
             if (viewInfo.viewer != null) {
                 viewInfo.planViewer.visualizeQueryPlan(viewInfo.viewer, lastQuery, plan);
@@ -238,4 +245,13 @@ public class ExplainPlanViewer extends Viewer
             activeViewInfo.viewer.setSelection(selection, reveal);
         }
     }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (activeViewInfo != null && activeViewInfo.viewer instanceof IAdaptable) {
+            return ((IAdaptable) activeViewInfo.viewer).getAdapter(adapter);
+        }
+        return null;
+    }
+
 }
