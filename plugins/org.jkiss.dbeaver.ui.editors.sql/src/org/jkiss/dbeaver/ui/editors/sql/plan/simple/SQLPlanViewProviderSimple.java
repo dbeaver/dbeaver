@@ -19,16 +19,14 @@ package org.jkiss.dbeaver.ui.editors.sql.plan.simple;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewer;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 
 /**
- * SQLPlanViewerSimple
+ * SQLPlanViewProviderSimple
  */
-public class SQLPlanViewerSimple implements SQLPlanViewer {
+public class SQLPlanViewProviderSimple implements SQLPlanViewProvider {
 
 
     @Override

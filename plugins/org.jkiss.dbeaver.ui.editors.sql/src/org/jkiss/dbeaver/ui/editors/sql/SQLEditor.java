@@ -614,15 +614,22 @@ public class SQLEditor extends SQLEditorBase implements
         if (required == IFindReplaceTarget.class) {
             return required.cast(findReplaceTarget);
         }
-        ResultSetViewer resultsView = getActiveResultSetViewer();
-        if (resultsView != null) {
-            if (required == IResultSetController.class || required == ResultSetViewer.class) {
-                return required.cast(resultsView);
+        CTabItem activeResultsTab = getActiveResultsTab();
+        if (activeResultsTab != null) {
+            Object tabControl = activeResultsTab.getData();
+            if (tabControl instanceof QueryResultsContainer) {
+                tabControl = ((QueryResultsContainer) tabControl).viewer;
             }
-            T adapter = resultsView.getAdapter(required);
-            if (adapter != null) {
-                return adapter;
+            if (tabControl instanceof IAdaptable) {
+                T adapter = ((IAdaptable) tabControl).getAdapter(required);
+                if (adapter != null) {
+                    return adapter;
+                }
             }
+            if (tabControl instanceof ResultSetViewer && (required == IResultSetController.class || required == ResultSetViewer.class)) {
+                return required.cast(tabControl);
+            }
+
         }
         return super.getAdapter(required);
     }
@@ -1006,7 +1013,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private CTabItem getActiveResultsTab() {
         return activeResultsTab == null || activeResultsTab.isDisposed() ?
-                resultTabs.getSelection() : activeResultsTab;
+            (resultTabs == null ? null : resultTabs.getSelection()) : activeResultsTab;
     }
 
     public void closeActiveTab() {
