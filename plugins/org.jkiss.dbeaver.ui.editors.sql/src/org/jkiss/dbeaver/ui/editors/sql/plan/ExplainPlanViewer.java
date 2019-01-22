@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
@@ -54,7 +55,7 @@ public class ExplainPlanViewer extends Viewer
 
     private static class PlanViewInfo {
         private SQLPlanViewDescriptor descriptor;
-        private ISQLPlanViewer planViewer;
+        private SQLPlanViewer planViewer;
         private Viewer viewer;
 
         public PlanViewInfo(SQLPlanViewDescriptor descriptor) {

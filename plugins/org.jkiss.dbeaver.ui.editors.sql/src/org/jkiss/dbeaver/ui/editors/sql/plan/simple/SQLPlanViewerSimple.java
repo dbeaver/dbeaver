@@ -22,12 +22,12 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.ui.editors.sql.plan.ISQLPlanViewer;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewer;
 
 /**
  * SQLPlanViewerSimple
  */
-public class SQLPlanViewerSimple implements ISQLPlanViewer {
+public class SQLPlanViewerSimple implements SQLPlanViewer {
 
 
     @Override

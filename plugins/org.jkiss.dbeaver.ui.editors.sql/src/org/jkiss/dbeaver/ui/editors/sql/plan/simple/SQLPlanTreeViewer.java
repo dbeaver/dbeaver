@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * ResultSetViewer
+ * SQLPlanTreeViewer
  */
 public class SQLPlanTreeViewer extends Viewer
 {
