@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.plan;
+package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
@@ -24,9 +24,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 
 /**
- * ISQLPlanViewer
+ * SQLPlanViewer
  */
-public interface ISQLPlanViewer {
+public interface SQLPlanViewer {
 
     Viewer createPlanViewer(IWorkbenchPart workbenchPart, Composite parent);
 
