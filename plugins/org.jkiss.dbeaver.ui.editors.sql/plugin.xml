@@ -7,6 +7,7 @@
     <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.plan.view" name="%extension-point.org.jkiss.dbeaver.sqlPlanView.name" schema="schema/org.jkiss.dbeaver.sqlPlanView.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorPreferencesInitializer"/>
@@ -24,7 +25,7 @@
                 <view
                         id="org.jkiss.dbeaver.core.sqlResults"
                         category="org.jkiss.dbeaver.core.category"
-                        class="org.jkiss.dbeaver.ui.views.SQLResultsView"
+                        class="org.jkiss.dbeaver.ui.editors.sql.SQLResultsView"
                         allowMultiple="true"
                         icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_data_grid.png"
                         name="%view.sql.results.title"/>
@@ -48,6 +49,10 @@
         <command id="set" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
         <command id="echo" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
         <command id="include" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another SQL script file"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sql.plan.view">
+        <command id="simple" priority="100" class="org.jkiss.dbeaver.ui.editors.sql.plan.simple.SQLPlanViewerSimple" label="Simple" description="Simple execution plan presentation"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sql.covert">
