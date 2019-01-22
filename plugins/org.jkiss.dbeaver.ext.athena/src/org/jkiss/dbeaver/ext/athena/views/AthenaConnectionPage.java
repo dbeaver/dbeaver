@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.athena.AthenaActivator;
+import org.jkiss.dbeaver.ext.athena.internal.AthenaMessages;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -48,7 +49,7 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
     private Text accessKeyText;
     private Text secretAccessKeyText;
 
-    private static ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png");
+    private static ImageDescriptor logoImage = AthenaActivator.getImageDescriptor("icons/aws_athena_logo.png"); //$NON-NLS-1$
     private DriverPropertiesDialogPage driverPropsPage;
 
     public AthenaConnectionPage() {
@@ -72,27 +73,27 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
         ModifyListener textListener = e -> site.updateButtons();
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, "Connection", 2, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, AthenaMessages.label_connection, 2, 0, 0);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            awsRegionCombo = UIUtils.createLabelCombo(addrGroup, "Region", SWT.DROP_DOWN);
+            awsRegionCombo = UIUtils.createLabelCombo(addrGroup, AthenaMessages.label_region, SWT.DROP_DOWN);
             awsRegionCombo.addModifyListener(textListener);
 
-            s3LocationText = UIUtils.createLabelText(addrGroup, "S3 location", "");
-            s3LocationText.setToolTipText("S3 output location");
+            s3LocationText = UIUtils.createLabelText(addrGroup, AthenaMessages.label_s3_location, ""); //$NON-NLS-2$ //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-1$
+            s3LocationText.setToolTipText(AthenaMessages.label_s3_output_location);
             s3LocationText.addModifyListener(textListener);
         }
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, "Security", 2, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, AthenaMessages.label_security, 2, 0, 0);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            accessKeyText = UIUtils.createLabelText(addrGroup, "AWS Access Key", "");
-            accessKeyText.setToolTipText("AWS account access key ID");
+            accessKeyText = UIUtils.createLabelText(addrGroup, AthenaMessages.label_aws_access_key, ""); //$NON-NLS-1$
+            accessKeyText.setToolTipText(AthenaMessages.label_access_key);
             accessKeyText.addModifyListener(textListener);
 
-            secretAccessKeyText = UIUtils.createLabelText(addrGroup, "AWS Secret Key", "", SWT.BORDER | SWT.PASSWORD);
-            secretAccessKeyText.setToolTipText("AWS account secret access key ID");
+            secretAccessKeyText = UIUtils.createLabelText(addrGroup, AthenaMessages.label_secret_key, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$ 
+            secretAccessKeyText.setToolTipText(AthenaMessages.label_access_key_id);
             secretAccessKeyText.addModifyListener(textListener);
 
             createSavePasswordButton(addrGroup, 2);
@@ -136,7 +137,7 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
         if (s3LocationText != null) {
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
-                databaseName = "s3://";
+                databaseName = "s3://"; //$NON-NLS-1$
             }
             s3LocationText.setText(databaseName);
         }
