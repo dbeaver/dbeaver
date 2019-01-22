@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.views.plan;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -33,7 +31,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -45,15 +42,19 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.VerticalButton;
+import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * ResultSetViewer
  */
-public class ExplainPlanViewer implements IPropertyChangeListener
+public class ExplainPlanViewer
 {
     //static final Log log = Log.getLog(ResultSetViewer.class);
+
     private SashForm planPanel;
     private Text sqlText;
     private PlanNodesTree planTree;
@@ -73,7 +74,22 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         super();
         createActions();
 
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite planPresentationContainer = UIUtils.createPlaceholder(parent, 2);
+        planPresentationContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        {
+            VerticalFolder tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
+            tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT);
+            treeViewButton.setText("Simple");
+            treeViewButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
+            treeViewButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            //Composite ph = new Composite(tabViewFolder, SWT.NONE);
+            //ph.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        }
+
+        Composite composite = UIUtils.createPlaceholder(planPresentationContainer, 1);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         this.planPanel = UIUtils.createPartDivider(workbenchPart, composite, SWT.HORIZONTAL);
         this.planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -172,17 +188,12 @@ public class ExplainPlanViewer implements IPropertyChangeListener
 
     public Control getControl()
     {
-        return planPanel.getParent();
+        return planPanel.getParent().getParent();
     }
 
     public Viewer getViewer()
     {
         return planTree.getItemsViewer();
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent event)
-    {
     }
 
     public void explainQueryPlan(DBCExecutionContext executionContext, SQLQuery query) throws DBCException
