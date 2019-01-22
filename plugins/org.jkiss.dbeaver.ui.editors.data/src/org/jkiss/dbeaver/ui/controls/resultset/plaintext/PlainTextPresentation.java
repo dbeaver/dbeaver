@@ -439,6 +439,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
         if (delimTrailing) grid.append("|");
         grid.append("\n");
+
+        if (delimLeading) grid.append("|");
         for (int j = 0; j < nameWidth; j++) grid.append("-");
         grid.append("|");
         for (int j = 0; j < valueWidth; j++) grid.append("-");
