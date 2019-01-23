@@ -351,14 +351,25 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 return;
             }
         }
-        String afterPath = config.getAttribute(RegistryConstants.ATTR_AFTER);
-        DBXTreeItem afterItem = null;
-        if (afterPath != null) {
-            afterItem = baseItem.findChildItemByPath(afterPath);
-        }
 
-        // Inject nodes into tree item
-        loadTreeChildren(config, baseItem, afterItem);
+        String changeFolderType = config.getAttribute("changeFolderType");
+        if (changeFolderType != null) {
+            DBXTreeNode parentNode = baseItem.getParent();
+            if (parentNode instanceof DBXTreeFolder) {
+                ((DBXTreeFolder)parentNode).setType(changeFolderType);
+            } else {
+                log.error("Can't update folder type to " + changeFolderType);
+            }
+        } else {
+            String afterPath = config.getAttribute(RegistryConstants.ATTR_AFTER);
+            DBXTreeItem afterItem = null;
+            if (afterPath != null) {
+                afterItem = baseItem.findChildItemByPath(afterPath);
+            }
+
+            // Inject nodes into tree item
+            loadTreeChildren(config, baseItem, afterItem);
+        }
     }
 
     private void loadTreeChildren(IConfigurationElement config, DBXTreeNode parent, DBXTreeItem afterItem)

@@ -19,6 +19,7 @@
                 label="Greenplum"
                 icon="icons/greenplum_icon.png">
 
+            <treeInjection path="postgresql/database/schema/table" changeFolderType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
             <treeInjection path="postgresql/database/schema" after="table">
                 <folder type="org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable"
                         label="%tree.externaltables.node.name"
