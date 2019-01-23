@@ -40,6 +40,7 @@ public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandl
             throws Exception {
         Widget widget = SWTElementHelpers.getWidget(element);
         if (widget == null || (widget instanceof Control && UIUtils.isInDialog((Control)widget))) {
+            super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
             return;
         }
 
