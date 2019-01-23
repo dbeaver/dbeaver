@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -532,8 +533,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 Label label = UIUtils.createControlLabel(parent, property.getDisplayName());
                 label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
                 Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+
                 editor.setText(objectValueToString(value));
-                editor.setLayoutData(new GridData(GridData.FILL_BOTH));
+                GridData gd = new GridData(GridData.FILL_BOTH);
+                // Make multline editor at least two lines height
+                gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 2;
+                editor.setLayoutData(gd);
                 return editor;
             } else {
                 Text text = UIUtils.createLabelText(

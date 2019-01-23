@@ -456,6 +456,15 @@ public class UIUtils {
         return fontData[0].getHeight();
     }
 
+    public static int getTextHeight(Control control) {
+        GC gc = new GC(control);
+        try {
+            return gc.textExtent("X").y;
+        } finally {
+            gc.dispose();
+        }
+    }
+
     public static Font makeBoldFont(Font normalFont)
     {
         return modifyFont(normalFont, SWT.BOLD);
