@@ -94,6 +94,17 @@ public class ActionUtils
         return item;
     }
 
+    public static ContributionItem makeActionContribution(
+        @NotNull IAction action,
+        DBPImage image)
+    {
+        ActionContributionItem item = new ActionContributionItem(action);
+        if (image != null) {
+            action.setImageDescriptor(DBeaverIcons.getImageDescriptor(image));
+        }
+        return item;
+    }
+
     public static CommandContributionItem makeCommandContribution(
         @NotNull IServiceLocator serviceLocator,
         @NotNull String commandId,
