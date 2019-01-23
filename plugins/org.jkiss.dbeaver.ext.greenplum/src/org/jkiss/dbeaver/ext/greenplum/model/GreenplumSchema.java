@@ -68,7 +68,7 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @NotNull PostgreSchema postgreSchema,
                                                     @Nullable PostgreTableBase object,
                                                     @Nullable String objectName) throws SQLException {
-            String sqlQuery = "SELECT c.oid,d.description, c.*,\n" +
+            StringBuilder sqlQuery = new StringBuilder("SELECT c.oid,d.description, c.*,\n" +
                     "CASE WHEN x.urilocation IS NOT NULL THEN array_to_string(x.urilocation, ',') ELSE '' END AS urilocation,\n" +
                     "CASE WHEN x.command IS NOT NULL THEN x.command ELSE '' END AS command,\n" +
                     "x.fmttype, x.fmtopts,\n" +
@@ -76,22 +76,26 @@ public class GreenplumSchema extends PostgreSchema {
                     "coalesce(x.rejectlimittype, '') AS rejectlimittype,\n" +
                     "array_to_string(x.execlocation, ',') AS execlocation,\n" +
                     "pg_encoding_to_char(x.encoding) AS encoding,\n" +
-                    "x.writable,\n" +
-                    "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n" +
-                    "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" +
-                    "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
-                    "FROM pg_catalog.pg_class c\n" +
-                    "inner join pg_catalog.pg_namespace ns\n" +
-                    "\ton ns.oid = c.relnamespace\n" +
-                    "LEFT OUTER JOIN pg_catalog.pg_description d\n" +
-                    "\tON d.objoid=c.oid AND d.objsubid=0\n" +
-                    "left outer join pg_catalog.pg_exttable x\n" +
-                    "\ton x.reloid = c.oid\n" +
-                    "left outer join pg_catalog.pg_partitions p\n" +
-                    "\ton c.relname = p.partitiontablename and ns.nspname = p.schemaname\n" +
-                    "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') AND p.partitiontablename is null "
-                    + (object == null && objectName == null ? "" : " AND relname=?");
-            final JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery);
+                    "x.writable,\n")
+                    .append(postgreSchema.getDataSource().isServerVersionAtLeast(9,4) ?
+                            "" :
+                            "case when x.fmterrtbl is not NULL then true else false end as \"is_logging_errors\",\n")
+                    .append(
+                            "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" +
+                                    "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
+                                    "FROM pg_catalog.pg_class c\n" +
+                                    "inner join pg_catalog.pg_namespace ns\n" +
+                                    "\ton ns.oid = c.relnamespace\n" +
+                                    "LEFT OUTER JOIN pg_catalog.pg_description d\n" +
+                                    "\tON d.objoid=c.oid AND d.objsubid=0\n" +
+                                    "left outer join pg_catalog.pg_exttable x\n" +
+                                    "\ton x.reloid = c.oid\n" +
+                                    "left outer join pg_catalog.pg_partitions p\n" +
+                                    "\ton c.relname = p.partitiontablename and ns.nspname = p.schemaname\n" +
+                                    "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') AND p.partitiontablename is null ")
+                    .append((object == null && objectName == null ? "" : " AND relname=?"));
+
+            final JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery.toString());
             dbStat.setLong(1, getObjectId());
             if (object != null || objectName != null)
                 dbStat.setString(2, object != null ? object.getName() : objectName);

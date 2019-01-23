@@ -160,6 +160,14 @@ public class GreenplumExternalTableTest {
         Assert.assertTrue(table.isLoggingErrors());
     }
 
+    @Test
+    public void onCreation_setsDefaultLoggingErrorsToFalse_ifGreenplumServerVersionIs6andAbove() throws SQLException {
+        // Greenplum 6 runs on Postgre 9.4.x
+        Mockito.when(mockDataSource.isServerVersionAtLeast(9,4)).thenReturn(true);
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        Assert.assertFalse(table.isLoggingErrors());
+        Mockito.verify(mockResults, Mockito.times(0)).getBoolean("is_logging_errors");
+    }
 
     @Test
     public void generateDDL_whenTableHasASingleColumn_returnsDDLStringForASingleColumn()
