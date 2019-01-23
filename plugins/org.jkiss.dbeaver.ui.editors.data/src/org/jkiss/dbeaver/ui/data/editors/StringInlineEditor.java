@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
@@ -59,6 +60,8 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
             editor.setTextLimit(MAX_STRING_LENGTH);
             editor.setEditable(!valueController.isReadOnly());
             editor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+            editor.setBackground(UIStyles.getDefaultTextBackground());
+            editor.setForeground(UIStyles.getDefaultTextForeground());
             StyledTextUtils.fillDefaultStyledTextContextMenu(editor);
             return editor;
         }
