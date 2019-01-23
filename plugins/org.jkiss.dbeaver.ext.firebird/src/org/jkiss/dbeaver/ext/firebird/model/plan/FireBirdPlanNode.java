@@ -32,7 +32,22 @@ public class FireBirdPlanNode implements DBCPlanNode {
 		this.plan = plan;
 		this.nested = new ArrayList<>();
 	}
-	
+
+	@Override
+	public String getNodeName() {
+		return plan;
+	}
+
+	@Override
+	public String getNodeType() {
+		return "Plan";
+	}
+
+	@Override
+	public String getNodeDescription() {
+		return plan;
+	}
+
 	@Override
 	public DBCPlanNode getParent() {
 		return parent;

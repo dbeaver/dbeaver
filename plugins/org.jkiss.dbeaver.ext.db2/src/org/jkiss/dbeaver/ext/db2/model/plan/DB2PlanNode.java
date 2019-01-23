@@ -43,6 +43,7 @@ public abstract class DB2PlanNode implements DBCPlanNode {
     // --------------------
     // DB2PlanNode Contract
     // --------------------
+    @Override
     public abstract String getNodeName();
 
     public abstract Double getEstimatedCardinality();

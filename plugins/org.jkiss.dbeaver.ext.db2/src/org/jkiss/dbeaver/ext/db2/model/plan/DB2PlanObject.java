@@ -190,6 +190,16 @@ public class DB2PlanObject extends DB2PlanNode {
         return nodeName;
     }
 
+    @Override
+    public String getNodeType() {
+        return objectType;
+    }
+
+    @Override
+    public String getNodeDescription() {
+        return displayName;
+    }
+
     // --------
     // Helpers
     // --------

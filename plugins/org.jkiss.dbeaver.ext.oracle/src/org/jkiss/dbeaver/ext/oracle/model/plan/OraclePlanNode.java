@@ -143,6 +143,21 @@ public class OraclePlanNode implements DBCPlanNode {
         return nested;
     }
 
+    @Override
+    public String getNodeName() {
+        return objectName;
+    }
+
+    @Override
+    public String getNodeType() {
+        return operation;
+    }
+
+    @Override
+    public String getNodeDescription() {
+        return null;
+    }
+
     //@Property(name = "ID", order = 0, viewable = true, description = "Node ID")
     public int getId()
     {

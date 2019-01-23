@@ -44,8 +44,7 @@ public class MySQLPlanNode implements DBCPlanNode {
     private MySQLPlanNode parent;
     private List<MySQLPlanNode> nested;
 
-    public MySQLPlanNode(MySQLPlanNode parent, ResultSet dbResult) throws SQLException
-    {
+    public MySQLPlanNode(MySQLPlanNode parent, ResultSet dbResult) throws SQLException {
         this.parent = parent;
         this.id = JDBCUtils.safeGetLong(dbResult, "id");
         this.selectType = JDBCUtils.safeGetString(dbResult, "select_type");
@@ -61,80 +60,79 @@ public class MySQLPlanNode implements DBCPlanNode {
     }
 
     @Override
-    public DBCPlanNode getParent()
-    {
+    public DBCPlanNode getParent() {
         return parent;
     }
 
     @Override
-    public List<MySQLPlanNode> getNested()
-    {
+    public String getNodeName() {
+        return table;
+    }
+
+    @Override
+    public String getNodeDescription() {
+        return null;
+    }
+
+    @Override
+    @Property(order = 3, viewable = true)
+    public String getNodeType() {
+        return type;
+    }
+
+
+    @Override
+    public List<MySQLPlanNode> getNested() {
         return nested;
     }
 
     @Property(order = 0, viewable = true)
-    public long getId()
-    {
+    public long getId() {
         return id;
     }
 
     @Property(order = 1, viewable = true)
-    public String getSelectType()
-    {
+    public String getSelectType() {
         return selectType;
     }
 
     @Property(order = 2, viewable = true)
-    public String getTable()
-    {
+    public String getTable() {
         return table;
     }
 
-    @Property(order = 3, viewable = true)
-    public String getType()
-    {
-        return type;
-    }
-
     @Property(order = 4, viewable = true)
-    public String getPossibleKeys()
-    {
+    public String getPossibleKeys() {
         return possibleKeys;
     }
 
     @Property(order = 5, viewable = true)
-    public String getKey()
-    {
+    public String getKey() {
         return key;
     }
 
     @Property(order = 6, viewable = true)
-    public String getKeyLength()
-    {
+    public String getKeyLength() {
         return keyLength;
     }
 
     @Property(order = 7, viewable = true)
-    public String getRef()
-    {
+    public String getRef() {
         return ref;
     }
 
     @Property(order = 8, viewable = true)
-    public long getRowCount()
-    {
+    public long getRowCount() {
         return rowCount;
     }
 
     @Property(order = 9, viewable = true)
-    public double getFiltered()
-    {
+    public double getFiltered() {
         return filtered;
     }
 
     @Property(order = 10, viewable = true)
-    public String getExtra()
-    {
+    public String getExtra() {
         return extra;
     }
 
