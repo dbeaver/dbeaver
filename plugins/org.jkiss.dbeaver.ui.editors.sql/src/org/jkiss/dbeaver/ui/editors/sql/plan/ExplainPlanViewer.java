@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPart;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
@@ -71,7 +73,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
 
     private final IWorkbenchPart workbenchPart;
     private final DBPContextProvider contextProvider;
-    private final Composite planPresentationContainer;
+    private final ProgressPageControl planPresentationContainer;
     private final VerticalFolder tabViewFolder;
     private final Composite planViewComposite;
 
@@ -84,7 +86,8 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         this.workbenchPart = workbenchPart;
         this.contextProvider = contextProvider;
 
-        planPresentationContainer = UIUtils.createPlaceholder(parent, 2);
+        planPresentationContainer = new ProgressPageControl(parent, SWT.SHEET);
+        planPresentationContainer.getLayout().numColumns = 2;
         planPresentationContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -116,6 +119,12 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             planViewComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
             planViewComposite.setLayout(new StackLayout());
         }
+
+        planPresentationContainer.setShowDivider(false);
+        Composite progressPanel = planPresentationContainer.createProgressPanel();
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        progressPanel.setLayoutData(gd);
 
         IDialogSettings settings = getPlanViewSettings();
         VerticalButton curItem = null;

@@ -87,7 +87,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         int style)
     {
         super(parent, style);
-        GridLayout layout = new GridLayout(1, true);
+        GridLayout layout = new GridLayout(1, false);
         if ((style & SWT.SHEET) != 0) {
             layout.marginHeight = 0;
             layout.marginWidth = 0;
@@ -240,7 +240,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
         hideControls(true);
 
-        return customControlsComposite;
+        return infoGroup;
     }
 
     @Override
