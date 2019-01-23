@@ -131,7 +131,6 @@ import java.util.regex.Pattern;
  */
 public class SQLEditor extends SQLEditorBase implements
     IDataSourceContainerProviderEx,
-    DBPContextProvider,
     DBPEventListener,
     ISaveablePart2,
     DBPDataSourceTask,
@@ -1475,14 +1474,7 @@ public class SQLEditor extends SQLEditorBase implements
             resultTabs.setSelection(item);
         }
 
-        try {
-            planView.explainQueryPlan(sqlQuery);
-        } catch (DBCException e) {
-            DBWorkbench.getPlatformUI().showError(
-                    SQLEditorMessages.editors_sql_error_execution_plan_title,
-                SQLEditorMessages.editors_sql_error_execution_plan_message,
-                e);
-        }
+        planView.explainQueryPlan(sqlQuery);
     }
 
     private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {
