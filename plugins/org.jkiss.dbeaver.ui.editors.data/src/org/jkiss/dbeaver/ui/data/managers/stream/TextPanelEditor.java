@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.AbstractTextPanelEditor;
 
@@ -26,6 +30,17 @@ public class TextPanelEditor extends AbstractTextPanelEditor<TextEditorPart> {
 
     @Override
     protected TextEditorPart createEditorParty(IValueController valueController) {
-        return new TextEditorPart();
+        // Override init function because standard is VEEERY slow
+        return new TextEditorPart() {
+            @Override
+            public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+                setSite(site);
+                try {
+                    doSetInput(input);
+                } catch (CoreException e) {
+                    throw new PartInitException("Error initializing panel text editor", e);
+                }
+            }
+        };
     }
 }
