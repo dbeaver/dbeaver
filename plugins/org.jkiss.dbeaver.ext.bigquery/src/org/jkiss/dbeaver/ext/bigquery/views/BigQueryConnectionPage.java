@@ -55,7 +55,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
     private Text hostText;
     private Text portText;
 
-    private static ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/bigquery_logo.png");
+    private static ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/bigquery_logo.png"); //$NON-NLS-1$
     private DriverPropertiesDialogPage driverPropsPage;
 
     public BigQueryConnectionPage() {
@@ -79,36 +79,36 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
         ModifyListener textListener = e -> site.updateButtons();
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, "Connection", 2, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_connection, 2, 0, 0);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            projectText = UIUtils.createLabelText(addrGroup, "Project", "");
+            projectText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_project, ""); //$NON-NLS-2$
             projectText.addModifyListener(textListener);
 
-            extraProjectsText = UIUtils.createLabelText(addrGroup, "Additional project(s)", "");
-            extraProjectsText.setToolTipText("Coma-separated list of projects (optional)");
+            extraProjectsText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_additional_project, ""); //$NON-NLS-2$
+            extraProjectsText.setToolTipText("Coma-separated list of projects (optional)"); //$NON-NLS-1$
             extraProjectsText.addModifyListener(textListener);
         }
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, "Security", 4, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_security, 4, 0, 0);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            usernameText = UIUtils.createLabelText(addrGroup, "Service account", "");
-            usernameText.setToolTipText("Google account email address. Can be left empty if auth type is service based and key file contains all user info (JSON).");
+            usernameText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_service_account, ""); //$NON-NLS-2$
+            usernameText.setToolTipText("Google account email address. Can be left empty if auth type is service based and key file contains all user info (JSON)."); //$NON-NLS-1$
             usernameText.addModifyListener(textListener);
 
-            UIUtils.createControlLabel(addrGroup, "OAuth type");
+            UIUtils.createControlLabel(addrGroup, BigQueryMessages.label_oauth_type);
             authTypeCombo = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            authTypeCombo.add("Service-based");
-            authTypeCombo.add("User-based");
+            authTypeCombo.add(BigQueryMessages.label_service_based);
+            authTypeCombo.add(BigQueryMessages.label_user_based);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             authTypeCombo.setLayoutData(gd);
             authTypeCombo.addModifyListener(textListener);
             authTypeCombo.select(0);
 
-            UIUtils.createControlLabel(addrGroup, "Key path");
-            authCertFile = new TextWithOpenFile(addrGroup, "Private key path (p12 or JSON)", new String[] { "*", "*.p12", "*.json" } );
+            UIUtils.createControlLabel(addrGroup, BigQueryMessages.label_key_path);
+            authCertFile = new TextWithOpenFile(addrGroup, BigQueryMessages.label_private_key_path, new String[] { "*", "*.p12", "*.json" } ); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             authCertFile.setLayoutData(gd);
@@ -117,13 +117,13 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
 
         {
             // Def host/port
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, "Server info", 4, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_server_info, 4, 0, 0);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            hostText = UIUtils.createLabelText(addrGroup, "Host", BigQueryConstants.DEFAULT_HOST_NAME);
+            hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);
             hostText.addModifyListener(textListener);
 
-            portText = UIUtils.createLabelText(addrGroup, "Port", String.valueOf(BigQueryConstants.DEFAULT_PORT));
+            portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
             GridData gd = (GridData) portText.getLayoutData();
             gd.widthHint = 40;
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
@@ -153,7 +153,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
         if (projectText != null) {
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
-                databaseName = "";
+                databaseName = ""; //$NON-NLS-1$
             }
             projectText.setText(databaseName);
         }
@@ -185,7 +185,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
             } else if (site.getDriver().getDefaultPort() != null) {
                 portText.setText(site.getDriver().getDefaultPort());
             } else {
-                portText.setText("");
+                portText.setText(""); //$NON-NLS-1$
             }
         }
     }
