@@ -303,26 +303,28 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         propValues.clear();
 
         final Object editableValue = getEditableValue();
-        IPropertyFilter filter;
-        if (editableValue instanceof DBSObject) {
-            filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
-        } else if (editableValue instanceof DBPContextProvider) {
-            DBCExecutionContext context = ((DBPContextProvider) editableValue).getExecutionContext();
-            filter = context == null ? new DataSourcePropertyFilter() : new DataSourcePropertyFilter(context.getDataSource());
-        } else {
-            filter = new DataSourcePropertyFilter();
-        }
-        List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter);
-        for (final ObjectPropertyDescriptor desc : annoProps) {
-            addProperty(desc);
-        }
-        if (editableValue instanceof DBPPropertySource) {
-            DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
-            DBPPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors2();
-            if (!ArrayUtils.isEmpty(ownProperties)) {
-                for (DBPPropertyDescriptor prop : ownProperties) {
-                    props.add(prop);
-                    propValues.put(prop.getId(), ownPropSource.getPropertyValue(null, prop.getId()));
+        if (editableValue != null) {
+            IPropertyFilter filter;
+            if (editableValue instanceof DBSObject) {
+                filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
+            } else if (editableValue instanceof DBPContextProvider) {
+                DBCExecutionContext context = ((DBPContextProvider) editableValue).getExecutionContext();
+                filter = context == null ? new DataSourcePropertyFilter() : new DataSourcePropertyFilter(context.getDataSource());
+            } else {
+                filter = new DataSourcePropertyFilter();
+            }
+            List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter);
+            for (final ObjectPropertyDescriptor desc : annoProps) {
+                addProperty(desc);
+            }
+            if (editableValue instanceof DBPPropertySource) {
+                DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
+                DBPPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors2();
+                if (!ArrayUtils.isEmpty(ownProperties)) {
+                    for (DBPPropertyDescriptor prop : ownProperties) {
+                        props.add(prop);
+                        propValues.put(prop.getId(), ownPropSource.getPropertyValue(null, prop.getId()));
+                    }
                 }
             }
         }
