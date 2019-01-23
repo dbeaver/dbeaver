@@ -610,26 +610,29 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public <T> T getAdapter(Class<T> required)
     {
-        if (required == IFindReplaceTarget.class) {
-            return required.cast(findReplaceTarget);
-        }
-        CTabItem activeResultsTab = getActiveResultsTab();
-        if (activeResultsTab != null) {
-            Object tabControl = activeResultsTab.getData();
-            if (tabControl instanceof QueryResultsContainer) {
-                tabControl = ((QueryResultsContainer) tabControl).viewer;
+        if (resultTabs != null && !resultTabs.isDisposed()) {
+            if (required == IFindReplaceTarget.class) {
+                return required.cast(findReplaceTarget);
             }
-            if (tabControl instanceof IAdaptable) {
-                T adapter = ((IAdaptable) tabControl).getAdapter(required);
-                if (adapter != null) {
-                    return adapter;
+            CTabItem activeResultsTab = getActiveResultsTab();
+            if (activeResultsTab != null) {
+                Object tabControl = activeResultsTab.getData();
+                if (tabControl instanceof QueryResultsContainer) {
+                    tabControl = ((QueryResultsContainer) tabControl).viewer;
                 }
-            }
-            if (tabControl instanceof ResultSetViewer && (required == IResultSetController.class || required == ResultSetViewer.class)) {
-                return required.cast(tabControl);
-            }
+                if (tabControl instanceof IAdaptable) {
+                    T adapter = ((IAdaptable) tabControl).getAdapter(required);
+                    if (adapter != null) {
+                        return adapter;
+                    }
+                }
+                if (tabControl instanceof ResultSetViewer && (required == IResultSetController.class || required == ResultSetViewer.class)) {
+                    return required.cast(tabControl);
+                }
 
+            }
         }
+
         return super.getAdapter(required);
     }
 
