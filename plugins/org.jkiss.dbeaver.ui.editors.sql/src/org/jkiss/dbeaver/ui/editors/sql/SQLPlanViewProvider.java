@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 
@@ -33,4 +32,5 @@ public interface SQLPlanViewProvider {
 
     void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan);
 
+    void contributeActions(Viewer viewer, IContributionManager contributionManager, SQLQuery lastQuery, DBCPlan lastPlan);
 }

@@ -55,7 +55,6 @@ public class SQLPlanTreeViewer extends Viewer
     private PropertyTreeViewer planProperties;
 
     private SQLQuery query;
-    private RefreshPlanAction refreshPlanAction;
     private ToggleViewAction toggleViewAction;
     private final SashForm leftPanel;
 
@@ -80,15 +79,9 @@ public class SQLPlanTreeViewer extends Viewer
             leftPanel = UIUtils.createPartDivider(workbenchPart, planPanel, SWT.VERTICAL);
             leftPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET, workbenchPart.getSite()) {
-                @Override
-                public void fillCustomActions(IContributionManager contributionManager) {
-                    contributionManager.add(toggleViewAction);
-                    contributionManager.add(refreshPlanAction);
-                }
-            };
-            this.planTree.setShowDivider(true);
-            this.planTree.createProgressPanel(composite);
+            this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET, workbenchPart.getSite());
+            //this.planTree.setShowDivider(true);
+            //this.planTree.createProgressPanel(composite);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalIndent = 0;
             gd.verticalIndent = 0;
@@ -158,9 +151,6 @@ public class SQLPlanTreeViewer extends Viewer
     {
         this.toggleViewAction = new ToggleViewAction();
         this.toggleViewAction.setEnabled(false);
-
-        this.refreshPlanAction = new RefreshPlanAction();
-        this.refreshPlanAction.setEnabled(false);
     }
 
     public Control getControl()
@@ -172,39 +162,6 @@ public class SQLPlanTreeViewer extends Viewer
     {
         return planTree.getItemsViewer();
     }
-/*
-
-    public void explainQueryPlan(DBCExecutionContext executionContext, SQLQuery query) throws DBCException
-    {
-        this.query = query;
-        if (executionContext != null) {
-            DBPDataSource dataSource = executionContext.getDataSource();
-            planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
-        } else {
-            planner = null;
-        }
-        planTree.clearListData();
-        refreshPlanAction.setEnabled(false);
-
-        if (planner == null) {
-            throw new DBCException("This datasource doesn't support execution plans");
-        }
-        if (planTree.isLoading()) {
-            UIUtils.showMessageBox(
-                getControl().getShell(),
-                "Can't explain plan",
-                "Explain plan already running",
-                SWT.ICON_ERROR);
-            return;
-        }
-        sqlText.setText(query.getText());
-        planTree.init(executionContext, planner, query.getText());
-        planTree.loadData();
-
-        refreshPlanAction.setEnabled(true);
-        toggleViewAction.setEnabled(true);
-    }
-*/
 
     /////////////////////////////////////////////////
     // Viewer
@@ -234,29 +191,19 @@ public class SQLPlanTreeViewer extends Viewer
 
     }
 
-    public void showPlan(SQLQuery query, DBCPlan plan) {
+    void showPlan(SQLQuery query, DBCPlan plan) {
         this.query = query;
         this.sqlText.setText(query.getText());
-        planTree.showPlan(query.getDataSource(), plan);
+        this.toggleViewAction.setEnabled(true);
+        this.planTree.showPlan(query.getDataSource(), plan);
+    }
+
+    void contributeActions(IContributionManager contributionManager, SQLQuery lastQuery, DBCPlan lastPlan) {
+        contributionManager.add(toggleViewAction);
     }
 
     /////////////////////////////////////////////////
     // Actions
-
-    private class RefreshPlanAction extends Action {
-        private RefreshPlanAction()
-        {
-            super("Reevaluate", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
-        }
-
-        @Override
-        public void run()
-        {
-            if (planTree != null) {
-                planTree.loadData();
-            }
-        }
-    }
 
     private class ToggleViewAction extends Action {
         private ToggleViewAction()

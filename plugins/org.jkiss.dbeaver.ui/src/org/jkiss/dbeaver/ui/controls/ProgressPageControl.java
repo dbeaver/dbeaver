@@ -518,6 +518,10 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
     }
 
+    public void refreshActions() {
+        getProgressControl().hideControls(true);
+    }
+
     public void activate(boolean active)
     {
         if (active) {
