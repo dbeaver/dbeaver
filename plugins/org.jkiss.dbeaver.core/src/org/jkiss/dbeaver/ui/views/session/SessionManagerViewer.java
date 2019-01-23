@@ -39,7 +39,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
@@ -53,6 +52,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -64,7 +64,7 @@ import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.plan.simple.PlanNodesTree;
+import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -101,7 +101,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     private final CTabItem detailsItem;
 
     private final DBCQueryPlanner planner;
-    private PlanNodesTree planTree;
+    private ExplainPlanViewer planViewer;
     private Object selectedPlanElement;
     private final CTabFolder detailsFolder;
 
@@ -237,13 +237,11 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 propCollector.collectProperties();
                 sessionProps.loadProperties(propCollector);
             }
-        } else if (planTree != null) {
+        } else if (planViewer != null) {
             // Show execution plan
-            planTree.clearListData();
             String sqlText = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
             if (!CommonUtils.isEmpty(sqlText)) {
-                DBPDataSource dataSource = sessionManager.getDataSource();
-                planTree.showPlan(dataSource, null);
+                planViewer.explainQueryPlan(new SQLQuery(sessionManager.getDataSource(), sqlText));
             }
         }
         if (detailsFolder.getSelectionIndex() > 0) {
@@ -257,21 +255,23 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     }
 
     private void createPlannerTab(CTabFolder previewFolder) {
-        planTree = new PlanNodesTree(previewFolder, SWT.SHEET, workbenchPart.getSite());
-        planTree.substituteProgressPanel(getSessionListControl());
-        planTree.getItemsViewer().addSelectionChangedListener(event -> showPlanNode());
+        planViewer = new ExplainPlanViewer(workbenchPart, sqlViewer, previewFolder);
+
+//        planTree = new PlanNodesTree(previewFolder, SWT.SHEET, workbenchPart.getSite());
+//        planTree.substituteProgressPanel(getSessionListControl());
+        planViewer.addSelectionChangedListener(event -> showPlanNode());
 
         CTabItem sqlPlanItem = new CTabItem(previewFolder, SWT.NONE);
         sqlPlanItem.setText("Execution Plan");
         sqlPlanItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
-        sqlPlanItem.setControl(planTree);
+        sqlPlanItem.setControl(planViewer.getControl());
     }
 
     private void showPlanNode()
     {
         detailsItem.setText("Plan Details");
 
-        ISelection selection = planTree.getItemsViewer().getSelection();
+        ISelection selection = planViewer.getSelection();
         if (selection.isEmpty()) {
             sessionProps.clearProperties();
         } else if (selection instanceof IStructuredSelection) {

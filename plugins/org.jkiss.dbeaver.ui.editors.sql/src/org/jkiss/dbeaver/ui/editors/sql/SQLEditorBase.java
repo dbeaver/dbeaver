@@ -79,7 +79,7 @@ import java.util.regex.Matcher;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
+public abstract class SQLEditorBase extends BaseTextEditor implements DBPContextProvider, IErrorVisualizer {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
     private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
@@ -206,9 +206,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         setEditorContextMenuId(SQLEditorContributions.SQL_EDITOR_CONTEXT_MENU_ID);
         setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
-
-    @Nullable
-    public abstract DBCExecutionContext getExecutionContext();
 
     public DBPDataSource getDataSource() {
         DBCExecutionContext context = getExecutionContext();

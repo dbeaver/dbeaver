@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -52,6 +51,7 @@ import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -120,7 +120,10 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                 try {
                     changeActiveView(tabViewFolder.getSelection());
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Plan view", "Error activating plan view '" + activeViewInfo.descriptor.getLabel() + "'", e);
+                    DBWorkbench.getPlatformUI().showError(
+                        SQLEditorMessages.editors_sql_error_execution_plan_title,
+                        SQLEditorMessages.editors_sql_error_execution_plan_message,
+                        e);
                 }
             });
         }
@@ -154,7 +157,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         return lastQuery;
     }
 
-    public void explainQueryPlan(SQLQuery query) throws DBCException {
+    public void explainQueryPlan(SQLQuery query) {
         this.lastQuery = query;
 
         refresh();
@@ -290,7 +293,9 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             @Override
             public void completeLoading(DBCPlan plan) {
                 super.completeLoading(plan);
-                visualizePlan(plan);
+                if (plan != null) {
+                    visualizePlan(plan);
+                }
             }
         }
     }
@@ -301,7 +306,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         private final DBCExecutionContext executionContext;
         private final String query;
 
-        protected ExplainPlanService(DBCQueryPlanner planner, DBCExecutionContext executionContext, String query)
+        ExplainPlanService(DBCQueryPlanner planner, DBCExecutionContext executionContext, String query)
         {
             super("Explain plan", planner.getDataSource());
             this.planner = planner;
