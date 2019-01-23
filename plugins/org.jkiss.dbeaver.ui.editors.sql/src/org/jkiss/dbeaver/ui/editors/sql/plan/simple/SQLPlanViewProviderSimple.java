@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.plan.simple;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
@@ -39,6 +40,12 @@ public class SQLPlanViewProviderSimple implements SQLPlanViewProvider {
     public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
         SQLPlanTreeViewer treeViewer = (SQLPlanTreeViewer) viewer;
         treeViewer.showPlan(query, plan);
+    }
+
+    @Override
+    public void contributeActions(Viewer viewer, IContributionManager contributionManager, SQLQuery lastQuery, DBCPlan lastPlan) {
+        SQLPlanTreeViewer treeViewer = (SQLPlanTreeViewer) viewer;
+        treeViewer.contributeActions(contributionManager, lastQuery, lastPlan);
     }
 
 }

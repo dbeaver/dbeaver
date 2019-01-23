@@ -131,53 +131,6 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
     };
 
-/*
-    public static class ExplainPlanService extends DatabaseLoadService<Collection<DBCPlanNode>> {
-
-        private final DBCQueryPlanner planner;
-        private final DBCExecutionContext executionContext;
-        private final String query;
-
-        protected ExplainPlanService(DBCQueryPlanner planner, DBCExecutionContext executionContext, String query)
-        {
-            super("Explain plan", planner.getDataSource());
-            this.planner = planner;
-            this.executionContext = executionContext;
-            this.query = query;
-        }
-
-        @Override
-        public Collection<DBCPlanNode> evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
-            try {
-                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
-                    DBCPlan plan = planner.planQueryExecution(session, query);
-                    return (Collection<DBCPlanNode>) plan.getPlanNodes();
-                }
-            } catch (Throwable ex) {
-                throw new InvocationTargetException(ex);
-            }
-        }
-    }
-
-    public class PlanLoadVisualizer extends ObjectsLoadVisualizer {
-
-        @Override
-        public void completeLoading(Collection<DBCPlanNode> items)
-        {
-            super.completeLoading(items);
-            final TreeViewer itemsViewer = (TreeViewer) PlanNodesTree.this.getItemsViewer();
-            itemsViewer.getControl().setRedraw(false);
-            try {
-                itemsViewer.expandToLevel(10);
-            } finally {
-                itemsViewer.getControl().setRedraw(true);
-            }
-        }
-    }
-*/
-
     private class PlanTreeRenderer extends ViewerRenderer {
         @Override
         public boolean isHyperlink(Object cellValue)
