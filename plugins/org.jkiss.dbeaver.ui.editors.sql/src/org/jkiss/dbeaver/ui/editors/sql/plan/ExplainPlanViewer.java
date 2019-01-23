@@ -243,6 +243,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                 viewInfo.planViewer.visualizeQueryPlan(viewInfo.viewer, lastQuery, plan);
             }
         }
+        planPresentationContainer.refreshActions();
     }
 
     @Override
