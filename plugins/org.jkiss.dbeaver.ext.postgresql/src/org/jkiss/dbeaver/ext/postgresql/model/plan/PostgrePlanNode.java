@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
@@ -38,7 +39,7 @@ import java.util.Map;
 /**
  * Postgre execution plan node
  */
-public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
+public class PostgrePlanNode implements DBCPlanNode, DBCPlanCostNode, DBPPropertySource {
 
     public static final String ATTR_NODE_TYPE = "Node-Type";
     public static final String ATTR_RELATION_NAME = "Relation-Name";
@@ -46,6 +47,10 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
     public static final String ATTR_TOTAL_COST = "Total-Cost";
     public static final String ATTR_STARTUP_COST = "Startup-Cost";
     public static final String ATTR_INDEX_NAME = "Index-Name";
+    public static final String ATTR_ACTUAL_TOTAL_TIME = "Actual-Total-Time";
+    public static final String ATTR_ACTUAL_ROWS = "Actual-Rows";
+    public static final String ATTR_PLAN_ROWS = "Plan-Rows";
+    public static final String ATTR_FILTER = "Filter";
 
     private PostgreDataSource dataSource;
     private PostgrePlanNode parent;
@@ -75,8 +80,8 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
         } else {
             entity = attributes.get(ATTR_INDEX_NAME);
         }
-        String startCost = attributes.remove(ATTR_STARTUP_COST);
-        String totalCost = attributes.remove(ATTR_TOTAL_COST);
+        String startCost = attributes.get(ATTR_STARTUP_COST);
+        String totalCost = attributes.get(ATTR_TOTAL_COST);
         cost = startCost + " - " + totalCost;
 
         Element nestedPlansElement = XMLUtils.getChildElement(element, "Plans");
@@ -90,9 +95,20 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
         }
     }
 
+    @Override
+    public String getNodeName() {
+        return attributes.get(ATTR_RELATION_NAME);
+    }
+
+    @Override
     @Property(order = 0, viewable = true)
     public String getNodeType() {
         return nodeType;
+    }
+
+    @Override
+    public String getNodeDescription() {
+        return attributes.get(ATTR_FILTER);
     }
 
     @Property(order = 2, viewable = true)
@@ -114,23 +130,23 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
 
     @Property(order = 21, viewable = true)
     public String getActualRows() {
-        String rows = attributes.get("Actual-Rows");
+        String rows = attributes.get(ATTR_ACTUAL_ROWS);
         if (rows == null) {
-            rows = attributes.get("Plan-Rows");
+            rows = attributes.get(ATTR_PLAN_ROWS);
         }
         return rows;
     }
 
     @Property(order = 22, viewable = true)
     public String getTotalTime() {
-        return attributes.get("Actual-Total-Time");
+        return attributes.get(ATTR_ACTUAL_TOTAL_TIME);
     }
 
     @Property(order = 23, viewable = true)
     public String getCondition() {
         String cond = attributes.get("Index-Cond");
         if (cond == null) {
-            cond = attributes.get("Filter");
+            cond = attributes.get(ATTR_FILTER);
         }
         if (!CommonUtils.isEmpty(cond)) {
             cond = SQLUtils.formatSQL(dataSource, cond);
@@ -224,5 +240,30 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
         title.append("; Cost: ").append(cost);
 
         return title.toString();
+    }
+
+    @Override
+    public Number getNodeCost() {
+        String totalCost = attributes.get(ATTR_TOTAL_COST);
+        return totalCost == null ? null : CommonUtils.toDouble(totalCost);
+    }
+
+    @Override
+    public Number getNodePercent() {
+        return null;
+//        String costPercent = attributes.get(ATTR_TOTAL_COST);
+//        return costPercent == null ? null : CommonUtils.toDouble(costPercent);
+    }
+
+    @Override
+    public Number getNodeDuration() {
+        String time = attributes.get(ATTR_ACTUAL_TOTAL_TIME);
+        return time == null ? null : CommonUtils.toDouble(time);
+    }
+
+    @Override
+    public Number getNodeRowCount() {
+        String rows = attributes.get(ATTR_ACTUAL_ROWS);
+        return rows == null ? null : CommonUtils.toLong(rows);
     }
 }

@@ -93,6 +93,20 @@ public class ExasolPlanNode implements DBCPlanNode {
         return listNestedNodes;
     }
 
+    @Override
+    public String getNodeName() {
+        return objectName;
+    }
+
+    @Override
+    public String getNodeType() {
+        return commandName;
+    }
+
+    @Override
+    public String getNodeDescription() {
+        return detailInfo;
+    }
 
     @Property(order = 0, viewable = true)
     public int getStmtId() {

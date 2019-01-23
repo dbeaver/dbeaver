@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 
 import java.util.Collection;
@@ -25,6 +26,12 @@ import java.util.Collection;
  * Execution plan node
  */
 public interface DBCPlanNode extends DBPObject {
+
+    String getNodeName();
+
+    String getNodeType();
+
+    String getNodeDescription();
 
     DBCPlanNode getParent();
 

@@ -328,6 +328,20 @@ public class CommonUtils {
         }
     }
 
+    public static double toDouble(@Nullable Object object) {
+        if (object == null) {
+            return 0.0;
+        } else if (object instanceof Number) {
+            return ((Number) object).doubleValue();
+        } else {
+            try {
+                return Double.parseDouble(toString(object));
+            } catch (NumberFormatException e) {
+                return Double.NaN;
+            }
+        }
+    }
+
     @NotNull
     public static String toHexString(@Nullable byte[] bytes) {
         return bytes == null ? "" : toHexString(bytes, 0, bytes.length);

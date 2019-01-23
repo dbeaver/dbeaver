@@ -111,6 +111,16 @@ public class DB2PlanOperator extends DB2PlanNode {
         return nodename;
     }
 
+    @Override
+    public String getNodeType() {
+        return CommonUtils.toString(operatorType);
+    }
+
+    @Override
+    public String getNodeDescription() {
+        return null;
+    }
+
     // --------
     // Helpers
     // --------
