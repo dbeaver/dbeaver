@@ -91,7 +91,8 @@ public class GreenplumExternalTable extends PostgreTableRegular {
         String rejectlimittype = JDBCUtils.safeGetString(dbResult, "rejectlimittype");
         this.writable = JDBCUtils.safeGetBoolean(dbResult, "writable");
         this.temporaryTable = JDBCUtils.safeGetBoolean(dbResult, "is_temp_table");
-        this.loggingErrors = JDBCUtils.safeGetBoolean(dbResult, "is_logging_errors");
+        this.loggingErrors = !getDataSource().isServerVersionAtLeast(9, 4)
+                && JDBCUtils.safeGetBoolean(dbResult, "is_logging_errors");
         this.command = JDBCUtils.safeGetString(dbResult, "command");
         if (rejectlimittype != null && rejectlimittype.length() > 0) {
             this.rejectLimitType = RejectLimitType.valueOf(rejectlimittype);
