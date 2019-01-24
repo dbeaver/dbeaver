@@ -34,6 +34,7 @@ public interface SQLEditorCommands
     String CMD_SQL_EDITOR_RECENT = "org.jkiss.dbeaver.core.sql.editor.recent";
     String CMD_SQL_QUERY_NEXT = "org.jkiss.dbeaver.ui.editors.sql.query.next";
     String CMD_SQL_QUERY_PREV = "org.jkiss.dbeaver.ui.editors.sql.query.prev";
+    String CMD_SQL_GOTO_MATCHING_BRACKET = "org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket";
     String CMD_SQL_SWITCH_PANEL = "org.jkiss.dbeaver.ui.editors.sql.switch.panel";
     String CMD_SQL_SHOW_OUTPUT = "org.jkiss.dbeaver.ui.editors.sql.show.output";
     String CMD_SQL_SHOW_LOG = "org.jkiss.dbeaver.ui.editors.sql.show.log";
