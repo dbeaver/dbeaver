@@ -210,13 +210,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Initialize workbench window");
         super.postWindowCreate();
         recomputeTitle();
+    }
+
+    @Override
+    public void postWindowOpen() {
+        log.debug("Finish initialization");
+        super.postWindowOpen();
 
         try {
             ApplicationCSSManager.updateApplicationCSS(Display.getCurrent());
         } catch (Throwable e) {
             log.warn(e);
         }
-
 
         try {
             DBeaverCommandLine.executeCommandLineCommands(
@@ -226,12 +231,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         } catch (Exception e) {
             log.error("Error processing command line", e);
         }
-    }
-
-    @Override
-    public void postWindowOpen() {
-        log.debug("Finish initialization");
-        super.postWindowOpen();
 
         if (isRunWorkbenchInitializers()) {
             // Open New Connection wizard
