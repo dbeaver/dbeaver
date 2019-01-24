@@ -61,9 +61,9 @@ class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
         Collection<DBNDatabaseNode> selected)
     {
         super(parentShell,
-            "Choose catalog/schema",
+            PerspectiveMessages.label_choose_catalog,
             true,
-            "SchemaSelector",
+            "SchemaSelector", //$NON-NLS-1$
             objects,
             selected);
         this.dataSourceContainer = dataSourceContainer;
@@ -84,7 +84,7 @@ class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
                 Composite instancePanel = UIUtils.createComposite(dialogArea, 3);
                 instancePanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 UIUtils.createLabel(instancePanel, dataSourceContainer.getDriver().getIcon());
-                Combo instanceCombo = UIUtils.createLabelCombo(instancePanel, "Instance", "Active server instance", SWT.DROP_DOWN | SWT.READ_ONLY);
+                Combo instanceCombo = UIUtils.createLabelCombo(instancePanel, PerspectiveMessages.label_instance, PerspectiveMessages.label_active_service_instance, SWT.DROP_DOWN | SWT.READ_ONLY);
                 instanceCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 //                Label databaseTermLabel = UIUtils.createControlLabel(instancePanel, dataSource.getInfo().getSchemaTerm());
 //                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -100,7 +100,7 @@ class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
                         instanceCombo.setText(currentInstanceName);
                     }
                 } catch (DBException e) {
-                    log.error("Error loading instance list", e);
+                    log.error(PerspectiveMessages.label_error_list, e);
                 }
 
                 instanceCombo.addModifyListener(e -> {

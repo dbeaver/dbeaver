@@ -189,7 +189,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             readColumnsConfiguration();
         } catch (Exception e) {
             // Possibly incompatible format from previous version
-            log.warn("Failed to load configuration for '" + this.configId + "'", e);
+            log.warn("Failed to load configuration for '" + this.configId + "'", e); //$NON-NLS-1$ //$NON-NLS-2$
         }
         recreateColumns(pack);
     }
@@ -552,7 +552,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         //private final Map<ColumnInfo, Button> buttonMap = new HashMap<>();
         protected ConfigDialog()
         {
-            super(viewer.getControl().getShell(), "Configure columns", UIIcon.CONFIGURATION);
+            super(viewer.getControl().getShell(), UINavigatorMessages.label_configure_columns, UIIcon.CONFIGURATION);
         }
 
         protected void setShellStyle(int newShellStyle) {
@@ -569,7 +569,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         {
             Composite composite = super.createDialogArea(parent);
 
-            UIUtils.createControlLabel(composite, "Select columns you want to display");
+            UIUtils.createControlLabel(composite, UINavigatorMessages.label_select_columns);
 
             List<ColumnInfo> orderedList = new ArrayList<>(columns);
             orderedList.sort(new ColumnInfoComparator());
@@ -585,9 +585,9 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 }
             });
             final TableColumn nameColumn = new TableColumn(colTable, SWT.LEFT);
-            nameColumn.setText("Name");
+            nameColumn.setText(UINavigatorMessages.label_name);
             final TableColumn descColumn = new TableColumn(colTable, SWT.LEFT);
-            descColumn.setText("Description");
+            descColumn.setText(UINavigatorMessages.label_description);
 
             for (ColumnInfo columnInfo : orderedList) {
                 TableItem colItem = new TableItem(colTable, SWT.NONE);
@@ -632,7 +632,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.DETAILS_ID, UIMessages.button_reset_to_defaults, false);
+            createButton(parent, IDialogConstants.DETAILS_ID, "", false); //$NON-NLS-1$
             super.createButtonsForButtonBar(parent);
         }
 
