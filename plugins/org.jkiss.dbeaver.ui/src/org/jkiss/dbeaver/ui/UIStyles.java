@@ -17,13 +17,10 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.e4.ui.css.swt.theme.ITheme;
-import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
@@ -68,18 +65,6 @@ public class UIStyles {
         IPreferenceStore preferenceStore = getEditorsPreferenceStore();
         String fgRGB = preferenceStore == null ? null : preferenceStore.getString(id);
         return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(defSWT) : UIUtils.getSharedColor(fgRGB);
-    }
-
-    public static boolean isDarkThemeEnabled() {
-        boolean isDark = false;
-        IThemeEngine engine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
-        if (engine != null) {
-            ITheme activeTheme = engine.getActiveTheme();
-            if (activeTheme != null) {
-                isDark = activeTheme.getId().contains("dark");
-            }
-        }
-        return isDark;
     }
 
 }
