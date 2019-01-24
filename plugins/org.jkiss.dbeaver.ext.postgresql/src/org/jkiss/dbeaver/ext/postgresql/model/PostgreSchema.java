@@ -73,7 +73,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     public final AggregateCache aggregateCache = new AggregateCache();
     public final TableCache tableCache = new TableCache();
     public final ConstraintCache constraintCache = new ConstraintCache();
-    public final ProceduresCache proceduresCache = new ProceduresCache();
+    private final ProceduresCache proceduresCache = new ProceduresCache();
     public final IndexCache indexCache = new IndexCache();
     public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
 
@@ -223,6 +223,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     public ConstraintCache getConstraintCache() {
         return this.constraintCache;
+    }
+
+    public ProceduresCache getProceduresCache() {
+        return this.proceduresCache;
     }
 
     @Association
@@ -796,9 +800,9 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     /**
      * Procedures cache implementation
      */
-    static class ProceduresCache extends JDBCObjectLookupCache<PostgreSchema, PostgreProcedure> {
+    public static class ProceduresCache extends JDBCObjectLookupCache<PostgreSchema, PostgreProcedure> {
 
-        ProceduresCache() {
+        public ProceduresCache() {
             super();
         }
 
