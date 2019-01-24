@@ -61,7 +61,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
     private boolean showBackupHosts = false;
     private Button encryptCommunication;
 
-    private static ImageDescriptor EXASOL_LOGO_IMG = Activator.getImageDescriptor(""); //$NON-NLS-1$
+    private static ImageDescriptor EXASOL_LOGO_IMG = Activator.getImageDescriptor("icons/exasol.png"); //$NON-NLS-1$
 
 
     @Override
