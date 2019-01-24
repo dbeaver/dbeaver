@@ -73,14 +73,16 @@ public class DataExporterHTML extends StreamExporterAbstract {
     private void printHeader()
     {
         out.write("<html>");
-        out.write("<head><style>" +
+        out.write("\t<head>" +
+            "\n\t<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">" +
+            "\n\t<style>" +
                 "table {font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;text-align:left;border-collapse:collapse;margin:10px;} " +
                 "th{font-size:14px;font-weight:normal;color:#039;padding:10px 8px;} " +
                 "td{color:#669;padding:8px;}" +
                 ".odd{background:#e8edff;}" +
                 "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
-                "</style></head>");
-        out.write("<body><table>");
+                "</style>\n</head>");
+        out.write("<body><table>\n");
         out.write("<tr>");
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             String colName = columns.get(i).getLabel();
