@@ -61,7 +61,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
     private boolean showBackupHosts = false;
     private Button encryptCommunication;
 
-    private static ImageDescriptor EXASOL_LOGO_IMG = Activator.getImageDescriptor("icons/exasol.png");
+    private static ImageDescriptor EXASOL_LOGO_IMG = Activator.getImageDescriptor(""); //$NON-NLS-1$
 
 
     @Override
@@ -83,11 +83,11 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             }
         };
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, "Database", 2, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(control, ExasolMessages.label_database, 2, 0, 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             addrGroup.setLayoutData(gd);
 
-            Label hostLabel = UIUtils.createControlLabel(addrGroup, "Host List");
+            Label hostLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.label_host_list);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             hostText = new Text(addrGroup, SWT.BORDER);
@@ -96,7 +96,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             hostText.setLayoutData(gd);
             hostText.addModifyListener(textListener);
 
-            backupHostLabel = UIUtils.createControlLabel(addrGroup, "Backup Host List");
+            backupHostLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.label_backup_host_list);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             backupHostLabel.setLayoutData(gd);
             backupHostLabel.setEnabled(showBackupHosts);
@@ -108,7 +108,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             backupHostText.addModifyListener(textListener);
 
 
-            useBackupHostList = UIUtils.createLabelCheckbox(addrGroup, "Use Backup Host List", showBackupHosts);
+            useBackupHostList = UIUtils.createLabelCheckbox(addrGroup, ExasolMessages.label_use_backup_host_list, showBackupHosts);
 
             useBackupHostList.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -118,7 +118,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
 
                     //reset text if disabled
                     if (!useBackupHostList.getSelection())
-                        backupHostText.setText("");
+                        backupHostText.setText(""); //$NON-NLS-1$
                 }
             });
 
@@ -134,13 +134,13 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 
-            encryptCommunication = UIUtils.createLabelCheckbox(addrGroup, "Encrypt Communication", false);
+            encryptCommunication = UIUtils.createLabelCheckbox(addrGroup, ExasolMessages.label_encrypt, false);
 
 
         }
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, "Security", 2, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(control, ExasolMessages.label_security, 2, 0, 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             addrGroup.setLayoutData(gd);
             Label usernameLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.dialog_connection_user_name);
@@ -186,7 +186,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
             } else {
-                hostText.setText("");
+                hostText.setText(""); //$NON-NLS-1$
             }
         }
         if (portText != null) {
@@ -195,7 +195,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             } else if (site.getDriver().getDefaultPort() != null) {
                 portText.setText(site.getDriver().getDefaultPort());
             } else {
-                portText.setText("8563");
+                portText.setText("8563"); //$NON-NLS-1$
             }
         }
         if (usernameText != null) {
@@ -221,7 +221,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
         String encryptComm = connectionInfo.getProviderProperty(ExasolConstants.DRV_ENCRYPT);
 
         if (encryptComm != null) {
-            if (encryptComm.equals("1"))
+            if (encryptComm.equals("1")) //$NON-NLS-1$
                 this.encryptCommunication.setEnabled(true);
         }
 
@@ -248,7 +248,7 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
 
         connectionInfo.setProviderProperty(ExasolConstants.DRV_BACKUP_HOST_LIST, backupHostText.getText());
         if (this.encryptCommunication.getSelection())
-            connectionInfo.setProviderProperty(ExasolConstants.DRV_ENCRYPT, "1");
+            connectionInfo.setProviderProperty(ExasolConstants.DRV_ENCRYPT, "1"); //$NON-NLS-1$
 
         super.saveSettings(dataSource);
     }

@@ -91,6 +91,12 @@ public class ExasolMessages extends NLS {
 	public static String exasol_security_policy_description;
 	public static String exasol_partition_name;
 	public static String exasol_partition_description;
+	public static String label_backup_host_list;
+	public static String label_database;
+	public static String label_encrypt;
+	public static String label_host_list;
+	public static String label_security;
+	public static String label_use_backup_host_list;
 	
 
 }
