@@ -63,6 +63,8 @@ public class SQLServerConstants {
 
     // https://support.microsoft.com/en-us/help/321185/how-to-determine-the-version--edition-and-update-level-of-sql-server-a
     public static final int SQL_SERVER_2016_VERSION_MAJOR = 13;
+    public static final int SQL_SERVER_2014_VERSION_MAJOR = 12;
+    public static final int SQL_SERVER_2012_VERSION_MAJOR = 11;
     public static final int SQL_SERVER_2008_VERSION_MAJOR = 10;
     public static final int SQL_SERVER_2005_VERSION_MAJOR = 9;
     public static final int SQL_SERVER_2000_VERSION_MAJOR = 8;
