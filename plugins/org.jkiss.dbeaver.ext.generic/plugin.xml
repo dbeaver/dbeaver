@@ -938,6 +938,23 @@
                     <file type="jar" path="maven:/monetdb:monetdb-jdbc:RELEASE"/>
                 </driver>
 
+                <!-- Dremio -->
+
+                <driver
+                        id="dremio"
+                        label="Dremio"
+                        icon="icons/dremio_icon.png"
+                        iconBig="icons/dremio_icon_big.png"
+                        class="com.dremio.jdbc.Driver"
+                        sampleURL="jdbc:dremio:direct={host}[:{port}][;schema={database}]"
+                        defaultPort="31010"
+                        description="Dremio JDBC driver"
+                        webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
+                        categories="analytic,hadoop,sql">
+                    <file type="jar" path="https://download.dremio.com/jdbc-driver/3.0.6-201812082352540436-1f684f9/dremio-jdbc-driver-3.0.6-201812082352540436-1f684f9.jar"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+
                 <!-- Legacy deprecated drivers -->
 
                 <driver
