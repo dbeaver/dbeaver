@@ -253,6 +253,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         int maxColumnSize = prefs.getInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
         boolean delimLeading = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
         boolean delimTrailing = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        boolean extraSpaces = prefs.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
         this.showNulls = getController().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
 
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
@@ -278,7 +279,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 }
             }
             for (int i = 0; i < colWidths.length; i++) {
-                //colWidths[i]++;
+                if (extraSpaces) colWidths[i]++;
                 if (colWidths[i] > maxColumnSize) {
                     colWidths[i] = maxColumnSize;
                 }
@@ -296,6 +297,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 for (int k = colWidths[i] - attrName.length(); k > 0; k--) {
                     grid.append(" ");
                 }
+                if (extraSpaces) {
+                    grid.append(" ");
+                }
             }
             if (delimTrailing) grid.append("|");
             grid.append("\n");
@@ -306,6 +310,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             for (int i = 0; i < attrs.size(); i++) {
                 if (i > 0) grid.append("|");
                 for (int k = colWidths[i]; k > 0; k--) {
+                    grid.append("-");
+                }
+                if (extraSpaces) {
                     grid.append("-");
                 }
             }
@@ -345,6 +352,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                     for (int j = colWidths[k] - stringWidth; j > 0; j--) {
                         grid.append(" ");
                     }
+                }
+                if (extraSpaces) {
+                    grid.append(" ");
                 }
             }
             if (delimTrailing) grid.append("|");

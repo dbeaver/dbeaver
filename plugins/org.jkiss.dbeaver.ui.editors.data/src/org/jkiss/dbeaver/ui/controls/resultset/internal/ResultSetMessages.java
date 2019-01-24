@@ -233,6 +233,7 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_text_show_nulls;
     public static String pref_page_database_resultsets_label_text_delimiter_leading;
     public static String pref_page_database_resultsets_label_text_delimiter_trailing;
+    public static String pref_page_database_resultsets_label_text_extra_spaces;
 
     public static String pref_page_content_cache_clob;
     public static String pref_page_content_cache_blob;

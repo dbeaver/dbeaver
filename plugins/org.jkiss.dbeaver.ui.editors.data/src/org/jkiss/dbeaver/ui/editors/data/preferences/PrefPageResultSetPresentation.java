@@ -67,6 +67,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     private Button showNulls;
     private Button textDelimiterLeading;
     private Button textDelimiterTrailing;
+    private Button textExtraSpaces;
 
     public PrefPageResultSetPresentation()
     {
@@ -97,7 +98,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT) ||
             store.contains(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS) ||
             store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING)
+            store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING) ||
+            store.contains(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES)
             ;
     }
 
@@ -150,6 +152,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             showNulls = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
             textDelimiterLeading = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
             textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
+            textExtraSpaces = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_text_extra_spaces, null, false, 2);
         }
 
         return composite;
@@ -183,6 +186,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             showNulls.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS));
             textDelimiterLeading.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING));
             textDelimiterTrailing.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING));
+            textExtraSpaces.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -214,6 +218,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS, showNulls.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING, textDelimiterLeading.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING, textDelimiterLeading.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES, textExtraSpaces.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -246,6 +251,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS);
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING);
+        store.setToDefault(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES);
     }
 
     @Override
