@@ -32,6 +32,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -86,6 +87,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     public static final String STATS_CATEGORY_SELECTION_STATE = "SelectionState";
 
+    protected final static char[] BRACKETS = {'{', '}', '(', ')', '[', ']', '<', '>'};
+
     static {
         // SQL editor preferences. Do this here because it initializes display
         // (that's why we can't run it in prefs initializer classes which run before workbench creation)
@@ -120,17 +123,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private boolean markOccurrencesForSelection;
     private OccurrencesFinderJob occurrencesFinderJob;
     private OccurrencesFinderJobCanceler occurrencesFinderJobCanceler;
+    private ICharacterPairMatcher characterPairMatcher;
 
-    public SQLEditorBase()
-    {
+    public SQLEditorBase() {
         super();
         syntaxManager = new SQLSyntaxManager();
         ruleManager = new SQLRuleManager(syntaxManager);
         themeListener = new IPropertyChangeListener() {
             long lastUpdateTime = 0;
+
             @Override
-            public void propertyChange(PropertyChangeEvent event)
-            {
+            public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
                     if (lastUpdateTime > 0 && System.currentTimeMillis() - lastUpdateTime < 500) {
@@ -246,8 +249,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @NotNull
-    public SQLSyntaxManager getSyntaxManager()
-    {
+    public SQLSyntaxManager getSyntaxManager() {
         return syntaxManager;
     }
 
@@ -256,19 +258,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return ruleManager;
     }
 
-    public ProjectionAnnotationModel getAnnotationModel()
-    {
+    public ProjectionAnnotationModel getAnnotationModel() {
         return annotationModel;
     }
 
-    public SQLEditorSourceViewerConfiguration getViewerConfiguration()
-    {
+    public SQLEditorSourceViewerConfiguration getViewerConfiguration() {
         return (SQLEditorSourceViewerConfiguration) super.getSourceViewerConfiguration();
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
         editorControl = new SQLEditorControl(parent, this);
@@ -325,8 +324,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Override
-    public void updatePartControl(IEditorInput input)
-    {
+    public void updatePartControl(IEditorInput input) {
         super.updatePartControl(input);
     }
 
@@ -358,18 +356,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Override
-    protected IVerticalRuler createVerticalRuler()
-    {
+    protected IVerticalRuler createVerticalRuler() {
         return hasVerticalRuler ? super.createVerticalRuler() : new VerticalRuler(0);
     }
 
-    public void setHasVerticalRuler(boolean hasVerticalRuler)
-    {
+    public void setHasVerticalRuler(boolean hasVerticalRuler) {
         this.hasVerticalRuler = hasVerticalRuler;
     }
 
-    protected ISharedTextColors getSharedColors()
-    {
+    protected ISharedTextColors getSharedColors() {
         return UIUtils.getSharedTextColors();
     }
 
@@ -387,10 +382,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Override
-    protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles)
-    {
-        fAnnotationAccess= getAnnotationAccess();
-        fOverviewRuler= createOverviewRuler(getSharedColors());
+    protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
+        fAnnotationAccess = getAnnotationAccess();
+        fOverviewRuler = createOverviewRuler(getSharedColors());
 
         SQLEditorSourceViewer sourceViewer = createSourceViewer(parent, ruler, styles, fOverviewRuler);
 
@@ -400,17 +394,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
-        char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
-        ICharacterPairMatcher matcher;
+        char[] matchChars = BRACKETS; //which brackets to match
         try {
-            matcher = new SQLCharacterPairMatcher(this, matchChars,
+            characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars,
                 SQLPartitionScanner.SQL_PARTITIONING,
                 true);
         } catch (Throwable e) {
             // If we below Eclipse 4.2.1
-            matcher = new SQLCharacterPairMatcher(this, matchChars, SQLPartitionScanner.SQL_PARTITIONING);
+            characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars, SQLPartitionScanner.SQL_PARTITIONING);
         }
-        support.setCharacterPairMatcher(matcher);
+        support.setCharacterPairMatcher(characterPairMatcher);
         support.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
         super.configureSourceViewerDecorationSupport(support);
     }
@@ -418,11 +411,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     @NotNull
     protected SQLEditorSourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles, IOverviewRuler overviewRuler) {
         return new SQLEditorSourceViewer(
-                parent,
-                ruler,
-                overviewRuler,
-                true,
-                styles);
+            parent,
+            ruler,
+            overviewRuler,
+            true,
+            styles);
     }
 
     @Override
@@ -439,7 +432,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
     }
 */
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getAdapter(Class<T> required) {
@@ -456,19 +449,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return super.getAdapter(required);
     }
 
-    public SQLTemplatesPage getTemplatesPage()
-    {
+    public SQLTemplatesPage getTemplatesPage() {
         if (templatesPage == null)
             templatesPage = new SQLTemplatesPage(this);
         return templatesPage;
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         if (this.selectionChangedListener != null) {
             this.selectionChangedListener.uninstall(this.getSelectionProvider());
-            this.selectionChangedListener= null;
+            this.selectionChangedListener = null;
         }
 /*
         if (this.activationListener != null) {
@@ -489,8 +480,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Override
-    protected void createActions()
-    {
+    protected void createActions() {
         super.createActions();
 
         ResourceBundle bundle = ResourceBundle.getBundle(SQLEditorMessages.BUNDLE_NAME);
@@ -545,8 +535,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu)
-    {
+    public void editorContextMenuAboutToShow(IMenuManager menu) {
         super.editorContextMenuAboutToShow(menu);
 
         //menu.add(new Separator("content"));//$NON-NLS-1$
@@ -574,8 +563,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         //menu.remove(IWorkbenchActionConstants.MB_ADDITIONS);
     }
 
-    public void reloadSyntaxRules()
-    {
+    public void reloadSyntaxRules() {
         // Refresh syntax
         SQLDialect dialect = getSQLDialect();
         syntaxManager.init(dialect, getActivePreferenceStore());
@@ -628,8 +616,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
     }
 
-    public boolean hasActiveQuery()
-    {
+    public boolean hasActiveQuery() {
         Document document = getDocument();
         if (document == null) {
             return false;
@@ -654,8 +641,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     @Nullable
-    public SQLScriptElement extractActiveQuery()
-    {
+    public SQLScriptElement extractActiveQuery() {
         SQLScriptElement element;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText();
@@ -684,13 +670,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             return null;
         }
         if (element instanceof SQLQuery && getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
-            ((SQLQuery)element).setParameters(parseParameters(getDocument(), (SQLQuery)element));
+            ((SQLQuery) element).setParameters(parseParameters(getDocument(), (SQLQuery) element));
         }
         return element;
     }
 
-    public SQLScriptElement extractQueryAtPos(int currentPos)
-    {
+    public SQLScriptElement extractQueryAtPos(int currentPos) {
         Document document = getDocument();
         if (document == null || document.getLength() == 0) {
             return null;
@@ -839,8 +824,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         ruleManager.endEval();
     }
 
-    public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters, boolean parseParameters)
-    {
+    public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters, boolean parseParameters) {
         List<SQLScriptElement> queryList = new ArrayList<>();
 
         IDocument document = getDocument();
@@ -858,8 +842,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 queryList.add(query);
                 queryOffset = query.getOffset() + query.getLength();
             }
-        }
-        finally {
+        } finally {
             this.endScriptEvaluation();
         }
 
@@ -867,7 +850,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             // Parse parameters
             for (SQLScriptElement query : queryList) {
                 if (query instanceof SQLQuery) {
-                    ((SQLQuery)query).setParameters(parseParameters(getDocument(), (SQLQuery) query));
+                    ((SQLQuery) query).setParameters(parseParameters(getDocument(), (SQLQuery) query));
                 }
             }
         }
@@ -896,7 +879,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
             int tokenLength = ruleManager.getTokenLength();
-            int tokenType = token instanceof SQLToken ? ((SQLToken)token).getType() : SQLToken.T_UNKNOWN;
+            int tokenType = token instanceof SQLToken ? ((SQLToken) token).getType() : SQLToken.T_UNKNOWN;
             if (tokenOffset < startPos) {
                 // This may happen with EOF tokens (bug in jface?)
                 return null;
@@ -1014,17 +997,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             commandId = ((SQLControlToken) token).getCommandId();
                         }
                         SQLControlCommand command = new SQLControlCommand(
-                                getDataSource(),
-                                syntaxManager,
-                                controlText.trim(),
-                                commandId,
-                                tokenOffset,
-                                tokenLength,
-                                tokenType == SQLToken.T_SET_DELIMITER);
+                            getDataSource(),
+                            syntaxManager,
+                            controlText.trim(),
+                            commandId,
+                            tokenOffset,
+                            tokenLength,
+                            tokenType == SQLToken.T_SET_DELIMITER);
                         if (command.isEmptyCommand() ||
-                                (command.getCommandId() != null &&
-                                SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId()) != null))
-                        {
+                            (command.getCommandId() != null &&
+                                SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId()) != null)) {
                             return command;
                         }
                         // This is not a valid command
@@ -1032,7 +1014,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                     } catch (BadLocationException e) {
                         log.warn("Can't extract control statement", e); //$NON-NLS-1$
                         return null;
-                        }
+                    }
                 }
                 if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
                     if (tokenOffset > endPos) {
@@ -1071,10 +1053,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         if (isDelimiter && (keepDelimiters || (hasBlocks ?
                             dialect.isDelimiterAfterBlock() && firstKeyword != null &&
                                 (SQLUtils.isBlockStartKeyword(dialect, firstKeyword) ||
-                                ArrayUtils.containsIgnoreCase(dialect.getDDLKeywords(), firstKeyword) ||
-                                ArrayUtils.containsIgnoreCase(dialect.getBlockHeaderStrings(), firstKeyword)) :
-                            dialect.isDelimiterAfterQuery())))
-                        {
+                                    ArrayUtils.containsIgnoreCase(dialect.getDDLKeywords(), firstKeyword) ||
+                                    ArrayUtils.containsIgnoreCase(dialect.getBlockHeaderStrings(), firstKeyword)) :
+                            dialect.isDelimiterAfterQuery()))) {
                             if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                                 // Add delimiter in the end of query. Do this only for semicolon delimiters.
                                 // For SQL server add it in the end of query. For Oracle only after END clause
@@ -1092,7 +1073,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             getDataSource(),
                             queryText,
                             statementStart,
-                                queryEndPos - statementStart);
+                            queryEndPos - statementStart);
                     } catch (BadLocationException ex) {
                         log.warn("Can't extract query", ex); //$NON-NLS-1$
                         return null;
@@ -1141,7 +1122,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         ruleManager.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
-        for (;;) {
+        for (; ; ) {
             IToken token = ruleManager.nextToken();
             final int tokenOffset = ruleManager.getTokenOffset();
             final int tokenLength = ruleManager.getTokenLength();
@@ -1259,8 +1240,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         return parseParameters(new Document(query), 0, query.length());
     }
 
-    public boolean isDisposed()
-    {
+    public boolean isDisposed() {
         return
             getSourceViewer() == null ||
                 getSourceViewer().getTextWidget() == null ||
@@ -1269,8 +1249,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Nullable
     @Override
-    public ICommentsSupport getCommentsSupport()
-    {
+    public ICommentsSupport getCommentsSupport() {
         final SQLDialect dialect = getSQLDialect();
         return new ICommentsSupport() {
             @Nullable
@@ -1372,7 +1351,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
      */
     protected void updateStatusField(String category) {
         if (STATS_CATEGORY_SELECTION_STATE.equals(category)) {
-            IStatusField field= getStatusField(category);
+            IStatusField field = getStatusField(category);
             if (field != null) {
                 StringBuilder txt = new StringBuilder("Sel: ");
                 ISelection selection = getSelectionProvider().getSelection();
@@ -1456,7 +1435,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (documentProvider != null) {
             IAnnotationModel annotationModel = documentProvider.getAnnotationModel(this.getEditorInput());
             if (annotationModel != null && this.occurrenceAnnotations != null) {
-                synchronized(LOCK_OBJECT) {
+                synchronized (LOCK_OBJECT) {
                     this.updateAnnotationModelForRemoves(annotationModel);
                 }
 
@@ -1466,11 +1445,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     private void updateAnnotationModelForRemoves(IAnnotationModel annotationModel) {
         if (annotationModel instanceof IAnnotationModelExtension) {
-            ((IAnnotationModelExtension)annotationModel).replaceAnnotations(this.occurrenceAnnotations, null);
+            ((IAnnotationModelExtension) annotationModel).replaceAnnotations(this.occurrenceAnnotations, null);
         } else {
             int i = 0;
 
-            for(int length = this.occurrenceAnnotations.length; i < length; ++i) {
+            for (int length = this.occurrenceAnnotations.length; i < length; ++i) {
                 annotationModel.removeAnnotation(this.occurrenceAnnotations[i]);
             }
         }
@@ -1528,7 +1507,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     private class EditorSelectionChangedListener implements ISelectionChangedListener {
         public void install(ISelectionProvider selectionProvider) {
             if (selectionProvider instanceof IPostSelectionProvider) {
-                ((IPostSelectionProvider)selectionProvider).addPostSelectionChangedListener(this);
+                ((IPostSelectionProvider) selectionProvider).addPostSelectionChangedListener(this);
             } else if (selectionProvider != null) {
                 selectionProvider.addSelectionChangedListener(this);
             }
@@ -1536,7 +1515,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         public void uninstall(ISelectionProvider selectionProvider) {
             if (selectionProvider instanceof IPostSelectionProvider) {
-                ((IPostSelectionProvider)selectionProvider).removePostSelectionChangedListener(this);
+                ((IPostSelectionProvider) selectionProvider).removePostSelectionChangedListener(this);
             } else if (selectionProvider != null) {
                 selectionProvider.removeSelectionChangedListener(this);
             }
@@ -1545,7 +1524,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         public void selectionChanged(SelectionChangedEvent event) {
             ISelection selection = event.getSelection();
             if (selection instanceof ITextSelection) {
-                SQLEditorBase.this.updateOccurrenceAnnotations((ITextSelection)selection);
+                SQLEditorBase.this.updateOccurrenceAnnotations((ITextSelection) selection);
             }
         }
     }
@@ -1602,7 +1581,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                                 }
 
                                 if (!this.isCanceled()) {
-                                    synchronized(LOCK_OBJECT) {
+                                    synchronized (LOCK_OBJECT) {
                                         this.updateAnnotations(annotationModel, annotationMap);
                                     }
                                     return Status.OK_STATUS;
@@ -1617,7 +1596,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         private void updateAnnotations(IAnnotationModel annotationModel, Map<Annotation, Position> annotationMap) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-                ((IAnnotationModelExtension)annotationModel).replaceAnnotations(SQLEditorBase.this.occurrenceAnnotations, annotationMap);
+                ((IAnnotationModelExtension) annotationModel).replaceAnnotations(SQLEditorBase.this.occurrenceAnnotations, annotationMap);
             } else {
                 SQLEditorBase.this.removeOccurrenceAnnotations();
 
@@ -1733,7 +1712,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
         private void findPositions(String searchFor, List<OccurrencePosition> positions, boolean forSelection) throws BadLocationException {
             FindReplaceDocumentAdapter findReplaceDocumentAdapter = new FindReplaceDocumentAdapter(fDocument);
-            for (int offset = 0;;) {
+            for (int offset = 0; ; ) {
                 IRegion region = findReplaceDocumentAdapter.find(offset, searchFor, true, false, !forSelection, false);
                 if (region == null) {
                     break;
@@ -1745,6 +1724,105 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             }
         }
 
+    }
+
+    ////////////////////////////////////////////////////////
+    // Brackets
+
+    // copied from JDT code
+    public void gotoMatchingBracket() {
+
+        ISourceViewer sourceViewer = getSourceViewer();
+        IDocument document = sourceViewer.getDocument();
+        if (document == null)
+            return;
+
+        IRegion selection = getSignedSelection(sourceViewer);
+
+        IRegion region = characterPairMatcher.match(document, selection.getOffset());
+        if (region == null) {
+            return;
+        }
+        int offset = region.getOffset();
+        int length = region.getLength();
+
+        if (length < 1)
+            return;
+
+        int anchor = characterPairMatcher.getAnchor();
+        // http://dev.eclipse.org/bugs/show_bug.cgi?id=34195
+        int targetOffset = (ICharacterPairMatcher.RIGHT == anchor) ? offset + 1 : offset + length - 1;
+
+        boolean visible = false;
+        if (sourceViewer instanceof ITextViewerExtension5) {
+            ITextViewerExtension5 extension = (ITextViewerExtension5) sourceViewer;
+            visible = (extension.modelOffset2WidgetOffset(targetOffset) > -1);
+        } else {
+            IRegion visibleRegion = sourceViewer.getVisibleRegion();
+            // http://dev.eclipse.org/bugs/show_bug.cgi?id=34195
+            visible = (targetOffset >= visibleRegion.getOffset() && targetOffset <= visibleRegion.getOffset() + visibleRegion.getLength());
+        }
+
+        if (!visible) {
+            return;
+        }
+
+        int adjustment = getOffsetAdjustment(document, selection.getOffset() + selection.getLength(), selection.getLength());
+        targetOffset += adjustment;
+        int direction = Integer.compare(selection.getLength(), 0);
+
+        sourceViewer.setSelectedRange(targetOffset, direction);
+        sourceViewer.revealRange(targetOffset, direction);
+    }
+
+    // copied from JDT code
+    private static IRegion getSignedSelection(ISourceViewer sourceViewer) {
+        Point viewerSelection = sourceViewer.getSelectedRange();
+
+        StyledText text = sourceViewer.getTextWidget();
+        Point selection = text.getSelectionRange();
+        if (text.getCaretOffset() == selection.x) {
+            viewerSelection.x = viewerSelection.x + viewerSelection.y;
+            viewerSelection.y = -viewerSelection.y;
+        }
+
+        return new Region(viewerSelection.x, viewerSelection.y);
+    }
+
+    // copied from JDT code
+    private static int getOffsetAdjustment(IDocument document, int offset, int length) {
+        if (length == 0 || Math.abs(length) > 1)
+            return 0;
+        try {
+            if (length < 0) {
+                if (isOpeningBracket(document.getChar(offset))) {
+                    return 1;
+                }
+            } else {
+                if (isClosingBracket(document.getChar(offset - 1))) {
+                    return -1;
+                }
+            }
+        } catch (BadLocationException e) {
+            //do nothing
+        }
+        return 0;
+    }
+
+    private static boolean isOpeningBracket(char character) {
+        for (int i = 0; i < BRACKETS.length; i += 2) {
+            if (character == BRACKETS[i])
+                return true;
+        }
+        return false;
+    }
+
+    private static boolean isClosingBracket(char character) {
+        for (int i = 1; i < BRACKETS.length; i += 2) {
+            if (character == BRACKETS[i])
+                return true;
+        }
+        return false;
     }
 
 }

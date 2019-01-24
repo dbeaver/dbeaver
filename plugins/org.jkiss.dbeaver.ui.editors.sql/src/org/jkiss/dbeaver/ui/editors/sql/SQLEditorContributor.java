@@ -157,6 +157,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
                 navMenu.add(new Separator());
                 navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_QUERY_NEXT));
                 navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_QUERY_PREV));
+                navMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_SQL_GOTO_MATCHING_BRACKET));
             }
         }
     }

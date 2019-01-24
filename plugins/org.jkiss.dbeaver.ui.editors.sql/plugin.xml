@@ -256,6 +256,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.sync.auto" name="%command.org.jkiss.dbeaver.ui.editors.sql.sync.auto.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.sync.auto.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.rename" name="%command.org.jkiss.dbeaver.ui.editors.sql.rename.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.rename.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.close.tab" name="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.close.tab.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" name="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="%command.org.jkiss.dbeaver.ui.editors.text.content.format.name" description="%command.org.jkiss.dbeaver.ui.editors.text.content.format.description" categoryId="org.jkiss.dbeaver.core.sql"/>
 
     </extension>
@@ -527,6 +528,9 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" class="org.jkiss.dbeaver.ui.editors.sql.handlers.GoToMatchingBracketHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor.base"/></enabledWhen>
+        </handler>
 
     </extension>
 
@@ -551,7 +555,7 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.next" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_DOWN"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_UP"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+O"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+P"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+6"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+6"/>
@@ -572,6 +576,8 @@
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+["/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+F3"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+]"/>
+
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+P"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
