@@ -378,13 +378,13 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
             PostgreDataType returnType = getReturnType();
             String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
-            procDDL = omitHeader ? procSrc : generateFunctionDeclaration(monitor, getLanguage(monitor), returnTypeName, procSrc);
+            procDDL = omitHeader ? procSrc : generateFunctionDeclaration(getLanguage(monitor), returnTypeName, procSrc);
         } else {
             if (body == null) {
                 if (!isPersisted()) {
                     PostgreDataType returnType = getReturnType();
                     String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
-                    body = generateFunctionDeclaration(monitor, getLanguage(monitor), returnTypeName, "\n\t-- Enter function body here\n");
+                    body = generateFunctionDeclaration(getLanguage(monitor), returnTypeName, "\n\t-- Enter function body here\n");
                 } else if (oid == 0 || isAggregate) {
                     // No OID so let's use old (bad) way
                     body = this.procSrc;
@@ -421,7 +421,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return procDDL;
     }
 
-    private String generateFunctionDeclaration(DBRProgressMonitor monitor, PostgreLanguage language, String returnTypeName, String functionBody) throws DBException {
+    protected String generateFunctionDeclaration(PostgreLanguage language, String returnTypeName, String functionBody) {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder decl = new StringBuilder();
@@ -642,7 +642,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override
