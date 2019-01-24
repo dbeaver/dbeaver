@@ -151,7 +151,18 @@ public class UINavigatorMessages extends NLS {
     public static String confirm_close_entity_edit_title;
     public static String confirm_close_entity_edit_message;
 
-    public static String pref_page_target_button_use_datasource_settings;
+    public static String label_configure_columns;
+
+	public static String label_description;
+
+	public static String label_name;
+
+	public static String label_select_columns;
+
+	public static String label_show_all_projects;
+	public static String label_show_connected;
+
+	public static String pref_page_target_button_use_datasource_settings;
     public static String pref_page_target_link_show_datasource_settings;
     public static String pref_page_target_link_show_global_settings;
 
