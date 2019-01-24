@@ -16,6 +16,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.editors,
  org.eclipse.ui.ide,
  org.eclipse.ui.workbench.texteditor,
+ org.eclipse.e4.ui.css.swt.theme,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui
 Bundle-ClassPath: .
