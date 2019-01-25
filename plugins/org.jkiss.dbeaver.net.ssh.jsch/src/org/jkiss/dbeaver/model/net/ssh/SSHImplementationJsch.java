@@ -233,6 +233,11 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             }
             return super.promptPassphrase(message);
         }
+
+        @Override
+        public void showMessage(String message) {
+            // do not show ssh banner
+        }
     }
 
 }
