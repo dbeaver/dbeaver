@@ -60,7 +60,6 @@ public class GreenplumTableManagerTest {
                 greenplumTableManager.createDeleteAction(greenplumTable, Collections.emptyMap());
 
         Assert.assertEquals(regularTableDropTableQuery.getScript(), sqlDatabasePersistAction.getScript());
-        Assert.assertEquals(regularTableDropTableQuery.getTitle(), sqlDatabasePersistAction.getTitle());
     }
 
     @Test
@@ -77,7 +76,6 @@ public class GreenplumTableManagerTest {
                 greenplumTableManager.createDeleteAction(postgreForeignTable, Collections.emptyMap());
 
         Assert.assertEquals(regularTableDropTableQuery.getScript(), sqlDatabasePersistAction.getScript());
-        Assert.assertEquals(regularTableDropTableQuery.getTitle(), sqlDatabasePersistAction.getTitle());
     }
 
     @Test
@@ -95,6 +93,5 @@ public class GreenplumTableManagerTest {
                         Collections.singletonMap("deleteCascade", true));
 
         Assert.assertEquals(regularTableDropTableQuery.getScript(), sqlDatabasePersistAction.getScript());
-        Assert.assertEquals(regularTableDropTableQuery.getTitle(), sqlDatabasePersistAction.getTitle());
     }
 }
