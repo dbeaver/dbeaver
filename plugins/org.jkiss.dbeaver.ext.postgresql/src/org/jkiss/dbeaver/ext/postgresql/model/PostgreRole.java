@@ -313,6 +313,11 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         }
     }
 
+    @Override
+    public String generateChangeOwnerQuery(String owner) {
+        return null;
+    }
+
     private static Collection<PostgrePermission> getRolePermissions(PostgreRole role, PostgrePrivilege.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
             Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();

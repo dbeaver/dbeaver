@@ -1,10 +1,7 @@
 package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.Assert;
@@ -59,6 +56,7 @@ public class GreenplumExternalTableTest {
         Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
         Mockito.when(mockSchema.getName()).thenReturn(exampleSchemaName);
         Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
+        Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(mockDataSource.isServerVersionAtLeast(Matchers.anyInt(), Matchers.anyInt())).thenReturn(false);
 
         Mockito.when(mockResults.getString("relname")).thenReturn(exampleTableName);
@@ -594,6 +592,13 @@ public class GreenplumExternalTableTest {
         GreenplumExternalTable table = new GreenplumExternalTable(mockSchema);
         table.setFormatType("CUSTOM");
         Assert.assertEquals("CUSTOM", table.getFormatType());
+    }
+
+    @Test
+    public void generateChangeOwnerQuery_whenProvidedAValidOwner_thenShouldGenerateQuerySuccessfully() {
+        GreenplumExternalTable table = new GreenplumExternalTable(mockSchema, mockResults);
+        Assert.assertEquals("ALTER EXTERNAL TABLE sampleSchema.sampleTable OWNER TO someOwner",
+                table.generateChangeOwnerQuery("someOwner"));
     }
 
     private PostgreTableColumn mockDbColumn(String columnName, String columnType, int ordinalPosition) {

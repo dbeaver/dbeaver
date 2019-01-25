@@ -620,7 +620,7 @@ public class PostgreUtils {
             if (owner != null) {
                 actions.add(new SQLDatabasePersistAction(
                     "Owner change",
-                    "ALTER " + getObjectTypeName(object) + " " + getObjectUniqueName(object) + " OWNER TO " + DBUtils.getQuotedIdentifier(owner)
+                    object.generateChangeOwnerQuery(DBUtils.getQuotedIdentifier(owner))
                 ));
             }
 
