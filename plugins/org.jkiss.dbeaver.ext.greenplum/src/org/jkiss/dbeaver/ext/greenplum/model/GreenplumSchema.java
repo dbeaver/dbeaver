@@ -24,13 +24,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -40,6 +43,7 @@ import java.util.stream.Collectors;
 
 public class GreenplumSchema extends PostgreSchema {
     private GreenplumTableCache greenplumTableCache = new GreenplumTableCache();
+    private GreenplumFunctionsCache greenplumFunctionsCache = new GreenplumFunctionsCache();
 
     public GreenplumSchema(PostgreDatabase owner, String name, JDBCResultSet resultSet) throws SQLException {
         super(owner, name, resultSet);
@@ -60,6 +64,31 @@ public class GreenplumSchema extends PostgreSchema {
     @Override
     public TableCache getTableCache() {
         return this.greenplumTableCache;
+    }
+
+    @Association
+    public Collection<PostgreProcedure> getProcedures(DBRProgressMonitor monitor)
+            throws DBException {
+        return greenplumFunctionsCache.getAllObjects(monitor, this);
+    }
+
+    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, String procName)
+            throws DBException {
+        return greenplumFunctionsCache.getObject(monitor, this, procName);
+    }
+
+    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long oid)
+            throws DBException {
+        for (PostgreProcedure proc : greenplumFunctionsCache.getAllObjects(monitor, this)) {
+            if (proc.getObjectId() == oid) {
+                return proc;
+            }
+        }
+        return null;
+    }
+
+    public GreenplumFunctionsCache getGreenplumFunctionsCache() {
+        return this.greenplumFunctionsCache;
     }
 
     public class GreenplumTableCache extends TableCache {
@@ -105,6 +134,41 @@ public class GreenplumSchema extends PostgreSchema {
             if (object != null || objectName != null)
                 dbStat.setString(2, object != null ? object.getName() : objectName);
             return dbStat;
+        }
+    }
+
+    public class GreenplumFunctionsCache extends ProceduresCache {
+        GreenplumFunctionsCache() {
+            super();
+        }
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session,
+                                                    @NotNull PostgreSchema owner,
+                                                    @Nullable PostgreProcedure object,
+                                                    @Nullable String objectName) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT p.oid,p.*," +
+                            (session.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_catalog.pg_get_expr(p.proargdefaults, 0)" : "NULL") + " as arg_defaults,d.description\n" +
+                            "FROM pg_catalog.pg_proc p\n" +
+                            "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p.oid\n" +
+                            "WHERE p.pronamespace=?" +
+                            (object == null ? "" : " AND p.oid=?") +
+                            "\nORDER BY p.proname"
+            );
+            dbStat.setLong(1, owner.getObjectId());
+            if (object != null) {
+                dbStat.setLong(2, object.getObjectId());
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected GreenplumFunction fetchObject(@NotNull JDBCSession session,
+                                                @NotNull PostgreSchema owner,
+                                                @NotNull JDBCResultSet dbResult) {
+            return new GreenplumFunction(session.getProgressMonitor(), owner, dbResult);
         }
     }
 }

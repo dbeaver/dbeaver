@@ -652,7 +652,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         throws DBException {
         final PostgreSchema schema = getSchema(monitor, schemaId);
         if (schema != null) {
-            return PostgreUtils.getObjectById(monitor, schema.proceduresCache, schema, procId);
+            return PostgreUtils.getObjectById(monitor, schema.getProceduresCache(), schema, procId);
         }
         return null;
     }
@@ -660,7 +660,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long procId)
         throws DBException {
         for (final PostgreSchema schema : getSchemas(monitor)) {
-            PostgreProcedure procedure = PostgreUtils.getObjectById(monitor, schema.proceduresCache, schema, procId);
+            PostgreProcedure procedure = PostgreUtils.getObjectById(monitor, schema.getProceduresCache(), schema, procId);
             if (procedure != null) {
                 return procedure;
             }

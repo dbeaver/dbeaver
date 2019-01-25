@@ -54,7 +54,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     @Override
     public DBSObjectCache<PostgreSchema, PostgreProcedure> getObjectsCache(PostgreProcedure object)
     {
-        return object.getContainer().proceduresCache;
+        return object.getContainer().getProceduresCache();
     }
 
     @Override
