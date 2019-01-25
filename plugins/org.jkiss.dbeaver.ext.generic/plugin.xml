@@ -549,7 +549,7 @@
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
-                    label="UCanAccess"
+                    label="MS Access (UCanAccess)"
                     icon="icons/msaccess_icon.png"
                     iconBig="icons/msaccess_icon_big.png"
                     category="MS Access"
