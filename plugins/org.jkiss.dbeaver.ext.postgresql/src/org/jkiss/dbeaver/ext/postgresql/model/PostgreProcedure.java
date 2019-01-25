@@ -646,8 +646,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
+    public String generateChangeOwnerQuery(String owner) {
+        return "ALTER " + this.getProcedureTypeName() + " " + this.getFullQualifiedSignature() + " OWNER TO " + owner;
+    }
+
+    @Override
     public String toString() {
         return overloadedName == null ? name : overloadedName;
     }
-
 }
