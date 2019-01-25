@@ -246,6 +246,10 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         // Nothing
     }
 
+    @Override
+    public String generateChangeOwnerQuery(String owner) {
+        return "ALTER TABLE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+    }
 
     public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTableBase> {
         @Override

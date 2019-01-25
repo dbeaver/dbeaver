@@ -325,5 +325,4 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         }
         return result;
     }
-
 }

@@ -240,4 +240,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         return sql.toString();
     }
 
+    public String generateChangeOwnerQuery(String owner) {
+        return "ALTER SEQUENCE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+    }
 }

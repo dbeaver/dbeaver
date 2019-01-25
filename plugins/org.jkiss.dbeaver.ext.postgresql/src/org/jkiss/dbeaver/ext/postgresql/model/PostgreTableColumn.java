@@ -62,6 +62,11 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
     }
 
     @Override
+    public String generateChangeOwnerQuery(String owner) {
+        return null;
+    }
+
+    @Override
     public int getAttributeSRID(DBRProgressMonitor monitor) {
         if (srid == -1) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
