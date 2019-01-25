@@ -17,8 +17,7 @@
   -->
 <plugin>
 
-   <extension
-         point="com.github.eclipsecolortheme.mapper">
+   <extension point="com.github.eclipsecolortheme.mapper">
 
       <mapper
             class="com.github.eclipsecolortheme.mapper.GenericMapper"
