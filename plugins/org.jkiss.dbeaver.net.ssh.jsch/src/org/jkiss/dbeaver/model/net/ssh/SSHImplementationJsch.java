@@ -236,7 +236,9 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
 
         @Override
         public void showMessage(String message) {
-            // do not show ssh banner
+            // Just log it in debug
+            log.debug("SSH server message:");
+            log.debug(message);
         }
     }
 
