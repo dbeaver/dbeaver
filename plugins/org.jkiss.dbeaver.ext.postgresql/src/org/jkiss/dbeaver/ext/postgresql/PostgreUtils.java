@@ -618,10 +618,10 @@ public class PostgreUtils {
             // Owner
             PostgreRole owner = object.getOwner(monitor);
             if (owner != null) {
-                actions.add(new SQLDatabasePersistAction(
-                    "Owner change",
-                    object.generateChangeOwnerQuery(DBUtils.getQuotedIdentifier(owner))
-                ));
+                String alterScript = object.generateChangeOwnerQuery(DBUtils.getQuotedIdentifier(owner));
+                if (!CommonUtils.isEmpty(alterScript)) {
+                    actions.add(new SQLDatabasePersistAction("Owner change", alterScript));
+                }
             }
 
             // Permissions
