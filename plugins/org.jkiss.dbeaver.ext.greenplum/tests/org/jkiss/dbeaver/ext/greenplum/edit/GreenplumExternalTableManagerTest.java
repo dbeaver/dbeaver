@@ -60,7 +60,6 @@ public class GreenplumExternalTableManagerTest {
                 greenplumExternalTableManager.createDeleteAction(greenplumExternalTable, Collections.emptyMap());
 
         Assert.assertEquals(regularTableDropTableQuery.getScript(), sqlDatabasePersistAction.getScript());
-        Assert.assertEquals(regularTableDropTableQuery.getTitle(), sqlDatabasePersistAction.getTitle());
     }
 
     @Test
@@ -79,7 +78,6 @@ public class GreenplumExternalTableManagerTest {
                         Collections.singletonMap("deleteCascade", true));
 
         Assert.assertEquals(regularTableDropTableQuery.getScript(), sqlDatabasePersistAction.getScript());
-        Assert.assertEquals(regularTableDropTableQuery.getTitle(), sqlDatabasePersistAction.getTitle());
     }
 
     private GreenplumExternalTable newGreenplumExternalTableFixture() throws SQLException {
