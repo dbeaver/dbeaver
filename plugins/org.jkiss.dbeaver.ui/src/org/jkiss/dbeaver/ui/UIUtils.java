@@ -1475,6 +1475,15 @@ public class UIUtils {
         throw new IllegalStateException("No workbench window");
     }
 
+    public static IWorkbenchWindow getParentWorkbenchWindow(Control control) {
+        for (Control p = control.getParent(); p != null; p = p.getParent()) {
+            if (p.getData() instanceof IWorkbenchWindow) {
+                return (IWorkbenchWindow) p.getData();
+            }
+        }
+        return null;
+    }
+
     public static Shell getActiveWorkbenchShell() {
         IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();

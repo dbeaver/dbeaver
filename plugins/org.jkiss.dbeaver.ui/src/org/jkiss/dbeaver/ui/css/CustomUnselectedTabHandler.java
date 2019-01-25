@@ -42,16 +42,18 @@ public class CustomUnselectedTabHandler extends CSSPropertyUnselectedTabsSWTHand
             return false;
         }
 
-        Color newColor = CustomSelectedTabFillHandler.getCurrentEditorConnectionColor();
-        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
-            CTabFolder nativeWidget = (CTabFolder) ((CTabFolderElement) element).getNativeWidget();
-            if (nativeWidget.getRenderer() instanceof CTabRendering) {
-                ((CTabRendering) nativeWidget.getRenderer()).setUnselectedTabsColor(newColor);
-            } else {
+        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY))) {
+            Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
+            if (newColor != null) {
+                CTabFolder nativeWidget = (CTabFolder) ((CTabFolderElement) element).getNativeWidget();
+                if (nativeWidget.getRenderer() instanceof CTabRendering) {
+                    ((CTabRendering) nativeWidget.getRenderer()).setUnselectedTabsColor(newColor);
+                } else {
+                    nativeWidget.setBackground(newColor);
+                }
                 nativeWidget.setBackground(newColor);
+                return true;
             }
-            nativeWidget.setBackground(newColor);
-            return true;
         }
         return super.applyCSSProperty(element, property, value, pseudo, engine);
     }

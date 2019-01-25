@@ -26,11 +26,6 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.w3c.dom.css.CSSValue;
 
@@ -50,40 +45,20 @@ public class CustomSelectedTabFillHandler extends CSSPropertye4SelectedTabFillHa
             return false;
         }
 
-        Color newColor = getCurrentEditorConnectionColor();
-        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
-            CTabFolder nativeWidget = (CTabFolder) ((CTabFolderElement) element).getNativeWidget();
-            if (nativeWidget.getRenderer() instanceof CTabRendering) {
-                ((CTabRendering) nativeWidget.getRenderer()).setSelectedTabFill(newColor);
-            } else {
-                nativeWidget.setBackground(newColor);
+        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY))) {
+            Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
+            if (newColor != null) {
+                CTabFolder nativeWidget = (CTabFolder) ((CTabFolderElement) element).getNativeWidget();
+                if (nativeWidget.getRenderer() instanceof CTabRendering) {
+                    ((CTabRendering) nativeWidget.getRenderer()).setSelectedTabFill(newColor);
+                } else {
+                    nativeWidget.setBackground(newColor);
+                }
+                return true;
             }
-            return true;
         }
         return super.applyCSSProperty(element, property, value, pseudo, engine);
 
     }
 
-    static Color getCurrentEditorConnectionColor() {
-        Color color = null;
-        try {
-            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-            if (workbenchWindow != null) {
-                IWorkbenchPage activePage = workbenchWindow.getActivePage();
-                if (activePage != null) {
-                    IEditorPart activeEditor = activePage.getActiveEditor();
-                    if (activeEditor instanceof DBPContextProvider) {
-                        DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
-                        if (context != null) {
-                            color = UIUtils.getConnectionColor(context.getDataSource().getContainer()
-                                .getConnectionConfiguration());
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // Some UI issues. Probably workbench window or page wasn't yet created
-        }
-        return color;
-    }
 }
