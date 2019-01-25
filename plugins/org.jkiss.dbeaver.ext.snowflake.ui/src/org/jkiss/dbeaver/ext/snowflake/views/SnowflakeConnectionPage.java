@@ -63,7 +63,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     private Text usernameText;
     private Text passwordText;
 
-    private static ImageDescriptor logoImage = SnowflakeUIActivator.getImageDescriptor("icons/snowflake_logo.png");
+    private static ImageDescriptor logoImage = SnowflakeUIActivator.getImageDescriptor("icons/snowflake_logo.png"); //$NON-NLS-1$
 
     @Override
     public void dispose()
@@ -82,11 +82,11 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
         ModifyListener textListener = e -> site.updateButtons();
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, "Connection", 4, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(control, SnowlfakeMessages.label_connection, 4, 0, 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             addrGroup.setLayoutData(gd);
 
-            UIUtils.createControlLabel(addrGroup, "Host");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_host);
 
             hostText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -94,7 +94,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             hostText.setLayoutData(gd);
             hostText.addModifyListener(textListener);
 
-            UIUtils.createControlLabel(addrGroup, "Port");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_port);
 
             portText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
@@ -103,7 +103,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 
-            UIUtils.createControlLabel(addrGroup, "Database");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_database);
 
             dbText = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -112,7 +112,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             dbText.setLayoutData(gd);
             dbText.addModifyListener(textListener);
 
-            UIUtils.createControlLabel(addrGroup, "Warehouse");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_warehouse);
 
             warehouseText = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -121,7 +121,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             warehouseText.setLayoutData(gd);
             warehouseText.addModifyListener(textListener);
 
-            UIUtils.createControlLabel(addrGroup, "Schema");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_schema);
 
             schemaText = new Combo(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -133,9 +133,9 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
 
         {
             Composite ph = UIUtils.createPlaceholder(control, 2);
-            CLabel infoLabel = UIUtils.createInfoLabel(ph, "");
+            CLabel infoLabel = UIUtils.createInfoLabel(ph, ""); //$NON-NLS-1$
             Link testLink = new Link(ph, SWT.NONE);
-            testLink.setText("Click on <a>Test Connection</a> to load warehouse/schema list from the server");
+            testLink.setText(SnowlfakeMessages.label_click_on_test_connection);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.grabExcessHorizontalSpace = true;
             testLink.setLayoutData(gd);
@@ -148,10 +148,10 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
         }
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, "Security", 4, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(control, SnowlfakeMessages.label_security, 4, 0, 0);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(addrGroup, "User");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_user);
 
             usernameText = new Text(addrGroup, SWT.BORDER);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
@@ -160,7 +160,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
 
             UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
-            UIUtils.createControlLabel(addrGroup, "Password");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_password);
 
             passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
@@ -169,7 +169,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
 
             createSavePasswordButton(addrGroup, 2);
 
-            UIUtils.createControlLabel(addrGroup, "Role");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_role);
 
             roleText = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
@@ -178,11 +178,11 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
 
             //UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
-            UIUtils.createControlLabel(addrGroup, "Authenticator");
+            UIUtils.createControlLabel(addrGroup, SnowlfakeMessages.label_authenticator);
             authTypeCombo = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
-            authTypeCombo.add("");
-            authTypeCombo.add("snowflake");
-            authTypeCombo.add("externalbrowser");
+            authTypeCombo.add(""); //$NON-NLS-1$
+            authTypeCombo.add("snowflake"); //$NON-NLS-1$
+            authTypeCombo.add("externalbrowser"); //$NON-NLS-1$
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
             authTypeCombo.setLayoutData(gd);
             authTypeCombo.addModifyListener(textListener);
@@ -219,7 +219,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             } else if (site.getDriver().getDefaultPort() != null) {
                 portText.setText(site.getDriver().getDefaultPort());
             } else {
-                portText.setText("");
+                portText.setText(""); //$NON-NLS-1$
             }
         }
         if (dbText != null) {
@@ -286,10 +286,10 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     @Override
     public void testConnection(DBCSession session) {
         try {
-            loadDictList(session, dbText, "SHOW DATABASES");
-            loadDictList(session, warehouseText, "SHOW WAREHOUSES");
-            loadDictList(session, schemaText, "SHOW SCHEMAS");
-            loadDictList(session, roleText, "SHOW ROLES");
+            loadDictList(session, dbText, "SHOW DATABASES"); //$NON-NLS-1$
+            loadDictList(session, warehouseText, "SHOW WAREHOUSES"); //$NON-NLS-1$
+            loadDictList(session, schemaText, "SHOW SCHEMAS"); //$NON-NLS-1$
+            loadDictList(session, roleText, "SHOW ROLES"); //$NON-NLS-1$
         } catch (Exception e) {
             log.error(e);
         }
@@ -297,12 +297,12 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
 
     private static void loadDictList(DBCSession session, Combo combo, String query) throws DBCException {
         List<String> result = new ArrayList<>();
-        session.getProgressMonitor().subTask("Exec " + query);
+        session.getProgressMonitor().subTask("Exec " + query); //$NON-NLS-1$
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false)) {
             dbStat.executeStatement();
             try (DBCResultSet dbResult = dbStat.openResultSet()) {
                 while (dbResult.nextRow()) {
-                    result.add(CommonUtils.toString(dbResult.getAttributeValue("name")));
+                    result.add(CommonUtils.toString(dbResult.getAttributeValue("name"))); //$NON-NLS-1$
                 }
             }
         }
@@ -311,8 +311,8 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             if (!result.contains(oldText)) {
                 result.add(0, oldText);
             }
-            if (!result.contains("")) {
-                result.add(0, "");
+            if (!result.contains("")) { //$NON-NLS-1$
+                result.add(0, ""); //$NON-NLS-1$
             }
             combo.setItems(result.toArray(new String[0]));
             combo.setText(oldText);
