@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 public class CSSUtils {
-    private CSSUtils() {
-    }
 
     /**
      * Set value to a widget as a CSSSWTConstants.CSS_CLASS_NAME_KEY value.
@@ -30,5 +32,23 @@ public class CSSUtils {
      */
     public static void setCSSClass(Widget widget, String value){
         widget.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, value);
+    }
+
+    public static Color getCurrentEditorConnectionColor(Widget widget) {
+        if (!(widget instanceof Control)) {
+            return null;
+        }
+        try {
+            for (Control c = (Control)widget; c != null; c = c.getParent()) {
+                Object data = c.getData(DBStyles.DATABASE_EDITOR_COMPOSITE_DATASOURCE);
+                if (data instanceof DBPDataSourceContainer) {
+                    return UIUtils.getConnectionColor(
+                        ((DBPDataSourceContainer) data).getConnectionConfiguration());
+                }
+            }
+        } catch (Exception e) {
+            // Some UI issues. Probably workbench window or page wasn't yet created
+        }
+        return null;
     }
 }

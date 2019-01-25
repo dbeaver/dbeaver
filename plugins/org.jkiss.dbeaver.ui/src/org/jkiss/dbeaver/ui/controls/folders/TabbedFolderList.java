@@ -776,6 +776,9 @@ public class TabbedFolderList extends Composite {
         UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
+                if (isDisposed()) {
+                    return;
+                }
                 initColours();
                 for (ListElement e : elements) {
                     e.redraw();

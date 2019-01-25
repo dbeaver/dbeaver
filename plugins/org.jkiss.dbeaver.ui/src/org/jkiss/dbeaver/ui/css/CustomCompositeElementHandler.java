@@ -44,9 +44,11 @@ public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandl
             return;
         }
 
-        Color newColor = CustomSelectedTabFillHandler.getCurrentEditorConnectionColor();
-        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY)) && newColor != null) {
-            applyCustomBackground(element, newColor);
+        if (DBStyles.COLORED_BY_CONNECTION_TYPE.equals(widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY))) {
+            Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
+            if (newColor != null) {
+                applyCustomBackground(element, newColor);
+            }
         } else {
             super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
         }

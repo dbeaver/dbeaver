@@ -44,6 +44,8 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
         progressEditorPart = new ProgressEditorPart(this);
         progressEditorPart.init(getEditorSite(), input);
         progressEditorPart.createPartControl(parent);
+
+        DatabaseEditorUtils.setPartBackground(this, parent);
     }
 
     @Override

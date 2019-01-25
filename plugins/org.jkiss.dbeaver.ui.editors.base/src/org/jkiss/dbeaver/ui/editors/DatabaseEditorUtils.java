@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 
 /**
  * DB editor utils
@@ -54,21 +55,22 @@ public class DatabaseEditorUtils {
             tabFolder.setBorderVisible(false);
         }
 
-        Color bgColor = null;
+        DBPDataSourceContainer dsContainer = null;
         if (editor instanceof IDataSourceContainerProvider) {
-            DBPDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
-            if (container != null) {
-                bgColor = UIUtils.getConnectionColor(container.getConnectionConfiguration());
-            }
+            dsContainer = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
         } else if (editor instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) editor).getExecutionContext();
             if (context != null) {
-                bgColor = UIUtils.getConnectionColor(context.getDataSource().getContainer().getConnectionConfiguration());
+                dsContainer = context.getDataSource().getContainer();
             }
         }
-        if (bgColor == null) {
+
+        if (dsContainer == null) {
             rootComposite.setBackground(null);
         } else {
+            Color bgColor = UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
+
+            rootComposite.setData(DBStyles.DATABASE_EDITOR_COMPOSITE_DATASOURCE, dsContainer);
             rootComposite.setBackground(bgColor);
         }
     }
