@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -37,4 +39,5 @@ public interface PostgrePermissionsOwner extends PostgreObject {
      */
     Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
 
+    String generateChangeOwnerQuery(String owner);
 }

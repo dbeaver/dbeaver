@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
@@ -263,6 +265,13 @@ public class GreenplumExternalTable extends PostgreTable {
         }
 
         return ddlBuilder.toString();
+    }
+
+    @Override
+    public String generateChangeOwnerQuery(String owner) {
+        assert CommonUtils.isNotEmpty(owner);
+
+        return "ALTER EXTERNAL TABLE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
     }
 
     private List<PostgreTableColumn> filterOutNonMetadataColumns(DBRProgressMonitor monitor) throws DBException {
