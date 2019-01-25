@@ -227,13 +227,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Finish initialization");
         super.postWindowOpen();
 
-/*
         try {
             ApplicationCSSManager.updateApplicationCSS(Display.getCurrent());
         } catch (Throwable e) {
             log.warn(e);
         }
-*/
         if (isRunWorkbenchInitializers()) {
             // Open New Connection wizard
             UIUtils.asyncExec(() -> {
