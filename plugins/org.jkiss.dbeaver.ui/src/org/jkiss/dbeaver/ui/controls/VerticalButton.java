@@ -23,6 +23,8 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -38,15 +40,20 @@ public class VerticalButton extends Canvas {
     private String text = "";
     private Image image = null;
 
-    private float rotatingAngle = -90;
+    private float rotatingAngle;
     private boolean isHover;
 
     private IAction action;
+    private IServiceLocator serviceLocator;
+    private String commandId;
     //float[] angles = {0, 90, 180, 270};
     //int index = 0;
 
     public VerticalButton(VerticalFolder parent, int style) {
-        super(parent, style);
+        super(parent, style | SWT.NO_FOCUS);
+
+        rotatingAngle = (style & SWT.RIGHT) == SWT.RIGHT ? 90 : -90;
+
         parent.addItem(this);
 
         this.addPaintListener(this::paint);
@@ -114,11 +121,17 @@ public class VerticalButton extends Canvas {
         if (action != null) {
             action.runWithEvent(event);
             redraw();
+        } else if (commandId != null) {
+            ActionUtils.runCommand(commandId, serviceLocator);
         }
     }
 
     public VerticalFolder getFolder() {
         return (VerticalFolder) getParent();
+    }
+
+    public String getText() {
+        return text;
     }
 
     public void setText(String string) {
@@ -131,11 +144,17 @@ public class VerticalButton extends Canvas {
         redraw();
     }
 
+    private void setImage(ImageDescriptor imageDescriptor) {
+        if (imageDescriptor != null) {
+            this.image = imageDescriptor.createImage(true);
+            addDisposeListener(e -> UIUtils.dispose(image));
+        }
+    }
 
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
         GC gc = new GC(this);
-        Point textSize = gc.stringExtent(text);
+        Point textSize = gc.stringExtent(getText());
         gc.dispose();
 
         Point iconSize = new Point(0, 0);
@@ -145,9 +164,15 @@ public class VerticalButton extends Canvas {
             iconSize.y = imageBounds.height + BORDER_MARGIN * 2;
         }
 
-        return new Point(
-            Math.max(iconSize.y, textSize.y + BORDER_MARGIN * 2),
-            textSize.x + (BORDER_MARGIN + VERT_INDENT) * 2 + iconSize.x);
+        if (CommonUtils.isEmpty(text)) {
+            return new Point(
+                iconSize.x,
+                iconSize.y);
+        } else {
+            return new Point(
+                Math.max(iconSize.y, textSize.y + BORDER_MARGIN * 2),
+                textSize.x + (BORDER_MARGIN + VERT_INDENT) * 2 + iconSize.x);
+        }
     }
 
     public void paint(PaintEvent e) {
@@ -173,21 +198,28 @@ public class VerticalButton extends Canvas {
                 e.gc.drawRectangle(e.x, e.y, e.width - 1, e.height - 1);
             }
         }
-        Transform tr = new Transform(e.display);
 
-        e.gc.setAntialias(SWT.ON);
-        tr.translate(0, e.height);
-        tr.rotate(rotatingAngle);
-        e.gc.setTransform(tr);
+        int x = e.x;
 
-        int x = e.x + VERT_INDENT;
+        String text = getText();
+        if (!CommonUtils.isEmpty(text)) {
+            Transform tr = new Transform(e.display);
+
+            e.gc.setAntialias(SWT.ON);
+            tr.translate(0, e.height);
+            tr.rotate(rotatingAngle);
+            e.gc.setTransform(tr);
+
+            x += e.x + VERT_INDENT;
+        }
+
         if (image != null) {
             e.gc.drawImage(image, x, e.y + BORDER_MARGIN);
             x += image.getBounds().width + BORDER_MARGIN;
         }
 
         e.gc.setForeground(UIStyles.getDefaultTextForeground());
-        e.gc.drawString(text, x, e.y + BORDER_MARGIN);
+        e.gc.drawString(this.text, x, e.y + BORDER_MARGIN);
     }
 
     private boolean isSelected() {
@@ -199,17 +231,36 @@ public class VerticalButton extends Canvas {
         addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
     }
 
-    public void setAction(IAction action) {
+    public void setAction(IAction action, boolean showText) {
         this.action = action;
-        ImageDescriptor imageDescriptor = action.getImageDescriptor();
-        if (imageDescriptor != null) {
-            this.image = imageDescriptor.createImage(true);
-            addDisposeListener(e -> UIUtils.dispose(image));
+        setImage(action.getImageDescriptor());
+        if (showText) {
+            this.text = action.getText();
         }
-        this.text = action.getText();
         String toolTipText = action.getToolTipText();
         if (!CommonUtils.isEmpty(toolTipText)) {
             this.setToolTipText(toolTipText);
         }
     }
+
+    public void setCommand(IServiceLocator serviceLocator, String commandId, boolean showText) {
+        this.serviceLocator = serviceLocator;
+        this.commandId = commandId;
+        setImage(ActionUtils.findCommandImage(commandId));
+        if (showText) {
+            this.text = ActionUtils.findCommandName(commandId);
+        }
+        String toolTipText = ActionUtils.findCommandDescription(commandId, serviceLocator, false);
+        if (!CommonUtils.isEmpty(toolTipText)) {
+            this.setToolTipText(toolTipText);
+        }
+    }
+
+
+    public static VerticalButton create(VerticalFolder folder, int style, IServiceLocator serviceLocator, String commandId, boolean showText) {
+        VerticalButton button = new VerticalButton(folder, style);
+        button.setCommand(serviceLocator, commandId, showText);
+        return button;
+    }
+
 }
