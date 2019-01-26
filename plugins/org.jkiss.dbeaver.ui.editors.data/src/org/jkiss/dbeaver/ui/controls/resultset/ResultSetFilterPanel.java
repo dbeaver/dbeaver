@@ -117,7 +117,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private boolean filterExpanded = false;
 
     ResultSetFilterPanel(ResultSetViewer rsv) {
-        super(rsv.getControl(), SWT.NONE);
+        super(rsv.getViewerPanel(), SWT.NONE);
         this.viewer = rsv;
         CSSUtils.setCSSClass(this, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
