@@ -30,6 +30,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -112,7 +113,9 @@ public class TextEditorUtils {
         });
         control.addDisposeListener(e -> {
             if (activated[0]) {
-                enableHostEditorKeyBindings(partSite, true);
+                if (!DBWorkbench.getPlatform().isShuttingDown()) {
+                    enableHostEditorKeyBindings(partSite, true);
+                }
                 activated[0] = false;
             }
         });
