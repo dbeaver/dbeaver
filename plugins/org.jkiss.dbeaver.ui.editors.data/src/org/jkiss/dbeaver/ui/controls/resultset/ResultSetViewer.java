@@ -39,6 +39,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
@@ -193,6 +194,7 @@ public class ResultSetViewer extends Viewer
     private boolean actionsDisabled;
 
     private Color defaultBackground, defaultForeground;
+    private VerticalButton recordModeButton;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
@@ -574,7 +576,7 @@ public class ResultSetViewer extends Viewer
                     item.dispose();
                 }
                 for (ResultSetPresentationDescriptor pd : availablePresentations) {
-                    VerticalButton item = new VerticalButton(presentationSwitchFolder, SWT.LEFT);
+                    VerticalButton item = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.RADIO);
                     item.setImage(DBeaverIcons.getImage(pd.getIcon()));
                     item.setText(pd.getLabel());
                     item.setToolTipText(pd.getDescription());
@@ -591,6 +593,11 @@ public class ResultSetViewer extends Viewer
                         }
                     });
                 }
+                UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
+                recordModeButton = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.CHECK);
+                recordModeButton.setAction(new ToggleModeAction());
+
+                ((GridLayout)presentationSwitchFolder.getLayout()).marginBottom = statusBar.getSize().y;
             }
             mainPanel.layout(true, true);
         } catch (Exception e) {
@@ -655,6 +662,9 @@ public class ResultSetViewer extends Viewer
         }
 
         presentationPanel.layout();
+        if (recordModeButton != null) {
+            recordModeButton.setVisible(activePresentationDescriptor.supportsRecordMode());
+        }
 
         // Update dynamic find/replace target
         {
@@ -1285,12 +1295,6 @@ public class ResultSetViewer extends Viewer
         {
             ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             configToolBarManager.add(new ToolbarSeparatorContribution(true));
-            {
-                //configToolBarManager.add(new ToggleModeAction());
-                ActionContributionItem item = new ActionContributionItem(new ToggleModeAction());
-                item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-                configToolBarManager.add(item);
-            }
 
             {
                 CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
@@ -1382,6 +1386,9 @@ public class ResultSetViewer extends Viewer
     void toggleMode()
     {
         changeMode(!recordMode);
+        if (recordModeButton != null) {
+            recordModeButton.redraw();
+        }
 
         updateEditControls();
     }

@@ -49,6 +49,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final int order;
     private final IResultSetPresentation.PresentationType presentationType;
     private final List<MimeType> contentTypes = new ArrayList<>();
+    private boolean supportsRecordMode;
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);
@@ -60,6 +61,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         this.icon = iconToImage(config.getAttribute("icon"));
         this.order = CommonUtils.toInt(config.getAttribute("order"));
         this.presentationType = IResultSetPresentation.PresentationType.valueOf(config.getAttribute("type").toUpperCase(Locale.ENGLISH));
+        this.supportsRecordMode = CommonUtils.toBoolean(config.getAttribute("supportsRecordMode"));
 
         for (IConfigurationElement typeCfg : config.getChildren(CONTENT_TYPE)) {
             String type = typeCfg.getAttribute("type");
@@ -128,5 +130,9 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     @Override
     public String toString() {
         return id;
+    }
+
+    public boolean supportsRecordMode() {
+        return supportsRecordMode;
     }
 }

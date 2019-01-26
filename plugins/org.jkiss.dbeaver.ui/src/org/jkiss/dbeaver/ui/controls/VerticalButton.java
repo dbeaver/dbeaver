@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -23,6 +25,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Event;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class VerticalButton extends Canvas {
 
@@ -37,6 +40,8 @@ public class VerticalButton extends Canvas {
 
     private float rotatingAngle = -90;
     private boolean isHover;
+
+    private IAction action;
     //float[] angles = {0, 90, 180, 270};
     //int index = 0;
 
@@ -83,7 +88,7 @@ public class VerticalButton extends Canvas {
                 if (hit) {
                     Event event = new Event();
                     event.widget = VerticalButton.this;
-                    notifyListeners(SWT.Selection, event);
+                    runAction(event);
                 }
                 hit = false;
             }
@@ -92,12 +97,23 @@ public class VerticalButton extends Canvas {
             public void keyPressed(KeyEvent e) {
                 if (e.keyCode == '\r' || e.character == ' ') {
                     Event event = new Event();
-                    notifyListeners(SWT.Selection, event);
+                    runAction(event);
                 }
             }
         });
 
         this.addDisposeListener(e -> getFolder().removeItem(this));
+    }
+
+    private void runAction(Event event) {
+        notifyListeners(SWT.Selection, event);
+        if ((getStyle() & SWT.RADIO) == SWT.RADIO) {
+            getFolder().setSelection(this);
+        }
+        if (action != null) {
+            action.runWithEvent(event);
+            redraw();
+        }
     }
 
     public VerticalFolder getFolder() {
@@ -161,6 +177,7 @@ public class VerticalButton extends Canvas {
         e.gc.setAntialias(SWT.ON);
         tr.translate(0, e.height);
         tr.rotate(rotatingAngle);
+        tr.invert();
         e.gc.setTransform(tr);
 
         int x = e.x + VERT_INDENT;
@@ -174,11 +191,25 @@ public class VerticalButton extends Canvas {
     }
 
     private boolean isSelected() {
-        return getFolder().getSelection() == this;
+        return ((getStyle() & SWT.RADIO) == SWT.RADIO && getFolder().getSelection() == this) ||
+            (action != null && (action.getStyle() & IAction.AS_CHECK_BOX) == IAction.AS_CHECK_BOX && action.isChecked());
     }
 
     public void addSelectionListener(SelectionListener listener) {
         addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
     }
 
+    public void setAction(IAction action) {
+        this.action = action;
+        ImageDescriptor imageDescriptor = action.getImageDescriptor();
+        if (imageDescriptor != null) {
+            this.image = imageDescriptor.createImage(true);
+            addDisposeListener(e -> UIUtils.dispose(image));
+        }
+        this.text = action.getText();
+        String toolTipText = action.getToolTipText();
+        if (!CommonUtils.isEmpty(toolTipText)) {
+            this.setToolTipText(toolTipText);
+        }
+    }
 }

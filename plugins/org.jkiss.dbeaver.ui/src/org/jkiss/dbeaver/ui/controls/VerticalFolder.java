@@ -55,9 +55,6 @@ public class VerticalFolder extends Canvas {
 
     public void addItem(VerticalButton item) {
         items.add(item);
-        item.addListener(SWT.Selection, event -> {
-            setSelection((VerticalButton)event.widget);
-        });
     }
 
     public void setSelection(VerticalButton item) {
