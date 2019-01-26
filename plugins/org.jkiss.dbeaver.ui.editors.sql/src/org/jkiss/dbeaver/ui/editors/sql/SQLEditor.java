@@ -1169,12 +1169,14 @@ public class SQLEditor extends SQLEditorBase implements
 
             // Show presentation panels
             boolean sideBarChanged = false;
-/*
             if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.HIDDEN) {
                 // Remove all presentation panel toggles
                 for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
-                    if (sideToolBar.remove(PANEL_ITEM_PREFIX + panelDescriptor.getId()) != null) {
-                        sideBarChanged = true;
+                    for (VerticalButton vb : sideToolBar.getItems()) {
+                        if (vb.getData() instanceof SQLPresentationPanelDescriptor) {
+                            vb.dispose();
+                            sideBarChanged = true;
+                        }
                     }
                 }
                 // Close all panels
@@ -1187,17 +1189,17 @@ public class SQLEditor extends SQLEditorBase implements
             } else {
                 // Check and add presentation panel toggles
                 for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
-                    if (sideToolBar.find(PANEL_ITEM_PREFIX + panelDescriptor.getId()) == null) {
-                        sideBarChanged = true;
-                        PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
-                        sideToolBar.insertAfter(TOOLBAR_GROUP_PANELS, toggleAction);
-                        if (panelDescriptor.isAutoActivate()) {
-                            toggleAction.run();
-                        }
+                    sideBarChanged = true;
+                    PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
+                    VerticalButton panelButton = new VerticalButton(sideToolBar, SWT.LEFT);
+                    panelButton.setAction(toggleAction, true);
+                    panelButton.setData(panelDescriptor);
+                    if (panelDescriptor.isAutoActivate()) {
+                        panelButton.setChecked(true);
+                        toggleAction.run();
                     }
                 }
             }
-*/
 
             if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.MAXIMIZED) {
                 presentationSwitchFolder.setSelection(presentationSwitchFolder.getItems()[1]);
@@ -1206,7 +1208,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             if (sideBarChanged) {
-                sideToolBar.getParent().layout(true);
+                sideToolBar.getParent().layout(true, true);
             }
         } finally {
             resultsSash.setRedraw(true);
