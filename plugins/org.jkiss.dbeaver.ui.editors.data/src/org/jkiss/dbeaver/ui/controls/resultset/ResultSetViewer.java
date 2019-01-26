@@ -595,7 +595,7 @@ public class ResultSetViewer extends Viewer
                 }
                 UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
                 recordModeButton = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.CHECK);
-                recordModeButton.setAction(new ToggleModeAction());
+                recordModeButton.setAction(new ToggleModeAction(), true);
 
                 ((GridLayout)presentationSwitchFolder.getLayout()).marginBottom = statusBar.getSize().y;
             }
