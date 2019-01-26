@@ -46,6 +46,7 @@ public class VerticalButton extends Canvas {
     private IAction action;
     private IServiceLocator serviceLocator;
     private String commandId;
+    private boolean checked;
     //float[] angles = {0, 90, 180, 270};
     //int index = 0;
 
@@ -238,12 +239,17 @@ public class VerticalButton extends Canvas {
     }
 
     private boolean isSelected() {
-        return ((getStyle() & SWT.RADIO) == SWT.RADIO && getFolder().getSelection() == this) ||
+        return checked ||
+            ((getStyle() & SWT.RADIO) == SWT.RADIO && getFolder().getSelection() == this) ||
             (action != null && (action.getStyle() & IAction.AS_CHECK_BOX) == IAction.AS_CHECK_BOX && action.isChecked());
     }
 
     public void addSelectionListener(SelectionListener listener) {
         addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
+    }
+
+    public IAction getAction() {
+        return action;
     }
 
     public void setAction(IAction action, boolean showText) {
@@ -256,6 +262,10 @@ public class VerticalButton extends Canvas {
         if (!CommonUtils.isEmpty(toolTipText)) {
             this.setToolTipText(toolTipText);
         }
+    }
+
+    public String getCommandId() {
+        return commandId;
     }
 
     public void setCommand(IServiceLocator serviceLocator, String commandId, boolean showText) {
@@ -271,6 +281,9 @@ public class VerticalButton extends Canvas {
         }
     }
 
+    public void setChecked(boolean selection) {
+        this.checked = selection;
+    }
 
     public static VerticalButton create(VerticalFolder folder, int style, IServiceLocator serviceLocator, String commandId, boolean showText) {
         VerticalButton button = new VerticalButton(folder, style);
