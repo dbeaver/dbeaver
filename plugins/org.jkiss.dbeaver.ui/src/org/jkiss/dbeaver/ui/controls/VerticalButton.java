@@ -147,7 +147,9 @@ public class VerticalButton extends Canvas {
     private void setImage(ImageDescriptor imageDescriptor) {
         if (imageDescriptor != null) {
             this.image = imageDescriptor.createImage(true);
-            addDisposeListener(e -> UIUtils.dispose(image));
+            addDisposeListener(e -> {
+                UIUtils.dispose(image);
+            });
         }
     }
 

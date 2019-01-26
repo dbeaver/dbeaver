@@ -784,11 +784,11 @@ public class SQLEditor extends SQLEditorBase implements
         presentationSwitchFolder = new VerticalFolder(sqlEditorPanel, SWT.RIGHT);
         presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-        VerticalButton sqlEditorButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.RADIO);
+        VerticalButton sqlEditorButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
         sqlEditorButton.setText(SQLEditorMessages.editors_sql_description);
         sqlEditorButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
 
-        VerticalButton presentationButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.RADIO);
+        VerticalButton presentationButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
         presentationButton.setData(extraPresentationDescriptor);
         presentationButton.setText(extraPresentationDescriptor.getLabel());
         presentationButton.setImage(DBeaverIcons.getImage(extraPresentationDescriptor.getIcon()));
@@ -800,7 +800,7 @@ public class SQLEditor extends SQLEditorBase implements
             presentationButton.setToolTipText(toolTip);
         }
 
-        presentationSwitchFolder.setSelection(sqlEditorButton);
+        sqlEditorButton.setChecked(true);
 
         // We use single switch handler. It must be provided by presentation itself
         // Presentation switch may require some additional action so we can't just switch visible controls
@@ -1039,10 +1039,14 @@ public class SQLEditor extends SQLEditorBase implements
         item.setData(view);
         // De-select tool item on tab close
         item.addDisposeListener(e -> {
-            if (!viewItem.isDisposed()) viewItem.setChecked(false);
+            if (!viewItem.isDisposed()) {
+                viewItem.setChecked(false);
+                viewItem.redraw();
+            }
             resultTabDisposeListener.widgetDisposed(e);
         });
         resultTabs.setSelection(item);
+        viewItem.redraw();
     }
 
     private VerticalButton getViewToolItem(String commandId) {
@@ -1201,11 +1205,10 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
 
-            if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.MAXIMIZED) {
-                presentationSwitchFolder.setSelection(presentationSwitchFolder.getItems()[1]);
-            } else {
-                presentationSwitchFolder.setSelection(presentationSwitchFolder.getItems()[0]);
-            }
+            boolean isExtra = getExtraPresentationState() == SQLEditorPresentation.ActivationType.MAXIMIZED;
+            presentationSwitchFolder.getItems()[0].setChecked(!isExtra);
+            presentationSwitchFolder.getItems()[1].setChecked(isExtra);
+            presentationSwitchFolder.redraw();
 
             if (sideBarChanged) {
                 sideToolBar.getParent().layout(true, true);
@@ -3117,10 +3120,13 @@ public class SQLEditor extends SQLEditorBase implements
         if (outputItem != null && outputItem != resultTabs.getSelection()) {
             outputItem.setImage(image);
         } else {
+            // TODO: make icon update. Can't call setImage because this will break contract f VerticalButton
+/*
             VerticalButton viewItem = getViewToolItem(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT);
             if (viewItem != null) {
                 viewItem.setImage(image);
             }
+*/
         }
     }
 
