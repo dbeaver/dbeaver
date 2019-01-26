@@ -41,6 +41,7 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
     private final ObjectType implClass;
     private final DBPImage icon;
     private final SQLEditorPresentation.ActivationType activationType;
+    private final String toggleCommandId;
     private final List<SQLPresentationPanelDescriptor> panels = new ArrayList<>();
 
     public SQLPresentationDescriptor(IConfigurationElement config)
@@ -57,6 +58,7 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         } else {
             this.activationType = SQLEditorPresentation.ActivationType.valueOf(activationStr.toUpperCase(Locale.ENGLISH));
         }
+        toggleCommandId = config.getAttribute("toggleCommand");
         for (IConfigurationElement panelConfig : config.getChildren("panel")) {
             // Load functions
             SQLPresentationPanelDescriptor presentationDescriptor = new SQLPresentationPanelDescriptor(panelConfig);
@@ -82,6 +84,10 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
 
     public SQLEditorPresentation.ActivationType getActivationType() {
         return activationType;
+    }
+
+    public String getToggleCommandId() {
+        return toggleCommandId;
     }
 
     public List<SQLPresentationPanelDescriptor> getPanels() {

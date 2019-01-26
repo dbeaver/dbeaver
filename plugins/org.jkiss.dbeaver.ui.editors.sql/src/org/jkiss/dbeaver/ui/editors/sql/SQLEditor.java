@@ -91,6 +91,8 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
+import org.jkiss.dbeaver.ui.controls.VerticalButton;
+import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -105,12 +107,12 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
+import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -197,6 +199,7 @@ public class SQLEditor extends SQLEditorBase implements
     private SQLEditorPresentation extraPresentation;
     private Map<SQLPresentationPanelDescriptor, SQLEditorPresentationPanel> extraPresentationPanels = new HashMap<>();
     private SQLEditorPresentationPanel extraPresentationCurrentPanel;
+    private VerticalFolder presentationSwitchFolder;
 
     private final List<SQLEditorListener> listeners = new ArrayList<>();
 
@@ -215,6 +218,8 @@ public class SQLEditor extends SQLEditorBase implements
     public SQLEditor()
     {
         super();
+
+        this.extraPresentationDescriptor = SQLPresentationRegistry.getInstance().getPresentation(this);
     }
 
     @Override
@@ -669,11 +674,12 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.setHelp(resultsSash, IHelpContextIds.CTX_SQL_EDITOR);
 
         Composite editorContainer;
-        sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 2, 0);
-        createSideBar(sqlEditorPanel);
+        sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 3, 0);
 
-        // divides SQL editor presentations
-        extraPresentationDescriptor = SQLPresentationRegistry.getInstance().getPresentation(this);
+        // Create left vertical toolbar
+        createControlsBar(sqlEditorPanel);
+
+        // Create editor presentations sash
         Composite pPlaceholder = null;
         if (extraPresentationDescriptor != null) {
             presentationSash = UIUtils.createPartDivider(
@@ -692,6 +698,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         super.createPartControl(editorContainer);
         getEditorControlWrapper().setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        // Create right vertical toolbar
+        createPresentationSwitchBar(sqlEditorPanel);
 
         if (pPlaceholder != null) {
             switch (extraPresentationDescriptor.getActivationType()) {
@@ -735,7 +744,7 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.asyncExec(this::onDataSourceChange);
     }
 
-    private void createSideBar(Composite sqlEditorPanel) {
+    private void createControlsBar(Composite sqlEditorPanel) {
         Composite ph = new Composite(sqlEditorPanel, SWT.NONE);
         ph.setLayoutData(new GridData(GridData.FILL_VERTICAL));
         GridLayout layout = new GridLayout(1, false);
@@ -772,6 +781,49 @@ public class SQLEditor extends SQLEditorBase implements
         ToolBar toolBar = sideToolBar.createControl(ph);
         GridData gd = new GridData(GridData.FILL_VERTICAL | GridData.VERTICAL_ALIGN_BEGINNING);
         toolBar.setLayoutData(gd);
+    }
+
+    private void createPresentationSwitchBar(Composite sqlEditorPanel) {
+        if (extraPresentationDescriptor == null) {
+            return;
+        }
+
+        presentationSwitchFolder = new VerticalFolder(sqlEditorPanel, SWT.RIGHT);
+        presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+
+        VerticalButton sqlEditorButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.RADIO);
+        sqlEditorButton.setText(SQLEditorMessages.editors_sql_description);
+        sqlEditorButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+
+        VerticalButton presentationButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.RADIO);
+        presentationButton.setData(extraPresentationDescriptor);
+        presentationButton.setText(extraPresentationDescriptor.getLabel());
+        presentationButton.setImage(DBeaverIcons.getImage(extraPresentationDescriptor.getIcon()));
+        String toolTip = ActionUtils.findCommandDescription(extraPresentationDescriptor.getToggleCommandId(), getSite(), false);
+        if (CommonUtils.isEmpty(toolTip)) {
+            toolTip = extraPresentationDescriptor.getDescription();
+        }
+        if (!CommonUtils.isEmpty(toolTip)) {
+            presentationButton.setToolTipText(toolTip);
+        }
+
+        presentationSwitchFolder.setSelection(sqlEditorButton);
+
+        // We use single switch handler. It must be provided by presentation itself
+        // Presentation switch may require some additional action so we can't just switch visible controls
+        SelectionListener switchListener = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (presentationSwitchFolder.getSelection() == e.item) {
+                    return;
+                }
+                String toggleCommandId = extraPresentationDescriptor.getToggleCommandId();
+                ActionUtils.runCommand(toggleCommandId, getSite());
+            }
+        };
+        sqlEditorButton.addSelectionListener(switchListener);
+        presentationButton.addSelectionListener(switchListener);
+
     }
 
     /**
@@ -1153,6 +1205,13 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             }
+
+            if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.MAXIMIZED) {
+                presentationSwitchFolder.setSelection(presentationSwitchFolder.getItems()[1]);
+            } else {
+                presentationSwitchFolder.setSelection(presentationSwitchFolder.getItems()[0]);
+            }
+
             if (sideBarChanged) {
                 sideToolBar.update(true);
                 sideToolBar.getControl().getParent().layout(true);
