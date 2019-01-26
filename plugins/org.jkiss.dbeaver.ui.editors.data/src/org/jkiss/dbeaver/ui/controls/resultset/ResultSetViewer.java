@@ -139,6 +139,7 @@ public class ResultSetViewer extends Viewer
     private IResultSetFilterManager filterManager;
     @NotNull
     private final IWorkbenchPartSite site;
+    private final Composite mainPanel;
     private final Composite viewerPanel;
     private final IResultSetDecorator decorator;
     @Nullable
@@ -213,7 +214,14 @@ public class ResultSetViewer extends Viewer
         this.defaultBackground = UIStyles.getDefaultTextBackground();
         this.defaultForeground = UIStyles.getDefaultTextForeground();
 
-        this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
+        this.mainPanel = UIUtils.createPlaceholder(parent, 2);
+
+        this.presentationSwitchFolder = new VerticalFolder(mainPanel, SWT.LEFT);
+        this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
+        this.viewerPanel = UIUtils.createPlaceholder(mainPanel, 1);
+        this.viewerPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.viewerPanel.setData(CONTROL_ID, this);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
@@ -227,16 +235,10 @@ public class ResultSetViewer extends Viewer
             }
             this.findReplaceTarget = new DynamicFindReplaceTarget();
 
-            this.viewerSash = UIUtils.createPartDivider(site.getPart(), viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
+            this.viewerSash = UIUtils.createPartDivider(site.getPart(), this.viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            Composite presentationComposite = UIUtils.createPlaceholder(this.viewerSash, 2);
-
-            this.presentationSwitchFolder = new VerticalFolder(presentationComposite, SWT.LEFT);
-            this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-            CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
-            this.presentationPanel = UIUtils.createPlaceholder(presentationComposite, 1);
+            this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
             this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             if (supportsPanels()) {
@@ -590,8 +592,7 @@ public class ResultSetViewer extends Viewer
                     });
                 }
             }
-            statusBar.layout();
-            viewerPanel.layout(true, true);
+            mainPanel.layout(true, true);
         } catch (Exception e) {
             log.debug("Error updating presentation toolbar", e);
         } finally {
@@ -2583,6 +2584,11 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public Composite getControl()
+    {
+        return this.mainPanel;
+    }
+
+    public Composite getViewerPanel()
     {
         return this.viewerPanel;
     }
