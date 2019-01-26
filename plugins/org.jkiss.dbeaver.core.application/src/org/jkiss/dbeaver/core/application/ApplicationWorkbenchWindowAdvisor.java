@@ -227,6 +227,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         log.debug("Finish initialization");
         super.postWindowOpen();
 
+        UIUtils.asyncExec(() -> {
+
+        });
         try {
             ApplicationCSSManager.updateApplicationCSS(Display.getCurrent());
         } catch (Throwable e) {
