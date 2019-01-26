@@ -87,7 +87,7 @@ public class VerticalButton extends Canvas {
                 redraw();
                 if (hit) {
                     Event event = new Event();
-                    event.widget = VerticalButton.this;
+                    event.widget = event.item = VerticalButton.this;
                     runAction(event);
                 }
                 hit = false;
@@ -97,6 +97,7 @@ public class VerticalButton extends Canvas {
             public void keyPressed(KeyEvent e) {
                 if (e.keyCode == '\r' || e.character == ' ') {
                     Event event = new Event();
+                    event.widget = event.item = VerticalButton.this;
                     runAction(event);
                 }
             }
