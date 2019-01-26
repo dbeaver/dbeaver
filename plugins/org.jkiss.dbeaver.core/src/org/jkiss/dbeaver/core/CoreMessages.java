@@ -710,6 +710,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_download_auto_page_download_rate;
 	public static String dialog_driver_download_auto_page_download_failed_msg;
 	// Driver download
+	public static String label_general;
+	public static String use_environment;
 
 	static {
 		// initialize resource bundle

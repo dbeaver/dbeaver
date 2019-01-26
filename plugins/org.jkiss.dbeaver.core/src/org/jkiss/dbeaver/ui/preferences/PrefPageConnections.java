@@ -102,9 +102,9 @@ public class PrefPageConnections extends TargetPrefPage
         }
 
         {
-            Group connGroup = UIUtils.createControlGroup(composite, "General", 2, GridData.FILL_HORIZONTAL, 0);
+            Group connGroup = UIUtils.createControlGroup(composite, CoreMessages.label_general, 2, GridData.FILL_HORIZONTAL, 0);
 
-            connUseEnvVariables = UIUtils.createCheckbox(connGroup, "Use environment variables in connection parameters", null, false, 2);
+            connUseEnvVariables = UIUtils.createCheckbox(connGroup, CoreMessages.use_environment, null, false, 2);
         }
         return composite;
     }
