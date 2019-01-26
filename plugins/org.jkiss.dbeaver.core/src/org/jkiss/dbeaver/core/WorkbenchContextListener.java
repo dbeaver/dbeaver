@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributions;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -82,6 +83,18 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
             }
         });
+        IWorkbenchWindow activeWindow = workbench.getActiveWorkbenchWindow();
+        if (activeWindow != null) {
+            windowActivated(activeWindow);
+            IWorkbenchPage activePage = activeWindow.getActivePage();
+            if (activePage != null) {
+                pageActivated(activePage);
+                IWorkbenchPart activePart = activePage.getActivePart();
+                if (activePart != null) {
+                    partActivated(activePart);
+                }
+            }
+        }
     }
 
     private void listenWindowEvents(IWorkbenchWindow window) {
@@ -188,8 +201,9 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 }
                 activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
             }
-            if (part.getAdapter(ResultSetViewer.class) != null || (
-                part instanceof EntityEditor && ((EntityEditor) part).getDatabaseObject() instanceof DBSDataContainer))
+            if (part.getAdapter(ResultSetViewer.class) != null ||
+                (part instanceof SQLEditor) ||
+                (part instanceof EntityEditor && ((EntityEditor) part).getDatabaseObject() instanceof DBSDataContainer))
             {
                 if (activationResults != null) {
                     contextService.deactivateContext(activationResults);
