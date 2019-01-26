@@ -40,7 +40,6 @@ public class VerticalButton extends Canvas {
     private String text = "";
     private Image image = null;
 
-    private float rotatingAngle;
     private boolean isHover;
 
     private IAction action;
@@ -51,8 +50,6 @@ public class VerticalButton extends Canvas {
 
     public VerticalButton(VerticalFolder parent, int style) {
         super(parent, style | SWT.NO_FOCUS);
-
-        rotatingAngle = (style & SWT.RIGHT) == SWT.RIGHT ? 90 : -90;
 
         parent.addItem(this);
 
@@ -154,8 +151,15 @@ public class VerticalButton extends Canvas {
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
         GC gc = new GC(this);
+        try {
+            return computeSize(gc, wHint, hHint, changed);
+        } finally {
+            gc.dispose();
+        }
+    }
+
+    public Point computeSize(GC gc, int wHint, int hHint, boolean changed) {
         Point textSize = gc.stringExtent(getText());
-        gc.dispose();
 
         Point iconSize = new Point(0, 0);
         if (image != null) {
@@ -177,6 +181,8 @@ public class VerticalButton extends Canvas {
 
     public void paint(PaintEvent e) {
         boolean selected = isSelected();
+        Point size = computeSize(e.gc, -1, -1, false);
+
         if (selected || isHover) {
             Color curBackground = e.gc.getBackground();
 
@@ -185,41 +191,46 @@ public class VerticalButton extends Canvas {
                 RGB buttonHoverRGB = UIUtils.blend(curBackground.getRGB(), new RGB(0, 0, 0), 90);
                 Color buttonHoverColor = UIUtils.getSharedTextColors().getColor(buttonHoverRGB);
                 e.gc.setBackground(buttonHoverColor);
-                e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+                e.gc.fillRectangle(0, 0, size.x, size.y);
             }
             if (selected) {
                 if (!isHover) {
                     RGB selectedBackRGB = UIUtils.blend(curBackground.getRGB(), new RGB(0, 0, 0), 95);
                     Color selectedBackColor = UIUtils.getSharedTextColors().getColor(selectedBackRGB);
                     e.gc.setBackground(selectedBackColor);
-                    e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+                    e.gc.fillRectangle(0, 0, size.x, size.y);
                 }
                 e.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                e.gc.drawRectangle(e.x, e.y, e.width - 1, e.height - 1);
+                e.gc.drawRectangle(0, 0, size.x - 1, size.y - 1);
             }
         }
 
-        int x = e.x;
+        int x = 0;
 
         String text = getText();
         if (!CommonUtils.isEmpty(text)) {
             Transform tr = new Transform(e.display);
 
             e.gc.setAntialias(SWT.ON);
-            tr.translate(0, e.height);
-            tr.rotate(rotatingAngle);
+            if ((getStyle() & SWT.RIGHT) == SWT.RIGHT) {
+                tr.translate(size.x, 0);
+                tr.rotate(90);
+            } else {
+                tr.translate(0, size.y);
+                tr.rotate(-90);
+            }
             e.gc.setTransform(tr);
 
-            x += e.x + VERT_INDENT;
+            x += VERT_INDENT;
         }
 
         if (image != null) {
-            e.gc.drawImage(image, x, e.y + BORDER_MARGIN);
+            e.gc.drawImage(image, x, BORDER_MARGIN);
             x += image.getBounds().width + BORDER_MARGIN;
         }
 
         e.gc.setForeground(UIStyles.getDefaultTextForeground());
-        e.gc.drawString(this.text, x, e.y + BORDER_MARGIN);
+        e.gc.drawString(this.text, x, BORDER_MARGIN);
     }
 
     private boolean isSelected() {
