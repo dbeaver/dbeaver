@@ -177,7 +177,6 @@ public class VerticalButton extends Canvas {
         e.gc.setAntialias(SWT.ON);
         tr.translate(0, e.height);
         tr.rotate(rotatingAngle);
-        tr.invert();
         e.gc.setTransform(tr);
 
         int x = e.x + VERT_INDENT;
