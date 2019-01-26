@@ -21,6 +21,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.services.IServiceLocator;
@@ -51,6 +52,7 @@ public class VerticalButton extends Canvas {
     public VerticalButton(VerticalFolder parent, int style) {
         super(parent, style | SWT.NO_FOCUS);
 
+        setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
         parent.addItem(this);
 
         this.addPaintListener(this::paint);
@@ -185,17 +187,19 @@ public class VerticalButton extends Canvas {
 
         if (selected || isHover) {
             Color curBackground = e.gc.getBackground();
+            boolean isDarkBG = UIUtils.isDark(curBackground.getRGB());
+            RGB blendRGB = isDarkBG ? new RGB(255, 255, 255) : new RGB(0, 0, 0);
 
             // Make bg a bit darker
             if (isHover) {
-                RGB buttonHoverRGB = UIUtils.blend(curBackground.getRGB(), new RGB(0, 0, 0), 90);
+                RGB buttonHoverRGB = UIUtils.blend(curBackground.getRGB(), blendRGB, 90);
                 Color buttonHoverColor = UIUtils.getSharedTextColors().getColor(buttonHoverRGB);
                 e.gc.setBackground(buttonHoverColor);
                 e.gc.fillRectangle(0, 0, size.x, size.y);
             }
             if (selected) {
                 if (!isHover) {
-                    RGB selectedBackRGB = UIUtils.blend(curBackground.getRGB(), new RGB(0, 0, 0), 95);
+                    RGB selectedBackRGB = UIUtils.blend(curBackground.getRGB(), blendRGB, 95);
                     Color selectedBackColor = UIUtils.getSharedTextColors().getColor(selectedBackRGB);
                     e.gc.setBackground(selectedBackColor);
                     e.gc.fillRectangle(0, 0, size.x, size.y);

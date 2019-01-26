@@ -1758,4 +1758,24 @@ public class UIUtils {
         emptyLabel.setLayoutData(gd);
         return emptyLabel;
     }
+
+    //////////////////////////////////////////
+    // From E4 sources
+
+    /**
+     * Returns the grey value in which the given color would be drawn in grey-scale.
+     */
+    public static double greyLevel(RGB rgb) {
+        if (rgb.red == rgb.green && rgb.green == rgb.blue)
+            return rgb.red;
+        return (0.299 * rgb.red + 0.587 * rgb.green + 0.114 * rgb.blue + 0.5);
+    }
+
+    /**
+     * Returns whether the given color is dark or light depending on the colors grey-scale level.
+     */
+    public static boolean isDark(RGB rgb) {
+        return greyLevel(rgb) < 128;
+    }
+
 }
