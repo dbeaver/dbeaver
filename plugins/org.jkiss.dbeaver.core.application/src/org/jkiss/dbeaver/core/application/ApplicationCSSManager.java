@@ -56,7 +56,7 @@ class ApplicationCSSManager {
             for (StyleSheet sheet : sheets) {
                 doc.addStyleSheet(sheet);
             }
-            engine.reapply();
+            //engine.reapply();
         } catch (Exception e) {
             log.error(e);
         }
