@@ -632,7 +632,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
         @Override
         protected void createButtonsForButtonBar(Composite parent) {
-            createButton(parent, IDialogConstants.DETAILS_ID, "", false); //$NON-NLS-1$
+            createButton(parent, IDialogConstants.DETAILS_ID, UIMessages.button_reset_to_defaults, false); //$NON-NLS-1$
             super.createButtonsForButtonBar(parent);
         }
 
