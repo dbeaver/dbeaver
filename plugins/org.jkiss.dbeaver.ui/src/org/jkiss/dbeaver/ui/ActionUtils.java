@@ -28,6 +28,7 @@ import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.commands.ToggleState;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -153,6 +154,23 @@ public class ActionUtils
                 if (commandService != null) {
                     Command command = commandService.getCommand(commandId);
                     return command != null && command.isEnabled();
+                }
+            } catch (Exception e) {
+                log.error("Can't execute command '" + commandId + "'", e);
+            }
+        }
+        return false;
+    }
+
+    public static boolean isCommandChecked(String commandId, IWorkbenchPartSite site)
+    {
+        if (commandId != null && site != null) {
+            try {
+                //Command cmd = new Command();
+                ICommandService commandService = site.getService(ICommandService.class);
+                if (commandService != null) {
+                    Command command = commandService.getCommand(commandId);
+                    return command != null && command.getState(ToggleState.class.getName()) != null;
                 }
             } catch (Exception e) {
                 log.error("Can't execute command '" + commandId + "'", e);

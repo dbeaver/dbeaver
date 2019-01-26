@@ -597,7 +597,12 @@ public class ResultSetViewer extends Viewer
                 recordModeButton = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.CHECK);
                 recordModeButton.setAction(new ToggleModeAction(), true);
 
-                ((GridLayout)presentationSwitchFolder.getLayout()).marginBottom = statusBar.getSize().y;
+                if (filtersPanel != null) {
+                    ((GridLayout) presentationSwitchFolder.getLayout()).marginTop = filtersPanel.getSize().y;
+                }
+                if (statusBar != null) {
+                    ((GridLayout) presentationSwitchFolder.getLayout()).marginBottom = statusBar.getSize().y;
+                }
             }
             mainPanel.layout(true, true);
         } catch (Exception e) {
