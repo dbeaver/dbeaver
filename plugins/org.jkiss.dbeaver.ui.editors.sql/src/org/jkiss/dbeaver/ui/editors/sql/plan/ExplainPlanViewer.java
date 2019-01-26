@@ -105,7 +105,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
             for (SQLPlanViewDescriptor viewDesc : SQLPlanViewRegistry.getInstance().getPlanViewDescriptors()) {
-                VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT);
+                VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT | SWT.RADIO);
                 treeViewButton.setText(viewDesc.getLabel());
                 if (!CommonUtils.isEmpty(viewDesc.getDescription())) {
                     treeViewButton.setToolTipText(viewDesc.getDescription());

@@ -90,8 +90,9 @@
                 description="%presentation.spreadsheet.description"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
-                order="100"
-                type="columns">
+                type="columns"
+                supportsRecordMode="true"
+                order="100">
             <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
         </presentation>
         <presentation
@@ -100,8 +101,9 @@
                 description="%presentation.plaintext.description"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_text.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation"
-                order="200"
-                type="columns">
+                type="columns"
+                supportsRecordMode="true"
+                order="200">
             <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
         </presentation>
     </extension>
