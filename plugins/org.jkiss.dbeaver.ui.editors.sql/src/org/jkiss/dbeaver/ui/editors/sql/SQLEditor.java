@@ -1017,6 +1017,8 @@ public class SQLEditor extends SQLEditorBase implements
         for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() == view) {
                 // Close tab if it is already open
+                viewItem.setChecked(false);
+                viewItem.redraw();
                 item.dispose();
                 return;
             }
