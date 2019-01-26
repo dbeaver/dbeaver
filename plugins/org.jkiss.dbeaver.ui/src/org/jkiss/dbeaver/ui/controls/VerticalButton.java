@@ -96,6 +96,8 @@ public class VerticalButton extends Canvas {
                 }
             }
         });
+
+        this.addDisposeListener(e -> getFolder().removeItem(this));
     }
 
     public VerticalFolder getFolder() {
@@ -173,6 +175,10 @@ public class VerticalButton extends Canvas {
 
     private boolean isSelected() {
         return getFolder().getSelection() == this;
+    }
+
+    public void addSelectionListener(SelectionListener listener) {
+        addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
     }
 
 }
