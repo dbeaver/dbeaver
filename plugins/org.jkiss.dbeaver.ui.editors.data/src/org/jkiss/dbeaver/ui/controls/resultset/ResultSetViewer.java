@@ -80,6 +80,8 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
+import org.jkiss.dbeaver.ui.controls.VerticalButton;
+import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
@@ -146,6 +148,7 @@ public class ResultSetViewer extends Viewer
     private CTabFolder panelFolder;
     private ToolBarManager panelToolBar;
 
+    private final VerticalFolder presentationSwitchFolder;
     private final Composite presentationPanel;
 
     private final List<ToolBarManager> toolbarList = new ArrayList<>();
@@ -159,7 +162,6 @@ public class ResultSetViewer extends Viewer
     private IResultSetPresentation activePresentation;
     private ResultSetPresentationDescriptor activePresentationDescriptor;
     private List<ResultSetPresentationDescriptor> availablePresentations;
-    private ToolBar presentationSwitchToolbar;
     private final List<ResultSetPanelDescriptor> availablePanels = new ArrayList<>();
 
     private final Map<ResultSetPresentationDescriptor, PresentationSettings> presentationSettings = new HashMap<>();
@@ -228,7 +230,13 @@ public class ResultSetViewer extends Viewer
             this.viewerSash = UIUtils.createPartDivider(site.getPart(), viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
+            Composite presentationComposite = UIUtils.createPlaceholder(this.viewerSash, 2);
+
+            this.presentationSwitchFolder = new VerticalFolder(presentationComposite, SWT.LEFT);
+            this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
+            this.presentationPanel = UIUtils.createPlaceholder(presentationComposite, 1);
             this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             if (supportsPanels()) {
@@ -542,7 +550,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         } finally {
-            if (changed && presentationSwitchToolbar != null) {
+            if (changed && presentationSwitchFolder != null) {
                 updatePresentationInToolbar();
             }
         }
@@ -554,21 +562,23 @@ public class ResultSetViewer extends Viewer
         viewerPanel.setRedraw(false);
         try {
             boolean pVisible = activePresentationDescriptor != null;
-            ((RowData) presentationSwitchToolbar.getLayoutData()).exclude = !pVisible;
-            presentationSwitchToolbar.setVisible(pVisible);
+            ((GridData) presentationSwitchFolder.getLayoutData()).exclude = !pVisible;
+            presentationSwitchFolder.setVisible(pVisible);
             if (!pVisible) {
-                presentationSwitchToolbar.setEnabled(false);
+                presentationSwitchFolder.setEnabled(false);
             } else {
-                presentationSwitchToolbar.setEnabled(true);
-                for (ToolItem item : presentationSwitchToolbar.getItems()) item.dispose();
+                presentationSwitchFolder.setEnabled(true);
+                for (VerticalButton item : presentationSwitchFolder.getItems()) {
+                    item.dispose();
+                }
                 for (ResultSetPresentationDescriptor pd : availablePresentations) {
-                    ToolItem item = new ToolItem(presentationSwitchToolbar, SWT.CHECK);
+                    VerticalButton item = new VerticalButton(presentationSwitchFolder, SWT.LEFT);
                     item.setImage(DBeaverIcons.getImage(pd.getIcon()));
                     item.setText(pd.getLabel());
                     item.setToolTipText(pd.getDescription());
                     item.setData(pd);
                     if (pd == activePresentationDescriptor) {
-                        item.setSelection(true);
+                        presentationSwitchFolder.setSelection(item);
                     }
                     item.addSelectionListener(new SelectionAdapter() {
                         @Override
@@ -581,7 +591,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
             statusBar.layout();
-            viewerPanel.layout();
+            viewerPanel.layout(true, true);
         } catch (Exception e) {
             log.debug("Error updating presentation toolbar", e);
         } finally {
@@ -701,9 +711,12 @@ public class ResultSetViewer extends Viewer
             setActivePresentation(instance);
             instance.refreshData(true, false, false);
 
-            if (presentationSwitchToolbar != null) {
-                for (ToolItem item : presentationSwitchToolbar.getItems()) {
-                    item.setSelection(item.getData() == activePresentationDescriptor);
+            if (presentationSwitchFolder != null) {
+                for (VerticalButton item : presentationSwitchFolder.getItems()) {
+                    if (item.getData() == activePresentationDescriptor) {
+                        presentationSwitchFolder.setSelection(item);
+                        break;
+                    }
                 }
             }
 
@@ -950,7 +963,7 @@ public class ResultSetViewer extends Viewer
         CTabItem activePanelTab = panelFolder.getSelection();
 
         if (!show) {
-            viewerSash.setMaximizedControl(presentationPanel);
+            viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
             if (activePanelTab != null && !activePanelTab.getControl().isDisposed() && UIUtils.hasFocus(activePanelTab.getControl())) {
                 // Set focus to presentation
                 activePresentation.getControl().setFocus();
@@ -1219,8 +1232,6 @@ public class ResultSetViewer extends Viewer
 
     private void createStatusBar()
     {
-        UIUtils.createHorizontalLine(viewerPanel);
-
         statusBar = new Composite(viewerPanel, SWT.NONE);
         statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -1295,14 +1306,6 @@ public class ResultSetViewer extends Viewer
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             toolbarList.add(configToolBarManager);
-        }
-
-        {
-            presentationSwitchToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            CSSUtils.setCSSClass(presentationSwitchToolbar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            RowData rd = new RowData();
-            rd.exclude = true;
-            presentationSwitchToolbar.setLayoutData(rd);
         }
 
         {

@@ -21,9 +21,13 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class VerticalFolder extends Canvas {
 
     private boolean isLeft;
+    private List<VerticalButton> items = new ArrayList<>();
     private VerticalButton selectedItem;
 
     public VerticalFolder(Composite parent, int style) {
@@ -34,6 +38,7 @@ public class VerticalFolder extends Canvas {
         GridLayout gl = new GridLayout(1, true);
         gl.horizontalSpacing = 0;
         gl.verticalSpacing = 0;
+        gl.marginHeight = 0;
         gl.marginWidth = 2;
         this.setLayout(gl);
     }
@@ -49,6 +54,7 @@ public class VerticalFolder extends Canvas {
     }
 
     public void addItem(VerticalButton item) {
+        items.add(item);
         item.addListener(SWT.Selection, event -> {
             setSelection((VerticalButton)event.widget);
         });
@@ -69,11 +75,10 @@ public class VerticalFolder extends Canvas {
     }
 
     public VerticalButton[] getItems() {
-        Control[] children = getChildren();
-        VerticalButton[] items = new VerticalButton[children.length];
-        for (int i = 0; i < children.length; i++) {
-            items[i] = (VerticalButton) children[i];
-        }
-        return items;
+        return items.toArray(new VerticalButton[0]);
+    }
+
+    public void removeItem(VerticalButton item) {
+        this.items.remove(item);
     }
 }
