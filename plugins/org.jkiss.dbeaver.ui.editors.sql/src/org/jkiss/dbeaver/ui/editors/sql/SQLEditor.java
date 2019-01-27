@@ -746,6 +746,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         sideToolBar = new VerticalFolder(sqlEditorPanel, SWT.LEFT);
         ((GridLayout)sideToolBar.getLayout()).marginTop = 3;
+        ((GridLayout)sideToolBar.getLayout()).marginBottom = 10;
         ((GridLayout)sideToolBar.getLayout()).verticalSpacing = 3;
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW, false);
@@ -755,8 +756,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         UIUtils.createEmptyLabel(sideToolBar, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, false).setText("Output");
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_LOG, false).setText("Log");
+        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, false);
+        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_SQL_SHOW_LOG, false);
         //sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, CommandContributionItem.STYLE_CHECK));
         //sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_SHOW_LOG, CommandContributionItem.STYLE_CHECK));
 
