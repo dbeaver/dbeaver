@@ -74,7 +74,7 @@ public class ItemListControl extends NodeListControl
 
         this.searcher = new SearcherFilter();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
-        this.disabledCellColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
+        this.disabledCellColor = UIStyles.getDefaultTextBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
         this.normalFont = parent.getFont();
         this.boldFont = UIUtils.makeBoldFont(normalFont);
     }
