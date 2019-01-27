@@ -572,7 +572,7 @@ public class ResultSetViewer extends Viewer
                 presentationSwitchFolder.setEnabled(false);
             } else {
                 presentationSwitchFolder.setEnabled(true);
-                for (VerticalButton item : presentationSwitchFolder.getItems()) {
+                for (Control item : presentationSwitchFolder.getChildren()) {
                     item.dispose();
                 }
                 for (ResultSetPresentationDescriptor pd : availablePresentations) {
