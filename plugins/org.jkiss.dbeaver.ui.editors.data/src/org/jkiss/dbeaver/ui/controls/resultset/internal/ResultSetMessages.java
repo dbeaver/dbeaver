@@ -246,9 +246,20 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_general_label_result_set_cancel_timeout;
     public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
 
-    public static String pref_page_results_group_advanced;
+    public static String pref_page_result_label_editor;
+
+	public static String pref_page_result_label_inline_editor;
+
+	public static String pref_page_result_label_none;
+
+	public static String pref_page_results_group_advanced;
     public static String pref_page_sql_editor_group_misc;
 
+	public static String value_format_selector_label_database_native;
+	public static String value_format_selector_label_display;
+	public static String value_format_selector_label_editable;
+	public static String value_format_selector_label_value;
+    
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);
