@@ -59,7 +59,7 @@ public class ItemListControl extends NodeListControl
 {
     private ISearchExecutor searcher;
     private Color searchHighlightColor;
-    private Color disabledCellColor;
+    //private Color disabledCellColor;
     private Font normalFont;
     private Font boldFont;
 
@@ -74,7 +74,7 @@ public class ItemListControl extends NodeListControl
 
         this.searcher = new SearcherFilter();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
-        this.disabledCellColor = UIStyles.getDefaultTextBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
+        //this.disabledCellColor = UIStyles.getDefaultTextBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
         this.normalFont = parent.getFont();
         this.boldFont = UIUtils.makeBoldFont(normalFont);
     }
@@ -169,7 +169,7 @@ public class ItemListControl extends NodeListControl
 //            objectEditorHandler = null;
 //        }
         UIUtils.dispose(searchHighlightColor);
-        UIUtils.dispose(disabledCellColor);
+        //UIUtils.dispose(disabledCellColor);
         UIUtils.dispose(boldFont);
         super.disposeControl();
     }
@@ -338,7 +338,7 @@ public class ItemListControl extends NodeListControl
                 final Object objectValue = getObjectValue(node);
                 final ObjectPropertyDescriptor prop = objectColumn.getProperty(getObjectValue(node));
                 if (prop != null && !prop.isEditable(objectValue)) {
-                    return disabledCellColor;
+                    return null;//disabledCellColor;
                 }
             }
             return null;
