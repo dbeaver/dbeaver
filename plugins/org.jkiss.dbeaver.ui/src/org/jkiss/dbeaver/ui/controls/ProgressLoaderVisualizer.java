@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -170,7 +171,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
 
                 int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
                 int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
-                e.gc.setForeground(progressPane.getForeground());
+                e.gc.setForeground(UIStyles.getDefaultTextForeground());
                 e.gc.setBackground(progressPane.getBackground());
                 e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
                 e.gc.drawText(status, statusX, statusY, true);
