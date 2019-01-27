@@ -51,12 +51,6 @@ public class DisconnectJob extends AbstractJob
             long startTime = System.currentTimeMillis();
             container.disconnect(monitor);
 
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            if (elapsedTime < 250) {
-                // Pake a pause to trigger progress dialog and status update
-                Thread.sleep(250 - elapsedTime);
-            }
-
             connectStatus = Status.OK_STATUS;
         }
         catch (Throwable ex) {
