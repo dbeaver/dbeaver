@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -221,10 +222,10 @@ public class DataSourceHandler
                             null,
                             result);
                     }
+                    DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
                 }
             });
-            // Run in UI thread to update actions (some Eclipse magic)
-            UIUtils.asyncExec(disconnectJob::schedule);
+            disconnectJob.schedule();
         }
     }
 
