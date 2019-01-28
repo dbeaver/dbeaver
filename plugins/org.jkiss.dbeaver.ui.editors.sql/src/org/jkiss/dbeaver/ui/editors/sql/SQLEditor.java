@@ -212,6 +212,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
     };
+    private VerticalButton switchPresentationSQLButton;
+    private VerticalButton switchPresentationExtraButton;
 
     public SQLEditor()
     {
@@ -785,38 +787,38 @@ public class SQLEditor extends SQLEditorBase implements
         presentationSwitchFolder = new VerticalFolder(sqlEditorPanel, SWT.RIGHT);
         presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-        VerticalButton sqlEditorButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-        sqlEditorButton.setText(SQLEditorMessages.editors_sql_description);
-        sqlEditorButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+        switchPresentationSQLButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
+        switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_description);
+        switchPresentationSQLButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
 
-        VerticalButton presentationButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
-        presentationButton.setData(extraPresentationDescriptor);
-        presentationButton.setText(extraPresentationDescriptor.getLabel());
-        presentationButton.setImage(DBeaverIcons.getImage(extraPresentationDescriptor.getIcon()));
+        switchPresentationExtraButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
+        switchPresentationExtraButton.setData(extraPresentationDescriptor);
+        switchPresentationExtraButton.setText(extraPresentationDescriptor.getLabel());
+        switchPresentationExtraButton.setImage(DBeaverIcons.getImage(extraPresentationDescriptor.getIcon()));
         String toolTip = ActionUtils.findCommandDescription(extraPresentationDescriptor.getToggleCommandId(), getSite(), false);
         if (CommonUtils.isEmpty(toolTip)) {
             toolTip = extraPresentationDescriptor.getDescription();
         }
         if (!CommonUtils.isEmpty(toolTip)) {
-            presentationButton.setToolTipText(toolTip);
+            switchPresentationExtraButton.setToolTipText(toolTip);
         }
 
-        sqlEditorButton.setChecked(true);
+        switchPresentationSQLButton.setChecked(true);
 
         // We use single switch handler. It must be provided by presentation itself
         // Presentation switch may require some additional action so we can't just switch visible controls
         SelectionListener switchListener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (presentationSwitchFolder.getSelection() == e.item) {
+                if (((VerticalButton)e.item).isChecked() || presentationSwitchFolder.getSelection() == e.item) {
                     return;
                 }
                 String toggleCommandId = extraPresentationDescriptor.getToggleCommandId();
                 ActionUtils.runCommand(toggleCommandId, getSite());
             }
         };
-        sqlEditorButton.addSelectionListener(switchListener);
-        presentationButton.addSelectionListener(switchListener);
+        switchPresentationSQLButton.addSelectionListener(switchListener);
+        switchPresentationExtraButton.addSelectionListener(switchListener);
 
     }
 
@@ -1177,8 +1179,8 @@ public class SQLEditor extends SQLEditorBase implements
             if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.HIDDEN) {
                 // Remove all presentation panel toggles
                 for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
-                    for (VerticalButton vb : sideToolBar.getItems()) {
-                        if (vb.getData() instanceof SQLPresentationPanelDescriptor) {
+                    for (Control vb : presentationSwitchFolder.getChildren()) {
+                        if (vb instanceof Label || vb.getData() instanceof SQLPresentationPanelDescriptor) {
                             vb.dispose();
                             sideBarChanged = true;
                         }
@@ -1193,22 +1195,24 @@ public class SQLEditor extends SQLEditorBase implements
                 extraPresentationCurrentPanel = null;
             } else {
                 // Check and add presentation panel toggles
+                UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
                 for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
                     sideBarChanged = true;
                     PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
-                    VerticalButton panelButton = new VerticalButton(sideToolBar, SWT.LEFT);
-                    panelButton.setAction(toggleAction, false);
+                    VerticalButton panelButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT);
+                    panelButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_END));
+                    panelButton.setAction(toggleAction, true);
                     panelButton.setData(panelDescriptor);
                     if (panelDescriptor.isAutoActivate()) {
-                        panelButton.setChecked(true);
+                        //panelButton.setChecked(true);
                         toggleAction.run();
                     }
                 }
             }
 
             boolean isExtra = getExtraPresentationState() == SQLEditorPresentation.ActivationType.MAXIMIZED;
-            presentationSwitchFolder.getItems()[0].setChecked(!isExtra);
-            presentationSwitchFolder.getItems()[1].setChecked(isExtra);
+            switchPresentationSQLButton.setChecked(!isExtra);
+            switchPresentationExtraButton.setChecked(isExtra);
             presentationSwitchFolder.redraw();
 
             if (sideBarChanged) {
@@ -1305,6 +1309,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void run() {
+            setChecked(!isChecked());
             SQLEditorPresentationPanel panelInstance = extraPresentationPanels.get(panel);
             if (panelInstance != null && !isChecked()) {
                 // Hide panel
