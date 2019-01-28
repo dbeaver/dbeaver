@@ -283,6 +283,10 @@ public class VerticalButton extends Canvas {
         }
     }
 
+    public boolean isChecked() {
+        return checked;
+    }
+
     public void setChecked(boolean selection) {
         this.checked = selection;
     }
