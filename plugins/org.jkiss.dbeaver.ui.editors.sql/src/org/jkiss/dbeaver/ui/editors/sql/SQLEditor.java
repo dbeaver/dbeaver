@@ -1197,7 +1197,7 @@ public class SQLEditor extends SQLEditorBase implements
                     sideBarChanged = true;
                     PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
                     VerticalButton panelButton = new VerticalButton(sideToolBar, SWT.LEFT);
-                    panelButton.setAction(toggleAction, true);
+                    panelButton.setAction(toggleAction, false);
                     panelButton.setData(panelDescriptor);
                     if (panelDescriptor.isAutoActivate()) {
                         panelButton.setChecked(true);
