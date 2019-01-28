@@ -138,9 +138,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters, ResultSetMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
             gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering, ResultSetMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
             gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, ResultSetMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
-            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_label_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
-            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_label_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
-            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_label_inline_editor, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
+            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_none, Spreadsheet.DoubleClickBehavior.NONE.ordinal());
+            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_editor, Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
+            gridDoubleClickBehavior.add(ResultSetMessages.pref_page_result_selector_inline_editor, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
         }
 
         {
