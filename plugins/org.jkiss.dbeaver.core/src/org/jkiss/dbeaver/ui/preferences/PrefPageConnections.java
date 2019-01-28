@@ -92,19 +92,19 @@ public class PrefPageConnections extends TargetPrefPage
                     updateClientAppEnablement();
                 }
             });
-            clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, CoreMessages.pref_page_database_label_client_application_name, "");
+            clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, CoreMessages.pref_page_database_label_client_application_name, ""); //$NON-NLS-1$
 
             UIUtils.installContentProposal(
                 clientApplicationNameText,
                 new TextContentAdapter(),
                 new SimpleContentProposalProvider(DataSourceDescriptor.CONNECT_PATTERNS));
-            UIUtils.setContentProposalToolTip(clientApplicationNameText, "Client application name variables", DataSourceDescriptor.CONNECT_PATTERNS);
+            UIUtils.setContentProposalToolTip(clientApplicationNameText, "Client application name variables", DataSourceDescriptor.CONNECT_PATTERNS); //$NON-NLS-1$
         }
 
         {
-            Group connGroup = UIUtils.createControlGroup(composite, "General", 2, GridData.FILL_HORIZONTAL, 0);
+            Group connGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_general, 2, GridData.FILL_HORIZONTAL, 0);
 
-            connUseEnvVariables = UIUtils.createCheckbox(connGroup, "Use environment variables in connection parameters", null, false, 2);
+            connUseEnvVariables = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_connection_label_use_environment, null, false, 2);
         }
         return composite;
     }
