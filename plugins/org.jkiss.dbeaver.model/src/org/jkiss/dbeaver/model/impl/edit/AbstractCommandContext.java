@@ -464,7 +464,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     DBECommandListener[] getListeners()
     {
         synchronized (listeners) {
-            return listeners.toArray(new DBECommandListener[listeners.size()]);
+            return listeners.toArray(new DBECommandListener[0]);
         }
     }
 

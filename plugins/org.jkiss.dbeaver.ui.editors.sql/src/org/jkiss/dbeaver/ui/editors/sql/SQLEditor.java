@@ -2169,7 +2169,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 items.add(new ActionContributionItem(action));
             }
-            return items.toArray(new IContributionItem[items.size()]);
+            return items.toArray(new IContributionItem[0]);
         }
     }
 

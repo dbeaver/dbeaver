@@ -49,8 +49,8 @@ public class ClipboardData
 
     public void pushToClipboard(Display display) {
         final int size = formats.size();
-        final Transfer[] transfers = formats.keySet().toArray(new Transfer[size]);
-        final Object[] objects = formats.values().toArray(new Object[size]);
+        final Transfer[] transfers = formats.keySet().toArray(new Transfer[0]);
+        final Object[] objects = formats.values().toArray(new Object[0]);
 
         Clipboard clipboard = new Clipboard(display);
         try {

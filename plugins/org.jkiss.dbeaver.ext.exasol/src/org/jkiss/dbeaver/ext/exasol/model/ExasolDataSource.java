@@ -370,7 +370,7 @@ public class ExasolDataSource extends JDBCDataSource
                 positions.add(pos);
             }
             if (!positions.isEmpty()) {
-                return positions.toArray(new ErrorPosition[positions.size()]);
+                return positions.toArray(new ErrorPosition[0]);
             }
         }
         return null;

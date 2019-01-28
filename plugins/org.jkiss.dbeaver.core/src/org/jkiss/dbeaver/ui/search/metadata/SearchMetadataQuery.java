@@ -107,7 +107,7 @@ public class SearchMetadataQuery implements ISearchQuery {
             Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
                 localMonitor,
                 params.getParentObject(),
-                objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
+                objectTypes.toArray(new DBSObjectType[0]),
                 objectNameMask,
                 params.isCaseSensitive(),
                 true,

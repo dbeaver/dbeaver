@@ -717,7 +717,7 @@ public class OracleDataSource extends JDBCDataSource
             }
 
             if (!positions.isEmpty()) {
-                return positions.toArray(new ErrorPosition[positions.size()]);
+                return positions.toArray(new ErrorPosition[0]);
             }
         }
         if (error.getCause() != null) {

@@ -208,7 +208,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                     if (tmpList.isEmpty()) {
                         this.childNodes = EMPTY_NODES;
                     } else {
-                        this.childNodes = tmpList.toArray(new DBNDatabaseNode[tmpList.size()]);
+                        this.childNodes = tmpList.toArray(new DBNDatabaseNode[0]);
                     }
                     this.afterChildRead();
                 }
@@ -708,7 +708,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         List<DBNDatabaseNode> newChildren = new ArrayList<>();
         loadChildren(monitor, getMeta(), oldChildren, newChildren, source, reflect);
         synchronized (this) {
-            childNodes = newChildren.toArray(new DBNDatabaseNode[newChildren.size()]);
+            childNodes = newChildren.toArray(new DBNDatabaseNode[0]);
         }
     }
 

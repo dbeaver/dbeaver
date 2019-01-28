@@ -234,7 +234,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
         if (!actions.isEmpty()) {
             sql.append("\n\n");
-            sql.append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false));
+            sql.append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
         }
 
         return sql.toString();

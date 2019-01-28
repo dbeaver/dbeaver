@@ -154,7 +154,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 childNodes.add(dataSource);
             }
             sortNodes(childNodes);
-            this.children = childNodes.toArray(new DBNNode[childNodes.size()]);
+            this.children = childNodes.toArray(new DBNNode[0]);
         }
         return children;
     }

@@ -76,7 +76,7 @@ public class LinkFileHandler extends CreateLinkHandler {
             Path filePath = Paths.get(filterPath, fileName);
             paths.add(filePath);
         }
-        return (Path[]) paths.toArray(new Path[paths.size()]);
+        return (Path[]) paths.toArray(new Path[0]);
     }
 
     @Override

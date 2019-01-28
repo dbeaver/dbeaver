@@ -150,7 +150,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
         if (variables.isEmpty()) {
             return NO_VARIABLES;
         }
-        return variables.toArray(new IVariable[variables.size()]);
+        return variables.toArray(new IVariable[0]);
     }
 
     protected void invalidateVariables() {

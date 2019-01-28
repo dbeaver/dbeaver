@@ -257,7 +257,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             }
         }
 
-        IAggregateFunction[] funcs = funcMap.keySet().toArray(new IAggregateFunction[funcMap.size()]);
+        IAggregateFunction[] funcs = funcMap.keySet().toArray(new IAggregateFunction[0]);
         int[] funcCount = new int[funcs.length];
         for (Object element : values) {
             for (int i = 0; i < funcs.length; i++) {

@@ -520,7 +520,7 @@ public class ResultSetModel {
                 if (topAttr.getDataKind() == DBPDataKind.DOCUMENT || topAttr.getDataKind() == DBPDataKind.STRUCT) {
                     List<DBDAttributeBinding> nested = topAttr.getNestedBindings();
                     if (nested != null && !nested.isEmpty()) {
-                        attributes = nested.toArray(new DBDAttributeBinding[nested.size()]);
+                        attributes = nested.toArray(new DBDAttributeBinding[0]);
                         fillVisibleAttributes();
                     }
                 }

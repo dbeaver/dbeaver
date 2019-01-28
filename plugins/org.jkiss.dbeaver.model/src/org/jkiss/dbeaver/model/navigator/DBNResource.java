@@ -167,7 +167,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
             return EMPTY_NODES;
         } else {
             filterChildren(result);
-            final DBNNode[] childNodes = result.toArray(new DBNNode[result.size()]);
+            final DBNNode[] childNodes = result.toArray(new DBNNode[0]);
             sortChildren(childNodes);
             return childNodes;
         }

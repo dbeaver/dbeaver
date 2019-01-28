@@ -120,7 +120,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public IThread[] getThreads() throws DebugException {
-        return threads.toArray(new IThread[threads.size()]);
+        return threads.toArray(new IThread[0]);
     }
 
     @Override

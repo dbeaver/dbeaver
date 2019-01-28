@@ -78,7 +78,7 @@ public abstract class AbstractSearchResult<OBJECT_TYPE> implements ISearchResult
     public void fireChange(SearchResultEvent e) {
         ISearchResultListener[] copiedListeners;
         synchronized (listeners) {
-            copiedListeners = listeners.toArray(new ISearchResultListener[listeners.size()]);
+            copiedListeners = listeners.toArray(new ISearchResultListener[0]);
         }
         for (ISearchResultListener listener : copiedListeners) {
             listener.searchResultChanged(e);

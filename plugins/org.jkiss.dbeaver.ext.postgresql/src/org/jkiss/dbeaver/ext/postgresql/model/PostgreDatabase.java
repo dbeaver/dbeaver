@@ -946,7 +946,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         {
             try {
                 Collection<PostgreTablespace> tablespaces = object.getTablespaces(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[tablespaces.size()]);
+                return tablespaces.toArray(new Object[0]);
             } catch (DBException e) {
                 log.error(e);
                 return new Object[0];
@@ -966,7 +966,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         {
             try {
                 Collection<PostgreRole> roles = object.getAuthIds(new VoidProgressMonitor());
-                return roles.toArray(new Object[roles.size()]);
+                return roles.toArray(new Object[0]);
             } catch (DBException e) {
                 log.error(e);
                 return new Object[0];
@@ -986,7 +986,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         {
             try {
                 Collection<PostgreCharset> tablespaces = object.getEncodings(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[tablespaces.size()]);
+                return tablespaces.toArray(new Object[0]);
             } catch (DBException e) {
                 log.error(e);
                 return new Object[0];

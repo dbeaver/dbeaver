@@ -126,7 +126,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                     clipboardData.addTransfer(DatabaseObjectTransfer.getInstance(), selectedObjects);
                 }
                 if (!selectedFiles.isEmpty() && !clipboardData.hasTransfer(FileTransfer.getInstance())) {
-                    clipboardData.addTransfer(FileTransfer.getInstance(), selectedFiles.toArray(new String[selectedFiles.size()]));
+                    clipboardData.addTransfer(FileTransfer.getInstance(), selectedFiles.toArray(new String[0]));
                 }
             }
         }

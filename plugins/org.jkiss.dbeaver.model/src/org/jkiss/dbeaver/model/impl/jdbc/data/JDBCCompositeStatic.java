@@ -60,7 +60,7 @@ public class JDBCCompositeStatic extends JDBCComposite {
                 if (attrValues != null && entityAttributes.size() != valueCount) {
                     log.warn("Number of entity attributes (" + entityAttributes.size() + ") differs from real values (" + valueCount + ")");
                 }
-                attributes = entityAttributes.toArray(new DBSEntityAttribute[entityAttributes.size()]);
+                attributes = entityAttributes.toArray(new DBSEntityAttribute[0]);
                 values = new Object[attributes.length];
                 for (int i = 0; i < attributes.length; i++) {
                     DBSEntityAttribute attr = attributes[i];

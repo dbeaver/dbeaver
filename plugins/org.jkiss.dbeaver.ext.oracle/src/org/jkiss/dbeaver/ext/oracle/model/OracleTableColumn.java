@@ -225,7 +225,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
                 dataTypes.add(column.getDataType());
             }
             Collections.sort(dataTypes, DBUtils.nameComparator());
-            return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
+            return dataTypes.toArray(new DBSDataType[0]);
         }
     }
 

@@ -921,7 +921,7 @@ public final class SQLUtils {
                 name = name.substring(nameSeparator.length()).trim();
             }
         }
-        return nameList.toArray(new String[nameList.size()]);
+        return nameList.toArray(new String[0]);
     }
 
     public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {

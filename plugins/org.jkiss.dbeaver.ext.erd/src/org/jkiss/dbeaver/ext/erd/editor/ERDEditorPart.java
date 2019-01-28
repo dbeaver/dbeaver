@@ -1057,7 +1057,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         for (String error : errorMessages) {
                             messageStatuses.add(new Status(Status.ERROR, DBeaverCore.getCorePluginID(), error));
                         }
-                        MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[messageStatuses.size()]), null, null);
+                        MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[0]), null, null);
 
                         DBWorkbench.getPlatformUI().showError(
                                 "Diagram loading errors",

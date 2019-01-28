@@ -274,7 +274,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
                 log.error(e);
             }
             tablespaces.sort(DBUtils.<OracleTablespace>nameComparator());
-            return tablespaces.toArray(new OracleTablespace[tablespaces.size()]);
+            return tablespaces.toArray(new OracleTablespace[0]);
         }
     }
 }

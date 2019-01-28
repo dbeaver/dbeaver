@@ -495,7 +495,7 @@ public class DBNModel implements IResourceChangeListener {
             } else {
                 this.listeners.add(listener);
             }
-            this.listenersCopy = this.listeners.toArray(new INavigatorListener[this.listeners.size()]);
+            this.listenersCopy = this.listeners.toArray(new INavigatorListener[0]);
         }
     }
 
@@ -505,7 +505,7 @@ public class DBNModel implements IResourceChangeListener {
             if (!this.listeners.remove(listener)) {
                 log.warn("Listener " + listener + " wasn't registered in model");
             }
-            this.listenersCopy = this.listeners.toArray(new INavigatorListener[this.listeners.size()]);
+            this.listenersCopy = this.listeners.toArray(new INavigatorListener[0]);
         }
     }
 
@@ -633,7 +633,7 @@ public class DBNModel implements IResourceChangeListener {
                     if (eventCache.isEmpty()) {
                         continue;
                     }
-                    realEvents = eventCache.toArray(new DBNEvent[eventCache.size()]);
+                    realEvents = eventCache.toArray(new DBNEvent[0]);
                     eventCache.clear();
                 }
 

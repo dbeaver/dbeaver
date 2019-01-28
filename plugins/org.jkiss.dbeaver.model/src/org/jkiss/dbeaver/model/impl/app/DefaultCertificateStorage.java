@@ -126,7 +126,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             }
             if (keyData != null) {
                 PrivateKey privateKey = loadPrivateKeyFromPEM(keyData);
-               keyStore.setKeyEntry("key-cert", privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[certChain.size()]));
+               keyStore.setKeyEntry("key-cert", privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[0]));
             }
 
             saveKeyStore(dataSource, certType, keyStore);

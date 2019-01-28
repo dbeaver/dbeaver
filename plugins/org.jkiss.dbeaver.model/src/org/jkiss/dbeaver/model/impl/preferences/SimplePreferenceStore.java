@@ -267,7 +267,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
 
     public String[] preferenceNames()
     {
-        return properties.keySet().toArray(new String[properties.size()]);
+        return properties.keySet().toArray(new String[0]);
     }
 
     @Override

@@ -258,7 +258,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         {
             try {
                 Collection<PostgreTablespace> tablespaces = object.getDatabase().getTablespaces(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[tablespaces.size()]);
+                return tablespaces.toArray(new Object[0]);
             } catch (DBException e) {
                 log.error(e);
                 return new Object[0];

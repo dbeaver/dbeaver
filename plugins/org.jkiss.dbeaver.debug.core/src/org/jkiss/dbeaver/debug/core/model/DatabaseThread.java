@@ -153,7 +153,7 @@ public class DatabaseThread extends DatabaseDebugElement implements IThread {
                 extractStackFrames();
             }
         }
-        return frames.toArray(new IStackFrame[frames.size()]);
+        return frames.toArray(new IStackFrame[0]);
     }
 
     protected void extractStackFrames() throws DebugException {

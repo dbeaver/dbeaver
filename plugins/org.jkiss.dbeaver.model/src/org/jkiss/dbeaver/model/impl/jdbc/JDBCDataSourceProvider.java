@@ -67,7 +67,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
         if (props == null) {
             return null;
         }
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+        return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
     private Collection<DBPPropertyDescriptor> readDriverProperties(

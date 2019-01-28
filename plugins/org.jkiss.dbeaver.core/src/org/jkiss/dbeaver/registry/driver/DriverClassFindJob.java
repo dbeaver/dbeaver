@@ -73,7 +73,7 @@ public class DriverClassFindJob implements IRunnableWithProgress {
                 }
             }
         }
-        ClassLoader findCL = new URLClassLoader(libURLs.toArray(new URL[libURLs.size()]));
+        ClassLoader findCL = new URLClassLoader(libURLs.toArray(new URL[0]));
 
         for (File libFile : libFiles) {
             if (monitor.isCanceled()) {

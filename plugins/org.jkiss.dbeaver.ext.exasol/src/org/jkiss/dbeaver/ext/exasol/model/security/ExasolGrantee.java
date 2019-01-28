@@ -227,7 +227,7 @@ public abstract class ExasolGrantee
 			ExasolDataSource dataSource = object.getDataSource();
 			try {
 				Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
-				return priorityGroups.toArray(new Object[priorityGroups.size()]);
+				return priorityGroups.toArray(new Object[0]);
 			} catch (DBException e) {
 				log.error(e);
 				return new Object[0];

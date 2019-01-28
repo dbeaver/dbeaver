@@ -135,7 +135,7 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
         if (subPages.isEmpty()) {
             return null;
         }
-        return subPages.toArray(new WizardPrefPage[subPages.size()]);
+        return subPages.toArray(new WizardPrefPage[0]);
     }
 
     public void addSubPage(IPreferencePage page, String title, String description) {

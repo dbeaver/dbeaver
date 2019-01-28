@@ -308,7 +308,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 result = structureAssistant.findObjectsByMask(
                     monitor,
                     container,
-                    typesToSearch.toArray(new DBSObjectType[typesToSearch.size()]),
+                    typesToSearch.toArray(new DBSObjectType[0]),
                     nameMask,
                     false,
                     true,

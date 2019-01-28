@@ -354,7 +354,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             {
                 DBPProjectListener[] listeners;
                 synchronized (projectListeners) {
-                    listeners = projectListeners.toArray(new DBPProjectListener[projectListeners.size()]);
+                    listeners = projectListeners.toArray(new DBPProjectListener[0]);
                 }
                 for (DBPProjectListener listener : listeners) {
                     listener.handleActiveProjectChange(oldValue, activeProject);

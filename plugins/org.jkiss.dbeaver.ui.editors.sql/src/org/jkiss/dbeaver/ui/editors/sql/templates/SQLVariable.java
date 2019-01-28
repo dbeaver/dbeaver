@@ -138,7 +138,7 @@ public class SQLVariable extends TemplateVariable {
 
     public Object[][] getAllChoices()
     {
-        return fValueMap.values().toArray(new Object[fValueMap.size()][]);
+        return fValueMap.values().toArray(new Object[0][]);
     }
 
     public TemplateVariableResolver getResolver()

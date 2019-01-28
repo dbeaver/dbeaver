@@ -250,7 +250,7 @@ public class DBPConnectionConfiguration implements DBPObject
     public DBPConnectionEventType[] getDeclaredEvents()
     {
         Set<DBPConnectionEventType> eventTypes = events.keySet();
-        return eventTypes.toArray(new DBPConnectionEventType[eventTypes.size()]);
+        return eventTypes.toArray(new DBPConnectionEventType[0]);
     }
 
     ////////////////////////////////////////////////////

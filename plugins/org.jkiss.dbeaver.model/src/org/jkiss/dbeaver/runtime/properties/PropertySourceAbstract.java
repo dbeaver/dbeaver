@@ -105,7 +105,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     public DBPPropertyDescriptor[] getProperties() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+        return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
     public DBPPropertyDescriptor getProperty(String id) {
@@ -135,7 +135,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     @Override
     public DBPPropertyDescriptor[] getPropertyDescriptors2() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+        return props.toArray(new DBPPropertyDescriptor[0]);
     }
 /*
     public IPropertyDescriptor getPropertyDescriptor(final Object id)

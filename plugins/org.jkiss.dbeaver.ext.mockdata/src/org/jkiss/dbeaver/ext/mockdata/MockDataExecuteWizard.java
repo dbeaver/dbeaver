@@ -177,7 +177,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 if (JUST_GENERATE_SCRIPT) {
                     String scriptText = SQLUtils.generateScript(
                             dataManipulator.getDataSource(),
-                            persistActions.toArray(new DBEPersistAction[persistActions.size()]),
+                            persistActions.toArray(new DBEPersistAction[0]),
                             false);
                     logPage.appendLog("    The insert data script:\n " + scriptText + "\n\n");
                 }
@@ -350,7 +350,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 if (JUST_GENERATE_SCRIPT) {
                     String scriptText = SQLUtils.generateScript(
                             dataManipulator.getDataSource(),
-                            persistActions.toArray(new DBEPersistAction[persistActions.size()]),
+                            persistActions.toArray(new DBEPersistAction[0]),
                             false);
                     logPage.appendLog("    The insert data script:\n " + scriptText + "\n\n");
                 }

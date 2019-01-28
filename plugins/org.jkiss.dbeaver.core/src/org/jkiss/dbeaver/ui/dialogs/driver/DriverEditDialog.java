@@ -431,7 +431,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
                     if (classListCombo != null && !classListCombo.isDisposed()) {
                         List<String> classNames = classFinder.getDriverClassNames();
-                        classListCombo.setItems(classNames.toArray(new String[classNames.size()]));
+                        classListCombo.setItems(classNames.toArray(new String[0]));
                         classListCombo.setListVisible(true);
                     }
 
@@ -899,7 +899,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 if (CommonUtils.isEmpty(files)) {
                     return null;
                 }
-                return files.toArray(new Object[files.size()]);
+                return files.toArray(new Object[0]);
             }
             return new Object[0];
         }

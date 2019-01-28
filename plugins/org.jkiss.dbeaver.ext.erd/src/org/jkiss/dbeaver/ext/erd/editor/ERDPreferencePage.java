@@ -198,7 +198,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 enabledStyles.add((ERDViewStyle) check.getData());
             }
         }
-        ERDViewStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDViewStyle[enabledStyles.size()]));
+        ERDViewStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDViewStyle[0]));
 
         PrefUtils.savePreferenceStore(store);
 

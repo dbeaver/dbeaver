@@ -124,7 +124,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
         extensions.add("*");
 
-        File file = DialogUtils.openFile(getShell(), extensions.toArray(new String[extensions.size()]));
+        File file = DialogUtils.openFile(getShell(), extensions.toArray(new String[0]));
         if (file != null) {
             pipe.setProducer(new StreamTransferProducer(file));
             return true;

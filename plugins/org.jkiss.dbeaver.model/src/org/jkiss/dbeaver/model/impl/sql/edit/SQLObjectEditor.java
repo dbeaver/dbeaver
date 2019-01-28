@@ -262,7 +262,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectModifyActions(monitor, actions, this, options);
             addObjectExtraActions(monitor, actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override
@@ -294,7 +294,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(monitor, actions, this, options);
             addObjectExtraActions(monitor, actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override
@@ -332,7 +332,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectDeleteActions(actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override
@@ -372,7 +372,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectRenameActions(monitor, actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override
@@ -443,7 +443,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectReorderActions(monitor, actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override

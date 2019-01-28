@@ -197,7 +197,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                         CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
                             mappingViewer,
                             mappingViewer.getTable(),
-                            items.toArray(new String[items.size()]),
+                            items.toArray(new String[0]),
                             SWT.DROP_DOWN);
                         updateStatus(Status.OK_STATUS);
                         return editor;
@@ -282,7 +282,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     }
                     types.add(attrMapping.getTargetType(dataSource));
 
-                    return new CustomComboBoxCellEditor(mappingViewer, mappingViewer.getTable(), types.toArray(new String[types.size()]), SWT.BORDER);
+                    return new CustomComboBoxCellEditor(mappingViewer, mappingViewer.getTable(), types.toArray(new String[0]), SWT.BORDER);
                 }
                 @Override
                 protected boolean canEdit(Object element)

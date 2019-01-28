@@ -253,7 +253,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         addExtraDDLCommands(monitor, table, options, command);
         Collections.addAll(actions, command.getPersistActions(monitor, options));
 
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[0]);
     }
 
     protected void addExtraDDLCommands(DBRProgressMonitor monitor, OBJECT_TYPE table, Map<String, Object> options, StructCreateCommand createCommand) {

@@ -278,7 +278,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                     if (!sqlScript.isEmpty()) {
                         String scriptText = SQLUtils.generateScript(
                             rsv.getDataContainer() == null ? null : rsv.getDataContainer().getDataSource(),
-                            sqlScript.toArray(new DBEPersistAction[sqlScript.size()]),
+                            sqlScript.toArray(new DBEPersistAction[0]),
                             false);
                         scriptText =
                             SQLUtils.generateCommentLine(

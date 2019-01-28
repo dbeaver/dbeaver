@@ -482,7 +482,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (part instanceof IDatabaseEditor) {
             makeDatabaseEditorTabs((IDatabaseEditor)part, tabList);
         }
-        return tabList.toArray(new TabbedFolderInfo[tabList.size()]);
+        return tabList.toArray(new TabbedFolderInfo[0]);
     }
 
     private void makeStandardPropertiesTabs(List<TabbedFolderInfo> tabList)

@@ -96,7 +96,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         if (hasSet) {
             actions.add(new SQLDatabasePersistAction(MySQLMessages.edit_command_change_user_action_update_user_record, script.toString()));
         }
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[0]);
     }
 
     private boolean generateUpdateScript(StringBuilder script) {

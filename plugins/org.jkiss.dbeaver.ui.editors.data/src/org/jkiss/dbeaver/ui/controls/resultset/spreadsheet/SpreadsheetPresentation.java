@@ -632,7 +632,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         break;
                     case rowDelimiter:
                         curLine.add(cellValue.toString());
-                        lines.add(curLine.toArray(new String[curLine.size()]));
+                        lines.add(curLine.toArray(new String[0]));
                         curLine.clear();
                         cellValue.setLength(0);
                         break;
@@ -676,10 +676,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             curLine.add(cellValue.toString());
         }
         if (!curLine.isEmpty()) {
-            lines.add(curLine.toArray(new String[curLine.size()]));
+            lines.add(curLine.toArray(new String[0]));
         }
 
-        return lines.toArray(new String[lines.size()][]);
+        return lines.toArray(new String[0][]);
     }
 
     @Override
@@ -1395,7 +1395,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (!recordMode) {
                     return model.getAllRows().toArray();
                 } else {
-                    DBDAttributeBinding[] columns = model.getVisibleAttributes().toArray(new DBDAttributeBinding[model.getVisibleAttributeCount()]);
+                    DBDAttributeBinding[] columns = model.getVisibleAttributes().toArray(new DBDAttributeBinding[0]);
                     if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
                         Arrays.sort(columns, (o1, o2) -> o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.UP ? 1 : -1));
                     }

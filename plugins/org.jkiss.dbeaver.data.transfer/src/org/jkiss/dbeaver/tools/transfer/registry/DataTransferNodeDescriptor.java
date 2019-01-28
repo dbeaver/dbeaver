@@ -160,7 +160,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
                 log.error("Can't create wizard page", e);
             }
         }
-        return pages.toArray(new IWizardPage[pages.size()]);
+        return pages.toArray(new IWizardPage[0]);
     }
 
     public NodeType getNodeType()

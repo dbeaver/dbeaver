@@ -288,7 +288,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
         for (int i = 0; i < groups.size(); i++) {
             List<TabbedFolderInfo> group = groups.get(i);
             FolderPane folderPane = new FolderPane(compositePane, i >= groups.size() - 1);
-            folderPane.setFolders(group.toArray(new TabbedFolderInfo[group.size()]));
+            folderPane.setFolders(group.toArray(new TabbedFolderInfo[0]));
             folderPanes[i] = folderPane;
         }
 

@@ -115,7 +115,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
             containers.get(0).getRegistry().getProject() :
             DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         checkProjectIsOpen(project);
-        final DBPDataSourceContainer[] containerList = containers.toArray(new DBPDataSourceContainer[containers.size()]);
+        final DBPDataSourceContainer[] containerList = containers.toArray(new DBPDataSourceContainer[0]);
 
         final IFolder rootFolder = SQLEditorUtils.getScriptsFolder(project, true);
         final List<SQLEditorUtils.ResourceInfo> scriptTree = SQLEditorUtils.findScriptTree(rootFolder, containerList.length == 0 ? null : containerList);

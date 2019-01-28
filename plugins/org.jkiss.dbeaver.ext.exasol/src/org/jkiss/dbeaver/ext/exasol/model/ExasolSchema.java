@@ -406,7 +406,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 			ExasolDataSource dataSource = object.getDataSource();
 			try {
 				Collection<ExasolGrantee> grantees = dataSource.getAllGrantees(new VoidProgressMonitor());
-				return grantees.toArray(new Object[grantees.size()]);
+				return grantees.toArray(new Object[0]);
 			} catch (DBException e) {
 				log.error(e);
 				return new  Object[0];

@@ -630,7 +630,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
                     log.debug("Internal error during clearWarnings", e);
                 }
             }
-            return warnings == null ? null : warnings.toArray(new Throwable[warnings.size()]);
+            return warnings == null ? null : warnings.toArray(new Throwable[0]);
         } catch (SQLException e) {
             throw new DBCException(e, getSession().getDataSource());
         }

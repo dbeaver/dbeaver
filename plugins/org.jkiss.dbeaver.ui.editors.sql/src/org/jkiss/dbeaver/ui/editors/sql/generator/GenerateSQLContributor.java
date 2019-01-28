@@ -104,7 +104,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 makeScriptContributions(menu, scriptObjects);
             }
         }
-        return menu.toArray(new IContributionItem[menu.size()]);
+        return menu.toArray(new IContributionItem[0]);
     }
 
     private void makeTableContributions(List<IContributionItem> menu, final List<DBSEntity> entities)

@@ -1605,7 +1605,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 }
             }
 
-            SQLEditorBase.this.occurrenceAnnotations = annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
+            SQLEditorBase.this.occurrenceAnnotations = annotationMap.keySet().toArray(new Annotation[0]);
         }
     }
 

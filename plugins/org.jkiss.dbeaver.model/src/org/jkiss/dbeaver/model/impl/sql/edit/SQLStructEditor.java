@@ -146,7 +146,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             List<DBEPersistAction> actions = new ArrayList<>();
             addStructObjectCreateActions(monitor, actions, this, options);
             addObjectExtraActions(monitor, actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
     }
 

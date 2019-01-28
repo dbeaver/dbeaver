@@ -130,7 +130,7 @@ public abstract class PostgreViewBase extends PostgreTableReal
         StringBuilder ddl = new StringBuilder(source);
         if (!actions.isEmpty()) {
             ddl.append("\n\n").append(SQLUtils.generateScript(
-                getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false));
+                getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
         }
 
         return ddl.toString();

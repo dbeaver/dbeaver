@@ -108,7 +108,7 @@ public class PropertySourceCustom implements DBPPropertySource {
 
     @Override
     public DBPPropertyDescriptor[] getPropertyDescriptors2() {
-        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+        return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
     @Override

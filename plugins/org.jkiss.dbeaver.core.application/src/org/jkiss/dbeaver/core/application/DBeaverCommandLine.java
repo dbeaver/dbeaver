@@ -165,7 +165,7 @@ public class DBeaverCommandLine
                 if (!ArrayUtils.isEmpty(fileArgs)) {
                     Collections.addAll(fileNames, fileArgs);
                 }
-                controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
+                controller.openExternalFiles(fileNames.toArray(new String[0]));
                 exitAfterExecute = true;
             }
         }

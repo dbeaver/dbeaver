@@ -1336,7 +1336,7 @@ public final class DBUtils {
         if (dataKind == DBPDataKind.STRING) {
             operators.add(DBCLogicalOperator.LIKE);
         }
-        return operators.toArray(new DBCLogicalOperator[operators.size()]);
+        return operators.toArray(new DBCLogicalOperator[0]);
     }
 
     public static Object getRawValue(Object value) {

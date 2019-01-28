@@ -145,7 +145,7 @@ public class QMControllerImpl implements QMController {
                 if (method.getReturnType() == Void.TYPE && method.getName().startsWith("handle")) {
                     QMExecutionHandler[] handlersCopy;
                     synchronized (handlers) {
-                        handlersCopy = handlers.toArray(new QMExecutionHandler[handlers.size()]);
+                        handlersCopy = handlers.toArray(new QMExecutionHandler[0]);
                     }
                     for (QMExecutionHandler handler : handlersCopy) {
                         try {

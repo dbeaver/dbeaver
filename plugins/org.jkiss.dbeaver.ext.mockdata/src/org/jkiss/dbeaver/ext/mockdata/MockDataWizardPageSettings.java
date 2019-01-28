@@ -248,7 +248,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(
                                 generatorsTableViewer,
                                 generatorsTableViewer.getTable(),
-                                generators.toArray(new String[generators.size()]),
+                                generators.toArray(new String[0]),
                                 SWT.BORDER | SWT.READ_ONLY);
                         return customComboBoxCellEditor;
                     }
@@ -557,7 +557,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         }
         generatorDescriptionLink.setVisible(false);
         if (!generators.isEmpty()) {
-            generatorCombo.setItems(generators.toArray(new String[generators.size()]));
+            generatorCombo.setItems(generators.toArray(new String[0]));
             MockGeneratorDescriptor generatorDescriptor = mockDataSettings.getGeneratorDescriptor(generatorId);
             if (generatorDescriptor != null) {
                 generatorCombo.setText(generatorDescriptor.getLabel());

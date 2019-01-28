@@ -117,7 +117,7 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
     @Override
     public JDBCExecutionContext[] getAllContexts() {
         synchronized (allContexts) {
-            return allContexts.toArray(new JDBCExecutionContext[allContexts.size()]);
+            return allContexts.toArray(new JDBCExecutionContext[0]);
         }
     }
 

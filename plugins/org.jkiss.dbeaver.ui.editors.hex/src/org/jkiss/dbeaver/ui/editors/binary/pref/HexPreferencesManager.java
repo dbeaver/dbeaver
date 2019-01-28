@@ -234,7 +234,7 @@ public class HexPreferencesManager {
         if (fontsSorted.size() < 1) {
             populateFixedCharWidthFonts();
         } else {
-            listFont.setItems(fontsSorted.keySet().toArray(new String[fontsSorted.keySet().size()]));
+            listFont.setItems(fontsSorted.keySet().toArray(new String[0]));
             refreshWidgets();
         }
 
@@ -340,7 +340,7 @@ public class HexPreferencesManager {
                     heights.add(fontData.getHeight());
                 }
                 if (!listFont.isDisposed())
-                    listFont.setItems(fontsSorted.keySet().toArray(new String[fontsSorted.keySet().size()]));
+                    listFont.setItems(fontsSorted.keySet().toArray(new String[0]));
                 refreshWidgets();
             } else {
                 fontsRejected.add(fontData.getName());

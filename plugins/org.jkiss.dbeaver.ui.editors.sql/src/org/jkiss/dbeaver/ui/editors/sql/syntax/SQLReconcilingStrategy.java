@@ -216,7 +216,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
         if (removedAnnotations != null || !CommonUtils.isEmpty(addedAnnotations)) {
             annotationModel.modifyAnnotations(
-                removedAnnotations == null ? null : removedAnnotations.toArray(new Annotation[removedAnnotations.size()]),
+                removedAnnotations == null ? null : removedAnnotations.toArray(new Annotation[0]),
                 addedAnnotations,
                 null);
         }

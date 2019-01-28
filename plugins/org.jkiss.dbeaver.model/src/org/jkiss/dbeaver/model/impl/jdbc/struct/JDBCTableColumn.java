@@ -221,7 +221,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
                     }
                 }
             }
-            return typeNames.toArray(new String[typeNames.size()]);
+            return typeNames.toArray(new String[0]);
         }
     }
 
