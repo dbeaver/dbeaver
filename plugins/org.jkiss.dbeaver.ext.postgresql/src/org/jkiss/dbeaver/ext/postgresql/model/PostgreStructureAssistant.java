@@ -255,7 +255,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                         log.debug("Constraint's schema '" + schemaId + "' not found");
                         continue;
                     }
-                    objects.add(new AbstractObjectReference(constrName, constrSchema, null, PostgreTableConstraintBase.class, RelationalObjectType.TYPE_TABLE) {
+                    objects.add(new AbstractObjectReference(constrName, constrSchema, null, PostgreTableConstraintBase.class, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             final PostgreTableConstraintBase constraint = PostgreUtils.getObjectById(monitor, constrSchema.constraintCache, constrSchema, constrId);
@@ -300,7 +300,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                         log.debug("Attribute's schema '" + schemaId + "' not found");
                         continue;
                     }
-                    objects.add(new AbstractObjectReference(attributeName, constrSchema, null, PostgreTableBase.class, RelationalObjectType.TYPE_TABLE) {
+                    objects.add(new AbstractObjectReference(attributeName, constrSchema, null, PostgreTableBase.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             final PostgreTableBase table = PostgreUtils.getObjectById(monitor, constrSchema.tableCache, constrSchema, tableId);
