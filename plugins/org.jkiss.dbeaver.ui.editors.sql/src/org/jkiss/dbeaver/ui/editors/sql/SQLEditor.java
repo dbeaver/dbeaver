@@ -620,7 +620,7 @@ public class SQLEditor extends SQLEditorBase implements
                 return required.cast(findReplaceTarget);
             }
             CTabItem activeResultsTab = getActiveResultsTab();
-            if (activeResultsTab != null) {
+            if (activeResultsTab != null && UIUtils.isUIThread()) {
                 Object tabControl = activeResultsTab.getData();
                 if (tabControl instanceof QueryResultsContainer) {
                     tabControl = ((QueryResultsContainer) tabControl).viewer;
@@ -634,7 +634,6 @@ public class SQLEditor extends SQLEditorBase implements
                 if (tabControl instanceof ResultSetViewer && (required == IResultSetController.class || required == ResultSetViewer.class)) {
                     return required.cast(tabControl);
                 }
-
             }
         }
 
