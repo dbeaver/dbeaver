@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +79,26 @@ public class VerticalFolder extends Canvas {
         return items.toArray(new VerticalButton[0]);
     }
 
+    public int getItemCount() {
+        return items.size();
+    }
+
     public void removeItem(VerticalButton item) {
         this.items.remove(item);
     }
+
+    public void removeAll() {
+        for (Control child : getChildren()) {
+            child.dispose();
+        }
+    }
+
+    public void addVerticalGap() {
+        UIUtils.createEmptyLabel(this, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
+    }
+
+    public void addSelectionListener(SelectionListener listener) {
+        addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
+    }
+
 }
