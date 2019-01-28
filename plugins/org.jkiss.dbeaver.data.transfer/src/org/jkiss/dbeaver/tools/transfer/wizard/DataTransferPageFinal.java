@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -58,15 +59,17 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         initializeDialogUnits(parent);
 
         Composite composite = new Composite(parent, SWT.NULL);
-        GridLayout gl = new GridLayout(2, true);
+        GridLayout gl = new GridLayout(1, true);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         composite.setLayout(gl);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        SashForm sash = new SashForm(composite, SWT.VERTICAL);
+        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+
         {
-            Group tablesGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_final_group_objects, 3, GridData.FILL_BOTH, 0);
-            ((GridData)tablesGroup.getLayoutData()).horizontalSpan = 2;
+            Group tablesGroup = UIUtils.createControlGroup(sash, DTMessages.data_transfer_wizard_final_group_objects, 3, GridData.FILL_BOTH, 0);
 
             resultTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -82,11 +85,14 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         }
 
         {
-            Group sourceSettingsGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_final_group_settings_source, 1, GridData.FILL_BOTH, 0);
+            Composite settingsGroup = UIUtils.createComposite(sash, 2);
+            settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            Group sourceSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTMessages.data_transfer_wizard_final_group_settings_source, 1, GridData.FILL_BOTH, 0);
             sourceSettingsText = new Text(sourceSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             sourceSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            Group targetSettingsGroup = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_final_group_settings_target, 1, GridData.FILL_BOTH, 0);
+            Group targetSettingsGroup = UIUtils.createControlGroup(settingsGroup, DTMessages.data_transfer_wizard_final_group_settings_target, 1, GridData.FILL_BOTH, 0);
             targetSettingsText = new Text(targetSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             targetSettingsText.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
