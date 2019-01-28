@@ -32,11 +32,11 @@ public class ValueFormatSelector {
     private final Combo formatCombo;
 
     public ValueFormatSelector(@NotNull Composite parent) {
-        UIUtils.createControlLabel(parent, ResultSetMessages.value_format_selector_label_value);
+        UIUtils.createControlLabel(parent, ResultSetMessages.value_format_selector_value);
         formatCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-        formatCombo.add(ResultSetMessages.value_format_selector_label_display);
-        formatCombo.add(ResultSetMessages.value_format_selector_label_editable);
-        formatCombo.add(ResultSetMessages.value_format_selector_label_database_native);
+        formatCombo.add(ResultSetMessages.value_format_selector_display);
+        formatCombo.add(ResultSetMessages.value_format_selector_editable);
+        formatCombo.add(ResultSetMessages.value_format_selector_database_native);
     }
 
     public void select(@NotNull DBDDisplayFormat format) {

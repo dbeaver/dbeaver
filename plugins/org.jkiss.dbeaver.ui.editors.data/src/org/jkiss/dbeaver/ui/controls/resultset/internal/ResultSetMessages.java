@@ -227,7 +227,7 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_show_attr_ordering_tip;
     public static String pref_page_database_resultsets_label_double_click_behavior;
     public static String pref_page_database_resultsets_group_plain_text;
-    public static String pref_page_database_resultsets_lable_value_format;
+    public static String pref_page_database_resultsets_label_value_format;
     public static String pref_page_database_resultsets_label_tab_width;
     public static String pref_page_database_resultsets_label_maximum_column_length;
     public static String pref_page_database_resultsets_label_text_show_nulls;
@@ -246,19 +246,17 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_general_label_result_set_cancel_timeout;
     public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
 
-    public static String pref_page_result_label_editor;
-
-	public static String pref_page_result_label_inline_editor;
-
-	public static String pref_page_result_label_none;
+    public static String pref_page_result_selector_editor;
+	public static String pref_page_result_selector_inline_editor;
+	public static String pref_page_result_selector_none;
 
 	public static String pref_page_results_group_advanced;
     public static String pref_page_sql_editor_group_misc;
 
-	public static String value_format_selector_label_database_native;
-	public static String value_format_selector_label_display;
-	public static String value_format_selector_label_editable;
-	public static String value_format_selector_label_value;
+	public static String value_format_selector_database_native;
+	public static String value_format_selector_display;
+	public static String value_format_selector_editable;
+	public static String value_format_selector_value;
     
     static {
         // initialize resource bundle
