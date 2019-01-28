@@ -1,13 +1,15 @@
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+
 /**
  * Connection type
  */
 public class DBPConnectionType {
 
-    public static final DBPConnectionType DEV = new DBPConnectionType("dev", "Development", "255,255,255", "Regular development database", true, false, true);
-    public static final DBPConnectionType TEST = new DBPConnectionType("test", "Test", "196,255,181", "Test (QA) database", true, false, true);
-    public static final DBPConnectionType PROD = new DBPConnectionType("prod", "Production", "247,159,129", "Production database", false, true, true);
+    public static final DBPConnectionType DEV = new DBPConnectionType("dev", ModelMessages.dbp_connection_type_table_development, "255,255,255", ModelMessages.dbp_connection_type_table_regular_development_database, true, false, true); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBPConnectionType TEST = new DBPConnectionType("test", ModelMessages.dbp_connection_type_table_test, "196,255,181", ModelMessages.dbp_connection_type_table_test_database, true, false, true); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBPConnectionType PROD = new DBPConnectionType("prod", ModelMessages.dbp_connection_type_table_production, "247,159,129", ModelMessages.dbp_connection_type_table_production_database, false, true, true); //$NON-NLS-1$ //$NON-NLS-3$
 
     public static final DBPConnectionType[] SYSTEM_TYPES = { DEV, TEST, PROD };
     public static final DBPConnectionType DEFAULT_TYPE = DEV;
