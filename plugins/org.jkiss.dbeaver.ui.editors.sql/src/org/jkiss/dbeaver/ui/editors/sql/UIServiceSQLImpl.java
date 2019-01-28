@@ -107,10 +107,10 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     @Override
     public Object openNewScript(DBPDataSourceContainer dataSource) {
         try {
-            OpenHandler.openRecentScript(UIUtils.getActiveWorkbenchWindow(), dataSource, null);
+            OpenHandler.openNewEditor(UIUtils.getActiveWorkbenchWindow(), dataSource, null);
             return true;
         } catch (CoreException e) {
-            DBWorkbench.getPlatformUI().showError("Open SQL editor", "Can't open SQL editor", e);
+            DBWorkbench.getPlatformUI().showError("Open new SQL editor", "Can't open new SQL editor", e);
             return false;
         }
     }
@@ -118,10 +118,10 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     @Override
     public Object openRecentScript(DBPDataSourceContainer dataSource) {
         try {
-            OpenHandler.openNewEditor(UIUtils.getActiveWorkbenchWindow(), dataSource, null);
+            OpenHandler.openRecentScript(UIUtils.getActiveWorkbenchWindow(), dataSource, null);
             return true;
         } catch (CoreException e) {
-            DBWorkbench.getPlatformUI().showError("Open new SQL editor", "Can't open new SQL editor", e);
+            DBWorkbench.getPlatformUI().showError("Open SQL editor", "Can't open SQL editor", e);
             return false;
         }
     }

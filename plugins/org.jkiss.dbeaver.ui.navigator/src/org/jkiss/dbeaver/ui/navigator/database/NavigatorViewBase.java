@@ -126,9 +126,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                         toggleNode(viewer, node);
                     } else {
                         DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
-                        DoubleClickBehavior doubleClickBehavior =
-                            DoubleClickBehavior.valueOf(DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
-                        switch (doubleClickBehavior) {
+                        switch (dsBehaviorDefault) {
                             case EDIT:
                                 NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, UIUtils.getActiveWorkbenchWindow());
                                 break;
@@ -137,7 +135,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 if (dataSource.isConnected()) {
                                     serviceConnections.disconnectDataSource(dataSource);
                                 } else {
-                                    serviceConnections.disconnectDataSource(dataSource);
+                                    serviceConnections.connectDataSource(dataSource, null);
                                 }
                                 break;
                             }
