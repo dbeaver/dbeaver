@@ -81,16 +81,16 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
     private void createContentsGroup(IPreferenceStore store, Composite composite)
     {
-        Group contentsGroup = UIUtils.createControlGroup(composite, "Diagram contents", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group contentsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_diagram_contents, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         ((GridData)contentsGroup.getLayoutData()).horizontalSpan = 2;
-        contentsShowViews = UIUtils.createCheckbox(contentsGroup, "Show views", store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS));
+        contentsShowViews = UIUtils.createCheckbox(contentsGroup, ERDMessages.erd_preference_page_title_shows_views, store.getBoolean(ERDConstants.PREF_DIAGRAM_SHOW_VIEWS));
     }
 
     private void createVisibilityGroup(IPreferenceStore store, Composite composite)
     {
         ERDAttributeVisibility defaultVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
 
-        Group elemsGroup = UIUtils.createControlGroup(composite, "Attributes visibility", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group elemsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_attributes_visibility, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         for (ERDAttributeVisibility visibility : ERDAttributeVisibility.values()) {
             Button radio = new Button(elemsGroup, SWT.RADIO);
             radio.setData(visibility);
@@ -106,7 +106,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     {
         ERDViewStyle[] enabledStyles = ERDViewStyle.getDefaultStyles(store);
 
-        Group elemsGroup = UIUtils.createControlGroup(composite, "Attribute styles", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Group elemsGroup = UIUtils.createControlGroup(composite, ERDMessages.erd_preference_page_title_attribute_style, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
         for (ERDViewStyle style : ERDViewStyle.values()) {
             Button check = new Button(elemsGroup, SWT.CHECK);
             check.setData(style);

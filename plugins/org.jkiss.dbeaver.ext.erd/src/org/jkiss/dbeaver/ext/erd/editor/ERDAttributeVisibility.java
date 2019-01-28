@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
@@ -28,10 +29,10 @@ import org.jkiss.utils.CommonUtils;
 public enum ERDAttributeVisibility
 {
 
-    ALL("All"),
-    KEYS("Any keys"),
-    PRIMARY("Primary key"),
-    NONE("None");
+    ALL(ERDMessages.erd_attribute_visibility_selection_item_all),
+    KEYS(ERDMessages.erd_attribute_visibility_selection_item_any_keys),
+    PRIMARY(ERDMessages.erd_attribute_visibility_selection_item_primary_key),
+    NONE(ERDMessages.erd_attribute_visibility_selection_item_none);
 
     private final String title;
 

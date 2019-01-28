@@ -56,6 +56,10 @@ public class ERDMessages extends NLS {
 	public static String wizard_page_diagram_create_name;
 	public static String wizard_page_diagram_create_title;
 
+	public static String erd_attribute_visibility_selection_item_all;
+	public static String erd_attribute_visibility_selection_item_any_keys;
+	public static String erd_attribute_visibility_selection_item_none;
+	public static String erd_attribute_visibility_selection_item_primary_key;
 	//ERD editor action item control
 	public static String erd_editor_control_action_toggle_grid;
 	public static String erd_editor_control_action_refresh_diagram;
@@ -64,12 +68,21 @@ public class ERDMessages extends NLS {
 	public static String erd_editor_control_action_configuration;
 	//ERD editor action item control
 
+	public static String erd_preference_page_title_attribute_style;
+	public static String erd_preference_page_title_attributes_visibility;
+	public static String erd_preference_page_title_diagram_contents;
+	public static String erd_preference_page_title_shows_views;
 	public static String erd_tool_create_connection;
 	public static String erd_tool_create_connection_tip;
 	public static String erd_tool_create_note;
 	public static String erd_tool_create_note_tip;
 	public static String erd_tool_create_default;
 
+	public static String erd_view_style_selection_item_comments;
+	public static String erd_view_style_selection_item_data_types;
+	public static String erd_view_style_selection_item_fully_qualified_names;
+	public static String erd_view_style_selection_item_icons;
+	public static String erd_view_style_selection_item_nullability;
 	public static String menu_view_style;
 	public static String menu_attribute_visibility;
 	public static String menu_attribute_visibility_default;
