@@ -56,17 +56,17 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
     }
 
     @NotNull
-    @Property(viewable = true, order = 1)
-    public PostgreSchema getSchema() {
-        return schema;
-    }
-
-    @NotNull
     @Override
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
+    }
+
+    @NotNull
+    @Property(viewable = true, order = 2)
+    public PostgreSchema getSchema() {
+        return schema;
     }
 
     @Override

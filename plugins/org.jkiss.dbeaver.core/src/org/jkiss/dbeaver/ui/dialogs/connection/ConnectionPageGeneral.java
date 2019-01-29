@@ -170,7 +170,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 connectionFolderCombo.select(0);
             }
 
-            showSystemObjects.setSelection(true);
+            showSystemObjects.setSelection(false);
             showUtilityObjects.setSelection(false);
             readOnlyConnection.setSelection(false);
         }
@@ -346,7 +346,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             showSystemObjects = UIUtils.createCheckbox(
                 miscGroup,
                 CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
-                dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
+                dataSourceDescriptor != null && dataSourceDescriptor.isShowSystemObjects());
             showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             showUtilityObjects = UIUtils.createCheckbox(
