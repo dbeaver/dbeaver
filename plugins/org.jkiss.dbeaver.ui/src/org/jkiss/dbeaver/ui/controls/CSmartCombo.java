@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -111,7 +112,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gd.heightHint = heightHint;
         this.arrow.setLayoutData(gd);
 
-        setEnabled(true, true);
+        this.setEnabled(true, true);
+        this.setForeground(UIStyles.getDefaultTextForeground());
 
         this.listener = event -> {
             if (isDisposed()) {
@@ -386,6 +388,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.text.setText(itemText);
         if (itemImage != null) {
             this.imageLabel.setImage(itemImage);
+        }
+        if (itemBackground == null) {
+            itemBackground = UIStyles.getDefaultTextBackground();
         }
         this.setBackground(itemBackground);
     }
