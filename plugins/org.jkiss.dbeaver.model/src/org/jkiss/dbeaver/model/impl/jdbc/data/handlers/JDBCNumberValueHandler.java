@@ -162,7 +162,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         if (CommonUtils.toInt(type.getScale()) > 0) {
                             value = resultSet.getDouble(index);
                         } else {
-                            value = resultSet.getLong(index);
+                            try {
+                                value = resultSet.getLong(index);
+                            } catch (NumberFormatException e) {
+                                // Something went wrong. E.g. #5147
+                                value = resultSet.getDouble(index);
+                            }
                         }
                     } catch (SQLException e) {
                         // Last chance - get it as string. Sometimes columns marked as numbers are actually not numbers
