@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
@@ -175,7 +176,8 @@ public class QMControllerImpl implements QMController {
         @Override
         public QMEventCursor getQueryHistoryCursor(
             @NotNull DBRProgressMonitor monitor,
-            @NotNull QMEventCriteria criteria)
+            @NotNull QMEventCriteria criteria,
+            @Nullable QMEventFilter filter)
             throws DBException
         {
             List<QMMetaEvent> pastEvents = metaHandler.getPastEvents();
@@ -189,6 +191,10 @@ public class QMControllerImpl implements QMController {
                             iter.remove();
                             continue;
                         }
+                    }
+                    if (filter != null && !filter.accept(event)) {
+                        iter.remove();
+                        continue;
                     }
                     if (criteria.getQueryTypes() != null) {
                         QMMStatementInfo statementInfo = null;
@@ -211,7 +217,9 @@ public class QMControllerImpl implements QMController {
                 String searchString = criteria.getSearchString().toLowerCase();
                 List<QMMetaEvent> filtered = new ArrayList<>();
                 for (QMMetaEvent event : pastEvents) {
-                    if (event.getObject().getText().toLowerCase().contains(searchString)) {
+                    if (event.getObject().getText().toLowerCase().contains(searchString) &&
+                        (filter == null || filter.accept(event)))
+                    {
                         filtered.add(event);
                     }
                 }
