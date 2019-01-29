@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -65,20 +66,20 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
 
     public DB2ConnectionTracePage()
     {
-        setTitle("Trace settings");
-        setDescription("Trace settings");
+        setTitle(DB2Messages.db2_connection_trace_page_tab_trace_settings);
+        setDescription(DB2Messages.db2_connection_trace_page_tab_description_trace_settings);
         levels = new LevelConfig[] {
-            new LevelConfig(DB2Constants.TRACE_CONNECTION_CALLS, "Connection calls"),
-            new LevelConfig(DB2Constants.TRACE_STATEMENT_CALLS, "Statement calls"),
-            new LevelConfig(DB2Constants.TRACE_RESULT_SET_CALLS, "Result set calls"),
-            new LevelConfig(DB2Constants.TRACE_DRIVER_CONFIGURATION, "Driver configuration"),
-            new LevelConfig(DB2Constants.TRACE_CONNECTS, "Connects"),
-            new LevelConfig(DB2Constants.TRACE_DRDA_FLOWS, "DRDA flows"),
-            new LevelConfig(DB2Constants.TRACE_RESULT_SET_META_DATA, "Result set metadata"),
-            new LevelConfig(DB2Constants.TRACE_PARAMETER_META_DATA, "Parameter metadata"),
-            new LevelConfig(DB2Constants.TRACE_DIAGNOSTICS, "Diagnostics"),
-            new LevelConfig(DB2Constants.TRACE_SQLJ, "SQL J"),
-            new LevelConfig(DB2Constants.TRACE_XA_CALLS, "XA calls"),
+            new LevelConfig(DB2Constants.TRACE_CONNECTION_CALLS, DB2Messages.db2_connection_trace_page_checkbox_connection_calls),
+            new LevelConfig(DB2Constants.TRACE_STATEMENT_CALLS, DB2Messages.db2_connection_trace_page_checkbox_statement_calls),
+            new LevelConfig(DB2Constants.TRACE_RESULT_SET_CALLS, DB2Messages.db2_connection_trace_page_checkbox_result_set_calls),
+            new LevelConfig(DB2Constants.TRACE_DRIVER_CONFIGURATION, DB2Messages.db2_connection_trace_page_checkbox_driver_configuration),
+            new LevelConfig(DB2Constants.TRACE_CONNECTS, DB2Messages.db2_connection_trace_page_checkbox_connect),
+            new LevelConfig(DB2Constants.TRACE_DRDA_FLOWS, DB2Messages.db2_connection_trace_page_checkbox_drda_flows),
+            new LevelConfig(DB2Constants.TRACE_RESULT_SET_META_DATA, DB2Messages.db2_connection_trace_page_checkbox_result_set_metadata),
+            new LevelConfig(DB2Constants.TRACE_PARAMETER_META_DATA, DB2Messages.db2_connection_trace_page_checkbox_parameter_metadata),
+            new LevelConfig(DB2Constants.TRACE_DIAGNOSTICS, DB2Messages.db2_connection_trace_page_checkbox_diagnostics),
+            new LevelConfig(DB2Constants.TRACE_SQLJ, DB2Messages.db2_connection_trace_page_checkbox_sql_j),
+            new LevelConfig(DB2Constants.TRACE_XA_CALLS, DB2Messages.db2_connection_trace_page_checkbox_xa_calls),
         };
     }
 
@@ -99,17 +100,17 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
         GridData gd = new GridData(GridData.FILL_BOTH);
         cfgGroup.setLayoutData(gd);
 
-        enableTraceCheck = UIUtils.createCheckbox(cfgGroup, "Enable trace", false);
+        enableTraceCheck = UIUtils.createCheckbox(cfgGroup, DB2Messages.db2_connection_trace_page_checkbox_enable_trace, false);
 
         traceGroup = new Composite(cfgGroup, SWT.NONE);
         traceGroup.setLayout(new GridLayout(2, false));
         traceGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        folderText = DialogUtils.createOutputFolderChooser(traceGroup, "Folder", null);
-        fileNameText = UIUtils.createLabelText(traceGroup, "File name", "trace");
-        traceAppendCheck = UIUtils.createLabelCheckbox(traceGroup, "Append", false);
+        folderText = DialogUtils.createOutputFolderChooser(traceGroup, DB2Messages.db2_connection_trace_page_label_folder, null);
+        fileNameText = UIUtils.createLabelText(traceGroup, DB2Messages.db2_connection_trace_page_label_file_name, DB2Messages.db2_connection_trace_page_string_trace);
+        traceAppendCheck = UIUtils.createLabelCheckbox(traceGroup, DB2Messages.db2_connection_trace_page_checkbox_append, false);
 
-        Group levelsGroup = UIUtils.createControlGroup(traceGroup, "Levels", 2, 0, 0);
+        Group levelsGroup = UIUtils.createControlGroup(traceGroup, DB2Messages.db2_connection_trace_page_header_levels, 2, 0, 0);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 2;
         levelsGroup.setLayoutData(gd);
