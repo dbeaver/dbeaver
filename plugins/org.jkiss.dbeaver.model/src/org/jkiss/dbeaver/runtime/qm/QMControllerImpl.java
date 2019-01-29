@@ -31,6 +31,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -178,6 +179,7 @@ public class QMControllerImpl implements QMController {
             throws DBException
         {
             List<QMMetaEvent> pastEvents = metaHandler.getPastEvents();
+            Collections.reverse(pastEvents);
             if (criteria.getObjectTypes() != null || criteria.getQueryTypes() != null) {
                 // Filter by query type and object type
                 for (Iterator<QMMetaEvent> iter = pastEvents.iterator(); iter.hasNext(); ) {
