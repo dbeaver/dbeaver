@@ -33,7 +33,28 @@ public class DB2Messages extends NLS {
         // Pure Utility Class
     }
 
-    public static String dialog_connection_browse_button;
+    public static String db2_connection_page_tab_database;
+	public static String db2_connection_page_tab_security;
+	public static String db2_connection_trace_page_checkbox_append;
+	public static String db2_connection_trace_page_checkbox_connect;
+	public static String db2_connection_trace_page_checkbox_connection_calls;
+	public static String db2_connection_trace_page_checkbox_diagnostics;
+	public static String db2_connection_trace_page_checkbox_drda_flows;
+	public static String db2_connection_trace_page_checkbox_driver_configuration;
+	public static String db2_connection_trace_page_checkbox_enable_trace;
+	public static String db2_connection_trace_page_checkbox_parameter_metadata;
+	public static String db2_connection_trace_page_checkbox_result_set_calls;
+	public static String db2_connection_trace_page_checkbox_result_set_metadata;
+	public static String db2_connection_trace_page_checkbox_sql_j;
+	public static String db2_connection_trace_page_checkbox_statement_calls;
+	public static String db2_connection_trace_page_checkbox_xa_calls;
+	public static String db2_connection_trace_page_header_levels;
+	public static String db2_connection_trace_page_label_file_name;
+	public static String db2_connection_trace_page_label_folder;
+	public static String db2_connection_trace_page_string_trace;
+	public static String db2_connection_trace_page_tab_description_trace_settings;
+	public static String db2_connection_trace_page_tab_trace_settings;
+	public static String dialog_connection_browse_button;
     public static String dialog_connection_database_schema_label;
     public static String dialog_connection_db_file_chooser_text;
     public static String dialog_connection_db_folder_chooser_message;
