@@ -667,6 +667,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
                 QMMetaEvent event = events.get(i);
                 if ((filter != null && !filter.accept(event)) || (useDefaultFilter && !defaultFilter.accept(event))) {
+                    // Filter the same second time?
                     continue;
                 }
                 QMMObject object = event.getObject();
@@ -1157,13 +1158,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 } else {
                     monitor.subTask("Load all queries");
                 }
-                try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria)) {
+                try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria, filter != null ? filter : (useDefaultFilter  ? defaultFilter : null))) {
                     while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
                         if (monitor.isCanceled()) {
                             break;
                         }
                         events.add(cursor.nextEvent(monitor));
-                        monitor.subTask(events.get(events.size() - 1).toString());
+                        //monitor.subTask(events.get(events.size() - 1).toString());
                     }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);

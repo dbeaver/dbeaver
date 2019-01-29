@@ -28,7 +28,7 @@ public interface QMEventBrowser {
 
     QMEventCursor getQueryHistoryCursor(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull QMEventCriteria criteria)
+        @NotNull QMEventCriteria criteria, QMEventFilter filter)
         throws DBException;
 
 }
