@@ -22,6 +22,14 @@ import org.eclipse.osgi.util.NLS;
 public class ModelMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.messages.ModelResources"; //$NON-NLS-1$
 
+	public static String edit_transaction_log_dialog_header_translation_log;
+
+	public static String edit_transaction_log_dialog_show_connect_to_a_database;
+
+	public static String edit_transaction_log_dialog_show_no_editor;
+
+	public static String edit_transaction_log_dialog_show_open_database_editor;
+
 	public static String error_not_connected_to_database;
 
 	public static String error_can_create_temp_dir;

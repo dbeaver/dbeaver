@@ -51,6 +51,14 @@ public class CoreMessages extends NLS {
 	public static String action_menu_transactionMonitor_uptime;
 	public static String action_menu_transactionMonitor_notConnected;
 
+	public static String action_transactioninfo_dialog_checkbox_show_all_queries;
+
+	public static String action_transactioninfo_dialog_checkbox_show_previous_transactions;
+
+	public static String action_transactioninfo_dialog_description_all_transaction_queries;
+
+	public static String action_transactioninfo_dialog_description_show_only_active_one;
+
 	public static String actions_navigator_bookmark_error_message;
 	public static String actions_navigator_bookmark_error_title;
 	public static String actions_navigator_bookmark_title;

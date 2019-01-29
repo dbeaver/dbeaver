@@ -59,7 +59,7 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Transaction log [" + context.getDataSource().getContainer().getName() + " : " + context.getContextName() + "]");
+        getShell().setText(ModelMessages.edit_transaction_log_dialog_header_translation_log + context.getDataSource().getContainer().getName() + " : " + context.getContextName() + "]"); //$NON-NLS-2$ //$NON-NLS-3$
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
@@ -79,12 +79,12 @@ public class TransactionLogDialog extends TransactionInfoDialog {
         IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (activeEditor == null) {
             DBWorkbench.getPlatformUI().showError(
-                    "No editor",
-                "Transaction log is not available.\nOpen database editor.");
+                    ModelMessages.edit_transaction_log_dialog_show_no_editor,
+                ModelMessages.edit_transaction_log_dialog_show_open_database_editor);
         } else if (executionContext == null) {
             DBWorkbench.getPlatformUI().showError(
                 ModelMessages.error_not_connected_to_database,
-                "Transaction log is not available.\nConnect to a database.");
+                ModelMessages.edit_transaction_log_dialog_show_connect_to_a_database);
         } else {
             final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);
             dialog.open();

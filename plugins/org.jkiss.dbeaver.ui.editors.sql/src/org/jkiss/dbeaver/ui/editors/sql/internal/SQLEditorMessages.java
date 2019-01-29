@@ -259,6 +259,8 @@ public class SQLEditorMessages extends NLS {
     public static String controls_querylog_shell_text;
     public static String controls_querylog_success;
     public static String controls_querylog_transaction;
+
+	public static String controls_querylog_viewer_draw_text_type_query_part0;
     public static String sql_editor_menu_choose_format;
     public static String  sql_editor_panel_format;
     
