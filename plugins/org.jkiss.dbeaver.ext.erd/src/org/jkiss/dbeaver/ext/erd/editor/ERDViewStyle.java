@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
@@ -27,11 +28,11 @@ import org.jkiss.utils.CommonUtils;
  */
 public enum ERDViewStyle
 {
-    ICONS(1, "Icons"),
-    TYPES(2, "Data Types"),
-    NULLABILITY(4, "Nullability"),
-    COMMENTS(8, "Comments"),
-    ENTITY_FQN(16, "Fully qualified names")
+    ICONS(1, ERDMessages.erd_view_style_selection_item_icons),
+    TYPES(2, ERDMessages.erd_view_style_selection_item_data_types),
+    NULLABILITY(4, ERDMessages.erd_view_style_selection_item_nullability),
+    COMMENTS(8, ERDMessages.erd_view_style_selection_item_comments),
+    ENTITY_FQN(16, ERDMessages.erd_view_style_selection_item_fully_qualified_names)
     ;
 
     private final int value;
@@ -56,7 +57,7 @@ public enum ERDViewStyle
     {
         String attrString = store.getString(ERDConstants.PREF_ATTR_STYLES);
         if (!CommonUtils.isEmpty(attrString)) {
-            String[] psList = attrString.split(",");
+            String[] psList = attrString.split(","); //$NON-NLS-1$
             ERDViewStyle[] pList = new ERDViewStyle[psList.length];
             for (int i = 0; i < psList.length; i++) {
                 try {
@@ -72,9 +73,9 @@ public enum ERDViewStyle
 
     public static void setDefaultStyles(DBPPreferenceStore store, ERDViewStyle[] styles)
     {
-        String stylesString = "";
+        String stylesString = ""; //$NON-NLS-1$
         for (ERDViewStyle style : styles) {
-            if (!stylesString.isEmpty()) stylesString += ",";
+            if (!stylesString.isEmpty()) stylesString += ","; //$NON-NLS-1$
             stylesString += style.name();
         }
         store.setValue(

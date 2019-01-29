@@ -145,6 +145,18 @@ public class ModelMessages extends NLS {
 	public static String CreateLinkedFolderRunnable_e_cancelled_link;
 	public static String CreateLinkedFolderRunnable_e_unable_to_link;
 
+	public static String dbp_connection_type_table_development;
+
+	public static String dbp_connection_type_table_production;
+
+	public static String dbp_connection_type_table_production_database;
+
+	public static String dbp_connection_type_table_regular_development_database;
+
+	public static String dbp_connection_type_table_test;
+
+	public static String dbp_connection_type_table_test_database;
+
     static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

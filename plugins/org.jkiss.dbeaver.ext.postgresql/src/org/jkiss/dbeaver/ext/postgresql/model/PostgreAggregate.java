@@ -112,7 +112,7 @@ public class PostgreAggregate implements PostgreObject {
         return null;
     }
 
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
         PostgreProcedure function = getFunction(monitor);
         return function == null ? null : function.getDescription();
