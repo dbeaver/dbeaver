@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class NumberDataFormatter implements DBDDataFormatter {
 
-    public static final int MAX_DEFAULT_FRACTIONS_DIGITS = 4;
+    public static final int MAX_DEFAULT_FRACTIONS_DIGITS = 16;
 
     private DecimalFormat numberFormat;
     private StringBuffer buffer;
