@@ -221,9 +221,11 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         if (info.getLastValue() != null && info.getLastValue().longValue() > 0) {
             sql.append("\n\tSTART ").append(info.getLastValue());
         }
-		sql.append("\n\tCACHE ").append(info.getCacheValue())
-		   .append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE")
-		   .append(";");
+        if (info.getCacheValue() != null && info.getCacheValue().longValue() > 0) {
+            sql.append("\n\tCACHE ").append(info.getCacheValue())
+                .append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE")
+                .append(";");
+        }
 
 		if (!CommonUtils.isEmpty(getDescription())) {
 			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getQuotedIdentifier(this)).append(" IS ")
