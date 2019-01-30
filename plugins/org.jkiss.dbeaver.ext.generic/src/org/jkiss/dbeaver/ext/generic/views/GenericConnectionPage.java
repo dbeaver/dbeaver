@@ -344,7 +344,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             DBPImage iconBig = driver.getIconBig();
             if (iconBig != null) {
                 ImageDescriptor imageDescriptor = DBeaverIcons.getImageDescriptor(iconBig);
-                if (imageDescriptor.getImageData(100).width >= 64) {
+                if (imageDescriptor.getImageData().width >= 64) {
                     setImageDescriptor(imageDescriptor);
                 } else {
                     setImageDescriptor(null);
