@@ -188,6 +188,10 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="omit-catalog" value="true"/>
+
+                    <!-- Enable table/column descriptions -->
+                    <property name="translate binary" value="true"/>
+                    <property name="metadata source" value="0"/>
                 </driver>
 
                 <driver
