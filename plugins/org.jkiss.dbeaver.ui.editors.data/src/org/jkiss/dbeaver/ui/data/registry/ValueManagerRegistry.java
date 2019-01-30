@@ -66,20 +66,20 @@ public class ValueManagerRegistry {
     }
 
     @NotNull
-    public IValueManager getManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject dataKind, @NotNull Class<?> valueType) {
+    public IValueManager getManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @NotNull Class<?> valueType) {
         // Check starting from most restrictive to less restrictive
-        IValueManager manager = findManager(dataSource, dataKind, valueType, true, true);
+        IValueManager manager = findManager(dataSource, type, valueType, true, true);
         if (manager == null) {
-            manager = findManager(dataSource, dataKind, valueType, false, true);
+            manager = findManager(dataSource, type, valueType, false, true);
         }
         if (manager == null) {
-            manager = findManager(dataSource, dataKind, valueType, true, false);
+            manager = findManager(dataSource, type, valueType, true, false);
         }
         if (manager == null) {
-            manager = findManager(dataSource, dataKind, valueType, false, false);
+            manager = findManager(dataSource, type, valueType, false, false);
         }
         if (manager == null) {
-            throw new IllegalStateException("Can't find default data manager for " + dataKind);
+            throw new IllegalStateException("Can't find default data manager for " + type);
         }
         return manager;
     }
