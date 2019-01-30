@@ -85,12 +85,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final Log log = Log.getLog(QueryLogViewer.class);
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
-    private static final String VIEWER_ID = "DBeaver.QM.LogViewer";
+    private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
-    public static final String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
-    public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47);
-    public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5);
+    public static final String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF); //$NON-NLS-1$
+    public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47); //$NON-NLS-1$
+    public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5); //$NON-NLS-1$
 
     private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
 
@@ -123,7 +123,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
     }
 
-    private LogColumn COLUMN_TIME = new LogColumn("time", SQLEditorMessages.controls_querylog_column_time_name, SQLEditorMessages.controls_querylog_column_time_tooltip, 80) {
+    private LogColumn COLUMN_TIME = new LogColumn("time", SQLEditorMessages.controls_querylog_column_time_name, SQLEditorMessages.controls_querylog_column_time_tooltip, 80) { //$NON-NLS-1$
         private final DateFormat timeFormat = new SimpleDateFormat("MMM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         private final DateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()); //$NON-NLS-1$
         @Override
@@ -135,14 +135,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return timestampFormat.format(event.getObject().getOpenTime());
         }
     };
-    private static LogColumn COLUMN_TYPE = new LogColumn("type", SQLEditorMessages.controls_querylog_column_type_name, SQLEditorMessages.controls_querylog_column_type_tooltip, 100) {
+    private static LogColumn COLUMN_TYPE = new LogColumn("type", SQLEditorMessages.controls_querylog_column_type_name, SQLEditorMessages.controls_querylog_column_type_tooltip, 100) { //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
             return getObjectType(event.getObject());
         }
     };
-    private static LogColumn COLUMN_TEXT = new LogColumn("text", SQLEditorMessages.controls_querylog_column_text_name, SQLEditorMessages.controls_querylog_column_text_tooltip, 400) {
+    private static LogColumn COLUMN_TEXT = new LogColumn("text", SQLEditorMessages.controls_querylog_column_text_name, SQLEditorMessages.controls_querylog_column_text_tooltip, 400) { //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
@@ -167,15 +167,15 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else if (object instanceof QMMSessionInfo) {
                 String containerName = ((QMMSessionInfo) object).getContainerName();
                 switch (event.getAction()) {
-                    case BEGIN: return SQLEditorMessages.controls_querylog_connected_to + containerName + "\"";
-                    case END:   return SQLEditorMessages.controls_querylog_disconnected_from + containerName + "\"";
-                    default:    return "?";
+                    case BEGIN: return SQLEditorMessages.controls_querylog_connected_to + containerName + "\""; //$NON-NLS-1$
+                    case END:   return SQLEditorMessages.controls_querylog_disconnected_from + containerName + "\""; //$NON-NLS-1$
+                    default:    return "?"; //$NON-NLS-1$
                 }
             }
             return ""; //$NON-NLS-1$
         }
     };
-    private static LogColumn COLUMN_DURATION = new LogColumn("duration", SQLEditorMessages.controls_querylog_column_duration_name + " (" + SQLEditorMessages.controls_querylog__ms + ")", SQLEditorMessages.controls_querylog_column_duration_tooltip, 100) {
+    private static LogColumn COLUMN_DURATION = new LogColumn("duration", SQLEditorMessages.controls_querylog_column_duration_name + " (" + SQLEditorMessages.controls_querylog__ms + ")", SQLEditorMessages.controls_querylog_column_duration_tooltip, 100) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         @Override
         String getText(QMMetaEvent event)
         {
@@ -214,7 +214,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return ""; //$NON-NLS-1$
         }
     };
-    private static LogColumn COLUMN_ROWS = new LogColumn("rows", SQLEditorMessages.controls_querylog_column_rows_name, SQLEditorMessages.controls_querylog_column_rows_tooltip, 120) {
+    private static LogColumn COLUMN_ROWS = new LogColumn("rows", SQLEditorMessages.controls_querylog_column_rows_name, SQLEditorMessages.controls_querylog_column_rows_tooltip, 120) { //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
@@ -233,7 +233,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return ""; //$NON-NLS-1$
         }
     };
-    private static LogColumn COLUMN_RESULT = new LogColumn("result", SQLEditorMessages.controls_querylog_column_result_name, SQLEditorMessages.controls_querylog_column_result_tooltip, 120) {
+    private static LogColumn COLUMN_RESULT = new LogColumn("result", SQLEditorMessages.controls_querylog_column_result_name, SQLEditorMessages.controls_querylog_column_result_tooltip, 120) { //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
@@ -244,9 +244,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                         if (exec.getErrorCode() == 0) {
                             return exec.getErrorMessage();
                         } else if (exec.getErrorMessage() == null) {
-                            return SQLEditorMessages.controls_querylog_error + exec.getErrorCode() + "]";
+                            return SQLEditorMessages.controls_querylog_error + exec.getErrorCode() + "]"; //$NON-NLS-1$
                         } else {
-                            return "[" + exec.getErrorCode() + "] " + exec.getErrorMessage();
+                            return "[" + exec.getErrorCode() + "] " + exec.getErrorMessage(); //$NON-NLS-1$ //$NON-NLS-2$
                         }
                     } else {
                         return SQLEditorMessages.controls_querylog_success;
@@ -256,7 +256,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return ""; //$NON-NLS-1$
         }
     };
-    private static LogColumn COLUMN_DATA_SOURCE = new LogColumn("datasource", SQLEditorMessages.controls_querylog_column_connection_name, SQLEditorMessages.controls_querylog_column_connection_tooltip, 150) {
+    private static LogColumn COLUMN_DATA_SOURCE = new LogColumn("datasource", SQLEditorMessages.controls_querylog_column_connection_name, SQLEditorMessages.controls_querylog_column_connection_tooltip, 150) { //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
@@ -273,10 +273,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else if (object instanceof QMMStatementExecuteInfo) {
                 containerName = ((QMMStatementExecuteInfo) object).getStatement().getSession().getContainerName();
             }
-            return containerName == null ? "?" : containerName;
+            return containerName == null ? "?" : containerName; //$NON-NLS-1$
         }
     };
-    private static LogColumn COLUMN_CONTEXT = new LogColumn("context", SQLEditorMessages.controls_querylog_column_context_name, SQLEditorMessages.controls_querylog_column_context_tooltip, 150) {
+    private static LogColumn COLUMN_CONTEXT = new LogColumn("context", SQLEditorMessages.controls_querylog_column_context_name, SQLEditorMessages.controls_querylog_column_context_tooltip, 150) { //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event) {
             QMMObject object = event.getObject();
@@ -293,7 +293,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 contextName = ((QMMStatementExecuteInfo) object).getStatement().getSession().getContextName();
             }
             if (contextName == null) {
-                return "?";
+                return "?"; //$NON-NLS-1$
             }
             return contextName;
         }
@@ -358,7 +358,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (searchText.isEnabled() && searchText.getCharCount() == 0) {
                 e.gc.setForeground(shadowColor);
                 e.gc.setFont(hintFont);
-                e.gc.drawText("Type query part to search in query history",
+                e.gc.drawText(SQLEditorMessages.editor_query_log_viewer_draw_text_type_qury_part,
                     2, 0, true);
                 e.gc.setFont(null);
             }
@@ -469,7 +469,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
             final TableColumn tableColumn = UIUtils.createTableColumn(logTable, SWT.NONE, logColumn.title);
             tableColumn.setData(logColumn);
-            final String colWidth = dialogSettings.get("column-" + logColumn.id);
+            final String colWidth = dialogSettings.get("column-" + logColumn.id); //$NON-NLS-1$
             if (colWidth != null) {
                 tableColumn.setWidth(Integer.parseInt(colWidth));
             } else {
@@ -483,7 +483,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             tableColumn.addListener(SWT.Selection, new TableColumnSortListener(logTable, colIndex));
             tableColumn.addListener(SWT.Resize, event -> {
                 final int width = tableColumn.getWidth();
-                dialogSettings.put("column-" + logColumn.id, String.valueOf(width));
+                dialogSettings.put("column-" + logColumn.id, String.valueOf(width)); //$NON-NLS-1$
             });
 
             colIndex++;
@@ -542,7 +542,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static String getObjectType(QMMObject object)
     {
         if (object instanceof QMMSessionInfo) {
-            return ModelMessages.model_navigator_Connection;
+            return ""; //$NON-NLS-1$
         } else if (object instanceof QMMStatementInfo || object instanceof QMMStatementExecuteInfo) {
             QMMStatementInfo statement;
             if (object instanceof QMMStatementInfo) {
@@ -550,7 +550,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else {
                 statement = ((QMMStatementExecuteInfo)object).getStatement();
             }
-            return "SQL" + (statement == null ? "" : " / " + CommonUtils.capitalizeWord(statement.getPurpose().getTitle())); //$NON-NLS-1$
+            return "SQL" + (statement == null ? "" : " / " + CommonUtils.capitalizeWord(statement.getPurpose().getTitle())); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 //        } else if (object instanceof QMMStatementScripInfo) {
 //            return SQLEditorMessages.controls_querylog_script;
         } else if (object instanceof QMMTransactionInfo) {
@@ -622,7 +622,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private void reloadEvents(@Nullable String searchString)
     {
         if (reloadInProgress) {
-            log.debug("Event reload is in progress. Skip");
+            log.debug("Event reload is in progress. Skip"); //$NON-NLS-1$
             return;
         }
         reloadInProgress = true;
@@ -705,7 +705,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 logTable.remove(indexes);
             }
         } catch (Exception e) {
-            log.error("Error updating Query Log", e);
+            log.error("Error updating Query Log", e); //$NON-NLS-1$
         }
         finally {
             if (!logTable.isDisposed()) {
@@ -762,7 +762,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(logTable);
         menuMgr.addMenuListener(manager -> {
-            IAction editorAction = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
+            IAction editorAction = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) { //$NON-NLS-1$
                 @Override
                 public void run()
                 {
@@ -900,12 +900,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 String queryString = stmtExec.getQueryString();
                 if (!CommonUtils.isEmptyTrimmed(queryString)) {
                     if (sql.length() > 0) {
-                        sql.append("\n");
+                        sql.append("\n"); //$NON-NLS-1$
                     }
                     queryString = queryString.trim();
                     sql.append(queryString);
                     if (!queryString.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
-                        sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append("\n");
+                        sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append("\n"); //$NON-NLS-1$
                     }
                 }
             }
@@ -914,7 +914,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             OpenHandler.openSQLConsole(
                 UIUtils.getActiveWorkbenchWindow(),
                 dsContainer,
-                "QueryManager",
+                "QueryManager", //$NON-NLS-1$
                 sql.toString()
             );
         }
@@ -1040,7 +1040,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         EventViewDialog(QMMetaEvent object)
         {
-            super(QueryLogViewer.this.getControl().getShell(), QueryLogViewer.this.site, "Event", null);
+            super(QueryLogViewer.this.getControl().getShell(), QueryLogViewer.this.site, "Event", null); //$NON-NLS-1$
             setShellStyle(SWT.SHELL_TRIM);
             this.object = object;
         }
@@ -1140,7 +1140,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         private String searchString;
 
         protected EventHistoryReadService(@Nullable String searchString) {
-            super("Load query history");
+            super("Load query history"); //$NON-NLS-1$
             this.searchString = searchString;
         }
 
@@ -1152,11 +1152,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 QMEventCriteria criteria = QMUtils.createDefaultCriteria(DBWorkbench.getPlatform().getPreferenceStore());
                 criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
 
-                monitor.beginTask("Load query history", 1);
+                monitor.beginTask("Load query history", 1); //$NON-NLS-1$
                 if (!CommonUtils.isEmpty(searchString)) {
-                    monitor.subTask("Search queries: " + searchString);
+                    monitor.subTask("Search queries: " + searchString); //$NON-NLS-1$
                 } else {
-                    monitor.subTask("Load all queries");
+                    monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }
                 try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria, filter != null ? filter : (useDefaultFilter  ? defaultFilter : null))) {
                     while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
