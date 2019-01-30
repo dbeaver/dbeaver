@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.eclipse.osgi.util.NLS;
 
 public class TransactionLogDialog extends TransactionInfoDialog {
 
@@ -60,7 +61,7 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(CoreMessages.pref_page_transaction_log_dialog_header_transaction_log + context.getDataSource().getContainer().getName() + " : " + context.getContextName() + "]"); //$NON-NLS-2$ //$NON-NLS-3$
+        getShell().setText(NLS.bind(CoreMessages.transaction_log_dialog_header_transaction_log, context.getDataSource().getContainer().getName(), context.getContextName())); //$NON-NLS-2$ //$NON-NLS-3$
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
@@ -80,12 +81,12 @@ public class TransactionLogDialog extends TransactionInfoDialog {
         IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (activeEditor == null) {
             DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.pref_page_transaction_log_dialog_label_no_editor,
-                CoreMessages.pref_page_transaction_log_dialog_label_open_database);
+                    CoreMessages.transaction_log_dialog_label_no_editor,
+                CoreMessages.transaction_log_dialog_label_open_database);
         } else if (executionContext == null) {
             DBWorkbench.getPlatformUI().showError(
-                CoreMessages.pref_page_transaction_log_dialog_label_not_connected,
-                CoreMessages.pref_page_transaction_log_dialog_label_connect_to_a_database);
+                CoreMessages.transaction_log_dialog_error_not_connected,
+                CoreMessages.transaction_log_dialog_label_connect_to_a_database);
         } else {
             final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);
             dialog.open();
