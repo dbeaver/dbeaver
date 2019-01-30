@@ -86,6 +86,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     }
 
     @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        return getSupportedObjectTypes();
+    }
+
+    @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return HYPER_LINKS_TYPES;

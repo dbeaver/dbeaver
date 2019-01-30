@@ -32,6 +32,8 @@ public interface DBSStructureAssistant
 
     DBSObjectType[] getSupportedObjectTypes();
 
+    DBSObjectType[] getSearchObjectTypes();
+
     DBSObjectType[] getHyperlinkObjectTypes();
 
     DBSObjectType[] getAutoCompleteObjectTypes();

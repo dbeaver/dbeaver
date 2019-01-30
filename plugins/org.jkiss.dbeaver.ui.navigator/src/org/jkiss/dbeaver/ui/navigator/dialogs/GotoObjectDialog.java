@@ -62,7 +62,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     private static final String DIALOG_ID = "GotoObjectDialog";
 
-    private static final boolean SHOW_OBJECT_TYPES = false;
+    private static final boolean SHOW_OBJECT_TYPES = true;
 
     private final DBCExecutionContext context;
     private DBSObject container;
