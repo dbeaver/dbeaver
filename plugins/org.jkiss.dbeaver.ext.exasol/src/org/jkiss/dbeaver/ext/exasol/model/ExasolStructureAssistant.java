@@ -80,6 +80,11 @@ public class ExasolStructureAssistant implements DBSStructureAssistant {
         return SUPP_OBJ_TYPES;
     }
 
+    @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        return getSupportedObjectTypes();
+    }
+
 
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes() {

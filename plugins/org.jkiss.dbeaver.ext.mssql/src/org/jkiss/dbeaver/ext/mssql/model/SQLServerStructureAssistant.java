@@ -67,6 +67,16 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
     }
 
     @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        return new DBSObjectType[] {
+            SQLServerObjectType.U,
+            SQLServerObjectType.V,
+            SQLServerObjectType.SN,
+            SQLServerObjectType.P,
+        };
+    }
+
+    @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return new DBSObjectType[] {
@@ -74,6 +84,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             SQLServerObjectType.U,
             SQLServerObjectType.IT,
             SQLServerObjectType.V,
+            SQLServerObjectType.P,
         };
     }
 

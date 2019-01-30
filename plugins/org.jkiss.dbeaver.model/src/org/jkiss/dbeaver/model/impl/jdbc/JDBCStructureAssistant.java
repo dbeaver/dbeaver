@@ -49,6 +49,11 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
     }
 
     @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        return getSupportedObjectTypes();
+    }
+
+    @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
