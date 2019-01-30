@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
@@ -174,12 +175,20 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             return null;
         }
         DBSObjectContainer container = (DBSObjectContainer) session.getDataSource();
-        for (int i = 0; i < names.length - 1; i++) {
-            DBSObject child = container.getChild(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[i]));
-            if (child instanceof DBSObjectContainer) {
-                container = (DBSObjectContainer) child;
-            } else {
-                return null;
+        if (names.length == 1) {
+            DBSObject[] selectedObjects = DBUtils.getSelectedObjects(session.getProgressMonitor(), container);
+            if (selectedObjects.length > 0 && selectedObjects[selectedObjects.length - 1] instanceof DBSObjectContainer) {
+                container = (DBSObjectContainer) selectedObjects[selectedObjects.length - 1];
+            }
+        } else {
+            container = (DBSObjectContainer) session.getDataSource();
+            for (int i = 0; i < names.length - 1; i++) {
+                DBSObject child = container.getChild(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[i]));
+                if (child instanceof DBSObjectContainer) {
+                    container = (DBSObjectContainer) child;
+                } else {
+                    return null;
+                }
             }
         }
         if (container instanceof DBSProcedureContainer) {
