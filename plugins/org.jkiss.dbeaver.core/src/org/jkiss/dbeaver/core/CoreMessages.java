@@ -610,11 +610,11 @@ public class CoreMessages extends NLS {
 
 	// Preference/Properties
 
-	public static String transaction_log_dialog_label_connect_to_a_database;
+	public static String transaction_log_dialog_error_connect_to_a_database;
 
-	public static String transaction_log_dialog_label_no_editor;
+	public static String transaction_log_dialog_error_no_editor;
 
-	public static String transaction_log_dialog_label_open_database;
+	public static String transaction_log_dialog_error_open_database;
 
 	// Connection edit
 	public static String dialog_connection_edit_title;

@@ -81,12 +81,12 @@ public class TransactionLogDialog extends TransactionInfoDialog {
         IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (activeEditor == null) {
             DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.transaction_log_dialog_label_no_editor,
-                CoreMessages.transaction_log_dialog_label_open_database);
+                    CoreMessages.transaction_log_dialog_error_no_editor,
+                CoreMessages.transaction_log_dialog_error_open_database);
         } else if (executionContext == null) {
             DBWorkbench.getPlatformUI().showError(
                 CoreMessages.transaction_log_dialog_error_not_connected,
-                CoreMessages.transaction_log_dialog_label_connect_to_a_database);
+                CoreMessages.transaction_log_dialog_error_connect_to_a_database);
         } else {
             final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);
             dialog.open();
