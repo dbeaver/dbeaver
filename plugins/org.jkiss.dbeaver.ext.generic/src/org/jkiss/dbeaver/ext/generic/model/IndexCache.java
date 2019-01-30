@@ -135,7 +135,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         String columnName = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.COLUMN_NAME);
         String ascOrDesc = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.ASC_OR_DESC);
 
-        if (ordinalPosition == 0 || CommonUtils.isEmpty(columnName)) {
+        if (CommonUtils.isEmpty(columnName)) {
             // Maybe a statistics index without column
             return null;
         }
