@@ -81,7 +81,6 @@ public class CoreMessages extends NLS {
 	public static String controls_connection_properties_action_remove_property;
 	public static String controls_connection_properties_category_user_properties;
 	public static String controls_connection_properties_dialog_new_property_title;
-
     public static String controls_client_home_selector_browse;
 	public static String controls_client_homes_panel_button_add_home;
 	public static String controls_client_homes_panel_button_remove_home;
@@ -466,6 +465,8 @@ public class CoreMessages extends NLS {
 	public static String editor_file_copy_path;
 	public static String editor_file_rename;
 
+	public static String error_not_connected_to_database;
+
 	// New Connection Wizard
 	public static String dialog_setting_connection_wizard_title;
 	public static String dialog_setting_connection_general;
@@ -595,6 +596,15 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_types_label_confirm_sql_execution;
 
 	// Preference/Properties
+
+	public static String pref_page_transaction_info_dialog_checkbox_show_all_queries;
+	public static String pref_page_transaction_info_dialog_checkbox_show_previous_transaction;
+	public static String pref_page_transaction_info_dialog_label_otherwise;
+	public static String pref_page_transaction_info_dialog_label_show_all_transaction_queries;
+	public static String pref_page_transaction_log_dialog_header_transaction_log;
+	public static String pref_page_transaction_log_dialog_label_connect_to_a_database;
+	public static String pref_page_transaction_log_dialog_label_no_editor;
+	public static String pref_page_transaction_log_dialog_label_open_database_editor;
 
 	// Connection edit
 	public static String dialog_connection_edit_title;
