@@ -975,6 +975,21 @@
                     <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
                 </driver>
 
+                <!-- OmniSci MapD -->
+
+                <driver
+                        id="omnisci_mapd"
+                        label="MapD"
+                        icon="icons/mapd_icon.png"
+                        iconBig="icons/mapd_icon_big.png"
+                        class="com.mapd.jdbc.MapDDriver"
+                        sampleURL="jdbc:mapd:{host}:{port}:{database}"
+                        defaultPort="9092"
+                        description="OmniSci MapD GPU SQL Analytics Engine"
+                        webURL="https://www.omnisci.com/docs/v4.0.0/6_jdbc.html"
+                        categories="analytics,sql">
+                </driver>
+
                 <!-- Legacy deprecated drivers -->
 
                 <driver
