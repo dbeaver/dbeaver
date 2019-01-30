@@ -20,11 +20,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
@@ -50,8 +53,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -66,6 +68,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     private final DBCExecutionContext context;
     private DBSObject container;
+    private Map<String, Boolean> enabledTypes = new HashMap<>();
 
     public GotoObjectDialog(Shell shell, DBCExecutionContext context, DBSObject container) {
         super(shell, true);
@@ -82,13 +85,16 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         if (!SHOW_OBJECT_TYPES) {
             return null;
         }
+        IDialogSettings driverSettings = DialogSettings.getOrCreateSection(
+            getDialogSettings(), context.getDataSource().getContainer().getDriver().getId());
+
         DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, context.getDataSource());
         if (structureAssistant == null) {
             return null;
         }
 
         List<DBSObjectType> typesToSearch = new ArrayList<>();
-        for (DBSObjectType type : structureAssistant.getSupportedObjectTypes()) {
+        for (DBSObjectType type : structureAssistant.getSearchObjectTypes()) {
             Class<? extends DBSObject> typeClass = type.getTypeClass();
             if (DBSEntityElement.class.isAssignableFrom(typeClass)) {
                 // Skipp attributes (columns), methods, etc
@@ -104,9 +110,32 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             cbGroup.setLayout(rowLayout);
             cbGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             for (DBSObjectType type : typesToSearch) {
+                if (!isValidObjectType(type)) {
+                    continue;
+                }
+
                 Button cb = new Button(cbGroup, SWT.CHECK);
-                cb.setText(type.getDescription());
-                cb.setSelection(true);
+                cb.setData(type);
+                String typeName = CommonUtils.notEmpty(type.getTypeName());
+                cb.setText(typeName);
+
+                boolean enabled;
+                if (driverSettings.get(typeName) != null) {
+                    enabled = driverSettings.getBoolean(typeName);
+                } else {
+                    enabled = true;
+                }
+                cb.setSelection(enabled);
+                enabledTypes.put(typeName, enabled);
+                cb.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        enabledTypes.put(typeName, cb.getSelection());
+                        driverSettings.put(typeName, cb.getSelection());
+                        applyFilter();
+                        //scheduleRefresh();
+                    }
+                });
             }
 
             return cbGroup;
@@ -128,6 +157,14 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     @Override
     protected ItemsFilter createFilter() {
         return new ObjectFilter();
+    }
+
+    protected boolean isValidObjectType(DBSObjectType objectType) {
+        Class<? extends DBSObject> typeClass = objectType.getTypeClass();
+        if (DBSEntityElement.class.isAssignableFrom(typeClass)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -153,10 +190,12 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         try {
             monitor.beginTask("Search for '" + nameMask + "'", 100);
             List<DBSObjectType> typesToSearch = new ArrayList<>();
-            for (DBSObjectType type : structureAssistant.getSupportedObjectTypes()) {
-                Class<? extends DBSObject> typeClass = type.getTypeClass();
-                if (DBSEntityElement.class.isAssignableFrom(typeClass)) {
-                    // Skipp attributes (columns), methods, etc
+            for (DBSObjectType type : structureAssistant.getSearchObjectTypes()) {
+                if (!isValidObjectType(type)) {
+                    // Skip attributes (columns), methods, etc
+                    continue;
+                }
+                if (!Boolean.TRUE.equals(enabledTypes.get(type.getTypeName()))) {
                     continue;
                 }
                 typesToSearch.add(type);
@@ -236,6 +275,11 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private class ObjectFilter extends ItemsFilter {
 
         private Pattern namePattern = null;
+        private Map<String, Boolean> enabledTypesCopy;
+
+        public ObjectFilter() {
+            this.enabledTypesCopy = new HashMap<>(enabledTypes);
+        }
 
         @Override
         public int getMatchRule() {
@@ -282,6 +326,18 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             return namePattern;
         }
 
+        @Override
+        public boolean equalsFilter(ItemsFilter filter) {
+            return
+                filter instanceof ObjectFilter &&
+                super.equalsFilter(filter) &&
+                CommonUtils.equalObjects(enabledTypesCopy, ((ObjectFilter)filter).enabledTypesCopy);
+        }
+
+        @Override
+        public boolean isSubFilter(ItemsFilter filter) {
+            return super.isSubFilter(filter) && CommonUtils.equalObjects(enabledTypesCopy, ((ObjectFilter)filter).enabledTypesCopy);
+        }
     }
 
     private class ObjectFinder implements DBRRunnableParametrized<DBRProgressMonitor> {

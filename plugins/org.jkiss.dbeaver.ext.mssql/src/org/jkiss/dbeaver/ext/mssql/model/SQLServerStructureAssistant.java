@@ -145,7 +145,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
         StringBuilder objectTypeClause = new StringBuilder(100);
         for (SQLServerObjectType objectType : supObjectTypes) {
             if (objectTypeClause.length() > 0) objectTypeClause.append(",");
-            objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
+            objectTypeClause.append("'").append(objectType.getTypeID()).append("'");
         }
         if (objectTypeClause.length() == 0) {
             return;
