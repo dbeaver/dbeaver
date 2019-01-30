@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -59,7 +60,7 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Transaction log [" + context.getDataSource().getContainer().getName() + " : " + context.getContextName() + "]");
+        getShell().setText(CoreMessages.pref_page_transaction_log_dialog_header_transaction_log + context.getDataSource().getContainer().getName() + " : " + context.getContextName() + "]"); //$NON-NLS-2$ //$NON-NLS-3$
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
@@ -79,12 +80,12 @@ public class TransactionLogDialog extends TransactionInfoDialog {
         IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (activeEditor == null) {
             DBWorkbench.getPlatformUI().showError(
-                    "No editor",
-                "Transaction log is not available.\nOpen database editor.");
+                    CoreMessages.pref_page_transaction_log_dialog_label_no_editor,
+                CoreMessages.pref_page_transaction_log_dialog_label_open_database);
         } else if (executionContext == null) {
             DBWorkbench.getPlatformUI().showError(
-                ModelMessages.error_not_connected_to_database,
-                "Transaction log is not available.\nConnect to a database.");
+                CoreMessages.pref_page_transaction_log_dialog_label_not_connected,
+                CoreMessages.pref_page_transaction_log_dialog_label_connect_to_a_database);
         } else {
             final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);
             dialog.open();
