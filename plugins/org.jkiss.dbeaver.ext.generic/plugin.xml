@@ -683,7 +683,7 @@
                 </driver>
                 <driver
                     id="spark_hive"
-                    label="Spark Hive"
+                    label="Apache Spark"
                     icon="icons/spark_hive_icon.png"
                     iconBig="icons/spark_hive_icon_big.png"
                     class="org.apache.hive.jdbc.HiveDriver"
@@ -953,6 +953,22 @@
                         categories="analytic,hadoop,sql">
                     <file type="jar" path="https://download.dremio.com/jdbc-driver/3.0.6-201812082352540436-1f684f9/dremio-jdbc-driver-3.0.6-201812082352540436-1f684f9.jar"/>
                     <parameter name="omit-catalog" value="true"/>
+                </driver>
+
+                <!-- Apache Ignite -->
+
+                <driver
+                        id="apache_ignite"
+                        label="Apache Ignite"
+                        icon="icons/ignite_icon.png"
+                        iconBig="icons/ignite_icon_big.png"
+                        class="org.apache.ignite.IgniteJdbcThinDriver"
+                        sampleURL="jdbc:ignite:thin://{host}[:{port}][;schema={database}]"
+                        defaultPort=""
+                        description="Apache Ignite JDBC driver"
+                        webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
+                        categories="hadoop">
+                    <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
                 </driver>
 
                 <!-- Legacy deprecated drivers -->
