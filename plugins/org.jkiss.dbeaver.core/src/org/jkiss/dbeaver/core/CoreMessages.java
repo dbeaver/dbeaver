@@ -598,23 +598,23 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_connection_label_use_environment;
 
-	public static String pref_page_transaction_info_dialog_checkbox_show_all_queries;
+	public static String transaction_info_dialog_checkbox_show_all_queries;
 
-	public static String pref_page_transaction_info_dialog_checkbox_show_previous_transactions;
+	public static String transaction_info_dialog_checkbox_show_previous_transactions;
 
-	public static String pref_page_transaction_info_dialog_label_otherwise;
+	public static String transaction_info_dialog_label_otherwise;
 
-	public static String pref_page_transaction_info_dialog_label_show_all_transaction_queries;
+	public static String transaction_info_dialog_label_show_all_transaction_queries;
 
-	public static String pref_page_transaction_log_dialog_header_transaction_log;
+	public static String transaction_log_dialog_header_transaction_log;
 
 	// Preference/Properties
 
-	public static String pref_page_transaction_log_dialog_label_connect_to_a_database;
+	public static String transaction_log_dialog_label_connect_to_a_database;
 
-	public static String pref_page_transaction_log_dialog_label_no_editor;
+	public static String transaction_log_dialog_label_no_editor;
 
-	public static String pref_page_transaction_log_dialog_label_open_database;
+	public static String transaction_log_dialog_label_open_database;
 
 	// Connection edit
 	public static String dialog_connection_edit_title;
@@ -731,7 +731,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_driver_download_auto_page_download_failed_msg;
 	// Driver download
 
-	public static String pref_page_transaction_log_dialog_label_not_connected;
+	public static String transaction_log_dialog_error_not_connected;
 
 	static {
 		// initialize resource bundle

@@ -71,7 +71,7 @@ public abstract class TransactionInfoDialog extends Dialog {
             ((GridData) gd).heightHint = logViewer.getControl().getHeaderHeight() + logViewer.getControl().getItemHeight() * 5;
         }
 
-        showAllCheck = UIUtils.createCheckbox(composite, CoreMessages.pref_page_transaction_info_dialog_checkbox_show_all_queries, CoreMessages.pref_page_transaction_info_dialog_label_show_all_transaction_queries, false, 1);
+        showAllCheck = UIUtils.createCheckbox(composite, CoreMessages.transaction_info_dialog_checkbox_show_all_queries, CoreMessages.transaction_info_dialog_label_show_all_transaction_queries, false, 1);
         showAllCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -79,7 +79,7 @@ public abstract class TransactionInfoDialog extends Dialog {
             }
         });
 
-        showPreviousCheck = UIUtils.createCheckbox(composite, CoreMessages.pref_page_transaction_info_dialog_checkbox_show_previous_transactions, CoreMessages.pref_page_transaction_info_dialog_label_otherwise, false, 1);
+        showPreviousCheck = UIUtils.createCheckbox(composite, CoreMessages.transaction_info_dialog_checkbox_show_previous_transactions, CoreMessages.transaction_info_dialog_label_otherwise, false, 1);
         showPreviousCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
