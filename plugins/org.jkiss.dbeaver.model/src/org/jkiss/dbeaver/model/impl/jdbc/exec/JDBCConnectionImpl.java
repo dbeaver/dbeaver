@@ -100,8 +100,8 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws DBCException
     {
         try {
-            if (type == DBCStatementType.EXEC) {
-                // Execute as call
+            if (type == DBCStatementType.EXEC && JDBCUtils.queryHasOutputParameters(getDataSource().getSQLDialect(), sqlQuery)) {
+                // Execute as call - only if we query has out parameters bounds
                 try {
                     return prepareCall(
                         sqlQuery,

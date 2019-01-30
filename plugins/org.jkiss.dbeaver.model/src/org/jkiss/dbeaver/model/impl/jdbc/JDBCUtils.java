@@ -804,4 +804,8 @@ public class JDBCUtils {
         }
     }
 
+    public static boolean queryHasOutputParameters(SQLDialect sqlDialect, String sqlQuery) {
+        return sqlQuery.contains("?");
+    }
+
 }
