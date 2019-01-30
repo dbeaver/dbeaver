@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 /**
  * ValueFormatSelector
@@ -31,11 +32,11 @@ public class ValueFormatSelector {
     private final Combo formatCombo;
 
     public ValueFormatSelector(@NotNull Composite parent) {
-        UIUtils.createControlLabel(parent, "Value Format");
+        UIUtils.createControlLabel(parent, ResultSetMessages.value_format_selector_value);
         formatCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-        formatCombo.add("Display (default)");
-        formatCombo.add("Editable");
-        formatCombo.add("Database native");
+        formatCombo.add(ResultSetMessages.value_format_selector_display);
+        formatCombo.add(ResultSetMessages.value_format_selector_editable);
+        formatCombo.add(ResultSetMessages.value_format_selector_database_native);
     }
 
     public void select(@NotNull DBDDisplayFormat format) {
