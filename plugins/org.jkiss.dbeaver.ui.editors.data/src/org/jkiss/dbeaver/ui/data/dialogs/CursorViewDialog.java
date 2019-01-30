@@ -90,7 +90,10 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
                         }
                     }
                 }
-                UIUtils.asyncExec(this::close);
+                UIUtils.asyncExec(() -> {
+                    setReturnCode(IDialogConstants.CANCEL_ID);
+                    close();
+                });
             }
         }
 
