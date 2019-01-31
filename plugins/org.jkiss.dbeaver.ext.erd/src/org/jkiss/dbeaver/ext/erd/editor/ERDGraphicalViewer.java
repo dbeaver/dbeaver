@@ -325,7 +325,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             // Workbench shutdown doesn't close editor
             UIUtils.asyncExec(() -> {
                 IWorkbenchPartSite site = editor.getSite();
-                if (site != null) {
+                if (site != null && site.getWorkbenchWindow() != null) {
                     site.getWorkbenchWindow().getActivePage().closeEditor(editor, false);
                 }
             });
