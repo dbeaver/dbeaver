@@ -127,6 +127,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
 
         boolean showTableGrid = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID);
+        if (UIStyles.isDarkTheme()) {
+            // Do not show grid in dark theme. It is awful
+            showTableGrid = false;
+        }
         if (contentProvider instanceof ITreeContentProvider) {
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
