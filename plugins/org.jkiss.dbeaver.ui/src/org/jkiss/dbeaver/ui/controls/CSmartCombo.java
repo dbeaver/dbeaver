@@ -390,7 +390,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             this.imageLabel.setImage(itemImage);
         }
         if (itemBackground == null) {
-            itemBackground = UIStyles.getDefaultTextBackground();
+            itemBackground = UIStyles.getDefaultWidgetBackground();
         }
         this.setBackground(itemBackground);
     }
