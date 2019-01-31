@@ -70,7 +70,7 @@ public class SQLPlanTreeViewer extends Viewer
 
         this.planPanel = UIUtils.createPartDivider(workbenchPart, composite, SWT.HORIZONTAL);
         this.planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-        this.planPanel.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        //this.planPanel.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         final GridLayout gl = new GridLayout(1, false);
         gl.marginWidth = 0;
         gl.marginHeight = 0;
