@@ -169,7 +169,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     /**
-     * Disable by default. Some drivers fail to conenct when client app name is specified
+     * Disable by default. Some drivers fail to connect when client app name is specified
      * Enable for all derived classes.
      */
     protected boolean isPopulateClientAppName() {

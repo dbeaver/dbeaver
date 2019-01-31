@@ -48,4 +48,9 @@ public class SnowflakeDataSource extends GenericDataSource {
 
         return props;
     }
+
+    @Override
+    protected boolean isPopulateClientAppName() {
+        return false;
+    }
 }
