@@ -19,14 +19,14 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -53,18 +52,18 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     public static final String PAGE_NAME = ConnectionPageNetwork.class.getSimpleName();
 
     private static final Log log = Log.getLog(ConnectionPageNetwork.class);
-    private CTabFolder handlersFolder;
+    private TabFolder handlersFolder;
     private DataSourceDescriptor prevDataSource;
 
     private static class HandlerBlock {
         private final IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
         private final Composite blockControl;
         private final Button useHandlerCheck;
-        private final CTabItem tabItem;
+        private final TabItem tabItem;
         ControlEnableState blockEnableState;
         private final Map<String, DBWHandlerConfiguration> loadedConfigs = new HashMap<>();
 
-        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, CTabItem tabItem)
+        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, TabItem tabItem)
         {
             this.configurator = configurator;
             this.blockControl = blockControl;
@@ -87,7 +86,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        handlersFolder = new CTabFolder(parent, SWT.TOP | SWT.FLAT);
+        handlersFolder = new TabFolder(parent, SWT.TOP | SWT.FLAT);
         handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         setControl(handlersFolder);
@@ -108,7 +107,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
             return;
         }
 
-        CTabItem tabItem = new CTabItem(handlersFolder, SWT.NONE);
+        TabItem tabItem = new TabItem(handlersFolder, SWT.NONE);
         tabItem.setText(descriptor.getLabel());
         tabItem.setToolTipText(descriptor.getDescription());
 
@@ -143,7 +142,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
         NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
 
         if (prevDataSource == null || prevDataSource != dataSource) {
-            for (CTabItem item : handlersFolder.getItems()) {
+            for (TabItem item : handlersFolder.getItems()) {
                 item.dispose();
             }
             for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
@@ -160,7 +159,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
 //            }
         }
 
-        CTabItem selectItem = null;
+        TabItem selectItem = null;
         for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
             DBWHandlerConfiguration configuration = dataSource.getConnectionConfiguration().getHandler(descriptor.getId());
             if (configuration == null) {
