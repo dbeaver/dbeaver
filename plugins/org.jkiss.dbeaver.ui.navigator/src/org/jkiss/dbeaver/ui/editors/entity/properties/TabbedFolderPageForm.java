@@ -18,11 +18,12 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.fieldassist.ComboContentAdapter;
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -520,10 +521,22 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                     strings[i] = objectValueToString(items[i]);
                 }
-                Combo combo = UIUtils.createLabelCombo(parent, property.getDisplayName(), SWT.BORDER | SWT.DROP_DOWN | (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                Combo combo = UIUtils.createLabelCombo(
+                    parent,
+                    property.getDisplayName(),
+                    SWT.BORDER | SWT.DROP_DOWN |
+                        (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) |
+                        (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 combo.setItems(strings);
                 combo.setText(objectValueToString(value));
                 combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+
+                if ((combo.getStyle() & SWT.READ_ONLY) == 0) {
+                    SimpleContentProposalProvider proposalProvider = new SimpleContentProposalProvider(strings);
+                    proposalProvider.setFiltering(true);
+                    UIUtils.installContentProposal(combo, new ComboContentAdapter(), proposalProvider, true, true);
+                }
+
                 return combo;
             }
         }
