@@ -67,6 +67,16 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
     }
 
     @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        return new DBSObjectType[] {
+            SQLServerObjectType.U,
+            SQLServerObjectType.V,
+            SQLServerObjectType.SN,
+            SQLServerObjectType.P,
+        };
+    }
+
+    @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return new DBSObjectType[] {
@@ -74,6 +84,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
             SQLServerObjectType.U,
             SQLServerObjectType.IT,
             SQLServerObjectType.V,
+            SQLServerObjectType.P,
         };
     }
 
@@ -134,7 +145,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
         StringBuilder objectTypeClause = new StringBuilder(100);
         for (SQLServerObjectType objectType : supObjectTypes) {
             if (objectTypeClause.length() > 0) objectTypeClause.append(",");
-            objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
+            objectTypeClause.append("'").append(objectType.getTypeID()).append("'");
         }
         if (objectTypeClause.length() == 0) {
             return;

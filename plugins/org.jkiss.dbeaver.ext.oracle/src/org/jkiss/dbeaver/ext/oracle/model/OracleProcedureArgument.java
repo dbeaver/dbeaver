@@ -63,7 +63,11 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
         this.position = JDBCUtils.safeGetInt(dbResult, "POSITION");
         this.dataLevel = JDBCUtils.safeGetInt(dbResult, "DATA_LEVEL");
         this.sequence = JDBCUtils.safeGetInt(dbResult, "SEQUENCE");
-        this.mode = OracleParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
+        if (CommonUtils.isEmpty(this.name)) {
+            this.mode =OracleParameterMode.RETURN;
+        } else {
+            this.mode = OracleParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
+        }
         final String dataType = JDBCUtils.safeGetString(dbResult, "DATA_TYPE");
         this.type = CommonUtils.isEmpty(dataType) ? null : OracleDataType.resolveDataType(
             monitor,

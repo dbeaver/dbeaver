@@ -609,23 +609,33 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
-        getMaxParameterLength(parameters, inParameters);
+        if (parameters != null) {
+            inParameters.addAll(parameters);
+        }
+        //getMaxParameterLength(parameters, inParameters);
         boolean useBrackets = useBracketsForExec();
         if (useBrackets) sql.append("{ ");
         sql.append(getStoredProcedureCallInitialClause(proc)).append("(");
         if (!inParameters.isEmpty()) {
-            sql.append("\n");
+            boolean first = true;
             for (int i = 0; i < inParameters.size(); i++) {
                 DBSProcedureParameter parameter = inParameters.get(i);
-                sql.append("\t:").append(CommonUtils.escapeIdentifier(parameter.getName()));
-                if (i < (inParameters.size() - 1)) {
+                if (!first) {
                     sql.append(",");
-                } else {
-                    sql.append(" ");
+                }
+                switch (parameter.getParameterKind()) {
+                    case IN:
+                        sql.append(":").append(CommonUtils.escapeIdentifier(parameter.getName()));
+                        break;
+                    case RETURN:
+                        continue;
+                    default:
+                        sql.append("?");
                 }
                 String typeName = parameter.getParameterType().getFullTypeName();
-                sql.append("\t-- put the ").append(parameter.getName())
-                    .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")\n");
+//                sql.append("\t-- put the ").append(parameter.getName())
+//                    .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")");
+                first = false;
             }
         }
         sql.append(")");

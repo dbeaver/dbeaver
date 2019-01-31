@@ -66,6 +66,17 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     }
 
     @Override
+    public DBSObjectType[] getSearchObjectTypes() {
+        return new DBSObjectType[] {
+            OracleObjectType.TABLE,
+            OracleObjectType.PACKAGE,
+            OracleObjectType.INDEX,
+            OracleObjectType.PROCEDURE,
+            OracleObjectType.SEQUENCE,
+        };
+    }
+
+    @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return new DBSObjectType[] {

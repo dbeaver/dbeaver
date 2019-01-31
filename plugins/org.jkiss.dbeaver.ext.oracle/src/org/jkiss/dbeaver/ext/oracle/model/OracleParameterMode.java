@@ -26,7 +26,8 @@ import org.jkiss.utils.CommonUtils;
 public enum OracleParameterMode {
     IN(DBSProcedureParameterKind.IN),
     OUT(DBSProcedureParameterKind.OUT),
-    INOUT(DBSProcedureParameterKind.INOUT);
+    INOUT(DBSProcedureParameterKind.INOUT),
+    RETURN(DBSProcedureParameterKind.RETURN);
     private final DBSProcedureParameterKind parameterKind;
 
     OracleParameterMode(DBSProcedureParameterKind parameterKind)
