@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -57,8 +56,11 @@ public class SQLiteUtils {
                 try (JDBCResultSet resultSet = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (resultSet.next()) {
-                        sql.append(resultSet.getString(1));
-                        sql.append(";\n");
+                        String ddl = resultSet.getString(1);
+                        if (ddl != null) {
+                            sql.append(ddl);
+                            sql.append(";\n");
+                        }
                     }
                     return sql.toString();
                 }
