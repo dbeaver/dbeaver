@@ -200,7 +200,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void saveSettings(IDialogSettings settings) {
-        if (targetName != null) {
+        if (!CommonUtils.isEmpty(targetName)) {
             settings.put("targetName", targetName);
         } else if (target != null) {
             settings.put("targetName", target.getName());
