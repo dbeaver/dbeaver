@@ -70,7 +70,7 @@ public enum SQLServerObjectType implements DBSObjectType {
 
     @Override
     public String getTypeName() {
-        return type;
+        return description;
     }
 
     @Override
@@ -86,6 +86,10 @@ public enum SQLServerObjectType implements DBSObjectType {
     @Override
     public Class<? extends DBSObject> getTypeClass() {
         return theClass;
+    }
+
+    public String getTypeID() {
+        return type;
     }
 
     @Override
