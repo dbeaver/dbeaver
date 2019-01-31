@@ -21,7 +21,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,8 +43,17 @@ public class UIStyles {
         return EDITORS_PREFERENCE_STORE;
     }
 
+    public static boolean isDarkTheme() {
+        return UIUtils.isDark(getDefaultWidgetBackground().getRGB());
+    }
+
     public static Color getDefaultWidgetBackground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.Background", SWT.COLOR_WIDGET_BACKGROUND);
+        ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        Color color = theme.getColorRegistry().get("org.eclipse.ui.workbench.INACTIVE_TAB_BG_END");
+        if (color == null) {
+            color = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        }
+        return color;
     }
 
     public static Color getDefaultTextBackground() {
