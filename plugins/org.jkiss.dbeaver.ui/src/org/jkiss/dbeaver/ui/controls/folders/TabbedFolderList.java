@@ -82,7 +82,6 @@ public class TabbedFolderList extends Composite {
     private int tabsThatFitInComposite = NONE;
 
     Color widgetForeground;
-    Color widgetBackground;
     Color widgetNormalShadow;
     Color widgetDarkShadow;
     private Color listBackground;
@@ -325,7 +324,6 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            e.gc.setBackground(widgetBackground);
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
 
@@ -409,7 +407,6 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            e.gc.setBackground(widgetBackground);
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
 
@@ -457,14 +454,15 @@ public class TabbedFolderList extends Composite {
 
     public TabbedFolderList(Composite parent, boolean section) {
         super(parent, SWT.NO_FOCUS);
-        CSSUtils.setCSSClass(this, "Composite");
+        //CSSUtils.setCSSClass(this, "MPartStack");
         this.section = section;
         removeAll();
         setLayout(new FormLayout());
-        initColours();
-        initAccessible();
         topNavigationElement = new TopNavigationElement(this);
         bottomNavigationElement = new BottomNavigationElement(this);
+
+        initColours();
+        initAccessible();
 
         this.addFocusListener(new FocusListener() {
 
@@ -726,7 +724,15 @@ public class TabbedFolderList extends Composite {
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
         listBackground = UIStyles.getDefaultTextBackground();
-        widgetBackground = getBackground();
+        Color widgetBackground = getBackground();
+        if (UIUtils.isInDialog(this) && UIStyles.isDarkTheme()) {
+            // FIXME: hacking of dark theme
+            // By some reason E4 sets white background in dark theme.
+            widgetBackground = UIStyles.getDefaultTextBackground();
+            super.setBackground(widgetBackground);
+            topNavigationElement.setBackground(widgetBackground);
+            bottomNavigationElement.setBackground(widgetBackground);
+        }
         widgetForeground = UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
