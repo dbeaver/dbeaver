@@ -110,5 +110,15 @@ public class OracleMessages extends NLS {
 	public static String dialog_controlgroup_performance;
 	public static String edit_create_checkbox_group_use_rule;
 	public static String edit_create_checkbox_adds_rule_tool_tip_text;
+	public static String pref_page_oracle_checkbox_disable_escape_processing;
+	public static String pref_page_oracle_checkbox_enable_dbms_output;
+	public static String pref_page_oracle_checkbox_use_rowid_to_identify_rows;
+	public static String pref_page_oracle_checkbox_read_all_synonyms;
+	public static String pref_page_oracle_label_by_default_plan_table;
+	public static String pref_page_oracle_label_disable_client_side_parser;
+	public static String pref_page_oracle_label_if_unchecked_java_classes;
+	public static String pref_page_oracle_label_plan_table;
+	public static String pref_page_oracle_legend_executin_plan;
+	public static String pref_page_oracle_legend_misc;
 
 }
