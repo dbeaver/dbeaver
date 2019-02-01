@@ -49,7 +49,7 @@ public class UIStyles {
 
     public static Color getDefaultWidgetBackground() {
         ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Color color = theme.getColorRegistry().get("org.eclipse.ui.workbench.INACTIVE_TAB_BG_END");
+        Color color = theme.getColorRegistry().get("org.eclipse.ui.workbench.INACTIVE_TAB_BG_START");
         if (color == null) {
             color = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         }
