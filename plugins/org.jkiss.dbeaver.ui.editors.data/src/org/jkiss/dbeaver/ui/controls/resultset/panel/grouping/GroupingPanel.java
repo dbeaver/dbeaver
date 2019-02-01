@@ -156,8 +156,6 @@ public class GroupingPanel implements IResultSetPanel {
         contributionManager.add(new DeleteColumnAction(resultsContainer));
         contributionManager.add(new Separator());
         contributionManager.add(new ClearGroupingAction(resultsContainer));
-
-        contributionManager.add(new PresentationSelectAction());
     }
 
     abstract static class GroupingAction extends Action {
@@ -356,37 +354,4 @@ public class GroupingPanel implements IResultSetPanel {
         }
     }
 
-    private class PresentationSelectAction extends Action implements IMenuCreator {
-        public PresentationSelectAction() {
-            super("View", AS_DROP_DOWN_MENU);
-            //setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.VI));
-        }
-
-        @Override
-        public IMenuCreator getMenuCreator() {
-            return this;
-        }
-
-        @Override
-        public void dispose() {
-
-        }
-
-        @Override
-        public Menu getMenu(Control parent) {
-            MenuManager menuManager = new MenuManager();
-            List<ResultSetPresentationDescriptor> presentations = ((ResultSetViewer) resultsContainer.getResultSetController()).getAvailablePresentations();
-            if (!CommonUtils.isEmpty(presentations)) {
-                for (ResultSetPresentationDescriptor pd : presentations) {
-                    menuManager.add(new PresentationToggleAction(pd));
-                }
-            }
-            return menuManager.createContextMenu(parent);
-        }
-
-        @Override
-        public Menu getMenu(Menu parent) {
-            return null;
-        }
-    }
 }
