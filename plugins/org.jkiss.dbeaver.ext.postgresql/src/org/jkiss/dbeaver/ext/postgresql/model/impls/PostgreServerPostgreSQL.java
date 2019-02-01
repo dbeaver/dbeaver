@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
  */
 public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
 
+    public static final String TYPE_ID = "postgresql";
+
     public PostgreServerPostgreSQL(PostgreDataSource dataSource) {
         super(dataSource);
     }

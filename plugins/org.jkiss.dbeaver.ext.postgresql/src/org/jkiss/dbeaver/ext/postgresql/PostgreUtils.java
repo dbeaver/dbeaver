@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -487,6 +488,9 @@ public class PostgreUtils {
 
     public static PostgreServerType getServerType(DBPDriver driver) {
         String serverTypeName = CommonUtils.toString(driver.getDriverParameter(PostgreConstants.PROP_SERVER_TYPE));
+        if (CommonUtils.isEmpty(serverTypeName)) {
+            serverTypeName = PostgreServerPostgreSQL.TYPE_ID;
+        }
         PostgreServerType serverType = PostgreServerTypeRegistry.getInstance().getServerType(serverTypeName);
         if (serverType == null) {
             throw new IllegalStateException("PostgreSQL server type '" + serverTypeName + "' not found");
