@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.wmi.Activator;
+import org.jkiss.dbeaver.ext.wmi.WMIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -38,8 +39,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class WMIConnectionPage extends ConnectionPageAbstract
 {
-    public static final String DEFAULT_HOST = "localhost";
-    public static final String DEFAULT_NAMESPACE = "root/cimv2";
+    public static final String DEFAULT_HOST = "localhost"; //$NON-NLS-1$
+    public static final String DEFAULT_NAMESPACE = "root/cimv2"; //$NON-NLS-1$
 
     private Text domainText;
     private Text hostText;
@@ -48,7 +49,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
     private Text usernameText;
     private Text passwordText;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_logo.png");
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_logo.png"); //$NON-NLS-1$
 
     public WMIConnectionPage()
     {
@@ -84,7 +85,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Label hostLabel = UIUtils.createControlLabel(addrGroup, "Host");
+        Label hostLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_host);
         hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         hostText = new Text(addrGroup, SWT.BORDER);
@@ -93,7 +94,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
 
-        Label domainLabel = UIUtils.createControlLabel(addrGroup, "Domain");
+        Label domainLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_domain);
         domainLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         domainText = new Text(addrGroup, SWT.BORDER);
@@ -102,7 +103,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         domainText.setLayoutData(gd);
         domainText.addModifyListener(textListener);
 
-        Label namespaceLabel = UIUtils.createControlLabel(addrGroup, "Namespace");
+        Label namespaceLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_namespace);
         namespaceLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         namespaceCombo = new Combo(addrGroup, SWT.BORDER);
@@ -119,7 +120,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         divLabel.setLayoutData(gd);
 
         {
-            Label usernameLabel = UIUtils.createControlLabel(addrGroup, "User");
+            Label usernameLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_user);
             usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             usernameText = new Text(addrGroup, SWT.BORDER);
@@ -130,7 +131,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
 
             UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
-            Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
+            Label passwordLabel = UIUtils.createControlLabel(addrGroup, WMIMessages.wmi_connection_page_label_password);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
