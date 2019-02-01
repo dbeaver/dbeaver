@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -51,35 +52,35 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
         composite.setLayoutData(gd);
 
         {
-            Group certGroup = UIUtils.createControlGroup(composite, "Certificates", 2, GridData.FILL_HORIZONTAL, -1);
-            UIUtils.createControlLabel(certGroup, "CA certificate");
+            Group certGroup = UIUtils.createControlGroup(composite, MySQLMessages.mysql_ssl_configurator_legend_certificates, 2, GridData.FILL_HORIZONTAL, -1);
+            UIUtils.createControlLabel(certGroup, MySQLMessages.mysql_ssl_configurator_label_ca_certificate);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = 130;
-            clientCAText = new TextWithOpenFile(certGroup, "CA Certificate", new String[]{"*.*", "*.crt", "*.cert", "*.pem", "*"});
+            clientCAText = new TextWithOpenFile(certGroup, MySQLMessages.mysql_ssl_configurator_text_with_open_file_ca_certificate, new String[]{"*.*", "*.crt", "*.cert", "*.pem", "*"}); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
             clientCAText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(certGroup, "SSL certificate");
+            UIUtils.createControlLabel(certGroup, MySQLMessages.mysql_ssl_configurator_label_ssl_certificate);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = 130;
-            clientCertText = new TextWithOpenFile(certGroup, "SSL Certificate", new String[]{"*.*", "*.cert", "*.pem", "*"});
+            clientCertText = new TextWithOpenFile(certGroup, MySQLMessages.mysql_ssl_configurator_text_with_open_file_ssl_certificate, new String[]{"*.*", "*.cert", "*.pem", "*"}); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
             clientCertText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(certGroup, "SSL certificate key");
+            UIUtils.createControlLabel(certGroup, MySQLMessages.mysql_ssl_configurator_label_ssl_certificate_key);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = 130;
-            clientKeyText = new TextWithOpenFile(certGroup, "SSL Certificate", new String[]{"*.*", "*.cert", "*.pem", "*"});
+            clientKeyText = new TextWithOpenFile(certGroup, MySQLMessages.mysql_ssl_configurator_text_with_open_file_ssl_certificate_key, new String[]{"*.*", "*.cert", "*.pem", "*"}); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
             clientKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            cipherSuitesText = UIUtils.createLabelText(certGroup, "Cipher suites (optional)", "");
-            cipherSuitesText.setToolTipText("Overrides the cipher suites enabled for use on the underlying SSL sockets.\nThis may be required when using external JSSE providers or to specify cipher suites compatible with both MySQL server and used JVM.");
+            cipherSuitesText = UIUtils.createLabelText(certGroup, MySQLMessages.mysql_ssl_configurator_label_cipher_suites, ""); //$NON-NLS-2$
+            cipherSuitesText.setToolTipText(MySQLMessages.mysql_ssl_configurator_label_overrides_the_cipher_suites);
         }
 
 
         {
-            Group advGroup = UIUtils.createControlGroup(composite, "Advanced", 2, GridData.FILL_HORIZONTAL, -1);
-            requireSSQL = UIUtils.createLabelCheckbox(advGroup, "Require SSL", "Require server support of SSL connection.", false);
-            veryServerCert = UIUtils.createLabelCheckbox(advGroup, "Verify server certificate", "Should the driver verify the server's certificate?\nWhen using this feature, the explicit certificate parameters should be specified, rather than system properties.", true);
-            allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(advGroup, "Allow public key retrieval", "Allows special handshake roundtrip to get server RSA public key directly from server.", false);
+            Group advGroup = UIUtils.createControlGroup(composite, MySQLMessages.mysql_ssl_configurator_legend_advanced, 2, GridData.FILL_HORIZONTAL, -1);
+            requireSSQL = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_require_ssl, MySQLMessages.mysql_ssl_configurator_label_require_server_support, false);
+            veryServerCert = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_verify_server_certificate, MySQLMessages.mysql_ssl_configurator_label_should_the_driver_verify, true);
+            allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_allow_public_key, MySQLMessages.mysql_ssl_configurator_label_allows_special_handshake, false);
         }
 //        debugSSL = UIUtils.createLabelCheckbox(composite, "Debug SSL", "Prints debug information in standard output.", false);
     }
