@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * Oracle materialized view
  */
-public class OracleMaterializedView extends OracleSchemaObject implements OracleSourceObject, DBSObjectLazy<OracleDataSource>
+public class OracleMaterializedView extends OracleTableBase implements OracleSourceObject, DBSObjectLazy<OracleDataSource>
 {
 
     private Object container;
@@ -194,5 +194,20 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
     public Object getLazyReference(Object propertyId)
     {
         return container;
+    }
+
+    @Override
+    public boolean isView() {
+        return true;
+    }
+
+    @Override
+    public TableAdditionalInfo getAdditionalInfo() {
+        return null;
+    }
+
+    @Override
+    protected String getTableTypeName() {
+        return "MVIEW";
     }
 }
