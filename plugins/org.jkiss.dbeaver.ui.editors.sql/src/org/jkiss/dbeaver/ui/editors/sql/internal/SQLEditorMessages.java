@@ -71,7 +71,13 @@ public class SQLEditorMessages extends NLS {
     public static String action_menu_sqleditor_maximizeResultsPanel;
     public static String action_menu_sqleditor_restoreResultsPanel;
 
-    public static String sql_editor_menu_format;
+    public static String sql_editor_double_click_behavior_horizontal;
+	public static String sql_editor_double_click_behavior_detached;
+	public static String sql_editor_double_click_behavior_vertical;
+	public static String sql_editor_label_results_are_below_the_editor;
+	public static String sql_editor_label_results_are_in_separate_view;
+	public static String sql_editor_label_results_are_to_the_right_from_editor;
+	public static String sql_editor_menu_format;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;
@@ -115,7 +121,11 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_enable_variables_tip;
     // SQProposalsSearch
     public static String pref_page_sql_format_group_search;
-    public static String pref_page_sql_completion_label_match_contains;
+    public static String pref_page_sql_completion_double_click_behavior_default;
+	public static String pref_page_sql_completion_double_click_behavior_lower_case;
+	public static String pref_page_sql_completion_double_click_behavior_upper_case;
+
+	public static String pref_page_sql_completion_label_match_contains;
     public static String pref_page_sql_completion_label_match_contains_tip;
     public static String pref_page_sql_completion_label_use_global_search;
     public static String pref_page_sql_completion_label_use_global_search_tip;
@@ -260,9 +270,17 @@ public class SQLEditorMessages extends NLS {
     public static String controls_querylog_success;
     public static String controls_querylog_transaction;
     public static String sql_editor_menu_choose_format;
-    public static String  sql_editor_panel_format;
-    
-    static {
+    public static String sql_editor_panel_format;
+    public static String sql_preference_constants_double_click_behavior_delete_always;
+	public static String sql_preference_constants_double_click_behavior_delete_only_new_scripts;
+	public static String sql_preference_constants_double_click_behavior_do_not_delete;
+
+	public static String sql_script_binding_type_radio_button_connection_name;
+	public static String sql_script_binding_type_radio_button_connection_parameters;
+	public static String sql_script_binding_type_radio_button_connection_unique;
+	public static String sql_script_binding_type_radio_button_connection_url;
+
+	static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);
     }

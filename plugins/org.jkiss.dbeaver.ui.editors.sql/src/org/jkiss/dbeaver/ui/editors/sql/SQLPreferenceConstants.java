@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+
 public class SQLPreferenceConstants
 {
 
     public enum EmptyScriptCloseBehavior {
-        NOTHING("Do not delete"),
-        DELETE_NEW("Delete only new scripts"),
-        DELETE_ALWAYS("Delete always");
+        NOTHING(SQLEditorMessages.sql_preference_constants_double_click_behavior_do_not_delete),
+        DELETE_NEW(SQLEditorMessages.sql_preference_constants_double_click_behavior_delete_only_new_scripts),
+        DELETE_ALWAYS(SQLEditorMessages.sql_preference_constants_double_click_behavior_delete_always);
 
         private final String title;
 
@@ -44,9 +46,9 @@ public class SQLPreferenceConstants
         }
         public static EmptyScriptCloseBehavior getByName(String name) {
             switch (name) {
-                case "true":
+                case "true": //$NON-NLS-1$
                     return SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW;
-                case "false":
+                case "false": //$NON-NLS-1$
                     return SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING;
                 default:
                     try {
@@ -59,60 +61,60 @@ public class SQLPreferenceConstants
 
     }
 
-    public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
-    public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
-    public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
-    public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
-    public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";
-    public static final String PROPOSAL_REPLACE_WORD                   = "SQLEditor.ContentAssistant.replace.word";
-    public static final String PROPOSAL_SORT_ALPHABETICALLY            = "SQLEditor.ContentAssistant.proposals.sort.alphabetically";
-    public static final String HIDE_DUPLICATE_PROPOSALS                = "SQLEditor.ContentAssistant.hide.duplicates";
-    public static final String PROPOSAL_SHORT_NAME                     = "SQLEditor.ContentAssistant.proposals.short.name";
-    public static final String PROPOSAL_ALWAYS_FQ                      = "SQLEditor.ContentAssistant.proposals.long.name";
-    public static final String INSERT_SPACE_AFTER_PROPOSALS            = "SQLEditor.ContentAssistant.insert.space.after.proposal";
-    public static final String USE_GLOBAL_ASSISTANT                    = "SQLEditor.ContentAssistant.use.global.search";
-    public static final String PROPOSALS_MATCH_CONTAINS                = "SQLEditor.ContentAssistant.matching.fuzzy";
-    public static final String SHOW_COLUMN_PROCEDURES                  = "SQLEditor.ContentAssistant.show.column.procedures";
-    public static final String SHOW_SERVER_HELP_TOPICS                 = "SQLEditor.ContentAssistant.show.helpTopics";
+    public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal"; //$NON-NLS-1$
+    public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable"; //$NON-NLS-1$
+    public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation"; //$NON-NLS-1$
+    public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay"; //$NON-NLS-1$
+    public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case"; //$NON-NLS-1$
+    public static final String PROPOSAL_REPLACE_WORD                   = "SQLEditor.ContentAssistant.replace.word"; //$NON-NLS-1$
+    public static final String PROPOSAL_SORT_ALPHABETICALLY            = "SQLEditor.ContentAssistant.proposals.sort.alphabetically"; //$NON-NLS-1$
+    public static final String HIDE_DUPLICATE_PROPOSALS                = "SQLEditor.ContentAssistant.hide.duplicates"; //$NON-NLS-1$
+    public static final String PROPOSAL_SHORT_NAME                     = "SQLEditor.ContentAssistant.proposals.short.name"; //$NON-NLS-1$
+    public static final String PROPOSAL_ALWAYS_FQ                      = "SQLEditor.ContentAssistant.proposals.long.name"; //$NON-NLS-1$
+    public static final String INSERT_SPACE_AFTER_PROPOSALS            = "SQLEditor.ContentAssistant.insert.space.after.proposal"; //$NON-NLS-1$
+    public static final String USE_GLOBAL_ASSISTANT                    = "SQLEditor.ContentAssistant.use.global.search"; //$NON-NLS-1$
+    public static final String PROPOSALS_MATCH_CONTAINS                = "SQLEditor.ContentAssistant.matching.fuzzy"; //$NON-NLS-1$
+    public static final String SHOW_COLUMN_PROCEDURES                  = "SQLEditor.ContentAssistant.show.column.procedures"; //$NON-NLS-1$
+    public static final String SHOW_SERVER_HELP_TOPICS                 = "SQLEditor.ContentAssistant.show.helpTopics"; //$NON-NLS-1$
 
-    public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences";
-    public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection";
-    public static final String FOLDING_ENABLED                         = "SQLEditor.Folding.enabled";
+    public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences"; //$NON-NLS-1$
+    public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection"; //$NON-NLS-1$
+    public static final String FOLDING_ENABLED                         = "SQLEditor.Folding.enabled"; //$NON-NLS-1$
 
     // Auto-save
-    public static final String AUTO_SAVE_ON_CLOSE                      = "SQLEditor.autoSaveOnClose";
-    public static final String AUTO_SAVE_ON_EXECUTE                    = "SQLEditor.autoSaveOnExecute";
+    public static final String AUTO_SAVE_ON_CLOSE                      = "SQLEditor.autoSaveOnClose"; //$NON-NLS-1$
+    public static final String AUTO_SAVE_ON_EXECUTE                    = "SQLEditor.autoSaveOnExecute"; //$NON-NLS-1$
 
     // Typing constants
-    public static final String SQLEDITOR_CLOSE_SINGLE_QUOTES           = "SQLEditor.closeSingleQuotes";
-    public static final String SQLEDITOR_CLOSE_DOUBLE_QUOTES           = "SQLEditor.closeDoubleQuotes";
-    public static final String SQLEDITOR_CLOSE_BRACKETS                = "SQLEditor.closeBrackets";
-    public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments";
-    public static final String SQLEDITOR_CLOSE_BEGIN_END               = "SQLEditor.closeBeginEndStatement";
+    public static final String SQLEDITOR_CLOSE_SINGLE_QUOTES           = "SQLEditor.closeSingleQuotes"; //$NON-NLS-1$
+    public static final String SQLEDITOR_CLOSE_DOUBLE_QUOTES           = "SQLEditor.closeDoubleQuotes"; //$NON-NLS-1$
+    public static final String SQLEDITOR_CLOSE_BRACKETS                = "SQLEditor.closeBrackets"; //$NON-NLS-1$
+    public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments"; //$NON-NLS-1$
+    public static final String SQLEDITOR_CLOSE_BEGIN_END               = "SQLEditor.closeBeginEndStatement"; //$NON-NLS-1$
 
     // Matching brackets
-    public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
+    public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets"; //$NON-NLS-1$
     // Reuse "AbstractTextEditor.Color.Foreground" color
-    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";//"org.jkiss.dbeaver.sql.editor.color.matchingBrackets.foreground";
+    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";//"org.jkiss.dbeaver.sql.editor.color.matchingBrackets.foreground"; //$NON-NLS-1$
 
-    public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
-    public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
+    public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute"; //$NON-NLS-1$
+    public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute"; //$NON-NLS-1$
 
     public static final int PROPOSAL_CASE_DEFAULT                       = 0;
     public static final int PROPOSAL_CASE_UPPER                         = 1;
     public static final int PROPOSAL_CASE_LOWER                         = 2;
 
-    public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
-    public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource";
-    public final static String SQL_FORMAT_BOLD_KEYWORDS                 = "SQLEditor.format.boldKeywords";
+    public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto"; //$NON-NLS-1$
+    public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource"; //$NON-NLS-1$
+    public final static String SQL_FORMAT_BOLD_KEYWORDS                 = "SQLEditor.format.boldKeywords"; //$NON-NLS-1$
 
-    public final static String BEEP_ON_QUERY_END                        = "SQLEditor.beepOnQueryEnd";
-    public final static String REFRESH_DEFAULTS_AFTER_EXECUTE           = "SQLEditor.refreshDefaultsAfterExecute";
-    public final static String CLEAR_OUTPUT_BEFORE_EXECUTE              = "SQLEditor.clearOutputBeforeExecute";
+    public final static String BEEP_ON_QUERY_END                        = "SQLEditor.beepOnQueryEnd"; //$NON-NLS-1$
+    public final static String REFRESH_DEFAULTS_AFTER_EXECUTE           = "SQLEditor.refreshDefaultsAfterExecute"; //$NON-NLS-1$
+    public final static String CLEAR_OUTPUT_BEFORE_EXECUTE              = "SQLEditor.clearOutputBeforeExecute"; //$NON-NLS-1$
 
-    public final static String RESULT_SET_CLOSE_ON_ERROR                = "SQLEditor.resultSet.closeOnError";
-    public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
-    public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
+    public final static String RESULT_SET_CLOSE_ON_ERROR                = "SQLEditor.resultSet.closeOnError"; //$NON-NLS-1$
+    public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation"; //$NON-NLS-1$
+    public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio"; //$NON-NLS-1$
 
     public static final String SCRIPT_BIND_EMBEDDED_READ                = "SQLEditor.script.bind.embedded.read"; //$NON-NLS-1$
     public static final String SCRIPT_BIND_EMBEDDED_WRITE               = "SQLEditor.script.bind.embedded.write"; //$NON-NLS-1$

@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DataSourceUtils;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
@@ -30,31 +31,31 @@ import java.util.Map;
  */
 public enum SQLScriptBindingType {
 
-    EXTERNAL("N/A", "External binding (IDE resources)") {
+    EXTERNAL("N/A", "External binding (IDE resources)") { //$NON-NLS-1$ //$NON-NLS-2$
         @Override
         public void appendSpec(DBPDataSourceContainer dataSource, StringBuilder spec) {
             // do nothing
         }
     },
-    ID("ID", "Connection unique ID") {
+    ID("ID", SQLEditorMessages.sql_script_binding_type_radio_button_connection_unique) { //$NON-NLS-1$
         @Override
         public void appendSpec(DBPDataSourceContainer dataSource, StringBuilder spec) {
-            spec.append(DataSourceUtils.PARAM_ID).append("=").append(dataSource.getId());
+            spec.append(DataSourceUtils.PARAM_ID).append("=").append(dataSource.getId()); //$NON-NLS-1$
         }
     },
-    NAME("NAME", "Connection name") {
+    NAME("NAME", SQLEditorMessages.sql_script_binding_type_radio_button_connection_name) { //$NON-NLS-1$
         @Override
         public void appendSpec(DBPDataSourceContainer dataSource, StringBuilder spec) {
-            spec.append(DataSourceUtils.PARAM_NAME).append("=").append(dataSource.getName());
+            spec.append(DataSourceUtils.PARAM_NAME).append("=").append(dataSource.getName()); //$NON-NLS-1$
         }
     },
-    URL("URL", "Connection URL (jdbc:dbms://host:port/...)") {
+    URL("URL", SQLEditorMessages.sql_script_binding_type_radio_button_connection_url) { //$NON-NLS-1$
         @Override
         public void appendSpec(DBPDataSourceContainer dataSource, StringBuilder spec) {
-            spec.append(DataSourceUtils.PARAM_URL).append("=").append(dataSource.getConnectionConfiguration().getUrl());
+            spec.append(DataSourceUtils.PARAM_URL).append("=").append(dataSource.getConnectionConfiguration().getUrl()); //$NON-NLS-1$
         }
     },
-    PARAMS("PARAMS", "Connection parameters (name1=value1;name2=value2;...)") {
+    PARAMS("PARAMS", SQLEditorMessages.sql_script_binding_type_radio_button_connection_parameters) { //$NON-NLS-1$
         @Override
         public void appendSpec(DBPDataSourceContainer dataSource, StringBuilder spec) {
             DBPConnectionConfiguration cfg = dataSource.getConnectionConfiguration();
@@ -81,14 +82,14 @@ public enum SQLScriptBindingType {
                 for (Map.Entry<String, String> prop : handler.getProperties().entrySet()) {
                     String propName = prop.getKey();
                     if (propName.contains(DataSourceUtils.PARAM_SERVER) || propName.contains(DataSourceUtils.PARAM_HOST) || propName.contains(DataSourceUtils.PARAM_PORT)) {
-                        params.put("handler." + handler.getId() + "." + propName, prop.getValue());
+                        params.put("handler." + handler.getId() + "." + propName, prop.getValue()); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
             }
             boolean first = true;
             for (Map.Entry<String, String> param : params.entrySet()) {
-                if (!first) spec.append("|");
-                spec.append(param.getKey()).append("=").append(param.getValue());
+                if (!first) spec.append("|"); //$NON-NLS-1$
+                spec.append(param.getKey()).append("=").append(param.getValue()); //$NON-NLS-1$
                 first = false;
             }
         }
