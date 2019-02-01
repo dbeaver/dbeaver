@@ -41,6 +41,10 @@ import java.util.Map;
  * OracleMaterializedViewManager
  */
 public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMaterializedView, OracleSchema> {
+    @Override
+    public boolean canEditObject(OracleMaterializedView object) {
+        return false;
+    }
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
@@ -71,6 +75,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     protected OracleMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         OracleMaterializedView newView = new OracleMaterializedView(parent, "NewView"); //$NON-NLS-1$
+        newView.setObjectDefinitionText("SELECT 1 FROM DUAL");
         return newView;
     }
 
@@ -83,7 +88,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        createOrReplaceViewQuery(actionList, command.getObject());
+        //createOrReplaceViewQuery(actionList, command.getObject());
     }
 
     @Override
@@ -100,8 +105,10 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
             .append("AS ").append(view.getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS)); //$NON-NLS-1$
-        actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$
+        if (view.isPersisted()) {
+            actions.add(
+                new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$
+        }
         actions.add(
             new SQLDatabasePersistAction("Create view", decl.toString()));
     }
