@@ -44,7 +44,7 @@ public class UIStyles {
     }
 
     public static boolean isDarkTheme() {
-        return UIUtils.isDark(getDefaultWidgetBackground().getRGB());
+        return UIUtils.isDark(getDefaultTextBackground().getRGB());
     }
 
     public static Color getDefaultWidgetBackground() {

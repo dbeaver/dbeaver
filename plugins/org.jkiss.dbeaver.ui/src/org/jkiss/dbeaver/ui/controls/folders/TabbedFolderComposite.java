@@ -94,7 +94,6 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                 gd.heightHint = TabbedFolderList.SECTION_DIV_HEIGHT;
                 sash.setLayoutData(gd);
                 sash.addPaintListener(e -> {
-                    e.gc.setBackground(folderList.widgetBackground);
                     e.gc.setForeground(folderList.widgetForeground);
                     e.gc.fillRectangle(0, 1, e.width, e.height - 2);
                     e.gc.setForeground(folderList.widgetNormalShadow);
