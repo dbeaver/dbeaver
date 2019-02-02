@@ -143,7 +143,7 @@ public class DataTransferRegistry {
     public DataTransferPageDescriptor getPageDescriptor(IWizardPage page) {
         for (DataTransferNodeDescriptor nd : nodes) {
             for (DataTransferPageDescriptor pd : nd.patPageDescriptors()) {
-                if (pd.getPageType().getImplName().equals(page.getClass().getName())) {
+                if (pd.getPageClass().getImplName().equals(page.getClass().getName())) {
                     return pd;
                 }
             }

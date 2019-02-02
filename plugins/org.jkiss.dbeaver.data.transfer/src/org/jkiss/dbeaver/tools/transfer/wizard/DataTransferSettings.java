@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferPageDescriptor;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.registry.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -52,11 +49,15 @@ public class DataTransferSettings {
         DataTransferNodeDescriptor sourceNode;
         IDataTransferSettings settings;
         IWizardPage[] pages;
+        IWizardPage settingsPage;
 
         private NodeSettings(DataTransferNodeDescriptor sourceNode, boolean consumerOptional, boolean producerOptional) throws DBException {
             this.sourceNode = sourceNode;
             this.settings = sourceNode.createSettings();
-            this.pages = sourceNode.createWizardPages(consumerOptional, producerOptional);
+            this.pages = sourceNode.createWizardPages(consumerOptional, producerOptional, false);
+            IWizardPage[] sPages = sourceNode.createWizardPages(consumerOptional, producerOptional, true);
+            // There can be only one settings page per node
+            this.settingsPage = sPages.length == 0 ? null : sPages[0];
         }
 
     }
@@ -173,9 +174,28 @@ public class DataTransferSettings {
     }
 
     void addWizardPages(DataTransferWizard wizard) {
+        List<IWizardPage> settingPages = new ArrayList<>();
+        // Add regular pages
         for (NodeSettings nodeSettings : this.nodeSettings.values()) {
-            if (nodeSettings.pages != null) {
-                for (IWizardPage page : nodeSettings.pages) {
+            for (IWizardPage page : nodeSettings.pages) {
+                if (nodeSettings.sourceNode.getPageDescriptor(page).getPageType() == DataTransferPageType.PREVIEW) {
+                    // Add later
+                    continue;
+                }
+                wizard.addPage(page);
+            }
+            if (nodeSettings.settingsPage != null) {
+                settingPages.add(nodeSettings.settingsPage);
+            }
+        }
+        // Add common settings page
+        if (!CommonUtils.isEmpty(settingPages)) {
+            wizard.addPage(new DataTransferPageSettings());
+        }
+        // Add preview pages
+        for (NodeSettings nodeSettings : this.nodeSettings.values()) {
+            for (IWizardPage page : nodeSettings.pages) {
+                if (nodeSettings.sourceNode.getPageDescriptor(page).getPageType() == DataTransferPageType.PREVIEW) {
                     wizard.addPage(page);
                 }
             }
@@ -191,7 +211,7 @@ public class DataTransferSettings {
     }
 
     public boolean isPageValid(IWizardPage page) {
-        return isPageValid(page, producer) || isPageValid(page, consumer);
+        return page instanceof DataTransferPageSettings || isPageValid(page, producer) || isPageValid(page, consumer);
     }
 
     private boolean isPageValid(IWizardPage page, DataTransferNodeDescriptor node) {
@@ -221,8 +241,15 @@ public class DataTransferSettings {
         return initObjects;
     }
 
+    NodeSettings getNodeInfo(IDataTransferNode node) {
+        return this.nodeSettings.get(node.getClass());
+    }
+
     public IDataTransferSettings getNodeSettings(IWizardPage page) {
         for (NodeSettings nodeSettings : this.nodeSettings.values()) {
+            if (page == nodeSettings.settingsPage) {
+                return nodeSettings.settings;
+            }
             if (nodeSettings.pages != null) {
                 for (IWizardPage nodePage : nodeSettings.pages) {
                     if (nodePage == page) {

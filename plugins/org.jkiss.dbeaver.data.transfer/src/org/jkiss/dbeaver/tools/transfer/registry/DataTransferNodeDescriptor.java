@@ -139,21 +139,22 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
 
     public DataTransferPageDescriptor getPageDescriptor(IWizardPage page) {
         for (DataTransferPageDescriptor pd : pageTypes) {
-            if (pd.getPageType().getImplName().equals(page.getClass().getName())) {
+            if (pd.getPageClass().getImplName().equals(page.getClass().getName())) {
                 return pd;
             }
         }
         return null;
     }
 
-    public IWizardPage[] createWizardPages(boolean consumerOptional, boolean producerOptional)
+    public IWizardPage[] createWizardPages(boolean consumerOptional, boolean producerOptional, boolean settingsPage)
     {
         List<IWizardPage> pages = new ArrayList<>();
         for (DataTransferPageDescriptor page : pageTypes) {
             if (page.isConsumerSelector() && !consumerOptional) continue;
             if (page.isProducerSelector() && !producerOptional) continue;
+            if (settingsPage != (page.getPageType() == DataTransferPageType.SETTINGS)) continue;
             try {
-                ObjectType type = page.getPageType();
+                ObjectType type = page.getPageClass();
                 type.checkObjectClass(IWizardPage.class);
                 pages.add(type.getObjectClass(IWizardPage.class).newInstance());
             } catch (Throwable e) {
