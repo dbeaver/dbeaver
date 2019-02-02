@@ -31,6 +31,7 @@ public class OracleMessages extends NLS {
 	private OracleMessages() {
 	}
 
+	public static String config_import_wizard_page_sql_developer_label_installation_not_found;
 	public static String dialog_connection_advanced_tab;
 	public static String dialog_connection_advanced_tab_tooltip;
 	public static String dialog_connection_basic_tab;
