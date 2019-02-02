@@ -29,6 +29,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -110,7 +112,14 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         {
             Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
 
-            columnsViewer = new CheckboxTreeViewer(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
+            FilteredTree filteredTree = new FilteredTree(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK, new PatternFilter(), true) {
+                @Override
+                protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
+                    columnsViewer = new CheckboxTreeViewer(columnsGroup, style);
+                    return columnsViewer;
+                }
+            };
+
             columnsViewer.setContentProvider(new TreeContentProvider() {
                 @Override
                 public Object[] getChildren(Object parentElement) {
@@ -284,7 +293,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         refreshData();
 
         // Pack UI
-        UIUtils.asyncExec(() -> UIUtils.packColumns(columnsViewer.getTree()));
+        UIUtils.asyncExec(() -> UIUtils.packColumns(columnsViewer.getTree(), true, new float[] { .45f, .05f, .05f, .45f}));
         //UIUtils.packColumns(filterViewer.getTable());
 
         if (criteriaColumn.getWidth() < 200) {
