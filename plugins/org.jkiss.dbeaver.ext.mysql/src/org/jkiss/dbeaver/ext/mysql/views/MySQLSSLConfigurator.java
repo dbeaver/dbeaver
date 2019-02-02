@@ -72,15 +72,15 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
             clientKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             cipherSuitesText = UIUtils.createLabelText(certGroup, MySQLMessages.mysql_ssl_configurator_label_cipher_suites, ""); //$NON-NLS-2$
-            cipherSuitesText.setToolTipText(MySQLMessages.mysql_ssl_configurator_label_overrides_the_cipher_suites);
+            cipherSuitesText.setToolTipText(MySQLMessages.mysql_ssl_configurator_label_cipher_suites_tip);
         }
 
 
         {
             Group advGroup = UIUtils.createControlGroup(composite, MySQLMessages.mysql_ssl_configurator_legend_advanced, 2, GridData.FILL_HORIZONTAL, -1);
-            requireSSQL = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_require_ssl, MySQLMessages.mysql_ssl_configurator_label_require_server_support, false);
-            veryServerCert = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_verify_server_certificate, MySQLMessages.mysql_ssl_configurator_label_should_the_driver_verify, true);
-            allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_allow_public_key, MySQLMessages.mysql_ssl_configurator_label_allows_special_handshake, false);
+            requireSSQL = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_require_ssl, MySQLMessages.mysql_ssl_configurator_checkbox_require_ssl_tip, false);
+            veryServerCert = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_verify_server_certificate, MySQLMessages.mysql_ssl_configurator_checkbox_verify_server_certificate_tip, true);
+            allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(advGroup, MySQLMessages.mysql_ssl_configurator_checkbox_allow_public_key, MySQLMessages.mysql_ssl_configurator_checkbox_allow_public_key_tip, false);
         }
 //        debugSSL = UIUtils.createLabelCheckbox(composite, "Debug SSL", "Prints debug information in standard output.", false);
     }
