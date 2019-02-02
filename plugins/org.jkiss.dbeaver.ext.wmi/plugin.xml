@@ -82,7 +82,7 @@
                 id="org.jkiss.dbeaver.ext.wmi.dataSourceWizardView"
                 dataSource="wmi"
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="WMI Connection"
+                label="%dialog.connection.datasource.header"
                 class="org.jkiss.dbeaver.ext.wmi.views.WMIConnectionPage"
                 icon="icons/wmi_icon.png">
         </view>
@@ -90,7 +90,7 @@
                 id="org.jkiss.dbeaver.ext.wmi.dataSourceEditorView"
                 dataSource="wmi"
                 targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                label="WMI Connection"
+                label="%dialog.connection.datasource.header"
                 class="org.jkiss.dbeaver.ext.wmi.views.WMIConnectionPage"
                 icon="icons/wmi_icon.png">
         </view>
