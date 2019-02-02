@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
@@ -515,7 +512,12 @@ public class BasicSQLDialect implements SQLDialect {
         if (column instanceof DBSObject) {
             // If type is UDT (i.e. we can find it in type list) and type precision == column precision
             // then do not use explicit precision in column definition
-            final DBSDataType dataType = DBUtils.getLocalDataType(((DBSObject) column).getDataSource(), column.getTypeName());
+            final DBSDataType dataType;
+            if (column instanceof DBSTypedObjectEx) {
+                dataType = ((DBSTypedObjectEx) column).getDataType();
+            } else {
+                dataType = DBUtils.getLocalDataType(((DBSObject) column).getDataSource(), column.getTypeName());
+            }
             if (dataType != null && CommonUtils.equalObjects(dataType.getScale(), column.getScale()) &&
                     ((CommonUtils.toInt(dataType.getPrecision()) > 0 && CommonUtils.equalObjects(dataType.getPrecision(), column.getPrecision())) ||
                             (dataType.getMaxLength() > 0 && dataType.getMaxLength() == column.getMaxLength())))
