@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.import_config.wizards.dbvis;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -55,7 +56,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
         File homeFolder = RuntimeUtils.getUserHomeDir();
         File dbvisConfigHome = new File(homeFolder, DBVIS_HOME_FOLDER);
         if (!dbvisConfigHome.exists()) {
-            throw new DBException("DBVisualizer installation not found");
+            throw new DBException(ImportConfigMessages.config_import_wizard_page_dbvis_label_installation_not_found);
         }
         File configFolder = new File(dbvisConfigHome, DBVIS_CONFIG70_FOLDER);
         if (!configFolder.exists()) {

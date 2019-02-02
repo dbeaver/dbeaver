@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,15 +55,15 @@ public abstract class ConfigImportWizardPage extends WizardPage {
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
 
-        UIUtils.createControlLabel(placeholder, "Connections");
+        UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_page_caption_connections);
 
         connectionTable = new Table(placeholder, SWT.BORDER | SWT.CHECK | SWT.MULTI);
         connectionTable.setHeaderVisible(true);
         connectionTable.setLinesVisible(true);
         connectionTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        UIUtils.createTableColumn(connectionTable, SWT.LEFT, "Name");
-        UIUtils.createTableColumn(connectionTable, SWT.LEFT, "Driver");
-        UIUtils.createTableColumn(connectionTable, SWT.LEFT, "URL/Host");
+        UIUtils.createTableColumn(connectionTable, SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_name);
+        UIUtils.createTableColumn(connectionTable, SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_driver);
+        UIUtils.createTableColumn(connectionTable, SWT.LEFT, ImportConfigMessages.config_import_wizard_page_th_url);
 
         UIUtils.packColumns(connectionTable);
 
@@ -96,7 +97,7 @@ public abstract class ConfigImportWizardPage extends WizardPage {
             getContainer().updateButtons();
             if (loaded) {
                 if (CommonUtils.isEmpty(importData.getConnections())) {
-                    setMessage("Connection list is empty", IMessageProvider.WARNING);
+                    setMessage(ImportConfigMessages.config_import_wizard_page_label_connection_list, IMessageProvider.WARNING);
                 } else {
                     for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
                         TableItem item = new TableItem(connectionTable, SWT.NONE);
