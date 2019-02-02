@@ -55,8 +55,8 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     public StreamConsumerPageSettings() {
         super(DTMessages.data_transfer_wizard_settings_name);
-        setTitle(DTMessages.data_transfer_wizard_settings_title);
-        setDescription(DTMessages.data_transfer_wizard_settings_description);
+        setTitle("Format settings");
+        setDescription("File format settings");
         setPageComplete(false);
     }
 

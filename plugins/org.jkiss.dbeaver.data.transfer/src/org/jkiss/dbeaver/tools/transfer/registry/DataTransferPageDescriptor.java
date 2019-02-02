@@ -21,6 +21,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
+
 /**
  * DataTransferProcessorDescriptor
  */
@@ -31,17 +33,24 @@ public class DataTransferPageDescriptor extends AbstractDescriptor
     private final boolean consumerSelector;
     private final String producerType;
     private final String consumerType;
-    private final ObjectType pageType;
+    private final DataTransferPageType pageType;
+    private final ObjectType pageClass;
 
     DataTransferPageDescriptor(IConfigurationElement config)
     {
         super(config);
         this.id = config.getAttribute("id");
-        this.pageType = new ObjectType(config.getAttribute("class"));
+        this.pageClass = new ObjectType(config.getAttribute("class"));
         this.producerSelector = CommonUtils.toBoolean(config.getAttribute("producerSelector"));
         this.consumerSelector = CommonUtils.toBoolean(config.getAttribute("consumerSelector"));
         this.producerType = config.getAttribute("producerType");
         this.consumerType = config.getAttribute("consumerType");
+        String typeStr = config.getAttribute("type");
+        if (CommonUtils.isEmpty(typeStr)) {
+            pageType = DataTransferPageType.NORMAL;
+        } else {
+            pageType = DataTransferPageType.valueOf(typeStr.toUpperCase(Locale.ENGLISH));
+        }
     }
 
     public String getId()
@@ -49,8 +58,8 @@ public class DataTransferPageDescriptor extends AbstractDescriptor
         return id;
     }
 
-    public ObjectType getPageType() {
-        return pageType;
+    public ObjectType getPageClass() {
+        return pageClass;
     }
 
     public boolean isProducerSelector() {
@@ -67,6 +76,10 @@ public class DataTransferPageDescriptor extends AbstractDescriptor
 
     public String getConsumerType() {
         return consumerType;
+    }
+
+    public DataTransferPageType getPageType() {
+        return pageType;
     }
 
     @Override
