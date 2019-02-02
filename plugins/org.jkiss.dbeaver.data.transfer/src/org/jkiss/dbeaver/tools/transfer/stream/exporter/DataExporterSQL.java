@@ -111,28 +111,20 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 DBUtils.getQuotedIdentifier((DBSObject) source) :
                 DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
         } else {
-            if (source instanceof IAdaptable) {
+            if (source instanceof SQLQueryContainer) {
+                getTableNameFromQuery(session, (SQLQueryContainer) source);
+            } else if (source instanceof IAdaptable) {
                 SQLQueryContainer queryContainer = ((IAdaptable) source).getAdapter(SQLQueryContainer.class);
                 if (queryContainer != null) {
-                    SQLScriptElement query = queryContainer.getQuery();
-                    if (query instanceof SQLQuery) {
-                        DBCEntityMetaData singleSource = ((SQLQuery) query).getSingleSource();
-                        if (singleSource != null) {
-                            if (omitSchema) {
-                                tableName = DBUtils.getQuotedIdentifier(session.getDataSource(), singleSource.getEntityName());
-                            } else {
-                                tableName = DBUtils.getFullyQualifiedName(session.getDataSource(), singleSource.getCatalogName(), singleSource.getSchemaName(), singleSource.getEntityName());
-                            }
-                        }
-                    }
+                    getTableNameFromQuery(session, queryContainer);
                 }
-                if (tableName == null) {
-                    DBSDataContainer dataContainer = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
-                    if (dataContainer instanceof DBSEntity) {
-                        tableName = omitSchema ?
-                            DBUtils.getQuotedIdentifier(dataContainer) :
-                            DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI);
-                    }
+            }
+            if (tableName == null && source instanceof IAdaptable) {
+                DBSDataContainer dataContainer = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
+                if (dataContainer instanceof DBSEntity) {
+                    tableName = omitSchema ?
+                        DBUtils.getQuotedIdentifier(dataContainer) :
+                        DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI);
                 }
             }
             if (tableName == null) {
@@ -140,6 +132,20 @@ public class DataExporterSQL extends StreamExporterAbstract {
             }
         }
         rowCount = 0;
+    }
+
+    private void getTableNameFromQuery(DBCSession session, SQLQueryContainer queryContainer) {
+        SQLScriptElement query = queryContainer.getQuery();
+        if (query instanceof SQLQuery) {
+            DBCEntityMetaData singleSource = ((SQLQuery) query).getSingleSource();
+            if (singleSource != null) {
+                if (omitSchema) {
+                    tableName = DBUtils.getQuotedIdentifier(session.getDataSource(), singleSource.getEntityName());
+                } else {
+                    tableName = DBUtils.getFullyQualifiedName(session.getDataSource(), singleSource.getCatalogName(), singleSource.getSchemaName(), singleSource.getEntityName());
+                }
+            }
+        }
     }
 
     @Override
