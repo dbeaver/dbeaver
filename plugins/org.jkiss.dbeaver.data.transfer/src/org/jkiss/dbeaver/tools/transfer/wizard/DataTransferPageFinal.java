@@ -80,8 +80,6 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source);
             UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target_container);
             UIUtils.createTableColumn(resultTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
-
-            UIUtils.packColumns(resultTable);
         }
 
         {
@@ -194,7 +192,11 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             settings.isProducerProcessor() ? null : settings.getProcessor());
 
         activated = true;
-        UIUtils.packColumns(resultTable, true);
+        int tableWidth = resultTable.getSize().x;
+        TableColumn[] columns = resultTable.getColumns();
+        for (TableColumn column : columns) {
+            column.setWidth(tableWidth / columns.length - 1);
+        }
         updatePageCompletion();
     }
 
