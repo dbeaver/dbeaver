@@ -47,7 +47,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -1624,13 +1623,23 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void exportDataFromQuery()
     {
-        SQLScriptElement sqlQuery = extractActiveQuery();
-        if (sqlQuery instanceof SQLQuery) {
-            processQueries(Collections.singletonList(sqlQuery), false, true, true, null);
+        List<SQLScriptElement> elements;
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+        if (selection.getLength() > 1) {
+            elements = extractScriptQueries(selection.getOffset(), selection.getLength(), true, false, true);
+        } else {
+            elements = new ArrayList<>();
+            elements.add(extractActiveQuery());
+        }
+
+        elements.removeIf(element -> !(element instanceof SQLQuery));
+
+        if (!elements.isEmpty()) {
+            processQueries(elements, false, true, true, null);
         } else {
             DBWorkbench.getPlatformUI().showError(
                     "Extract data",
-                    "Can't extract data from control command");
+                    "Choose one or more queries to export from");
         }
     }
 
@@ -1714,13 +1723,15 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) && isDirty()) {
             doSave(new NullProgressMonitor());
         }
-        if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)) {
-            outputViewer.clearOutput();
-        }
+        if (!export) {
+            if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)) {
+                outputViewer.clearOutput();
+            }
 
-        if (!newTab || !isSingleQuery) {
-            // We don't need new tab or we are executing a script - so close all extra tabs
-            closeExtraResultTabs(null);
+            if (!newTab || !isSingleQuery) {
+                // We don't need new tab or we are executing a script - so close all extra tabs
+                closeExtraResultTabs(null);
+            }
         }
 
         if (resultTabs.getItemCount() == 0) {
@@ -1740,29 +1751,31 @@ public class SQLEditor extends SQLEditorBase implements
                         getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR), queryListener);
             }
         } else {
-            // Use current tab.
-            // If current tab was pinned then use first tab
-            QueryResultsContainer firstResults = curQueryProcessor.getFirstResults();
-            if (firstResults.isPinned()) {
-                curQueryProcessor = queryProcessors.get(0);
-                firstResults = curQueryProcessor.getFirstResults();
+            if (!export) {
+                // Use current tab.
+                // If current tab was pinned then use first tab
+                QueryResultsContainer firstResults = curQueryProcessor.getFirstResults();
                 if (firstResults.isPinned()) {
-                    // The very first tab is also pinned
-                    // Well, let's create a new tab
-                    curQueryProcessor = createQueryProcessor(true, true);
-                    // Make new tab the default
+                    curQueryProcessor = queryProcessors.get(0);
                     firstResults = curQueryProcessor.getFirstResults();
                     if (firstResults.isPinned()) {
-                        firstResults.tabItem.setShowClose(false);
+                        // The very first tab is also pinned
+                        // Well, let's create a new tab
+                        curQueryProcessor = createQueryProcessor(true, true);
+                        // Make new tab the default
+                        firstResults = curQueryProcessor.getFirstResults();
+                        if (firstResults.isPinned()) {
+                            firstResults.tabItem.setShowClose(false);
+                        }
                     }
                 }
-            }
-            closeExtraResultTabs(curQueryProcessor);
-            if (firstResults.tabItem != null) {
-                // Do not switch tab if Output tab is active
-                CTabItem selectedTab = resultTabs.getSelection();
-                if (selectedTab == null || selectedTab.getData() != outputViewer) {
-                    resultTabs.setSelection(firstResults.tabItem);
+                closeExtraResultTabs(curQueryProcessor);
+                if (firstResults.tabItem != null) {
+                    // Do not switch tab if Output tab is active
+                    CTabItem selectedTab = resultTabs.getSelection();
+                    if (selectedTab == null || selectedTab.getData() != outputViewer) {
+                        resultTabs.setSelection(firstResults.tabItem);
+                    }
                 }
             }
             curQueryProcessor.processQueries(queries, false, export, false, queryListener);
@@ -2340,46 +2353,63 @@ public class SQLEditor extends SQLEditorBase implements
                     listener.setExtListener(queryListener);
                 }
                 File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
-                final SQLQueryJob job = new SQLQueryJob(
-                    getSite(),
-                    isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query : SQLEditorMessages.editors_sql_job_execute_script,
-                    executionContext,
-                    resultsContainer,
-                    queries,
-                    new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter()),
-                    this,
-                    listener);
 
-                if (export || isSingleQuery) {
-                    resultsContainer.query = queries.get(0);
-                }
                 if (export) {
-                    // Assign current job from active query and open wizard
-                    resultsContainer.lastGoodQuery = null;
-                    curJob = job;
+                    // Use special consumer and data containers
+                    SQLQueryResultsConsumer resultsConsumer = new SQLQueryResultsConsumer();
+                    SQLQueryJob job = new SQLQueryJob(
+                        getSite(),
+                        "Export from query",
+                        executionContext,
+                        resultsContainer,
+                        queries,
+                        new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter()),
+                        resultsConsumer,
+                        listener);
+
+                    List<IDataTransferProducer> producers = new ArrayList<>();
+                    for (int i = 0; i < queries.size(); i++) {
+                        SQLScriptElement element = queries.get(i);
+                        SQLQuery query = (SQLQuery) element;
+                        producers.add(new DatabaseTransferProducer(new SQLQueryDataContainer(job, resultsConsumer, query, i), null));
+                    }
+
                     ActiveWizardDialog dialog = new ActiveWizardDialog(
                         getSite().getWorkbenchWindow(),
                         new DataTransferWizard(
-                            new IDataTransferProducer[] {
-                                new DatabaseTransferProducer(resultsContainer, null)},
+                            producers.toArray(new IDataTransferProducer[0]),
                             null),
                         new StructuredSelection(this));
                     dialog.open();
-                } else if (isSingleQuery) {
-                    closeJob();
-                    curJob = job;
-                    ResultSetViewer rsv = resultsContainer.getResultSetController();
-                    if (rsv != null) {
-                        rsv.resetDataFilter(false);
-                        rsv.resetHistory();
-                        rsv.refresh();
-                    }
                 } else {
-                    if (fetchResults) {
-                        job.setFetchResultSets(true);
+                    final SQLQueryJob job = new SQLQueryJob(
+                        getSite(),
+                        isSingleQuery ? SQLEditorMessages.editors_sql_job_execute_query : SQLEditorMessages.editors_sql_job_execute_script,
+                        executionContext,
+                        resultsContainer,
+                        queries,
+                        new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter()),
+                        this,
+                        listener);
+
+                    if (isSingleQuery) {
+                        resultsContainer.query = queries.get(0);
+
+                        closeJob();
+                        curJob = job;
+                        ResultSetViewer rsv = resultsContainer.getResultSetController();
+                        if (rsv != null) {
+                            rsv.resetDataFilter(false);
+                            rsv.resetHistory();
+                            rsv.refresh();
+                        }
+                    } else {
+                        if (fetchResults) {
+                            job.setFetchResultSets(true);
+                        }
+                        job.schedule();
+                        curJob = job;
                     }
-                    job.schedule();
-                    curJob = job;
                 }
             }
         }
