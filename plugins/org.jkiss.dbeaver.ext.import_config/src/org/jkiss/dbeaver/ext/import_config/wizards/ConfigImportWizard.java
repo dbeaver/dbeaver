@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
@@ -52,7 +53,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
 	@Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-		setWindowTitle("Import Configuration"); //NON-NLS-1
+		setWindowTitle(ImportConfigMessages.config_import_wizard_header_import_configuration); 
 		setNeedsProgressMonitor(true);
 		mainPage = createMainPage(); //NON-NLS-1
 	}

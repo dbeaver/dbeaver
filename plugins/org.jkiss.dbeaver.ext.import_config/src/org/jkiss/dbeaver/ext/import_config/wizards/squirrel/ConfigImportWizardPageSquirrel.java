@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.import_config.wizards.squirrel;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
+import org.jkiss.dbeaver.ext.import_config.ImportConfigMessages;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -55,7 +56,7 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
         File homeFolder = RuntimeUtils.getUserHomeDir();
         File sqlConfigHome = new File(homeFolder, SQL_HOME_FOLDER);
         if (!sqlConfigHome.exists()) {
-            throw new DBException("SQL Squirrel installation not found");
+            throw new DBException(ImportConfigMessages.config_import_wizard_page_squirrel_label_installation_not_found);
         }
         File driversFile = new File(sqlConfigHome, SQL_DRIVERS_FILE);
         if (!driversFile.exists()) {
