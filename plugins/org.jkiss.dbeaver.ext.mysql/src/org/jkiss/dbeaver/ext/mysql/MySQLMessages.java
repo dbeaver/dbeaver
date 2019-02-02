@@ -85,12 +85,12 @@ public class MySQLMessages extends NLS {
 	public static String mysql_ssl_configurator_checkbox_allow_public_key;
 	public static String mysql_ssl_configurator_checkbox_require_ssl;
 	public static String mysql_ssl_configurator_checkbox_verify_server_certificate;
-	public static String mysql_ssl_configurator_label_allows_special_handshake;
+	public static String mysql_ssl_configurator_checkbox_allow_public_key_tip;
 	public static String mysql_ssl_configurator_label_ca_certificate;
 	public static String mysql_ssl_configurator_label_cipher_suites;
-	public static String mysql_ssl_configurator_label_overrides_the_cipher_suites;
-	public static String mysql_ssl_configurator_label_require_server_support;
-	public static String mysql_ssl_configurator_label_should_the_driver_verify;
+	public static String mysql_ssl_configurator_label_cipher_suites_tip;
+	public static String mysql_ssl_configurator_checkbox_require_ssl_tip;
+	public static String mysql_ssl_configurator_checkbox_verify_server_certificate_tip;
 	public static String mysql_ssl_configurator_label_ssl_certificate;
 	public static String mysql_ssl_configurator_label_ssl_certificate_key;
 	public static String mysql_ssl_configurator_legend_advanced;
