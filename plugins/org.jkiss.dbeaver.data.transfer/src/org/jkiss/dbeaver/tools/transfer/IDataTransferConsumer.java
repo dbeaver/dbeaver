@@ -29,8 +29,20 @@ import java.util.Map;
 public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, PROCESSOR extends IDataTransferProcessor>
     extends IDataTransferNode<SETTINGS>, DBDDataReceiver
 {
+    class TransferParameters {
+        public int orderNumber;
+        public int totalConsumers;
+        public boolean isBinary;
 
-    void initTransfer(DBSObject sourceObject, SETTINGS settings, boolean isBinary, PROCESSOR processor, Map<Object, Object> processorProperties);
+        public TransferParameters() {
+        }
+
+        public TransferParameters(boolean isBinary) {
+            this.isBinary = isBinary;
+        }
+    }
+
+    void initTransfer(DBSObject sourceObject, SETTINGS settings, TransferParameters parameters, PROCESSOR processor, Map<Object, Object> processorProperties);
 
     void startTransfer(DBRProgressMonitor monitor) throws DBException;
 

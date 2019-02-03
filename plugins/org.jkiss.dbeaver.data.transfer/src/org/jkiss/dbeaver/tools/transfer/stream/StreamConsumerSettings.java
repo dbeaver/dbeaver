@@ -18,13 +18,12 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -61,6 +60,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private DBDDataFormatterProfile formatterProfile;
 
     private boolean outputClipboard = false;
+    private boolean useSingleFile = false;
     private boolean compressResults = false;
     private boolean openFolderOnFinish = true;
     private boolean executeProcessOnFinish = false;
@@ -120,6 +120,14 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     public void setOutputClipboard(boolean outputClipboard) {
         this.outputClipboard = outputClipboard;
+    }
+
+    public boolean isUseSingleFile() {
+        return useSingleFile;
+    }
+
+    public void setUseSingleFile(boolean useSingleFile) {
+        this.useSingleFile = useSingleFile;
     }
 
     public boolean isCompressResults() {
@@ -194,6 +202,9 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         if (!CommonUtils.isEmpty(dialogSettings.get("outputClipboard"))) {
             outputClipboard = dialogSettings.getBoolean("outputClipboard");
         }
+        if (!CommonUtils.isEmpty(dialogSettings.get("useSingleFile"))) {
+            useSingleFile = dialogSettings.getBoolean("useSingleFile");
+        }
 
         if (!CommonUtils.isEmpty(dialogSettings.get("compressResults"))) {
             compressResults = dialogSettings.getBoolean("compressResults");
@@ -223,6 +234,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("outputEncoding", outputEncoding);
         dialogSettings.put("outputEncodingBOM", outputEncodingBOM);
         dialogSettings.put("outputClipboard", outputClipboard);
+        dialogSettings.put("useSingleFile", useSingleFile);
 
         dialogSettings.put("compressResults", compressResults);
 
@@ -242,7 +254,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         StringBuilder summary = new StringBuilder();
 
         if (!outputClipboard) {
-            DTUtils.addSummary(summary, UIMessages.output_label_directory, outputFolder);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_use_single_file, useSingleFile);
+            DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_directory, outputFolder);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_file_name_pattern, outputFilePattern);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_encoding, outputEncoding);
             DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_insert_bom, outputEncodingBOM);
