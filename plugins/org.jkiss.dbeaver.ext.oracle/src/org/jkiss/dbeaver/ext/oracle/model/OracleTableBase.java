@@ -148,12 +148,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     {
         if (comment == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
-                comment = JDBCUtils.queryString(
-                    session,
-                    "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND TABLE_NAME=? AND TABLE_TYPE=?",
-                    getSchema().getName(),
-                    getName(),
-                    getTableTypeName());
+                comment = queryTableComment(session);
                 if (comment == null) {
                     comment = "";
                 }
@@ -162,6 +157,15 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             }
         }
         return comment;
+    }
+
+    protected String queryTableComment(JDBCSession session) throws SQLException {
+        return JDBCUtils.queryString(
+            session,
+            "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND TABLE_NAME=? AND TABLE_TYPE=?",
+            getSchema().getName(),
+            getName(),
+            getTableTypeName());
     }
 
     void loadColumnComments(DBRProgressMonitor monitor) {
