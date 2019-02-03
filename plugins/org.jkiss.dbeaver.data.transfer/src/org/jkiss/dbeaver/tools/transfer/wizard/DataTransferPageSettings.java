@@ -70,6 +70,15 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
         {
             DataTransferPipe dataPipe = dtSettings.getDataPipes().get(0);
 
+            StringBuilder title = new StringBuilder();
+            title.append(DTMessages.data_transfer_wizard_settings_title).append(" (").append(dtSettings.getProducer().getName()).append(" to ").append(dtSettings.getConsumer().getName());
+            if (dtSettings.getProcessor() != null) {
+                title.append(", ").append(dtSettings.getProcessor().getName());
+            }
+            title.append(")");
+            setTitle(title.toString());
+
+
             producerSettingsPage = getSettingsPage(dataPipe.getProducer());
             consumerSettingsPage = getSettingsPage(dataPipe.getConsumer());
         }
