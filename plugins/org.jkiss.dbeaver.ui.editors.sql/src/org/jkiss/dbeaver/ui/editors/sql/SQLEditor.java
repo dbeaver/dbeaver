@@ -109,6 +109,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -614,6 +615,10 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public <T> T getAdapter(Class<T> required)
     {
+        if (required == INavigatorModelView.class) {
+            return null;
+        }
+
         if (resultTabs != null && !resultTabs.isDisposed()) {
             if (required == IFindReplaceTarget.class) {
                 return required.cast(findReplaceTarget);

@@ -534,6 +534,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 */
     }
 
+    // Exclude input additions. Get rid of tons of crap from debug/team extensions
+    @Override
+    protected boolean isEditorInputIncludedInContextMenu() {
+        return false;
+    }
+
     @Override
     public void editorContextMenuAboutToShow(IMenuManager menu) {
         super.editorContextMenuAboutToShow(menu);
