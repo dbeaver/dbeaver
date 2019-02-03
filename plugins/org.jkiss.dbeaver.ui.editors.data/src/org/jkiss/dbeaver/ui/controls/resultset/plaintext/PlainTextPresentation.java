@@ -176,6 +176,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
         int lineCount = text.getLineCount();
 
+        boolean delimLeading = getController().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING);
+
         int rowNum = lineNum - FIRST_ROW_LINE; //First 2 lines is header
         if (controller.isRecordMode()) {
             if (rowNum < 0) {
@@ -187,6 +189,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         } else {
             int colNum = 0;
             int horOffsetBegin = 0, horOffsetEnd = 0;
+            if (delimLeading) horOffsetEnd++;
             for (int i = 0; i < colWidths.length; i++) {
                 horOffsetBegin = horOffsetEnd;
                 horOffsetEnd += colWidths[i] + 1;
@@ -297,9 +300,6 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 for (int k = colWidths[i] - attrName.length(); k > 0; k--) {
                     grid.append(" ");
                 }
-                if (extraSpaces) {
-                    grid.append(" ");
-                }
             }
             if (delimTrailing) grid.append("|");
             grid.append("\n");
@@ -310,9 +310,6 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             for (int i = 0; i < attrs.size(); i++) {
                 if (i > 0) grid.append("|");
                 for (int k = colWidths[i]; k > 0; k--) {
-                    grid.append("-");
-                }
-                if (extraSpaces) {
                     grid.append("-");
                 }
             }
@@ -343,18 +340,17 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                     (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
                 {
                     // Right justify value
+                    if (extraSpaces) stringWidth++;
                     for (int j = colWidths[k] - stringWidth; j > 0; j--) {
                         grid.append(" ");
                     }
                     grid.append(displayString);
+                    if (extraSpaces) grid.append(" ");
                 } else {
                     grid.append(displayString);
                     for (int j = colWidths[k] - stringWidth; j > 0; j--) {
                         grid.append(" ");
                     }
-                }
-                if (extraSpaces) {
-                    grid.append(" ");
                 }
             }
             if (delimTrailing) grid.append("|");
