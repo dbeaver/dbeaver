@@ -106,7 +106,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
 
         IDataTransferSettings producerSettings = null, consumerSettings = null;
-        for (DataTransferPipe pipe : dataPipes) {
+        for (int i = 0; i < dataPipes.size(); i++) {
+            DataTransferPipe pipe = dataPipes.get(i);
             IDataTransferConsumer consumer = pipe.getConsumer();
             if (consumer == null || pipe.getProducer() == null) {
                 continue;
@@ -128,10 +129,15 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                     continue;
                 }
             }
+
+            IDataTransferConsumer.TransferParameters parameters = new IDataTransferConsumer.TransferParameters(
+                processorDescriptor != null && processorDescriptor.isBinaryFormat());
+            parameters.orderNumber = i;
+            parameters.totalConsumers = dataPipes.size();
             consumer.initTransfer(
                 pipe.getProducer().getDatabaseObject(),
                 consumerSettings,
-                processorDescriptor != null && processorDescriptor.isBinaryFormat(),
+                parameters,
                 processor,
                 processor == null ?
                     null :

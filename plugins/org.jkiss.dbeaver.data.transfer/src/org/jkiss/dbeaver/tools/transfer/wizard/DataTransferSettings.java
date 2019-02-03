@@ -331,7 +331,8 @@ public class DataTransferSettings {
             }
         }
         // Configure pipes
-        for (DataTransferPipe pipe : dataPipes) {
+        for (int i = 0; i < dataPipes.size(); i++) {
+            DataTransferPipe pipe = dataPipes.get(i);
             if (!rewrite && pipe.getConsumer() != null) {
                 continue;
             }
@@ -339,10 +340,15 @@ public class DataTransferSettings {
                 try {
                     IDataTransferConsumer consumerNode = (IDataTransferConsumer) consumer.createNode();
                     if (pipe.getProducer() != null) {
+                        IDataTransferConsumer.TransferParameters parameters = new IDataTransferConsumer.TransferParameters(
+                            processor != null && processor.isBinaryFormat());
+                        parameters.orderNumber = i;
+                        parameters.totalConsumers = dataPipes.size();
+
                         consumerNode.initTransfer(
                             pipe.getProducer().getDatabaseObject(),
                             getNodeSettings(consumerNode),
-                            processor != null && processor.isBinaryFormat(),
+                            parameters,
                             processor != null ? processor.getInstance() : null,
                             processor != null ? getProcessorProperties() : null);
                     }

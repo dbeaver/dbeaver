@@ -645,7 +645,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
 
         @Override
-        public void initTransfer(DBSObject sourceObject, IDataTransferSettings settings, boolean isBinary, IDataTransferProcessor processor, Map processorProperties) {
+        public void initTransfer(DBSObject sourceObject, IDataTransferSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map processorProperties) {
 
         }
 

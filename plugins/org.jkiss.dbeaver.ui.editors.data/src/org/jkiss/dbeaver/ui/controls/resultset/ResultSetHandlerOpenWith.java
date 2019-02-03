@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -178,7 +179,12 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     // Remove extension property (we specify file name directly)
                     properties.remove(StreamConsumerSettings.PROP_FILE_EXTENSION);
 
-                    consumer.initTransfer(dataContainer, settings, processor.isBinaryFormat(), exporter, properties);
+                    consumer.initTransfer(
+                        dataContainer,
+                        settings,
+                        new IDataTransferConsumer.TransferParameters(processor.isBinaryFormat()),
+                        exporter,
+                        properties);
 
                     DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);

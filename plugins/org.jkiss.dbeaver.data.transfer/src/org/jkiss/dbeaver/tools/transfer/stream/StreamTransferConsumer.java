@@ -88,8 +88,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private StreamExportSite exportSite;
     private Map<Object, Object> processorProperties;
     private StringWriter outputBuffer;
-    private boolean isBinary;
     private boolean initialized = false;
+    private TransferParameters parameters;
 
     public StreamTransferConsumer() {
     }
@@ -111,12 +111,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         row = new Object[metaColumns.size()];
 
         if (!initialized) {
-            try {
-                processor.exportHeader(session);
-            } catch (DBException e) {
-                log.warn("Error while exporting table header", e);
-            } catch (IOException e) {
-                throw new DBCException("IO error", e);
+            /*// For multi-streams export header only once
+            if (!settings.isUseSingleFile() || parameters.orderNumber == 0) */{
+                try {
+                    processor.exportHeader(session);
+                } catch (DBException e) {
+                    log.warn("Error while exporting table header", e);
+                } catch (IOException e) {
+                    throw new DBCException("IO error", e);
+                }
             }
         }
 
@@ -210,27 +213,27 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Open output streams
         boolean outputClipboard = settings.isOutputClipboard();
-        outputFile = !isBinary && outputClipboard ? null : makeOutputFile();
+        outputFile = !parameters.isBinary && outputClipboard ? null : makeOutputFile();
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
                 this.writer = new PrintWriter(this.outputBuffer, true);
             } else {
                 this.outputStream = new BufferedOutputStream(
-                    new FileOutputStream(outputFile),
+                    new FileOutputStream(outputFile, settings.isUseSingleFile()),
                     10000);
                 if (settings.isCompressResults()) {
                     zipStream = new ZipOutputStream(this.outputStream);
                     zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
                     StreamTransferConsumer.this.outputStream = zipStream;
                 }
-                if (!isBinary) {
+                if (!parameters.isBinary) {
                     this.writer = new PrintWriter(new OutputStreamWriter(this.outputStream, settings.getOutputEncoding()), true);
                 }
             }
 
             // Check for BOM
-            if (!isBinary && !outputClipboard && settings.isOutputEncodingBOM()) {
+            if (!parameters.isBinary && !outputClipboard && settings.isOutputEncodingBOM()) {
                 byte[] bom = GeneralUtils.getCharsetBOM(settings.getOutputEncoding());
                 if (bom != null) {
                     outputStream.write(bom);
@@ -290,9 +293,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, boolean isBinary, IStreamDataExporter processor, Map<Object, Object> processorProperties) {
+    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, TransferParameters parameters, IStreamDataExporter processor, Map<Object, Object> processorProperties) {
         this.sourceObject = sourceObject;
-        this.isBinary = isBinary;
+        this.parameters = parameters;
         this.processor = processor;
         this.settings = settings;
         this.processorProperties = processorProperties;
@@ -321,7 +324,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             return;
         }
 
-        if (!isBinary && settings.isOutputClipboard()) {
+        if (!parameters.isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
                 UIUtils.syncExec(() -> {
                     TextTransfer textTransfer = TextTransfer.getInstance();
@@ -405,17 +408,29 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return GeneralUtils.replaceVariables(pattern, name -> {
             switch (name) {
                 case VARIABLE_DATASOURCE: {
+                    if (settings.isUseSingleFile()) {
+                        return "";
+                    }
                     return stripObjectName(sourceObject.getDataSource().getContainer().getName());
                 }
                 case VARIABLE_CATALOG: {
+                    if (settings.isUseSingleFile()) {
+                        return "";
+                    }
                     DBSCatalog catalog = DBUtils.getParentOfType(DBSCatalog.class, sourceObject);
                     return catalog == null ? "" : stripObjectName(catalog.getName());
                 }
                 case VARIABLE_SCHEMA: {
+                    if (settings.isUseSingleFile()) {
+                        return "";
+                    }
                     DBSSchema schema = DBUtils.getParentOfType(DBSSchema.class, sourceObject);
                     return schema == null ? "" : stripObjectName(schema.getName());
                 }
                 case VARIABLE_TABLE: {
+                    if (settings.isUseSingleFile()) {
+                        return "export";
+                    }
                     String tableName = DTUtils.getTableName(sourceObject.getDataSource(), sourceObject, true);
                     return stripObjectName(tableName);
                 }
@@ -506,7 +521,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         @Override
         public void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException {
-            if (isBinary) {
+            if (parameters.isBinary) {
                 try (final InputStream stream = cs.getContentStream()) {
                     IOUtils.copyStream(stream, exportSite.getOutputStream());
                 }

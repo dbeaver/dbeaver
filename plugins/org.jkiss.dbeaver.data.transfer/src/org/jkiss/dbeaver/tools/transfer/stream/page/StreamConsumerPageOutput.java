@@ -46,6 +46,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     private Button execProcessCheckbox;
     private Text execProcessText;
     private Button clipboardCheck;
+    private Button singleFileCheck;
     private Button showFinalMessageCheckbox;
 
     public StreamConsumerPageOutput() {
@@ -70,13 +71,22 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
         {
             Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
-            clipboardCheck = UIUtils.createLabelCheckbox(generalSettings, "Copy to clipboard", false);
+            clipboardCheck = UIUtils.createLabelCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, false);
             clipboardCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 4, 1));
             clipboardCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOutputClipboard(clipboardCheck.getSelection());
                     toggleClipboardOutput();
+                    updatePageCompletion();
+                }
+            });
+            singleFileCheck = UIUtils.createLabelCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_use_single_file, DTMessages.data_transfer_wizard_output_label_use_single_file_tip, false);
+            singleFileCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 4, 1));
+            singleFileCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setUseSingleFile(singleFileCheck.getSelection());
                     updatePageCompletion();
                 }
             });
@@ -209,8 +219,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     private void toggleClipboardOutput() {
         boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
+        boolean isMulti = getWizard().getSettings().getDataPipes().size() > 1;
 
         clipboardCheck.setEnabled(!isBinary);
+        singleFileCheck.setEnabled(isMulti && !clipboard && getWizard().getSettings().getMaxJobCount() <= 1);
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard);
@@ -236,6 +248,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
         clipboardCheck.setSelection(settings.isOutputClipboard());
+        singleFileCheck.setSelection(settings.isUseSingleFile());
         directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
         fileNameText.setText(CommonUtils.toString(settings.getOutputFilePattern()));
         compressCheckbox.setSelection(settings.isCompressResults());
