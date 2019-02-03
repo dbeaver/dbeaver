@@ -857,16 +857,16 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
     }
 
-    static class MViewCache extends JDBCObjectCache<OracleSchema, OracleMaterializedView> {
+    static class MViewCache extends JDBCObjectLookupCache<OracleSchema, OracleMaterializedView> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
-            throws SQLException
-        {
+        public JDBCStatement prepareLookupStatement(JDBCSession session, OracleSchema owner, OracleMaterializedView object, String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_MVIEWS WHERE OWNER=? " +
+                    (object == null && objectName == null ? "" : "AND MVIEW_NAME=? ") +
                 "ORDER BY MVIEW_NAME");
             dbStat.setString(1, owner.getName());
+            if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
             return dbStat;
         }
 
