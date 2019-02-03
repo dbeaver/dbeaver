@@ -16,7 +16,19 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 
 import java.util.Map;
@@ -47,4 +59,50 @@ public class DTUtils {
         }
     }
 
+    public static String getTableName(DBPDataSource dataSource, DBPNamedObject source, boolean shortName) {
+        if (source instanceof DBSEntity) {
+            return shortName ?
+                DBUtils.getQuotedIdentifier((DBSObject) source) :
+                DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
+        } else {
+            String tableName = null;
+            if (source instanceof SQLQueryContainer) {
+                tableName = getTableNameFromQuery(dataSource, (SQLQueryContainer) source, shortName);
+            } else if (source instanceof IAdaptable) {
+                SQLQueryContainer queryContainer = ((IAdaptable) source).getAdapter(SQLQueryContainer.class);
+                if (queryContainer != null) {
+                    tableName = getTableNameFromQuery(dataSource, queryContainer, shortName);
+                }
+            }
+            if (tableName == null && source instanceof IAdaptable) {
+                DBSDataContainer dataContainer = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
+                if (dataContainer instanceof DBSEntity) {
+                    tableName = shortName ?
+                        DBUtils.getQuotedIdentifier(dataContainer) :
+                        DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI);
+                }
+            }
+            if (tableName == null) {
+                return shortName ?
+                    DBUtils.getQuotedIdentifier(dataSource, source.getName()) :
+                    DBUtils.getObjectFullName(source, DBPEvaluationContext.DML);
+            }
+            return tableName;
+        }
+    }
+
+    public static String getTableNameFromQuery(DBPDataSource dataSource, SQLQueryContainer queryContainer, boolean shortName) {
+        SQLScriptElement query = queryContainer.getQuery();
+        if (query instanceof SQLQuery) {
+            DBCEntityMetaData singleSource = ((SQLQuery) query).getSingleSource();
+            if (singleSource != null) {
+                if (shortName) {
+                    return DBUtils.getQuotedIdentifier(dataSource.getDataSource(), singleSource.getEntityName());
+                } else {
+                    return DBUtils.getFullyQualifiedName(dataSource.getDataSource(), singleSource.getCatalogName(), singleSource.getSchemaName(), singleSource.getEntityName());
+                }
+            }
+        }
+        return null;
+    }
 }
