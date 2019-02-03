@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.ext.oracle.Activator;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -70,7 +71,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
             if (!sqlDevHome.exists()) {
                 sqlDevHome = new File(homeFolder, ".sqldeveloper"); // On Linux
                 if (!sqlDevHome.exists()) {
-                    throw new DBException("SQL Developer installation not found");
+                    throw new DBException(OracleMessages.config_import_wizard_page_sql_developer_label_installation_not_found);
                 }
             }
         }
