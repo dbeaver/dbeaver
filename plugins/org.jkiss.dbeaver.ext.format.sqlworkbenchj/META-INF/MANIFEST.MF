@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Tester Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.format.sqlworkbenchj;singleton:=true
-Bundle-Version: 1.0.9.qualifier
-Bundle-Release-Date: 20190203
+Bundle-Version: 1.0.10.qualifier
+Bundle-Release-Date: 20190218
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,

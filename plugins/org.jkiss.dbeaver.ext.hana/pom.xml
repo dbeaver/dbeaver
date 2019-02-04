@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.hana</artifactId>
-  <version>1.0.31-SNAPSHOT</version>
+  <version>1.0.32-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
