@@ -47,6 +47,9 @@
 								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
 
+								<!-- JFreeChart -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:1.0.19</id></artifact>
+
 								<!-- SSH and BouncyCastle -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:0.27.0</id></artifact>
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:1.60.0</id></artifact>
