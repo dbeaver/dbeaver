@@ -234,6 +234,42 @@
             </or>
         </definition>
 
+        <definition id="org.jkiss.dbeaver.core.datasource.connected">
+            <or>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
+                        </adapt>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
+                    </adapt>
+                </with>
+            </or>
+        </definition>
+
+        <definition id="org.jkiss.dbeaver.core.datasource.disconnected">
+            <or>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
+                        </adapt>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
+                    </adapt>
+                </with>
+            </or>
+        </definition>
+
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -269,62 +305,14 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.connect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler">
-            <enabledWhen>
-                <or>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                                <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
-                            </adapt>
-                        </iterate>
-                    </with>
-                    <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
-                        </adapt>
-                    </with>
-                </or>
-            </enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.disconnected"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.disconnect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler">
-            <enabledWhen>
-                <or>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                                <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
-                            </adapt>
-                        </iterate>
-                    </with>
-                    <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
-                        </adapt>
-                    </with>
-                </or>
-            </enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.disconnectAll" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectAllHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.invalidate" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler">
-            <enabledWhen>
-                <or>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                                <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
-                            </adapt>
-                        </iterate>
-                    </with>
-                    <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
-                        </adapt>
-                    </with>
-                </or>
-            </enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <enabledWhen>
