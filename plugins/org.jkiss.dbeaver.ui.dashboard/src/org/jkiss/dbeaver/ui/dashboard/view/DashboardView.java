@@ -27,21 +27,20 @@ import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewManager;
 import org.jkiss.utils.CommonUtils;
 
 public class DashboardView extends ViewPart implements IDataSourceContainerProvider {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
 
-    public DashboardView()
-    {
+    private DashboardViewManager dashboardViewManager;
+
+    public DashboardView() {
         super();
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         String secondaryId = getViewSite().getSecondaryId();
         if (CommonUtils.isEmpty(secondaryId)) {
             throw new IllegalStateException("Dashboard view requires active database connection");
@@ -52,10 +51,8 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         }
         setPartName(dataSource.getName());
 
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new RowLayout());
-        Label label = new Label(composite, SWT.NONE);
-        label.setText(dataSource.getName());
+        dashboardViewManager = new DashboardViewManager(dataSource);
+        dashboardViewManager.createControl(parent);
     }
 
     @Override
@@ -67,6 +64,15 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
     public void init(IViewSite site) throws PartInitException {
         super.init(site);
 
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (dashboardViewManager != null) {
+            dashboardViewManager.dispose();
+            dashboardViewManager = null;
+        }
     }
 
     @Override
