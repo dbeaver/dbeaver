@@ -73,7 +73,10 @@ public class SQLEditorMessages extends NLS {
     public static String action_menu_sqleditor_maximizeResultsPanel;
     public static String action_menu_sqleditor_restoreResultsPanel;
 
-    public static String sql_editor_menu_format;
+    public static String script_close_behavior_delete_always;
+	public static String script_close_behavior_delete_only_new_scripts;
+	public static String script_close_behavior_do_not_delete;
+	public static String sql_editor_menu_format;
 
     public static String action_popup_sqleditor_layout_horizontal;
     public static String action_popup_sqleditor_layout_vertical;
@@ -224,6 +227,10 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_clear_output_before_execute;
     public static String pref_page_sql_editor_label_clear_output_before_execute_tip;
 
+	public static String pref_page_sql_insert_case_default;
+	public static String pref_page_sql_insert_case_lower_case;
+	public static String pref_page_sql_insert_case_upper_case;
+
     public static String controls_querylog__ms;
     public static String controls_querylog_action_clear_log;
     public static String controls_querylog_action_copy;
@@ -264,7 +271,12 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_menu_choose_format;
     public static String  sql_editor_panel_format;
     
-    static {
+    public static String sql_script_binding_type_radio_button_connection_name;
+	public static String sql_script_binding_type_radio_button_connection_parameters;
+	public static String sql_script_binding_type_radio_button_connection_unique;
+	public static String sql_script_binding_type_radio_button_connection_url;
+
+	static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);
     }

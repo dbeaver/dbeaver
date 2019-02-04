@@ -138,9 +138,9 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
             UIUtils.createControlLabel(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_insert_case);
             csInsertCase = new Combo(assistGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            csInsertCase.add("Default");
-            csInsertCase.add("Upper case");
-            csInsertCase.add("Lower case");
+            csInsertCase.add(SQLEditorMessages.pref_page_sql_insert_case_default);
+            csInsertCase.add(SQLEditorMessages.pref_page_sql_insert_case_upper_case);
+            csInsertCase.add(SQLEditorMessages.pref_page_sql_insert_case_lower_case);
 
             csReplaceWordAfter = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_replace_word_after, SQLEditorMessages.pref_page_sql_completion_label_replace_word_after_tip, false, 2);
             csHideDuplicates = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_hide_duplicate_names, null, false, 2);
