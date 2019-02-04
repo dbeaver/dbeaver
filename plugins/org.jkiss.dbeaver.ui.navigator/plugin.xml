@@ -165,6 +165,7 @@
                 <instanceof value="org.jkiss.dbeaver.model.DBPContextProvider"/>
             </with>
         </definition>
+
     </extension>
 
     <extension point="org.eclipse.ui.contexts">

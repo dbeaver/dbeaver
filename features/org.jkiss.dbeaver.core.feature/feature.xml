@@ -40,6 +40,7 @@
     <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="net.sf.opencsv" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
+    <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.net.ssh" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -58,12 +59,17 @@
     <plugin id="org.jkiss.dbeaver.ext.erd" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.ui.colortheme" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.ui.locks" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.mockdata" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.data.transfer" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="com.vividsolutions.jts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <!-- Gis -->
     <plugin id="org.jkiss.dbeaver.data.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="com.vividsolutions.jts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <!-- Charts -->
+    <plugin id="org.jkiss.dbeaver.ui.dashboard" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.bundle.jfreechart" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>
