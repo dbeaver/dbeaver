@@ -628,4 +628,25 @@
         </tools>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dashboard">
+
+        <dashboard id="postgresql.sessionCount" label="Server sessions" type="histogram" refresh="2" calc="value">
+            <query>
+                SELECT
+                (SELECT count(*) AS "Active" FROM pg_catalog.pg_stat_activity sa WHERE state='active'),
+                (SELECT count(*) as "Idle" FROM pg_catalog.pg_stat_activity sa WHERE state='idle'),
+                (SELECT count(*) as "Total" FROM pg_catalog.pg_stat_activity sa)
+            </query>
+        </dashboard>
+        <dashboard id="postgresql.transactionCount" label="Transactions per second" type="histogram" refresh="2" calc="delta">
+            <query>
+                SELECT
+                (SELECT sum(xact_commit) + sum(xact_rollback) AS "Total" FROM pg_stat_database),
+                (SELECT sum(xact_commit) AS "Commit" FROM pg_stat_database),
+                (SELECT sum(xact_rollback) AS "Rollback" FROM pg_stat_database)
+            </query>
+        </dashboard>
+
+    </extension>
+
 </plugin>
