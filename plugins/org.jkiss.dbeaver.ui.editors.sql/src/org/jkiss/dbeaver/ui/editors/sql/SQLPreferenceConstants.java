@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+
 public class SQLPreferenceConstants
 {
 
     public enum EmptyScriptCloseBehavior {
-        NOTHING("Do not delete"),
-        DELETE_NEW("Delete only new scripts"),
-        DELETE_ALWAYS("Delete always");
+        NOTHING(SQLEditorMessages.script_close_behavior_do_not_delete),
+        DELETE_NEW(SQLEditorMessages.script_close_behavior_delete_only_new_scripts),
+        DELETE_ALWAYS(SQLEditorMessages.script_close_behavior_delete_always);
 
         private final String title;
 
