@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
-import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
@@ -46,7 +45,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
@@ -418,27 +416,23 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public Collection<PostgreDataType> getLocalDataTypes()
     {
-        final PostgreSchema schema = getDefaultInstance().getCatalogSchema();
-        if (schema != null) {
-            return schema.dataTypeCache.getCachedObjects();
-        }
-        return null;
+        return getDefaultInstance().getLocalDataTypes();
     }
 
     @Override
     public PostgreDataType getLocalDataType(String typeName)
     {
-        return getDefaultInstance().getDataType(new VoidProgressMonitor(), typeName);
+        return getDefaultInstance().getLocalDataType(typeName);
     }
 
     @Override
     public DBSDataType getLocalDataType(int typeID) {
-        return getDefaultInstance().getDataType(new VoidProgressMonitor(), typeID);
+        return getDefaultInstance().getLocalDataType(typeID);
     }
 
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
-        return PostgreUtils.getDefaultDataTypeName(dataKind);
+        return getDefaultInstance().getDefaultDataTypeName(dataKind);
     }
 
     @NotNull

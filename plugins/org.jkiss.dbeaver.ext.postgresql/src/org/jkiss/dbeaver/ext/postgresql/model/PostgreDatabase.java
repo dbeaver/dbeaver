@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPStatefulObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -66,6 +63,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         DBPNamedObject2,
         PostgreObject,
         DBSObjectSelector,
+        DBPDataTypeProvider,
         DBSInstanceLazy {
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
@@ -364,6 +362,43 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         }
         checkInstanceConnection(monitor);
         return encodingCache.getAllObjects(monitor, this);
+    }
+
+    ///////////////////////////////////////////////
+    // Data types
+
+    @Override
+    public DBPDataKind resolveDataKind(String typeName, int typeID) {
+        return dataSource.resolveDataKind(typeName, typeID);
+    }
+
+    @Override
+    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException {
+        return dataSource.resolveDataType(monitor, typeFullName);
+    }
+
+    @Override
+    public Collection<PostgreDataType> getLocalDataTypes() {
+        final PostgreSchema schema = getCatalogSchema();
+        if (schema != null) {
+            return schema.dataTypeCache.getCachedObjects();
+        }
+        return null;
+    }
+
+    @Override
+    public PostgreDataType getLocalDataType(String typeName) {
+        return getDataType(new VoidProgressMonitor(), typeName);
+    }
+
+    @Override
+    public DBSDataType getLocalDataType(int typeID) {
+        return getDataType(new VoidProgressMonitor(), typeID);
+    }
+
+    @Override
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
+        return PostgreUtils.getDefaultDataTypeName(dataKind);
     }
 
     ///////////////////////////////////////////////
