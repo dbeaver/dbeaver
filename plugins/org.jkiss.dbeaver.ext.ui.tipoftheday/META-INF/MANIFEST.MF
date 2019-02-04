@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.tipoftheday;singleton:=true
-Bundle-Version: 1.0.8.qualifier
-Bundle-Release-Date: 20190203
+Bundle-Version: 1.0.9.qualifier
+Bundle-Release-Date: 20190218
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
