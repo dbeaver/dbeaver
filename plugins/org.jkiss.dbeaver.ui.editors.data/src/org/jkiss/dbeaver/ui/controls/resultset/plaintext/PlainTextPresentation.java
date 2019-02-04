@@ -334,19 +334,20 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 }
 
                 int stringWidth = getStringWidth(displayString);
+                if (extraSpaces) stringWidth++;
 
                 DBPDataKind dataKind = attr.getDataKind();
                 if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
                     (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
                 {
                     // Right justify value
-                    if (extraSpaces) stringWidth++;
                     for (int j = colWidths[k] - stringWidth; j > 0; j--) {
                         grid.append(" ");
                     }
                     grid.append(displayString);
                     if (extraSpaces) grid.append(" ");
                 } else {
+                    if (extraSpaces) grid.append(" ");
                     grid.append(displayString);
                     for (int j = colWidths[k] - stringWidth; j > 0; j--) {
                         grid.append(" ");
