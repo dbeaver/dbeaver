@@ -668,7 +668,7 @@ public class ResultSetViewer extends Viewer
 
         presentationPanel.layout();
         if (recordModeButton != null) {
-            recordModeButton.setVisible(activePresentationDescriptor.supportsRecordMode());
+            recordModeButton.setVisible(activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode());
         }
 
         // Update dynamic find/replace target
