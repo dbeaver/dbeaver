@@ -549,7 +549,7 @@ public class ResultSetViewer extends Viewer
                         activePresentationDescriptor = newPresentation;
                         setActivePresentation(instance);
                     } catch (Throwable e) {
-                        log.error(e);
+                        DBWorkbench.getPlatformUI().showError("Presentation activate", "Can't instantiate data view '" + newPresentation.getLabel() + "'", e);
                     }
                 }
             }
