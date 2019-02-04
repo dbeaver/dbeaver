@@ -51,7 +51,7 @@ public class AutoRefreshConfigDialog extends BaseDialog {
         Composite composite = super.createDialogArea(parent);
 
         Group settingsGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_BOTH, 0);
-        final Spinner intervalSpinner = UIUtils.createLabelSpinner(settingsGroup, "Interval (sec)", "Auto-refresh interval in seconds", refreshSettings.getRefreshInterval(), 0, Integer.MAX_VALUE);
+        final Spinner intervalSpinner = UIUtils.createLabelSpinner(settingsGroup, "Interval (sec)", "Auto-refresh interval in seconds", refreshSettings.getRefreshInterval(), 1, Integer.MAX_VALUE);
         intervalSpinner.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
