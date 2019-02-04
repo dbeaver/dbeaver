@@ -262,9 +262,16 @@ public class SQLEditorMessages extends NLS {
     public static String controls_querylog_success;
     public static String controls_querylog_transaction;
     public static String sql_editor_menu_choose_format;
-    public static String  sql_editor_panel_format;
+    public static String sql_editor_panel_format;
     
-    static {
+    public static String sql_editor_result_set_orientation_detached;
+	public static String sql_editor_result_set_orientation_detached_tip;
+	public static String sql_editor_result_set_orientation_horizontal;
+	public static String sql_editor_result_set_orientation_horizontal_tip;
+	public static String sql_editor_result_set_orientation_vertical;
+	public static String sql_editor_result_set_orientation_vertical_tip;
+
+	static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);
     }
