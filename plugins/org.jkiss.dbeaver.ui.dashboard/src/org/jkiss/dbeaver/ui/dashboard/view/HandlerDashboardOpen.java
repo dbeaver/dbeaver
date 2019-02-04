@@ -16,25 +16,35 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.commands.IElementUpdater;
-import org.eclipse.ui.menus.UIElement;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
-import java.util.Map;
-
-public class HandlerDashboardOpen extends AbstractHandler implements IElementUpdater {
+public class HandlerDashboardOpen extends AbstractDataSourceHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
+        if (dataSourceContainer == null) {
+            dataSourceContainer = getDataSourceContainer(event, true);
+        }
+        if (dataSourceContainer == null) {
+            DBWorkbench.getPlatformUI().showError("Dashboard view", "Can't open dashboard - no database connection selected");
+            return null;
+        }
+        try {
+            workbenchWindow.getActivePage().showView(DashboardView.VIEW_ID, dataSourceContainer.getId(), IWorkbenchPage.VIEW_ACTIVATE);
+        } catch (PartInitException e) {
+            DBWorkbench.getPlatformUI().showError("Dashboard view", "Can't open dashboard view", e);
+        }
         return null;
-    }
-
-    @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
-
     }
 
 }

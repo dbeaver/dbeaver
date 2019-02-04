@@ -15,6 +15,12 @@
                 name="%view.dashboard.title"/>
     </extension>
 
+    <!-- Hide dashboard view from Show View menu -->
+    <extension point="org.eclipse.ui.activities">
+        <activity id="org.jkiss.dbeaver.dashboard.view" name="Dashboard view hide"/>
+        <activityPatternBinding activityId="org.jkiss.dbeaver.dashboard.view" isEqualityPattern="true" pattern="org.jkiss.dbeaver.ui.dashboard/org.jkiss.dbeaver.ui.dashboardView"/>
+    </extension>
+
     <extension point="org.eclipse.ui.newWizards">
         <wizard
                 category="org.jkiss.dbeaver.core.new.general"
@@ -29,7 +35,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-
         <command id="org.jkiss.dbeaver.ui.dashboard.open" name="%command.org.jkiss.dbeaver.ui.dashboard.open.name" description="%command.org.jkiss.dbeaver.ui.dashboard.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
@@ -47,6 +52,26 @@
 
     <extension point="org.eclipse.ui.menus">
 
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+            <toolbar id="dbeaver-dashboard-launcher" label="%toolbar.dashboard.label">
+                <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
+                    <visibleWhen>
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
+                </command>
+                <separator name="additions" visible="false"/>
+            </toolbar>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.ui.dashboard.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+Z"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard">

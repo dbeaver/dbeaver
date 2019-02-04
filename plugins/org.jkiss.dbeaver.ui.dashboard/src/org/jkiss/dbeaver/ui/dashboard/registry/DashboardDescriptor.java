@@ -18,8 +18,9 @@ package org.jkiss.dbeaver.ui.dashboard.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DashboardDescriptor
@@ -31,6 +32,12 @@ public class DashboardDescriptor extends AbstractContextDescriptor
     private final String id;
     private final String label;
     private final String description;
+    private final String group;
+    private final String[] tags;
+
+    private final String dataSourceProvider;
+    private final String driverId;
+    private final String driverClass;
 
     public DashboardDescriptor(
         IConfigurationElement config)
@@ -40,6 +47,12 @@ public class DashboardDescriptor extends AbstractContextDescriptor
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.group = config.getAttribute("group");
+        this.tags = CommonUtils.notEmpty(config.getAttribute("tags")).split(",");
+
+        this.dataSourceProvider = config.getAttribute("datasource");
+        this.driverId = config.getAttribute("driver");
+        this.driverClass = config.getAttribute("driverClass");
     }
 
     @NotNull
@@ -56,6 +69,28 @@ public class DashboardDescriptor extends AbstractContextDescriptor
     public String getDescription()
     {
         return description;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public String[] getTags() {
+        return tags;
+    }
+
+    public boolean matches(DBPDataSourceContainer dataSource) {
+        if (this.dataSourceProvider != null && !this.dataSourceProvider.equals(dataSource.getDriver().getProviderId())) {
+            return false;
+        }
+        if (this.driverId != null && !this.driverId.equals(dataSource.getDriver().getId())) {
+            return false;
+        }
+        if (this.driverClass != null && !this.driverClass.equals(dataSource.getDriver().getDriverClassName())) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override

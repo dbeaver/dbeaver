@@ -16,13 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class DashboardView extends ViewPart implements IDataSourceContainerProvider {
@@ -36,20 +42,20 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
     @Override
     public void createPartControl(Composite parent)
     {
-        //UIUtils.setHelp(parent, IHelpContextIds.CTX_DATABASE_NAVIGATOR);
-
         String secondaryId = getViewSite().getSecondaryId();
-        if (!CommonUtils.isEmpty(secondaryId)) {
-/*
-            try {
-                DBNNode node = getNodeFromSecondaryId(secondaryId);
-                setPartName(node.getNodeName());
-                setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
-            } catch (DBException e) {
-                // ignore
-            }
-*/
+        if (CommonUtils.isEmpty(secondaryId)) {
+            throw new IllegalStateException("Dashboard view requires active database connection");
         }
+        DBPDataSourceContainer dataSource = DBUtils.findDataSource(secondaryId);
+        if (dataSource == null) {
+            throw new IllegalStateException("Database connection '" + secondaryId + "' not found");
+        }
+        setPartName(dataSource.getName());
+
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(new RowLayout());
+        Label label = new Label(composite, SWT.NONE);
+        label.setText(dataSource.getName());
     }
 
     @Override

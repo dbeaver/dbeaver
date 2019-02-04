@@ -62,7 +62,11 @@ public class DashboardRegistry {
 
     public List<DashboardDescriptor> getDashboard(DBPDataSourceContainer dataSourceContainer) {
         List<DashboardDescriptor> result = new ArrayList<>();
-
+        for (DashboardDescriptor dd : descriptors) {
+            if (dd.matches(dataSourceContainer)) {
+                result.add(dd);
+            }
+        }
         return result;
     }
 
