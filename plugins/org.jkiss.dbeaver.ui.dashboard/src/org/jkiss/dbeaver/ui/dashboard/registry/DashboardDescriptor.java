@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 /**
  * DashboardDescriptor
  */
-public class DashboardDescriptor extends AbstractContextDescriptor implements DBPPlatformLanguage
+public class DashboardDescriptor extends AbstractContextDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard"; //$NON-NLS-1$
 
@@ -43,13 +43,11 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     }
 
     @NotNull
-    @Override
     public String getId() {
         return id;
     }
 
     @NotNull
-    @Override
     public String getLabel()
     {
         return label;
