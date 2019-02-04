@@ -202,7 +202,7 @@ public class DBeaverCommandLine
         try {
             return new DefaultParser().parse(ALL_OPTIONS, Platform.getApplicationArgs(), false);
         } catch (Exception e) {
-            log.error("Error parsing command line: " + e.getMessage());
+            log.warn("Error parsing command line: " + e.getMessage());
             return null;
         }
     }
