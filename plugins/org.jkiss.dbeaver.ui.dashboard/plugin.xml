@@ -6,7 +6,6 @@
     <extension-point id="org.jkiss.dbeaver.dashboard" name="%extension-point.org.jkiss.dbeaver.dashboard.name" schema="schema/org.jkiss.dbeaver.dashboard.exsd"/>
 
     <extension point="org.eclipse.ui.views">
-        <category id="org.jkiss.dbeaver.core.category" name="%category.org.jkiss.dbeaver.core.category.name"/>
         <view
                 id="org.jkiss.dbeaver.ui.dashboardView"
                 category="org.jkiss.dbeaver.core.category"
