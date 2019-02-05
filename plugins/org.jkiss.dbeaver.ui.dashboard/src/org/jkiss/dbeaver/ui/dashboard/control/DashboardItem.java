@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -42,8 +43,11 @@ public class DashboardItem extends Composite implements DashboardContainer {
         this.dashboardDescriptor = dashboardDescriptor;
 
         try {
+            Composite chartComposite = new Composite(this, SWT.NONE);
+            chartComposite.setLayout(new FillLayout());
+            chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
             DashboardRenderer renderer = dashboardDescriptor.getType().createRenderer();
-            Control dashboardControl = renderer.createDashboard(this, this, computeSize(-1, -1));
+            Control dashboardControl = renderer.createDashboard(chartComposite, this, computeSize(-1, -1));
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);

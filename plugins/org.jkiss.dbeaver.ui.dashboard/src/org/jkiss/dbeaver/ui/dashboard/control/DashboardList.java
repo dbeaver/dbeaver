@@ -38,8 +38,10 @@ public class DashboardList extends Composite {
         this.provider = provider;
 
         RowLayout layout = new RowLayout();
-        layout.wrap = true;
         layout.spacing = 5;
+        layout.pack = false;
+        layout.wrap = true;
+        layout.justify = true;
         this.setLayout(layout);
     }
 
