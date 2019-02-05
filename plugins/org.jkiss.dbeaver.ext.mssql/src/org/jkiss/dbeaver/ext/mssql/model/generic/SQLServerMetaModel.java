@@ -383,7 +383,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public boolean supportsSynonyms(GenericDataSource dataSource) {
-        return true;
+        return isSqlServer();
     }
 
     @Override
