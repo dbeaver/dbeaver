@@ -2186,9 +2186,9 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public enum ResultSetOrientation {
-        HORIZONTAL(SWT.VERTICAL, "Horizontal", "Results are below the editor", true),
-        VERTICAL(SWT.HORIZONTAL, "Vertical", "Results are to the right from editor", true),
-        DETACHED(SWT.VERTICAL, "Detached", "Results are in separate view", false);
+        HORIZONTAL(SWT.VERTICAL, SQLEditorMessages.sql_editor_result_set_orientation_horizontal, SQLEditorMessages.sql_editor_result_set_orientation_horizontal_tip, true),
+        VERTICAL(SWT.HORIZONTAL, SQLEditorMessages.sql_editor_result_set_orientation_vertical, SQLEditorMessages.sql_editor_result_set_orientation_vertical_tip, true),
+        DETACHED(SWT.VERTICAL, SQLEditorMessages.sql_editor_result_set_orientation_detached, SQLEditorMessages.sql_editor_result_set_orientation_detached_tip, false);
 
         private final int sashOrientation;
         private final String label;
