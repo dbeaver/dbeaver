@@ -342,6 +342,20 @@ public class CommonUtils {
         }
     }
 
+    public static double toDouble(@Nullable Object object, double def) {
+        if (object == null) {
+            return def;
+        } else if (object instanceof Number) {
+            return ((Number) object).doubleValue();
+        } else {
+            try {
+                return Double.parseDouble(toString(object));
+            } catch (NumberFormatException e) {
+                return def;
+            }
+        }
+    }
+
     @NotNull
     public static String toHexString(@Nullable byte[] bytes) {
         return bytes == null ? "" : toHexString(bytes, 0, bytes.length);

@@ -43,6 +43,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor
     private String[] tags;
     private final List<DataSourceMapping> dataSourceMappings = new ArrayList<>();
 
+    private float widthRatio;
     private DashboardCalcType calcType;
     private DashboardFetchType fetchType;
 
@@ -85,6 +86,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
         this.type = registry.getDashboardType(config.getAttribute("type"));
+        this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), 1.5); // Default ratio is 2 to 3
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardCalcType.value);
         this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardFetchType.columns);
 
@@ -126,6 +128,10 @@ public class DashboardDescriptor extends AbstractContextDescriptor
 
     public String[] getTags() {
         return tags;
+    }
+
+    public float getWidthRatio() {
+        return widthRatio;
     }
 
     public DashboardCalcType getCalcType() {

@@ -20,17 +20,19 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DashboardList extends Composite {
 
+    private static final int ITEM_SPACING = 5;
+
     private IDataSourceContainerProvider provider;
+    private List<DashboardItem> items = new ArrayList<>();
 
     public DashboardList(Composite parent, IDataSourceContainerProvider provider) {
         super(parent, SWT.NONE);
@@ -38,7 +40,7 @@ public class DashboardList extends Composite {
         this.provider = provider;
 
         RowLayout layout = new RowLayout();
-        layout.spacing = 5;
+        layout.spacing = getItemSpacing();
         layout.pack = false;
         layout.wrap = true;
         layout.justify = true;
@@ -49,6 +51,10 @@ public class DashboardList extends Composite {
         return provider.getDataSourceContainer();
     }
 
+    public List<DashboardItem> getItems() {
+        return items;
+    }
+
     void createDefaultDashboards() {
         List<DashboardDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(provider.getDataSourceContainer(), true);
         for (DashboardDescriptor dd : dashboards) {
@@ -56,4 +62,15 @@ public class DashboardList extends Composite {
         }
     }
 
+    void addItem(DashboardItem item) {
+        this.items.add(item);
+    }
+
+    void removeItem(DashboardItem item) {
+        this.items.remove(item);
+    }
+
+    public int getItemSpacing() {
+        return ITEM_SPACING;
+    }
 }
