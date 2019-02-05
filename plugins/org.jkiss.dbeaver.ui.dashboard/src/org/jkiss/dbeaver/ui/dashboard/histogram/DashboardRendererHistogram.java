@@ -31,6 +31,7 @@ import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
@@ -59,10 +60,21 @@ public class DashboardRendererHistogram implements DashboardRenderer {
             true,
             true,
             false);
+        histogramChart.setBorderVisible(false);
+        histogramChart.setPadding(new RectangleInsets(0, 0, 0, 0));
+        //histogramChart.getLegend().setBorder(0, 0, 0, 0);
+        //histogramChart.removeLegend();
 
         ChartPanel chartPanel = new ChartPanel( histogramChart );
         chartPanel.setPreferredSize( new java.awt.Dimension( preferredSize.x, preferredSize.y ) );
+
         final XYPlot plot = histogramChart.getXYPlot( );
+        // Remove border
+        plot.setOutlinePaint(null);
+
+//        XYItemRenderer renderer = plot.getRenderer();
+//        renderer.setSeriesOutlinePaint(0, Color.black);
+//        renderer.setSeriesOutlineStroke(0, new BasicStroke(0.5f));
 
         DateAxis domainAxis = new DateAxis("Time");
         domainAxis.setDateFormatOverride(new SimpleDateFormat("MM/dd HH:mm"));
