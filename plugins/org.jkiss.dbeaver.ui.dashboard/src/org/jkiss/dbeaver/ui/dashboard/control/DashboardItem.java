@@ -31,10 +31,14 @@ import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 
 public class DashboardItem extends Composite implements DashboardContainer {
 
+    public static final int DEFAULT_HEIGHT = 200;
     private DashboardDescriptor dashboardDescriptor;
 
     public DashboardItem(DashboardList parent, DashboardDescriptor dashboardDescriptor) {
         super(parent, SWT.BORDER);
+        parent.addItem(this);
+        addDisposeListener(e -> parent.removeItem(this));
+
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -56,14 +60,73 @@ public class DashboardItem extends Composite implements DashboardContainer {
         }
     }
 
-
     public DashboardList getParent() {
         return (DashboardList) super.getParent();
     }
 
+    public int getDefaultHeight() {
+        return DEFAULT_HEIGHT;
+    }
+
+    public int getDefaultWidth() {
+        return (int) (dashboardDescriptor.getWidthRatio() * getDefaultHeight());
+    }
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
-        return new Point(300, 200);//super.computeSize(wHint, hHint, changed);
+        DashboardList list = getParent();
+
+        int defHeight = getDefaultHeight();
+        int defWidth = getDefaultWidth();
+        Point areaSize = list.getSize();
+        if (areaSize.x <= defWidth || areaSize.y <= defHeight) {
+            return new Point(defWidth, defHeight);
+        }
+        // Use some insets
+        areaSize.x -= 10;
+        areaSize.y -= 10;
+
+        int extraWidthSpace = 0;
+        int extraHeightSpace = 0;
+        int totalWidth = 0;
+        int totalHeight = 0;
+
+        if (areaSize.x > areaSize.y) {
+            // Horizontal
+            totalHeight = defHeight;
+            for (DashboardItem item : list.getItems()) {
+                if (totalWidth > 0) totalWidth += list.getItemSpacing();
+                totalWidth += item.getDefaultWidth();
+            }
+            if (totalWidth < areaSize.x) {
+                // Stretch to fit height
+                extraWidthSpace = areaSize.x - totalWidth;
+                extraHeightSpace = areaSize.y - defHeight;
+            }
+        } else {
+            // Vertical
+            totalWidth = defWidth;
+            for (DashboardItem item : list.getItems()) {
+                if (totalHeight > 0) totalHeight += list.getItemSpacing();
+                totalHeight += item.getDefaultHeight();
+            }
+            if (totalHeight < areaSize.y) {
+                // Stretch to fit width
+                // Stretch to fit height
+                extraWidthSpace = areaSize.x - defWidth;
+                extraHeightSpace = areaSize.y - totalHeight;
+            }
+        }
+        if (extraHeightSpace > 0 && extraWidthSpace > 0) {
+            // Stretch
+            int widthIncreasePercent = 100 * areaSize.x / totalWidth;
+            int heightIncreasePercent = 100 * areaSize.y / totalHeight;
+            int increasePercent = Math.min(widthIncreasePercent, heightIncreasePercent);
+            return new Point(
+                (defWidth * increasePercent / 100),
+                (defHeight * increasePercent / 100));
+        } else {
+            return new Point(defWidth, defHeight);
+        }
     }
 
     @Override
@@ -80,4 +143,5 @@ public class DashboardItem extends Composite implements DashboardContainer {
     public DBPDataSourceContainer getDataSourceContainer() {
         return getParent().getDataSourceContainer();
     }
+
 }
