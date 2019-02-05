@@ -391,6 +391,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
     }
 
+    StringBuilder fixBuffer = new StringBuilder();
+
     private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row, DBDDisplayFormat displayFormat) {
         Object cellValue = model.getCellValue(attr, row);
         if (cellValue instanceof DBDValueError) {
@@ -404,10 +406,29 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         {
             displayString = DBConstants.NULL_VALUE_LABEL;
         }
-        return displayString
-            .replace('\n', TextUtils.PARAGRAPH_CHAR)
-            .replace("\r", "")
-            .replace((char)0, ' ');
+
+        fixBuffer.setLength(0);
+        for (int i = 0; i < displayString.length(); i++) {
+            char c = displayString.charAt(i);
+            switch (c) {
+                case '\n':
+                    c = TextUtils.PARAGRAPH_CHAR;
+                    break;
+                case '\r':
+                    continue;
+                case 0:
+                case 255:
+                case '\t':
+                    c = ' ';
+                    break;
+            }
+            if (c < ' ' || (c > 127 && c < 255)) {
+                c = ' ';
+            }
+            fixBuffer.append(c);
+        }
+
+        return fixBuffer.toString();
     }
 
     private void printRecord() {
