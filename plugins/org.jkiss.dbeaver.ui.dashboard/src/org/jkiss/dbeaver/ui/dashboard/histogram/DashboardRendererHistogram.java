@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.histogram;
 
+import com.sun.javafx.charts.Legend;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
@@ -27,10 +28,13 @@ import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.DateTickMarkPosition;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.title.Title;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
@@ -64,6 +68,10 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         histogramChart.setPadding(new RectangleInsets(0, 0, 0, 0));
         //histogramChart.getLegend().setBorder(0, 0, 0, 0);
         //histogramChart.removeLegend();
+
+        LegendTitle legend = histogramChart.getLegend();
+        legend.setPosition(RectangleEdge.BOTTOM);
+        //legend.setAnchor(Legend.EAST);
 
         ChartPanel chartPanel = new ChartPanel( histogramChart );
         chartPanel.setPreferredSize( new java.awt.Dimension( preferredSize.x, preferredSize.y ) );

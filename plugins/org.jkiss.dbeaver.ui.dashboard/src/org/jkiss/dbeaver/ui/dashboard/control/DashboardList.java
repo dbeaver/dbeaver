@@ -43,7 +43,7 @@ public class DashboardList extends Composite {
         layout.spacing = getItemSpacing();
         layout.pack = false;
         layout.wrap = true;
-        layout.justify = true;
+        layout.justify = false;
         this.setLayout(layout);
     }
 
