@@ -21,13 +21,14 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 
-public class DashboardItem extends Composite {
+public class DashboardItem extends Composite implements DashboardContainer {
 
     private DashboardDescriptor dashboardDescriptor;
 
@@ -42,7 +43,7 @@ public class DashboardItem extends Composite {
 
         try {
             DashboardRenderer renderer = dashboardDescriptor.getType().createRenderer();
-            renderer.createDashboard(this);
+            Control dashboardControl = renderer.createDashboard(this, this, computeSize(-1, -1));
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
@@ -51,8 +52,28 @@ public class DashboardItem extends Composite {
         }
     }
 
+
+    public DashboardList getParent() {
+        return (DashboardList) super.getParent();
+    }
+
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
-        return new Point(200, 200);//super.computeSize(wHint, hHint, changed);
+        return new Point(300, 200);//super.computeSize(wHint, hHint, changed);
+    }
+
+    @Override
+    public String getDashboardTitle() {
+        return dashboardDescriptor.getLabel();
+    }
+
+    @Override
+    public String getDashboardDescription() {
+        return dashboardDescriptor.getDescription();
+    }
+
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return getParent().getDataSourceContainer();
     }
 }
