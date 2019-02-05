@@ -34,25 +34,30 @@ public class DashboardRegistry {
         return instance;
     }
 
-    private final List<DashboardDescriptor> descriptors = new ArrayList<>();
+    private final List<DashboardDescriptor> dashboardList = new ArrayList<>();
+    private final List<DashboardTypeDescriptor> dashboardTypeList = new ArrayList<>();
 
     private DashboardRegistry(IExtensionRegistry registry) {
-        // Load data descriptors from external plugins
-        {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
-            for (IConfigurationElement ext : extElements) {
-                DashboardDescriptor formatterDescriptor = new DashboardDescriptor(ext);
-                descriptors.add(formatterDescriptor);
+        // Load data dashboardList from external plugins
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
+        // Load types
+        for (IConfigurationElement ext : extElements) {
+            if ("dashboardType".equals(ext.getName())) {
+                dashboardTypeList.add(
+                    new DashboardTypeDescriptor(ext));
+            }
+        }
+        // Load dashboards
+        for (IConfigurationElement ext : extElements) {
+            if ("dashboard".equals(ext.getName())) {
+                dashboardList.add(
+                    new DashboardDescriptor(this, ext));
             }
         }
     }
 
-    public List<DashboardDescriptor> getAllDashboards() {
-        return descriptors;
-    }
-
-    public DashboardDescriptor getDashboard(String id) {
-        for (DashboardDescriptor descriptor : descriptors) {
+    public DashboardTypeDescriptor getDashboardType(String id) {
+        for (DashboardTypeDescriptor descriptor : dashboardTypeList) {
             if (descriptor.getId().equals(id)) {
                 return descriptor;
             }
@@ -60,11 +65,26 @@ public class DashboardRegistry {
         return null;
     }
 
-    public List<DashboardDescriptor> getDashboard(DBPDataSourceContainer dataSourceContainer) {
+    public List<DashboardDescriptor> getAllDashboards() {
+        return dashboardList;
+    }
+
+    public DashboardDescriptor getDashboards(String id) {
+        for (DashboardDescriptor descriptor : dashboardList) {
+            if (descriptor.getId().equals(id)) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
+
+    public List<DashboardDescriptor> getDashboards(DBPDataSourceContainer dataSourceContainer, boolean defaultOnly) {
         List<DashboardDescriptor> result = new ArrayList<>();
-        for (DashboardDescriptor dd : descriptors) {
+        for (DashboardDescriptor dd : dashboardList) {
             if (dd.matches(dataSourceContainer)) {
-                result.add(dd);
+                if (!defaultOnly || dd.isShowByDefault()) {
+                    result.add(dd);
+                }
             }
         }
         return result;

@@ -75,9 +75,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard">
-        <dashboard >
+        <dashboardType id="histogram" label="Histogram" renderer="org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererHistogram">
 
-        </dashboard>
+        </dashboardType>
     </extension>
 
 </plugin>

@@ -452,17 +452,17 @@ public class CommonUtils {
 
     @Nullable
     public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name) {
-        return valueOf(type, name, false);
+        return valueOf(type, name, null, false);
     }
 
     @Nullable
-    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, boolean underscoreSpaces) {
+    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, T defValue, boolean underscoreSpaces) {
         if (name == null) {
-            return null;
+            return defValue;
         }
         name = name.trim();
         if (name.length() == 0) {
-            return null;
+            return defValue;
         }
         if (underscoreSpaces) {
             name = name.replace(' ', '_');
@@ -471,7 +471,19 @@ public class CommonUtils {
             return Enum.valueOf(type, name);
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return defValue;
+        }
+    }
+
+    public static <T extends Enum<T>> T valueOf(Class<T> enumType, String str, T defValue) {
+        if (isEmpty(str)) {
+            return defValue;
+        }
+        try {
+            return Enum.valueOf(enumType, str);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return defValue;
         }
     }
 
@@ -583,4 +595,5 @@ public class CommonUtils {
         else
             return String.valueOf(val);
     }
+
 }

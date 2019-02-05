@@ -23,3 +23,4 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.bundle.jfreechart
+Export-Package: org.jkiss.dbeaver.ui.dashboard.control

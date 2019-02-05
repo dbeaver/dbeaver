@@ -19,21 +19,20 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Date;
 
-public class DashboardViewManager implements DBPEventListener {
+public class DashboardViewManager implements DBPEventListener, IDataSourceContainerProvider {
 
     private final DBPDataSourceContainer dataSourceContainer;
-    private Composite dashContainer;
+    private DashboardList dashContainer;
     private CLabel statusLabel;
 
     private Date initDate;
@@ -42,7 +41,9 @@ public class DashboardViewManager implements DBPEventListener {
         this.dataSourceContainer = dataSourceContainer;
         this.dataSourceContainer.getRegistry().addDataSourceListener(this);
 
-        //UIDashboardActivator.getDefault().getPreferences().get
+        if (!this.dataSourceContainer.isConnected()) {
+            //DataSourceConnectHandler
+        }
     }
 
     public void dispose() {
@@ -65,14 +66,15 @@ public class DashboardViewManager implements DBPEventListener {
     public void createControl(Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
 
-        dashContainer = new Composite(composite, SWT.NONE);
+        dashContainer = new DashboardList(composite, this);
         dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
-        dashContainer.setLayout(new RowLayout());
 
         statusLabel = new CLabel(composite, SWT.NONE);
         statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         updateStatus();
 
+        dashContainer.createDefaultDashboards();
     }
 
     private void updateStatus() {
@@ -81,4 +83,8 @@ public class DashboardViewManager implements DBPEventListener {
         statusLabel.setText(this.dataSourceContainer.getName() + ": " + status);
     }
 
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
+    }
 }
