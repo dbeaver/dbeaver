@@ -40,7 +40,7 @@ public class DashboardTypeDescriptor extends AbstractContextDescriptor
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
-        this.implType = new ObjectType(config.getAttribute("class"));
+        this.implType = new ObjectType(config.getAttribute("renderer"));
     }
 
     @NotNull
