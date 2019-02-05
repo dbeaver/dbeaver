@@ -71,6 +71,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
 
         LegendTitle legend = histogramChart.getLegend();
         legend.setPosition(RectangleEdge.BOTTOM);
+        legend.setBorder(0, 0, 0, 0);
         //legend.setAnchor(Legend.EAST);
 
         ChartPanel chartPanel = new ChartPanel( histogramChart );
