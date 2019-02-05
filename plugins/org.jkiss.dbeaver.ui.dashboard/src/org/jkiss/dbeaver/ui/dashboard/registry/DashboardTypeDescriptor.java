@@ -32,7 +32,7 @@ public class DashboardTypeDescriptor extends AbstractContextDescriptor
     private String description;
     private ObjectType implType;
 
-    public DashboardTypeDescriptor(
+    DashboardTypeDescriptor(
         IConfigurationElement config)
     {
         super(config);

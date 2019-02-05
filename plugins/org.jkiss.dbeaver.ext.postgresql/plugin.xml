@@ -649,6 +649,46 @@
             </query>
         </dashboard>
 
+<!--
+
+        <dashboard id="postgresql.transactionCount2" label="Transactions per second" group="Standard" type="histogram" refresh="2" calc="delta" fetch="columns" showByDefault="true">
+            <datasource id="postgresql"/>
+            <query>
+                SELECT
+                (SELECT sum(xact_commit) + sum(xact_rollback) AS "Total" FROM pg_stat_database),
+                (SELECT sum(xact_commit) AS "Commit" FROM pg_stat_database),
+                (SELECT sum(xact_rollback) AS "Rollback" FROM pg_stat_database)
+            </query>
+        </dashboard>
+        <dashboard id="postgresql.transactionCount3" label="Transactions per second" group="Standard" type="histogram" refresh="2" calc="delta" fetch="columns" showByDefault="true">
+            <datasource id="postgresql"/>
+            <query>
+                SELECT
+                (SELECT sum(xact_commit) + sum(xact_rollback) AS "Total" FROM pg_stat_database),
+                (SELECT sum(xact_commit) AS "Commit" FROM pg_stat_database),
+                (SELECT sum(xact_rollback) AS "Rollback" FROM pg_stat_database)
+            </query>
+        </dashboard>
+        <dashboard id="postgresql.transactionCount4" label="Transactions per second" group="Standard" type="histogram" refresh="2" calc="delta" fetch="columns" showByDefault="true">
+            <datasource id="postgresql"/>
+            <query>
+                SELECT
+                (SELECT sum(xact_commit) + sum(xact_rollback) AS "Total" FROM pg_stat_database),
+                (SELECT sum(xact_commit) AS "Commit" FROM pg_stat_database),
+                (SELECT sum(xact_rollback) AS "Rollback" FROM pg_stat_database)
+            </query>
+        </dashboard>
+        <dashboard id="postgresql.transactionCount5" label="Transactions per second" group="Standard" type="histogram" refresh="2" calc="delta" fetch="columns" showByDefault="true">
+            <datasource id="postgresql"/>
+            <query>
+                SELECT
+                (SELECT sum(xact_commit) + sum(xact_rollback) AS "Total" FROM pg_stat_database),
+                (SELECT sum(xact_commit) AS "Commit" FROM pg_stat_database),
+                (SELECT sum(xact_rollback) AS "Rollback" FROM pg_stat_database)
+            </query>
+        </dashboard>
+-->
+
     </extension>
 
 </plugin>

@@ -52,13 +52,13 @@ public class DashboardDescriptor extends AbstractContextDescriptor
         private final String driverId;
         private final String driverClass;
 
-        public DataSourceMapping(IConfigurationElement config) {
-            this.dataSourceProvider = config.getAttribute("datasource");
+        DataSourceMapping(IConfigurationElement config) {
+            this.dataSourceProvider = config.getAttribute("id");
             this.driverId = config.getAttribute("driver");
             this.driverClass = config.getAttribute("driverClass");
         }
 
-        public boolean matches(DBPDataSourceContainer dataSource) {
+        boolean matches(DBPDataSourceContainer dataSource) {
             if (this.dataSourceProvider != null && !this.dataSourceProvider.equals(dataSource.getDriver().getProviderId())) {
                 return false;
             }
@@ -72,7 +72,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor
         }
     }
 
-    public DashboardDescriptor(
+    DashboardDescriptor(
         DashboardRegistry registry,
         IConfigurationElement config)
     {
