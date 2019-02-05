@@ -269,8 +269,13 @@ public class SQLEditorMessages extends NLS {
     public static String controls_querylog_success;
     public static String controls_querylog_transaction;
     public static String sql_editor_menu_choose_format;
-    public static String  sql_editor_panel_format;
-    
+    public static String sql_editor_panel_format;
+    public static String sql_editor_result_set_orientation_detached;
+	public static String sql_editor_result_set_orientation_detached_tip;
+	public static String sql_editor_result_set_orientation_horizontal;
+	public static String sql_editor_result_set_orientation_horizontal_tip;
+	public static String sql_editor_result_set_orientation_vertical;
+	public static String sql_editor_result_set_orientation_vertical_tip;
     public static String sql_script_binding_type_radio_button_connection_name;
 	public static String sql_script_binding_type_radio_button_connection_parameters;
 	public static String sql_script_binding_type_radio_button_connection_unique;

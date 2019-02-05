@@ -40,9 +40,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlFormatter">
-        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="Default formatter" description="Default SQL formatter"/>
-        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="Compact formatter" description="Compact SQL formatter. Similar to default formatter but with more compact output"/>
-        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.SQLExternalFormatterConfigurationPage" label="External formatter" description="External formatter. Uses configurable command-line executable to format SQL queries"/>
+        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="%sql.formatter.combo.default" description="%sql.formatter.combo.default_tip"/>
+        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="%sql.formatter.combo.compact" description="%sql.formatter.combo.compact_tip"/>
+        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.SQLExternalFormatterConfigurationPage" label="%sql.formatter.combo.external" description="%sql.formatter.combo.external_tip"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
