@@ -17,12 +17,11 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 /**
- * Dashboard value calculation
+ * Dashboard data fetch type
  */
-public enum DashboardCalc {
+public enum DashboardFetchType {
 
-    VALUE,      // Absolute value
-    DELTA,      // Delta between last two value
-    PERCENT,    // Percent
+    columns,
+    rows,
 
 }
