@@ -217,7 +217,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT, textValueFormat.getSelection().name());
             store.setValue(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS, showNulls.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING, textDelimiterLeading.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING, textDelimiterLeading.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING, textDelimiterTrailing.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES, textExtraSpaces.getSelection());
         } catch (Exception e) {
             log.warn(e);
