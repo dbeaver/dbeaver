@@ -213,7 +213,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             log.error("Error parsing parameters defaults", e);
         }
 
-        this.overloadedName = makeOverloadedName(getSchema(), getName(), params, false);
+        this.overloadedName = makeOverloadedName(getSchema(), getName(), params, false, false);
 
         {
             final long varTypeId = JDBCUtils.safeGetLong(dbResult, "provariadic");
@@ -359,7 +359,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Override
     public void setName(String name) {
         super.setName(name);
-        this.overloadedName = makeOverloadedName(getSchema(), getName(), params, false);
+        this.overloadedName = makeOverloadedName(getSchema(), getName(), params, false, false);
     }
 
     @Override
@@ -425,7 +425,11 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder decl = new StringBuilder();
-        decl.append("CREATE OR REPLACE ").append(getProcedureTypeName()).append(" ").append(getFullQualifiedSignature()).append(lineSeparator);
+
+        String functionSignature = makeOverloadedName(getSchema(), getName(), params, true, true);
+        decl.append("CREATE OR REPLACE ").append(getProcedureTypeName()).append(" ")
+            .append(DBUtils.getQuotedIdentifier(getContainer())).append(".")
+            .append(functionSignature).append(lineSeparator);
         if (getProcedureType().hasReturnValue() && !CommonUtils.isEmpty(returnTypeName)) {
             decl.append("\tRETURNS ");
             if (isReturnsSet()) {
@@ -581,7 +585,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return procVolatile;
     }
 
-    public static String makeOverloadedName(PostgreSchema schema, String name, List<PostgreProcedureParameter> params, boolean quote) {
+    public static String makeOverloadedName(PostgreSchema schema, String name, List<PostgreProcedureParameter> params, boolean quote, boolean showParamNames) {
         String selfName = (quote ? DBUtils.getQuotedIdentifier(schema.getDataSource(), name) : name);
         if (!CommonUtils.isEmpty(params)) {
             StringBuilder paramsSignature = new StringBuilder(64);
@@ -595,6 +599,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 }
                 if (hasParam) paramsSignature.append(',');
                 hasParam = true;
+                if (showParamNames) {
+                    paramsSignature.append(param.getName()).append(' ');
+                }
                 final PostgreDataType dataType = param.getParameterType();
                 final PostgreSchema typeContainer = dataType.getParentObject();
                 if (typeContainer == null ||
@@ -623,7 +630,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     public String getFullQualifiedSignature() {
         return DBUtils.getQuotedIdentifier(getContainer()) + "." +
-            makeOverloadedName(getSchema(), getName(), params, true);
+            makeOverloadedName(getSchema(), getName(), params, true, false);
     }
 
     public String getProcedureTypeName() {
