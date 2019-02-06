@@ -7,7 +7,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20190218
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator
+Bundle-Activator: org.jkiss.dbeaver.ui.charts.internal.UIChartsActivator
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.preferences,
  org.eclipse.core.runtime,

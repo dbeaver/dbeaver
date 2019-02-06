@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
- * Dashboard chart composite
+ * Base chart composite
  */
 public class BaseChartComposite extends ChartComposite {
 

@@ -18,72 +18,24 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.*;
-import org.jfree.chart.swt.ChartComposite;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 
 /**
  * Dashboard chart composite
  */
-public class DashboardChartComposite extends ChartComposite {
+public class DashboardChartComposite extends BaseChartComposite {
 
-    public static final String CHART_CONFIG_COMMAND = "CHART_CONFIG";
-    private DashboardContainer dashboardContainer;
+    private final DashboardContainer dashboardContainer;
 
     public DashboardChartComposite(DashboardContainer dashboardContainer, Composite parent, int style, Point preferredSize) {
-        super(parent, style, null,
-            preferredSize.x, preferredSize.y,
-            30, 20,
-            10000, 10000,
-            true, false, true, true, true, true);
+        super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
     }
 
-    public Canvas getChartCanvas() {
-        Control[] children = getChildren();
-        return children.length == 0 ? null : (Canvas) children[0];
-    }
-
-    @Override
-    public void mouseDoubleClick(MouseEvent event) {
-        if (showChartConfigDialog()) {
-            forceRedraw();
-        }
-    }
-
-    @Override
-    protected Menu createPopupMenu(boolean properties, boolean save, boolean print, boolean zoom) {
-        Menu popupMenu = super.createPopupMenu(properties, save, print, zoom);
-
-        new MenuItem(popupMenu, SWT.SEPARATOR, 0);
-
-        MenuItem printItem = new MenuItem(popupMenu, SWT.PUSH, 0);
-        printItem.setText("Settings ...");
-        printItem.setImage(DBeaverIcons.getImage(UIIcon.CONFIGURATION));
-        printItem.setData(CHART_CONFIG_COMMAND);
-        printItem.addSelectionListener(this);
-
-        return popupMenu;
-    }
-
-    public void widgetSelected(SelectionEvent e) {
-        if (CHART_CONFIG_COMMAND.equals(((MenuItem) e.getSource()).getData())) {
-            if (showChartConfigDialog()) {
-                forceRedraw();
-            }
-        } else {
-            super.widgetSelected(e);
-        }
-
-    }
-
-    boolean showChartConfigDialog() {
+    protected boolean showChartConfigDialog() {
         DashboardChartConfigDialog dialog = new DashboardChartConfigDialog(this, dashboardContainer);
         return dialog.open() == IDialogConstants.OK_ID;
     }
