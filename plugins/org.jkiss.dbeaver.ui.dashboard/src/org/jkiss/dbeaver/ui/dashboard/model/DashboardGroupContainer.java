@@ -25,7 +25,7 @@ import java.util.List;
  */
 public interface DashboardGroupContainer {
 
-    DBPDataSourceContainer getDataSourceContainer();
+    DashboardViewContainer getView();
 
     List<? extends DashboardContainer> getItems();
 

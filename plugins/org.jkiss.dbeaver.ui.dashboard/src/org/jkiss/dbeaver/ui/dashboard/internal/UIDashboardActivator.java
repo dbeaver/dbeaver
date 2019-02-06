@@ -21,6 +21,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardUpdateJob;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.osgi.framework.BundleContext;
 
@@ -43,6 +44,8 @@ public class UIDashboardActivator extends AbstractUIPlugin {
         DBeaverNotifications.setHandler(NotificationUtils::sendNotification);
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
+
+        DashboardUpdateJob.startUpdating();
     }
 
     @Override

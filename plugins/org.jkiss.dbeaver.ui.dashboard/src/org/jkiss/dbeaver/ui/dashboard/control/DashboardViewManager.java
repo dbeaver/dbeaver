@@ -24,14 +24,16 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 
 import java.util.Collections;
 import java.util.List;
 
-public class DashboardViewManager implements DBPEventListener, IDataSourceContainerProvider {
+public class DashboardViewManager implements DBPEventListener, IDataSourceContainerProvider, DashboardViewContainer {
 
     private final DBPDataSourceContainer dataSourceContainer;
     private DashboardList dashContainer;
@@ -44,6 +46,8 @@ public class DashboardViewManager implements DBPEventListener, IDataSourceContai
         if (!this.dataSourceContainer.isConnected()) {
             //DataSourceConnectHandler
         }
+
+        // Activate updater
     }
 
     public void dispose() {
@@ -88,7 +92,14 @@ public class DashboardViewManager implements DBPEventListener, IDataSourceContai
         return dataSourceContainer;
     }
 
-    public List<? extends DashboardGroupContainer> getDashboardGroups() {
+    @Override
+    public List<? extends DashboardGroupContainer> getGroups() {
         return Collections.singletonList(dashContainer);
     }
+
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return dataSourceContainer.getDataSource().getDefaultInstance().getDefaultContext(false);
+    }
+
 }

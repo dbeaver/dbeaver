@@ -298,17 +298,20 @@ public class CommonUtils {
             }
         }
     }
-
     public static long toLong(@Nullable Object object) {
+        return toLong(object, 0);
+    }
+
+    public static long toLong(@Nullable Object object, long defValue) {
         if (object == null) {
-            return 0;
+            return defValue;
         } else if (object instanceof Number) {
             return ((Number) object).longValue();
         } else {
             try {
                 return Long.parseLong(toString(object));
             } catch (NumberFormatException e) {
-                return -1;
+                return defValue;
             }
         }
     }
