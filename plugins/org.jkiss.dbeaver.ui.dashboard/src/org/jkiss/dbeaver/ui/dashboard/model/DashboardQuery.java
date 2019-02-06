@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 /**
- * Abstract dashboard data
+ * Dashboard container
  */
-public class DashboardDataAbstract {
+public interface DashboardQuery {
+
+    String getQueryText();
 
 }

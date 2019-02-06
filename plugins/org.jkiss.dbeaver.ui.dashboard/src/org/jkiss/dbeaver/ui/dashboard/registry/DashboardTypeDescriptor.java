@@ -21,11 +21,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardType;
 
 /**
  * DashboardDescriptor
  */
-public class DashboardTypeDescriptor extends AbstractContextDescriptor
+public class DashboardTypeDescriptor extends AbstractContextDescriptor implements DashboardType
 {
     private String id;
     private String label;
@@ -43,22 +44,26 @@ public class DashboardTypeDescriptor extends AbstractContextDescriptor
         this.implType = new ObjectType(config.getAttribute("renderer"));
     }
 
+    @Override
     @NotNull
     public String getId() {
         return id;
     }
 
+    @Override
     @NotNull
-    public String getLabel()
+    public String getTitle()
     {
         return label;
     }
 
+    @Override
     public String getDescription()
     {
         return description;
     }
 
+    @Override
     public DashboardRenderer createRenderer() throws DBException {
         return implType.createInstance(DashboardRenderer.class);
     }

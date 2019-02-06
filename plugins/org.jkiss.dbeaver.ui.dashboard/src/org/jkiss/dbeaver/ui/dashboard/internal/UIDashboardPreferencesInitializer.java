@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.dashboard.internal;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
  * Preference initializer.
@@ -33,7 +35,7 @@ public class UIDashboardPreferencesInitializer extends AbstractPreferenceInitial
         // Init default preferences
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-//        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO, true);
+        PrefUtils.setDefaultPreferenceValue(store, DashboardConstants.PREF_OPEN_SEPARATE_CONNECTION, false);
 
     }
 

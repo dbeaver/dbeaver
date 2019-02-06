@@ -21,6 +21,9 @@ import org.eclipse.osgi.util.NLS;
 public class UIDashboardMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages"; //$NON-NLS-1$
 
+    public static String pref_page_dashboards_group_common;
+    public static String pref_page_dashboards_open_separate_connection_label;
+
 
     static {
         // initialize resource bundle

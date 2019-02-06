@@ -26,16 +26,16 @@ import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 
-import java.util.Date;
+import java.util.Collections;
+import java.util.List;
 
 public class DashboardViewManager implements DBPEventListener, IDataSourceContainerProvider {
 
     private final DBPDataSourceContainer dataSourceContainer;
     private DashboardList dashContainer;
     private CLabel statusLabel;
-
-    private Date initDate;
 
     public DashboardViewManager(DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
@@ -86,5 +86,9 @@ public class DashboardViewManager implements DBPEventListener, IDataSourceContai
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
+    }
+
+    public List<? extends DashboardGroupContainer> getDashboardGroups() {
+        return Collections.singletonList(dashContainer);
     }
 }

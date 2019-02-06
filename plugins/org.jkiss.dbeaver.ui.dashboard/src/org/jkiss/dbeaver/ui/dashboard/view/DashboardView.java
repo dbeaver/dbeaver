@@ -80,6 +80,10 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         super.saveState(memento);
     }
 
+    public DashboardViewManager getDashboardViewManager() {
+        return dashboardViewManager;
+    }
+
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return null;

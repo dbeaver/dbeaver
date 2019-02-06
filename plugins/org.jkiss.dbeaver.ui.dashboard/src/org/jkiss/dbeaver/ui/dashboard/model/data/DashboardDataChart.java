@@ -14,38 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.ui.dashboard.model.data;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Histogram data.
+ * Chart data.
  */
-public class DashboardDataSeries {
+public class DashboardDataChart extends DashboardDataAbstract {
 
-    private String title;
-    private String description;
-    private List<Number> values = new ArrayList<>();
+    private List<DashboardDataKeyValue> keyValues = new ArrayList<>();
 
-    public DashboardDataSeries(String title, String description) {
-        this.title = title;
-        this.description = description;
+    public List<DashboardDataKeyValue> getKeyValues() {
+        return keyValues;
     }
 
-    public String getTitle() {
-        return title;
+    public void addKeyValue(DashboardDataKeyValue keyValue) {
+        keyValues.add(keyValue);
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public List<Number> getValues() {
-        return values;
-    }
-
-    public void addValue(Number value) {
-        values.add(value);
-    }
 }

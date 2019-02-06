@@ -14,23 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.control;
+package org.jkiss.dbeaver.ui.dashboard.model.data;
 
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Dashboard renderer
+ * Histogram data.
  */
-public interface DashboardRenderer {
+public class DashboardDataHistogram extends DashboardDataAbstract {
 
-    Control createDashboard(Composite composite, DashboardContainer container, Point preferredSize);
+    private List<DashboardDataSeries> seriesList = new ArrayList<>();
 
-    void updateDashboardData(DashboardContainer container, DashboardDataset dataset);
+    public List<DashboardDataSeries> getSeries() {
+        return seriesList;
+    }
 
-    void disposeDashboard(DashboardContainer container);
+    public void addSeries(DashboardDataSeries series) {
+        seriesList.add(series);
+    }
 
 }

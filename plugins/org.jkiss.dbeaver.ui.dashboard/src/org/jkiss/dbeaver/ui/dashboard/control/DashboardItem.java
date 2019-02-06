@@ -26,8 +26,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
+
+import java.util.List;
 
 public class DashboardItem extends Composite implements DashboardContainer {
 
@@ -140,8 +142,33 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
+    public DashboardType getDashboardType() {
+        return dashboardDescriptor.getType();
+    }
+
+    @Override
+    public DashboardCalcType getDashboardCalcType() {
+        return dashboardDescriptor.getCalcType();
+    }
+
+    @Override
+    public DashboardFetchType getDashboardFetchType() {
+        return dashboardDescriptor.getFetchType();
+    }
+
+    @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return getParent().getDataSourceContainer();
+    }
+
+    @Override
+    public DashboardGroupContainer getGroup() {
+        return getParent();
+    }
+
+    @Override
+    public List<? extends DashboardQuery> getQueryList() {
+        return dashboardDescriptor.getQueries();
     }
 
 }
