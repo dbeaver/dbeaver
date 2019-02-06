@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardCalcType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardQuery;
 import org.jkiss.utils.CommonUtils;
@@ -49,6 +50,8 @@ public class DashboardDescriptor extends AbstractContextDescriptor
     private DashboardCalcType calcType;
     private DashboardFetchType fetchType;
     private long updatePeriod;
+    private int maxItems;
+    private long maxAge;
 
     private static class DataSourceMapping {
         private final String dataSourceProvider;
@@ -106,6 +109,8 @@ public class DashboardDescriptor extends AbstractContextDescriptor
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardCalcType.value);
         this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardFetchType.columns);
         this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), 5000); // Default ratio is 2 to 3
+        this.maxItems = CommonUtils.toInt(config.getAttribute("maxItems"), DashboardConstants.DEF_HISTOGRAM_MAXIMUM_ITEM_COUNT);
+        this.maxAge = CommonUtils.toLong(config.getAttribute("maxAge"), DashboardConstants.DEF_HISTOGRAM_MAXIMUM_AGE);
 
         for (IConfigurationElement ds : config.getChildren("datasource")) {
             dataSourceMappings.add(new DataSourceMapping(ds));
@@ -167,6 +172,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor
 
     public long getUpdatePeriod() {
         return updatePeriod;
+    }
+
+    public int getMaxItems() {
+        return maxItems;
+    }
+
+    public long getMaxAge() {
+        return maxAge;
     }
 
     public boolean matches(DBPDataSourceContainer dataSource) {
