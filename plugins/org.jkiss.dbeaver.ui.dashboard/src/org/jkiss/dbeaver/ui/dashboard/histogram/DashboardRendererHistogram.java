@@ -25,8 +25,12 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.DateTickMarkPosition;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLine3DRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
@@ -83,7 +87,9 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         // Remove border
         plot.setOutlinePaint(null);
 
-//        XYItemRenderer renderer = plot.getRenderer();
+        //XYItemRenderer renderer = new XYLine3DRenderer();
+        //plot.setRenderer(renderer);
+
 //        renderer.setSeriesOutlinePaint(0, Color.black);
 //        renderer.setSeriesOutlineStroke(0, new BasicStroke(0.5f));
 
@@ -92,9 +98,17 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
         domainAxis.setAutoRange(true);
         domainAxis.setLabel(null);
+        domainAxis.setLowerMargin(0);
+        domainAxis.setUpperMargin(0);
         plot.setDomainAxis(domainAxis);
 
-        plot.getRangeAxis().setLabel(null);
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        rangeAxis.setLabel(null);
+        //rangeAxis.setLowerMargin(0.2);
+        //rangeAxis.setLowerBound(.1);
+
+        XYItemRenderer plotRenderer = plot.getRenderer();
+
 
         // Set background
         org.eclipse.swt.graphics.RGB swtBgColor = composite.getBackground().getRGB();
@@ -146,6 +160,10 @@ public class DashboardRendererHistogram implements DashboardRenderer {
                     series = new TimeSeries(seriesName);
                     series.setMaximumItemCount(container.getDashboardMaxItems());
                     series.setMaximumItemAge(container.getDashboardMaxAge());
+
+                    BasicStroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f, null, 0.0f);
+                    plot.getRenderer().setSeriesStroke(chartDataset.getSeriesCount(), stroke);
+
                     chartDataset.addSeries(series);
                 }
 
