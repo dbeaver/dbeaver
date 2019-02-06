@@ -17,14 +17,12 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,18 +41,20 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     private Date lastUpdateTime;
     private DashboardRenderer renderer;
-    private Control dashboardControl;
+    private DashboardChartComposite dashboardControl;
 
     public DashboardItem(DashboardList parent, DashboardDescriptor dashboardDescriptor) {
-        super(parent, SWT.BORDER);
+        super(parent, SWT.DOUBLE_BUFFERED);
         this.groupContainer = parent;
         groupContainer.addItem(this);
 
         addDisposeListener(e -> groupContainer.removeItem(this));
 
+        this.addPaintListener(e -> paintItem(e));
+
         GridLayout layout = new GridLayout(1, true);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
+        layout.marginHeight = 3;
+        layout.marginWidth = 3;
         layout.verticalSpacing = 0;
         layout.horizontalSpacing = 0;
         this.setLayout(layout);
@@ -90,6 +90,38 @@ public class DashboardItem extends Composite implements DashboardContainer {
             errorLabel.setText("Error creating " + dashboardDescriptor.getLabel() + " renderer: " + e.getMessage());
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
+
+        if (dashboardControl != null) {
+            Canvas chartCanvas = dashboardControl.getChartCanvas();
+            chartCanvas.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDown(MouseEvent e) {
+                    chartCanvas.setFocus();
+                }
+            });
+            chartCanvas.addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    groupContainer.setSelection(DashboardItem.this);
+                    redraw();
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+
+                }
+            });
+        }
+
+    }
+
+    private void paintItem(PaintEvent e) {
+        Point itemSize = getSize();
+        e.gc.setLineWidth(groupContainer.getSelectedItem() == this ? 2 : 1);
+        e.gc.drawRoundRectangle(1, 1, itemSize.x - 2, itemSize.y - 2, 3, 3);
+//        if (groupContainer.getSelectedItem() == this) {
+//            e.gc.drawRoundRectangle(1, 1, itemSize.x - 4, itemSize.y - 4, 3, 3);
+//        }
     }
 
     public int getDefaultHeight() {
@@ -101,6 +133,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
+        Point currentSize = getSize();
+
         int defHeight = getDefaultHeight();
         int defWidth = getDefaultWidth();
         Point areaSize = groupContainer.getSize();
@@ -147,9 +181,16 @@ public class DashboardItem extends Composite implements DashboardContainer {
             int widthIncreasePercent = 100 * areaSize.x / totalWidth;
             int heightIncreasePercent = 100 * areaSize.y / totalHeight;
             int increasePercent = Math.min(widthIncreasePercent, heightIncreasePercent);
-            return new Point(
+
+            Point compSize = new Point(
                 (defWidth * increasePercent / 100),
                 (defHeight * increasePercent / 100));
+
+            if (currentSize.x > 0 && currentSize.y > 0) {
+                // Grab all extra space if possible
+                //System.out.println("NEw size: " + compSize);
+            }
+            return compSize;
         } else {
             return new Point(defWidth, defHeight);
         }
@@ -231,7 +272,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
-    public Control getDashboardControl() {
+    public DashboardChartComposite getDashboardControl() {
         return dashboardControl;
     }
 

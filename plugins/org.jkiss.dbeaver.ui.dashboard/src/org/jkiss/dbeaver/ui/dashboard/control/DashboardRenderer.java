@@ -29,7 +29,7 @@ import java.util.Date;
  */
 public interface DashboardRenderer {
 
-    Control createDashboard(Composite composite, DashboardContainer container, Point preferredSize);
+    DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, Point preferredSize);
 
     void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset);
 

@@ -36,10 +36,19 @@
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.ui.dashboard.open" name="%command.org.jkiss.dbeaver.ui.dashboard.open.name" description="%command.org.jkiss.dbeaver.ui.dashboard.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.configure" name="%command.org.jkiss.dbeaver.ui.dashboard.configure.name" description="%command.org.jkiss.dbeaver.ui.dashboard.configure.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.reset" name="%command.org.jkiss.dbeaver.ui.dashboard.reset.name" description="%command.org.jkiss.dbeaver.ui.dashboard.reset.description" categoryId="org.jkiss.dbeaver.core.database"/>
+
+        <command id="org.jkiss.dbeaver.ui.dashboard.add" name="%command.org.jkiss.dbeaver.ui.dashboard.add.name" description="%command.org.jkiss.dbeaver.ui.dashboard.add.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.remove" name="%command.org.jkiss.dbeaver.ui.dashboard.remove.name" description="%command.org.jkiss.dbeaver.ui.dashboard.remove.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ui.dashboard.open" icon="icons/dashboard.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.reset" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/actions/object_add.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.remove" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/actions/object_remove.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -48,6 +57,10 @@
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.open" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardOpen">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.add" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardAddItem"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.remove" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardRemoveItem"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -68,6 +81,17 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.dashboardView">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.configure"/>
+            <separator/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.add"/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.remove"/>
+            <separator/>
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.reset"/>
+            <separator name="additions" visible="true"/>
+        </menuContribution>
+
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
