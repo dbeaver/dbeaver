@@ -116,7 +116,10 @@ public class DashboardRendererHistogram implements DashboardRenderer {
 
 
         // Set background
-        plot.setBackgroundPaint(AWTUtils.makeAWTColor(composite.getBackground()));
+        plot.setBackgroundPaint(histogramChart.getBackgroundPaint());
+        Color gridColor = AWTUtils.makeAWTColor(UIStyles.getDefaultTextForeground());
+        plot.setDomainGridlinePaint(gridColor);
+        plot.setRangeGridlinePaint(gridColor);
 
         DashboardChartComposite chartComposite = new DashboardChartComposite(container, composite, SWT.NONE, preferredSize);
         chartComposite.setChart(histogramChart);

@@ -218,7 +218,9 @@ public class DashboardItem extends Composite implements DashboardContainer {
     @Override
     public void updateDashboardData(DashboardDataset dataset) {
         UIUtils.asyncExec(() -> {
-            renderer.updateDashboardData(this, lastUpdateTime, dataset);
+            if (renderer != null) {
+                renderer.updateDashboardData(this, lastUpdateTime, dataset);
+            }
         });
         lastUpdateTime = new Date();
     }
