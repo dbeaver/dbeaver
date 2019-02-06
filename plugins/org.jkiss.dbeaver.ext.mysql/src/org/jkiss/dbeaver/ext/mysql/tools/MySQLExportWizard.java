@@ -162,7 +162,8 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
                 cmd.add("--routines"); //$NON-NLS-1$
             }
         }
-        if (addDropStatements) { cmd.add("--add-drop-table"); //$NON-NLS-1$
+        if (addDropStatements) { 
+        	cmd.add("--add-drop-table"); //$NON-NLS-1$
         } else {
             cmd.add("--skip-add-drop-table"); //$NON-NLS-1$
         }
