@@ -40,6 +40,16 @@ public interface DashboardContainer {
 
     DashboardFetchType getDashboardFetchType();
 
+    /**
+     * Maximum item counts
+     */
+    int getDashboardMaxItems();
+
+    /**
+     * Maximum age in ms
+     */
+    long getDashboardMaxAge();
+
     DBPDataSourceContainer getDataSourceContainer();
 
     DashboardGroupContainer getGroup();

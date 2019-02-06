@@ -166,6 +166,16 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
+    public int getDashboardMaxItems() {
+        return dashboardDescriptor.getMaxItems();
+    }
+
+    @Override
+    public long getDashboardMaxAge() {
+        return dashboardDescriptor.getMaxAge();
+    }
+
+    @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return groupContainer.getDataSourceContainer();
     }

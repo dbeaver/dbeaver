@@ -144,6 +144,8 @@ public class DashboardRendererHistogram implements DashboardRenderer {
                 TimeSeries series = chartDataset.getSeries(seriesName);
                 if (series == null) {
                     series = new TimeSeries(seriesName);
+                    series.setMaximumItemCount(container.getDashboardMaxItems());
+                    series.setMaximumItemAge(container.getDashboardMaxAge());
                     chartDataset.addSeries(series);
                 }
 
