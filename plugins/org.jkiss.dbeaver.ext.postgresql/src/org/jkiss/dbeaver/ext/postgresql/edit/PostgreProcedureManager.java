@@ -157,7 +157,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
             new SQLDatabasePersistAction(
                 "Rename function",
                 "ALTER " + command.getObject().getProcedureTypeName() + " " +
-                        DBUtils.getQuotedIdentifier(procedure.getSchema()) + "." + PostgreProcedure.makeOverloadedName(procedure.getSchema(), command.getOldName(), procedure.getParameters(monitor), true) +
+                        DBUtils.getQuotedIdentifier(procedure.getSchema()) + "." + PostgreProcedure.makeOverloadedName(procedure.getSchema(), command.getOldName(), procedure.getParameters(monitor), true, false) +
                     " RENAME TO " + DBUtils.getQuotedIdentifier(procedure.getDataSource(), command.getNewName()))
         );
     }
