@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 
+import java.util.Date;
+
 /**
  * Dashboard renderer
  */
@@ -29,7 +31,7 @@ public interface DashboardRenderer {
 
     Control createDashboard(Composite composite, DashboardContainer container, Point preferredSize);
 
-    void updateDashboardData(DashboardContainer container, DashboardDataset dataset);
+    void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset);
 
     void disposeDashboard(DashboardContainer container);
 

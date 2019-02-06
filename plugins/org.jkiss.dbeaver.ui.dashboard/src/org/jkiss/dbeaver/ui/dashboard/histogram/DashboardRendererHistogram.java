@@ -25,6 +25,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.DateTickMarkPosition;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.LegendTitle;
@@ -32,15 +33,20 @@ import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
+import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Dashboard renderer
@@ -51,7 +57,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
     public Control createDashboard(Composite composite, DashboardContainer container, Point preferredSize) {
 
         TimeSeriesCollection dataset = new TimeSeriesCollection();
-        generateSampleSeries(container, dataset);
+        //generateSampleSeries(container, dataset);
 
         JFreeChart histogramChart = ChartFactory.createXYLineChart(
             null,
@@ -119,8 +125,35 @@ public class DashboardRendererHistogram implements DashboardRenderer {
     }
 
     @Override
-    public void updateDashboardData(DashboardContainer container, DashboardDataset dataset) {
+    public void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset) {
+        DashboardChartComposite chartComposite = (DashboardChartComposite) container.getDashboardControl();
+        JFreeChart chart = chartComposite.getChart();
+        XYPlot plot = (XYPlot) chart.getPlot();
+        TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
 
+        if (container.getDashboardFetchType() == DashboardFetchType.columns) {
+            String[] srcSeries = dataset.getColumnNames();
+            for (int i = 0; i < srcSeries.length; i++) {
+                String seriesName = srcSeries[i];
+
+                TimeSeries series = chartDataset.getSeries(seriesName);
+                if (series == null) {
+                    series = new TimeSeries(seriesName);
+                    chartDataset.addSeries(series);
+                }
+                for (DashboardDatasetRow row : dataset.getRows()) {
+                    Object value = row.getValues()[i];
+                    if (value instanceof Number) {
+                        series.add(new FixedMillisecond(row.getTimestamp().getTime()), (Number) value, false);
+                    }
+                }
+
+                series.fireSeriesChanged();
+            }
+        } else {
+            // Not supported
+
+        }
     }
 
     @Override

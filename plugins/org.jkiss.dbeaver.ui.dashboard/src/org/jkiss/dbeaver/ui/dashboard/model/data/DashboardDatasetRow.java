@@ -16,31 +16,26 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model.data;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 /**
- * Dashboard raw dataset
+ * Dashboard dataset row
  */
-public class DashboardDataset {
+public class DashboardDatasetRow {
 
-    private String[] columnNames;
-    private List<DashboardDatasetRow> rows = new ArrayList<>();
+    private Date timestamp;
+    private Object[] values;
 
-    public DashboardDataset(String[] columnNames) {
-        this.columnNames = columnNames;
+    public DashboardDatasetRow(Date timestamp, Object[] values) {
+        this.timestamp = timestamp;
+        this.values = values;
     }
 
-    public String[] getColumnNames() {
-        return columnNames;
+    public Date getTimestamp() {
+        return timestamp;
     }
 
-    public List<DashboardDatasetRow> getRows() {
-        return rows;
+    public Object[] getValues() {
+        return values;
     }
-
-    public void addRow(DashboardDatasetRow row) {
-        rows.add(row);
-    }
-
 }
