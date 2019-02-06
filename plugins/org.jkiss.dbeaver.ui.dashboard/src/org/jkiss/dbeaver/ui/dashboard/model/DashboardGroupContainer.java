@@ -14,23 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.control;
+package org.jkiss.dbeaver.ui.dashboard.model;
 
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+
+import java.util.List;
 
 /**
- * Dashboard renderer
+ * Dashboard group container
  */
-public interface DashboardRenderer {
+public interface DashboardGroupContainer {
 
-    Control createDashboard(Composite composite, DashboardContainer container, Point preferredSize);
+    DBPDataSourceContainer getDataSourceContainer();
 
-    void updateDashboardData(DashboardContainer container, DashboardDataset dataset);
-
-    void disposeDashboard(DashboardContainer container);
+    List<? extends DashboardContainer> getItems();
 
 }

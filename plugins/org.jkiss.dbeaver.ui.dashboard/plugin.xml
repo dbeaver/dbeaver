@@ -74,6 +74,10 @@
         <key commandId="org.jkiss.dbeaver.ui.dashboard.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+Z"/>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardPreferencesInitializer"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dashboard">
         <dashboardType id="histogram" label="Histogram" renderer="org.jkiss.dbeaver.ui.dashboard.histogram.DashboardRendererHistogram">
 

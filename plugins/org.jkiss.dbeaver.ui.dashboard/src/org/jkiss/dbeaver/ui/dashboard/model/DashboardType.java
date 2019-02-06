@@ -16,29 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
+
 /**
  * Dashboard type.
  */
-public enum DashboardType {
+public interface DashboardType {
 
-    HISTOGRAM("Histogram", "Chart showing time series graphs"),
-    BAR("Bar", "Bar chart"),
-    PIE("Pie", "Pie chart"),
-    METER("Meter", "Single value meter");
+    String getId();
 
-    private final String title;
-    private final String description;
+    String getTitle();
 
-    DashboardType(String title, String description) {
-        this.title = title;
-        this.description = description;
-    }
+    String getDescription();
 
-    public String getTitle() {
-        return title;
-    }
+    DashboardRenderer createRenderer() throws DBException;
 
-    public String getDescription() {
-        return description;
-    }
 }

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardCalcType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardQuery;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor
     private DashboardTypeDescriptor type;
     private String[] tags;
     private final List<DataSourceMapping> dataSourceMappings = new ArrayList<>();
+    private final List<QueryMapping> queries = new ArrayList<>();
 
     private float widthRatio;
     private DashboardCalcType calcType;
@@ -72,6 +74,19 @@ public class DashboardDescriptor extends AbstractContextDescriptor
         }
     }
 
+    private static class QueryMapping implements DashboardQuery {
+        private String queryText;
+
+        QueryMapping(IConfigurationElement config) {
+            this.queryText = config.getValue();
+        }
+
+        @Override
+        public String getQueryText() {
+            return queryText;
+        }
+    }
+
     DashboardDescriptor(
         DashboardRegistry registry,
         IConfigurationElement config)
@@ -90,12 +105,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardCalcType.value);
         this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardFetchType.columns);
 
-        IConfigurationElement[] datasourceList = config.getChildren("datasource");
-        if (datasourceList != null) {
-            for (IConfigurationElement ds : datasourceList) {
-                dataSourceMappings.add(new DataSourceMapping(ds));
-            }
+        for (IConfigurationElement ds : config.getChildren("datasource")) {
+            dataSourceMappings.add(new DataSourceMapping(ds));
         }
+
+        for (IConfigurationElement ds : config.getChildren("query")) {
+            queries.add(new QueryMapping(ds));
+        }
+
     }
 
     @NotNull
@@ -140,6 +157,10 @@ public class DashboardDescriptor extends AbstractContextDescriptor
 
     public DashboardFetchType getFetchType() {
         return fetchType;
+    }
+
+    public List<QueryMapping> getQueries() {
+        return queries;
     }
 
     public boolean matches(DBPDataSourceContainer dataSource) {

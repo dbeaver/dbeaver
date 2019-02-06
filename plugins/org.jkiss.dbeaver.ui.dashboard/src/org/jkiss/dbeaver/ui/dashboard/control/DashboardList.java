@@ -21,13 +21,15 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DashboardList extends Composite {
+public class DashboardList extends Composite implements DashboardGroupContainer {
 
     private static final int ITEM_SPACING = 5;
 
@@ -47,7 +49,8 @@ public class DashboardList extends Composite {
         this.setLayout(layout);
     }
 
-    DBPDataSourceContainer getDataSourceContainer() {
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
         return provider.getDataSourceContainer();
     }
 
@@ -73,4 +76,5 @@ public class DashboardList extends Composite {
     public int getItemSpacing() {
         return ITEM_SPACING;
     }
+
 }

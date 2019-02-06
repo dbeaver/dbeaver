@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 /**
- * Abstract dashboard dataset
+ * Dashboard value calculation
  */
-public class DashboardDataset {
+public class DashboardConstants {
+
+    public static final String PREF_OPEN_SEPARATE_CONNECTION = "dashboard.openSeparateConnection";
 
 }

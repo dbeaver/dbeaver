@@ -14,31 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.model;
+package org.jkiss.dbeaver.ui.dashboard.model.data;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Dashboard container
+ * Histogram data.
  */
-public interface DashboardContainer {
+public class DashboardDataSeries {
 
-    String getDashboardTitle();
+    private String title;
+    private String description;
+    private List<Number> values = new ArrayList<>();
 
-    String getDashboardDescription();
+    public DashboardDataSeries(String title, String description) {
+        this.title = title;
+        this.description = description;
+    }
 
-    DashboardType getDashboardType();
+    public String getTitle() {
+        return title;
+    }
 
-    DashboardCalcType getDashboardCalcType();
+    public String getDescription() {
+        return description;
+    }
 
-    DashboardFetchType getDashboardFetchType();
+    public List<Number> getValues() {
+        return values;
+    }
 
-    DBPDataSourceContainer getDataSourceContainer();
-
-    DashboardGroupContainer getGroup();
-
-    List<? extends DashboardQuery> getQueryList();
-
+    public void addValue(Number value) {
+        values.add(value);
+    }
 }

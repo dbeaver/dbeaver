@@ -37,7 +37,7 @@ import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataset;
+import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
