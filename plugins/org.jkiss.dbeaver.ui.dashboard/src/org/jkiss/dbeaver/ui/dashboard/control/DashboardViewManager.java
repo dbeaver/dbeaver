@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -25,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
@@ -37,7 +34,7 @@ public class DashboardViewManager implements DBPEventListener, IDataSourceContai
 
     private final DBPDataSourceContainer dataSourceContainer;
     private DashboardList dashContainer;
-    private CLabel statusLabel;
+    //private CLabel statusLabel;
 
     public DashboardViewManager(DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
@@ -73,8 +70,8 @@ public class DashboardViewManager implements DBPEventListener, IDataSourceContai
         dashContainer = new DashboardList(composite, this);
         dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        statusLabel = new CLabel(composite, SWT.NONE);
-        statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//        statusLabel = new CLabel(composite, SWT.NONE);
+//        statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         updateStatus();
 
@@ -82,9 +79,9 @@ public class DashboardViewManager implements DBPEventListener, IDataSourceContai
     }
 
     private void updateStatus() {
-        String status = dataSourceContainer.isConnected() ? "connected (" + dataSourceContainer.getConnectTime() + ")" : "disconnected";
-        statusLabel.setImage(DBeaverIcons.getImage(dataSourceContainer.getDriver().getIcon()));
-        statusLabel.setText(this.dataSourceContainer.getName() + ": " + status);
+//        String status = dataSourceContainer.isConnected() ? "connected (" + dataSourceContainer.getConnectTime() + ")" : "disconnected";
+//        statusLabel.setImage(DBeaverIcons.getImage(dataSourceContainer.getDriver().getIcon()));
+//        statusLabel.setText(this.dataSourceContainer.getName() + ": " + status);
     }
 
     @Override

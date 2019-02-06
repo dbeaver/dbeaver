@@ -22,10 +22,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.*;
 import org.jfree.chart.swt.ChartComposite;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 
 /**
@@ -45,6 +45,11 @@ public class DashboardChartComposite extends ChartComposite {
         this.dashboardContainer = dashboardContainer;
     }
 
+    public Canvas getChartCanvas() {
+        Control[] children = getChildren();
+        return children.length == 0 ? null : (Canvas) children[0];
+    }
+
     @Override
     public void mouseDoubleClick(MouseEvent event) {
         if (showChartConfigDialog()) {
@@ -59,7 +64,8 @@ public class DashboardChartComposite extends ChartComposite {
         new MenuItem(popupMenu, SWT.SEPARATOR, 0);
 
         MenuItem printItem = new MenuItem(popupMenu, SWT.PUSH, 0);
-        printItem.setText("Charts ...");
+        printItem.setText("Settings ...");
+        printItem.setImage(DBeaverIcons.getImage(UIIcon.CONFIGURATION));
         printItem.setData(CHART_CONFIG_COMMAND);
         printItem.addSelectionListener(this);
 

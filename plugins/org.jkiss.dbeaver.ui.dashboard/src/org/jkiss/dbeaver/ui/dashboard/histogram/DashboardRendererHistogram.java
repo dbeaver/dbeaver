@@ -58,7 +58,7 @@ import java.util.List;
 public class DashboardRendererHistogram implements DashboardRenderer {
 
     @Override
-    public Control createDashboard(Composite composite, DashboardContainer container, Point preferredSize) {
+    public DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, Point preferredSize) {
 
         TimeSeriesCollection dataset = new TimeSeriesCollection();
         //generateSampleSeries(container, dataset);
@@ -91,6 +91,8 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         final XYPlot plot = histogramChart.getXYPlot( );
         // Remove border
         plot.setOutlinePaint(null);
+        // Remove background
+        plot.setShadowGenerator(null);
 
         //XYItemRenderer renderer = new XYLine3DRenderer();
         //plot.setRenderer(renderer);
@@ -121,7 +123,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         plot.setDomainGridlinePaint(gridColor);
         plot.setRangeGridlinePaint(gridColor);
 
-        DashboardChartComposite chartComposite = new DashboardChartComposite(container, composite, SWT.NONE, preferredSize);
+        DashboardChartComposite chartComposite = new DashboardChartComposite(container, composite, SWT.DOUBLE_BUFFERED, preferredSize);
         chartComposite.setChart(histogramChart);
 
         return chartComposite;

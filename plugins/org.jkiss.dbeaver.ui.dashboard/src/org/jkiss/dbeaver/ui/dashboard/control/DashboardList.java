@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.RowLayout;
@@ -37,6 +38,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     private DashboardViewContainer viewContainer;
     private List<DashboardItem> items = new ArrayList<>();
     private final Font boldFont;
+    private DashboardItem selectedItem;
 
     public DashboardList(Composite parent, DashboardViewContainer viewContainer) {
         super(parent, SWT.NONE);
@@ -96,5 +98,17 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     public Font getTitleFont() {
         return boldFont;
+    }
+
+    public DashboardItem getSelectedItem() {
+        return selectedItem;
+    }
+
+    public void setSelection(DashboardItem selection) {
+        DashboardItem oldSelection = this.selectedItem;
+        this.selectedItem = selection;
+        if (oldSelection != null) {
+            oldSelection.redraw();
+        }
     }
 }
