@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -34,11 +36,22 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     private DashboardViewContainer viewContainer;
     private List<DashboardItem> items = new ArrayList<>();
+    private final Font boldFont;
 
     public DashboardList(Composite parent, DashboardViewContainer viewContainer) {
         super(parent, SWT.NONE);
 
         this.viewContainer = viewContainer;
+
+        Font normalFont = getFont();
+        FontData[] fontData = normalFont.getFontData();
+        fontData[0].setHeight(fontData[0].getHeight() + 1);
+        fontData[0].setStyle(SWT.BOLD);
+        boldFont = new Font(normalFont.getDevice(), fontData[0]);
+
+        addDisposeListener(e -> {
+            boldFont.dispose();
+        });
 
         RowLayout layout = new RowLayout();
         layout.spacing = getItemSpacing();
@@ -81,4 +94,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         return ITEM_SPACING;
     }
 
+    public Font getTitleFont() {
+        return boldFont;
+    }
 }

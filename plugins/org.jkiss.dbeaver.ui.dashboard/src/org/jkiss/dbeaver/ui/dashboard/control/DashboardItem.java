@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -48,19 +49,38 @@ public class DashboardItem extends Composite implements DashboardContainer {
         super(parent, SWT.BORDER);
         this.groupContainer = parent;
         groupContainer.addItem(this);
+
         addDisposeListener(e -> groupContainer.removeItem(this));
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
-        setLayout(layout);
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
+        this.setLayout(layout);
 
         this.dashboardDescriptor = dashboardDescriptor;
 
+        {
+            Composite titleComposite = new Composite(this, SWT.NONE);
+            titleComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            FillLayout fillLayout = new FillLayout();
+            fillLayout.marginHeight = 3;
+            fillLayout.marginWidth = 3;
+            titleComposite.setLayout(fillLayout);
+            Label titleLabel = new Label(titleComposite, SWT.NONE);
+            titleLabel.setFont(parent.getTitleFont());
+            //GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            //titleLabel.setLayoutData(gd);
+            //titleLabel.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_FOREGROUND));
+            //titleLabel.setBackground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
+            titleLabel.setText("  " + dashboardDescriptor.getLabel());
+        }
+
         try {
             Composite chartComposite = new Composite(this, SWT.NONE);
-            chartComposite.setLayout(new FillLayout());
             chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            chartComposite.setLayout(new FillLayout());
             renderer = dashboardDescriptor.getType().createRenderer();
             dashboardControl = renderer.createDashboard(chartComposite, this, computeSize(-1, -1));
 
