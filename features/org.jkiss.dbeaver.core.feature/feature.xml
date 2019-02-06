@@ -69,7 +69,8 @@
     <plugin id="com.vividsolutions.jts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- Charts -->
-    <plugin id="org.jkiss.dbeaver.ui.dashboard" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.bundle.jfreechart" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ui.charts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ui.dashboard" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>

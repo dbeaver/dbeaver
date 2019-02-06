@@ -14,25 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.internal;
+package org.jkiss.dbeaver.ui.charts.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.ui.dashboard.view.DashboardUpdateJob;
 import org.osgi.framework.BundleContext;
 
-public class UIDashboardActivator extends AbstractUIPlugin {
+public class UIChartsActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.dashboard";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.charts";
 
     // The shared instance
-    private static UIDashboardActivator plugin;
+    private static UIChartsActivator plugin;
     private DBPPreferenceStore preferences;
 
-    public UIDashboardActivator() {
+    public UIChartsActivator() {
     }
 
     @Override
@@ -40,8 +39,6 @@ public class UIDashboardActivator extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
-
-        DashboardUpdateJob.startUpdating();
     }
 
     @Override
@@ -50,7 +47,7 @@ public class UIDashboardActivator extends AbstractUIPlugin {
         super.stop(context);
     }
 
-    public static UIDashboardActivator getDefault() {
+    public static UIChartsActivator getDefault() {
         return plugin;
     }
 

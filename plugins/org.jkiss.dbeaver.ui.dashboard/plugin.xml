@@ -84,10 +84,10 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.dashboardView">
             <command commandId="org.jkiss.dbeaver.ui.dashboard.configure"/>
-            <separator visible="true"/>
+            <separator name="actions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.add"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.remove"/>
-            <separator visible="true"/>
+            <separator name="actions_ext" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.reset"/>
             <separator name="additions" visible="true"/>
         </menuContribution>

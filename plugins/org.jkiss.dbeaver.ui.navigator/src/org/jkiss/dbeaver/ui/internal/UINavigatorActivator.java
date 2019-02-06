@@ -20,8 +20,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
-import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.osgi.framework.BundleContext;
 
 public class UINavigatorActivator extends AbstractUIPlugin {
@@ -39,8 +37,6 @@ public class UINavigatorActivator extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        // Set notifications handler
-        DBeaverNotifications.setHandler(NotificationUtils::sendNotification);
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
     }

@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
-import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.osgi.framework.BundleContext;
 
 public class UIActivator extends AbstractUIPlugin {
@@ -36,8 +34,6 @@ public class UIActivator extends AbstractUIPlugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        // Set notifications handler
-        DBeaverNotifications.setHandler(NotificationUtils::sendNotification);
         plugin = this;
     }
 
