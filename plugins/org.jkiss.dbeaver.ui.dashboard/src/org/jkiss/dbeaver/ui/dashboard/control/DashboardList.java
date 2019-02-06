@@ -17,16 +17,19 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +88,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
 
     void addItem(DashboardItem item) {
+        addDragAndDropSupport(item);
+
         this.items.add(item);
     }
 
@@ -111,4 +116,170 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             oldSelection.redraw();
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////////
+    // DnD
+    /////////////////////////////////////////////////////////////////////////////////
+
+    private void addDragAndDropSupport(DashboardItem item)
+    {
+        Label dndControl = item.getTitleLabel();
+        final int operations = DND.DROP_MOVE | DND.DROP_COPY;// | DND.DROP_MOVE | DND.DROP_LINK | DND.DROP_DEFAULT;
+
+        final DragSource source = new DragSource(dndControl, operations);
+        source.setTransfer(DashboardTransfer.INSTANCE);
+        source.addDragListener (new DragSourceListener() {
+
+            private Image dragImage;
+            private long lastDragEndTime;
+
+            @Override
+            public void dragStart(DragSourceEvent event) {
+                if (selectedItem == null || lastDragEndTime > 0 && System.currentTimeMillis() - lastDragEndTime < 100) {
+                    event.doit = false;
+                } else {
+                    Rectangle columnBounds = selectedItem.getBounds();
+                    GC gc = new GC(DashboardList.this);
+                    dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
+                    gc.copyArea(
+                        dragImage,
+                        columnBounds.x,
+                        columnBounds.y);
+                    event.image = dragImage;
+                    gc.dispose();
+                }
+            }
+
+            @Override
+            public void dragSetData (DragSourceEvent event) {
+                if (selectedItem != null) {
+                    if (DashboardTransfer.INSTANCE.isSupportedType(event.dataType)) {
+                        event.data = selectedItem;
+                    }
+                }
+            }
+            @Override
+            public void dragFinished(DragSourceEvent event) {
+                if (dragImage != null) {
+                    UIUtils.dispose(dragImage);
+                    dragImage = null;
+                }
+                lastDragEndTime = System.currentTimeMillis();
+            }
+        });
+
+        DropTarget dropTarget = new DropTarget(dndControl, operations);
+        dropTarget.setTransfer(DashboardTransfer.INSTANCE, TextTransfer.getInstance());
+        dropTarget.addDropListener(new DropTargetListener() {
+            @Override
+            public void dragEnter(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragLeave(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOperationChanged(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOver(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void drop(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+                if (event.detail == DND.DROP_MOVE) {
+                    moveDashboard(event);
+                }
+            }
+
+            @Override
+            public void dropAccept(DropTargetEvent event)
+            {
+                handleDragEvent(event);
+            }
+
+            private void handleDragEvent(DropTargetEvent event)
+            {
+                if (!isDropSupported(event)) {
+                    event.detail = DND.DROP_NONE;
+                } else {
+                    event.detail = DND.DROP_MOVE;
+                }
+                event.feedback = DND.FEEDBACK_SELECT;
+            }
+
+            private boolean isDropSupported(DropTargetEvent event)
+            {
+                if (selectedItem == null || !(event.getSource() instanceof DashboardItem)) {
+                    return false;
+                }
+                DashboardItem overItem = (DashboardItem) event.getSource();
+                return overItem != selectedItem;
+            }
+
+            private DashboardItem getOverColumn(DropTargetEvent event) {
+                Point dragPoint = getDisplay().map(null, DashboardList.this, new Point(event.x, event.y));
+
+                return null;//getItem(dragPoint);
+            }
+
+            private void moveDashboard(DropTargetEvent event)
+            {
+/*
+                GridColumn overColumn = getOverColumn(event);
+                if (draggingColumn == null || draggingColumn == overColumn) {
+                    return;
+                }
+                IGridController gridController = getGridController();
+                if (gridController != null) {
+                    IGridController.DropLocation location;// = IGridController.DropLocation.SWAP;
+
+                    Point dropPoint = getDisplay().map(null, LightGrid.this, new Point(event.x, event.y));
+                    Rectangle columnBounds = overColumn.getBounds();
+                    if (dropPoint.x > columnBounds.x + columnBounds.width / 2) {
+                        location = IGridController.DropLocation.DROP_AFTER;
+                    } else {
+                        location = IGridController.DropLocation.DROP_BEFORE;
+                    }
+                    gridController.moveColumn(draggingColumn.getElement(), overColumn.getElement(), location);
+                }
+                draggingColumn = null;
+*/
+            }
+        });
+    }
+
+    public final static class DashboardTransfer extends LocalObjectTransfer<List<Object>> {
+
+        public static final DashboardTransfer INSTANCE = new DashboardTransfer();
+        private static final String TYPE_NAME = "DashboardTransfer.Item Transfer" + System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
+        private static final int TYPEID = registerType(TYPE_NAME);
+
+        private DashboardTransfer() {
+        }
+
+        @Override
+        protected int[] getTypeIds() {
+            return new int[] { TYPEID };
+        }
+
+        @Override
+        protected String[] getTypeNames() {
+            return new String[] { TYPE_NAME };
+        }
+
+    }
+
 }

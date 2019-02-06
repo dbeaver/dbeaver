@@ -42,15 +42,12 @@ public class DashboardItem extends Composite implements DashboardContainer {
     private Date lastUpdateTime;
     private DashboardRenderer renderer;
     private DashboardChartComposite dashboardControl;
+    private final Label titleLabel;
 
     public DashboardItem(DashboardList parent, DashboardDescriptor dashboardDescriptor) {
         super(parent, SWT.DOUBLE_BUFFERED);
         this.groupContainer = parent;
-        groupContainer.addItem(this);
-
-        addDisposeListener(e -> groupContainer.removeItem(this));
-
-        this.addPaintListener(e -> paintItem(e));
+        this.dashboardDescriptor = dashboardDescriptor;
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 3;
@@ -59,8 +56,6 @@ public class DashboardItem extends Composite implements DashboardContainer {
         layout.horizontalSpacing = 0;
         this.setLayout(layout);
 
-        this.dashboardDescriptor = dashboardDescriptor;
-
         {
             Composite titleComposite = new Composite(this, SWT.NONE);
             titleComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -68,7 +63,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
             fillLayout.marginHeight = 3;
             fillLayout.marginWidth = 3;
             titleComposite.setLayout(fillLayout);
-            Label titleLabel = new Label(titleComposite, SWT.NONE);
+            titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());
             //GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             //titleLabel.setLayoutData(gd);
@@ -93,12 +88,16 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
         if (dashboardControl != null) {
             Canvas chartCanvas = dashboardControl.getChartCanvas();
-            chartCanvas.addMouseListener(new MouseAdapter() {
+            MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
                 public void mouseDown(MouseEvent e) {
                     chartCanvas.setFocus();
                 }
-            });
+            };
+            this.addMouseListener(mouseAdapter);
+            chartCanvas.addMouseListener(mouseAdapter);
+            titleLabel.addMouseListener(mouseAdapter);
+
             chartCanvas.addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
@@ -113,6 +112,14 @@ public class DashboardItem extends Composite implements DashboardContainer {
             });
         }
 
+        groupContainer.addItem(this);
+        addDisposeListener(e -> groupContainer.removeItem(this));
+
+        this.addPaintListener(this::paintItem);
+    }
+
+    public Label getTitleLabel() {
+        return titleLabel;
     }
 
     private void paintItem(PaintEvent e) {
