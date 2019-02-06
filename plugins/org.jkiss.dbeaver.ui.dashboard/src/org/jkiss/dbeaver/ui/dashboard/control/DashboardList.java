@@ -20,9 +20,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 
@@ -33,13 +32,13 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     private static final int ITEM_SPACING = 5;
 
-    private IDataSourceContainerProvider provider;
+    private DashboardViewContainer viewContainer;
     private List<DashboardItem> items = new ArrayList<>();
 
-    public DashboardList(Composite parent, IDataSourceContainerProvider provider) {
+    public DashboardList(Composite parent, DashboardViewContainer viewContainer) {
         super(parent, SWT.NONE);
 
-        this.provider = provider;
+        this.viewContainer = viewContainer;
 
         RowLayout layout = new RowLayout();
         layout.spacing = getItemSpacing();
@@ -49,9 +48,13 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         this.setLayout(layout);
     }
 
+    DBPDataSourceContainer getDataSourceContainer() {
+        return viewContainer.getDataSourceContainer();
+    }
+
     @Override
-    public DBPDataSourceContainer getDataSourceContainer() {
-        return provider.getDataSourceContainer();
+    public DashboardViewContainer getView() {
+        return viewContainer;
     }
 
     public List<DashboardItem> getItems() {
@@ -59,7 +62,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
 
     void createDefaultDashboards() {
-        List<DashboardDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(provider.getDataSourceContainer(), true);
+        List<DashboardDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(
+            viewContainer.getDataSourceContainer(), true);
         for (DashboardDescriptor dd : dashboards) {
             DashboardItem item = new DashboardItem(this, dd);
         }

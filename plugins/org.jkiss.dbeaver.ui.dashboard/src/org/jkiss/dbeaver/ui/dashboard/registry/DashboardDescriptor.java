@@ -48,6 +48,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor
     private float widthRatio;
     private DashboardCalcType calcType;
     private DashboardFetchType fetchType;
+    private long updatePeriod;
 
     private static class DataSourceMapping {
         private final String dataSourceProvider;
@@ -104,6 +105,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), 1.5); // Default ratio is 2 to 3
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardCalcType.value);
         this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardFetchType.columns);
+        this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), 5000); // Default ratio is 2 to 3
 
         for (IConfigurationElement ds : config.getChildren("datasource")) {
             dataSourceMappings.add(new DataSourceMapping(ds));
@@ -161,6 +163,10 @@ public class DashboardDescriptor extends AbstractContextDescriptor
 
     public List<QueryMapping> getQueries() {
         return queries;
+    }
+
+    public long getUpdatePeriod() {
+        return updatePeriod;
     }
 
     public boolean matches(DBPDataSourceContainer dataSource) {

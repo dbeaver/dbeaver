@@ -27,19 +27,25 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
+import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 
+import java.util.Date;
 import java.util.List;
 
 public class DashboardItem extends Composite implements DashboardContainer {
 
     public static final int DEFAULT_HEIGHT = 200;
+    private DashboardList groupContainer;
     private DashboardDescriptor dashboardDescriptor;
+
+    private Date lastUpdateTime;
 
     public DashboardItem(DashboardList parent, DashboardDescriptor dashboardDescriptor) {
         super(parent, SWT.BORDER);
-        parent.addItem(this);
-        addDisposeListener(e -> parent.removeItem(this));
+        this.groupContainer = parent;
+        groupContainer.addItem(this);
+        addDisposeListener(e -> groupContainer.removeItem(this));
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 0;
@@ -62,10 +68,6 @@ public class DashboardItem extends Composite implements DashboardContainer {
         }
     }
 
-    public DashboardList getParent() {
-        return (DashboardList) super.getParent();
-    }
-
     public int getDefaultHeight() {
         return DEFAULT_HEIGHT;
     }
@@ -75,11 +77,9 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
-        DashboardList list = getParent();
-
         int defHeight = getDefaultHeight();
         int defWidth = getDefaultWidth();
-        Point areaSize = list.getSize();
+        Point areaSize = groupContainer.getSize();
         if (areaSize.x <= defWidth || areaSize.y <= defHeight) {
             return new Point(defWidth, defHeight);
         }
@@ -95,8 +95,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
         if (areaSize.x > areaSize.y) {
             // Horizontal
             totalHeight = defHeight;
-            for (DashboardItem item : list.getItems()) {
-                if (totalWidth > 0) totalWidth += list.getItemSpacing();
+            for (DashboardItem item : groupContainer.getItems()) {
+                if (totalWidth > 0) totalWidth += groupContainer.getItemSpacing();
                 totalWidth += item.getDefaultWidth();
             }
             if (totalWidth < areaSize.x) {
@@ -107,8 +107,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
         } else {
             // Vertical
             totalWidth = defWidth;
-            for (DashboardItem item : list.getItems()) {
-                if (totalHeight > 0) totalHeight += list.getItemSpacing();
+            for (DashboardItem item : groupContainer.getItems()) {
+                if (totalHeight > 0) totalHeight += groupContainer.getItemSpacing();
                 totalHeight += item.getDefaultHeight();
             }
             if (totalHeight < areaSize.y) {
@@ -129,6 +129,11 @@ public class DashboardItem extends Composite implements DashboardContainer {
         } else {
             return new Point(defWidth, defHeight);
         }
+    }
+
+    @Override
+    public String getDashboardId() {
+        return dashboardDescriptor.getId();
     }
 
     @Override
@@ -158,17 +163,33 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        return getParent().getDataSourceContainer();
+        return groupContainer.getDataSourceContainer();
     }
 
     @Override
     public DashboardGroupContainer getGroup() {
-        return getParent();
+        return groupContainer;
     }
 
     @Override
     public List<? extends DashboardQuery> getQueryList() {
         return dashboardDescriptor.getQueries();
     }
+
+    @Override
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    @Override
+    public void updateDashboardData(DashboardDataset dataset) {
+        lastUpdateTime = new Date();
+    }
+
+    @Override
+    public long getUpdatePeriod() {
+        return dashboardDescriptor.getUpdatePeriod();
+    }
+
 
 }

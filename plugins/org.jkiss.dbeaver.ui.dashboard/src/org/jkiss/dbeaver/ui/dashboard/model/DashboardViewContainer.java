@@ -17,40 +17,17 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
-import java.util.Date;
 import java.util.List;
 
 /**
- * Dashboard container
+ * Dashboard view container
  */
-public interface DashboardContainer {
+public interface DashboardViewContainer extends IDataSourceContainerProvider {
 
-    String getDashboardId();
+    List<? extends DashboardGroupContainer> getGroups();
 
-    String getDashboardTitle();
-
-    String getDashboardDescription();
-
-    DashboardType getDashboardType();
-
-    DashboardCalcType getDashboardCalcType();
-
-    DashboardFetchType getDashboardFetchType();
-
-    DBPDataSourceContainer getDataSourceContainer();
-
-    DashboardGroupContainer getGroup();
-
-    List<? extends DashboardQuery> getQueryList();
-
-    Date getLastUpdateTime();
-
-    void updateDashboardData(DashboardDataset dataset);
-
-    /**
-     * Dashboard update period in seconds
-     */
-    long getUpdatePeriod();
+    DBCExecutionContext getExecutionContext();
 }

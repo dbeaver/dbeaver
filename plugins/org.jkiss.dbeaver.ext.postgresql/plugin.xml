@@ -630,7 +630,7 @@
 
     <extension point="org.jkiss.dbeaver.dashboard">
 
-        <dashboard id="postgresql.sessionCount" label="Server sessions" type="histogram" group="Standard" refresh="2" calc="value" fetch="columns" showByDefault="true">
+        <dashboard id="postgresql.sessionCount" label="Server sessions" type="histogram" group="Standard" updatePeriod="2000" calc="value" fetch="columns" showByDefault="true">
             <datasource id="postgresql"/>
             <query>
                 SELECT
@@ -639,7 +639,7 @@
                 (SELECT count(*) as "Total" FROM pg_catalog.pg_stat_activity sa)
             </query>
         </dashboard>
-        <dashboard id="postgresql.transactionCount" label="Transactions per second" group="Standard" type="histogram" refresh="2" calc="delta" fetch="columns" showByDefault="true">
+        <dashboard id="postgresql.transactionCount" label="Transactions per second" group="Standard" type="histogram" updatePeriod="2000" calc="delta" fetch="columns" showByDefault="true">
             <datasource id="postgresql"/>
             <query>
                 SELECT
