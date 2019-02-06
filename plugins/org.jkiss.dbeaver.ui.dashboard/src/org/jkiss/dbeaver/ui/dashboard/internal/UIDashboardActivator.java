@@ -28,7 +28,7 @@ import org.osgi.framework.BundleContext;
 public class UIDashboardActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.navigator";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.dashboard";
 
     // The shared instance
     private static UIDashboardActivator plugin;
