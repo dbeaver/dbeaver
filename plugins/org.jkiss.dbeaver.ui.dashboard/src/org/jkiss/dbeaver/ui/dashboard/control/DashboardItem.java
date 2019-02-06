@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
@@ -40,6 +41,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
     private DashboardDescriptor dashboardDescriptor;
 
     private Date lastUpdateTime;
+    private DashboardRenderer renderer;
+    private Control dashboardControl;
 
     public DashboardItem(DashboardList parent, DashboardDescriptor dashboardDescriptor) {
         super(parent, SWT.BORDER);
@@ -58,8 +61,9 @@ public class DashboardItem extends Composite implements DashboardContainer {
             Composite chartComposite = new Composite(this, SWT.NONE);
             chartComposite.setLayout(new FillLayout());
             chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            DashboardRenderer renderer = dashboardDescriptor.getType().createRenderer();
-            Control dashboardControl = renderer.createDashboard(chartComposite, this, computeSize(-1, -1));
+            renderer = dashboardDescriptor.getType().createRenderer();
+            dashboardControl = renderer.createDashboard(chartComposite, this, computeSize(-1, -1));
+
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
@@ -183,12 +187,20 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     @Override
     public void updateDashboardData(DashboardDataset dataset) {
+        UIUtils.asyncExec(() -> {
+            renderer.updateDashboardData(this, lastUpdateTime, dataset);
+        });
         lastUpdateTime = new Date();
     }
 
     @Override
     public long getUpdatePeriod() {
         return dashboardDescriptor.getUpdatePeriod();
+    }
+
+    @Override
+    public Control getDashboardControl() {
+        return dashboardControl;
     }
 
 

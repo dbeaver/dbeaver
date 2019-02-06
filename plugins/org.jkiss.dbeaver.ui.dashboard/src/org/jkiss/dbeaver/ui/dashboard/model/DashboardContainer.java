@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 
@@ -53,4 +54,6 @@ public interface DashboardContainer {
      * Dashboard update period in seconds
      */
     long getUpdatePeriod();
+
+    Control getDashboardControl();
 }

@@ -23,4 +23,6 @@ public class DashboardConstants {
 
     public static final String PREF_OPEN_SEPARATE_CONNECTION = "dashboard.openSeparateConnection";
 
+    public static final String RS_COL_TIMESTAMP = "STAT_TIMESTAMP";
+
 }

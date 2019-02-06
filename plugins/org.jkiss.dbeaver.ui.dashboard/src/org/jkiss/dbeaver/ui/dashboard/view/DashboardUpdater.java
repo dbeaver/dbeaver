@@ -17,16 +17,20 @@
 package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.eclipse.ui.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewManager;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardQuery;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
+import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
+import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
+import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,13 +40,33 @@ public class DashboardUpdater {
     private static final Log log = Log.getLog(DashboardUpdater.class);
 
     public void updateDashboards(DBRProgressMonitor monitor) {
-        for (DashboardContainer dashboard : getDashboardsToUpdate()) {
-            updateDashboard(monitor, dashboard);
-        }
+        List<DashboardContainer> dashboards = getDashboardsToUpdate();
+
+        updateDashboards(monitor, dashboards);
 
     }
 
-    private void updateDashboard(DBRProgressMonitor monitor, DashboardContainer dashboard) {
+    private void updateDashboards(DBRProgressMonitor monitor, List<DashboardContainer> dashboards) {
+        for (DashboardContainer dashboard : dashboards) {
+            DBPDataSource dataSource = dashboard.getDataSourceContainer().getDataSource();
+            if (dataSource == null) {
+                continue;
+            }
+            try {
+                DBUtils.tryExecuteRecover(dashboards, dataSource, param -> {
+                    try {
+                        updateDashboard(monitor, dashboard);
+                    } catch (Throwable e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+    }
+
+    private void updateDashboard(DBRProgressMonitor monitor, DashboardContainer dashboard) throws DBCException {
         if (!dashboard.getDataSourceContainer().isConnected() || DBWorkbench.getPlatform().isShuttingDown()) {
             return;
         }
@@ -52,6 +76,7 @@ public class DashboardUpdater {
         try (DBCSession session = view.getExecutionContext().openSession(
             monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboardTitle() + "' data"))
         {
+            session.enableLogging(false);
             for (DashboardQuery query : queries) {
                 try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.getQueryText(), false, false, false)) {
                     if (dbStat.executeStatement()) {
@@ -62,14 +87,43 @@ public class DashboardUpdater {
                 }
             }
         } catch (Exception e) {
-            log.debug("Error updating dashboard " + dashboard.getDashboardId(), e);
+            throw new DBCException("Error updating dashboard " + dashboard.getDashboardId(), e);
         }
     }
 
     private void fetchDashboardData(DashboardContainer dashboard, DBCResultSet dbResults) throws DBCException {
-        while (dbResults.nextRow()) {
-
+        DBCResultSetMetaData meta = dbResults.getMeta();
+        List<DBCAttributeMetaData> rsAttrs = meta.getAttributes();
+        List<String> colNames = new ArrayList<>();
+        String tsColName = null;
+        for (DBCAttributeMetaData rsAttr : rsAttrs) {
+            String colName = rsAttr.getLabel();
+            if (CommonUtils.isEmpty(colName)) {
+                colName = rsAttr.getName();
+            }
+            if (DashboardConstants.RS_COL_TIMESTAMP.equalsIgnoreCase(colName)) {
+                tsColName = colName;
+            } else {
+                colNames.add(colName);
+            }
         }
+        DashboardDataset dataset = new DashboardDataset(colNames.toArray(new String[0]));
+
+        while (dbResults.nextRow()) {
+            Object[] values = new Object[colNames.size()];
+            Date timestamp;
+            if (tsColName != null) {
+                timestamp = (Date) dbResults.getAttributeValue(tsColName);
+            } else {
+                timestamp = new Date();
+            }
+            for (int i = 0; i < colNames.size(); i++) {
+                values[i] = dbResults.getAttributeValue(colNames.get(i));
+            }
+            dataset.addRow(new DashboardDatasetRow(timestamp, values));
+        }
+
+        dashboard.updateDashboardData(dataset);
     }
 
     public List<DashboardContainer> getDashboardsToUpdate() {
