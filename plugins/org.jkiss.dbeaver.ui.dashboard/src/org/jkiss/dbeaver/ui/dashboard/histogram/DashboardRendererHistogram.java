@@ -63,6 +63,8 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         TimeSeriesCollection dataset = new TimeSeriesCollection();
         //generateSampleSeries(container, dataset);
 
+        Color gridColor = AWTUtils.makeAWTColor(UIStyles.getDefaultTextForeground());
+
         JFreeChart histogramChart = ChartFactory.createXYLineChart(
             null,
             "Time",
@@ -83,6 +85,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         legend.setPosition(RectangleEdge.BOTTOM);
         legend.setBorder(0, 0, 0, 0);
         legend.setBackgroundPaint(histogramChart.getBackgroundPaint());
+        legend.setItemPaint(gridColor);
         //legend.setAnchor(Legend.EAST);
 
         ChartPanel chartPanel = new ChartPanel( histogramChart );
@@ -107,19 +110,22 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         domainAxis.setLabel(null);
         domainAxis.setLowerMargin(0);
         domainAxis.setUpperMargin(0);
+        domainAxis.setTickLabelPaint(gridColor);
         plot.setDomainAxis(domainAxis);
 
         ValueAxis rangeAxis = plot.getRangeAxis();
         rangeAxis.setLabel(null);
+        rangeAxis.setTickLabelPaint(gridColor);
         //rangeAxis.setLowerMargin(0.2);
         //rangeAxis.setLowerBound(.1);
 
         XYItemRenderer plotRenderer = plot.getRenderer();
+        plotRenderer.setBaseItemLabelPaint(gridColor);
 
 
         // Set background
         plot.setBackgroundPaint(histogramChart.getBackgroundPaint());
-        Color gridColor = AWTUtils.makeAWTColor(UIStyles.getDefaultTextForeground());
+
         plot.setDomainGridlinePaint(gridColor);
         plot.setRangeGridlinePaint(gridColor);
 

@@ -47,8 +47,8 @@
         <image commandId="org.jkiss.dbeaver.ui.dashboard.open" icon="icons/dashboard.png"/>
         <image commandId="org.jkiss.dbeaver.ui.dashboard.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
         <image commandId="org.jkiss.dbeaver.ui.dashboard.reset" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/actions/object_add.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.dashboard.remove" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/actions/object_remove.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/object_add.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.remove" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/object_remove.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -84,10 +84,10 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.dashboardView">
             <command commandId="org.jkiss.dbeaver.ui.dashboard.configure"/>
-            <separator/>
+            <separator visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.add"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.remove"/>
-            <separator/>
+            <separator visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.dashboard.reset"/>
             <separator name="additions" visible="true"/>
         </menuContribution>
