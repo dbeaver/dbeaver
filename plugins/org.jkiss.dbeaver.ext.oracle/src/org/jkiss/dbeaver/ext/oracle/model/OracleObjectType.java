@@ -68,7 +68,7 @@ public enum OracleObjectType implements DBSObjectType {
 	JOB_CLASS("JOB CLASS", null, DBSObject.class, null),
 	LIBRARY("LIBRARY", null, DBSObject.class, null),
 	LOB("CONTENT", null, DBSObject.class, null),
-	MATERIALIZED_VIEW("MATERIALIZED VIEW", null, DBSObject.class, null),
+	MATERIALIZED_VIEW("MATERIALIZED VIEW", DBIcon.TREE_VIEW, DBSObject.class, null),
 	OPERATOR("OPERATOR", null, DBSObject.class, null),
 	PACKAGE("PACKAGE", DBIcon.TREE_PACKAGE, OraclePackage.class, new ObjectFinder() {
         @Override

@@ -93,10 +93,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         if (!isSqlServer()) {
             // #4378
             GenericDataSource dataSource = container.getDataSource();
+            String dbName = DBUtils.getQuotedIdentifier(container.getParentObject());
             try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Synase procedure list")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "select distinct so.name as proc_name,su.name as schema_name,so.loginame as login_name\n" +
-                        "from sysobjects so, sysusers su\n" +
+                        "from " + dbName + ".dbo.sysobjects so, "+ dbName + ".dbo.sysusers su\n" +
                         "where so.type = 'P'\n" +
                         "and su.uid = so.uid\n" +
                         "and su.name=?"))
@@ -382,7 +383,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public boolean supportsSynonyms(GenericDataSource dataSource) {
-        return true;
+        return isSqlServer();
     }
 
     @Override

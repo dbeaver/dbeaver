@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 public class AttributeEditPage extends BaseObjectEditPage {
@@ -49,7 +51,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
 
     public AttributeEditPage(@Nullable DBECommandContext commandContext, @NotNull DBSEntityAttribute attribute)
     {
-        super("Edit attribute " + DBUtils.getObjectFullName(attribute, DBPEvaluationContext.UI));
+        super(NLS.bind(EditorsMessages.dialog_struct_attribute_edit_page_header_edit_attribute, DBUtils.getObjectFullName(attribute, DBPEvaluationContext.UI)));
         this.commandContext = commandContext;
         this.attribute = attribute;
     }
@@ -61,14 +63,14 @@ public class AttributeEditPage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text nameText = UIUtils.createLabelText(propsGroup, "Name", attribute.getName()); //$NON-NLS-2$
+        final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_attribute_edit_page_label_text_name, attribute.getName()); //$NON-NLS-2$
         nameText.addModifyListener(e -> {
             if (attribute instanceof DBPNamedObject2) {
                 ((DBPNamedObject2) attribute).setName(DBObjectNameCaseTransformer.transformName(attribute.getDataSource(), nameText.getText()));
             }
         });
 
-        UIUtils.createControlLabel(propsGroup, "Properties").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        UIUtils.createControlLabel(propsGroup, EditorsMessages.dialog_struct_attribute_edit_page_label_text_properties).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         propertyViewer = new PropertyTreeViewer(propsGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
