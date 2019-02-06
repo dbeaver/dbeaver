@@ -38,6 +38,8 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
+import org.jkiss.dbeaver.ui.AWTUtils;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
@@ -72,12 +74,15 @@ public class DashboardRendererHistogram implements DashboardRenderer {
             false);
         histogramChart.setBorderVisible(false);
         histogramChart.setPadding(new RectangleInsets(0, 0, 0, 0));
+        histogramChart.setTextAntiAlias(true);
+        histogramChart.setBackgroundPaint(AWTUtils.makeAWTColor(UIStyles.getDefaultTextBackground()));
         //histogramChart.getLegend().setBorder(0, 0, 0, 0);
         //histogramChart.removeLegend();
 
         LegendTitle legend = histogramChart.getLegend();
         legend.setPosition(RectangleEdge.BOTTOM);
         legend.setBorder(0, 0, 0, 0);
+        legend.setBackgroundPaint(histogramChart.getBackgroundPaint());
         //legend.setAnchor(Legend.EAST);
 
         ChartPanel chartPanel = new ChartPanel( histogramChart );
@@ -111,8 +116,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
 
 
         // Set background
-        org.eclipse.swt.graphics.RGB swtBgColor = composite.getBackground().getRGB();
-        plot.setBackgroundPaint(new Color(swtBgColor.red, swtBgColor.green, swtBgColor.blue));
+        plot.setBackgroundPaint(AWTUtils.makeAWTColor(composite.getBackground()));
 
         DashboardChartComposite chartComposite = new DashboardChartComposite(container, composite, SWT.NONE, preferredSize);
         chartComposite.setChart(histogramChart);
