@@ -98,7 +98,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         }
     }
 
-    private static class QueryMapping implements DashboardQuery {
+    public static class QueryMapping implements DashboardQuery {
         private String queryText;
 
         QueryMapping(IConfigurationElement config) {

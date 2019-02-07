@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.view;
+package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -36,61 +37,20 @@ public class DashboardViewConfiguration {
 
     private String viewId;
 
-    public class DashboardItemViewConfig {
-        private String dashboardId;
-
-        private String description;
-        private float widthRatio;
-        private long updatePeriod;
-        private int maxItems;
-        private long maxAge;
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        public float getWidthRatio() {
-            return widthRatio;
-        }
-
-        public void setWidthRatio(float widthRatio) {
-            this.widthRatio = widthRatio;
-        }
-
-        public long getUpdatePeriod() {
-            return updatePeriod;
-        }
-
-        public void setUpdatePeriod(long updatePeriod) {
-            this.updatePeriod = updatePeriod;
-        }
-
-        public int getMaxItems() {
-            return maxItems;
-        }
-
-        public void setMaxItems(int maxItems) {
-            this.maxItems = maxItems;
-        }
-
-        public long getMaxAge() {
-            return maxAge;
-        }
-
-        public void setMaxAge(long maxAge) {
-            this.maxAge = maxAge;
-        }
-    }
-
-    List<DashboardItemViewConfig> items = new ArrayList<>();
+    private List<DashboardItemViewConfiguration> items = new ArrayList<>();
 
     public DashboardViewConfiguration(String viewId) {
         this.viewId = viewId;
         loadSettings();
+    }
+
+    public DashboardItemViewConfiguration getDashboardConfig(String dashboardId) {
+        for (DashboardItemViewConfiguration item : items) {
+            if (item.getDashboardDescriptor().getId().equals(dashboardId)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     private void loadSettings() {
@@ -106,7 +66,7 @@ public class DashboardViewConfiguration {
         try (OutputStream out = new FileOutputStream(configFile)){
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xml.startElement("dashboards");
-            for (DashboardItemViewConfig itemConfig : items) {
+            for (DashboardItemViewConfiguration itemConfig : items) {
                 xml.startElement("dashboard");
                 //itemConfig.serialize(xml);
                 xml.endElement();
@@ -123,4 +83,20 @@ public class DashboardViewConfiguration {
         return new File(pluginFolder, "view-" + viewId + ".xml");
     }
 
+    public void readDashboardConfiguration(DashboardDescriptor dashboard) {
+        DashboardItemViewConfiguration dashboardConfig = getDashboardConfig(dashboard.getId());
+        if (dashboardConfig != null) {
+            return;
+        }
+        items.add(new DashboardItemViewConfiguration(dashboard));
+    }
+
+    public void removeDashboard(String dashboardId) {
+        items.removeIf(
+            dashboardItemViewConfiguration -> dashboardItemViewConfiguration.getDashboardDescriptor().getId().equals(dashboardId));
+    }
+
+    public void clearDashboards() {
+        this.items.clear();
+    }
 }

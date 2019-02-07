@@ -30,4 +30,6 @@ public interface DashboardViewContainer extends IDataSourceContainerProvider {
     List<? extends DashboardGroupContainer> getGroups();
 
     DBCExecutionContext getExecutionContext();
+
+    DashboardViewConfiguration getViewConfiguration();
 }
