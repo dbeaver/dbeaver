@@ -300,17 +300,19 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private List<? extends DBPDataSourceContainer> getAvailableDataSources() {
         //Get project from active editor
-        final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
-        if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
-            final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
-            if (curFile != null) {
-                DBPDataSourceContainer fileDataSource = EditorUtils.getFileDataSource(curFile);
-                if (fileDataSource != null) {
-                    return fileDataSource.getRegistry().getDataSources();
-                }
-                final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(curFile.getProject());
-                if (dsRegistry != null) {
-                    return dsRegistry.getDataSources();
+        if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
+            final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+            if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
+                final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
+                if (curFile != null) {
+                    DBPDataSourceContainer fileDataSource = EditorUtils.getFileDataSource(curFile);
+                    if (fileDataSource != null) {
+                        return fileDataSource.getRegistry().getDataSources();
+                    }
+                    final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(curFile.getProject());
+                    if (dsRegistry != null) {
+                        return dsRegistry.getDataSources();
+                    }
                 }
             }
         }
@@ -324,11 +326,13 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private IProject getActiveProject() {
         //Get project from active editor
-        final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
-        if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
-            final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
-            if (curFile != null) {
-                return curFile.getProject();
+        if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
+            final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+            if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
+                final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
+                if (curFile != null) {
+                    return curFile.getProject();
+                }
             }
         }
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
