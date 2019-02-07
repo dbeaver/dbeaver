@@ -14,30 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dashboard.control;
+package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-class DashboardChartConfigDialog extends BaseDialog {
+public class DashboardChartConfigDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardChartConfigDialog";//$NON-NLS-1$
 
-    private DashboardChartComposite chartComposite;
-    private DashboardContainer container;
-    private CTabFolder chartTabFolder;
-
-    DashboardChartConfigDialog(DashboardChartComposite chartComposite, DashboardContainer container)
+    public DashboardChartConfigDialog(DashboardChartComposite chartComposite, DashboardContainer container)
     {
-        super(chartComposite.getShell(), "Charts for [" + container.getDataSourceContainer().getName() + "]", null);
-
-        this.chartComposite = chartComposite;
-        this.container = container;
+        super(chartComposite.getShell(), "Dashboard [" + container.getDashboardTitle() + "]", null);
     }
 
     @Override
