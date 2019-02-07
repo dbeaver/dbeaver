@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.EnumValueManager;
 
@@ -36,11 +39,17 @@ public class PostgreEnumValueManager extends EnumValueManager {
 
     @Override
     protected List<String> getEnumValues(IValueController valueController) {
-        final PostgreAttribute attribute = (PostgreAttribute) valueController.getValueType();
-        if (attribute.getDataType() == null) {
+        final DBSTypedObject attribute = valueController.getValueType();
+        PostgreDataType dataType = null;
+        if (attribute instanceof DBSDataType) {
+            dataType = (PostgreDataType) attribute;
+        } else if (attribute instanceof DBSTypedObjectEx) {
+            dataType = (PostgreDataType) ((DBSTypedObjectEx) attribute).getDataType();
+        }
+        if (dataType == null) {
             return null;
         }
-        final Object[] values = attribute.getDataType().getEnumValues();
+        final Object[] values = dataType.getEnumValues();
         if (values == null) {
             return null;
         }

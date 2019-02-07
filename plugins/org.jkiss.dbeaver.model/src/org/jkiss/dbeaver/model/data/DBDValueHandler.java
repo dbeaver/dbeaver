@@ -94,6 +94,14 @@ public interface DBDValueHandler extends DBDValueRenderer
         throws DBCException;
 
     /**
+     * Creates new value object.
+     * Can be used to create new arrays, structs and other composite objects.
+     */
+    @Nullable
+    Object createNewValueObject(@NotNull DBCSession session, @NotNull DBSTypedObject type)
+        throws DBCException;
+
+    /**
      * Release any internal resources associated with this value.
      * This method is called after value binding and statement execution/close.
      * @param value value

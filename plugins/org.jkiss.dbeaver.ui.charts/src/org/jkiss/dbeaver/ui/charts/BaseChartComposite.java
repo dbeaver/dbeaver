@@ -17,21 +17,26 @@
 
 package org.jkiss.dbeaver.ui.charts;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jfree.chart.swt.ChartComposite;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+
+import java.io.IOException;
 
 /**
  * Base chart composite
  */
 public class BaseChartComposite extends ChartComposite {
-
-    public static final String CHART_CONFIG_COMMAND = "CHART_CONFIG";
 
     public BaseChartComposite(Composite parent, int style, Point preferredSize) {
         super(parent, style, null,
@@ -55,27 +60,56 @@ public class BaseChartComposite extends ChartComposite {
 
     @Override
     protected Menu createPopupMenu(boolean properties, boolean save, boolean print, boolean zoom) {
-        Menu popupMenu = super.createPopupMenu(properties, save, print, zoom);
+        MenuManager manager = new MenuManager();
 
-        new MenuItem(popupMenu, SWT.SEPARATOR, 0);
+        fillContextMenu(manager);
 
-        MenuItem printItem = new MenuItem(popupMenu, SWT.PUSH, 0);
-        printItem.setText("Settings ...");
-        printItem.setImage(DBeaverIcons.getImage(UIIcon.CONFIGURATION));
-        printItem.setData(CHART_CONFIG_COMMAND);
-        printItem.addSelectionListener(this);
-
-        return popupMenu;
+        return manager.createContextMenu(this);
     }
 
-    public void widgetSelected(SelectionEvent e) {
-        if (CHART_CONFIG_COMMAND.equals(((MenuItem) e.getSource()).getData())) {
-            if (showChartConfigDialog()) {
-                forceRedraw();
+    protected void fillContextMenu(MenuManager manager) {
+        manager.add(new Action("Settings ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+            @Override
+            public void run() {
+                showChartConfigDialog();
             }
-        } else {
-            super.widgetSelected(e);
-        }
+        });
+        manager.add(new Separator());
+        manager.add(new Action("Save as ...") {
+            @Override
+            public void run() {
+                try {
+                    doSaveAs();
+                } catch (IOException e) {
+                    DBWorkbench.getPlatformUI().showError("Save image", "Error saving chart image", e);
+                }
+            }
+        });
+        manager.add(new Action("Print ...") {
+            @Override
+            public void run() {
+                createChartPrintJob();
+            }
+        });
+        manager.add(new Separator());
+        manager.add(new Action("Zoom In", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
+            @Override
+            public void runWithEvent(Event e) {
+                zoomInBoth(e.x, e.y);
+            }
+        });
+        manager.add(new Action("Zoom Out", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
+            @Override
+            public void runWithEvent(Event e) {
+                zoomOutBoth(e.x, e.y);
+            }
+        });
+        manager.add(new Action("Zoom Reset", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
+            @Override
+            public void runWithEvent(Event e) {
+                restoreAutoBounds();
+            }
+        });
 
     }
 
