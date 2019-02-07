@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 
 import java.util.Collections;
@@ -33,16 +34,19 @@ import java.util.List;
 public class DashboardViewManager implements DBPEventListener, IDataSourceContainerProvider, DashboardViewContainer {
 
     private final DBPDataSourceContainer dataSourceContainer;
+    private final DashboardViewConfiguration viewConfiguration;
     private DashboardList dashContainer;
     //private CLabel statusLabel;
 
-    public DashboardViewManager(DBPDataSourceContainer dataSourceContainer) {
+    public DashboardViewManager(DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
         this.dataSourceContainer = dataSourceContainer;
         this.dataSourceContainer.getRegistry().addDataSourceListener(this);
 
         if (!this.dataSourceContainer.isConnected()) {
             //DataSourceConnectHandler
         }
+
+        this.viewConfiguration = viewConfiguration;
 
         // Activate updater
     }
@@ -97,6 +101,11 @@ public class DashboardViewManager implements DBPEventListener, IDataSourceContai
     @Override
     public DBCExecutionContext getExecutionContext() {
         return dataSourceContainer.getDataSource().getDefaultInstance().getDefaultContext(false);
+    }
+
+    @Override
+    public DashboardViewConfiguration getViewConfiguration() {
+        return viewConfiguration;
     }
 
 }

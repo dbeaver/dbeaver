@@ -28,12 +28,14 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewManager;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.utils.CommonUtils;
 
 public class DashboardView extends ViewPart implements IDataSourceContainerProvider {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
 
     private DashboardViewManager dashboardViewManager;
+    private DashboardViewConfiguration configuration;
     private int viewNumber;
 
     public DashboardView() {
@@ -56,7 +58,8 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         }
         setPartName(dataSource.getName());
 
-        dashboardViewManager = new DashboardViewManager(dataSource);
+        configuration = new DashboardViewConfiguration(secondaryId);
+        dashboardViewManager = new DashboardViewManager(dataSource, configuration);
         dashboardViewManager.createControl(parent);
     }
 

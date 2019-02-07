@@ -22,13 +22,15 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
-import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 
 import java.util.Date;
 import java.util.List;
@@ -37,17 +39,17 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     public static final int DEFAULT_HEIGHT = 200;
     private DashboardList groupContainer;
-    private DashboardDescriptor dashboardDescriptor;
+    private final DashboardItemViewConfiguration dashboardConfig;
 
     private Date lastUpdateTime;
     private DashboardRenderer renderer;
     private DashboardChartComposite dashboardControl;
     private final Label titleLabel;
 
-    public DashboardItem(DashboardList parent, DashboardDescriptor dashboardDescriptor) {
+    public DashboardItem(DashboardList parent, String dashboardId) {
         super(parent, SWT.DOUBLE_BUFFERED);
         this.groupContainer = parent;
-        this.dashboardDescriptor = dashboardDescriptor;
+        this.dashboardConfig = groupContainer.getView().getViewConfiguration().getDashboardConfig(dashboardId);
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 3;
@@ -69,20 +71,20 @@ public class DashboardItem extends Composite implements DashboardContainer {
             //titleLabel.setLayoutData(gd);
             //titleLabel.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_FOREGROUND));
             //titleLabel.setBackground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
-            titleLabel.setText("  " + dashboardDescriptor.getName());
+            titleLabel.setText("  " + dashboardConfig.getDashboardDescriptor().getName());
         }
 
         try {
             Composite chartComposite = new Composite(this, SWT.NONE);
             chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
             chartComposite.setLayout(new FillLayout());
-            renderer = dashboardDescriptor.getType().createRenderer();
-            dashboardControl = renderer.createDashboard(chartComposite, this, computeSize(-1, -1));
+            renderer = dashboardConfig.getDashboardDescriptor().getType().createRenderer();
+            dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView().getViewConfiguration(), computeSize(-1, -1));
 
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-            errorLabel.setText("Error creating " + dashboardDescriptor.getName() + " renderer: " + e.getMessage());
+            errorLabel.setText("Error creating " + dashboardConfig.getDashboardDescriptor().getName() + " renderer: " + e.getMessage());
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
 
@@ -137,7 +139,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     public int getDefaultWidth() {
-        return (int) (dashboardDescriptor.getWidthRatio() * getDefaultHeight());
+        return (int) (dashboardConfig.getWidthRatio() * getDefaultHeight());
     }
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
@@ -206,42 +208,42 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     @Override
     public String getDashboardId() {
-        return dashboardDescriptor.getId();
+        return dashboardConfig.getDashboardDescriptor().getId();
     }
 
     @Override
     public String getDashboardTitle() {
-        return dashboardDescriptor.getName();
+        return dashboardConfig.getDashboardDescriptor().getName();
     }
 
     @Override
     public String getDashboardDescription() {
-        return dashboardDescriptor.getDescription();
+        return dashboardConfig.getDescription();
     }
 
     @Override
     public DashboardType getDashboardType() {
-        return dashboardDescriptor.getType();
+        return dashboardConfig.getDashboardDescriptor().getType();
     }
 
     @Override
     public DashboardCalcType getDashboardCalcType() {
-        return dashboardDescriptor.getCalcType();
+        return dashboardConfig.getDashboardDescriptor().getCalcType();
     }
 
     @Override
     public DashboardFetchType getDashboardFetchType() {
-        return dashboardDescriptor.getFetchType();
+        return dashboardConfig.getDashboardDescriptor().getFetchType();
     }
 
     @Override
     public int getDashboardMaxItems() {
-        return dashboardDescriptor.getMaxItems();
+        return dashboardConfig.getMaxItems();
     }
 
     @Override
     public long getDashboardMaxAge() {
-        return dashboardDescriptor.getMaxAge();
+        return dashboardConfig.getMaxAge();
     }
 
     @Override
@@ -256,7 +258,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     @Override
     public List<? extends DashboardQuery> getQueryList() {
-        return dashboardDescriptor.getQueries();
+        return dashboardConfig.getDashboardDescriptor().getQueries();
     }
 
     @Override
@@ -285,7 +287,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     @Override
     public long getUpdatePeriod() {
-        return dashboardDescriptor.getUpdatePeriod();
+        return dashboardConfig.getUpdatePeriod();
     }
 
     @Override

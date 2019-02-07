@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 
 import java.util.Date;
@@ -29,7 +29,7 @@ import java.util.Date;
  */
 public interface DashboardRenderer {
 
-    DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, Point preferredSize);
+    DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, DashboardViewConfiguration viewConfiguration, Point preferredSize);
 
     void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset);
 

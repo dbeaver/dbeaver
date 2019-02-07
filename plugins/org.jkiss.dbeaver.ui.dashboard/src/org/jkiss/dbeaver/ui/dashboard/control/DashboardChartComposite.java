@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardChartConfigDialog;
 
 /**
@@ -30,14 +31,16 @@ import org.jkiss.dbeaver.ui.dashboard.view.DashboardChartConfigDialog;
 public class DashboardChartComposite extends BaseChartComposite {
 
     private final DashboardContainer dashboardContainer;
+    private final DashboardViewConfiguration viewConfiguration;
 
-    public DashboardChartComposite(DashboardContainer dashboardContainer, Composite parent, int style, Point preferredSize) {
+    public DashboardChartComposite(DashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration, Composite parent, int style, Point preferredSize) {
         super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
+        this.viewConfiguration = viewConfiguration;
     }
 
     protected boolean showChartConfigDialog() {
-        DashboardChartConfigDialog dialog = new DashboardChartConfigDialog(this, dashboardContainer);
+        DashboardChartConfigDialog dialog = new DashboardChartConfigDialog(this.getShell(), dashboardContainer, viewConfiguration);
         return dialog.open() == IDialogConstants.OK_ID;
     }
 

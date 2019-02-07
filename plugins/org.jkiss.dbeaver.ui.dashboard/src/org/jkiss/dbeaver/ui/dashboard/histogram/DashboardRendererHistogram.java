@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dashboard.histogram;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -29,8 +28,6 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLine3DRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
@@ -42,6 +39,7 @@ import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
@@ -58,7 +56,7 @@ import java.util.List;
 public class DashboardRendererHistogram implements DashboardRenderer {
 
     @Override
-    public DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, Point preferredSize) {
+    public DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, DashboardViewConfiguration viewConfiguration, Point preferredSize) {
 
         TimeSeriesCollection dataset = new TimeSeriesCollection();
         //generateSampleSeries(container, dataset);
@@ -129,7 +127,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         plot.setDomainGridlinePaint(gridColor);
         plot.setRangeGridlinePaint(gridColor);
 
-        DashboardChartComposite chartComposite = new DashboardChartComposite(container, composite, SWT.DOUBLE_BUFFERED, preferredSize);
+        DashboardChartComposite chartComposite = new DashboardChartComposite(container, viewConfiguration, composite, SWT.DOUBLE_BUFFERED, preferredSize);
         chartComposite.setChart(histogramChart);
 
         return chartComposite;
