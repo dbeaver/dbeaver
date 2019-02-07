@@ -64,6 +64,11 @@ public class ProxyValueHandler implements DBDValueHandler {
     }
 
     @Override
+    public Object createNewValueObject(@NotNull DBCSession session, @NotNull DBSTypedObject type) throws DBCException {
+        return target.createNewValueObject(session, type);
+    }
+
+    @Override
     public void releaseValueObject(@Nullable Object value) {
         target.releaseValueObject(value);
     }

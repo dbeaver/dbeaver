@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -702,9 +703,19 @@ public class ComplexObjectEditor extends TreeViewer {
         public void run() {
             DBDCollection collection = (DBDCollection) getInput();
             ComplexElement[] arrayItems = childrenMap.get(collection);
+            if (collection == null) {
+                try {
+                    collection = createNewObject(DBDCollection.class);
+                    setInput(collection);
+                } catch (DBCException e) {
+                    DBWorkbench.getPlatformUI().showError("New object create", "Error creating new collection", e);
+                    return;
+                }
+            }
             if (arrayItems == null) {
-                log.error("Can't find children items for add");
-                return;
+                arrayItems = new ComplexElement[0];
+                //log.error("Can't find children items for add");
+                //return;
             }
             final IStructuredSelection selection = getStructuredSelection();
             ArrayItem newItem;
@@ -717,6 +728,7 @@ public class ComplexObjectEditor extends TreeViewer {
             shiftArrayItems(arrayItems, newItem.index, 1);
             arrayItems = ArrayUtils.insertArea(ComplexElement.class, arrayItems, newItem.index, new ComplexElement[] {newItem} );
             childrenMap.put(collection, arrayItems);
+
             refresh();
 
             final Widget treeItem = findItem(newItem);
@@ -724,6 +736,36 @@ public class ComplexObjectEditor extends TreeViewer {
                 showEditor((TreeItem) treeItem, false);
             }
         }
+    }
+
+    private <T> T createNewObject(Class<T> targetType) throws DBCException {
+        DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Create new object")) {
+                    result = parentController.getValueHandler().createNewValueObject(session, parentController.getValueType());
+                } catch (DBCException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        };
+        try {
+            UIUtils.runInProgressService(runnable);
+        } catch (InvocationTargetException e) {
+            throw new DBCException(e.getTargetException(), executionContext.getDataSource());
+        } catch (InterruptedException e) {
+            throw new DBCException(e, executionContext.getDataSource());
+        }
+
+        Object result = runnable.getResult();
+        if (result == null) {
+            throw new DBCException("Internal error - null object created");
+        }
+        if (!targetType.isInstance(result)) {
+            throw new DBCException("Internal error - wrong object type '" + result.getClass().getName() + "' while '" + targetType.getName() + "' was expected");
+        }
+        return targetType.cast(result);
     }
 
     private class RemoveElementAction extends Action {

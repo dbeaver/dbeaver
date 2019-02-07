@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -24,7 +25,9 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Array;
@@ -63,6 +66,28 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
             return JDBCCollection.makeCollectionFromJavaArray((JDBCSession) session, type, object);
         } else {
             return JDBCCollection.makeCollectionFromString((JDBCSession) session, CommonUtils.toString(object));
+        }
+    }
+
+    @Override
+    public Object createNewValueObject(DBCSession session, DBSTypedObject type) throws DBCException {
+        DBSDataType dataType;
+        if (type instanceof DBSDataType) {
+            dataType = (DBSDataType) type;
+        } else if (type instanceof DBSTypedObjectEx) {
+            dataType = ((DBSTypedObjectEx) type).getDataType();
+        } else {
+            throw new DBCException("Can't determine array element data type: " + type.getFullTypeName());
+        }
+        try {
+            DBSDataType componentType = dataType.getComponentType(session.getProgressMonitor());
+            if (componentType == null) {
+                throw new DBCException("Can't determine component data type from " + dataType.getFullTypeName());
+            }
+            Array array = ((JDBCSession) session).createArrayOf(componentType.getFullTypeName(), new Object[0]);
+            return getValueFromObject(session, type, array, false);
+        } catch (Exception e) {
+            throw new DBCException("Error creating JDBC array " + type.getFullTypeName());
         }
     }
 
