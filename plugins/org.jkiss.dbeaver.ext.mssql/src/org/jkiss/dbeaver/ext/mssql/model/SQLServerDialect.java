@@ -110,6 +110,9 @@ public class SQLServerDialect extends JDBCSQLDialect {
                 }
             }
         } else if (dataKind == DBPDataKind.STRING) {
+            if (SQLServerConstants.TYPE_UNIQUEIDENTIFIER.equalsIgnoreCase(typeName)) {
+                return null;
+            }
             long maxLength = column.getMaxLength();
             if (maxLength == 0) {
                 return null;
