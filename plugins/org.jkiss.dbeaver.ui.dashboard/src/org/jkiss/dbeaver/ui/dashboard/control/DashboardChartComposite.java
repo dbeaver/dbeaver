@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardChartConfigDialog;
 
 /**
  * Dashboard chart composite
