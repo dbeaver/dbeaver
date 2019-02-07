@@ -33,6 +33,8 @@ public interface DashboardRenderer {
 
     void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset);
 
+    void resetDashboardData(DashboardContainer dashboardItem, Date lastUpdateTime);
+
     void disposeDashboard(DashboardContainer container);
 
 }

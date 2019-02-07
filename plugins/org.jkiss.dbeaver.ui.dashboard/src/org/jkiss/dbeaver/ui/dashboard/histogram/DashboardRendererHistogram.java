@@ -223,8 +223,20 @@ public class DashboardRendererHistogram implements DashboardRenderer {
     }
 
     @Override
-    public void disposeDashboard(DashboardContainer container) {
-
+    public void resetDashboardData(DashboardContainer container, Date lastUpdateTime) {
+        DashboardChartComposite chartComposite = (DashboardChartComposite) container.getDashboardControl();
+        if (chartComposite.isDisposed()) {
+            return;
+        }
+        JFreeChart chart = chartComposite.getChart();
+        XYPlot plot = (XYPlot) chart.getPlot();
+        TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
+        chartDataset.removeAllSeries();
     }
+
+    @Override
+    public void disposeDashboard(DashboardContainer container) {
+    }
+
 
 }

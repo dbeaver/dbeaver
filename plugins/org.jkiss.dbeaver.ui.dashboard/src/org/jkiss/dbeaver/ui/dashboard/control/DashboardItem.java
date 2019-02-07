@@ -125,7 +125,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
     private void paintItem(PaintEvent e) {
         Point itemSize = getSize();
         e.gc.setLineWidth(groupContainer.getSelectedItem() == this ? 2 : 1);
-        e.gc.drawRoundRectangle(1, 1, itemSize.x - 2, itemSize.y - 2, 3, 3);
+        e.gc.setLineStyle(groupContainer.getSelectedItem() == this ? SWT.LINE_SOLID : SWT.LINE_DASH);
+        e.gc.drawRectangle(1, 1, itemSize.x - 2, itemSize.y - 2);
 //        if (groupContainer.getSelectedItem() == this) {
 //            e.gc.drawRoundRectangle(1, 1, itemSize.x - 4, itemSize.y - 4, 3, 3);
 //        }
@@ -271,6 +272,15 @@ public class DashboardItem extends Composite implements DashboardContainer {
             }
         });
         lastUpdateTime = new Date();
+    }
+
+    @Override
+    public void resetDashboardData() {
+        UIUtils.asyncExec(() -> {
+            if (renderer != null) {
+                renderer.resetDashboardData(this, lastUpdateTime);
+            }
+        });
     }
 
     @Override
