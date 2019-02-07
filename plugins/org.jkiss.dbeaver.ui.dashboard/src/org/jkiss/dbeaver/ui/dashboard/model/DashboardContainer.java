@@ -60,10 +60,13 @@ public interface DashboardContainer {
 
     void updateDashboardData(DashboardDataset dataset);
 
+    void resetDashboardData();
+
     /**
      * Dashboard update period in seconds
      */
     long getUpdatePeriod();
 
     Control getDashboardControl();
+
 }
