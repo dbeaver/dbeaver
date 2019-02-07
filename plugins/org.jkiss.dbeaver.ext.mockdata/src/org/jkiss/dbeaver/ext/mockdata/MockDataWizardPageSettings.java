@@ -56,7 +56,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
     private MockDataSettings mockDataSettings;
 
-    private CLabel noGeneratorInfoLabel;
     private Text entityNameText;
     private Button removeOldDataCheck;
     private Text rowsText;
@@ -197,7 +196,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         }
                         if (attributeGeneratorProperties != null && attributeGeneratorProperties.isEmpty()) {
                             cell.setForeground(table.getDisplay().getSystemColor(SWT.COLOR_RED));
-                            noGeneratorInfoLabel.setVisible(true);
                         }
                     } else {
                         if (attributeGeneratorProperties != null && !attributeGeneratorProperties.isEmpty()) {
@@ -231,7 +229,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                     Set<String> generators = new LinkedHashSet<>();
                     generators.add(MockDataSettings.NO_GENERATOR_LABEL);
                     if (attributeGenerators.isEmpty()) {
-                        noGeneratorInfoLabel.setVisible(true);
                         TextCellEditor textCellEditor = new TextCellEditor(generatorsTableViewer.getTable());
                         textCellEditor.getControl().setEnabled(false);
                         return textCellEditor;
@@ -355,15 +352,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             gd.verticalIndent = 5;
             propsEditor.getControl().setLayoutData(gd);
 
-            noGeneratorInfoLabel = UIUtils.createInfoLabel(composite,
-                    MockDataMessages.tools_mockdata_wizard_page_settings_button_info_notfound);
-            //noGeneratorInfoLabel.setForeground(generatorsTableViewer.getDisplay().getSystemColor(SWT.COLOR_RED));
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
-            gd.verticalIndent = 5;
-            noGeneratorInfoLabel.setLayoutData(gd);
-            noGeneratorInfoLabel.setVisible(false);
-
             table.addControlListener(new ControlAdapter() {
                 @Override
                 public void controlResized(ControlEvent e)
@@ -467,9 +455,9 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             event.item = table.getItem(selectedItemIndex);
             event.type = SWT.Selection;
             table.notifyListeners(SWT.Selection, event);
+            setMessage(null);
         } else {
-            noGeneratorInfoLabel.setText(MockDataMessages.tools_mockdata_wizard_page_settings_button_info_noattributes);
-            noGeneratorInfoLabel.setVisible(true);
+            setMessage(MockDataMessages.tools_mockdata_wizard_page_settings_button_info_noattributes, SWT.ICON_ERROR);
         }
 
         updatePageCompletion();

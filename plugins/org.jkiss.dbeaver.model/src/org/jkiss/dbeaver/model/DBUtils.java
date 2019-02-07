@@ -1396,7 +1396,9 @@ public final class DBUtils {
 
     @Nullable
     public static DBSObject getFromObject(Object object) {
-        if (object instanceof DBSWrapper) {
+        if (object == null) {
+            return null;
+        } else if (object instanceof DBSWrapper) {
             return ((DBSWrapper) object).getObject();
         } else if (object instanceof DBSObject) {
             return (DBSObject) object;
