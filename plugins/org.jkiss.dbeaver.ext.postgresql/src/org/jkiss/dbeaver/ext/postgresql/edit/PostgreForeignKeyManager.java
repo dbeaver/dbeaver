@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -67,7 +68,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
             @Override
             protected PostgreTableForeignKey runTask() {
                 EditPGForeignKeyPage editPage = new EditPGForeignKeyPage(
-                    "Edit foreign key",
+                    PostgreMessages.postgre_foreign_key_manager_header_edit_foreign_key,
                     table);
                 if (!editPage.edit()) {
                     return null;
@@ -157,14 +158,14 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
             {
                 // Cascades
                 defGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                final Button deferrableCheck = UIUtils.createCheckbox(defGroup, "Deferrable", false);
+                final Button deferrableCheck = UIUtils.createCheckbox(defGroup, PostgreMessages.postgre_foreign_key_manager_checkbox_deferrable, false);
                 deferrableCheck.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         isDeferrable = deferrableCheck.getSelection();
                     }
                 });
-                final Button deferredCheck = UIUtils.createCheckbox(defGroup, "Deferred", false);
+                final Button deferredCheck = UIUtils.createCheckbox(defGroup, PostgreMessages.postgre_foreign_key_manager_checkbox_deferred, false);
                 deferredCheck.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
