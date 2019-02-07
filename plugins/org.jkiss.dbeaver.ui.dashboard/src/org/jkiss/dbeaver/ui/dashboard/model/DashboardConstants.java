@@ -25,7 +25,11 @@ public class DashboardConstants {
 
     public static final String RS_COL_TIMESTAMP = "STAT_TIMESTAMP";
 
-    public static final int DEF_HISTOGRAM_MAXIMUM_ITEM_COUNT = 300;
-    public static final long DEF_HISTOGRAM_MAXIMUM_AGE = 24 * 60 * 60 * 1000;
+    public static final int DEF_DASHBOARD_MAXIMUM_ITEM_COUNT = 300;
+    public static final long DEF_DASHBOARD_MAXIMUM_AGE = 24 * 60 * 60 * 1000;
 
+    public static final int DEF_DASHBOARD_UPDATE_PERIOD = 5000;
+    public static final double DEF_DASHBOARD_WIDTH_RATIO = 1.5;
+    public static final DashboardCalcType DEF_DASHBOARD_CALC_TYPE = DashboardCalcType.value;
+    public static final DashboardFetchType DEF_DASHBOARD_FETCH_TYPE = DashboardFetchType.columns;
 }

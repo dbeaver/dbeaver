@@ -43,7 +43,7 @@ public class SQLServerConstants {
     public static final String TYPE_DATETIME2 = "datetime2";
     public static final String TYPE_SMALLDATETIME = "smalldatetime";
     public static final String TYPE_DATETIMEOFFSET = "datetimeoffset";
-
+    public static final String TYPE_UNIQUEIDENTIFIER = "uniqueidentifier";
 
     public static final String PROP_AUTHENTICATION = DBConstants.INTERNAL_PROP_PREFIX + "authentication@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
