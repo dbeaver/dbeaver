@@ -69,7 +69,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
             //titleLabel.setLayoutData(gd);
             //titleLabel.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_FOREGROUND));
             //titleLabel.setBackground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
-            titleLabel.setText("  " + dashboardDescriptor.getLabel());
+            titleLabel.setText("  " + dashboardDescriptor.getName());
         }
 
         try {
@@ -82,7 +82,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
         } catch (DBException e) {
             // Something went wrong
             Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-            errorLabel.setText("Error creating " + dashboardDescriptor.getLabel() + " renderer: " + e.getMessage());
+            errorLabel.setText("Error creating " + dashboardDescriptor.getName() + " renderer: " + e.getMessage());
             errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
 
@@ -211,7 +211,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     @Override
     public String getDashboardTitle() {
-        return dashboardDescriptor.getLabel();
+        return dashboardDescriptor.getName();
     }
 
     @Override

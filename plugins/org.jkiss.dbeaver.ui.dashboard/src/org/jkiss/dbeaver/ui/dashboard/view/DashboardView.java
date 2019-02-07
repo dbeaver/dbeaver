@@ -34,6 +34,7 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
 
     private DashboardViewManager dashboardViewManager;
+    private int viewNumber;
 
     public DashboardView() {
         super();
@@ -45,9 +46,13 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         if (CommonUtils.isEmpty(secondaryId)) {
             throw new IllegalStateException("Dashboard view requires active database connection");
         }
-        DBPDataSourceContainer dataSource = DBUtils.findDataSource(secondaryId);
+        int divPos = secondaryId.lastIndexOf(':');
+        String dataSourceId = divPos == -1 ? secondaryId : secondaryId.substring(0, divPos);
+        viewNumber = divPos == -1 ? 0 : CommonUtils.toInt(secondaryId.substring(divPos + 1));
+
+        DBPDataSourceContainer dataSource = DBUtils.findDataSource(dataSourceId);
         if (dataSource == null) {
-            throw new IllegalStateException("Database connection '" + secondaryId + "' not found");
+            throw new IllegalStateException("Database connection '" + dataSourceId + "' not found");
         }
         setPartName(dataSource.getName());
 
