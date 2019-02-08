@@ -22,9 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.axis.DateTickMarkPosition;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.axis.*;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
@@ -39,10 +37,7 @@ import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
 
@@ -120,6 +115,9 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         rangeAxis.setLabel(null);
         rangeAxis.setTickLabelPaint(gridColor);
         rangeAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
+        if (container.getDashboardValueType() == DashboardValueType.integer) {
+            rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true));
+        }
         //rangeAxis.setLowerMargin(0.2);
         //rangeAxis.setLowerBound(.1);
 
@@ -201,7 +199,8 @@ public class DashboardRendererHistogram implements DashboardRenderer {
                             return;
                         }
                         //System.out.println("LAST=" + lastUpdateTime + "; CUR=" + new Date());
-                        long secondsPassed = (System.currentTimeMillis() - lastUpdateTime.getTime()) / 1000;
+                        long currentTime = System.currentTimeMillis();
+                        long secondsPassed = (currentTime - lastUpdateTime.getTime()) / 1000;
                         if (secondsPassed <= 0) {
                             secondsPassed = 1;
                         }
@@ -212,6 +211,9 @@ public class DashboardRendererHistogram implements DashboardRenderer {
                                 if (newValue instanceof Number && prevValue instanceof Number) {
                                     double deltaValue = ((Number) newValue).doubleValue() - ((Number) prevValue).doubleValue();
                                     deltaValue /= secondsPassed;
+                                    if (container.getDashboardValueType() == DashboardValueType.integer) {
+                                        deltaValue = Math.round(deltaValue);
+                                    }
                                     series.add(
                                         new FixedMillisecond(
                                             row.getTimestamp().getTime()),

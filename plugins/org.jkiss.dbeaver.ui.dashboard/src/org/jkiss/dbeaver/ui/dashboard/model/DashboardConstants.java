@@ -31,6 +31,7 @@ public class DashboardConstants {
     public static final int DEF_DASHBOARD_UPDATE_PERIOD = 5000;
     public static final double DEF_DASHBOARD_WIDTH_RATIO = 1.5;
     public static final DashboardCalcType DEF_DASHBOARD_CALC_TYPE = DashboardCalcType.value;
+    public static final DashboardValueType DEF_DASHBOARD_VALUE_TYPE = DashboardValueType.decimal;
     public static final DashboardFetchType DEF_DASHBOARD_FETCH_TYPE = DashboardFetchType.columns;
 
     public static final String CMD_ADD_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.add";

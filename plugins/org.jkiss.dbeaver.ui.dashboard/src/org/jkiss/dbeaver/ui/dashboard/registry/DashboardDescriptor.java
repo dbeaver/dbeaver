@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardCalcType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardQuery;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLUtils;
@@ -60,6 +57,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private long maxAge;
 
     private boolean isCustom;
+    private DashboardValueType valueType;
 
     private static class DataSourceMapping {
         private final String dataSourceProvider;
@@ -135,6 +133,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.type = registry.getDashboardType(config.getAttribute("type"));
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO); // Default ratio is 2 to 3
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
+        this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
         this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardConstants.DEF_DASHBOARD_FETCH_TYPE);
         this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD); // Default ratio is 2 to 3
         this.maxItems = CommonUtils.toInt(config.getAttribute("maxItems"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT);
@@ -165,6 +164,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.type = registry.getDashboardType(config.getAttribute("type"));
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO);
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
+        this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
         this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardConstants.DEF_DASHBOARD_FETCH_TYPE);
         this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD); // Default ratio is 2 to 3
         this.maxItems = CommonUtils.toInt(config.getAttribute("maxItems"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT);
@@ -194,6 +194,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.type = source.type;
         this.widthRatio = source.widthRatio;
         this.calcType = source.calcType;
+        this.valueType = source.valueType;
         this.fetchType = source.fetchType;
         this.updatePeriod = source.updatePeriod;
         this.maxItems = source.maxItems;
@@ -285,6 +286,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.calcType = calcType;
     }
 
+    public DashboardValueType getValueType() {
+        return valueType;
+    }
+
+    public void setValueType(DashboardValueType valueType) {
+        this.valueType = valueType;
+    }
+
     public DashboardFetchType getFetchType() {
         return fetchType;
     }
@@ -347,6 +356,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         xml.addAttribute("type", type.getId());
         xml.addAttribute("ratio", widthRatio);
         xml.addAttribute("calc", calcType.name());
+        xml.addAttribute("value", valueType.name());
         xml.addAttribute("fetch", fetchType.name());
         xml.addAttribute("updatePeriod", updatePeriod);
         xml.addAttribute("maxItems", maxItems);
