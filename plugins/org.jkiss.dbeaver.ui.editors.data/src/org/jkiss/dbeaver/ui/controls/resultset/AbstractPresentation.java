@@ -177,16 +177,10 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         // Register context menu
         MenuManager menuMgr = new MenuManager(null, RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(getControl());
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
-                controller.fillContextMenu(
-                    manager,
-                    getCurrentAttribute(),
-                    controller.getCurrentRow());
-            }
-        });
+        menuMgr.addMenuListener(manager -> controller.fillContextMenu(
+            manager,
+            getCurrentAttribute(),
+            controller.getCurrentRow()));
         menuMgr.setRemoveAllWhenShown(true);
         getControl().setMenu(menu);
         controller.getSite().registerContextMenu(menuMgr, null);

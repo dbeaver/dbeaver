@@ -22,6 +22,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -104,6 +106,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
         menuMgr.setRemoveAllWhenShown(true);
         this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
+        this.aggregateTable.addDisposeListener(e -> menuMgr.dispose());
 
         aggregateTable.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -338,6 +341,12 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 }
 
                 final Menu contextMenu = menuManager.createContextMenu(aggregateTable);
+                contextMenu.addMenuListener(new MenuAdapter() {
+                    @Override
+                    public void menuHidden(MenuEvent e) {
+                        menuManager.dispose();
+                    }
+                });
                 contextMenu.setLocation(location);
                 contextMenu.setVisible(true);
             }

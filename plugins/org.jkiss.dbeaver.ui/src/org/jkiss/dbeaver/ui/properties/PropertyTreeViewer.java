@@ -549,6 +549,7 @@ public class PropertyTreeViewer extends TreeViewer {
             Menu menu = menuMgr.createContextMenu(getTree());
 
             getTree().setMenu(menu);
+            getTree().addDisposeListener(e -> menuMgr.dispose());
         }
     }
 

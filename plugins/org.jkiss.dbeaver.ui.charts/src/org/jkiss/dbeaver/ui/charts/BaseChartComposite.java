@@ -21,6 +21,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -64,7 +66,14 @@ public class BaseChartComposite extends ChartComposite {
 
         fillContextMenu(manager);
 
-        return manager.createContextMenu(this);
+        Menu contextMenu = manager.createContextMenu(this);
+        contextMenu.addMenuListener(new MenuAdapter() {
+            @Override
+            public void menuHidden(MenuEvent e) {
+                manager.dispose();
+            }
+        });
+        return contextMenu;
     }
 
     protected void fillContextMenu(MenuManager manager) {

@@ -61,6 +61,7 @@ public class StyledTextUtils {
             fillDefaultStyledTextContextMenu(manager, text));
         menuMgr.setRemoveAllWhenShown(true);
         text.setMenu(menuMgr.createContextMenu(text));
+        text.addDisposeListener(e -> menuMgr.dispose());
     }
 
     public static void fillDefaultStyledTextContextMenu(IMenuManager menu, final StyledText text) {

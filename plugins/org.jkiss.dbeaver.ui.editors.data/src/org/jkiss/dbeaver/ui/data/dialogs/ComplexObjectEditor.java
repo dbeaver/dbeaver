@@ -249,24 +249,21 @@ public class ComplexObjectEditor extends TreeViewer {
         Control control = getControl();
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
-                if (!getSelection().isEmpty()) {
-                    manager.add(copyNameAction);
-                    manager.add(copyValueAction);
-                    manager.add(new Separator());
-                }
-                try {
-                    parentController.getValueManager().contributeActions(manager, parentController, editor);
-                } catch (DBCException e) {
-                    log.error(e);
-                }
+        menuMgr.addMenuListener(manager -> {
+            if (!getSelection().isEmpty()) {
+                manager.add(copyNameAction);
+                manager.add(copyValueAction);
+                manager.add(new Separator());
+            }
+            try {
+                parentController.getValueManager().contributeActions(manager, parentController, editor);
+            } catch (DBCException e) {
+                log.error(e);
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
+        control.addDisposeListener(e -> menuMgr.dispose());
     }
 
     @Override
