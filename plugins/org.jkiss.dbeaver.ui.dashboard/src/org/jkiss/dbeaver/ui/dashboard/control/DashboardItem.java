@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.LineAttributes;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -126,8 +127,14 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     private void paintItem(PaintEvent e) {
         Point itemSize = getSize();
-        e.gc.setLineWidth(groupContainer.getSelectedItem() == this ? 2 : 1);
-        e.gc.setLineStyle(groupContainer.getSelectedItem() == this ? SWT.LINE_SOLID : SWT.LINE_DASH);
+        if (groupContainer.getSelectedItem() == this) {
+            e.gc.setLineWidth(2);
+            e.gc.setLineStyle(SWT.LINE_SOLID);
+        } else {
+            e.gc.setLineWidth(1);
+            e.gc.setLineStyle(SWT.LINE_CUSTOM);
+            e.gc.setLineDash(new int[] {10, 10});
+        }
         e.gc.drawRectangle(1, 1, itemSize.x - 2, itemSize.y - 2);
 //        if (groupContainer.getSelectedItem() == this) {
 //            e.gc.drawRoundRectangle(1, 1, itemSize.x - 4, itemSize.y - 4, 3, 3);
@@ -271,9 +278,9 @@ public class DashboardItem extends Composite implements DashboardContainer {
         UIUtils.asyncExec(() -> {
             if (renderer != null) {
                 renderer.updateDashboardData(this, lastUpdateTime, dataset);
+                lastUpdateTime = new Date();
             }
         });
-        lastUpdateTime = new Date();
     }
 
     @Override

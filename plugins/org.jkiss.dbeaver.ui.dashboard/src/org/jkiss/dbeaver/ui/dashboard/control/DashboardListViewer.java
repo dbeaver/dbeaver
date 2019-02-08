@@ -16,14 +16,18 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
@@ -31,14 +35,14 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import java.util.Collections;
 import java.util.List;
 
-public class DashboardViewManager implements DBPEventListener, IDataSourceContainerProvider, DashboardViewContainer {
+public class DashboardListViewer extends StructuredViewer implements DBPEventListener, IDataSourceContainerProvider, DashboardViewContainer {
 
     private final DBPDataSourceContainer dataSourceContainer;
     private final DashboardViewConfiguration viewConfiguration;
     private DashboardList dashContainer;
     //private CLabel statusLabel;
 
-    public DashboardViewManager(DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
+    public DashboardListViewer(DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
         this.dataSourceContainer = dataSourceContainer;
         this.dataSourceContainer.getRegistry().addDataSourceListener(this);
 
@@ -106,6 +110,57 @@ public class DashboardViewManager implements DBPEventListener, IDataSourceContai
     @Override
     public DashboardViewConfiguration getViewConfiguration() {
         return viewConfiguration;
+    }
+
+    @Override
+    protected DashboardItem doFindInputItem(Object element) {
+        return null;
+    }
+
+    @Override
+    protected DashboardItem doFindItem(Object element) {
+        return null;
+    }
+
+    @Override
+    protected void doUpdateItem(Widget item, Object element, boolean fullMap) {
+
+    }
+
+    @Override
+    protected List getSelectionFromWidget() {
+        DashboardContainer selectedItem = dashContainer.getSelectedItem();
+        return selectedItem == null ? Collections.emptyList() : Collections.singletonList(selectedItem);
+    }
+
+    @Override
+    protected void internalRefresh(Object element) {
+
+    }
+
+    @Override
+    public void reveal(Object element) {
+        DashboardContainer item = doFindItem(element);
+        if (item != null) {
+            dashContainer.showItem(item);
+        }
+    }
+
+    @Override
+    protected void setSelectionToWidget(List l, boolean reveal) {
+        if (l.isEmpty()) {
+            dashContainer.setSelection(null);
+        } else {
+            DashboardItem item = doFindItem(l.get(0));
+            if (item != null) {
+                dashContainer.setSelection(item);
+            }
+        }
+    }
+
+    @Override
+    public Control getControl() {
+        return dashContainer;
     }
 
 }

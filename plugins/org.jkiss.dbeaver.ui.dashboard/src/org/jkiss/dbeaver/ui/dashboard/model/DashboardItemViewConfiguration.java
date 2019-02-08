@@ -79,4 +79,18 @@ public class DashboardItemViewConfiguration {
         this.maxItems = dashboardDescriptor.getMaxItems();
         this.maxAge = dashboardDescriptor.getMaxAge();
     }
+
+    public DashboardItemViewConfiguration(DashboardItemViewConfiguration source) {
+        copyFrom(source);
+    }
+
+    public void copyFrom(DashboardItemViewConfiguration source) {
+        this.dashboardDescriptor = source.dashboardDescriptor;
+        this.description = source.description;
+        this.widthRatio = source.widthRatio;
+        this.updatePeriod = source.updatePeriod;
+        this.maxItems = source.maxItems;
+        this.maxAge = source.maxAge;
+    }
+
 }
