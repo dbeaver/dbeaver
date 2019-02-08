@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.LineAttributes;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -80,7 +79,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
             chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
             chartComposite.setLayout(new FillLayout());
             renderer = dashboardConfig.getDashboardDescriptor().getType().createRenderer();
-            dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView().getViewConfiguration(), computeSize(-1, -1));
+            dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
 
         } catch (DBException e) {
             // Something went wrong

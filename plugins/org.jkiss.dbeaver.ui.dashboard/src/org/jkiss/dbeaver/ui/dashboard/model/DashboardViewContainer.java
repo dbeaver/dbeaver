@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -32,4 +33,6 @@ public interface DashboardViewContainer extends IDataSourceContainerProvider {
     DBCExecutionContext getExecutionContext();
 
     DashboardViewConfiguration getViewConfiguration();
+
+    IWorkbenchSite getSite();
 }

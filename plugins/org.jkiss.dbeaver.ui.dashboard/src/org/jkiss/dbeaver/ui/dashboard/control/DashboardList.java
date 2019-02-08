@@ -16,15 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
@@ -39,14 +45,16 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
     private static final int ITEM_SPACING = 5;
 
+    private IWorkbenchSite site;
     private DashboardViewContainer viewContainer;
     private List<DashboardItem> items = new ArrayList<>();
     private final Font boldFont;
     private DashboardItem selectedItem;
 
-    public DashboardList(Composite parent, DashboardViewContainer viewContainer) {
-        super(parent, SWT.NONE);
+    public DashboardList(IWorkbenchSite site, Composite parent, DashboardViewContainer viewContainer) {
+        super(parent, SWT.DOUBLE_BUFFERED);
 
+        this.site = site;
         this.viewContainer = viewContainer;
 
         Font normalFont = getFont();
@@ -66,7 +74,24 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         layout.justify = false;
         this.setLayout(layout);
 
-        //setMenu();
+        registerContextMenu();
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                setSelection(null);
+                setFocus();
+            }
+        });
+    }
+
+    private void registerContextMenu() {
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardConstants.CMD_ADD_DASHBOARD));
+        menuMgr.add(ActionUtils.makeCommandContribution(site, DashboardConstants.CMD_RESET_DASHBOARD));
+        setMenu(menuMgr.createContextMenu(this));
+
+        addDisposeListener(e -> menuMgr.dispose());
     }
 
     DBPDataSourceContainer getDataSourceContainer() {

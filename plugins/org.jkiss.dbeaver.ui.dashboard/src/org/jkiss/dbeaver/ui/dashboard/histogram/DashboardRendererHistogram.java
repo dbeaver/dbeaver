@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
 
@@ -59,7 +60,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
     private static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
 
     @Override
-    public DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, DashboardViewConfiguration viewConfiguration, Point preferredSize) {
+    public DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, DashboardViewContainer viewContainer, Point preferredSize) {
 
         TimeSeriesCollection dataset = new TimeSeriesCollection();
         //generateSampleSeries(container, dataset);
@@ -132,7 +133,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         plot.setDomainGridlinePaint(gridColor);
         plot.setRangeGridlinePaint(gridColor);
 
-        DashboardChartComposite chartComposite = new DashboardChartComposite(container, viewConfiguration, composite, SWT.DOUBLE_BUFFERED, preferredSize);
+        DashboardChartComposite chartComposite = new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize);
         chartComposite.setChart(histogramChart);
 
         return chartComposite;
