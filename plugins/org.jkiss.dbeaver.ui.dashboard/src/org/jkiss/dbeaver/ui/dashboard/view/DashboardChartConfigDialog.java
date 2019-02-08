@@ -28,16 +28,14 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.Duration;
-import java.util.List;
 
 public class DashboardChartConfigDialog extends BaseDialog {
 
@@ -53,7 +51,7 @@ public class DashboardChartConfigDialog extends BaseDialog {
 
         this.viewConfiguration = viewConfiguration;
         this.dashboardContainer = dashboardContainer;
-        this.dashboardConfig = viewConfiguration.getDashboardConfig(dashboardContainer.getDashboardId());
+        this.dashboardConfig = new DashboardItemViewConfiguration(viewConfiguration.getDashboardConfig(dashboardContainer.getDashboardId()));
     }
 
     @Override
@@ -113,15 +111,38 @@ public class DashboardChartConfigDialog extends BaseDialog {
             Group updateGroup = UIUtils.createControlGroup(composite, "Dashboard update", 2, GridData.FILL_HORIZONTAL, 0);
 
             Text updatePeriodText = UIUtils.createLabelText(updateGroup, "Update period (ms)", String.valueOf(dashboardConfig.getUpdatePeriod()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            updatePeriodText.addModifyListener(e -> {
+                dashboardConfig.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardConfig.getUpdatePeriod()));
+            });
             Text maxItemsText = UIUtils.createLabelText(updateGroup, "Maximum items", String.valueOf(dashboardConfig.getMaxItems()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            maxItemsText.addModifyListener(e -> {
+                dashboardConfig.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardConfig.getMaxItems()));
+            });
             Text maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", Duration.ofMillis(dashboardConfig.getMaxAge()).toString().substring(2), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            maxAgeText.addModifyListener(e -> {
+                String maxAgeStr = maxAgeText.getText();
+                if (!maxAgeStr.startsWith("PT")) maxAgeStr = "PT" + maxAgeStr;
+                maxAgeStr = maxAgeStr.replace(" ", "");
+                try {
+                    Duration newDuration = Duration.parse(maxAgeStr);
+                    dashboardConfig.setMaxAge(newDuration.toMillis());
+                } catch (Exception e1) {
+                    // Ignore
+                }
+            });
         }
 
         {
             Group updateGroup = UIUtils.createControlGroup(composite, "Dashboard view", 2, GridData.FILL_HORIZONTAL, 0);
 
             Text widthRatioText = UIUtils.createLabelText(updateGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            widthRatioText.addModifyListener(e -> {
+                dashboardConfig.setWidthRatio((float) CommonUtils.toDouble(widthRatioText.getText(), dashboardConfig.getWidthRatio()));
+            });
             Text descriptionText = UIUtils.createLabelText(updateGroup, "Description", CommonUtils.notEmpty(dashboardConfig.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            descriptionText.addModifyListener(e -> {
+                dashboardConfig.setDescription(widthRatioText.getText());
+            });
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 200;
             gd.heightHint = 50;
@@ -138,9 +159,10 @@ public class DashboardChartConfigDialog extends BaseDialog {
         return contents;
     }
 
-
     @Override
     protected void okPressed() {
         super.okPressed();
+        viewConfiguration.updateDashboardConfig(this.dashboardConfig);
+        viewConfiguration.saveSettings();
     }
 }

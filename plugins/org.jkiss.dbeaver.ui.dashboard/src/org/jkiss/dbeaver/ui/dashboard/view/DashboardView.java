@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
@@ -27,14 +24,14 @@ import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewManager;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.utils.CommonUtils;
 
 public class DashboardView extends ViewPart implements IDataSourceContainerProvider {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
 
-    private DashboardViewManager dashboardViewManager;
+    private DashboardListViewer dashboardListViewer;
     private DashboardViewConfiguration configuration;
     private int viewNumber;
 
@@ -59,8 +56,8 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         setPartName(dataSource.getName());
 
         configuration = new DashboardViewConfiguration(secondaryId);
-        dashboardViewManager = new DashboardViewManager(dataSource, configuration);
-        dashboardViewManager.createControl(parent);
+        dashboardListViewer = new DashboardListViewer(dataSource, configuration);
+        dashboardListViewer.createControl(parent);
     }
 
     @Override
@@ -77,9 +74,9 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
     @Override
     public void dispose() {
         super.dispose();
-        if (dashboardViewManager != null) {
-            dashboardViewManager.dispose();
-            dashboardViewManager = null;
+        if (dashboardListViewer != null) {
+            dashboardListViewer.dispose();
+            dashboardListViewer = null;
         }
     }
 
@@ -88,8 +85,8 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         super.saveState(memento);
     }
 
-    public DashboardViewManager getDashboardViewManager() {
-        return dashboardViewManager;
+    public DashboardListViewer getDashboardListViewer() {
+        return dashboardListViewer;
     }
 
     @Override

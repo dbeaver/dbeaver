@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
@@ -265,6 +266,10 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 */
             }
         });
+    }
+
+    public void showItem(DashboardContainer item) {
+
     }
 
     public final static class DashboardTransfer extends LocalObjectTransfer<List<Object>> {

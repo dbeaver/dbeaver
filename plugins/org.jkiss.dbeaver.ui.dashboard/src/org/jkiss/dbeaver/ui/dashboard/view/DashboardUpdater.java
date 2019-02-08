@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardViewManager;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
@@ -145,7 +145,7 @@ public class DashboardUpdater {
 
     private void getViewDashboards(DashboardView view, List<DashboardContainer> dashboards) {
         long currentTime = System.currentTimeMillis();
-        DashboardViewManager viewManager = view.getDashboardViewManager();
+        DashboardListViewer viewManager = view.getDashboardListViewer();
         if (!viewManager.getDataSourceContainer().isConnected()) {
             return;
         }

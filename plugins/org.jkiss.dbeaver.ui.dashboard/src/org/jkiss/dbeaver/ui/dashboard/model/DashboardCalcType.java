@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 public enum DashboardCalcType {
 
     value,      // Absolute value
-    delta,      // Delta between last two value
+    delta,      // Delta between last two value / number of seconds between values obtain time.
     percent,    // Percent
 
 }

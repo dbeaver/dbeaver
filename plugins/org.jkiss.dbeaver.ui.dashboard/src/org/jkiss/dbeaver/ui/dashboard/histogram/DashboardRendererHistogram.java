@@ -55,6 +55,9 @@ import java.util.List;
  */
 public class DashboardRendererHistogram implements DashboardRenderer {
 
+    private static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
+    private static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
+
     @Override
     public DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, DashboardViewConfiguration viewConfiguration, Point preferredSize) {
 
@@ -76,15 +79,15 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         histogramChart.setPadding(new RectangleInsets(0, 0, 0, 0));
         histogramChart.setTextAntiAlias(true);
         histogramChart.setBackgroundPaint(AWTUtils.makeAWTColor(UIStyles.getDefaultTextBackground()));
-        //histogramChart.getLegend().setBorder(0, 0, 0, 0);
-        //histogramChart.removeLegend();
 
-        LegendTitle legend = histogramChart.getLegend();
-        legend.setPosition(RectangleEdge.BOTTOM);
-        legend.setBorder(0, 0, 0, 0);
-        legend.setBackgroundPaint(histogramChart.getBackgroundPaint());
-        legend.setItemPaint(gridColor);
-        //legend.setAnchor(Legend.EAST);
+        {
+            LegendTitle legend = histogramChart.getLegend();
+            legend.setPosition(RectangleEdge.BOTTOM);
+            legend.setBorder(0, 0, 0, 0);
+            legend.setBackgroundPaint(histogramChart.getBackgroundPaint());
+            legend.setItemPaint(gridColor);
+            legend.setItemFont(DEFAULT_LEGEND_FONT);
+        }
 
         ChartPanel chartPanel = new ChartPanel( histogramChart );
         chartPanel.setPreferredSize( new java.awt.Dimension( preferredSize.x, preferredSize.y ) );
@@ -109,11 +112,13 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         domainAxis.setLowerMargin(0);
         domainAxis.setUpperMargin(0);
         domainAxis.setTickLabelPaint(gridColor);
+        domainAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
         plot.setDomainAxis(domainAxis);
 
         ValueAxis rangeAxis = plot.getRangeAxis();
         rangeAxis.setLabel(null);
         rangeAxis.setTickLabelPaint(gridColor);
+        rangeAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
         //rangeAxis.setLowerMargin(0.2);
         //rangeAxis.setLowerBound(.1);
 
@@ -191,16 +196,25 @@ public class DashboardRendererHistogram implements DashboardRenderer {
                         break;
                     }
                     case delta: {
+                        if (lastUpdateTime == null) {
+                            return;
+                        }
+                        //System.out.println("LAST=" + lastUpdateTime + "; CUR=" + new Date());
+                        long secondsPassed = (System.currentTimeMillis() - lastUpdateTime.getTime()) / 1000;
+                        if (secondsPassed <= 0) {
+                            secondsPassed = 1;
+                        }
                         for (DashboardDatasetRow row : rows) {
                             if (lastRow != null) {
                                 Object prevValue = lastRow.getValues()[i];
                                 Object newValue = row.getValues()[i];
                                 if (newValue instanceof Number && prevValue instanceof Number) {
-                                    double delataValue = ((Number) newValue).doubleValue() - ((Number) prevValue).doubleValue();
+                                    double deltaValue = ((Number) newValue).doubleValue() - ((Number) prevValue).doubleValue();
+                                    deltaValue /= secondsPassed;
                                     series.add(
                                         new FixedMillisecond(
                                             row.getTimestamp().getTime()),
-                                        delataValue,
+                                        deltaValue,
                                         false);
                                 }
                             }

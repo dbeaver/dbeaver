@@ -60,7 +60,7 @@ public class DashboardViewConfiguration {
         }
     }
 
-    private void saveSettings() {
+    public void saveSettings() {
         File configFile = getConfigFile();
 
         try (OutputStream out = new FileOutputStream(configFile)){
@@ -98,5 +98,14 @@ public class DashboardViewConfiguration {
 
     public void clearDashboards() {
         this.items.clear();
+    }
+
+    public void updateDashboardConfig(DashboardItemViewConfiguration config) {
+        DashboardItemViewConfiguration curConfig = getDashboardConfig(config.getDashboardDescriptor().getId());
+        if (curConfig == null) {
+            items.add(config);
+        } else {
+            curConfig.copyFrom(config);
+        }
     }
 }

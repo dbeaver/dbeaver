@@ -27,7 +27,7 @@ public class HandlerDashboardReset extends HandlerDashboardAbstract {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardView view = getActiveDashboardView(event);
         if (view != null) {
-            for (DashboardGroupContainer gc : view.getDashboardViewManager().getGroups()) {
+            for (DashboardGroupContainer gc : view.getDashboardListViewer().getGroups()) {
                 for (DashboardContainer dc : gc.getItems()) {
                     dc.resetDashboardData();
                 }
