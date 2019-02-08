@@ -30,10 +30,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -297,6 +294,7 @@ public class ResultSetViewer extends Viewer
                 });
                 Menu panelsMenu = panelsMenuManager.createContextMenu(this.panelFolder);
                 this.panelFolder.setMenu(panelsMenu);
+                this.panelFolder.addDisposeListener(e -> panelsMenuManager.dispose());
             }
 
             setEmptyPresentation();
@@ -1097,6 +1095,7 @@ public class ResultSetViewer extends Viewer
                         Point displayAt = item.getParent().toDisplay(ib.x, ib.y + ib.height);
                         swtMenu.setLocation(displayAt);
                         swtMenu.setVisible(true);
+                        tb.addDisposeListener(e -> panelMenu.dispose());
                         return;
                     }
                 }
@@ -1874,6 +1873,12 @@ public class ResultSetViewer extends Viewer
             final Menu contextMenu = menuManager.createContextMenu(getActivePresentation().getControl());
             contextMenu.setLocation(location);
             contextMenu.setVisible(true);
+            contextMenu.addMenuListener(new MenuAdapter() {
+                @Override
+                public void menuHidden(MenuEvent e) {
+                    menuManager.dispose();
+                }
+            });
         }
     }
 

@@ -82,6 +82,7 @@ public class StatisticsPresentation extends AbstractPresentation {
             });
             menuMgr.setRemoveAllWhenShown(true);
             table.setMenu(menuMgr.createContextMenu(table));
+            table.addDisposeListener(e -> menuMgr.dispose());
         }
     }
 

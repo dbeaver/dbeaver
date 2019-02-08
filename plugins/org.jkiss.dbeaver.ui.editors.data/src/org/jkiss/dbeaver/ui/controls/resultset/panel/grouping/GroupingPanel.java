@@ -229,6 +229,9 @@ public class GroupingPanel implements IResultSetPanel {
     }
 
     class DefaultSortingAction extends Action implements IMenuCreator {
+
+        private MenuManager menuManager;
+
         DefaultSortingAction() {
             super(ResultSetMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DROP_DOWN));
@@ -241,16 +244,21 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public void dispose() {
-
+            if (menuManager != null) {
+                menuManager.dispose();
+                menuManager = null;
+            }
         }
 
         @Override
         public Menu getMenu(Control parent)
         {
-            MenuManager menuManager = new MenuManager();
-            menuManager.add(new ChangeSortingAction(null));
-            menuManager.add(new ChangeSortingAction(Boolean.FALSE));
-            menuManager.add(new ChangeSortingAction(Boolean.TRUE));
+            if (menuManager == null) {
+                menuManager = new MenuManager();
+                menuManager.add(new ChangeSortingAction(null));
+                menuManager.add(new ChangeSortingAction(Boolean.FALSE));
+                menuManager.add(new ChangeSortingAction(Boolean.TRUE));
+            }
             return menuManager.createContextMenu(parent);
         }
 

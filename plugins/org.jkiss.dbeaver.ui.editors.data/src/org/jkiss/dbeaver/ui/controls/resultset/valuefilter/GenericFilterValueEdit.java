@@ -115,6 +115,7 @@ class GenericFilterValueEdit {
         });
         menuMgr.setRemoveAllWhenShown(true);
         tableViewer.getTable().setMenu(menuMgr.createContextMenu(tableViewer.getTable()));
+        tableViewer.getTable().addDisposeListener(e -> menuMgr.dispose());
     }
 
     Collection<DBDLabelValuePair> getMultiValues() {

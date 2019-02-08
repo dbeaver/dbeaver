@@ -149,45 +149,42 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     {
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(infoTable);
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
-                IAction copyAction = new Action(WorkbenchMessages.Workbench_copy) {
-                    @Override
-                    public void run()
-                    {
-                        copySelectionToClipboard();
-                    }
-                };
-                copyAction.setEnabled(infoTable.getSelectionCount() > 0);
-                copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+        menuMgr.addMenuListener(manager -> {
+            IAction copyAction = new Action(WorkbenchMessages.Workbench_copy) {
+                @Override
+                public void run()
+                {
+                    copySelectionToClipboard();
+                }
+            };
+            copyAction.setEnabled(infoTable.getSelectionCount() > 0);
+            copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
-                IAction selectAllAction = new Action(WorkbenchMessages.Workbench_selectAll) {
-                    @Override
-                    public void run()
-                    {
-                        infoTable.selectAll();
-                    }
-                };
-                selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
+            IAction selectAllAction = new Action(WorkbenchMessages.Workbench_selectAll) {
+                @Override
+                public void run()
+                {
+                    infoTable.selectAll();
+                }
+            };
+            selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
 
-                IAction clearLogAction = new Action(WorkbenchMessages.Workbench_revert) {
-                    @Override
-                    public void run()
-                    {
-                        infoTable.removeAll();
-                    }
-                };
+            IAction clearLogAction = new Action(WorkbenchMessages.Workbench_revert) {
+                @Override
+                public void run()
+                {
+                    infoTable.removeAll();
+                }
+            };
 
-                manager.add(copyAction);
-                manager.add(selectAllAction);
-                manager.add(clearLogAction);
-                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-            }
+            manager.add(copyAction);
+            manager.add(selectAllAction);
+            manager.add(clearLogAction);
+            //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         });
         menuMgr.setRemoveAllWhenShown(true);
         infoTable.setMenu(menu);
+        infoTable.addDisposeListener(e -> menuMgr.dispose());
     }
 
     public void copySelectionToClipboard()

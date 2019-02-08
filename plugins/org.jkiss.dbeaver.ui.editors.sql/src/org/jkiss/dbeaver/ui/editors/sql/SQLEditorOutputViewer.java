@@ -123,6 +123,7 @@ public class SQLEditorOutputViewer extends Composite {
         });
         menuMgr.setRemoveAllWhenShown(true);
         text.setMenu(menuMgr.createContextMenu(text));
+        text.addDisposeListener(e -> menuMgr.dispose());
     }
 
     void clearOutput() {

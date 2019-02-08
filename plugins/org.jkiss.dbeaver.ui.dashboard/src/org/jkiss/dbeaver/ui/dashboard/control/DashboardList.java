@@ -65,6 +65,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         layout.wrap = true;
         layout.justify = false;
         this.setLayout(layout);
+
+        //setMenu();
     }
 
     DBPDataSourceContainer getDataSourceContainer() {
