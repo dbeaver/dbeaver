@@ -78,10 +78,11 @@ public class DashboardChartConfigDialog extends BaseDialog {
             typeCombo.add(dashboardConfig.getDashboardDescriptor().getType().getTitle());
             typeCombo.select(0);
             UIUtils.createLabelText(infoGroup, "Calc type", dashboardConfig.getDashboardDescriptor().getCalcType().name(), SWT.BORDER | SWT.READ_ONLY);
+            UIUtils.createLabelText(infoGroup, "Value type", dashboardConfig.getDashboardDescriptor().getValueType().name(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(infoGroup, "Fetch type", dashboardConfig.getDashboardDescriptor().getFetchType().name(), SWT.BORDER | SWT.READ_ONLY);
 
             Composite btnGroup = UIUtils.createComposite(infoGroup, 1);
-            btnGroup.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 4, 1));
+            btnGroup.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 2, 1));
             Button queriesButton = new Button(btnGroup, SWT.PUSH);
             queriesButton.setText("SQL Queries ...");
             queriesButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));

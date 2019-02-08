@@ -38,6 +38,8 @@ public interface DashboardContainer {
 
     DashboardCalcType getDashboardCalcType();
 
+    DashboardValueType getDashboardValueType();
+
     DashboardFetchType getDashboardFetchType();
 
     /**
