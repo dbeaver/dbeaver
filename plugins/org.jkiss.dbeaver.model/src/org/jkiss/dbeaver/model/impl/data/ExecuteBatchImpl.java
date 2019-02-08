@@ -122,7 +122,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             boolean[] nulls = new boolean[attributes.length];
             int statementsInBatch = 0;
 
-            for (Object[] rowValues : values) {
+            for (int rowIndex = 0; rowIndex < values.size(); rowIndex++) {
+                Object[] rowValues = values.get(rowIndex);
                 if (session.getProgressMonitor().isCanceled()) {
                     break;
                 }
