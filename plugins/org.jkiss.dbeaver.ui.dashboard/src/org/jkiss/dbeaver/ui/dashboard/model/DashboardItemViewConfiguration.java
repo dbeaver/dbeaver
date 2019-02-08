@@ -17,26 +17,22 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLBuilder;
+
+import java.io.IOException;
 
 public class DashboardItemViewConfiguration {
     private DashboardDescriptor dashboardDescriptor;
 
-    private String description;
     private float widthRatio;
     private long updatePeriod;
     private int maxItems;
     private long maxAge;
+    private String description;
 
     public DashboardDescriptor getDashboardDescriptor() {
         return dashboardDescriptor;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public float getWidthRatio() {
@@ -71,26 +67,44 @@ public class DashboardItemViewConfiguration {
         this.maxAge = maxAge;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     DashboardItemViewConfiguration(DashboardDescriptor dashboardDescriptor) {
         this.dashboardDescriptor = dashboardDescriptor;
-        this.description = dashboardDescriptor.getDescription();
         this.widthRatio = dashboardDescriptor.getWidthRatio();
         this.updatePeriod = dashboardDescriptor.getUpdatePeriod();
         this.maxItems = dashboardDescriptor.getMaxItems();
         this.maxAge = dashboardDescriptor.getMaxAge();
+        this.description = dashboardDescriptor.getDescription();
     }
 
     public DashboardItemViewConfiguration(DashboardItemViewConfiguration source) {
         copyFrom(source);
     }
 
-    public void copyFrom(DashboardItemViewConfiguration source) {
+    void copyFrom(DashboardItemViewConfiguration source) {
         this.dashboardDescriptor = source.dashboardDescriptor;
-        this.description = source.description;
         this.widthRatio = source.widthRatio;
         this.updatePeriod = source.updatePeriod;
         this.maxItems = source.maxItems;
         this.maxAge = source.maxAge;
+        this.description = source.description;
     }
 
+    void serialize(XMLBuilder xml) throws IOException {
+        xml.addAttribute("dashboard", dashboardDescriptor.getId());
+        xml.addAttribute("widthRatio", widthRatio);
+        xml.addAttribute("updatePeriod", updatePeriod);
+        xml.addAttribute("maxItems", maxItems);
+        xml.addAttribute("maxAge", maxAge);
+        if (!CommonUtils.isEmpty(description)) {
+            xml.addAttribute("description", description);
+        }
+    }
 }

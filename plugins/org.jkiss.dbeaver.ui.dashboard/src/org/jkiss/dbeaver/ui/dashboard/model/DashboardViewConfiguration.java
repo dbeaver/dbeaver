@@ -65,14 +65,15 @@ public class DashboardViewConfiguration {
 
         try (OutputStream out = new FileOutputStream(configFile)){
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
+            xml.setButify(true);
             xml.startElement("dashboards");
             for (DashboardItemViewConfiguration itemConfig : items) {
                 xml.startElement("dashboard");
-                //itemConfig.serialize(xml);
+                itemConfig.serialize(xml);
                 xml.endElement();
             }
             xml.endElement();
-            out.flush();
+            xml.flush();
         } catch (Exception e) {
             log.error("Error saving dashboard view configuration", e);
         }
