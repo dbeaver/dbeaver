@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
@@ -37,12 +38,14 @@ import java.util.List;
 
 public class DashboardListViewer extends StructuredViewer implements DBPEventListener, IDataSourceContainerProvider, DashboardViewContainer {
 
+    private final IWorkbenchSite site;
     private final DBPDataSourceContainer dataSourceContainer;
     private final DashboardViewConfiguration viewConfiguration;
     private DashboardList dashContainer;
     //private CLabel statusLabel;
 
-    public DashboardListViewer(DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
+    public DashboardListViewer(IWorkbenchSite site, DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
+        this.site = site;
         this.dataSourceContainer = dataSourceContainer;
         this.dataSourceContainer.getRegistry().addDataSourceListener(this);
 
@@ -75,7 +78,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
     public void createControl(Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
 
-        dashContainer = new DashboardList(composite, this);
+        dashContainer = new DashboardList(site, composite, this);
         dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 //        statusLabel = new CLabel(composite, SWT.NONE);
@@ -110,6 +113,11 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
     @Override
     public DashboardViewConfiguration getViewConfiguration() {
         return viewConfiguration;
+    }
+
+    @Override
+    public IWorkbenchSite getSite() {
+        return site;
     }
 
     @Override

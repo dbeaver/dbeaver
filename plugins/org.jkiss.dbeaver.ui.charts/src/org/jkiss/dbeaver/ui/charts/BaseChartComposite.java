@@ -67,12 +67,7 @@ public class BaseChartComposite extends ChartComposite {
         fillContextMenu(manager);
 
         Menu contextMenu = manager.createContextMenu(this);
-        contextMenu.addMenuListener(new MenuAdapter() {
-            @Override
-            public void menuHidden(MenuEvent e) {
-                manager.dispose();
-            }
-        });
+        addDisposeListener(e -> manager.dispose());
         return contextMenu;
     }
 

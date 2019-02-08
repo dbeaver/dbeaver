@@ -32,4 +32,8 @@ public class DashboardConstants {
     public static final double DEF_DASHBOARD_WIDTH_RATIO = 1.5;
     public static final DashboardCalcType DEF_DASHBOARD_CALC_TYPE = DashboardCalcType.value;
     public static final DashboardFetchType DEF_DASHBOARD_FETCH_TYPE = DashboardFetchType.columns;
+
+    public static final String CMD_ADD_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.add";
+    public static final String CMD_REMOVE_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.remove";
+    public static final String CMD_RESET_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.reset";
 }

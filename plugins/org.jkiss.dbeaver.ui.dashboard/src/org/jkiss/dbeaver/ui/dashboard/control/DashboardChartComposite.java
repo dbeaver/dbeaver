@@ -17,12 +17,18 @@
 
 package org.jkiss.dbeaver.ui.dashboard.control;
 
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.charts.BaseChartComposite;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardChartConfigDialog;
 
 /**
@@ -30,17 +36,29 @@ import org.jkiss.dbeaver.ui.dashboard.view.DashboardChartConfigDialog;
  */
 public class DashboardChartComposite extends BaseChartComposite {
 
+    private final DashboardViewContainer viewContainer;
     private final DashboardContainer dashboardContainer;
-    private final DashboardViewConfiguration viewConfiguration;
 
-    public DashboardChartComposite(DashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration, Composite parent, int style, Point preferredSize) {
+    public DashboardChartComposite(DashboardContainer dashboardContainer, DashboardViewContainer viewContainer, Composite parent, int style, Point preferredSize) {
         super(parent, style, preferredSize);
         this.dashboardContainer = dashboardContainer;
-        this.viewConfiguration = viewConfiguration;
+        this.viewContainer = viewContainer;
+    }
+
+    @Override
+    protected void fillContextMenu(MenuManager manager) {
+        super.fillContextMenu(manager);
+        manager.add(new Separator());
+        manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_ADD_DASHBOARD));
+        manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_REMOVE_DASHBOARD));
+        manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_RESET_DASHBOARD));
     }
 
     protected boolean showChartConfigDialog() {
-        DashboardChartConfigDialog dialog = new DashboardChartConfigDialog(this.getShell(), dashboardContainer, viewConfiguration);
+        DashboardChartConfigDialog dialog = new DashboardChartConfigDialog(
+            this.getShell(),
+            dashboardContainer,
+            viewContainer.getViewConfiguration());
         return dialog.open() == IDialogConstants.OK_ID;
     }
 
