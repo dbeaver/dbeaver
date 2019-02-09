@@ -86,7 +86,11 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
 
         updateStatus();
 
-        dashContainer.createDefaultDashboards();
+        if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
+            dashContainer.createDefaultDashboards();
+        } else {
+            dashContainer.createDashboardsFromConfiguration();
+        }
     }
 
     private void updateStatus() {
@@ -102,7 +106,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
 
     @Override
     public List<? extends DashboardGroupContainer> getGroups() {
-        return Collections.singletonList(dashContainer);
+        return dashContainer == null ? Collections.emptyList() : Collections.singletonList(dashContainer);
     }
 
     @Override

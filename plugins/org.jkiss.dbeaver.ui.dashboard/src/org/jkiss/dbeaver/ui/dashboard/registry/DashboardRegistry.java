@@ -124,7 +124,7 @@ public class DashboardRegistry {
         return new ArrayList<>(dashboardList.values());
     }
 
-    public DashboardDescriptor getDashboards(String id) {
+    public DashboardDescriptor getDashboard(String id) {
         return dashboardList.get(id);
     }
 
