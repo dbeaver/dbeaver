@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
@@ -64,6 +65,9 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         addDisposeListener(e -> {
             boldFont.dispose();
         });
+
+        this.setForeground(UIStyles.getDefaultTextForeground());
+        this.setBackground(UIStyles.getDefaultTextBackground());
 
         RowLayout layout = new RowLayout();
         layout.spacing = getItemSpacing();

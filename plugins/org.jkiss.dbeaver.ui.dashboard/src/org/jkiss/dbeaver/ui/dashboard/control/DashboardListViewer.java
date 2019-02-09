@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
@@ -76,10 +79,21 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
     }
 
     public void createControl(Composite parent) {
-        Composite composite = UIUtils.createComposite(parent, 1);
+        ScrolledComposite composite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
 
         dashContainer = new DashboardList(site, composite, this);
-        dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+        //dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        composite.setContent(this.dashContainer);
+        composite.setExpandHorizontal( true );
+        composite.setExpandVertical( true );
+        composite.setMinSize( 10, 10 );
+
+        composite.addListener( SWT.Resize, event -> {
+            composite.setMinHeight(10);
+            int width = composite.getClientArea().width;
+            composite.setMinHeight( parent.computeSize( width, SWT.DEFAULT ).y );
+        } );
 
 //        statusLabel = new CLabel(composite, SWT.NONE);
 //        statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

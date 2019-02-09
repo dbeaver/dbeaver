@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -28,6 +29,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
@@ -58,19 +60,22 @@ public class DashboardItem extends Composite implements DashboardContainer {
         layout.horizontalSpacing = 0;
         this.setLayout(layout);
 
+        Color defFG = UIStyles.getDefaultTextForeground();
+        Color defBG = UIStyles.getDefaultTextBackground();
+        this.setForeground(defFG);
+        this.setBackground(defBG);
+
         {
             Composite titleComposite = new Composite(this, SWT.NONE);
             titleComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            titleComposite.setBackground(defBG);
+            titleComposite.setForeground(defFG);
             FillLayout fillLayout = new FillLayout();
             fillLayout.marginHeight = 3;
             fillLayout.marginWidth = 3;
             titleComposite.setLayout(fillLayout);
             titleLabel = new Label(titleComposite, SWT.NONE);
             titleLabel.setFont(parent.getTitleFont());
-            //GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            //titleLabel.setLayoutData(gd);
-            //titleLabel.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_FOREGROUND));
-            //titleLabel.setBackground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
             titleLabel.setText("  " + dashboardConfig.getDashboardDescriptor().getName());
         }
 
@@ -154,7 +159,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
         int defHeight = getDefaultHeight();
         int defWidth = getDefaultWidth();
-        Point areaSize = groupContainer.getSize();
+        Point areaSize = groupContainer.getParent().getSize();
         if (areaSize.x <= 0 || areaSize.y <= 0) {
             return new Point(defWidth, defHeight);
         }
