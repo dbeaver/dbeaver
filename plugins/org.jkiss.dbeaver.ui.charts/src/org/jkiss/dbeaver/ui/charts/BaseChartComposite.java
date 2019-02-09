@@ -72,10 +72,22 @@ public class BaseChartComposite extends ChartComposite {
     }
 
     protected void fillContextMenu(MenuManager manager) {
-        manager.add(new Action("Settings ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+        manager.add(new Action("Zoom In", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
             @Override
-            public void run() {
-                showChartConfigDialog();
+            public void runWithEvent(Event e) {
+                zoomInBoth(e.x, e.y);
+            }
+        });
+        manager.add(new Action("Zoom Out", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
+            @Override
+            public void runWithEvent(Event e) {
+                zoomOutBoth(e.x, e.y);
+            }
+        });
+        manager.add(new Action("Zoom Reset", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
+            @Override
+            public void runWithEvent(Event e) {
+                restoreAutoBounds();
             }
         });
         manager.add(new Separator());
@@ -95,23 +107,13 @@ public class BaseChartComposite extends ChartComposite {
                 createChartPrintJob();
             }
         });
+
         manager.add(new Separator());
-        manager.add(new Action("Zoom In", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
+
+        manager.add(new Action("Settings ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
             @Override
-            public void runWithEvent(Event e) {
-                zoomInBoth(e.x, e.y);
-            }
-        });
-        manager.add(new Action("Zoom Out", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
-            @Override
-            public void runWithEvent(Event e) {
-                zoomOutBoth(e.x, e.y);
-            }
-        });
-        manager.add(new Action("Zoom Reset", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
-            @Override
-            public void runWithEvent(Event e) {
-                restoreAutoBounds();
+            public void run() {
+                showChartConfigDialog();
             }
         });
 
