@@ -303,6 +303,15 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
+    public void updateDashboardView() {
+        UIUtils.asyncExec(() -> {
+            if (renderer != null) {
+                renderer.updateDashboardView(this);
+            }
+        });
+    }
+
+    @Override
     public long getUpdatePeriod() {
         return dashboardConfig.getUpdatePeriod();
     }

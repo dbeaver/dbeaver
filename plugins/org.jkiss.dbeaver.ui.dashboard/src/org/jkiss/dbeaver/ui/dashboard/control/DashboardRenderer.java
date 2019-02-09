@@ -38,6 +38,8 @@ public interface DashboardRenderer {
 
     void resetDashboardData(DashboardContainer dashboardItem, Date lastUpdateTime);
 
+    void updateDashboardView(DashboardItem dashboardItem);
+
     void disposeDashboard(DashboardContainer container);
 
 }

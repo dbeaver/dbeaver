@@ -134,13 +134,13 @@ public class DashboardChartConfigDialog extends BaseDialog {
         }
 
         {
-            Group updateGroup = UIUtils.createControlGroup(composite, "Dashboard view", 2, GridData.FILL_HORIZONTAL, 0);
+            Group viewGroup = UIUtils.createControlGroup(composite, "Dashboard view", 2, GridData.FILL_HORIZONTAL, 0);
 
-            Text widthRatioText = UIUtils.createLabelText(updateGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            Text widthRatioText = UIUtils.createLabelText(viewGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             widthRatioText.addModifyListener(e -> {
                 dashboardConfig.setWidthRatio((float) CommonUtils.toDouble(widthRatioText.getText(), dashboardConfig.getWidthRatio()));
             });
-            Text descriptionText = UIUtils.createLabelText(updateGroup, "Description", CommonUtils.notEmpty(dashboardConfig.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            Text descriptionText = UIUtils.createLabelText(viewGroup, "Description", CommonUtils.notEmpty(dashboardConfig.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             descriptionText.addModifyListener(e -> {
                 dashboardConfig.setDescription(widthRatioText.getText());
             });
@@ -148,6 +148,29 @@ public class DashboardChartConfigDialog extends BaseDialog {
             gd.widthHint = 200;
             gd.heightHint = 50;
             descriptionText.setLayoutData(gd);
+
+            UIUtils.createCheckbox(viewGroup, "Show legend", "Show dashboard chart legend", dashboardConfig.isLegendVisible(), 2)
+                .addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dashboardConfig.setLegendVisible(((Button)e.widget).getSelection());
+                    }
+                });
+            UIUtils.createCheckbox(viewGroup, "Show domain axis", "Show domain (horizontal) axis", dashboardConfig.isDomainTicksVisible(), 2)
+                .addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dashboardConfig.setDomainTicksVisible(((Button)e.widget).getSelection());
+                    }
+                });
+            UIUtils.createCheckbox(viewGroup, "Show range axis", "Show range (vertical) axis", dashboardConfig.isDomainTicksVisible(), 2)
+                .addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dashboardConfig.setRangeTicksVisible(((Button)e.widget).getSelection());
+                    }
+                });
+
         }
 
         return parent;

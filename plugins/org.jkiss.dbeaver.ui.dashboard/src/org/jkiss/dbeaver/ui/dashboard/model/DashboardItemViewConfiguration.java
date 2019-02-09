@@ -31,6 +31,9 @@ public class DashboardItemViewConfiguration {
     private long updatePeriod;
     private int maxItems;
     private long maxAge;
+    private boolean legendVisible;
+    private boolean domainTicksVisible;
+    private boolean rangeTicksVisible;
     private String description;
 
     public DashboardDescriptor getDashboardDescriptor() {
@@ -77,6 +80,30 @@ public class DashboardItemViewConfiguration {
         this.index = index;
     }
 
+    public boolean isLegendVisible() {
+        return legendVisible;
+    }
+
+    public void setLegendVisible(boolean legendVisible) {
+        this.legendVisible = legendVisible;
+    }
+
+    public boolean isDomainTicksVisible() {
+        return domainTicksVisible;
+    }
+
+    public void setDomainTicksVisible(boolean domainTicksVisible) {
+        this.domainTicksVisible = domainTicksVisible;
+    }
+
+    public boolean isRangeTicksVisible() {
+        return rangeTicksVisible;
+    }
+
+    public void setRangeTicksVisible(boolean rangeTicksVisible) {
+        this.rangeTicksVisible = rangeTicksVisible;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -92,6 +119,11 @@ public class DashboardItemViewConfiguration {
         this.updatePeriod = dashboardDescriptor.getUpdatePeriod();
         this.maxItems = dashboardDescriptor.getMaxItems();
         this.maxAge = dashboardDescriptor.getMaxAge();
+
+        this.legendVisible = true;
+        this.domainTicksVisible = true;
+        this.rangeTicksVisible = true;
+
         this.description = dashboardDescriptor.getDescription();
     }
 
@@ -106,6 +138,11 @@ public class DashboardItemViewConfiguration {
         this.updatePeriod = source.updatePeriod;
         this.maxItems = source.maxItems;
         this.maxAge = source.maxAge;
+
+        this.legendVisible = source.legendVisible;
+        this.domainTicksVisible = source.domainTicksVisible;
+        this.rangeTicksVisible = source.rangeTicksVisible;
+
         this.description = source.description;
     }
 
@@ -116,6 +153,11 @@ public class DashboardItemViewConfiguration {
         xml.addAttribute("updatePeriod", updatePeriod);
         xml.addAttribute("maxItems", maxItems);
         xml.addAttribute("maxAge", maxAge);
+
+        xml.addAttribute("legendVisible", legendVisible);
+        xml.addAttribute("domainTicksVisible", domainTicksVisible);
+        xml.addAttribute("rangeTicksVisible", rangeTicksVisible);
+
         if (!CommonUtils.isEmpty(description)) {
             xml.addAttribute("description", description);
         }
@@ -129,6 +171,11 @@ public class DashboardItemViewConfiguration {
         this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"), dashboardDescriptor.getUpdatePeriod());
         this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"), dashboardDescriptor.getMaxItems());
         this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"), dashboardDescriptor.getMaxAge());
+
+        legendVisible = CommonUtils.getBoolean(element.getAttribute("legendVisible"), true);
+        domainTicksVisible = CommonUtils.getBoolean(element.getAttribute("domainTicksVisible"), true);
+        rangeTicksVisible = CommonUtils.getBoolean(element.getAttribute("rangeTicksVisible"), true);
+
         this.description = element.getAttribute("description");
     }
 
