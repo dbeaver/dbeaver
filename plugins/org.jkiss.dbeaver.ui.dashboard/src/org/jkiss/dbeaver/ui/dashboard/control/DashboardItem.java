@@ -118,6 +118,13 @@ public class DashboardItem extends Composite implements DashboardContainer {
                 }
             });
 
+            chartCanvas.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    groupContainer.handleKeyEvent(e);
+                }
+            });
+
             dashboardControl.addDisposeListener(e -> renderer.disposeDashboard(DashboardItem.this));
         }
 

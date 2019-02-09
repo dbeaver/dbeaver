@@ -31,4 +31,5 @@ public interface DashboardGroupContainer {
 
     void addItem(String dashboardId);
 
+    void selectItem(DashboardContainer item);
 }

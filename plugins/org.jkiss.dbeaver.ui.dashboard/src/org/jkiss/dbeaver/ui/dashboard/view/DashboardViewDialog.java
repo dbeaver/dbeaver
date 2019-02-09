@@ -90,6 +90,8 @@ public class DashboardViewDialog extends BaseDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+
+        UIUtils.asyncExec(() -> getButton(IDialogConstants.OK_ID).setFocus());
     }
 
 }
