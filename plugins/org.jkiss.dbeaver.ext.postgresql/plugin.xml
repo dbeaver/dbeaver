@@ -630,30 +630,30 @@
 
     <extension point="org.jkiss.dbeaver.dashboard">
 
-        <dashboard id="postgresql.sessionCount" label="Server sessions" type="histogram" group="Standard" updatePeriod="2000" calc="value" value="integer" fetch="columns" showByDefault="true">
+        <dashboard id="postgresql.sessionCount" label="Server sessions" type="histogram" group="Standard" updatePeriod="2000" calc="value" value="integer" fetch="columns" showByDefault="true" description="Shows active/idle server sessions">
             <datasource id="postgresql"/>
             <query>
-                SELECT
-                (SELECT count(*) AS "Active" FROM pg_catalog.pg_stat_activity sa WHERE state='active'),
-                (SELECT count(*) as "Idle" FROM pg_catalog.pg_stat_activity sa WHERE state='idle'),
-                (SELECT count(*) as "Total" FROM pg_catalog.pg_stat_activity sa)
+SELECT
+    (SELECT count(*) AS "Active" FROM pg_catalog.pg_stat_activity sa WHERE state='active'),
+    (SELECT count(*) as "Idle" FROM pg_catalog.pg_stat_activity sa WHERE state='idle'),
+    (SELECT count(*) as "Total" FROM pg_catalog.pg_stat_activity sa)
             </query>
         </dashboard>
-        <dashboard id="postgresql.transactionCount" label="Transactions per second" group="Standard" type="histogram" updatePeriod="2000" calc="delta" value="integer" fetch="columns" showByDefault="true">
+        <dashboard id="postgresql.transactionCount" label="Transactions per second" group="Standard" type="histogram" updatePeriod="2000" calc="delta" value="integer" fetch="columns" showByDefault="true" description="Shows commit/rollback transactions per second">
             <datasource id="postgresql"/>
             <query>
-                SELECT
-                (SELECT sum(xact_commit) + sum(xact_rollback) AS "Total" FROM pg_stat_database),
-                (SELECT sum(xact_commit) AS "Commit" FROM pg_stat_database),
-                (SELECT sum(xact_rollback) AS "Rollback" FROM pg_stat_database)
+SELECT
+    (SELECT sum(xact_commit) + sum(xact_rollback) AS "Total" FROM pg_stat_database),
+    (SELECT sum(xact_commit) AS "Commit" FROM pg_stat_database),
+    (SELECT sum(xact_rollback) AS "Rollback" FROM pg_stat_database)
             </query>
         </dashboard>
-        <dashboard id="postgresql.blockIO" label="Block IO" group="Standard" type="histogram" updatePeriod="2000" calc="delta" value="integer" fetch="columns" showByDefault="true">
+        <dashboard id="postgresql.blockIO" label="Block IO" group="Standard" type="histogram" updatePeriod="2000" calc="delta" value="integer" fetch="columns" showByDefault="true" description="Shows blocking IO operations per second">
             <datasource id="postgresql"/>
             <query>
-                SELECT
-                    (SELECT sum(blks_read) as "Read" FROM pg_stat_database),
-                    (SELECT sum(blks_hit) as "Hits" FROM pg_stat_database)
+SELECT
+    (SELECT sum(blks_read) as "Read" FROM pg_stat_database),
+    (SELECT sum(blks_hit) as "Hits" FROM pg_stat_database)
             </query>
         </dashboard>
 

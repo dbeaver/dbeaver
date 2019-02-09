@@ -105,6 +105,27 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         return items;
     }
 
+    @Override
+    public void removeItem(DashboardContainer container) {
+        DashboardItem item = (DashboardItem) container;
+        item.dispose();
+        layout(true, true);
+        viewContainer.getViewConfiguration().removeDashboard(item.getDashboardId());
+        viewContainer.getViewConfiguration().saveSettings();
+    }
+
+    @Override
+    public void addItem(String dashboardId) {
+        DashboardDescriptor dashboardDescriptor = DashboardRegistry.getInstance().getDashboard(dashboardId);
+        if (dashboardDescriptor == null) {
+            return;
+        }
+        viewContainer.getViewConfiguration().readDashboardConfiguration(dashboardDescriptor);
+        new DashboardItem(this, dashboardId);
+        viewContainer.getViewConfiguration().saveSettings();
+        layout(true, true);
+    }
+
     void createDefaultDashboards() {
         List<DashboardDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(
             viewContainer.getDataSourceContainer(), true);

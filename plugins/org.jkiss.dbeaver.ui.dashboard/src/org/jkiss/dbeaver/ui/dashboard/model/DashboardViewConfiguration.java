@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
@@ -42,11 +43,17 @@ public class DashboardViewConfiguration {
 
     private String viewId;
 
+    private final DBPDataSourceContainer dataSourceContainer;
     private List<DashboardItemViewConfiguration> items = new ArrayList<>();
 
-    public DashboardViewConfiguration(String viewId) {
+    public DashboardViewConfiguration(DBPDataSourceContainer dataSourceContainer, String viewId) {
+        this.dataSourceContainer = dataSourceContainer;
         this.viewId = viewId;
         loadSettings();
+    }
+
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
     }
 
     public List<DashboardItemViewConfiguration> getDashboardItemConfigs() {
@@ -74,7 +81,7 @@ public class DashboardViewConfiguration {
 
     public void removeDashboard(String dashboardId) {
         int decValue = 0;
-        for (int i = 0; i < items.size(); i++) {
+        for (int i = 0; i < items.size(); ) {
             DashboardItemViewConfiguration item = items.get(i);
             if (item.getDashboardDescriptor().getId().equals(dashboardId)) {
                 items.remove(i);

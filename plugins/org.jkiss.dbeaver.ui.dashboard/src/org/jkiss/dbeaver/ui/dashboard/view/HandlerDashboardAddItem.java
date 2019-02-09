@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 
 public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
 
@@ -27,9 +28,13 @@ public class HandlerDashboardAddItem extends HandlerDashboardAbstract {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardView view = getActiveDashboardView(event);
         if (view != null) {
-            DashboardAddDialog addDialog = new DashboardAddDialog(HandlerUtil.getActiveShell(event));
+            DashboardAddDialog addDialog = new DashboardAddDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
             if (addDialog.open() == IDialogConstants.OK_ID) {
-
+                DashboardDescriptor selectedDashboard = addDialog.getSelectedDashboard();
+                if (selectedDashboard != null) {
+                    view.getConfiguration().readDashboardConfiguration(selectedDashboard);
+                    view.getDashboardListViewer().getDefaultGroup().addItem(selectedDashboard.getId());
+                }
             }
         }
         return null;

@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-
 import java.util.List;
 
 /**
@@ -28,5 +26,9 @@ public interface DashboardGroupContainer {
     DashboardViewContainer getView();
 
     List<? extends DashboardContainer> getItems();
+
+    void removeItem(DashboardContainer item);
+
+    void addItem(String dashboardId);
 
 }

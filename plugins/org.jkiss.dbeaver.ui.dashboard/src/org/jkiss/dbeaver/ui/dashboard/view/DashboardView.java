@@ -39,6 +39,10 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         super();
     }
 
+    public DashboardViewConfiguration getConfiguration() {
+        return configuration;
+    }
+
     @Override
     public void createPartControl(Composite parent) {
         String secondaryId = getViewSite().getSecondaryId();
@@ -55,7 +59,7 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         }
         setPartName(dataSource.getName());
 
-        configuration = new DashboardViewConfiguration(secondaryId);
+        configuration = new DashboardViewConfiguration(dataSource, secondaryId);
         dashboardListViewer = new DashboardListViewer(getSite(), dataSource, configuration);
         dashboardListViewer.createControl(parent);
 
