@@ -63,6 +63,8 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         dashboardListViewer = new DashboardListViewer(getSite(), dataSource, configuration);
         dashboardListViewer.createControl(parent);
 
+        dashboardListViewer.createDashboardsFromConfiguration();
+
         getSite().setSelectionProvider(dashboardListViewer);
     }
 

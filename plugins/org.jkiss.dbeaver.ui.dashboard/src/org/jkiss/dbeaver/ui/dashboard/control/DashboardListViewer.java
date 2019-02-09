@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
@@ -45,6 +44,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
     private final DBPDataSourceContainer dataSourceContainer;
     private final DashboardViewConfiguration viewConfiguration;
     private DashboardList dashContainer;
+    private boolean singleChartMode;
     //private CLabel statusLabel;
 
     public DashboardListViewer(IWorkbenchSite site, DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
@@ -66,6 +66,15 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
     }
 
     @Override
+    public boolean isSingleChartMode() {
+        return singleChartMode;
+    }
+
+    public void setSingleChartMode(boolean singleChartMode) {
+        this.singleChartMode = singleChartMode;
+    }
+
+    @Override
     public void handleDataSourceEvent(DBPEvent event) {
         if (event.getObject() != dataSourceContainer) {
             return;
@@ -79,27 +88,41 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
     }
 
     public void createControl(Composite parent) {
-        ScrolledComposite composite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+        Composite composite;
+        if (singleChartMode) {
+            composite = UIUtils.createPlaceholder(parent, 1);
+            composite.setLayout(new FillLayout());
+        } else {
+            ScrolledComposite sComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+            sComposite.setExpandHorizontal( true );
+            sComposite.setExpandVertical( true );
+            sComposite.setMinSize( 10, 10 );
+
+            sComposite.addListener( SWT.Resize, event -> {
+                sComposite.setMinHeight(10);
+                int width = sComposite.getClientArea().width;
+                sComposite.setMinHeight( parent.computeSize( width, SWT.DEFAULT ).y );
+            } );
+
+            composite = sComposite;
+        }
 
         dashContainer = new DashboardList(site, composite, this);
+
+        if (!singleChartMode) {
+            ((ScrolledComposite)composite).setContent(this.dashContainer);
+        }
+
         //dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        composite.setContent(this.dashContainer);
-        composite.setExpandHorizontal( true );
-        composite.setExpandVertical( true );
-        composite.setMinSize( 10, 10 );
-
-        composite.addListener( SWT.Resize, event -> {
-            composite.setMinHeight(10);
-            int width = composite.getClientArea().width;
-            composite.setMinHeight( parent.computeSize( width, SWT.DEFAULT ).y );
-        } );
 
 //        statusLabel = new CLabel(composite, SWT.NONE);
 //        statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         updateStatus();
 
+    }
+
+    public void createDashboardsFromConfiguration() {
         if (viewConfiguration.getDashboardItemConfigs().isEmpty()) {
             dashContainer.createDefaultDashboards();
         } else {
