@@ -194,7 +194,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 }
                 activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
             }
-            if (part.getAdapter(SQLEditorBase.class) != null) {
+            if (part instanceof SQLEditorBase || part.getAdapter(SQLEditorBase.class) != null) {
                 if (activationSQL != null) {
                     //log.debug("Double activation of SQL context");
                     contextService.deactivateContext(activationSQL);
