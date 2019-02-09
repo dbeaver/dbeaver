@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.*;
@@ -90,6 +92,49 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 setFocus();
             }
         });
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                handleKeyEvent(e);
+            }
+        });
+    }
+
+    void handleKeyEvent(KeyEvent e) {
+        switch (e.keyCode) {
+            case SWT.CR:
+                ActionUtils.runCommand(DashboardConstants.CMD_VIEW_DASHBOARD, DashboardList.this.site);
+                break;
+            case SWT.ARROW_LEFT:
+            case SWT.ARROW_UP:
+                moveSelection(-1);
+                break;
+            case SWT.ARROW_RIGHT:
+            case SWT.ARROW_DOWN:
+                moveSelection(1);
+                break;
+        }
+    }
+
+    private void moveSelection(int delta) {
+        if (items.isEmpty()) {
+            return;
+        }
+        if (selectedItem == null) {
+            setSelection(items.get(0));
+        } else {
+            int curIndex = items.indexOf(selectedItem);
+            curIndex += delta;
+            if (curIndex < 0) {
+                curIndex = items.size() - 1;
+            } else if (curIndex >= items.size()) {
+                curIndex = 0;
+            }
+            DashboardItem newSelection = items.get(curIndex);
+            newSelection.getDashboardControl().setFocus();
+            setSelection(newSelection);
+            newSelection.redraw();
+        }
     }
 
     private void registerContextMenu() {
@@ -133,6 +178,12 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         new DashboardItem(this, dashboardId);
         viewContainer.getViewConfiguration().saveSettings();
         layout(true, true);
+    }
+
+    @Override
+    public void selectItem(DashboardContainer item) {
+        setSelection((DashboardItem) item);
+        item.getDashboardControl().setFocus();
     }
 
     void createDefaultDashboards() {

@@ -25,8 +25,12 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 public class DashboardView extends ViewPart implements IDataSourceContainerProvider {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
@@ -70,7 +74,13 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
 
     @Override
     public void setFocus() {
-
+        if (dashboardListViewer != null) {
+            DashboardGroupContainer group = dashboardListViewer.getDefaultGroup();
+            List<? extends DashboardContainer> items = group.getItems();
+            if (!items.isEmpty()) {
+                group.selectItem(items.get(0));
+            }
+        }
     }
 
     @Override
