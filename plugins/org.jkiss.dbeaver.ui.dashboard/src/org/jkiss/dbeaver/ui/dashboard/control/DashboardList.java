@@ -144,7 +144,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     public void setSelection(DashboardItem selection) {
         DashboardItem oldSelection = this.selectedItem;
         this.selectedItem = selection;
-        if (oldSelection != null) {
+        if (oldSelection != null && !oldSelection.isDisposed()) {
             oldSelection.redraw();
         }
     }
@@ -200,6 +200,11 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             }
         });
 
+        addControlDropTarget(dndControl, operations);
+        addControlDropTarget(item.getDashboardControl(), operations);
+    }
+
+    private void addControlDropTarget(Control dndControl, int operations) {
         DropTarget dropTarget = new DropTarget(dndControl, operations);
         dropTarget.setTransfer(DashboardTransfer.INSTANCE, TextTransfer.getInstance());
         dropTarget.addDropListener(new DropTargetListener() {
@@ -232,7 +237,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             {
                 handleDragEvent(event);
                 if (event.detail == DND.DROP_MOVE) {
-                    moveDashboard(event);
+                    UIUtils.asyncExec(() -> moveDashboard(event));
                 }
             }
 
@@ -279,6 +284,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 // Re-create  items
                 DashboardList.this.setRedraw(false);
                 try {
+                    selectedItem = null;
                     for (DashboardItem item : items.toArray(new DashboardItem[0])) {
                         item.dispose();
                     }
@@ -293,27 +299,6 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 }
 
                 viewConfiguration.saveSettings();
-
-/*
-                GridColumn overColumn = getOverItem(event);
-                if (draggingColumn == null || draggingColumn == overColumn) {
-                    return;
-                }
-                IGridController gridController = getGridController();
-                if (gridController != null) {
-                    IGridController.DropLocation location;// = IGridController.DropLocation.SWAP;
-
-                    Point dropPoint = getDisplay().map(null, LightGrid.this, new Point(event.x, event.y));
-                    Rectangle columnBounds = overColumn.getBounds();
-                    if (dropPoint.x > columnBounds.x + columnBounds.width / 2) {
-                        location = IGridController.DropLocation.DROP_AFTER;
-                    } else {
-                        location = IGridController.DropLocation.DROP_BEFORE;
-                    }
-                    gridController.moveColumn(draggingColumn.getElement(), overColumn.getElement(), location);
-                }
-                draggingColumn = null;
-*/
             }
 
             private DashboardItem getOverItem(DropTargetEvent event) {
