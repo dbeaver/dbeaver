@@ -155,7 +155,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
         int defHeight = getDefaultHeight();
         int defWidth = getDefaultWidth();
         Point areaSize = groupContainer.getSize();
-        if (areaSize.x <= defWidth || areaSize.y <= defHeight) {
+        if (areaSize.x <= 0 || areaSize.y <= 0) {
             return new Point(defWidth, defHeight);
         }
         // Use some insets
@@ -169,7 +169,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
         if (areaSize.x > areaSize.y) {
             // Horizontal
-            totalHeight = defHeight;
+            totalHeight = Math.min(defHeight, areaSize.y);
             for (DashboardItem item : groupContainer.getItems()) {
                 if (totalWidth > 0) totalWidth += groupContainer.getItemSpacing();
                 totalWidth += item.getDefaultWidth();
@@ -181,7 +181,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
             }
         } else {
             // Vertical
-            totalWidth = defWidth;
+            totalWidth = Math.min(defWidth, areaSize.x);
             for (DashboardItem item : groupContainer.getItems()) {
                 if (totalHeight > 0) totalHeight += groupContainer.getItemSpacing();
                 totalHeight += item.getDefaultHeight();
@@ -209,7 +209,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
             }
             return compSize;
         } else {
-            return new Point(defWidth, defHeight);
+            return new Point(Math.min(defWidth, areaSize.x), Math.min(defHeight, areaSize.y));
         }
     }
 
