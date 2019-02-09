@@ -143,6 +143,7 @@ public class UIIcon {
     public static final DBIcon OBJ_ADD = new DBIcon("object_add", "misc/object_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OBJ_REMOVE = new DBIcon("object_remove", "misc/object_remove.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OBJ_REFRESH = new DBIcon("object_refresh", "misc/object_refresh.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OBJ_LAYOUT = new DBIcon("layout", "misc/layout.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon GROUP_BY_ATTR = new DBIcon("group_attr", "misc/group_attributes.png"); //$NON-NLS-1$ //$NON-NLS-2$
 

@@ -852,8 +852,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         //toolBarManager.add(new RedoAction(ERDEditorPart.this));
         //toolBarManager.add(new PrintAction(ERDEditorPart.this));
 
-        toolBarManager.add(new ZoomInAction(zoomManager));
-        toolBarManager.add(new ZoomOutAction(zoomManager));
+        ZoomInAction zoomInAction = new ZoomInAction(zoomManager);
+        zoomInAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN));
+        ZoomOutAction zoomOutAction = new ZoomOutAction(zoomManager);
+        zoomOutAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT));
+        toolBarManager.add(zoomInAction);
+        toolBarManager.add(zoomOutAction);
+
         toolBarManager.add(new Separator());
         //toolBarManager.add(createAttributeVisibilityMenu());
         toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
