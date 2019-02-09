@@ -45,6 +45,10 @@ public class DashboardChartComposite extends BaseChartComposite {
         this.viewContainer = viewContainer;
     }
 
+    public DashboardViewContainer getViewContainer() {
+        return viewContainer;
+    }
+
     @Override
     protected void fillContextMenu(MenuManager manager) {
         super.fillContextMenu(manager);
@@ -59,7 +63,11 @@ public class DashboardChartComposite extends BaseChartComposite {
             this.getShell(),
             dashboardContainer,
             viewContainer.getViewConfiguration());
-        return dialog.open() == IDialogConstants.OK_ID;
+        boolean changed = dialog.open() == IDialogConstants.OK_ID;
+        if (changed) {
+            dashboardContainer.updateDashboardView();
+        }
+        return changed;
     }
 
 }

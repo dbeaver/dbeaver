@@ -52,6 +52,11 @@ public interface DashboardContainer {
      */
     long getDashboardMaxAge();
 
+    /**
+     * Dashboard update period in seconds
+     */
+    long getUpdatePeriod();
+
     DBPDataSourceContainer getDataSourceContainer();
 
     DashboardGroupContainer getGroup();
@@ -64,10 +69,7 @@ public interface DashboardContainer {
 
     void resetDashboardData();
 
-    /**
-     * Dashboard update period in seconds
-     */
-    long getUpdatePeriod();
+    void updateDashboardView();
 
     Control getDashboardControl();
 

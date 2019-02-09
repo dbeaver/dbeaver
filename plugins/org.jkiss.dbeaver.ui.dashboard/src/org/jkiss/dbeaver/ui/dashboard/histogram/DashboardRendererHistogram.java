@@ -41,10 +41,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardValueType;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
 
@@ -66,6 +63,8 @@ public class DashboardRendererHistogram implements DashboardRenderer {
 
         TimeSeriesCollection dataset = new TimeSeriesCollection();
         //generateSampleSeries(container, dataset);
+
+        DashboardItemViewConfiguration viewConfig = viewContainer.getViewConfiguration().getDashboardConfig(container.getDashboardId());
 
         Color gridColor = AWTUtils.makeAWTColor(UIStyles.getDefaultTextForeground());
 
@@ -90,6 +89,10 @@ public class DashboardRendererHistogram implements DashboardRenderer {
             legend.setBackgroundPaint(histogramChart.getBackgroundPaint());
             legend.setItemPaint(gridColor);
             legend.setItemFont(DEFAULT_LEGEND_FONT);
+
+            if (viewConfig != null && !viewConfig.isLegendVisible()) {
+                legend.setVisible(false);
+            }
         }
 
         ChartPanel chartPanel = new ChartPanel( histogramChart );
@@ -107,26 +110,38 @@ public class DashboardRendererHistogram implements DashboardRenderer {
 //        renderer.setSeriesOutlinePaint(0, Color.black);
 //        renderer.setSeriesOutlineStroke(0, new BasicStroke(0.5f));
 
-        DateAxis domainAxis = new DateAxis("Time");
-        domainAxis.setDateFormatOverride(new SimpleDateFormat("MM/dd HH:mm"));
-        domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
-        domainAxis.setAutoRange(true);
-        domainAxis.setLabel(null);
-        domainAxis.setLowerMargin(0);
-        domainAxis.setUpperMargin(0);
-        domainAxis.setTickLabelPaint(gridColor);
-        domainAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
-        plot.setDomainAxis(domainAxis);
-
-        ValueAxis rangeAxis = plot.getRangeAxis();
-        rangeAxis.setLabel(null);
-        rangeAxis.setTickLabelPaint(gridColor);
-        rangeAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
-        if (container.getDashboardValueType() == DashboardValueType.integer) {
-            rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true));
+        {
+            DateAxis domainAxis = new DateAxis("Time");
+            domainAxis.setDateFormatOverride(new SimpleDateFormat("MM/dd HH:mm"));
+            domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
+            domainAxis.setAutoRange(true);
+            domainAxis.setLabel(null);
+            domainAxis.setLowerMargin(0);
+            domainAxis.setUpperMargin(0);
+            domainAxis.setTickLabelPaint(gridColor);
+            domainAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
+            domainAxis.setTickLabelInsets(RectangleInsets.ZERO_INSETS);
+            if (viewConfig != null && !viewConfig.isDomainTicksVisible()) {
+                domainAxis.setVisible(false);
+            }
+            plot.setDomainAxis(domainAxis);
         }
-        //rangeAxis.setLowerMargin(0.2);
-        //rangeAxis.setLowerBound(.1);
+
+        {
+            ValueAxis rangeAxis = plot.getRangeAxis();
+            rangeAxis.setLabel(null);
+            rangeAxis.setTickLabelPaint(gridColor);
+            rangeAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
+            rangeAxis.setTickLabelInsets(RectangleInsets.ZERO_INSETS);
+            if (container.getDashboardValueType() == DashboardValueType.integer) {
+                rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true));
+            }
+            if (viewConfig != null && !viewConfig.isRangeTicksVisible()) {
+                rangeAxis.setVisible(false);
+            }
+            //rangeAxis.setLowerMargin(0.2);
+            //rangeAxis.setLowerBound(.1);
+        }
 
         XYItemRenderer plotRenderer = plot.getRenderer();
         plotRenderer.setBaseItemLabelPaint(gridColor);
@@ -165,7 +180,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
 
     @Override
     public void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset) {
-        DashboardChartComposite chartComposite = (DashboardChartComposite) container.getDashboardControl();
+        DashboardChartComposite chartComposite = getChartComposite(container);
         if (chartComposite.isDisposed()) {
             return;
         }
@@ -277,13 +292,41 @@ public class DashboardRendererHistogram implements DashboardRenderer {
     }
 
     @Override
+    public void updateDashboardView(DashboardItem dashboardItem) {
+        XYPlot plot = getDashboardPlot(dashboardItem);
+        if (plot != null) {
+            DashboardChartComposite chartComposite = getChartComposite(dashboardItem);
+            DashboardViewConfiguration viewConfiguration = chartComposite.getViewContainer().getViewConfiguration();
+            DashboardItemViewConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(dashboardItem.getDashboardId());
+            if (dashboardConfig != null) {
+                plot.getRangeAxis().setVisible(dashboardConfig.isRangeTicksVisible());
+                plot.getDomainAxis().setVisible(dashboardConfig.isDomainTicksVisible());
+
+                chartComposite.getChart().getLegend().setVisible(dashboardConfig.isLegendVisible());
+
+                TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
+                for (int i = 0; i < chartDataset.getSeriesCount(); i++) {
+                    TimeSeries series = chartDataset.getSeries(i);
+                    series.setMaximumItemCount(dashboardConfig.getMaxItems());
+                    series.setMaximumItemAge(dashboardConfig.getMaxAge());
+                }
+            }
+        }
+        dashboardItem.getParent().layout(true, true);
+    }
+
+    @Override
     public void disposeDashboard(DashboardContainer container) {
     }
 
     private XYPlot getDashboardPlot(DashboardContainer container) {
-        DashboardChartComposite chartComposite = (DashboardChartComposite) container.getDashboardControl();
+        DashboardChartComposite chartComposite = getChartComposite(container);
         JFreeChart chart = chartComposite.getChart();
         return (XYPlot) chart.getPlot();
+    }
+
+    private DashboardChartComposite getChartComposite(DashboardContainer container) {
+        return (DashboardChartComposite) container.getDashboardControl();
     }
 
 }
