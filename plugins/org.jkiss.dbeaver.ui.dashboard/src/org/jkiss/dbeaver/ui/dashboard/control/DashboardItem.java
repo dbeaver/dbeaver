@@ -117,6 +117,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
                 }
             });
+
+            dashboardControl.addDisposeListener(e -> renderer.disposeDashboard(DashboardItem.this));
         }
 
         groupContainer.addItem(this);
@@ -155,6 +157,9 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
+        if (groupContainer.getView().isSingleChartMode()) {
+            return super.computeSize(wHint, hHint, changed);
+        }
         Point currentSize = getSize();
 
         int defHeight = getDefaultHeight();
@@ -322,7 +327,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
 
-    void copyFrom(DashboardItem item) {
-        renderer.copyDashboardData(this, item);
+    public void moveViewFrom(DashboardItem item, boolean clearOriginal) {
+        renderer.moveDashboardView(this, item, clearOriginal);
     }
 }

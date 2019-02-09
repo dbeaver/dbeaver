@@ -41,6 +41,7 @@
 
         <command id="org.jkiss.dbeaver.ui.dashboard.add" name="%command.org.jkiss.dbeaver.ui.dashboard.add.name" description="%command.org.jkiss.dbeaver.ui.dashboard.add.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.ui.dashboard.remove" name="%command.org.jkiss.dbeaver.ui.dashboard.remove.name" description="%command.org.jkiss.dbeaver.ui.dashboard.remove.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.dashboard.view" name="%command.org.jkiss.dbeaver.ui.dashboard.view.name" description="%command.org.jkiss.dbeaver.ui.dashboard.view.description" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -58,6 +59,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset"/>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.add" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardAddItem"/>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.remove" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardRemoveItem"/>
+        <handler commandId="org.jkiss.dbeaver.ui.dashboard.view" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardViewItem"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">

@@ -22,6 +22,7 @@ import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -69,12 +70,16 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         this.setForeground(UIStyles.getDefaultTextForeground());
         this.setBackground(UIStyles.getDefaultTextBackground());
 
-        RowLayout layout = new RowLayout();
-        layout.spacing = getItemSpacing();
-        layout.pack = false;
-        layout.wrap = true;
-        layout.justify = false;
-        this.setLayout(layout);
+        if (viewContainer.isSingleChartMode()) {
+            this.setLayout(new FillLayout());
+        } else {
+            RowLayout layout = new RowLayout();
+            layout.spacing = getItemSpacing();
+            layout.pack = false;
+            layout.wrap = true;
+            layout.justify = false;
+            this.setLayout(layout);
+        }
 
         registerContextMenu();
 
@@ -324,7 +329,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                         DashboardItem newItem = new DashboardItem(DashboardList.this, oldItem.getDashboardId());
                         DashboardItemViewConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboardId());
                         dashboardConfig.setIndex(i);
-                        newItem.copyFrom(oldItem);
+                        newItem.moveViewFrom(oldItem, true);
                     }
                 } finally {
                     DashboardList.this.layout(true, true);

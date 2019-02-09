@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 
@@ -34,9 +33,9 @@ public interface DashboardRenderer {
 
     void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset);
 
-    void copyDashboardData(DashboardItem dashboardItem, DashboardItem fromItem);
-
     void resetDashboardData(DashboardContainer dashboardItem, Date lastUpdateTime);
+
+    void moveDashboardView(DashboardItem toItem, DashboardItem fromItem, boolean clearOriginal);
 
     void updateDashboardView(DashboardItem dashboardItem);
 

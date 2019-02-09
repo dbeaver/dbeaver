@@ -156,7 +156,12 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         plot.setDomainGridlinePaint(gridColor);
         plot.setRangeGridlinePaint(gridColor);
 
-        DashboardChartComposite chartComposite = new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize);
+        DashboardChartComposite chartComposite = new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize) {
+            @Override
+            protected boolean isSingleChartMode() {
+                return viewContainer.isSingleChartMode();
+            }
+        };
         chartComposite.setChart(histogramChart);
 
         return chartComposite;
@@ -260,7 +265,15 @@ public class DashboardRendererHistogram implements DashboardRenderer {
     }
 
     @Override
-    public void copyDashboardData(DashboardItem dashboardItem, DashboardItem fromItem) {
+    public void moveDashboardView(DashboardItem toItem, DashboardItem fromItem, boolean clearOriginal) {
+        DashboardChartComposite toComp = getChartComposite(toItem);
+        DashboardChartComposite fromComp = getChartComposite(fromItem);
+        toComp.setChart(fromComp.getChart());
+        if (clearOriginal) {
+            fromComp.setChart(null);
+        }
+
+/*
         XYPlot plotTo = getDashboardPlot(dashboardItem);
         XYPlot plotFrom = getDashboardPlot(fromItem);
         if (plotTo != null && plotFrom != null) {
@@ -280,6 +293,7 @@ public class DashboardRendererHistogram implements DashboardRenderer {
             }
 
         }
+*/
     }
 
     @Override
@@ -317,6 +331,10 @@ public class DashboardRendererHistogram implements DashboardRenderer {
 
     @Override
     public void disposeDashboard(DashboardContainer container) {
+        DashboardChartComposite chartComposite = getChartComposite(container);
+        if (chartComposite != null) {
+            chartComposite.setChart(null);
+        }
     }
 
     private XYPlot getDashboardPlot(DashboardContainer container) {

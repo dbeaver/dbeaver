@@ -34,5 +34,7 @@ public interface DashboardViewContainer extends IDataSourceContainerProvider {
 
     DashboardViewConfiguration getViewConfiguration();
 
+    boolean isSingleChartMode();
+
     IWorkbenchSite getSite();
 }
