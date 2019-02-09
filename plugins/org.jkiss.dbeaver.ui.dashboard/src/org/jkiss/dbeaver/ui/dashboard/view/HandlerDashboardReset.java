@@ -30,18 +30,14 @@ public class HandlerDashboardReset extends HandlerDashboardAbstract {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DashboardView view = getActiveDashboardView(event);
         if (view != null) {
-            ISelection selection = view.getSite().getSelectionProvider().getSelection();
-            if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-                Object firstElement = ((IStructuredSelection) selection).getFirstElement();
-                if (firstElement instanceof DashboardContainer) {
-                    ((DashboardContainer) firstElement).resetDashboardData();
-                    return null;
-                }
-            }
-
-            for (DashboardGroupContainer gc : view.getDashboardListViewer().getGroups()) {
-                for (DashboardContainer dc : gc.getItems()) {
-                    dc.resetDashboardData();
+            DashboardContainer selectedDashboard = getSelectedDashboard(view);
+            if (selectedDashboard != null) {
+                selectedDashboard.resetDashboardData();
+            } else {
+                for (DashboardGroupContainer gc : view.getDashboardListViewer().getGroups()) {
+                    for (DashboardContainer dc : gc.getItems()) {
+                        dc.resetDashboardData();
+                    }
                 }
             }
         }

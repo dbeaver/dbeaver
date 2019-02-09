@@ -175,4 +175,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
         return dashContainer;
     }
 
+    public DashboardGroupContainer getDefaultGroup() {
+        return dashContainer;
+    }
 }
