@@ -146,7 +146,7 @@ public class DashboardUpdater {
     private void getViewDashboards(DashboardView view, List<DashboardContainer> dashboards) {
         long currentTime = System.currentTimeMillis();
         DashboardListViewer viewManager = view.getDashboardListViewer();
-        if (!viewManager.getDataSourceContainer().isConnected()) {
+        if (viewManager == null || !viewManager.getDataSourceContainer().isConnected()) {
             return;
         }
         for (DashboardGroupContainer group : viewManager.getGroups()) {

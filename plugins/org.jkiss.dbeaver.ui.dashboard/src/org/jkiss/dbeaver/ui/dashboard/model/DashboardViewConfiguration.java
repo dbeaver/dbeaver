@@ -19,13 +19,18 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
+import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -44,6 +49,10 @@ public class DashboardViewConfiguration {
         loadSettings();
     }
 
+    public List<DashboardItemViewConfiguration> getDashboardItemConfigs() {
+        return items;
+    }
+
     public DashboardItemViewConfiguration getDashboardConfig(String dashboardId) {
         for (DashboardItemViewConfiguration item : items) {
             if (item.getDashboardDescriptor().getId().equals(dashboardId)) {
@@ -53,17 +62,28 @@ public class DashboardViewConfiguration {
         return null;
     }
 
-    public void readDashboardConfiguration(DashboardDescriptor dashboard) {
+    public DashboardItemViewConfiguration readDashboardConfiguration(DashboardDescriptor dashboard) {
         DashboardItemViewConfiguration dashboardConfig = getDashboardConfig(dashboard.getId());
         if (dashboardConfig != null) {
-            return;
+            return dashboardConfig;
         }
-        items.add(new DashboardItemViewConfiguration(dashboard));
+        DashboardItemViewConfiguration itemViewConfiguration = new DashboardItemViewConfiguration(dashboard, items.size());
+        items.add(itemViewConfiguration);
+        return itemViewConfiguration;
     }
 
     public void removeDashboard(String dashboardId) {
-        items.removeIf(
-            dashboardItemViewConfiguration -> dashboardItemViewConfiguration.getDashboardDescriptor().getId().equals(dashboardId));
+        int decValue = 0;
+        for (int i = 0; i < items.size(); i++) {
+            DashboardItemViewConfiguration item = items.get(i);
+            if (item.getDashboardDescriptor().getId().equals(dashboardId)) {
+                items.remove(i);
+                decValue++;
+            } else {
+                item.setIndex(item.getIndex() - decValue);
+                i++;
+            }
+        }
     }
 
     public void updateDashboardConfig(DashboardItemViewConfiguration config) {
@@ -84,10 +104,35 @@ public class DashboardViewConfiguration {
         if (!configFile.exists()) {
             return;
         }
+
+        try {
+            Document document = XMLUtils.parseDocument(configFile);
+            for (Element dbElement : XMLUtils.getChildElementList(document.getDocumentElement(), "dashboard")) {
+                String dashboardId = dbElement.getAttribute("id");
+                DashboardDescriptor dashboard = DashboardRegistry.getInstance().getDashboard(dashboardId);
+                if (dashboard != null) {
+                    DashboardItemViewConfiguration itemConfig = new DashboardItemViewConfiguration(dashboard, dbElement);
+                    items.add(itemConfig);
+                } else {
+                    log.warn("Dashboard '" + dashboardId + "' not found");
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error loading dashboard view configuration", e);
+        }
+
+        items.sort(Comparator.comparingInt(DashboardItemViewConfiguration::getIndex));
     }
 
     public void saveSettings() {
         File configFile = getConfigFile();
+
+        if (items.isEmpty()) {
+            if (configFile.exists() && !configFile.delete()) {
+                log.debug("Can't delete view configuration " + configFile.getAbsolutePath());
+            }
+            return;
+        }
 
         try (OutputStream out = new FileOutputStream(configFile)){
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
@@ -107,7 +152,13 @@ public class DashboardViewConfiguration {
 
     private File getConfigFile() {
         File pluginFolder = UIDashboardActivator.getDefault().getStateLocation().toFile();
-        return new File(pluginFolder, "view-" + viewId + ".xml");
+        File viewConfigFolder = new File(pluginFolder, "views");
+        if (!viewConfigFolder.exists()) {
+            if (!viewConfigFolder.mkdirs()) {
+                log.error("Can't create view config folder " + viewConfigFolder.getAbsolutePath());
+            }
+        }
+        return new File(viewConfigFolder, "view-" + viewId + ".xml");
     }
 
 }

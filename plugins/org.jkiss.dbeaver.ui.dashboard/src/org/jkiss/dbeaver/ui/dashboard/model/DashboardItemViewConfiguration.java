@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
+import org.w3c.dom.Element;
 
 import java.io.IOException;
 
 public class DashboardItemViewConfiguration {
     private DashboardDescriptor dashboardDescriptor;
 
+    private int index;
     private float widthRatio;
     private long updatePeriod;
     private int maxItems;
@@ -67,6 +69,14 @@ public class DashboardItemViewConfiguration {
         this.maxAge = maxAge;
     }
 
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -75,8 +85,9 @@ public class DashboardItemViewConfiguration {
         this.description = description;
     }
 
-    DashboardItemViewConfiguration(DashboardDescriptor dashboardDescriptor) {
+    DashboardItemViewConfiguration(DashboardDescriptor dashboardDescriptor, int index) {
         this.dashboardDescriptor = dashboardDescriptor;
+        this.index = index;
         this.widthRatio = dashboardDescriptor.getWidthRatio();
         this.updatePeriod = dashboardDescriptor.getUpdatePeriod();
         this.maxItems = dashboardDescriptor.getMaxItems();
@@ -90,6 +101,7 @@ public class DashboardItemViewConfiguration {
 
     void copyFrom(DashboardItemViewConfiguration source) {
         this.dashboardDescriptor = source.dashboardDescriptor;
+        this.index = source.index;
         this.widthRatio = source.widthRatio;
         this.updatePeriod = source.updatePeriod;
         this.maxItems = source.maxItems;
@@ -98,7 +110,8 @@ public class DashboardItemViewConfiguration {
     }
 
     void serialize(XMLBuilder xml) throws IOException {
-        xml.addAttribute("dashboard", dashboardDescriptor.getId());
+        xml.addAttribute("id", dashboardDescriptor.getId());
+        xml.addAttribute("index", index);
         xml.addAttribute("widthRatio", widthRatio);
         xml.addAttribute("updatePeriod", updatePeriod);
         xml.addAttribute("maxItems", maxItems);
@@ -106,5 +119,21 @@ public class DashboardItemViewConfiguration {
         if (!CommonUtils.isEmpty(description)) {
             xml.addAttribute("description", description);
         }
+    }
+
+    public DashboardItemViewConfiguration(DashboardDescriptor dashboard, Element element) {
+        this.dashboardDescriptor = dashboard;
+
+        this.index = CommonUtils.toInt(element.getAttribute("index"));
+        this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"), dashboardDescriptor.getWidthRatio());
+        this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"), dashboardDescriptor.getUpdatePeriod());
+        this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"), dashboardDescriptor.getMaxItems());
+        this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"), dashboardDescriptor.getMaxAge());
+        this.description = element.getAttribute("description");
+    }
+
+    @Override
+    public String toString() {
+        return dashboardDescriptor.getId() + ":" + index;
     }
 }

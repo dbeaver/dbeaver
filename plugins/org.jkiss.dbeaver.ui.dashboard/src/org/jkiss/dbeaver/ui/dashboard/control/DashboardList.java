@@ -106,13 +106,19 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     }
 
     void createDefaultDashboards() {
-
         List<DashboardDescriptor> dashboards = DashboardRegistry.getInstance().getDashboards(
             viewContainer.getDataSourceContainer(), true);
         for (DashboardDescriptor dd : dashboards) {
             addDashboard(dd);
         }
     }
+
+    public void createDashboardsFromConfiguration() {
+        for (DashboardItemViewConfiguration itemConfig : viewContainer.getViewConfiguration().getDashboardItemConfigs()) {
+            addDashboard(itemConfig.getDashboardDescriptor());
+        }
+    }
+
 
     private void addDashboard(DashboardDescriptor dashboard) {
         viewContainer.getViewConfiguration().readDashboardConfiguration(dashboard);
@@ -279,7 +285,6 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 newList.add(newIndex, selectedItem);
 
                 DashboardViewConfiguration viewConfiguration = viewContainer.getViewConfiguration();
-                //viewConfiguration.
 
                 // Re-create  items
                 DashboardList.this.setRedraw(false);
@@ -289,8 +294,11 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                         item.dispose();
                     }
 
-                    for (DashboardItem oldItem : newList) {
+                    for (int i = 0; i < newList.size(); i++) {
+                        DashboardItem oldItem = newList.get(i);
                         DashboardItem newItem = new DashboardItem(DashboardList.this, oldItem.getDashboardId());
+                        DashboardItemViewConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboardId());
+                        dashboardConfig.setIndex(i);
                         newItem.copyFrom(oldItem);
                     }
                 } finally {
