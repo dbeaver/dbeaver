@@ -53,6 +53,32 @@ public class DashboardViewConfiguration {
         return null;
     }
 
+    public void readDashboardConfiguration(DashboardDescriptor dashboard) {
+        DashboardItemViewConfiguration dashboardConfig = getDashboardConfig(dashboard.getId());
+        if (dashboardConfig != null) {
+            return;
+        }
+        items.add(new DashboardItemViewConfiguration(dashboard));
+    }
+
+    public void removeDashboard(String dashboardId) {
+        items.removeIf(
+            dashboardItemViewConfiguration -> dashboardItemViewConfiguration.getDashboardDescriptor().getId().equals(dashboardId));
+    }
+
+    public void updateDashboardConfig(DashboardItemViewConfiguration config) {
+        DashboardItemViewConfiguration curConfig = getDashboardConfig(config.getDashboardDescriptor().getId());
+        if (curConfig == null) {
+            items.add(config);
+        } else {
+            curConfig.copyFrom(config);
+        }
+    }
+
+    public void clearDashboards() {
+        this.items.clear();
+    }
+
     private void loadSettings() {
         File configFile = getConfigFile();
         if (!configFile.exists()) {
@@ -84,29 +110,4 @@ public class DashboardViewConfiguration {
         return new File(pluginFolder, "view-" + viewId + ".xml");
     }
 
-    public void readDashboardConfiguration(DashboardDescriptor dashboard) {
-        DashboardItemViewConfiguration dashboardConfig = getDashboardConfig(dashboard.getId());
-        if (dashboardConfig != null) {
-            return;
-        }
-        items.add(new DashboardItemViewConfiguration(dashboard));
-    }
-
-    public void removeDashboard(String dashboardId) {
-        items.removeIf(
-            dashboardItemViewConfiguration -> dashboardItemViewConfiguration.getDashboardDescriptor().getId().equals(dashboardId));
-    }
-
-    public void clearDashboards() {
-        this.items.clear();
-    }
-
-    public void updateDashboardConfig(DashboardItemViewConfiguration config) {
-        DashboardItemViewConfiguration curConfig = getDashboardConfig(config.getDashboardDescriptor().getId());
-        if (curConfig == null) {
-            items.add(config);
-        } else {
-            curConfig.copyFrom(config);
-        }
-    }
 }

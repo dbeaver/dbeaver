@@ -45,7 +45,6 @@ public class DashboardAddDialog extends BaseDialog {
         AdvancedListViewer listViewer = new AdvancedListViewer(dialogArea, SWT.NONE);
         listViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-
         return dialogArea;
     }
 
