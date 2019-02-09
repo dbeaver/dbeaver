@@ -126,6 +126,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     private void paintItem(PaintEvent e) {
         Point itemSize = getSize();
+        e.gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
         if (groupContainer.getSelectedItem() == this) {
             e.gc.setLineWidth(2);
             e.gc.setLineStyle(SWT.LINE_SOLID);
