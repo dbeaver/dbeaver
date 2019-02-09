@@ -22,7 +22,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.*;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.DateTickMarkPosition;
+import org.jfree.chart.axis.NumberTickUnitSource;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
@@ -36,8 +39,12 @@ import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.*;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardFetchType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardValueType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
 
@@ -124,6 +131,9 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         XYItemRenderer plotRenderer = plot.getRenderer();
         plotRenderer.setBaseItemLabelPaint(gridColor);
 
+        BasicStroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f, null, 0.0f);
+        plot.getRenderer().setBaseStroke(stroke);
+
 
         // Set background
         plot.setBackgroundPaint(histogramChart.getBackgroundPaint());
@@ -177,11 +187,8 @@ public class DashboardRendererHistogram implements DashboardRenderer {
                     series = new TimeSeries(seriesName);
                     series.setMaximumItemCount(container.getDashboardMaxItems());
                     series.setMaximumItemAge(container.getDashboardMaxAge());
-
-                    BasicStroke stroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f, null, 0.0f);
-                    plot.getRenderer().setSeriesStroke(chartDataset.getSeriesCount(), stroke);
-
                     chartDataset.addSeries(series);
+                    plot.getRenderer().setSeriesStroke(chartDataset.getSeriesCount() - 1, plot.getRenderer().getBaseStroke());
                 }
 
                 switch (container.getDashboardCalcType()) {
@@ -238,20 +245,45 @@ public class DashboardRendererHistogram implements DashboardRenderer {
     }
 
     @Override
-    public void resetDashboardData(DashboardContainer container, Date lastUpdateTime) {
-        DashboardChartComposite chartComposite = (DashboardChartComposite) container.getDashboardControl();
-        if (chartComposite.isDisposed()) {
-            return;
+    public void copyDashboardData(DashboardItem dashboardItem, DashboardItem fromItem) {
+        XYPlot plotTo = getDashboardPlot(dashboardItem);
+        XYPlot plotFrom = getDashboardPlot(fromItem);
+        if (plotTo != null && plotFrom != null) {
+            TimeSeriesCollection datasetTo = (TimeSeriesCollection) plotTo.getDataset();
+            TimeSeriesCollection datasetFrom = (TimeSeriesCollection) plotFrom.getDataset();
+            datasetTo.removeAllSeries();
+            for (int i = 0; i < datasetFrom.getSeriesCount(); i++) {
+                TimeSeries seriesFrom = datasetFrom.getSeries(i);
+                TimeSeries seriesTo = new TimeSeries(seriesFrom.getKey(), seriesFrom.getDomainDescription(), seriesFrom.getRangeDescription());
+                seriesTo.setMaximumItemAge(seriesFrom.getMaximumItemAge());
+                seriesTo.setMaximumItemCount(seriesFrom.getMaximumItemCount());
+                for (Object si : seriesFrom.getItems()) {
+                    seriesTo.add((TimeSeriesDataItem) si);
+                }
+                datasetTo.addSeries(seriesTo);
+                plotTo.getRenderer().setSeriesStroke(datasetTo.getSeriesCount() - 1, plotTo.getRenderer().getBaseStroke());
+            }
+
         }
-        JFreeChart chart = chartComposite.getChart();
-        XYPlot plot = (XYPlot) chart.getPlot();
-        TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
-        chartDataset.removeAllSeries();
+    }
+
+    @Override
+    public void resetDashboardData(DashboardContainer container, Date lastUpdateTime) {
+        XYPlot plot = getDashboardPlot(container);
+        if (plot != null) {
+            TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
+            chartDataset.removeAllSeries();
+        }
     }
 
     @Override
     public void disposeDashboard(DashboardContainer container) {
     }
 
+    private XYPlot getDashboardPlot(DashboardContainer container) {
+        DashboardChartComposite chartComposite = (DashboardChartComposite) container.getDashboardControl();
+        JFreeChart chart = chartComposite.getChart();
+        return (XYPlot) chart.getPlot();
+    }
 
 }

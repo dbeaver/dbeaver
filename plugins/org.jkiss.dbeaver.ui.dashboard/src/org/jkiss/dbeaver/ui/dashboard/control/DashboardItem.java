@@ -193,7 +193,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
                 extraHeightSpace = areaSize.y - totalHeight;
             }
         }
-        if (extraHeightSpace > 0 && extraWidthSpace > 0) {
+        if (extraHeightSpace > 0 && extraWidthSpace > 0 && totalWidth > 0) {
             // Stretch
             int widthIncreasePercent = 100 * areaSize.x / totalWidth;
             int heightIncreasePercent = 100 * areaSize.y / totalHeight;
@@ -308,4 +308,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
 
+    void copyFrom(DashboardItem item) {
+        renderer.copyDashboardData(this, item);
+    }
 }

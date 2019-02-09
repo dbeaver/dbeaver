@@ -34,6 +34,8 @@ public interface DashboardRenderer {
 
     void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset);
 
+    void copyDashboardData(DashboardItem dashboardItem, DashboardItem fromItem);
+
     void resetDashboardData(DashboardContainer dashboardItem, Date lastUpdateTime);
 
     void disposeDashboard(DashboardContainer container);

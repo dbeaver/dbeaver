@@ -24,16 +24,14 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
@@ -256,23 +254,48 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
 
             private boolean isDropSupported(DropTargetEvent event)
             {
-                if (selectedItem == null || !(event.getSource() instanceof DashboardItem)) {
+                DashboardItem overItem = getOverItem(event);
+                if (selectedItem == null || overItem == null) {
                     return false;
                 }
-                DashboardItem overItem = (DashboardItem) event.getSource();
                 return overItem != selectedItem;
-            }
-
-            private DashboardItem getOverColumn(DropTargetEvent event) {
-                Point dragPoint = getDisplay().map(null, DashboardList.this, new Point(event.x, event.y));
-
-                return null;//getItem(dragPoint);
             }
 
             private void moveDashboard(DropTargetEvent event)
             {
+                DashboardItem overItem = getOverItem(event);
+                if (selectedItem == null || overItem == null || selectedItem == overItem) {
+                    return;
+                }
+
+                List<DashboardItem> newList = new ArrayList<>(items);
+                int newIndex = newList.indexOf(overItem);
+                newList.remove(selectedItem);
+                newList.add(newIndex, selectedItem);
+
+                DashboardViewConfiguration viewConfiguration = viewContainer.getViewConfiguration();
+                //viewConfiguration.
+
+                // Re-create  items
+                DashboardList.this.setRedraw(false);
+                try {
+                    for (DashboardItem item : items.toArray(new DashboardItem[0])) {
+                        item.dispose();
+                    }
+
+                    for (DashboardItem oldItem : newList) {
+                        DashboardItem newItem = new DashboardItem(DashboardList.this, oldItem.getDashboardId());
+                        newItem.copyFrom(oldItem);
+                    }
+                } finally {
+                    DashboardList.this.layout(true, true);
+                    DashboardList.this.setRedraw(true);
+                }
+
+                viewConfiguration.saveSettings();
+
 /*
-                GridColumn overColumn = getOverColumn(event);
+                GridColumn overColumn = getOverItem(event);
                 if (draggingColumn == null || draggingColumn == overColumn) {
                     return;
                 }
@@ -292,6 +315,20 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 draggingColumn = null;
 */
             }
+
+            private DashboardItem getOverItem(DropTargetEvent event) {
+                Object source = event.getSource();
+                if (source instanceof DropTarget) {
+                    Control control = ((DropTarget) source).getControl();
+                    for (Composite parent = control.getParent(); parent != null; parent = parent.getParent()) {
+                        if (parent instanceof DashboardItem) {
+                            return (DashboardItem) parent;
+                        }
+                    }
+                }
+                return null;
+            }
+
         });
     }
 
