@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardViewTypeDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -116,7 +117,7 @@ public class DashboardEditDialog extends BaseDialog {
         }
 
         {
-            Group sqlGroup = UIUtils.createControlGroup(composite, "Queries", 1, GridData.FILL_HORIZONTAL, 0);
+            Group sqlGroup = UIUtils.createControlGroup(composite, "Queries", 1, GridData.FILL_BOTH, 0);
             queryText = new Text(sqlGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | baseStyle);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 100;
@@ -126,9 +127,9 @@ public class DashboardEditDialog extends BaseDialog {
 
             StringBuilder sql = new StringBuilder();
             for (DashboardDescriptor.QueryMapping query : dashboardDescriptor.getQueries()) {
-                sql.append(query.getQueryText().trim()).append("\n\n");
+                sql.append(query.getQueryText().trim()).append(GeneralUtils.getDefaultLineSeparator()).append(GeneralUtils.getDefaultLineSeparator());
             }
-            queryText.setText(sql.toString());
+            queryText.setText(sql.toString().trim());
         }
 
         {
@@ -137,11 +138,14 @@ public class DashboardEditDialog extends BaseDialog {
             viewTypeCombo = UIUtils.createLabelCombo(updateGroup, "Default view", "Dashboard view", SWT.BORDER | SWT.READ_ONLY);
             viewTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
-                viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardDescriptor.getDataType());
+                viewTypes = DashboardRegistry.getInstance().getAllViewTypes();
                 for (DashboardViewType viewType : viewTypes) {
                     viewTypeCombo.add(viewType.getTitle());
                 }
                 viewTypeCombo.setText(dashboardDescriptor.getDefaultViewType().getTitle());
+                if (viewTypeCombo.getSelectionIndex() < 0) {
+                    viewTypeCombo.select(0);
+                }
             }
             viewTypeCombo.setEnabled(!readOnly);
 

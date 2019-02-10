@@ -185,6 +185,10 @@ public class DashboardRegistry {
         saveConfigFile();
     }
 
+    public List<DashboardViewType> getAllViewTypes() {
+        return new ArrayList<>(viewTypeList);
+    }
+
     public List<DashboardViewType> getSupportedViewTypes(DashboardDataType dataType) {
         List<DashboardViewType> result = new ArrayList<>();
         for (DashboardViewType vt : viewTypeList) {
