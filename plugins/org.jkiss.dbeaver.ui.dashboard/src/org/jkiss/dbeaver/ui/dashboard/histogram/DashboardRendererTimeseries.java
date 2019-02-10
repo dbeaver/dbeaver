@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.histogram;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.jfree.chart.ChartFactory;
@@ -29,11 +28,9 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -54,7 +51,6 @@ import java.util.List;
  */
 public class DashboardRendererTimeseries extends DashboardRendererBase {
 
-    private static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
     private static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
 
     @Override
@@ -81,18 +77,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
         histogramChart.setTextAntiAlias(true);
         histogramChart.setBackgroundPaint(AWTUtils.makeAWTColor(UIStyles.getDefaultTextBackground()));
 
-        {
-            LegendTitle legend = histogramChart.getLegend();
-            legend.setPosition(RectangleEdge.BOTTOM);
-            legend.setBorder(0, 0, 0, 0);
-            legend.setBackgroundPaint(histogramChart.getBackgroundPaint());
-            legend.setItemPaint(gridColor);
-            legend.setItemFont(DEFAULT_LEGEND_FONT);
-
-            if (viewConfig != null && !viewConfig.isLegendVisible()) {
-                legend.setVisible(false);
-            }
-        }
+        createDefaultLegend(viewConfig, histogramChart);
 
         ChartPanel chartPanel = new ChartPanel( histogramChart );
         chartPanel.setPreferredSize( new java.awt.Dimension( preferredSize.x, preferredSize.y ) );
@@ -155,12 +140,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
         plot.setDomainGridlinePaint(gridColor);
         plot.setRangeGridlinePaint(gridColor);
 
-        DashboardChartComposite chartComposite = new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize) {
-            @Override
-            protected boolean isSingleChartMode() {
-                return viewContainer.isSingleChartMode();
-            }
-        };
+        DashboardChartComposite chartComposite = createChartComposite(composite, container, viewContainer, preferredSize);
         chartComposite.setChart(histogramChart);
 
         return chartComposite;

@@ -16,11 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.ui.RectangleEdge;
+import org.jkiss.dbeaver.ui.AWTUtils;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 
 import java.awt.*;
 
@@ -90,6 +99,29 @@ public abstract class DashboardRendererBase implements DashboardRenderer {
 
     protected DashboardChartComposite getChartComposite(DashboardContainer container) {
         return (DashboardChartComposite) container.getDashboardControl();
+    }
+
+    protected DashboardChartComposite createChartComposite(Composite composite, DashboardContainer container, DashboardViewContainer viewContainer, org.eclipse.swt.graphics.Point preferredSize) {
+        return new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize) {
+            @Override
+            protected boolean isSingleChartMode() {
+                return viewContainer.isSingleChartMode();
+            }
+        };
+    }
+
+    protected void createDefaultLegend(DashboardItemViewConfiguration viewConfig, JFreeChart chart) {
+        Color gridColor = AWTUtils.makeAWTColor(UIStyles.getDefaultTextForeground());
+        LegendTitle legend = chart.getLegend();
+        legend.setPosition(RectangleEdge.BOTTOM);
+        legend.setBorder(0, 0, 0, 0);
+        legend.setBackgroundPaint(chart.getBackgroundPaint());
+        legend.setItemPaint(gridColor);
+        legend.setItemFont(DEFAULT_LEGEND_FONT);
+
+        if (viewConfig != null && !viewConfig.isLegendVisible()) {
+            legend.setVisible(false);
+        }
     }
 
 }

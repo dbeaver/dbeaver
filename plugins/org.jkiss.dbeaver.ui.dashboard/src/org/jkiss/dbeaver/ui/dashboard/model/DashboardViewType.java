@@ -30,6 +30,8 @@ public interface DashboardViewType {
 
     String getDescription();
 
+    DashboardDataType[] getSupportedTypes();
+
     DashboardRenderer createRenderer() throws DBException;
 
 }

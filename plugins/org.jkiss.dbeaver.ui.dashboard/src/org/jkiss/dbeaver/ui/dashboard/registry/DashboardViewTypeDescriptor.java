@@ -21,7 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DashboardDescriptor
@@ -32,6 +34,7 @@ public class DashboardViewTypeDescriptor extends AbstractContextDescriptor imple
     private String label;
     private String description;
     private ObjectType implType;
+    private DashboardDataType[] supportedDataTypes;
 
     DashboardViewTypeDescriptor(
         IConfigurationElement config)
@@ -41,6 +44,12 @@ public class DashboardViewTypeDescriptor extends AbstractContextDescriptor imple
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        String[] dataTypeNames = CommonUtils.notEmpty(config.getAttribute("dataTypes")).split(",");
+        this.supportedDataTypes = new DashboardDataType[dataTypeNames.length];
+        for (int i = 0; i < dataTypeNames.length; i++) {
+            this.supportedDataTypes[i] = CommonUtils.valueOf(DashboardDataType.class, dataTypeNames[i], DashboardDataType.timeseries);
+        }
+
         this.implType = new ObjectType(config.getAttribute("renderer"));
     }
 
@@ -61,6 +70,11 @@ public class DashboardViewTypeDescriptor extends AbstractContextDescriptor imple
     public String getDescription()
     {
         return description;
+    }
+
+    @Override
+    public DashboardDataType[] getSupportedTypes() {
+        return supportedDataTypes;
     }
 
     @Override
