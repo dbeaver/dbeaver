@@ -69,15 +69,21 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         private final String driverClass;
 
         DataSourceMapping(IConfigurationElement config) {
-            this.dataSourceProvider = config.getAttribute("id");
-            this.driverId = config.getAttribute("driver");
-            this.driverClass = config.getAttribute("driverClass");
+            this.dataSourceProvider = CommonUtils.nullIfEmpty(config.getAttribute("id"));
+            this.driverId = CommonUtils.nullIfEmpty(config.getAttribute("driver"));
+            this.driverClass = CommonUtils.nullIfEmpty(config.getAttribute("driverClass"));
         }
 
         DataSourceMapping(Element config) {
-            this.dataSourceProvider = config.getAttribute("id");
-            this.driverId = config.getAttribute("driver");
-            this.driverClass = config.getAttribute("driverClass");
+            this.dataSourceProvider = CommonUtils.nullIfEmpty(config.getAttribute("id"));
+            this.driverId = CommonUtils.nullIfEmpty(config.getAttribute("driver"));
+            this.driverClass = CommonUtils.nullIfEmpty(config.getAttribute("driverClass"));
+        }
+
+        public DataSourceMapping(String dataSourceProvider, String driverId, String driverClass) {
+            this.dataSourceProvider = dataSourceProvider;
+            this.driverId = driverId;
+            this.driverClass = driverClass;
         }
 
         boolean matches(String providerId, String checkDriverId, String checkDriverClass) {
@@ -94,9 +100,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         }
 
         void serialize(XMLBuilder xml) throws IOException {
-            if (dataSourceProvider != null) xml.addAttribute("id", dataSourceProvider);
-            if (driverId != null) xml.addAttribute("driver", driverId);
-            if (driverClass != null) xml.addAttribute("driverClass", driverClass);
+            if (!CommonUtils.isEmpty(dataSourceProvider)) xml.addAttribute("id", dataSourceProvider);
+            if (!CommonUtils.isEmpty(driverId)) xml.addAttribute("driver", driverId);
+            if (!CommonUtils.isEmpty(driverClass)) xml.addAttribute("driverClass", driverClass);
         }
     }
 
@@ -381,6 +387,23 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public void setCustom(boolean custom) {
         this.isCustom = custom;
+    }
+
+    public List<DBPNamedObject> getDataSourceMappings() {
+        return getSupportedSources();
+    }
+
+    public void setDataSourceMappings(List<DBPNamedObject> targets) {
+        dataSourceMappings.clear();
+        for (DBPNamedObject target : targets) {
+            if (target instanceof DBPDataSourceProviderDescriptor) {
+                dataSourceMappings.add(
+                    new DataSourceMapping(((DBPDataSourceProviderDescriptor) target).getId(), null, null));
+            } else if (target instanceof DBPDriver) {
+                DBPDriver driver = (DBPDriver)target;
+                dataSourceMappings.add(new DataSourceMapping(driver.getProviderId(), driver.getId(), null));
+            }
+        }
     }
 
     public boolean matches(String providerId, String driverId, String driverClass) {

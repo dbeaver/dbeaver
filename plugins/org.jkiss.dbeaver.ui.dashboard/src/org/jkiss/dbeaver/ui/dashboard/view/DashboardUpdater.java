@@ -61,7 +61,7 @@ public class DashboardUpdater {
                     }
                 });
             } catch (DBException e) {
-                log.error(e);
+                log.debug(e);
             }
         }
     }

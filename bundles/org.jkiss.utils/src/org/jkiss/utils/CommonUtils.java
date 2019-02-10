@@ -180,6 +180,11 @@ public class CommonUtils {
         return value == null ? "" : value;
     }
 
+    @Nullable
+    public static String nullIfEmpty(@Nullable String value) {
+        return value == null || value.isEmpty() ? null : value;
+    }
+
     public static boolean isTrue(Boolean value) {
         return value != null && value;
     }

@@ -16,10 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
@@ -29,6 +33,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 public class DashboardEditDialog extends BaseDialog {
@@ -52,11 +57,18 @@ public class DashboardEditDialog extends BaseDialog {
     private Combo valueTypeCombo;
     private Combo fetchTypeCombo;
 
+    private DBPNamedObject targetDatabase;
+
     public DashboardEditDialog(Shell shell, DashboardDescriptor dashboardDescriptor)
     {
         super(shell, "Dashboard [" + dashboardDescriptor.getName() + "]", null);
 
         this.dashboardDescriptor = dashboardDescriptor;
+
+        List<DBPNamedObject> dataSourceMappings = dashboardDescriptor.getDataSourceMappings();
+        if (!dataSourceMappings.isEmpty()) {
+            targetDatabase = dataSourceMappings.get(0);
+        }
     }
 
     @Override
@@ -78,8 +90,36 @@ public class DashboardEditDialog extends BaseDialog {
 
             idText = UIUtils.createLabelText(infoGroup, "ID", dashboardDescriptor.getId(), SWT.BORDER | baseStyle);
             idText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
+            idText.addModifyListener(e -> updateButtons());
             nameText = UIUtils.createLabelText(infoGroup, "Name", dashboardDescriptor.getName(), SWT.BORDER | baseStyle);
             nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
+            nameText.addModifyListener(e -> updateButtons());
+
+            {
+                UIUtils.createControlLabel(infoGroup, "Database");
+                Composite dbSelectorPanel = UIUtils.createComposite(infoGroup, 2);
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 3;
+                dbSelectorPanel.setLayoutData(gd);
+                Text dbSelectorText = new Text(dbSelectorPanel, SWT.READ_ONLY | SWT.BORDER);
+                dbSelectorText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                if (targetDatabase != null) {
+                    dbSelectorText.setText(targetDatabase.getName());
+                }
+                UIUtils.createPushButton(dbSelectorPanel, "Select", null, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DashboardDatabaseSelectDialog selectDialog = new DashboardDatabaseSelectDialog(getShell());
+                        if (selectDialog.open() == IDialogConstants.OK_ID) {
+                            targetDatabase = selectDialog.getTarget();
+                            dbSelectorText.setText(targetDatabase.getName());
+                        }
+                        updateButtons();
+                    }
+                });
+            }
+
+
 //            UIUtils.createLabelText(infoGroup, "Group", CommonUtils.notEmpty(dashboardDescriptor.getGroup()), SWT.BORDER | baseStyle)
 //                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             dataTypeCombo = UIUtils.createLabelCombo(infoGroup, "Data type", "Type of data for this dashboard", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -170,12 +210,28 @@ public class DashboardEditDialog extends BaseDialog {
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
 
+        updateButtons();
+
         return contents;
     }
+
+    private void updateButtons() {
+        Button okButton = getButton(IDialogConstants.OK_ID);
+        okButton.setEnabled(
+            dashboardDescriptor.isCustom() &&
+            !idText.getText().isEmpty() &&
+            !nameText.getText().isEmpty() &&
+            !queryText.getText().isEmpty() &&
+            viewTypeCombo.getSelectionIndex() >= 0 &&
+            targetDatabase != null
+        );
+    }
+
 
     private void saveSettings() {
         dashboardDescriptor.setId(idText.getText());
         dashboardDescriptor.setName(nameText.getText());
+        dashboardDescriptor.setDataSourceMappings(Collections.singletonList(targetDatabase));
         dashboardDescriptor.setDescription(descriptionText.getText());
         dashboardDescriptor.setDataType(DashboardDataType.values()[dataTypeCombo.getSelectionIndex()]);
         dashboardDescriptor.setCalcType(DashboardCalcType.values()[calcTypeCombo.getSelectionIndex()]);

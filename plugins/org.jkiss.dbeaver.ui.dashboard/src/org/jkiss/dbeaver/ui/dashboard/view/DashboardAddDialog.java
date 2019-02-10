@@ -20,6 +20,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -44,8 +46,6 @@ import java.util.Iterator;
 public class DashboardAddDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardAddDialog";//$NON-NLS-1$
-
-    private static final int MANAGER_BUTTON_ID = 1000;
 
     private final DashboardViewConfiguration viewConfiguration;
     private DashboardDescriptor selectedDashboard;
@@ -119,9 +119,15 @@ public class DashboardAddDialog extends BaseDialog {
     protected void createButtonsForButtonBar(Composite parent) {
         ((GridData)parent.getLayoutData()).grabExcessHorizontalSpace = true;
 
-        final Button createButton = createButton(parent, MANAGER_BUTTON_ID, "Manage ...", false);
-        ((GridData) createButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
-        ((GridData) createButton.getLayoutData()).grabExcessHorizontalSpace = true;
+        final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, "Manage ...", false);
+        ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
+        ((GridData) managerButton.getLayoutData()).grabExcessHorizontalSpace = true;
+        managerButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
+            }
+        });
 
         createButton(parent, IDialogConstants.OK_ID, "Add", true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
@@ -129,15 +135,6 @@ public class DashboardAddDialog extends BaseDialog {
 
     public DashboardDescriptor getSelectedDashboard() {
         return selectedDashboard;
-    }
-
-    @Override
-    protected void buttonPressed(int buttonId) {
-        if (buttonId == MANAGER_BUTTON_ID) {
-            new DashboardManagerDialog(getShell()).open();
-        } else {
-            super.buttonPressed(buttonId);
-        }
     }
 
 }
