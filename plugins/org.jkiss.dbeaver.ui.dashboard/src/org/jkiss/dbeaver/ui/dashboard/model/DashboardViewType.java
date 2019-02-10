@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dashboard.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 
 /**
@@ -29,6 +30,8 @@ public interface DashboardViewType {
     String getTitle();
 
     String getDescription();
+
+    DBPImage getIcon();
 
     DashboardDataType[] getSupportedTypes();
 

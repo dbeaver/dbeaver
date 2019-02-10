@@ -34,7 +34,9 @@ public interface DashboardContainer {
 
     String getDashboardDescription();
 
-    DashboardViewType getDashboardType();
+    DashboardViewType getDashboardViewType();
+
+    DashboardDataType getDashboardDataType();
 
     DashboardCalcType getDashboardCalcType();
 

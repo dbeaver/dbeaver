@@ -238,6 +238,10 @@ public class DashboardItem extends Composite implements DashboardContainer {
         }
     }
 
+    public DashboardItemViewConfiguration getDashboardConfig() {
+        return dashboardConfig;
+    }
+
     @Override
     public String getDashboardId() {
         return dashboardConfig.getDashboardDescriptor().getId();
@@ -254,8 +258,13 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
-    public DashboardViewType getDashboardType() {
-        return dashboardConfig.getDashboardDescriptor().getDefaultViewType();
+    public DashboardViewType getDashboardViewType() {
+        return dashboardConfig.getViewType();
+    }
+
+    @Override
+    public DashboardDataType getDashboardDataType() {
+        return dashboardConfig.getDashboardDescriptor().getDataType();
     }
 
     @Override
