@@ -160,66 +160,61 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 
         List<DashboardDatasetRow> rows = dataset.getRows();
 
-        if (container.getDashboardFetchType() == DashboardFetchType.columns) {
-            String[] srcSeries = dataset.getColumnNames();
-            for (int i = 0; i < srcSeries.length; i++) {
-                String seriesName = srcSeries[i];
+        String[] srcSeries = dataset.getColumnNames();
+        for (int i = 0; i < srcSeries.length; i++) {
+            String seriesName = srcSeries[i];
 
-                TimeSeries series = chartDataset.getSeries(seriesName);
-                if (series == null) {
-                    series = new TimeSeries(seriesName);
-                    series.setMaximumItemCount(container.getDashboardMaxItems());
-                    series.setMaximumItemAge(container.getDashboardMaxAge());
-                    chartDataset.addSeries(series);
-                    plot.getRenderer().setSeriesStroke(chartDataset.getSeriesCount() - 1, plot.getRenderer().getBaseStroke());
-                }
-
-                switch (container.getDashboardCalcType()) {
-                    case value: {
-                        for (DashboardDatasetRow row : rows) {
-                            Object value = row.getValues()[i];
-                            if (value instanceof Number) {
-                                series.add(new FixedMillisecond(row.getTimestamp().getTime()), (Number) value, false);
-                            }
-                        }
-                        break;
-                    }
-                    case delta: {
-                        if (lastUpdateTime == null) {
-                            return;
-                        }
-                        //System.out.println("LAST=" + lastUpdateTime + "; CUR=" + new Date());
-                        long currentTime = System.currentTimeMillis();
-                        long secondsPassed = (currentTime - lastUpdateTime.getTime()) / 1000;
-                        if (secondsPassed <= 0) {
-                            secondsPassed = 1;
-                        }
-                        for (DashboardDatasetRow row : rows) {
-                            if (lastRow != null) {
-                                Object prevValue = lastRow.getValues()[i];
-                                Object newValue = row.getValues()[i];
-                                if (newValue instanceof Number && prevValue instanceof Number) {
-                                    double deltaValue = ((Number) newValue).doubleValue() - ((Number) prevValue).doubleValue();
-                                    deltaValue /= secondsPassed;
-                                    if (container.getDashboardValueType() == DashboardValueType.integer) {
-                                        deltaValue = Math.round(deltaValue);
-                                    }
-                                    series.add(
-                                        new FixedMillisecond(
-                                            row.getTimestamp().getTime()),
-                                        deltaValue,
-                                        false);
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-                series.fireSeriesChanged();
+            TimeSeries series = chartDataset.getSeries(seriesName);
+            if (series == null) {
+                series = new TimeSeries(seriesName);
+                series.setMaximumItemCount(container.getDashboardMaxItems());
+                series.setMaximumItemAge(container.getDashboardMaxAge());
+                chartDataset.addSeries(series);
+                plot.getRenderer().setSeriesStroke(chartDataset.getSeriesCount() - 1, plot.getRenderer().getBaseStroke());
             }
-        } else {
-            // Not supported
 
+            switch (container.getDashboardCalcType()) {
+                case value: {
+                    for (DashboardDatasetRow row : rows) {
+                        Object value = row.getValues()[i];
+                        if (value instanceof Number) {
+                            series.add(new FixedMillisecond(row.getTimestamp().getTime()), (Number) value, false);
+                        }
+                    }
+                    break;
+                }
+                case delta: {
+                    if (lastUpdateTime == null) {
+                        return;
+                    }
+                    //System.out.println("LAST=" + lastUpdateTime + "; CUR=" + new Date());
+                    long currentTime = System.currentTimeMillis();
+                    long secondsPassed = (currentTime - lastUpdateTime.getTime()) / 1000;
+                    if (secondsPassed <= 0) {
+                        secondsPassed = 1;
+                    }
+                    for (DashboardDatasetRow row : rows) {
+                        if (lastRow != null) {
+                            Object prevValue = lastRow.getValues()[i];
+                            Object newValue = row.getValues()[i];
+                            if (newValue instanceof Number && prevValue instanceof Number) {
+                                double deltaValue = ((Number) newValue).doubleValue() - ((Number) prevValue).doubleValue();
+                                deltaValue /= secondsPassed;
+                                if (container.getDashboardValueType() == DashboardValueType.integer) {
+                                    deltaValue = Math.round(deltaValue);
+                                }
+                                series.add(
+                                    new FixedMillisecond(
+                                        row.getTimestamp().getTime()),
+                                    deltaValue,
+                                    false);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            series.fireSeriesChanged();
         }
 
         if (!rows.isEmpty()) {

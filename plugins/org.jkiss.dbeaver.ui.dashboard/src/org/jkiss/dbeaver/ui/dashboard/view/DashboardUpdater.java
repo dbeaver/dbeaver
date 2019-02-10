@@ -123,7 +123,44 @@ public class DashboardUpdater {
             dataset.addRow(new DashboardDatasetRow(timestamp, values));
         }
 
+        if (dashboard.getDashboardFetchType() == DashboardFetchType.rows) {
+            dataset = transposeDataset(dataset);
+        }
         dashboard.updateDashboardData(dataset);
+    }
+
+    private DashboardDataset transposeDataset(DashboardDataset dataset) {
+        int oldColumnCount = dataset.getColumnNames().length;
+        if (oldColumnCount < 2) {
+            // Something went wrong
+            return dataset;
+        }
+        // Column names don't matter. Get everything from rows.
+        // First column in row is actually column name. The rest are row values (usually 1)
+        List<String> colNamesFromRows = new ArrayList<>();
+        List<DashboardDatasetRow> oldRows = dataset.getRows();
+        Date oldTimestamp = oldRows.get(0).getTimestamp();
+        DashboardDatasetRow[] newRows = new DashboardDatasetRow[oldColumnCount - 1];
+
+        for (int i = 0; i < oldRows.size(); i++) {
+            DashboardDatasetRow oldRow = oldRows.get(i);
+            colNamesFromRows.add(CommonUtils.toString(oldRow.getValues()[0], String.valueOf(i + 1)));
+            for (int colIndex = 1; colIndex < oldColumnCount; colIndex++) {
+                DashboardDatasetRow newRow = newRows[colIndex - 1];
+                if (newRow == null) {
+                    newRow = new DashboardDatasetRow(oldTimestamp, new Object[oldRows.size()]);
+                    newRows[colIndex - 1] = newRow;
+                }
+                newRow.getValues()[i] = oldRow.getValues()[colIndex];
+            }
+        }
+
+        DashboardDataset newDataset = new DashboardDataset(colNamesFromRows.toArray(new String[0]));
+        for (DashboardDatasetRow newRow : newRows) {
+            newDataset.addRow(newRow);
+        }
+
+        return newDataset;
     }
 
     public List<DashboardContainer> getDashboardsToUpdate() {
