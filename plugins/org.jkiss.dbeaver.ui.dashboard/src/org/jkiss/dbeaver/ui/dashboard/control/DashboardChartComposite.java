@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
-import org.jkiss.dbeaver.ui.dashboard.view.DashboardChartConfigDialog;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemConfigDialog;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
 
 import java.util.List;
@@ -116,7 +116,7 @@ public class DashboardChartComposite extends BaseChartComposite {
     }
 
     protected boolean showChartConfigDialog() {
-        DashboardChartConfigDialog dialog = new DashboardChartConfigDialog(
+        DashboardItemConfigDialog dialog = new DashboardItemConfigDialog(
             this.getShell(),
             dashboardContainer,
             viewContainer.getViewConfiguration());

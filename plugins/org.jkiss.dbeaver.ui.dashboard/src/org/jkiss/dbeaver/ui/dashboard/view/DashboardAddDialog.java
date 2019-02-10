@@ -71,6 +71,7 @@ public class DashboardAddDialog extends BaseDialog {
 
         dashboardTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         Table table = dashboardTable.getTable();
+        table.setHeaderVisible(true);
         UIUtils.createTableColumn(table, SWT.LEFT, "Name");
         UIUtils.createTableColumn(table, SWT.LEFT, "Description");
 

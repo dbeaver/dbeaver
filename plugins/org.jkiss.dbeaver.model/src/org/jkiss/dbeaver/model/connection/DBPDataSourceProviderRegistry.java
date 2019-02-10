@@ -25,7 +25,9 @@ public interface DBPDataSourceProviderRegistry {
 
     List<? extends DBPDataSourceProviderDescriptor> getDataSourceProviders();
 
+    DBPDataSourceProviderDescriptor getDataSourceProvider(String id);
+
     void saveConnectionTypes();
 
-    DBPDriver findDriver(String driverName);
+    DBPDriver findDriver(String driverIdOrName);
 }

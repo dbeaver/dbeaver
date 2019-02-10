@@ -21,6 +21,9 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
@@ -35,10 +38,7 @@ import org.w3c.dom.Element;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DashboardRegistry {
     private static final Log log = Log.getLog(DashboardRegistry.class);
@@ -131,10 +131,27 @@ public class DashboardRegistry {
         return dashboardList.get(id);
     }
 
-    public List<DashboardDescriptor> getDashboards(DBPDataSourceContainer dataSourceContainer, boolean defaultOnly) {
+    /**
+     * Find dashboard matchign source. Source can be {@link DBPDataSourceContainer}, {@link DBPDataSourceProviderDescriptor} or {@link DBPDriver}
+     */
+    public List<DashboardDescriptor> getDashboards(DBPNamedObject source, boolean defaultOnly) {
+        if (source instanceof DBPDataSourceContainer) {
+            source = ((DBPDataSourceContainer) source).getDriver();
+        }
+        String providerId, driverId, driverClass;
+        if (source instanceof DBPDataSourceProviderDescriptor) {
+            providerId = ((DBPDataSourceProviderDescriptor) source).getId();
+            driverId = null;
+            driverClass = null;
+        } else {
+            providerId = ((DBPDriver)source).getProviderId();
+            driverId = ((DBPDriver)source).getId();
+            driverClass = ((DBPDriver)source).getDriverClassName();
+        }
+
         List<DashboardDescriptor> result = new ArrayList<>();
         for (DashboardDescriptor dd : dashboardList.values()) {
-            if (dd.matches(dataSourceContainer)) {
+            if (dd.matches(providerId, driverId, driverClass)) {
                 if (!defaultOnly || dd.isShowByDefault()) {
                     result.add(dd);
                 }
@@ -176,4 +193,15 @@ public class DashboardRegistry {
         }
         return result;
     }
+
+    public List<DBPNamedObject> getAllSupportedSources() {
+        Set<DBPNamedObject> result = new LinkedHashSet<>();
+        for (DashboardDescriptor dd : dashboardList.values()) {
+            result.addAll(dd.getSupportedSources());
+        }
+        ArrayList<DBPNamedObject> sortedDrivers = new ArrayList<>(result);
+        sortedDrivers.sort(Comparator.comparing(DBPNamedObject::getName));
+        return sortedDrivers;
+    }
+
 }

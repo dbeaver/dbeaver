@@ -28,27 +28,23 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.time.Duration;
 import java.util.List;
 
-public class DashboardChartConfigDialog extends BaseDialog {
+public class DashboardItemConfigDialog extends BaseDialog {
 
-    private static final String DIALOG_ID = "DBeaver.DashboardChartConfigDialog";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.DashboardItemConfigDialog";//$NON-NLS-1$
 
     private final DashboardItemViewConfiguration dashboardConfig;
     private DashboardViewConfiguration viewConfiguration;
     private DashboardContainer dashboardContainer;
 
-    public DashboardChartConfigDialog(Shell shell, DashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration)
+    public DashboardItemConfigDialog(Shell shell, DashboardContainer dashboardContainer, DashboardViewConfiguration viewConfiguration)
     {
         super(shell, "Dashboard [" + dashboardContainer.getDashboardTitle() + "]", null);
 
@@ -74,12 +70,14 @@ public class DashboardChartConfigDialog extends BaseDialog {
             //UIUtils.createLabelText(infoGroup, "ID", dashboardConfig.getDashboardDescriptor().getId(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(infoGroup, "Name", dashboardConfig.getDashboardDescriptor().getName(), SWT.BORDER | SWT.READ_ONLY)
                 .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
+/*
             UIUtils.createLabelText(infoGroup, "Group", CommonUtils.notEmpty(dashboardConfig.getDashboardDescriptor().getGroup()), SWT.BORDER | SWT.READ_ONLY)
                 .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             UIUtils.createLabelText(infoGroup, "Data type", dashboardConfig.getDashboardDescriptor().getDataType().name(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(infoGroup, "Calc type", dashboardConfig.getDashboardDescriptor().getCalcType().name(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(infoGroup, "Value type", dashboardConfig.getDashboardDescriptor().getValueType().name(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(infoGroup, "Fetch type", dashboardConfig.getDashboardDescriptor().getFetchType().name(), SWT.BORDER | SWT.READ_ONLY);
+*/
 
             Composite btnGroup = UIUtils.createComposite(infoGroup, 1);
             btnGroup.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 4, 1));
@@ -119,17 +117,9 @@ public class DashboardChartConfigDialog extends BaseDialog {
             maxItemsText.addModifyListener(e -> {
                 dashboardConfig.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardConfig.getMaxItems()));
             });
-            Text maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", Duration.ofMillis(dashboardConfig.getMaxAge()).toString().substring(2), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            Text maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardConfig.getMaxAge()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             maxAgeText.addModifyListener(e -> {
-                String maxAgeStr = maxAgeText.getText();
-                if (!maxAgeStr.startsWith("PT")) maxAgeStr = "PT" + maxAgeStr;
-                maxAgeStr = maxAgeStr.replace(" ", "");
-                try {
-                    Duration newDuration = Duration.parse(maxAgeStr);
-                    dashboardConfig.setMaxAge(newDuration.toMillis());
-                } catch (Exception e1) {
-                    // Ignore
-                }
+                dashboardConfig.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardConfig.getMaxAge()));
             });
         }
 

@@ -30,7 +30,7 @@ public class DashboardConstants {
 
     public static final DashboardDataType DEF_DASHBOARD_DATA_TYPE = DashboardDataType.timeseries;
     public static final int DEF_DASHBOARD_UPDATE_PERIOD = 5000;
-    public static final double DEF_DASHBOARD_WIDTH_RATIO = 1.5;
+    public static final float DEF_DASHBOARD_WIDTH_RATIO = 1.5f;
     public static final DashboardCalcType DEF_DASHBOARD_CALC_TYPE = DashboardCalcType.value;
     public static final DashboardValueType DEF_DASHBOARD_VALUE_TYPE = DashboardValueType.decimal;
     public static final DashboardFetchType DEF_DASHBOARD_FETCH_TYPE = DashboardFetchType.columns;
@@ -39,4 +39,5 @@ public class DashboardConstants {
     public static final String CMD_REMOVE_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.remove";
     public static final String CMD_RESET_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.reset";
     public static final String CMD_VIEW_DASHBOARD = "org.jkiss.dbeaver.ui.dashboard.view";
+    public static final String DEF_DASHBOARD_VIEW_TYPE = "timeseries";
 }

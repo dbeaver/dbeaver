@@ -188,6 +188,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         this.resourceContributions.clear();
     }
 
+    @Override
     @Nullable
     public DataSourceProviderDescriptor getDataSourceProvider(String id)
     {
@@ -215,10 +216,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     @Nullable
-    public DriverDescriptor findDriver(@NotNull String driverName) {
+    public DriverDescriptor findDriver(@NotNull String driverIdOrName) {
         // Try to find by ID
         for (DataSourceProviderDescriptor pd : dataSourceProviders) {
-            DriverDescriptor driver = pd.getDriver(driverName);
+            DriverDescriptor driver = pd.getDriver(driverIdOrName);
             if (driver != null) {
                 return driver;
             }
@@ -226,7 +227,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         // Try to find by name
         for (DataSourceProviderDescriptor pd : dataSourceProviders) {
             for (DriverDescriptor driver : pd.getDrivers()) {
-                if (driver.getName().equalsIgnoreCase(driverName)) {
+                if (driver.getName().equalsIgnoreCase(driverIdOrName)) {
                     while (driver.getReplacedBy() != null) {
                         driver = driver.getReplacedBy();
                     }
