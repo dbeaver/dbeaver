@@ -339,7 +339,7 @@
 
                 <driver
                         id="sybase_jtds"
-                        label="Sybase"
+                        label="Sybase jTDS"
                         icon="icons/sybase_icon.png"
                         iconBig="icons/sybase_icon_big.png"
                         class="net.sourceforge.jtds.jdbc.Driver"
