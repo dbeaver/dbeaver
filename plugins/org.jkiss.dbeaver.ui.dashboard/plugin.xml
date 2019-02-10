@@ -102,7 +102,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard">
-        <dashboardView id="timeseries" label="Time series" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.png" renderer="org.jkiss.dbeaver.ui.dashboard.histogram.DashboardRendererTimeseries">
+        <dashboardView id="timeseries" label="Time series" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.png"
+            dataTypes="timeseries"
+            renderer="org.jkiss.dbeaver.ui.dashboard.histogram.DashboardRendererTimeseries">
 
         </dashboardView>
     </extension>

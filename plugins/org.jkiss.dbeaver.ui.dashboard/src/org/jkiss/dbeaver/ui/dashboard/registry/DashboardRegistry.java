@@ -22,7 +22,10 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -164,4 +167,13 @@ public class DashboardRegistry {
         saveConfigFile();
     }
 
+    public List<DashboardViewType> getSupportedViewTypes(DashboardDataType dataType) {
+        List<DashboardViewType> result = new ArrayList<>();
+        for (DashboardViewType vt : viewTypeList) {
+            if (ArrayUtils.contains(vt.getSupportedTypes(), dataType)) {
+                result.add(vt);
+            }
+        }
+        return result;
+    }
 }
