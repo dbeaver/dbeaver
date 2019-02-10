@@ -517,6 +517,11 @@ public class ResultSetViewer extends Viewer
                         DBDAttributeBinding docAttr = model.getDocumentAttribute();
                         return docAttr == null ? null : docAttr.getValueHandler().getValueContentType(docAttr);
                     }
+
+                    @Override
+                    public DBCResultSet getResultSet() {
+                        return resultSet;
+                    }
                 };
                 final List<ResultSetPresentationDescriptor> newPresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet, context);
                 changed = CommonUtils.isEmpty(this.availablePresentations) || !newPresentations.equals(this.availablePresentations);
