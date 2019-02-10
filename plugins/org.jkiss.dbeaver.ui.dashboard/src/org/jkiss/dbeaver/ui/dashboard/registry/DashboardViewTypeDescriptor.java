@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.dashboard.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
@@ -33,6 +34,7 @@ public class DashboardViewTypeDescriptor extends AbstractContextDescriptor imple
     private String id;
     private String label;
     private String description;
+    private DBPImage icon;
     private ObjectType implType;
     private DashboardDataType[] supportedDataTypes;
 
@@ -44,6 +46,7 @@ public class DashboardViewTypeDescriptor extends AbstractContextDescriptor imple
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.icon = iconToImage(config.getAttribute("icon"));
         String[] dataTypeNames = CommonUtils.notEmpty(config.getAttribute("dataTypes")).split(",");
         this.supportedDataTypes = new DashboardDataType[dataTypeNames.length];
         for (int i = 0; i < dataTypeNames.length; i++) {
@@ -70,6 +73,11 @@ public class DashboardViewTypeDescriptor extends AbstractContextDescriptor imple
     public String getDescription()
     {
         return description;
+    }
+
+    @Override
+    public DBPImage getIcon() {
+        return icon;
     }
 
     @Override
