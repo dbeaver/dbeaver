@@ -44,9 +44,11 @@ public class DashboardItem extends Composite implements DashboardContainer {
     private final DashboardItemViewConfiguration dashboardConfig;
 
     private Date lastUpdateTime;
+    private DashboardViewType curViewType;
     private DashboardRenderer renderer;
     private DashboardChartComposite dashboardControl;
     private final Label titleLabel;
+    private final Composite chartComposite;
 
     public DashboardItem(DashboardList parent, String dashboardId) {
         super(parent, SWT.DOUBLE_BUFFERED);
@@ -79,19 +81,11 @@ public class DashboardItem extends Composite implements DashboardContainer {
             titleLabel.setText("  " + dashboardConfig.getDashboardDescriptor().getName());
         }
 
-        try {
-            Composite chartComposite = new Composite(this, SWT.NONE);
-            chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-            chartComposite.setLayout(new FillLayout());
-            renderer = dashboardConfig.getDashboardDescriptor().getDefaultViewType().createRenderer();
-            dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
+        chartComposite = new Composite(this, SWT.NONE);
+        chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        chartComposite.setLayout(new FillLayout());
 
-        } catch (DBException e) {
-            // Something went wrong
-            Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-            errorLabel.setText("Error creating " + dashboardConfig.getDashboardDescriptor().getName() + " renderer: " + e.getMessage());
-            errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
-        }
+        createChartRenderer();
 
         if (dashboardControl != null) {
             Canvas chartCanvas = dashboardControl.getChartCanvas();
@@ -132,6 +126,20 @@ public class DashboardItem extends Composite implements DashboardContainer {
         addDisposeListener(e -> groupContainer.removeItem(this));
 
         this.addPaintListener(this::paintItem);
+    }
+
+    private void createChartRenderer() {
+
+        try {
+            curViewType = dashboardConfig.getViewType();
+            renderer = curViewType.createRenderer();
+            dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
+        } catch (DBException e) {
+            // Something went wrong
+            Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+            errorLabel.setText("Error creating " + dashboardConfig.getDashboardDescriptor().getName() + " renderer: " + e.getMessage());
+            errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
+        }
     }
 
     public Label getTitleLabel() {
@@ -317,8 +325,19 @@ public class DashboardItem extends Composite implements DashboardContainer {
     @Override
     public void updateDashboardView() {
         UIUtils.asyncExec(() -> {
-            if (renderer != null) {
+            boolean forceLayout = false;
+            if (dashboardConfig.getViewType() != curViewType) {
+                // Change view!
+                if (dashboardControl != null) {
+                    dashboardControl.dispose();
+                    forceLayout = true;
+                }
+                createChartRenderer();
+            } else if (renderer != null) {
                 renderer.updateDashboardView(this);
+            }
+            if (forceLayout) {
+                chartComposite.layout(true, true);
             }
         });
     }
