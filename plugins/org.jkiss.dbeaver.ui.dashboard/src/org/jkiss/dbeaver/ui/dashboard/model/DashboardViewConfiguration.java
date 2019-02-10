@@ -46,10 +46,17 @@ public class DashboardViewConfiguration {
     private final DBPDataSourceContainer dataSourceContainer;
     private List<DashboardItemViewConfiguration> items = new ArrayList<>();
 
+    private boolean openConnectionOnActivate;
+    private boolean useSeparateConnection;
+
     public DashboardViewConfiguration(DBPDataSourceContainer dataSourceContainer, String viewId) {
         this.dataSourceContainer = dataSourceContainer;
         this.viewId = viewId;
         loadSettings();
+    }
+
+    public String getViewId() {
+        return viewId;
     }
 
     public DBPDataSourceContainer getDataSourceContainer() {
@@ -58,6 +65,22 @@ public class DashboardViewConfiguration {
 
     public List<DashboardItemViewConfiguration> getDashboardItemConfigs() {
         return items;
+    }
+
+    public boolean isOpenConnectionOnActivate() {
+        return openConnectionOnActivate;
+    }
+
+    public void setOpenConnectionOnActivate(boolean openConnectionOnActivate) {
+        this.openConnectionOnActivate = openConnectionOnActivate;
+    }
+
+    public boolean isUseSeparateConnection() {
+        return useSeparateConnection;
+    }
+
+    public void setUseSeparateConnection(boolean useSeparateConnection) {
+        this.useSeparateConnection = useSeparateConnection;
     }
 
     public DashboardItemViewConfiguration getDashboardConfig(String dashboardId) {
