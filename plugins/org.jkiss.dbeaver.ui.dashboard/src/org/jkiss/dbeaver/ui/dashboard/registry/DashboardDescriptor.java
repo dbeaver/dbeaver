@@ -44,11 +44,12 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     private String description;
     private String group;
     private boolean showByDefault;
-    private DashboardTypeDescriptor type;
+    private DashboardViewTypeDescriptor defaultViewType;
     private String[] tags;
     private final List<DataSourceMapping> dataSourceMappings = new ArrayList<>();
     private final List<QueryMapping> queries = new ArrayList<>();
 
+    private DashboardDataType dataType;
     private float widthRatio;
     private DashboardCalcType calcType;
     private DashboardFetchType fetchType;
@@ -130,7 +131,8 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.tags = CommonUtils.notEmpty(config.getAttribute("tags")).split(",");
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
-        this.type = registry.getDashboardType(config.getAttribute("type"));
+        this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
+        this.defaultViewType = registry.getViewType(config.getAttribute("defaultView"));
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO); // Default ratio is 2 to 3
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
         this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
@@ -161,7 +163,8 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.tags = CommonUtils.notEmpty(config.getAttribute("tags")).split(",");
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
-        this.type = registry.getDashboardType(config.getAttribute("type"));
+        this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
+        this.defaultViewType = registry.getViewType(config.getAttribute("defaultView"));
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO);
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
         this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
@@ -191,7 +194,8 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.tags = source.tags;
         this.showByDefault = source.showByDefault;
 
-        this.type = source.type;
+        this.dataType = source.dataType;
+        this.defaultViewType = source.defaultViewType;
         this.widthRatio = source.widthRatio;
         this.calcType = source.calcType;
         this.valueType = source.valueType;
@@ -254,12 +258,20 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return showByDefault;
     }
 
-    public DashboardTypeDescriptor getType() {
-        return type;
+    public DashboardDataType getDataType() {
+        return dataType;
     }
 
-    public void setType(DashboardTypeDescriptor type) {
-        this.type = type;
+    public void setDataType(DashboardDataType dataType) {
+        this.dataType = dataType;
+    }
+
+    public DashboardViewTypeDescriptor getDefaultViewType() {
+        return defaultViewType;
+    }
+
+    public void setDefaultViewType(DashboardViewTypeDescriptor defaultViewType) {
+        this.defaultViewType = defaultViewType;
     }
 
     public String[] getTags() {
@@ -353,7 +365,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         xml.addAttribute("tags", String.join(",", tags));
         xml.addAttribute("showByDefault", showByDefault);
 
-        xml.addAttribute("type", type.getId());
+        xml.addAttribute("type", defaultViewType.getId());
         xml.addAttribute("ratio", widthRatio);
         xml.addAttribute("calc", calcType.name());
         xml.addAttribute("value", valueType.name());

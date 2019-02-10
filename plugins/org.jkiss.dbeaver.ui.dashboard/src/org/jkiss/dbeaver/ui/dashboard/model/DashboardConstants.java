@@ -28,6 +28,7 @@ public class DashboardConstants {
     public static final int DEF_DASHBOARD_MAXIMUM_ITEM_COUNT = 300;
     public static final long DEF_DASHBOARD_MAXIMUM_AGE = 30 * 60 * 1000; // Half of hour
 
+    public static final DashboardDataType DEF_DASHBOARD_DATA_TYPE = DashboardDataType.timeseries;
     public static final int DEF_DASHBOARD_UPDATE_PERIOD = 5000;
     public static final double DEF_DASHBOARD_WIDTH_RATIO = 1.5;
     public static final DashboardCalcType DEF_DASHBOARD_CALC_TYPE = DashboardCalcType.value;

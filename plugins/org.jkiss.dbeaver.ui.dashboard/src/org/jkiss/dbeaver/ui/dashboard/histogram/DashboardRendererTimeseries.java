@@ -33,14 +33,13 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.time.TimeSeriesDataItem;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
+import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererBase;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
@@ -51,9 +50,9 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Dashboard renderer
+ * Histogram dashboard renderer
  */
-public class DashboardRendererHistogram implements DashboardRenderer {
+public class DashboardRendererTimeseries extends DashboardRendererBase {
 
     private static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
     private static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
@@ -167,22 +166,6 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         return chartComposite;
     }
 
-    private void generateSampleSeries(DashboardContainer container, TimeSeriesCollection dataset) {
-        TimeSeries seriesSin = new TimeSeries("Sin");
-        long startTime = System.currentTimeMillis() - 1000 * 60 * 60 * 2;
-        for (int i = 0; i < 100; i++) {
-            seriesSin.add(new TimeSeriesDataItem(new FixedMillisecond(startTime + i * 60 * 1000), Math.sin(0.1 * i) * 100));
-        }
-        dataset.addSeries(seriesSin);
-
-        TimeSeries seriesCos = new TimeSeries("Cos");
-        for (int i = 0; i < 100; i++) {
-            seriesCos.add(new TimeSeriesDataItem(new FixedMillisecond(startTime + i * 60 * 1000), Math.cos(0.1 * i) * 100));
-        }
-        dataset.addSeries(seriesCos);
-
-    }
-
     @Override
     public void updateDashboardData(DashboardContainer container, Date lastUpdateTime, DashboardDataset dataset) {
         DashboardChartComposite chartComposite = getChartComposite(container);
@@ -265,38 +248,6 @@ public class DashboardRendererHistogram implements DashboardRenderer {
     }
 
     @Override
-    public void moveDashboardView(DashboardItem toItem, DashboardItem fromItem, boolean clearOriginal) {
-        DashboardChartComposite toComp = getChartComposite(toItem);
-        DashboardChartComposite fromComp = getChartComposite(fromItem);
-        toComp.setChart(fromComp.getChart());
-        if (clearOriginal) {
-            fromComp.setChart(null);
-        }
-
-/*
-        XYPlot plotTo = getDashboardPlot(dashboardItem);
-        XYPlot plotFrom = getDashboardPlot(fromItem);
-        if (plotTo != null && plotFrom != null) {
-            TimeSeriesCollection datasetTo = (TimeSeriesCollection) plotTo.getDataset();
-            TimeSeriesCollection datasetFrom = (TimeSeriesCollection) plotFrom.getDataset();
-            datasetTo.removeAllSeries();
-            for (int i = 0; i < datasetFrom.getSeriesCount(); i++) {
-                TimeSeries seriesFrom = datasetFrom.getSeries(i);
-                TimeSeries seriesTo = new TimeSeries(seriesFrom.getKey(), seriesFrom.getDomainDescription(), seriesFrom.getRangeDescription());
-                seriesTo.setMaximumItemAge(seriesFrom.getMaximumItemAge());
-                seriesTo.setMaximumItemCount(seriesFrom.getMaximumItemCount());
-                for (Object si : seriesFrom.getItems()) {
-                    seriesTo.add((TimeSeriesDataItem) si);
-                }
-                datasetTo.addSeries(seriesTo);
-                plotTo.getRenderer().setSeriesStroke(datasetTo.getSeriesCount() - 1, plotTo.getRenderer().getBaseStroke());
-            }
-
-        }
-*/
-    }
-
-    @Override
     public void resetDashboardData(DashboardContainer container, Date lastUpdateTime) {
         XYPlot plot = getDashboardPlot(container);
         if (plot != null) {
@@ -329,22 +280,10 @@ public class DashboardRendererHistogram implements DashboardRenderer {
         dashboardItem.getParent().layout(true, true);
     }
 
-    @Override
-    public void disposeDashboard(DashboardContainer container) {
-        DashboardChartComposite chartComposite = getChartComposite(container);
-        if (chartComposite != null) {
-            chartComposite.setChart(null);
-        }
-    }
-
     private XYPlot getDashboardPlot(DashboardContainer container) {
         DashboardChartComposite chartComposite = getChartComposite(container);
         JFreeChart chart = chartComposite.getChart();
         return (XYPlot) chart.getPlot();
-    }
-
-    private DashboardChartComposite getChartComposite(DashboardContainer container) {
-        return (DashboardChartComposite) container.getDashboardControl();
     }
 
 }
