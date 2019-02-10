@@ -25,4 +25,5 @@ Require-Bundle: org.eclipse.equinox.preferences,
  org.jkiss.dbeaver.ui.navigator
 Export-Package: org.jkiss.dbeaver.ui.dashboard.control,
  org.jkiss.dbeaver.ui.dashboard.internal,
- org.jkiss.dbeaver.ui.dashboard.model
+ org.jkiss.dbeaver.ui.dashboard.model,
+ org.jkiss.dbeaver.ui.dashboard.model.data
