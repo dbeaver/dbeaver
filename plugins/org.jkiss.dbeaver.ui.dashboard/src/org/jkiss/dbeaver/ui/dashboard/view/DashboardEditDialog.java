@@ -18,13 +18,10 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardUtils;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
+import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardViewTypeDescriptor;
@@ -38,6 +35,21 @@ public class DashboardEditDialog extends BaseDialog {
     private static final String DIALOG_ID = "DBeaver.DashboardEditDialog";//$NON-NLS-1$
 
     private final DashboardDescriptor dashboardDescriptor;
+
+    private Text idText;
+    private Text nameText;
+    private Text descriptionText;
+    private Text queryText;
+
+    private Combo viewTypeCombo;
+    private Text updatePeriodText;
+    private Text maxItemsText;
+    private Text maxAgeText;
+    private List<DashboardViewType> viewTypes;
+    private Combo dataTypeCombo;
+    private Combo calcTypeCombo;
+    private Combo valueTypeCombo;
+    private Combo fetchTypeCombo;
 
     public DashboardEditDialog(Shell shell, DashboardDescriptor dashboardDescriptor)
     {
@@ -63,38 +75,58 @@ public class DashboardEditDialog extends BaseDialog {
         {
             Group infoGroup = UIUtils.createControlGroup(composite, "Main info", 4, GridData.FILL_HORIZONTAL, 0);
 
-            UIUtils.createLabelText(infoGroup, "ID", dashboardDescriptor.getId(), SWT.BORDER | baseStyle)
-                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-            UIUtils.createLabelText(infoGroup, "Name", dashboardDescriptor.getName(), SWT.BORDER | baseStyle)
-                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
+            idText = UIUtils.createLabelText(infoGroup, "ID", dashboardDescriptor.getId(), SWT.BORDER | baseStyle);
+            idText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
+            nameText = UIUtils.createLabelText(infoGroup, "Name", dashboardDescriptor.getName(), SWT.BORDER | baseStyle);
+            nameText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
 //            UIUtils.createLabelText(infoGroup, "Group", CommonUtils.notEmpty(dashboardDescriptor.getGroup()), SWT.BORDER | baseStyle)
 //                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-            UIUtils.createLabelText(infoGroup, "Data type", dashboardDescriptor.getDataType().name(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(infoGroup, "Calc type", dashboardDescriptor.getCalcType().name(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(infoGroup, "Value type", dashboardDescriptor.getValueType().name(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(infoGroup, "Fetch type", dashboardDescriptor.getFetchType().name(), SWT.BORDER | SWT.READ_ONLY);
+            dataTypeCombo = UIUtils.createLabelCombo(infoGroup, "Data type", "Type of data for this dashboard", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (DashboardDataType ddt : DashboardDataType.values()) {
+                dataTypeCombo.add(ddt.name());
+            }
+            dataTypeCombo.setText(dashboardDescriptor.getDataType().name());
+            dataTypeCombo.setEnabled(!readOnly);
 
-            Text descriptionText = UIUtils.createLabelText(infoGroup, "Description", CommonUtils.notEmpty(dashboardDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
-            ((GridData)descriptionText.getLayoutData()).heightHint = 30;
-            ((GridData)descriptionText.getLayoutData()).widthHint = 300;
-            ((GridData)descriptionText.getLayoutData()).horizontalSpan = 3;
-            descriptionText.addModifyListener(e -> {
-                dashboardDescriptor.setDescription(descriptionText.getText());
-            });
+            calcTypeCombo = UIUtils.createLabelCombo(infoGroup, "Calc type", "Value calculation type", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (DashboardCalcType dct : DashboardCalcType.values()) {
+                calcTypeCombo.add(dct.name());
+            }
+            calcTypeCombo.setText(dashboardDescriptor.getCalcType().name());
+            calcTypeCombo.setEnabled(!readOnly);
+
+            valueTypeCombo = UIUtils.createLabelCombo(infoGroup, "Value type", "Type of values", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (DashboardValueType dvt : DashboardValueType.values()) {
+                valueTypeCombo.add(dvt.name());
+            }
+            valueTypeCombo.setText(dashboardDescriptor.getValueType().name());
+            valueTypeCombo.setEnabled(!readOnly);
+
+            fetchTypeCombo = UIUtils.createLabelCombo(infoGroup, "Fetch type", "Values fetch type", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (DashboardFetchType dft : DashboardFetchType.values()) {
+                fetchTypeCombo.add(dft.name());
+            }
+            fetchTypeCombo.setText(dashboardDescriptor.getFetchType().name());
+            fetchTypeCombo.setEnabled(!readOnly);
+
+            descriptionText = UIUtils.createLabelText(infoGroup, "Description", CommonUtils.notEmpty(dashboardDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
+            ((GridData) descriptionText.getLayoutData()).heightHint = 30;
+            ((GridData) descriptionText.getLayoutData()).widthHint = 300;
+            ((GridData) descriptionText.getLayoutData()).horizontalSpan = 3;
         }
 
         {
             Group sqlGroup = UIUtils.createControlGroup(composite, "Queries", 1, GridData.FILL_HORIZONTAL, 0);
-            Text queryText = new Text(sqlGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | baseStyle);
+            queryText = new Text(sqlGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | baseStyle);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 100;
-            gd.widthHint = 300;
+            gd.widthHint = 400;
             queryText.setLayoutData(gd);
             UIUtils.createInfoLabel(sqlGroup, "Use blank line as query separator");
 
             StringBuilder sql = new StringBuilder();
             for (DashboardDescriptor.QueryMapping query : dashboardDescriptor.getQueries()) {
-                sql.append(query.getQueryText()).append("\n\n");
+                sql.append(query.getQueryText().trim()).append("\n\n");
             }
             queryText.setText(sql.toString());
         }
@@ -102,35 +134,29 @@ public class DashboardEditDialog extends BaseDialog {
         {
             Group updateGroup = UIUtils.createControlGroup(composite, "Rendering", 2, GridData.FILL_HORIZONTAL, 0);
 
-            Combo typeCombo = UIUtils.createLabelCombo(updateGroup, "Default view", "Dashboard view", SWT.BORDER | SWT.READ_ONLY);
-            typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            viewTypeCombo = UIUtils.createLabelCombo(updateGroup, "Default view", "Dashboard view", SWT.BORDER | SWT.READ_ONLY);
+            viewTypeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             {
-                List<DashboardViewType> viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardDescriptor.getDataType());
+                viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardDescriptor.getDataType());
                 for (DashboardViewType viewType : viewTypes) {
-                    typeCombo.add(viewType.getTitle());
+                    viewTypeCombo.add(viewType.getTitle());
                 }
-                typeCombo.setText(dashboardDescriptor.getDefaultViewType().getTitle());
-                typeCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        dashboardDescriptor.setDefaultViewType((DashboardViewTypeDescriptor) viewTypes.get(typeCombo.getSelectionIndex()));
-                    }
-                });
+                viewTypeCombo.setText(dashboardDescriptor.getDefaultViewType().getTitle());
             }
-            typeCombo.setEnabled(!readOnly);
+            viewTypeCombo.setEnabled(!readOnly);
 
-            Text updatePeriodText = UIUtils.createLabelText(updateGroup, "Update period (ms)", String.valueOf(dashboardDescriptor.getUpdatePeriod()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
-            updatePeriodText.addModifyListener(e -> {
-                dashboardDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardDescriptor.getUpdatePeriod()));
-            });
-            Text maxItemsText = UIUtils.createLabelText(updateGroup, "Maximum items", String.valueOf(dashboardDescriptor.getMaxItems()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
-            maxItemsText.addModifyListener(e -> {
-                dashboardDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardDescriptor.getMaxItems()));
-            });
-            Text maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardDescriptor.getMaxAge()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
-            maxAgeText.addModifyListener(e -> {
-                dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));
-            });
+            updatePeriodText = UIUtils.createLabelText(updateGroup, "Update period (ms)", String.valueOf(dashboardDescriptor.getUpdatePeriod()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
+//            updatePeriodText.addModifyListener(e -> {
+//                dashboardDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardDescriptor.getUpdatePeriod()));
+//            });
+            maxItemsText = UIUtils.createLabelText(updateGroup, "Maximum items", String.valueOf(dashboardDescriptor.getMaxItems()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
+//            maxItemsText.addModifyListener(e -> {
+//                dashboardDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardDescriptor.getMaxItems()));
+//            });
+            maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardDescriptor.getMaxAge()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
+//            maxAgeText.addModifyListener(e -> {
+//                dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));
+//            });
         }
 
         return parent;
@@ -141,6 +167,28 @@ public class DashboardEditDialog extends BaseDialog {
         Control contents = super.createContents(parent);
 
         return contents;
+    }
+
+    private void saveSettings() {
+        dashboardDescriptor.setId(idText.getText());
+        dashboardDescriptor.setName(nameText.getText());
+        dashboardDescriptor.setDescription(descriptionText.getText());
+        dashboardDescriptor.setDataType(DashboardDataType.values()[dataTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setCalcType(DashboardCalcType.values()[calcTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setValueType(DashboardValueType.values()[valueTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setFetchType(DashboardFetchType.values()[fetchTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setQueries(queryText.getText().split("\\n\\s*\\n"));
+
+        dashboardDescriptor.setDefaultViewType((DashboardViewTypeDescriptor) viewTypes.get(viewTypeCombo.getSelectionIndex()));
+        dashboardDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardDescriptor.getUpdatePeriod()));
+        dashboardDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardDescriptor.getMaxItems()));
+        dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));
+    }
+
+    @Override
+    protected void okPressed() {
+        saveSettings();
+        super.okPressed();
     }
 
 }

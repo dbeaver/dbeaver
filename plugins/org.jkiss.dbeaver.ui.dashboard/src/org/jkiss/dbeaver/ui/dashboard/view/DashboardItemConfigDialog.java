@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -187,6 +188,18 @@ public class DashboardItemConfigDialog extends BaseDialog {
         Control contents = super.createContents(parent);
 
         return contents;
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        createButton(parent, IDialogConstants.CANCEL_ID, "Edit", false).addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), dashboardConfig.getDashboardDescriptor());
+                editDialog.open();
+            }
+        });
+        super.createButtonsForButtonBar(parent);
     }
 
     @Override

@@ -111,6 +111,10 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
             this.queryText = XMLUtils.getElementBody(config);
         }
 
+        public QueryMapping(String queryText) {
+            this.queryText = queryText;
+        }
+
         @Override
         public String getQueryText() {
             return queryText;
@@ -136,6 +140,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
         this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
         this.defaultViewType = registry.getViewType(config.getAttribute("defaultView"));
+        if (this.defaultViewType == null) {
+            this.defaultViewType = registry.getViewType(DashboardConstants.DEF_DASHBOARD_VIEW_TYPE);
+        }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO); // Default ratio is 2 to 3
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
         this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
@@ -168,6 +175,9 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
         this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
         this.defaultViewType = registry.getViewType(config.getAttribute("defaultView"));
+        if (this.defaultViewType == null) {
+            this.defaultViewType = registry.getViewType(DashboardConstants.DEF_DASHBOARD_VIEW_TYPE);
+        }
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO);
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
         this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
@@ -236,6 +246,10 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     @NotNull
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override
@@ -330,6 +344,13 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return queries;
     }
 
+    public void setQueries(String[] queryStrings) {
+        queries.clear();
+        for (String qs : queryStrings) {
+            queries.add(new QueryMapping(qs));
+        }
+    }
+
     public long getUpdatePeriod() {
         return updatePeriod;
     }
@@ -356,6 +377,10 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public boolean isCustom() {
         return isCustom;
+    }
+
+    public void setCustom(boolean custom) {
+        this.isCustom = custom;
     }
 
     public boolean matches(String providerId, String driverId, String driverClass) {
@@ -397,7 +422,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         xml.addAttribute("tags", String.join(",", tags));
         xml.addAttribute("showByDefault", showByDefault);
 
-        xml.addAttribute("type", defaultViewType.getId());
+        xml.addAttribute("viewType", defaultViewType.getId());
         xml.addAttribute("ratio", widthRatio);
         xml.addAttribute("calc", calcType.name());
         xml.addAttribute("value", valueType.name());

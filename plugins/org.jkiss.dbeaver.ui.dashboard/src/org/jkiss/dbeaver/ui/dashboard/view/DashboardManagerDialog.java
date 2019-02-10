@@ -124,7 +124,7 @@ public class DashboardManagerDialog extends BaseDialog {
                             DashboardDescriptor dashboardDescriptor = (DashboardDescriptor) element;
                             DBPImage icon;
                             if (dashboardDescriptor.isCustom()) {
-                                icon = UIIcon.CHART_CURVE;
+                                icon = UIIcon.ACTION_OBJECT;
                             } else {
                                 icon = dashboardDescriptor.getDefaultViewType().getIcon();
                             }
@@ -239,16 +239,33 @@ public class DashboardManagerDialog extends BaseDialog {
         DashboardDescriptor newDashboard = new DashboardDescriptor("", "", "", "");
         DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), newDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
+            DashboardRegistry.getInstance().createDashboard(newDashboard);
             refreshDashboards();
         }
     }
 
     private void copyDashboard() {
+        DashboardDescriptor newDashboard = new DashboardDescriptor(selectedDashboard);
+        newDashboard.setCustom(true);
+        String origId = newDashboard.getId();
+        for (int i = 2; ; i++) {
+            if (DashboardRegistry.getInstance().getDashboard(newDashboard.getId()) != null) {
+                newDashboard.setId(origId + " " + i);
+            } else {
+                break;
+            }
+        }
+        DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), newDashboard);
+        if (editDialog.open() == IDialogConstants.OK_ID) {
+            DashboardRegistry.getInstance().createDashboard(newDashboard);
+            refreshDashboards();
+        }
     }
 
     private void editDashboard() {
         DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), selectedDashboard);
         if (editDialog.open() == IDialogConstants.OK_ID) {
+            DashboardRegistry.getInstance().saveSettings();
             refreshDashboards();
         }
     }
@@ -262,12 +279,15 @@ public class DashboardManagerDialog extends BaseDialog {
             "Delete dashboard",
             "Are you sure you want to delete dashboard '" + selectedDashboard.getName() + "'?"))
         {
+            DashboardRegistry.getInstance().removeDashboard(selectedDashboard);
+            selectedDashboard = null;
             refreshDashboards();
         }
     }
 
     private void refreshDashboards() {
         treeViewer.setInput(DashboardRegistry.getInstance().getAllSupportedSources());
+        updateButtons();
     }
 
 }
