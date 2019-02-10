@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+
 /**
  * Result set context
  */
@@ -27,4 +29,8 @@ public interface IResultSetContext
     boolean supportsDocument();
 
     String getDocumentContentType();
+
+    DBCResultSet getResultSet();
+
+
 }

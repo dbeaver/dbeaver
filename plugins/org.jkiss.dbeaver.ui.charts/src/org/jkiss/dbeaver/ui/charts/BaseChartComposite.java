@@ -108,15 +108,20 @@ public class BaseChartComposite extends ChartComposite {
             }
         });
 
-        manager.add(new Separator());
+        if (hasConfigurationDialog()) {
+            manager.add(new Separator());
 
-        manager.add(new Action("Settings ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
-            @Override
-            public void run() {
-                showChartConfigDialog();
-            }
-        });
+            manager.add(new Action("Settings ...", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+                @Override
+                public void run() {
+                    showChartConfigDialog();
+                }
+            });
+        }
+    }
 
+    protected boolean hasConfigurationDialog() {
+        return true;
     }
 
     protected boolean showChartConfigDialog() {
