@@ -13,7 +13,7 @@
                 id="bigquery"
                 parent="generic"
                 label="BigQuery"
-                icon="icons/google_bigquery.png">
+                icon="icons/bigquery_icon.png">
             <drivers managable="true">
 
                 <!-- Simba JDBC driver -->
