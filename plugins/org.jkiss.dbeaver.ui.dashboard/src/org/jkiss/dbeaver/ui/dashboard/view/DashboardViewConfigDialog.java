@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -27,7 +28,6 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 public class DashboardViewConfigDialog extends BaseDialog {
 
-    private static final int MANAGER_BUTTON_ID = 1000;
     private DashboardViewConfiguration viewConfiguration;
 
     public DashboardViewConfigDialog(Shell shell, DashboardViewConfiguration viewConfiguration)
@@ -79,9 +79,15 @@ public class DashboardViewConfigDialog extends BaseDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        final Button createButton = createButton(parent, MANAGER_BUTTON_ID, "Manage ...", false);
-        ((GridData) createButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
-        ((GridData) createButton.getLayoutData()).grabExcessHorizontalSpace = true;
+        final Button managerButton = createButton(parent, IDialogConstants.CANCEL_ID, "Manage ...", false);
+        ((GridData) managerButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
+        ((GridData) managerButton.getLayoutData()).grabExcessHorizontalSpace = true;
+        managerButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                new DashboardManagerDialog(UIUtils.getActiveWorkbenchShell()).open();
+            }
+        });
 
         super.createButtonsForButtonBar(parent);
     }
@@ -92,12 +98,4 @@ public class DashboardViewConfigDialog extends BaseDialog {
         viewConfiguration.saveSettings();
     }
 
-    @Override
-    protected void buttonPressed(int buttonId) {
-        if (buttonId == MANAGER_BUTTON_ID) {
-            new DashboardManagerDialog(getShell()).open();
-        } else {
-            super.buttonPressed(buttonId);
-        }
-    }
 }

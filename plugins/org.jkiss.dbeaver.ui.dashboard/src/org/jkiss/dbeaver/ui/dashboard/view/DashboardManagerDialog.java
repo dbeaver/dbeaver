@@ -287,6 +287,7 @@ public class DashboardManagerDialog extends BaseDialog {
 
     private void refreshDashboards() {
         treeViewer.setInput(DashboardRegistry.getInstance().getAllSupportedSources());
+        treeViewer.expandAll();
         updateButtons();
     }
 
