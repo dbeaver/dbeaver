@@ -69,7 +69,10 @@ public class DashboardItemViewDialog extends BaseDialog {
         Composite dialogArea = super.createDialogArea(parent);
 
         Composite chartGroup = UIUtils.createPlaceholder(dialogArea, 1);
-        chartGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 450;
+        gd.heightHint = 300;
+        chartGroup.setLayoutData(gd);
         chartGroup.setLayout(new FillLayout());
 
         DashboardListViewer dashboardListViewer = new DashboardListViewer(
