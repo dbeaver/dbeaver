@@ -87,6 +87,25 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
         createChartRenderer();
 
+        groupContainer.addItem(this);
+        addDisposeListener(e -> groupContainer.removeItem(this));
+
+        this.addPaintListener(this::paintItem);
+    }
+
+    private void createChartRenderer() {
+
+        try {
+            curViewType = dashboardConfig.getViewType();
+            renderer = curViewType.createRenderer();
+            dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
+        } catch (DBException e) {
+            // Something went wrong
+            Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+            errorLabel.setText("Error creating " + dashboardConfig.getDashboardDescriptor().getName() + " renderer: " + e.getMessage());
+            errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
+        }
+
         if (dashboardControl != null) {
             Canvas chartCanvas = dashboardControl.getChartCanvas();
             MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -120,25 +139,6 @@ public class DashboardItem extends Composite implements DashboardContainer {
             });
 
             dashboardControl.addDisposeListener(e -> renderer.disposeDashboard(DashboardItem.this));
-        }
-
-        groupContainer.addItem(this);
-        addDisposeListener(e -> groupContainer.removeItem(this));
-
-        this.addPaintListener(this::paintItem);
-    }
-
-    private void createChartRenderer() {
-
-        try {
-            curViewType = dashboardConfig.getViewType();
-            renderer = curViewType.createRenderer();
-            dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
-        } catch (DBException e) {
-            // Something went wrong
-            Text errorLabel = new Text(this, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-            errorLabel.setText("Error creating " + dashboardConfig.getDashboardDescriptor().getName() + " renderer: " + e.getMessage());
-            errorLabel.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, true, true));
         }
     }
 

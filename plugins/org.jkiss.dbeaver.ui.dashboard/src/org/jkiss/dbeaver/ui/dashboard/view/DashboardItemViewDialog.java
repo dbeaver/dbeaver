@@ -45,14 +45,14 @@ import java.util.ArrayList;
 /**
  * Dashboard view dialog
  */
-public class DashboardViewDialog extends BaseDialog {
+public class DashboardItemViewDialog extends BaseDialog {
 
-    private static final String DIALOG_ID = "DBeaver.DashboardViewDialog";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.DashboardItemViewDialog";//$NON-NLS-1$
 
     private final DashboardViewContainer parentPart;
     private final DashboardItem sourceItem;
 
-    public DashboardViewDialog(DashboardViewContainer parentPart, DashboardItem sourceItem) {
+    public DashboardItemViewDialog(DashboardViewContainer parentPart, DashboardItem sourceItem) {
         super(parentPart.getSite().getShell(), "View Dashboard", null);
 
         this.parentPart = parentPart;

@@ -129,4 +129,14 @@ public class DashboardAddDialog extends BaseDialog {
     public DashboardDescriptor getSelectedDashboard() {
         return selectedDashboard;
     }
+
+    @Override
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == MANAGER_BUTTON_ID) {
+            new DashboardManagerDialog(getShell()).open();
+        } else {
+            super.buttonPressed(buttonId);
+        }
+    }
+
 }

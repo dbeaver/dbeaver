@@ -16,20 +16,32 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-public class HandlerDashboardConfiguration extends HandlerDashboardAbstract {
+public class DashboardManagerDialog extends BaseDialog {
+
+    public DashboardManagerDialog(Shell shell)
+    {
+        super(shell, "Manager dashboards", null);
+    }
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        DashboardView view = getActiveDashboardView(event);
-        if (view != null) {
-            DashboardViewConfigDialog dialog = new DashboardViewConfigDialog(HandlerUtil.getActiveShell(event), view.getConfiguration());
-            dialog.open();
-        }
-        return null;
+    protected Composite createDialogArea(Composite parent)
+    {
+        Composite composite = super.createDialogArea(parent);
+
+
+        return parent;
+    }
+
+    @Override
+    protected Control createContents(Composite parent) {
+        Control contents = super.createContents(parent);
+
+        return contents;
     }
 
 }

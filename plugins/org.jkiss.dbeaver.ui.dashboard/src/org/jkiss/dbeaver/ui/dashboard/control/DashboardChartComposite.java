@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dashboard.view.DashboardChartConfigDialog;
-import org.jkiss.dbeaver.ui.dashboard.view.DashboardViewDialog;
+import org.jkiss.dbeaver.ui.dashboard.view.DashboardItemViewDialog;
 
 import java.util.List;
 
@@ -129,7 +129,7 @@ public class DashboardChartComposite extends BaseChartComposite {
 
     @Override
     public void mouseDoubleClick(MouseEvent event) {
-        DashboardViewDialog viewDialog = new DashboardViewDialog(viewContainer, (DashboardItem) dashboardContainer);
+        DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DashboardItem) dashboardContainer);
         viewDialog.open();
     }
 
