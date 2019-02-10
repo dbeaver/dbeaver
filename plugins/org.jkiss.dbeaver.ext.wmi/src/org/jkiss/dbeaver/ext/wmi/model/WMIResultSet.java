@@ -157,6 +157,11 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
+    public Object getFeature(String name) {
+        return null;
+    }
+
+    @Override
     public void close()
     {
         for (WMIObject row : rows) {

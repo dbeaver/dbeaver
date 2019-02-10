@@ -238,6 +238,14 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
         }
 
         @Override
+        public Object getFeature(String name) {
+            if (FEATURE_NAME_LOCAL.equals(name)) {
+                return true;
+            }
+            return null;
+        }
+
+        @Override
         public void close() {
             // do nothing
         }
