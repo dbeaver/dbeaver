@@ -18,9 +18,12 @@ package org.jkiss.dbeaver.ui.dashboard.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.utils.CommonUtils;
@@ -77,14 +80,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
             this.driverClass = config.getAttribute("driverClass");
         }
 
-        boolean matches(DBPDataSourceContainer dataSource) {
-            if (this.dataSourceProvider != null && !this.dataSourceProvider.equals(dataSource.getDriver().getProviderId())) {
+        boolean matches(String providerId, String checkDriverId, String checkDriverClass) {
+            if (this.dataSourceProvider != null && !this.dataSourceProvider.equals(providerId)) {
                 return false;
             }
-            if (this.driverId != null && !this.driverId.equals(dataSource.getDriver().getId())) {
+            if (checkDriverId != null && this.driverId != null && !this.driverId.equals(checkDriverId)) {
                 return false;
             }
-            if (this.driverClass != null && !this.driverClass.equals(dataSource.getDriver().getDriverClassName())) {
+            if (checkDriverClass != null && this.driverClass != null && !this.driverClass.equals(checkDriverClass)) {
                 return false;
             }
             return true;
@@ -217,6 +220,15 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.name = name;
         this.description = description;
         this.group = group;
+        this.dataType = DashboardDataType.timeseries;
+        this.defaultViewType = DashboardRegistry.getInstance().getViewType(DashboardConstants.DEF_DASHBOARD_VIEW_TYPE);
+        this.widthRatio = DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO;
+        this.calcType = DashboardConstants.DEF_DASHBOARD_CALC_TYPE;
+        this.valueType = DashboardConstants.DEF_DASHBOARD_VALUE_TYPE;
+        this.fetchType = DashboardConstants.DEF_DASHBOARD_FETCH_TYPE;
+        this.updatePeriod = DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD;
+        this.maxItems = DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT;
+        this.maxAge = DashboardConstants.DEF_DASHBOARD_MAXIMUM_AGE;
 
         this.isCustom = true;
     }
@@ -346,14 +358,34 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         return isCustom;
     }
 
-    public boolean matches(DBPDataSourceContainer dataSource) {
+    public boolean matches(String providerId, String driverId, String driverClass) {
         for (DataSourceMapping dsm : dataSourceMappings) {
-            if (!dsm.matches(dataSource)) {
+            if (!dsm.matches(providerId, driverId, driverClass)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    public List<DBPNamedObject> getSupportedSources() {
+        DBPPlatform platform = DBWorkbench.getPlatform();
+
+        List<DBPNamedObject> results = new ArrayList<>();
+        for (DataSourceMapping dsm : dataSourceMappings) {
+            if (dsm.dataSourceProvider != null) {
+                DBPDataSourceProviderDescriptor provider = platform.getDataSourceProviderRegistry().getDataSourceProvider(dsm.dataSourceProvider);
+                if (provider != null) {
+                    results.add(provider);
+                }
+            } else if (dsm.driverId != null) {
+                DBPDriver driver = platform.getDataSourceProviderRegistry().findDriver(dsm.driverId);
+                if (driver != null) {
+                    results.add(driver);
+                }
+            }
+        }
+        return results;
     }
 
     void serialize(XMLBuilder xml) throws IOException {

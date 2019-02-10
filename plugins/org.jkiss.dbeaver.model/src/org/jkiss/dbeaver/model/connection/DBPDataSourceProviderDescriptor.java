@@ -17,17 +17,16 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 import java.util.List;
 
 /**
  * Data source provider descriptor
  */
-public interface DBPDataSourceProviderDescriptor {
+public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
 
     String getId();
-
-    String getName();
 
     String getDescription();
 
