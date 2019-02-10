@@ -13,7 +13,7 @@
                 id="athena"
                 parent="generic"
                 label="Athena"
-                icon="icons/aws_athena.png">
+                icon="icons/athena_icon.png">
             <drivers managable="true">
 
                 <!-- Simba JDBC driver -->
