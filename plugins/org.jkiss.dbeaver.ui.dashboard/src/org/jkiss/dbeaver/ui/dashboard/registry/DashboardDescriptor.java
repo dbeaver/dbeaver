@@ -347,7 +347,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     public void setQueries(String[] queryStrings) {
         queries.clear();
         for (String qs : queryStrings) {
-            queries.add(new QueryMapping(qs));
+            queries.add(new QueryMapping(qs.trim()));
         }
     }
 
