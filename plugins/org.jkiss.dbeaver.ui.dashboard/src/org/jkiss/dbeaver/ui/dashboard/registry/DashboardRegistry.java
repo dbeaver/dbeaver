@@ -95,6 +95,7 @@ public class DashboardRegistry {
     private void saveConfigFile() {
         try (OutputStream out = new FileOutputStream(getDashboardsConfigFile())){
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
+            xml.setButify(true);
             xml.startElement("dashboards");
             for (DashboardDescriptor dashboard : dashboardList.values()) {
                 if (dashboard.isCustom()) {
@@ -104,7 +105,7 @@ public class DashboardRegistry {
                 }
             }
             xml.endElement();
-            out.flush();
+            xml.flush();
         } catch (Exception e) {
             log.error("Error saving dashboard configuration", e);
         }
@@ -204,4 +205,7 @@ public class DashboardRegistry {
         return sortedDrivers;
     }
 
+    public void saveSettings() {
+        saveConfigFile();
+    }
 }
