@@ -16,20 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
-
 /**
- * Dashboard type.
+ * Dashboard data type
  */
-public interface DashboardType {
+public enum DashboardDataType {
 
-    String getId();
-
-    String getTitle();
-
-    String getDescription();
-
-    DashboardRenderer createRenderer() throws DBException;
+    timeseries,
+    statistics
 
 }

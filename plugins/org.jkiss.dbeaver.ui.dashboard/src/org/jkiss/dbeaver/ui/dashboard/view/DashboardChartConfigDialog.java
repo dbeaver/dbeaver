@@ -75,7 +75,7 @@ public class DashboardChartConfigDialog extends BaseDialog {
                 .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
             Combo typeCombo = UIUtils.createLabelCombo(infoGroup, "Type", "Dashboard type", SWT.BORDER | SWT.READ_ONLY);
             typeCombo.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-            typeCombo.add(dashboardConfig.getDashboardDescriptor().getType().getTitle());
+            typeCombo.add(dashboardConfig.getDashboardDescriptor().getDefaultViewType().getTitle());
             typeCombo.select(0);
             UIUtils.createLabelText(infoGroup, "Calc type", dashboardConfig.getDashboardDescriptor().getCalcType().name(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(infoGroup, "Value type", dashboardConfig.getDashboardDescriptor().getValueType().name(), SWT.BORDER | SWT.READ_ONLY);

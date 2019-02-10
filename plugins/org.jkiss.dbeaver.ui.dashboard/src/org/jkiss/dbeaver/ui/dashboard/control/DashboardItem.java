@@ -83,7 +83,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
             Composite chartComposite = new Composite(this, SWT.NONE);
             chartComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
             chartComposite.setLayout(new FillLayout());
-            renderer = dashboardConfig.getDashboardDescriptor().getType().createRenderer();
+            renderer = dashboardConfig.getDashboardDescriptor().getDefaultViewType().createRenderer();
             dashboardControl = renderer.createDashboard(chartComposite, this, groupContainer.getView(), computeSize(-1, -1));
 
         } catch (DBException e) {
@@ -246,8 +246,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
-    public DashboardType getDashboardType() {
-        return dashboardConfig.getDashboardDescriptor().getType();
+    public DashboardViewType getDashboardType() {
+        return dashboardConfig.getDashboardDescriptor().getDefaultViewType();
     }
 
     @Override

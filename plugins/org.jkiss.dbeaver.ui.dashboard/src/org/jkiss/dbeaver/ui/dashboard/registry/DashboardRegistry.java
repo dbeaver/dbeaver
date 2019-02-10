@@ -50,16 +50,16 @@ public class DashboardRegistry {
     }
 
     private final Map<String, DashboardDescriptor> dashboardList = new LinkedHashMap<>();
-    private final List<DashboardTypeDescriptor> dashboardTypeList = new ArrayList<>();
+    private final List<DashboardViewTypeDescriptor> viewTypeList = new ArrayList<>();
 
     private DashboardRegistry(IExtensionRegistry registry) {
         // Load data dashboardList from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
         // Load types
         for (IConfigurationElement ext : extElements) {
-            if ("dashboardType".equals(ext.getName())) {
-                dashboardTypeList.add(
-                    new DashboardTypeDescriptor(ext));
+            if ("dashboardView".equals(ext.getName())) {
+                viewTypeList.add(
+                    new DashboardViewTypeDescriptor(ext));
             }
         }
         // Load dashboards from extensions
@@ -111,8 +111,8 @@ public class DashboardRegistry {
         return new File(UIDashboardActivator.getDefault().getStateLocation().toFile(), "dashboards.xml");
     }
 
-    public DashboardTypeDescriptor getDashboardType(String id) {
-        for (DashboardTypeDescriptor descriptor : dashboardTypeList) {
+    public DashboardViewTypeDescriptor getViewType(String id) {
+        for (DashboardViewTypeDescriptor descriptor : viewTypeList) {
             if (descriptor.getId().equals(id)) {
                 return descriptor;
             }

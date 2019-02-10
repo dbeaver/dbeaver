@@ -21,19 +21,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
-import org.jkiss.dbeaver.ui.dashboard.model.DashboardType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 
 /**
  * DashboardDescriptor
  */
-public class DashboardTypeDescriptor extends AbstractContextDescriptor implements DashboardType
+public class DashboardViewTypeDescriptor extends AbstractContextDescriptor implements DashboardViewType
 {
     private String id;
     private String label;
     private String description;
     private ObjectType implType;
 
-    DashboardTypeDescriptor(
+    DashboardViewTypeDescriptor(
         IConfigurationElement config)
     {
         super(config);
