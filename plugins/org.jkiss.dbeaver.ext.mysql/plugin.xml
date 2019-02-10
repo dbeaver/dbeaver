@@ -438,4 +438,16 @@
         <command id="mysql.source" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dashboard">
+
+        <dashboard id="mysql.sessions" label="Server sessions" defaultView="pie" group="Standard" updatePeriod="2000" calc="value" value="integer" fetch="rows" showByDefault="true" description="Shows session grouped by command">
+            <datasource id="mysql"/>
+            <query>
+SELECT Command,count(*) from information_schema.PROCESSLIST
+GROUP BY Command
+            </query>
+        </dashboard>
+
+    </extension>
+
 </plugin>
