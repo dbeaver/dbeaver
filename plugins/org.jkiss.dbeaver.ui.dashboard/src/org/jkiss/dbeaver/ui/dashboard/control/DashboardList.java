@@ -371,9 +371,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 DashboardList.this.setRedraw(false);
                 try {
                     selectedItem = null;
-                    for (DashboardItem item : items.toArray(new DashboardItem[0])) {
-                        item.dispose();
-                    }
+                    items.clear();
 
                     for (int i = 0; i < newList.size(); i++) {
                         DashboardItem oldItem = newList.get(i);
@@ -381,6 +379,11 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                         DashboardItemViewConfiguration dashboardConfig = viewConfiguration.getDashboardConfig(newItem.getDashboardId());
                         dashboardConfig.setIndex(i);
                         newItem.moveViewFrom(oldItem, true);
+                    }
+
+                    // Dispose old items
+                    for (DashboardItem item : newList) {
+                        item.dispose();
                     }
                 } finally {
                     DashboardList.this.layout(true, true);
