@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;
@@ -245,6 +244,14 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         }
+    }
+
+    @Override
+    public Object getFeature(String name) {
+        if (FEATURE_NAME_JDBC.equals(name)) {
+            return true;
+        }
+        return null;
     }
 
     @Override

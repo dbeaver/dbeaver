@@ -118,6 +118,11 @@ public class StreamTransferResultSet implements DBCResultSet {
     }
 
     @Override
+    public Object getFeature(String name) {
+        return null;
+    }
+
+    @Override
     public void close() {
 
     }

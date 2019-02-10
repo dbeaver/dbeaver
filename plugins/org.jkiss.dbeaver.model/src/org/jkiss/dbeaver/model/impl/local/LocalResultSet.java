@@ -112,6 +112,14 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
     }
 
     @Override
+    public Object getFeature(String name) {
+        if (name.equals(FEATURE_NAME_LOCAL)) {
+            return true;
+        }
+        return null;
+    }
+
+    @Override
     public void close() {
         curPosition = -1;
         rows.clear();
