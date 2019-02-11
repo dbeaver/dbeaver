@@ -246,13 +246,13 @@ public abstract class JDBCDataSource
                     }
                 } catch (Throwable e) {
                     // Do not write warning because connection maybe broken before the moment of close
-                    log.debug("Error closing transaction", e);
+                    log.debug("Error closing active transaction", e);
                 }
                 try {
                     connection.close();
                 }
                 catch (Throwable ex) {
-                    log.error("Error closing connection", ex);
+                    log.debug("Error closing connection", ex);
                 }
             }, "Close JDBC connection (" + purpose + ")",
                 getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
