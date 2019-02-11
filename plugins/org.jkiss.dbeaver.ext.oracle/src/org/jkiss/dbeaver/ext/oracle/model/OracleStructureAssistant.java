@@ -222,9 +222,6 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                 oracleObjectTypes.add((OracleObjectType) objectType);
                 if (objectType == OracleObjectType.PROCEDURE) {
                     oracleObjectTypes.add(OracleObjectType.FUNCTION);
-                } else if (objectType == OracleObjectType.TABLE) {
-                    oracleObjectTypes.add(OracleObjectType.VIEW);
-                    oracleObjectTypes.add(OracleObjectType.MATERIALIZED_VIEW);
                 }
             } else if (DBSProcedure.class.isAssignableFrom(objectType.getTypeClass())) {
                 oracleObjectTypes.add(OracleObjectType.FUNCTION);
