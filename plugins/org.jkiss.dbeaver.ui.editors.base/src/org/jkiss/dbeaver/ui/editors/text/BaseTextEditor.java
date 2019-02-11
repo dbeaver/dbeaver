@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
@@ -273,7 +274,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
                 {
                     try {
                         StringReader cr = new StringReader(document.get());
-                        ContentUtils.saveContentToFile(cr, saveFile, GeneralUtils.UTF8_ENCODING, monitor);
+                        ContentUtils.saveContentToFile(cr, saveFile, ResourcesPlugin.getEncoding(), monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
