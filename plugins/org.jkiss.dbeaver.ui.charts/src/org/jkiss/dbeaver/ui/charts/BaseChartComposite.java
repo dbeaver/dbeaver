@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.charts;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.dnd.Clipboard;
@@ -28,6 +29,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
+import org.jfree.chart.plot.Zoomable;
 import org.jfree.chart.swt.ChartComposite;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -63,34 +65,36 @@ public class BaseChartComposite extends ChartComposite {
     @Override
     protected Menu createPopupMenu(boolean properties, boolean save, boolean print, boolean zoom) {
         MenuManager manager = new MenuManager();
-
-        fillContextMenu(manager);
-
+        manager.setRemoveAllWhenShown(true);
+        manager.addMenuListener(this::fillContextMenu);
         Menu contextMenu = manager.createContextMenu(this);
         addDisposeListener(e -> manager.dispose());
         return contextMenu;
     }
 
-    protected void fillContextMenu(MenuManager manager) {
-        manager.add(new Action("Zoom In", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
-            @Override
-            public void runWithEvent(Event e) {
-                zoomInBoth(e.x, e.y);
-            }
-        });
-        manager.add(new Action("Zoom Out", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
-            @Override
-            public void runWithEvent(Event e) {
-                zoomOutBoth(e.x, e.y);
-            }
-        });
-        manager.add(new Action("Zoom Reset", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
-            @Override
-            public void runWithEvent(Event e) {
-                restoreAutoBounds();
-            }
-        });
-        manager.add(new Separator());
+    protected void fillContextMenu(IMenuManager manager) {
+        boolean zoomable = getChart().getPlot() instanceof Zoomable;
+        if (zoomable) {
+            manager.add(new Action("Zoom In", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_IN)) {
+                @Override
+                public void runWithEvent(Event e) {
+                    zoomInBoth(e.x, e.y);
+                }
+            });
+            manager.add(new Action("Zoom Out", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM_OUT)) {
+                @Override
+                public void runWithEvent(Event e) {
+                    zoomOutBoth(e.x, e.y);
+                }
+            });
+            manager.add(new Action("Zoom Reset", DBeaverIcons.getImageDescriptor(UIIcon.ZOOM)) {
+                @Override
+                public void runWithEvent(Event e) {
+                    restoreAutoBounds();
+                }
+            });
+            manager.add(new Separator());
+        }
         manager.add(new Action("Copy to clipboard") {
             @Override
             public void runWithEvent(Event event) {

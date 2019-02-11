@@ -71,6 +71,18 @@ public class DashboardItemConfigDialog extends BaseDialog {
             //UIUtils.createLabelText(infoGroup, "ID", dashboardConfig.getDashboardDescriptor().getId(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(infoGroup, "Name", dashboardConfig.getDashboardDescriptor().getName(), SWT.BORDER | SWT.READ_ONLY)
                 .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
+
+            UIUtils.createControlLabel(infoGroup, "Description").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            Text descriptionText = new Text(infoGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            descriptionText.setText(CommonUtils.notEmpty(dashboardConfig.getDescription()));
+            descriptionText.addModifyListener(e -> {
+                dashboardConfig.setDescription(descriptionText.getText());
+            });
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.widthHint = 200;
+            gd.heightHint = 50;
+            descriptionText.setLayoutData(gd);
+
 /*
             UIUtils.createLabelText(infoGroup, "Group", CommonUtils.notEmpty(dashboardConfig.getDashboardDescriptor().getGroup()), SWT.BORDER | SWT.READ_ONLY)
                 .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
@@ -143,24 +155,18 @@ public class DashboardItemConfigDialog extends BaseDialog {
                 });
             }
 
-            Text widthRatioText = UIUtils.createLabelText(viewGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
-            widthRatioText.addModifyListener(e -> {
-                dashboardConfig.setWidthRatio((float) CommonUtils.toDouble(widthRatioText.getText(), dashboardConfig.getWidthRatio()));
-            });
-            Text descriptionText = UIUtils.createLabelText(viewGroup, "Description", CommonUtils.notEmpty(dashboardConfig.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-            descriptionText.addModifyListener(e -> {
-                dashboardConfig.setDescription(widthRatioText.getText());
-            });
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 200;
-            gd.heightHint = 50;
-            descriptionText.setLayoutData(gd);
-
             UIUtils.createCheckbox(viewGroup, "Show legend", "Show dashboard chart legend", dashboardConfig.isLegendVisible(), 2)
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         dashboardConfig.setLegendVisible(((Button)e.widget).getSelection());
+                    }
+                });
+            UIUtils.createCheckbox(viewGroup, "Show grid", "Show dashboard grid", dashboardConfig.isGridVisible(), 2)
+                .addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        dashboardConfig.setGridVisible(((Button)e.widget).getSelection());
                     }
                 });
             UIUtils.createCheckbox(viewGroup, "Show domain axis", "Show domain (horizontal) axis", dashboardConfig.isDomainTicksVisible(), 2)
@@ -177,6 +183,11 @@ public class DashboardItemConfigDialog extends BaseDialog {
                         dashboardConfig.setRangeTicksVisible(((Button)e.widget).getSelection());
                     }
                 });
+            Text widthRatioText = UIUtils.createLabelText(viewGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            widthRatioText.addModifyListener(e -> {
+                dashboardConfig.setWidthRatio((float) CommonUtils.toDouble(widthRatioText.getText(), dashboardConfig.getWidthRatio()));
+            });
+
 
         }
 

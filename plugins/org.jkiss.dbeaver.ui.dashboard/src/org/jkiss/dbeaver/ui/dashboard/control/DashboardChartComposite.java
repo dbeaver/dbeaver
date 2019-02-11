@@ -63,7 +63,7 @@ public class DashboardChartComposite extends BaseChartComposite {
     }
 
     @Override
-    protected void fillContextMenu(MenuManager manager) {
+    protected void fillContextMenu(IMenuManager manager) {
         if (!isSingleChartMode()) {
             manager.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), DashboardConstants.CMD_VIEW_DASHBOARD));
             manager.add(new Separator());
@@ -72,28 +72,25 @@ public class DashboardChartComposite extends BaseChartComposite {
         {
             manager.add(new Separator());
             MenuManager viewMenu = new MenuManager("View as");
-            viewMenu.setRemoveAllWhenShown(true);
-            viewMenu.addMenuListener(manager1 -> {
-                List<DashboardViewType> viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardContainer.getDashboardDataType());
-                for (DashboardViewType viewType : viewTypes) {
-                    Action changeViewAction = new Action(viewType.getTitle(), Action.AS_RADIO_BUTTON) {
-                        @Override
-                        public boolean isChecked() {
-                            return dashboardContainer.getDashboardViewType() == viewType;
-                        }
-
-                        @Override
-                        public void runWithEvent(Event event) {
-                            ((DashboardItem)dashboardContainer).getDashboardConfig().setViewType(viewType);
-                            dashboardContainer.updateDashboardView();
-                        }
-                    };
-                    if (viewType.getIcon() != null) {
-                        changeViewAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(viewType.getIcon()));
+            List<DashboardViewType> viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardContainer.getDashboardDataType());
+            for (DashboardViewType viewType : viewTypes) {
+                Action changeViewAction = new Action(viewType.getTitle(), Action.AS_RADIO_BUTTON) {
+                    @Override
+                    public boolean isChecked() {
+                        return dashboardContainer.getDashboardViewType() == viewType;
                     }
-                    manager1.add(changeViewAction);
+
+                    @Override
+                    public void runWithEvent(Event event) {
+                        ((DashboardItem) dashboardContainer).getDashboardConfig().setViewType(viewType);
+                        dashboardContainer.updateDashboardView();
+                    }
+                };
+                if (viewType.getIcon() != null) {
+                    changeViewAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(viewType.getIcon()));
                 }
-            });
+                viewMenu.add(changeViewAction);
+            }
 
             manager.add(viewMenu);
 
@@ -109,7 +106,7 @@ public class DashboardChartComposite extends BaseChartComposite {
     @Override
     public void setChart(JFreeChart chart) {
         super.setChart(chart);
-        if (!isSingleChartMode()) {
+        if (chart != null && !isSingleChartMode()) {
             this.setDomainZoomable(false);
             this.setRangeZoomable(false);
         }
@@ -129,8 +126,12 @@ public class DashboardChartComposite extends BaseChartComposite {
 
     @Override
     public void mouseDoubleClick(MouseEvent event) {
-        DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DashboardItem) dashboardContainer);
-        viewDialog.open();
+        if (viewContainer.isSingleChartMode()) {
+            restoreAutoBounds();
+        } else {
+            DashboardItemViewDialog viewDialog = new DashboardItemViewDialog(viewContainer, (DashboardItem) dashboardContainer);
+            viewDialog.open();
+        }
     }
 
 }
