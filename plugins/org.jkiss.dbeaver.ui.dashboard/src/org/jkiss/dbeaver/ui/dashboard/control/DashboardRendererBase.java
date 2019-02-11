@@ -102,12 +102,7 @@ public abstract class DashboardRendererBase implements DashboardRenderer {
     }
 
     protected DashboardChartComposite createChartComposite(Composite composite, DashboardContainer container, DashboardViewContainer viewContainer, org.eclipse.swt.graphics.Point preferredSize) {
-        return new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize) {
-            @Override
-            protected boolean isSingleChartMode() {
-                return viewContainer.isSingleChartMode();
-            }
-        };
+        return new DashboardChartComposite(container, viewContainer, composite, SWT.DOUBLE_BUFFERED, preferredSize);
     }
 
     protected void createDefaultLegend(DashboardItemViewConfiguration viewConfig, JFreeChart chart) {

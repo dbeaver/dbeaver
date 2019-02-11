@@ -145,10 +145,10 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 
         plot.setDomainGridlinePaint(gridColor);
         //plot.setDomainGridlineStroke(gridStroke);
-        plot.setDomainGridlinesVisible(false);
+        plot.setDomainGridlinesVisible(viewConfig == null || viewConfig.isGridVisible());
         plot.setRangeGridlinePaint(gridColor);
         //plot.setRangeGridlineStroke(gridStroke);
-        plot.setRangeGridlinesVisible(false);
+        plot.setRangeGridlinesVisible(viewConfig == null || viewConfig.isGridVisible());
 
         DashboardChartComposite chartComposite = createChartComposite(composite, container, viewContainer, preferredSize);
         chartComposite.setChart(histogramChart);
@@ -251,6 +251,9 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
             if (dashboardConfig != null) {
                 plot.getRangeAxis().setVisible(dashboardConfig.isRangeTicksVisible());
                 plot.getDomainAxis().setVisible(dashboardConfig.isDomainTicksVisible());
+
+                plot.setDomainGridlinesVisible(dashboardConfig.isGridVisible());
+                plot.setRangeGridlinesVisible(dashboardConfig.isGridVisible());
 
                 chartComposite.getChart().getLegend().setVisible(dashboardConfig.isLegendVisible());
 

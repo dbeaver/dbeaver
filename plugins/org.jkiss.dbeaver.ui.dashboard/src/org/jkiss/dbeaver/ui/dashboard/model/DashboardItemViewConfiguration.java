@@ -34,6 +34,7 @@ public class DashboardItemViewConfiguration {
     private int maxItems;
     private long maxAge;
     private boolean legendVisible;
+    private boolean gridVisible;
     private boolean domainTicksVisible;
     private boolean rangeTicksVisible;
     private String description;
@@ -98,6 +99,14 @@ public class DashboardItemViewConfiguration {
         this.legendVisible = legendVisible;
     }
 
+    public boolean isGridVisible() {
+        return gridVisible;
+    }
+
+    public void setGridVisible(boolean gridVisible) {
+        this.gridVisible = gridVisible;
+    }
+
     public boolean isDomainTicksVisible() {
         return domainTicksVisible;
     }
@@ -132,6 +141,7 @@ public class DashboardItemViewConfiguration {
         this.maxAge = dashboardDescriptor.getMaxAge();
 
         this.legendVisible = true;
+        this.gridVisible = true;
         this.domainTicksVisible = true;
         this.rangeTicksVisible = true;
 
@@ -152,6 +162,7 @@ public class DashboardItemViewConfiguration {
         this.maxAge = source.maxAge;
 
         this.legendVisible = source.legendVisible;
+        this.gridVisible = source.gridVisible;
         this.domainTicksVisible = source.domainTicksVisible;
         this.rangeTicksVisible = source.rangeTicksVisible;
 
@@ -168,6 +179,7 @@ public class DashboardItemViewConfiguration {
         xml.addAttribute("maxAge", maxAge);
 
         xml.addAttribute("legendVisible", legendVisible);
+        xml.addAttribute("gridVisible", gridVisible);
         xml.addAttribute("domainTicksVisible", domainTicksVisible);
         xml.addAttribute("rangeTicksVisible", rangeTicksVisible);
 
@@ -193,9 +205,10 @@ public class DashboardItemViewConfiguration {
         this.maxItems = CommonUtils.toInt(element.getAttribute("maxItems"), dashboardDescriptor.getMaxItems());
         this.maxAge = CommonUtils.toLong(element.getAttribute("maxAge"), dashboardDescriptor.getMaxAge());
 
-        legendVisible = CommonUtils.getBoolean(element.getAttribute("legendVisible"), true);
-        domainTicksVisible = CommonUtils.getBoolean(element.getAttribute("domainTicksVisible"), true);
-        rangeTicksVisible = CommonUtils.getBoolean(element.getAttribute("rangeTicksVisible"), true);
+        this.legendVisible = CommonUtils.getBoolean(element.getAttribute("legendVisible"), true);
+        this.gridVisible = CommonUtils.getBoolean(element.getAttribute("gridVisible"), true);
+        this.domainTicksVisible = CommonUtils.getBoolean(element.getAttribute("domainTicksVisible"), true);
+        this.rangeTicksVisible = CommonUtils.getBoolean(element.getAttribute("rangeTicksVisible"), true);
 
         this.description = element.getAttribute("description");
     }
