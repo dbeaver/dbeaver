@@ -154,8 +154,9 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant
         // Seek for objects (join with public synonyms)
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "all_objects") + " o " +
-                "WHERE o.type IN (" + objectTypeClause.toString() + ") AND o.name LIKE ?" +
-                (schema == null ? "" : " AND o.schema_id=? ")))
+                "\nWHERE o.type IN (" + objectTypeClause.toString() + ") AND o.name LIKE ?" +
+                (schema == null ? "" : " AND o.schema_id=? ") +
+                "\nORDER BY o.name"))
         {
             dbStat.setString(1, objectNameMask);
             if (schema != null) {

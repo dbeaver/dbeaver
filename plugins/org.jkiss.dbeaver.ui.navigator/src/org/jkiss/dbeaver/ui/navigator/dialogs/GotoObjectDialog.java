@@ -65,10 +65,12 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private static final String DIALOG_ID = "GotoObjectDialog";
 
     private static final boolean SHOW_OBJECT_TYPES = true;
+    public static final int MAX_RESULT_COUNT = 1000;
 
     private final DBCExecutionContext context;
     private DBSObject container;
     private Map<String, Boolean> enabledTypes = new HashMap<>();
+    private boolean hasMoreResults;
 
     public GotoObjectDialog(Shell shell, DBCExecutionContext context, DBSObject container) {
         super(shell, true);
@@ -336,7 +338,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
         @Override
         public boolean isSubFilter(ItemsFilter filter) {
-            return super.isSubFilter(filter) && CommonUtils.equalObjects(enabledTypesCopy, ((ObjectFilter)filter).enabledTypesCopy);
+            return !hasMoreResults && super.isSubFilter(filter) && CommonUtils.equalObjects(enabledTypesCopy, ((ObjectFilter)filter).enabledTypesCopy);
         }
     }
 
@@ -368,7 +370,8 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                     nameMask,
                     false,
                     true,
-                    1000);
+                    MAX_RESULT_COUNT);
+                hasMoreResults = result.size() >= MAX_RESULT_COUNT;
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }
