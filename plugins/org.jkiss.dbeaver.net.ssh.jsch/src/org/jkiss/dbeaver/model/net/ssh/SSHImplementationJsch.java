@@ -59,7 +59,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             session.setConfig("StrictHostKeyChecking", "no");
             //session.setConfig("PreferredAuthentications", "password,publickey,keyboard-interactive");
             session.setConfig("PreferredAuthentications",
-                    privKeyFile != null ? "publickey" : "password,keyboard-interactive");
+                    privKeyFile != null ? "publickey,keyboard-interactive" : "password,keyboard-interactive");
             session.setConfig("ConnectTimeout", String.valueOf(connectTimeout));
 
             // Use Eclipse standard prompter
