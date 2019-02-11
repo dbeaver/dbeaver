@@ -64,7 +64,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
         Color defFG = UIStyles.getDefaultTextForeground();
         Color defBG = UIStyles.getDefaultTextBackground();
-        this.setForeground(defFG);
+        //this.setForeground(defFG);
         this.setBackground(defBG);
 
         {
@@ -154,8 +154,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
             e.gc.setLineStyle(SWT.LINE_SOLID);
         } else {
             e.gc.setLineWidth(1);
-            e.gc.setLineStyle(SWT.LINE_CUSTOM);
-            e.gc.setLineDash(new int[] {10, 10});
+            e.gc.setLineStyle(SWT.LINE_SOLID);
+            //e.gc.setLineDash(new int[] {10, 10});
         }
         e.gc.drawRectangle(1, 1, itemSize.x - 2, itemSize.y - 2);
 //        if (groupContainer.getSelectedItem() == this) {

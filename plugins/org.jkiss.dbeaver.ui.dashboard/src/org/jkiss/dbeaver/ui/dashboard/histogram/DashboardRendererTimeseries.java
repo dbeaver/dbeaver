@@ -137,8 +137,18 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
         // Set background
         plot.setBackgroundPaint(histogramChart.getBackgroundPaint());
 
+/*
+        Stroke gridStroke = new BasicStroke(0.1f,
+            BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f,
+            new float[] {1.0f, 1.0f}, 0.0f);
+*/
+
         plot.setDomainGridlinePaint(gridColor);
+        //plot.setDomainGridlineStroke(gridStroke);
+        plot.setDomainGridlinesVisible(false);
         plot.setRangeGridlinePaint(gridColor);
+        //plot.setRangeGridlineStroke(gridStroke);
+        plot.setRangeGridlinesVisible(false);
 
         DashboardChartComposite chartComposite = createChartComposite(composite, container, viewContainer, preferredSize);
         chartComposite.setChart(histogramChart);

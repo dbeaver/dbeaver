@@ -635,8 +635,8 @@
             <query>
 SELECT
     (SELECT count(*) AS "Active" FROM pg_catalog.pg_stat_activity sa WHERE state='active'),
-    (SELECT count(*) as "Idle" FROM pg_catalog.pg_stat_activity sa WHERE state='idle'),
-    (SELECT count(*) as "Total" FROM pg_catalog.pg_stat_activity sa)
+    (SELECT count(*) AS "Idle" FROM pg_catalog.pg_stat_activity sa WHERE state='idle'),
+    (SELECT count(*) AS "Total" FROM pg_catalog.pg_stat_activity sa WHERE state IS NOT NULL)
             </query>
         </dashboard>
         <dashboard id="postgresql.transactionCount" label="Transactions per second" group="Standard" defaultView="timeseries" updatePeriod="2000" calc="delta" value="integer" fetch="columns" showByDefault="true" description="Shows commit/rollback transactions per second">
