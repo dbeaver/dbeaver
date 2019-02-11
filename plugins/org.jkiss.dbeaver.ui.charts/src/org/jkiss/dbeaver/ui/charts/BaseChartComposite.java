@@ -20,15 +20,15 @@ package org.jkiss.dbeaver.ui.charts;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MenuAdapter;
-import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.ImageTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jfree.chart.swt.ChartComposite;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -91,6 +91,12 @@ public class BaseChartComposite extends ChartComposite {
             }
         });
         manager.add(new Separator());
+        manager.add(new Action("Copy to clipboard") {
+            @Override
+            public void runWithEvent(Event event) {
+                doCopyToClipboard();
+            }
+        });
         manager.add(new Action("Save as ...") {
             @Override
             public void run() {
@@ -118,6 +124,20 @@ public class BaseChartComposite extends ChartComposite {
                 }
             });
         }
+    }
+
+    protected void doCopyToClipboard() {
+        Image image = new Image(Display.getDefault(), this.getBounds());
+        GC gc = new GC(image);
+        try {
+            this.print(gc);
+        } finally {
+            gc.dispose();
+        }
+
+        ImageTransfer imageTransfer = ImageTransfer.getInstance();
+        Clipboard clipboard = new Clipboard(Display.getCurrent());
+        clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
     }
 
     protected boolean hasConfigurationDialog() {
