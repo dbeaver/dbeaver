@@ -727,20 +727,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 if (currentLine == firstLine) {
                     for (String delim : statementDelimiters) {
                         final int offset = TextUtils.getOffsetOf(document, firstLine, delim);
-                        if (offset >= 0 && isDefaultPartition(partitioner, offset)) {
+                        if (offset >= 0 ) {
                             int delimOffset = document.getLineOffset(firstLine) + offset + delim.length();
-                            if (currentPos > startPos) {
-                                if (docLength > delimOffset) {
-                                    boolean hasValuableChars = false;
-                                    for (int i = delimOffset; i <= lastPos; i++) {
-                                        if (!Character.isWhitespace(document.getChar(i))) {
-                                            hasValuableChars = true;
+                            if (isDefaultPartition(partitioner, delimOffset)) {
+                                if (currentPos > startPos) {
+                                    if (docLength > delimOffset) {
+                                        boolean hasValuableChars = false;
+                                        for (int i = delimOffset; i <= lastPos; i++) {
+                                            if (!Character.isWhitespace(document.getChar(i))) {
+                                                hasValuableChars = true;
+                                                break;
+                                            }
+                                        }
+                                        if (hasValuableChars) {
+                                            startPos = delimOffset;
                                             break;
                                         }
-                                    }
-                                    if (hasValuableChars) {
-                                        startPos = delimOffset;
-                                        break;
                                     }
                                 }
                             }
