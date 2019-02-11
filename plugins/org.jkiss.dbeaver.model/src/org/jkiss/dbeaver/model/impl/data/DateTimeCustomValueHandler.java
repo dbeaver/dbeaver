@@ -54,7 +54,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
         } else if (object instanceof Date) {
             return copy ? ((Date)object).clone() : object;
         } else if (object instanceof String) {
-            if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
+            if (session != null && session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
                 // Do not use formatter for native format
                 return object;
             }

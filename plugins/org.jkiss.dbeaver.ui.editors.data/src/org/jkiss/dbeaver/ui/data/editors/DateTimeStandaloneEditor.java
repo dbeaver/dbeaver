@@ -55,7 +55,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         Object value = valueController.getValue();
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
-        Composite panel = UIUtils.createPlaceholder(dialogGroup, 3);
+        Composite panel = UIUtils.createComposite(dialogGroup, 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         int style = SWT.BORDER;
@@ -63,7 +63,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
             style |= SWT.READ_ONLY;
         }
 
-        UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        UIUtils.createControlLabel(panel, "Time");
         timeEditor = new CustomTimeEditor(panel, style);
         timeEditor.getControl().addModifyListener(new ModifyListener() {
             @Override
@@ -73,13 +73,12 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         });
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalAlignment = GridData.CENTER;
+        gd.grabExcessHorizontalSpace = true;
         timeEditor.getControl().setLayoutData(gd);
 
         primeEditorValue(value);
 
         Button button = UIUtils.createPushButton(panel, "Set Current", null);
-        button.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         button.setEnabled(!valueController.isReadOnly());
         button.addSelectionListener(new SelectionAdapter() {
