@@ -20,9 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -39,8 +37,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public static final DefaultResourceHandlerImpl INSTANCE = new DefaultResourceHandlerImpl();
 
     @Override
-    public int getFeatures(IResource resource)
-    {
+    public int getFeatures(IResource resource) {
         if (resource instanceof IFile) {
             return FEATURE_OPEN | FEATURE_DELETE | FEATURE_RENAME;
         } else if (resource instanceof IFolder) {
@@ -51,8 +48,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
 
     @NotNull
     @Override
-    public String getTypeName(@NotNull IResource resource)
-    {
+    public String getTypeName(@NotNull IResource resource) {
         final ProgramInfo program = ProgramInfo.getProgram(resource);
         if (program != null) {
             return program.getProgram().getName();
@@ -61,15 +57,13 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public String getResourceDescription(@NotNull IResource resource)
-    {
+    public String getResourceDescription(@NotNull IResource resource) {
         return "";
     }
 
     @NotNull
     @Override
-    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
-    {
+    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
         updateNavigatorNode(node, resource);
         return node;
@@ -85,18 +79,9 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(@NotNull IResource resource) throws CoreException, DBException
-    {
+    public void openResource(@NotNull IResource resource) throws CoreException, DBException {
         if (resource instanceof IFile) {
-            IEditorDescriptor desc = PlatformUI.getWorkbench().
-                getEditorRegistry().getDefaultEditor(resource.getName());
-            if (desc != null) {
-                UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(
-                    new FileEditorInput((IFile) resource),
-                    desc.getId());
-            } else {
-                UIUtils.launchProgram(resource.getLocation().toFile().getAbsolutePath());
-            }
+            IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
         }
     }
 
