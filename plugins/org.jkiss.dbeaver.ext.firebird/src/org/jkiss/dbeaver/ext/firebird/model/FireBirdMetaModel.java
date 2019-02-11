@@ -87,13 +87,12 @@ public class FireBirdMetaModel extends GenericMetaModel
                         if (name == null) {
                             continue;
                         }
-                        name = name.trim();
                         String description = JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION");
-                        GenericSequence sequence = new GenericSequence(
+                        FireBirdSequence sequence = new FireBirdSequence(
                             container,
                             name,
                             description,
-                            -1,
+                            null,
                             0,
                             -1,
                             1
@@ -102,18 +101,7 @@ public class FireBirdMetaModel extends GenericMetaModel
                     }
                 }
 
-                // Obtain sequence values
-                for (GenericSequence sequence : result) {
-                    try (JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT GEN_ID(" + sequence.getName() + ", 0) from RDB$DATABASE")) {
-                        try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
-                            seqResults.next();
-                            sequence.setLastValue(JDBCUtils.safeGetLong(seqResults, 1));
-                        }
-                    }
-                }
-
                 return result;
-
             }
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
