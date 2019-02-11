@@ -705,7 +705,12 @@ public class GenericDataSource extends JDBCDataSource
     public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
         String oldEntityName = selectedEntityName;
         DBSObject oldDefaultObject = getDefaultObject();
-        determineSelectedEntity((JDBCSession) session);
+        try {
+            determineSelectedEntity((JDBCSession) session);
+        } catch (Throwable e) {
+            log.debug("Error detecting active object", e);
+            return false;
+        }
         if (!CommonUtils.equalObjects(oldEntityName, selectedEntityName)) {
             final DBSObject newDefaultObject = getDefaultObject();
             if (newDefaultObject != null) {
