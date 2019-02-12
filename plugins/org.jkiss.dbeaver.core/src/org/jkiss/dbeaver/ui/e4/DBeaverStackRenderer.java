@@ -68,6 +68,17 @@ public class DBeaverStackRenderer extends StackRenderer {
                 }
             });
         }
+        {
+            MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
+            menuItemDelete.setText("Delete");
+            menuItemDelete.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    String inputFile = file.getAbsolutePath();
+                    UIUtils.confirmAction("Delete object", "Are you sure you want to delete");
+                }
+            });
+        }
 
         if (inputFile != null) {
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
