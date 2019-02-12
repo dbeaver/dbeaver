@@ -180,7 +180,7 @@ public class OraclePackage extends OracleSchemaObject
                     "ALTER PACKAGE " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE BODY"
                 ));
         }
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[0]);
     }
 
     @NotNull

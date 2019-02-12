@@ -149,6 +149,14 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                 if (!closeBrackets) {
                     return;
                 }
+                try {
+                    if (offset < document.getLength() && !Character.isWhitespace(document.getChar(offset + length))) {
+                        return;
+                    }
+                } catch (BadLocationException e) {
+                    log.debug(e);
+                    return;
+                }
                 if (hasCharacterToTheRight(document, offset + length, event.character)) {
                     return;
                 }

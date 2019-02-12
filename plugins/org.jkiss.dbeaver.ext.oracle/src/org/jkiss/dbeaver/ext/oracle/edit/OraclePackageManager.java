@@ -110,7 +110,10 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, OraclePackage pack)
     {
         try {
-            String header = pack.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS);
+            String header = pack.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS).trim();
+            if (!header.endsWith(";")) {
+                header += ";";
+            }
             if (!CommonUtils.isEmpty(header)) {
                 actionList.add(
                     new OracleObjectValidateAction(
@@ -120,6 +123,10 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
             }
             String body = pack.getExtendedDefinitionText(new VoidProgressMonitor());
             if (!CommonUtils.isEmpty(body)) {
+                body = body.trim();
+                if (!body.endsWith(";")) {
+                    body += ";";
+                }
                 actionList.add(
                     new OracleObjectValidateAction(
                         pack, OracleObjectType.PACKAGE_BODY,
