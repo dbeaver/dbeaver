@@ -73,7 +73,11 @@ public class DashboardUpdater {
 
         List<? extends DashboardQuery> queries = dashboard.getQueryList();
         DashboardViewContainer view = dashboard.getGroup().getView();
-        try (DBCSession session = view.getExecutionContext().openSession(
+        DBCExecutionContext executionContext = view.getExecutionContext();
+        if (executionContext == null) {
+            return;
+        }
+        try (DBCSession session = executionContext.openSession(
             monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboardTitle() + "' data"))
         {
             session.enableLogging(false);
