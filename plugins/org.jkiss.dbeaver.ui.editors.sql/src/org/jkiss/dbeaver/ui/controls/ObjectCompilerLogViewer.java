@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
@@ -28,6 +30,7 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
+import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -42,7 +45,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
 
     private Table infoTable;
 
-    public ObjectCompilerLogViewer(Composite parent, boolean bordered)
+    public ObjectCompilerLogViewer(Composite parent, DBCSourceHost sourceHost, boolean bordered)
     {
         super();
 
@@ -52,6 +55,25 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
         UIUtils.createTableColumn(infoTable, SWT.LEFT, "Message");
         UIUtils.createTableColumn(infoTable, SWT.LEFT, "Line");
         UIUtils.createTableColumn(infoTable, SWT.LEFT, "Pos");
+
+        if (sourceHost != null) {
+            infoTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    TableItem[] selection = infoTable.getSelection();
+                    if (selection.length > 0) {
+                        TableItem item = selection[0];
+                        Object data = item.getData();
+                        if (data instanceof DBCCompileError) {
+                            int line = ((DBCCompileError) data).getLine();
+                            int position = ((DBCCompileError) data).getPosition();
+                            sourceHost.positionSource(line, position);
+                            sourceHost.setCompileInfo(((DBCCompileError) data).getMessage(), true);
+                        }
+                    }
+                }
+            });
+        }
 
         createContextMenu();
     }
@@ -124,6 +146,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
                     if (color != -1) {
                         item.setForeground(infoTable.getDisplay().getSystemColor(color));
                     }
+                    item.setData(message);
                     infoTable.showItem(item);
                 }
                 if (t != null) {

@@ -41,7 +41,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -127,7 +126,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
             super.createPartControl(editorSash);
 
             editorControl = editorSash.getChildren()[0];
-            compileLog = new ObjectCompilerLogViewer(editorSash, false);
+            compileLog = new ObjectCompilerLogViewer(editorSash, this, false);
         } else {
             super.createPartControl(pageControl.createContentContainer());
         }
@@ -164,6 +163,15 @@ public abstract class SQLEditorNested<T extends DBSObject>
     @Override
     public void doSave(final IProgressMonitor progressMonitor) {
         UIUtils.syncExec(() -> SQLEditorNested.super.doSave(progressMonitor));
+        postScriptSave();
+    }
+
+    private void postScriptSave() {
+        String compileCommandId = getCompileCommandId();
+        if (compileCommandId != null) {
+            // Compile after save
+            ActionUtils.runCommand(compileCommandId, getSite().getWorkbenchWindow());
+        }
     }
 
     @Override
@@ -313,7 +321,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         try {
             final IRegion lineInfo = getTextViewer().getDocument().getLineInformation(line - 1);
             final int offset = lineInfo.getOffset() + position - 1;
-            super.selectAndReveal(offset, 1);
+            super.selectAndReveal(offset, 0);
             //textEditor.setFocus();
         } catch (BadLocationException e) {
             log.warn(e);
