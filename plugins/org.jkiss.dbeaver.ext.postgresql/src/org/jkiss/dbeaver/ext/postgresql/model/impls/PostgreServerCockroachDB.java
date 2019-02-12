@@ -73,6 +73,11 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsRules() {
+        return false;
+    }
+
+    @Override
     public boolean supportsExtensions() {
         return false;
     }
