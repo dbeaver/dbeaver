@@ -55,7 +55,7 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 			"FROM " + 
 			"SYS.%s_COLUMNS c " + 
 			"WHERE " + 
-			"COLUMN_SCHEMA = '%s' AND COLUMN_OBJECT_TYPE = 'TABLE' " + 
+			"COLUMN_SCHEMA = '%s' AND COLUMN_OBJECT_TYPE = 'VIEW' " + 
 			"ORDER BY " + 
 			"COLUMN_ORDINAL_POSITION ";
 
@@ -151,7 +151,7 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
         String sql;
 		String tablePrefix = exasolSchema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
 
-		if (exasolSchema.getName().equals("SYS"))
+		if (exasolSchema.getName().equals("SYS") | exasolSchema.getName().equals("EXA_STATISTICS"))
 		{
 			if (forView != null) {
 	            sql = String.format(SQL_COLS_SYS_VIEW, ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forView.getName())) ;
