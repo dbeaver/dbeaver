@@ -157,11 +157,9 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     log.debug(e);
                     return;
                 }
-/*
                 if (hasCharacterToTheRight(document, offset + length, event.character)) {
                     return;
                 }
-*/
 
                 // fall through
 
