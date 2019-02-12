@@ -21,9 +21,8 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
@@ -32,12 +31,13 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
-public class DashboardView extends ViewPart implements IDataSourceContainerProvider {
+public class DashboardView extends ViewPart implements IDataSourceContainerProvider, DBPEventListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.dashboardView";
 
     private DashboardListViewer dashboardListViewer;
     private DashboardViewConfiguration configuration;
     private int viewNumber;
+    private DBPDataSourceContainer dataSourceContainer;
 
     public DashboardView() {
         super();
@@ -57,19 +57,22 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
         String dataSourceId = divPos == -1 ? secondaryId : secondaryId.substring(0, divPos);
         viewNumber = divPos == -1 ? 0 : CommonUtils.toInt(secondaryId.substring(divPos + 1));
 
-        DBPDataSourceContainer dataSource = DBUtils.findDataSource(dataSourceId);
-        if (dataSource == null) {
+        dataSourceContainer = DBUtils.findDataSource(dataSourceId);
+        if (dataSourceContainer == null) {
             throw new IllegalStateException("Database connection '" + dataSourceId + "' not found");
         }
-        setPartName(dataSource.getName());
 
-        configuration = new DashboardViewConfiguration(dataSource, secondaryId);
-        dashboardListViewer = new DashboardListViewer(getSite(), dataSource, configuration);
+        dataSourceContainer.getRegistry().addDataSourceListener(this);
+
+        configuration = new DashboardViewConfiguration(dataSourceContainer, secondaryId);
+        dashboardListViewer = new DashboardListViewer(getSite(), dataSourceContainer, configuration);
         dashboardListViewer.createControl(parent);
 
         dashboardListViewer.createDashboardsFromConfiguration();
 
         getSite().setSelectionProvider(dashboardListViewer);
+
+        updateStatus();
     }
 
     @Override
@@ -92,11 +95,33 @@ public class DashboardView extends ViewPart implements IDataSourceContainerProvi
     @Override
     public void dispose() {
         super.dispose();
+
         if (dashboardListViewer != null) {
+            dataSourceContainer.getRegistry().removeDataSourceListener(this);
             dashboardListViewer.dispose();
             dashboardListViewer = null;
         }
     }
+
+    @Override
+    public void handleDataSourceEvent(DBPEvent event) {
+        if (event.getObject() != dataSourceContainer) {
+            return;
+        }
+        switch (event.getAction()) {
+            case OBJECT_UPDATE:
+            case OBJECT_REMOVE:
+                UIUtils.asyncExec(this::updateStatus);
+                break;
+        }
+    }
+
+    private void updateStatus() {
+        UIUtils.asyncExec(() -> {
+            setPartName(dataSourceContainer.getName() + (dataSourceContainer.isConnected() ? "" : " <off>"));
+        });
+    }
+
 
     @Override
     public void saveState(IMemento memento) {
