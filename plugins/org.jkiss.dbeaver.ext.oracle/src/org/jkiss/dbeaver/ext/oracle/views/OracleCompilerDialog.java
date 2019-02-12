@@ -161,7 +161,7 @@ public class OracleCompilerDialog extends BaseDialog
             infoGroup.setLayoutData(gd);
             infoGroup.setLayout(new GridLayout(1, false));
 
-            compileLog = new ObjectCompilerLogViewer(infoGroup, true);
+            compileLog = new ObjectCompilerLogViewer(infoGroup, null, true);
         }
 
         return composite;

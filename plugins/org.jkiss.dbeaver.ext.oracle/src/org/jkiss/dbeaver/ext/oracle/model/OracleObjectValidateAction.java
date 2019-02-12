@@ -16,15 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.ext.oracle.actions.CompileHandler;
-import org.jkiss.dbeaver.ext.oracle.actions.OracleTaskHandler;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
-import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
-import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 /**
  * Oracle persist action with validation
@@ -43,6 +37,7 @@ public class OracleObjectValidateAction extends OracleObjectPersistAction {
         if (error != null) {
             return;
         }
+/*
         DBCCompileLog log = new DBCCompileLogBase();
         OracleTaskHandler.logObjectErrors((JDBCSession) session, log, object, getObjectType());
         if (!log.getErrorStack().isEmpty()) {
@@ -54,5 +49,6 @@ public class OracleObjectValidateAction extends OracleObjectPersistAction {
             }
             throw new DBCException(message.toString());
         }
+*/
     }
 }
