@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.*;
@@ -109,6 +107,10 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Nullable
     public String[] getRelOptions() {
         return relOptions;
+    }
+
+    public Object getAcl() {
+        return acl;
     }
 
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
@@ -220,19 +222,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         if (!isPersisted()) {
             return Collections.emptyList();
         }
-        List<PostgrePermission> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, this, acl);
-        if (!includeNestedObjects) {
-            return tablePermissions;
-        }
-        tablePermissions = new ArrayList<>(tablePermissions);
-        for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
-            if (column.getAcl() == null || column.isHidden()) {
-                continue;
-            }
-            tablePermissions.addAll(column.getPermissions(monitor, true));
-        }
-
-        return tablePermissions;
+        return getDataSource().getServerType().readObjectPermissions(monitor, this, includeNestedObjects);
     }
 
 	public boolean isPartition() {

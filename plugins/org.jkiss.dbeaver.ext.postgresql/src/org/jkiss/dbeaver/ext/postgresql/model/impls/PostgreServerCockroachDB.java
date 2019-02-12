@@ -17,9 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -27,6 +25,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreServerCockroachDB
@@ -130,6 +134,35 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     @Override
     public boolean supportFunctionDefRead() {
         return false;
+    }
+
+    @Override
+    public List<PostgrePermission> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase table, boolean includeNestedObjects) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load CockroachDB table grants")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+                    List<PostgrePermission> permissions = new ArrayList<>();
+                    Map<String, List<PostgrePrivilege>> privilegeMap = new HashMap<>();
+                    while (resultSet.next()) {
+                        String databaseName = JDBCUtils.safeGetString(resultSet, "database_name");
+                        String schemaName = JDBCUtils.safeGetString(resultSet, "schema_name");
+                        String tableName = JDBCUtils.safeGetString(resultSet, "table_name");
+                        String grantee = JDBCUtils.safeGetString(resultSet, "grantee");
+                        String privilege = JDBCUtils.safeGetString(resultSet, "privilege_type");
+                        List<PostgrePrivilege> privList = privilegeMap.computeIfAbsent(grantee, k -> new ArrayList<>());
+                        PostgrePrivilegeType privType = CommonUtils.valueOf(PostgrePrivilegeType.class, privilege, PostgrePrivilegeType.UNKNOWN);
+                        privList.add(new PostgrePrivilege("", grantee, databaseName, schemaName, tableName, privType, true, true));
+                    }
+                    for (Map.Entry<String, List<PostgrePrivilege>> entry : privilegeMap.entrySet()) {
+                        PostgrePermission permission = new PostgreObjectPermission(table, entry.getKey(), entry.getValue());
+                        permissions.add(permission);
+                    }
+                    return permissions;
+                }
+            }
+        } catch (Exception e) {
+            throw new DBException(e, table.getDataSource());
+        }
     }
 
     @Override

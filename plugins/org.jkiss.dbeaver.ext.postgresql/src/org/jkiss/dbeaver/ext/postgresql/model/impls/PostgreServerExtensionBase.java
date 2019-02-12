@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -281,6 +283,23 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             // We need to disable SSL explicitly (see #4928)
             props.put(PostgreConstants.PROP_SSL, "false");
         }
+    }
+
+    @Override
+    public List<PostgrePermission> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException {
+        List<PostgrePermission> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl());
+        if (!includeNestedObjects) {
+            return tablePermissions;
+        }
+        tablePermissions = new ArrayList<>(tablePermissions);
+        for (PostgreTableColumn column : CommonUtils.safeCollection(object.getAttributes(monitor))) {
+            if (column.getAcl() == null || column.isHidden()) {
+                continue;
+            }
+            tablePermissions.addAll(column.getPermissions(monitor, true));
+        }
+
+        return tablePermissions;
     }
 
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
