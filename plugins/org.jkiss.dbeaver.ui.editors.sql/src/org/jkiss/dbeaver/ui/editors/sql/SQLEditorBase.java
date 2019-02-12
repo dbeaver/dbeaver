@@ -1330,6 +1330,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             }
                             if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
                             if (errorLength > queryLength) errorLength = queryLength;
+                            if (errorOffset >= queryStartOffset + queryLength) {
+                                // This may happen if error position was incorrectly detected.
+                                // E.g. in SQL Server when actual error happened in some stored procedure.
+                                errorOffset  = queryStartOffset + queryLength - 1;
+                            }
                             getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
                             scrolled = true;
                         }

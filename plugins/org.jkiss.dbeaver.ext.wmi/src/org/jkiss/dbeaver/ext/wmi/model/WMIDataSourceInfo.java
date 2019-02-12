@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.impl.BaseDataSourceInfo;
 import org.osgi.framework.Version;
 
 import java.util.Collection;
@@ -25,7 +26,7 @@ import java.util.Collection;
 /**
  * Info
  */
-public class WMIDataSourceInfo implements DBPDataSourceInfo {
+public class WMIDataSourceInfo extends BaseDataSourceInfo {
 
     public WMIDataSourceInfo()
     {
@@ -136,18 +137,4 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
         return true;
     }
 
-    @Override
-    public boolean supportsResultSetScroll() {
-        return false;
-    }
-
-    @Override
-    public boolean isDynamicMetadata() {
-        return false;
-    }
-
-    @Override
-    public boolean supportsMultipleResults() {
-        return false;
-    }
 }

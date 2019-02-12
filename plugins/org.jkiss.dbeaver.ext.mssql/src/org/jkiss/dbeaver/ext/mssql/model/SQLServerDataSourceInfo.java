@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 
@@ -24,8 +25,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
  */
 class SQLServerDataSourceInfo extends JDBCDataSourceInfo {
 
+    private boolean isSybase;
+
     public SQLServerDataSourceInfo(SQLServerDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super(metaData);
+        this.isSybase = !SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver());
     }
 
     @Override
@@ -36,6 +40,11 @@ class SQLServerDataSourceInfo extends JDBCDataSourceInfo {
     @Override
     public boolean supportsMultipleResults() {
         return true;
+    }
+
+    @Override
+    public boolean isMultipleResultsFetchBroken() {
+        return isSybase;
     }
 
 }

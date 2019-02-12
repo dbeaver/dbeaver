@@ -320,6 +320,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return false;
     }
 
+    @Override
+    public boolean isMultipleResultsFetchBroken() {
+        return false;
+    }
+
     public void setSupportsResultSetScroll(boolean supportsScroll)
     {
         this.supportsScroll = supportsScroll;

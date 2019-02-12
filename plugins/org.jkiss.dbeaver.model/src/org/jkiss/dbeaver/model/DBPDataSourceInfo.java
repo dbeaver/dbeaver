@@ -152,4 +152,9 @@ public interface DBPDataSourceInfo
      * Checks whether this data source supports multiple results for a single statement
      */
     boolean supportsMultipleResults();
+
+    /**
+     * Workaround for broken drivers (#2792)
+     */
+    boolean isMultipleResultsFetchBroken();
 }
