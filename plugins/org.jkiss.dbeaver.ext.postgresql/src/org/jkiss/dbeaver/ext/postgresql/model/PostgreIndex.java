@@ -84,10 +84,10 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         if (getDataSource().isServerVersionAtLeast(7, 4)) {
             this.predicateExpression = JDBCUtils.safeGetString(dbResult, "pred_expr");
         }
-        if (getDataSource().isServerVersionAtLeast(8, 1)) {
+        if (getDataSource().getServerType().supportsRelationSizeCalc()) {
             this.indexRelSize = JDBCUtils.safeGetLong(dbResult, "index_rel_size");
+            this.indexNumScans = JDBCUtils.safeGetLong(dbResult, "index_num_scans");
         }
-        this.indexNumScans = JDBCUtils.safeGetLong(dbResult, "index_num_scans");
 
         // Unique key indexes (including PK) are implicit. We don't want to show them separately
         if (this.isUnique) {

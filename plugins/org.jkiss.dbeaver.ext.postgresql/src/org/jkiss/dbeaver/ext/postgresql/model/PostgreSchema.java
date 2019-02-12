@@ -709,10 +709,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 sql.append(",pg_catalog.pg_get_expr(i.indpred, i.indrelid) as pred_expr");
                 sql.append(",pg_catalog.pg_get_expr(i.indexprs, i.indrelid, true) as expr");
             }
-            if (getDataSource().isServerVersionAtLeast(8, 1)) {
+            if (getDataSource().getServerType().supportsRelationSizeCalc()) {
                 sql.append(",pg_catalog.pg_relation_size(i.indrelid) as index_rel_size");
+                sql.append(",pg_catalog.pg_stat_get_numscans(i.indrelid) as index_num_scans");
             }
-            sql.append(",pg_catalog.pg_stat_get_numscans(i.indrelid) as index_num_scans");
             sql.append(
                 "\nFROM pg_catalog.pg_index i" +
                     "\nINNER JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid" +
