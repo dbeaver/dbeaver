@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.control;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -24,25 +26,33 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbenchSite;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewContainer;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collections;
 import java.util.List;
 
-public class DashboardListViewer extends StructuredViewer implements DBPEventListener, IDataSourceContainerProvider, DashboardViewContainer {
+public class DashboardListViewer extends StructuredViewer implements IDataSourceContainerProvider, DashboardViewContainer {
 
     private final IWorkbenchSite site;
     private final DBPDataSourceContainer dataSourceContainer;
     private final DashboardViewConfiguration viewConfiguration;
+
+    private volatile boolean useSeparateConnection;
+    private volatile DBCExecutionContext isolatedContext;
+
     private DashboardList dashContainer;
     private boolean singleChartMode;
     //private CLabel statusLabel;
@@ -50,7 +60,6 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
     public DashboardListViewer(IWorkbenchSite site, DBPDataSourceContainer dataSourceContainer, DashboardViewConfiguration viewConfiguration) {
         this.site = site;
         this.dataSourceContainer = dataSourceContainer;
-        this.dataSourceContainer.getRegistry().addDataSourceListener(this);
 
         if (!this.dataSourceContainer.isConnected()) {
             //DataSourceConnectHandler
@@ -58,11 +67,16 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
 
         this.viewConfiguration = viewConfiguration;
 
-        // Activate updater
+        initConnection();
     }
 
     public void dispose() {
-        dataSourceContainer.getRegistry().removeDataSourceListener(this);
+        if (isolatedContext != null) {
+            if (isolatedContext.isConnected()) {
+                isolatedContext.close();
+            }
+            isolatedContext = null;
+        }
     }
 
     @Override
@@ -72,19 +86,6 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
 
     public void setSingleChartMode(boolean singleChartMode) {
         this.singleChartMode = singleChartMode;
-    }
-
-    @Override
-    public void handleDataSourceEvent(DBPEvent event) {
-        if (event.getObject() != dataSourceContainer) {
-            return;
-        }
-        switch (event.getAction()) {
-            case OBJECT_UPDATE:
-            case OBJECT_REMOVE:
-                UIUtils.asyncExec(this::updateStatus);
-                break;
-        }
     }
 
     public void createControl(Composite parent) {
@@ -148,6 +149,9 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
 
     @Override
     public DBCExecutionContext getExecutionContext() {
+        if (useSeparateConnection) {
+            return isolatedContext;
+        }
         return dataSourceContainer.getDataSource().getDefaultInstance().getDefaultContext(false);
     }
 
@@ -215,4 +219,47 @@ public class DashboardListViewer extends StructuredViewer implements DBPEventLis
     public DashboardGroupContainer getDefaultGroup() {
         return dashContainer;
     }
+
+    private void initConnection() {
+        useSeparateConnection = viewConfiguration.isUseSeparateConnection();
+        if (viewConfiguration.isOpenConnectionOnActivate()) {
+            if (!dataSourceContainer.isConnected()) {
+                UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+                if (serviceConnections != null) {
+                    serviceConnections.connectDataSource(dataSourceContainer, status -> {
+                        if (useSeparateConnection) {
+                            openSeparateContext();
+                        }
+                    });
+                }
+            } else if (useSeparateConnection) {
+                openSeparateContext();
+            }
+        } else if (useSeparateConnection) {
+            openSeparateContext();
+        }
+    }
+
+    private void openSeparateContext() {
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (dataSource == null) {
+            return;
+        }
+        DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
+        new DataSourceJob("Open connection for dashboard", defaultContext) {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                DBSInstance instance = DBUtils.getObjectOwnerInstance(dataSource);
+                if (instance != null) {
+                    try {
+                        isolatedContext = instance.openIsolatedContext(monitor, "Dashboard connection");
+                    } catch (DBException e) {
+                        return GeneralUtils.makeExceptionStatus(e);
+                    }
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
+    }
+
 }

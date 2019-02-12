@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -137,6 +138,10 @@ public class DashboardViewConfiguration {
 
         try {
             Document document = XMLUtils.parseDocument(configFile);
+            for (Element viewElement : XMLUtils.getChildElementList(document.getDocumentElement(), "view")) {
+                openConnectionOnActivate = CommonUtils.getBoolean(viewElement.getAttribute("openConnectionOnActivate"), openConnectionOnActivate);
+                useSeparateConnection = CommonUtils.getBoolean(viewElement.getAttribute("useSeparateConnection"), useSeparateConnection);
+            }
             for (Element dbElement : XMLUtils.getChildElementList(document.getDocumentElement(), "dashboard")) {
                 String dashboardId = dbElement.getAttribute("id");
                 DashboardDescriptor dashboard = DashboardRegistry.getInstance().getDashboard(dashboardId);
@@ -168,6 +173,10 @@ public class DashboardViewConfiguration {
             XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
             xml.setButify(true);
             xml.startElement("dashboards");
+            xml.startElement("view");
+            xml.addAttribute("openConnectionOnActivate", openConnectionOnActivate);
+            xml.addAttribute("useSeparateConnection", useSeparateConnection);
+            xml.endElement();
             for (DashboardItemViewConfiguration itemConfig : items) {
                 xml.startElement("dashboard");
                 itemConfig.serialize(xml);
@@ -190,5 +199,6 @@ public class DashboardViewConfiguration {
         }
         return new File(viewConfigFolder, "view-" + viewId + ".xml");
     }
+
 
 }
