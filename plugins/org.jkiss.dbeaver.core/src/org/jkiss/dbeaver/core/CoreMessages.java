@@ -102,6 +102,12 @@ public class CoreMessages extends NLS {
 	public static String model_navigator_Connection;
 	public static String model_navigator_Connections;
 
+	public static String dbeaver_stack_renderer_delete_error_title;
+	public static String dbeaver_stack_renderer_delete_error_text;
+	public static String dbeaver_stack_renderer_menu_item_delete_this_script;
+	public static String dbeaver_stack_renderer_widget_selected_confirm_delete_text;
+	public static String dbeaver_stack_renderer_widget_selected_confirm_delete_title;
+
 	public static String dialog_about_font;
 	public static String dialog_about_label_version;
 	public static String dialog_about_title;
