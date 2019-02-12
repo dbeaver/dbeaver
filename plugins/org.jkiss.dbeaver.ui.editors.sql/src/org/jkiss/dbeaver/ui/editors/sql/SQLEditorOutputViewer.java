@@ -71,6 +71,10 @@ public class SQLEditorOutputViewer extends Composite {
         refreshStyles();
     }
 
+    public StyledText getText() {
+        return text;
+    }
+
     void refreshStyles() {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
         Font outputFont = currentTheme.getFontRegistry().get(SQLConstants.CONFIG_FONT_OUTPUT);
