@@ -1,40 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?eclipse version="3.2"?>
-
-
 <tips>
-<tip>You can execute current query using <b>Ctrl+Enter</b> shortcut.
-	<br/>If you want to open results in a new tab then use <b>Ctrl+\</b> shortcut.
-	<br/>Queries are separated by delimiters or empty lines.
-</tip>
-<tip>You can select any part of SQL script and run it with <b>Ctrl+Enter</b></tip>
-<tip>You can run SQL script using <b>Alt+X</b> shortcut. Script queries are separated with delimiters (like ";" or "go").</tip>
-<tip>You can filter table rows by column value (use <b>F11</b> or <b>Ctrl+F11</b>) or by typing SQL expression in filter edit field</tip>
-<tip>In order to format SQL use <b>Ctrl+Shift+F</b>.
-	<br/>You can <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.format">configure</a> SQL formatter (globally or for the particular database).
-</tip>
-<tip>New version of DBeaver Community is released once per two weeks (usually at Monday).
-	<br/>You always can download a fresh version from <a href="https://dbeaver.io/download">dbeaver.io/download</a>.
-</tip>
-<tip>You can navigate over foreign keys in data view by pressing <b>Ctrl+1</b> or using context menu.
-	<br/>Back/Forward buttons (<b>Alt+Left/Right</b>) near to the filter panel allow to jump to previous tables/filter values.
-	<br/><b>Ctrl+Shift+1</b> will open links in a new editor.
-</tip>
-<tip>You can export data directly from SQL query without pre-executing it: use SQL editor context menu Execute -> Export From Query.</tip>
-<tip>You can assign your own shortcuts for almost all DBeaver operations. Also, you can change most of <a href="prefs://org.eclipse.ui.preferencePages.Keys">existing shortcuts</a>.</tip>
-<tip>You can debug PostgreSQL functions. Use debug tool in the main toolbar to initiate debug session.</tip>
-<tip>Data editor supports copy/paste of multiple cells. Use <b>Ctrl+Shift+V</b> to paste multiple rows/columns separated by tabs and line feeds.</tip>
-<tip>DBeaver documentation can be found in our WIKI (<a href="https://github.com/dbeaver/dbeaver/wiki">https://github.com/dbeaver/dbeaver/wiki</a>).
-	<br/>Just press <b>F1</b>.
-</tip>
-<tip>Panels in Data viewer are extremely useful.<br/>You can open cell value viewer, statistics calculator, columns aggregator and others.<br/>Use <b>F7</b> to toggle panels.</tip>
-<tip>You can view queries executed in DBeaver in <a href="view://org.jkiss.dbeaver.core.queryManager">Query Manager</a> view.
-	<br/>There you can see even all internal queries which DBeaver runs to read metadata.
-</tip>
-<tip>See all SQL errors which occur in DBeaver in <a href="view://org.eclipse.pde.runtime.LogView">Error Log</a> view.
-	<br/>Error log includes all SQL, permission and configuration errors. You always can open error history and send error details to your colleagues.
-</tip>
-<tip>If you need more features, NoSQL databases support or analytical functions then you can use <a href="https://dbeaver.com/">DBeaver Enterprise Edition</a>.
-	<br/>You can try it for free.
-</tip>
+	<tip>To execute current query use the following shortcut: <b>Ctrl+Enter</b>.<br/>Note that queries are separated by delimiters or empty lines.</tip>
+
+	<tip>To open query results in a new tab, use the following shortcut: <b>Ctrl+\</b>.<br/>Note that queries are separated by delimiters or empty lines.</tip>
+	<tip>You can select any part of SQL script and run it using the following shortcut: <b>Ctrl+Enter</b>.</tip>
+	<tip>To run the current SQL script use the following shortcut: <b>Alt+X</b>.</tip>
+	<tip>If you want to filter table rows by column value in<a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor"> Data Editor</a>, press <b>F11</b>.</tip>
+	<tip>If you want to filter table rows by column value in<a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor"> Data Editor</a>, use the following shortcut: <b>Ctrl+F11</b>.</tip>
+	<tip>In order to format SQL statements use the following shortcut: <b>Ctrl+Shift+F</b>.</tip>
+	<tip>You can <a href="prefs://org.jkiss.dbeaver.preferences.main.sql.format">configure</a> SQL formatter globally or for a particular database.</tip>
+	<tip>We release new version of DBeaver Community every two weeks and usually publish the updates on Mondays.<br/> You can download up-to-date version <a href="https://dbeaver.io/download">here</a>.</tip>
+
+	<tip>The following keyboard shortcuts can be useful when viewing data:
+		<br/> <b>Ctrl+1</b> - opens foreign keys menu.
+		<br/><b>Alt+Left</b>  - navigates backward in history of your actions.
+		<br/><b>Alt+Right</b>  - navigates forward in history of your actions.
+		<br/><b>Ctrl+Shift+1</b> - opens link in a new editor.
+	</tip>
+	<tip>Use the following options in SQL Editor's context menu: Execute -> Export From Query, to export data directly from SQL query without pre-executing it. </tip>
+	<tip>Any keyboard shortcut can be created for most of DBeaver commands. <a href="prefs://org.eclipse.ui.preferencePages.Keys">Existing shortcuts can also be changed</a>.</tip>
+	<tip>Use the Debug As tool in the main toolbar of SQL Editor to initiate a debug session.</tip>
+	<tip>For additional information on DBeaver features and functions, visit our <a href="https://github.com/dbeaver/dbeaver/wiki"> wiki page</a>).</tip>
+	<tip>To open DBeaver Help contents, press <b>F1</b>.</tip>
+	<tip>You can view queries executed in DBeaver in <a href="view://org.jkiss.dbeaver.core.queryManager">Query Manager</a> view.<br/>All the internal queries DBeaver runs to read metadata can also be found there.</tip>
+	<tip>All the errors that occur when running SQL scripts in DBeaver, can be observed in the <a href="view://org.eclipse.pde.runtime.LogView">Error Log</a> view.<br/>The error log tracks SQL, permission and configuration errors.</tip>
+
+	<tip>When you need error details to be shared with your colleagues, use <a href="view://org.eclipse.pde.runtime.LogView"> Error Log view</a>.</tip>
+	<tip>If your project requires advanced analytical tools or NoSQL database support, you can try <a href="https://dbeaver.com/">DBeaver Enterprise Edition</a>.</tip>
+	<tip>You can convert the selected text into uppercase using the following shortcut: <b>Ctrl+Shift+X</b>.</tip>
+	<tip>You can convert the selected text into lowercase using the following shortcut: <b>Ctrl+Shift+Y</b>.</tip>
+	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor">Data Editor</a>, you can iterate through the view modes using the following shortcut: <b>Ctrl+~</b>.</tip>
+	<tip>Use <b>Ctrl+F7</b> shortcut to iterate through the view windows of DBeaver interface.</tip>
+	<tip>You can turn on/off the right panels by using the following shortcut: <b>Ctrl+7</b>.</tip>
+	<tip>You can turn on/off the right panels by pressing <b>F7</b>.</tip>
+	<tip>To refresh query results in <a href="https://github.com/dbeaver/dbeaver/wiki/SQL-Editor">SQL Editor</a>, press <b>F5</b>.</tip>
+	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F2</b> to rename the selected element.</tip>
+	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F4</b> to edit properties of the selected element.</tip>
+	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>F5</b> to refresh the selected element.</tip>
+	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Navigator"> Database Navigator</a>, press <b>Ctrl+D</b> to add the selected elements into your <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a>.</tip>
+	<tip>Use <a href="https://github.com/dbeaver/dbeaver/wiki/Bookmarks">bookmarks</a> as quick access links to objects of a database.</tip>
+	<tip><a href="https://github.com/dbeaver/dbeaver/wiki/Managing-Charts">Charts</a> let you quickly and easily turn your SELECT queries' output into a colorized bar chart.</tip>
+	<tip>To see available <a href="https://github.com/dbeaver/dbeaver/wiki/SQL-Templates">templates</a> of SQL statements, use <b>Ctrl+Alt+Space</b> shortcut.</tip>
+	<tip><a href="https://github.com/dbeaver/dbeaver/wiki/SQL-Templates">Templates</a> allow you to insert frequently used SQL statements into an SQL script.</tip>
+	<tip>In <a href="https://github.com/dbeaver/dbeaver/wiki/Data-Editor"> Data Editor</a>, press <b>Ctrl+F</b> to search for data in the current table.</tip>
+	<tip>You can generate SQL statements (SELECT/INSERT/UPDATE/DELETE) based on selected rows. To generate SQL, right-click the selected rows,then click Generate SQL and select one of the SQL commands you see.</tip>
+	<tip>DBeaver allows viewing diagrams of existing tables and whole database schemas, see <a href="https://github.com/dbeaver/dbeaver/wiki/Database-Structure-Diagrams">ER diagrams</a> article.</tip>
+	<tip>DBeaver allows creating custom diagrams, see <a href="https://github.com/dbeaver/dbeaver/wiki/Custom-Diagrams">Custom Diagrams</a>.</tip>
+	<tip>DBeaver is a customizable software.<br/>For additional information on optional extensions, see <a href="https://github.com/dbeaver/dbeaver/wiki/Optional-extensions"> Optional Extensions</a></tip>
+	<tip>Use <a href="https://github.com/dbeaver/dbeaver/wiki/Mock-Data-Generation-in-DBeaver">DBeaver Mock Data Generator</a> when you need to create a huge quantities of realistic sample data for testing purposes and want to avoid tedious and time-consuming work of entering test data by hand.</tip>
+	<tip>To customize the menu bar and the list of menu items displayed go to Window -> Customize Perspective ->Menu Visibility tab.</tip>
+	<tip>To customize the toolbar go to Window -> Customize Perspective -> Toolbar Visibility tab.</tip>
+	<tip>To execute the selected SQL expression and print the results use the following shortcut: <b>Ctrl+Alt+'</b>.</tip>
+	<tip>To see the execution plan for the current query, use the following shortcut: <b>Ctrl+Shift+E</b>.</tip>
+	<tip>To execute queries of current script simultaneously and display the results in separate tabs, use the following shortcut: <b>Ctrl+Alt+Shift+X</b>.</tip>
+	<tip>To jump to the previous query in the current SQL script,use the following shortcut: <b>Alt+Up</b>.</tip>
+	<tip>To jump to the next query in the current SQL script,use the following shortcut: <b>Alt+Down</b>.</tip>
+	<tip>If you are not much familiar with SQL scripting, use <a href="https://github.com/dbeaver/dbeaver/wiki/Visual-Query-Builder">Visual Query Builder</a> tool.
+		<br/>Note: this tool is available only in DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a>.
+	</tip>
 </tips>
