@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -90,4 +91,6 @@ public interface PostgreServerExtension
 
     // Initializes SSL config if SSL wasn't enabled explicitly. By default disables SSL explicitly.
     void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
+
+    List<PostgrePermission> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
 }
