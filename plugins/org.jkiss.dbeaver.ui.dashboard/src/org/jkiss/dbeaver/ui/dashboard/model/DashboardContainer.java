@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.apache.commons.jexl2.Expression;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
@@ -62,6 +63,12 @@ public interface DashboardContainer {
     DBPDataSourceContainer getDataSourceContainer();
 
     DashboardGroupContainer getGroup();
+
+    DashboardMapQuery getMapQuery();
+
+    String getMapKey();
+
+    Expression getMapFormula();
 
     List<? extends DashboardQuery> getQueryList();
 

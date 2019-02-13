@@ -20,6 +20,7 @@ import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,13 +32,27 @@ import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class DashboardUpdater {
 
     private static final Log log = Log.getLog(DashboardUpdater.class);
+    private Map<DBPDataSourceContainer, List<MapQueryInfo>> mapQueries = new HashMap<>();
+
+    private static class MapQueryInfo {
+        private final DashboardViewContainer viewContainer;
+        private final DashboardMapQuery mapQuery;
+        public Date timestamp;
+        private Map<String, Object> mapValue = new HashMap<>();
+
+        public MapQueryInfo(DashboardViewContainer viewContainer, DashboardMapQuery mapQuery) {
+            this.viewContainer = viewContainer;
+            this.mapQuery = mapQuery;
+        }
+    }
+
+    public DashboardUpdater() {
+    }
 
     public void updateDashboards(DBRProgressMonitor monitor) {
         List<DashboardContainer> dashboards = getDashboardsToUpdate();
@@ -47,6 +62,46 @@ public class DashboardUpdater {
     }
 
     private void updateDashboards(DBRProgressMonitor monitor, List<DashboardContainer> dashboards) {
+        // Get all map queries used by dashboards
+        for (DashboardContainer dashboard : dashboards) {
+            DashboardMapQuery mapQuery = dashboard.getMapQuery();
+            if (mapQuery != null) {
+                List<MapQueryInfo> queryList = mapQueries.computeIfAbsent(
+                    dashboard.getDataSourceContainer(), k -> new ArrayList<>());
+                boolean found = false;
+                for (MapQueryInfo mqi : queryList) {
+                    if (mqi.mapQuery == mapQuery) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    queryList.add(new MapQueryInfo(dashboard.getGroup().getView(), mapQuery));
+                }
+            }
+        }
+
+        for (Map.Entry<DBPDataSourceContainer, List<MapQueryInfo>> mqEntry : mapQueries.entrySet()) {
+            DBPDataSourceContainer dsContainer = mqEntry.getKey();
+            DBPDataSource dataSource = dsContainer.getDataSource();
+            if (dataSource == null) {
+                continue;
+            }
+            try {
+                DBUtils.tryExecuteRecover(dashboards, dataSource, param -> {
+                    try {
+                        for (MapQueryInfo mqi : mqEntry.getValue()) {
+                            readMapQueryData(monitor, mqi);
+                        }
+                    } catch (Throwable e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (DBException e) {
+                log.debug("Error reading map query data for '" + dsContainer.getName() + "'", e);
+            }
+        }
+
         for (DashboardContainer dashboard : dashboards) {
             DBPDataSource dataSource = dashboard.getDataSourceContainer().getDataSource();
             if (dataSource == null) {
@@ -61,8 +116,34 @@ public class DashboardUpdater {
                     }
                 });
             } catch (DBException e) {
-                log.debug(e);
+                log.debug("Error reading dashboard '" + dashboard.getDashboardId() + "' data", e);
             }
+        }
+    }
+
+    private void readMapQueryData(DBRProgressMonitor monitor, MapQueryInfo mqInfo) throws DBCException {
+        DBCExecutionContext executionContext = mqInfo.viewContainer.getExecutionContext();
+        if (executionContext == null) {
+            return;
+        }
+        try (DBCSession session = executionContext.openSession(
+            monitor, DBCExecutionPurpose.UTIL, "Read map query '" + mqInfo.mapQuery.getId() + "' data"))
+        {
+            session.enableLogging(false);
+            try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, mqInfo.mapQuery.getQueryText(), false, false, false)) {
+                if (dbStat.executeStatement()) {
+                    try (DBCResultSet dbResults = dbStat.openResultSet()) {
+                        mqInfo.timestamp = new Date();
+                        while (dbResults.nextRow()) {
+                            String mapKey = CommonUtils.toString(dbResults.getAttributeValue(0));
+                            Object mapValue = dbResults.getAttributeValue(1);
+                            mqInfo.mapValue.put(mapKey, mapValue);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DBCException("Error reading map query data", e);
         }
     }
 
@@ -71,7 +152,14 @@ public class DashboardUpdater {
             return;
         }
 
+        if (dashboard.getMapQuery() != null) {
+            fetchDashboardMapData(monitor, dashboard);
+            return;
+        }
         List<? extends DashboardQuery> queries = dashboard.getQueryList();
+        if (queries.isEmpty()) {
+            return;
+        }
         DashboardViewContainer view = dashboard.getGroup().getView();
         DBCExecutionContext executionContext = view.getExecutionContext();
         if (executionContext == null) {
@@ -92,6 +180,31 @@ public class DashboardUpdater {
             }
         } catch (Exception e) {
             throw new DBCException("Error updating dashboard " + dashboard.getDashboardId(), e);
+        }
+    }
+
+    private void fetchDashboardMapData(DBRProgressMonitor monitor, DashboardContainer dashboard) {
+        MapQueryInfo mqi = getMapQueryData(dashboard);
+        if (mqi == null) {
+            return;
+        }
+        Map<String, Object> mapValue = mqi.mapValue;
+        if (mapValue != null) {
+            String mapKey = dashboard.getMapKey();
+            if (!CommonUtils.isEmpty(mapKey)) {
+                Object value = mapValue.get(mapKey);
+                Number numValue;
+                if (value instanceof Number) {
+                    numValue = (Number) value;
+                } else {
+                    numValue = CommonUtils.toDouble(value);
+                }
+                DashboardDataset dataset = new DashboardDataset(new String[] { mapKey });
+                dataset.addRow(new DashboardDatasetRow(mqi.timestamp, new Object[] { numValue }));
+                dashboard.updateDashboardData(dataset);
+            } else if (dashboard.getMapFormula() != null) {
+                log.debug("Formulas are not supported yet");
+            }
         }
     }
 
@@ -198,6 +311,18 @@ public class DashboardUpdater {
                 }
             }
         }
+    }
+
+    private MapQueryInfo getMapQueryData(DashboardContainer dashboard) {
+        List<MapQueryInfo> mapQueryInfos = mapQueries.get(dashboard.getDataSourceContainer());
+        if (mapQueryInfos != null) {
+            for (MapQueryInfo mqi : mapQueryInfos) {
+                if (mqi.mapQuery == dashboard.getMapQuery()) {
+                    return mqi;
+                }
+            }
+        }
+        return null;
     }
 
 }
