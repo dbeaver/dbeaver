@@ -321,7 +321,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         try {
             final IRegion lineInfo = getTextViewer().getDocument().getLineInformation(line - 1);
             final int offset = lineInfo.getOffset() + position - 1;
-            super.selectAndReveal(offset, 0);
+            super.selectAndReveal(offset, 1);
             //textEditor.setFocus();
         } catch (BadLocationException e) {
             log.warn(e);
