@@ -149,7 +149,7 @@ public class DashboardListViewer extends StructuredViewer implements IDataSource
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        if (useSeparateConnection) {
+        if (useSeparateConnection && isolatedContext != null) {
             return isolatedContext;
         }
         return dataSourceContainer.getDataSource().getDefaultInstance().getDefaultContext(false);

@@ -445,7 +445,7 @@ SHOW GLOBAL STATUS
         </mapQuery>
 
         <dashboard id="mysql.traffic" mapQuery="mysql.query.status" label="Traffic" defaultView="timeseries" group="Status"
-            calc="delta" value="integer" mapKey="Bytes_sent" measue="Kb/s"
+            calc="delta" value="integer" mapKeys="Bytes_sent,Bytes_received" measue="Kb/s"
             showByDefault="true" description="Server outbound traffic">
             <datasource id="mysql"/>
         </dashboard>

@@ -66,7 +66,7 @@ public interface DashboardContainer {
 
     DashboardMapQuery getMapQuery();
 
-    String getMapKey();
+    String[] getMapKeys();
 
     Expression getMapFormula();
 
