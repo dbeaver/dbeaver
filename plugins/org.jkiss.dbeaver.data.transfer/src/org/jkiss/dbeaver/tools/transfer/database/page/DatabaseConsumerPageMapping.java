@@ -151,7 +151,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
                                 if (mappingContainer.getMappingType() != DatabaseMappingType.unspecified) {
                                     try {
-                                        mappingContainer.refreshMappingType(getContainer(), DatabaseMappingType.create);
+                                        mappingContainer.refreshMappingType(getContainer(), DatabaseMappingType.unspecified);
                                     } catch (DBException e1) {
                                         log.error(e1);
                                     }
