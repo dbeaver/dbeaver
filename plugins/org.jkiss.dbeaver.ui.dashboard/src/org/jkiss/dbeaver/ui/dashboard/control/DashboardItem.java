@@ -309,8 +309,8 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
-    public String getMapKey() {
-        return dashboardConfig.getDashboardDescriptor().getMapKey();
+    public String[] getMapKeys() {
+        return dashboardConfig.getDashboardDescriptor().getMapKeys();
     }
 
     @Override

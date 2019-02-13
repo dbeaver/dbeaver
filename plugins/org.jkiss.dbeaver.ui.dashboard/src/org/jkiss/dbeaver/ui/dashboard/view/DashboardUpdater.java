@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -190,17 +191,25 @@ public class DashboardUpdater {
         }
         Map<String, Object> mapValue = mqi.mapValue;
         if (mapValue != null) {
-            String mapKey = dashboard.getMapKey();
-            if (!CommonUtils.isEmpty(mapKey)) {
-                Object value = mapValue.get(mapKey);
-                Number numValue;
-                if (value instanceof Number) {
-                    numValue = (Number) value;
-                } else {
-                    numValue = CommonUtils.toDouble(value);
+            String[] mapKeys = dashboard.getMapKeys();
+            if (!ArrayUtils.isEmpty(mapKeys)) {
+                DashboardDataset dataset = new DashboardDataset(mapKeys);
+                Object[] mapValues = new Object[mapKeys.length];
+                for (int i = 0; i < mapKeys.length; i++) {
+                    Object value = mapValue.get(mapKeys[i]);
+                    Number numValue;
+                    if (value instanceof Number) {
+                        numValue = (Number) value;
+                    } else {
+                        numValue = CommonUtils.toDouble(value);
+                    }
+                    mapValues[i] = numValue;
                 }
-                DashboardDataset dataset = new DashboardDataset(new String[] { mapKey });
-                dataset.addRow(new DashboardDatasetRow(mqi.timestamp, new Object[] { numValue }));
+                Date timestamp = mqi.timestamp;
+                if (timestamp == null) {
+                    timestamp = new Date();
+                }
+                dataset.addRow(new DashboardDatasetRow(timestamp, mapValues));
                 dashboard.updateDashboardData(dataset);
             } else if (dashboard.getMapFormula() != null) {
                 log.debug("Formulas are not supported yet");

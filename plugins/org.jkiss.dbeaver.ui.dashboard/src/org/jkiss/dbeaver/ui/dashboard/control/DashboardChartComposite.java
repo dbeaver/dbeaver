@@ -83,6 +83,7 @@ public class DashboardChartComposite extends BaseChartComposite {
                     @Override
                     public void runWithEvent(Event event) {
                         ((DashboardItem) dashboardContainer).getDashboardConfig().setViewType(viewType);
+                        dashboardContainer.getGroup().getView().getViewConfiguration().saveSettings();
                         dashboardContainer.updateDashboardView();
                     }
                 };
