@@ -122,6 +122,11 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsAggregates() {
+        return false;
+    }
+
+    @Override
     public boolean isSupportsLimits() {
         return false;
     }
