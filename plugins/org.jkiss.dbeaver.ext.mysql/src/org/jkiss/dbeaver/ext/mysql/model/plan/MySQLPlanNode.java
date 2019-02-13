@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -27,7 +28,7 @@ import java.util.List;
 /**
  * MySQL execution plan node
  */
-public class MySQLPlanNode implements DBCPlanNode {
+public class MySQLPlanNode implements DBCPlanNode, DBCPlanCostNode {
 
     private long id;
     private String selectType;
@@ -44,7 +45,15 @@ public class MySQLPlanNode implements DBCPlanNode {
     private MySQLPlanNode parent;
     private List<MySQLPlanNode> nested;
 
-    public MySQLPlanNode(MySQLPlanNode parent, ResultSet dbResult) throws SQLException {
+    public MySQLPlanNode(List<MySQLPlanNode> nodes) {
+        // Root node
+        if (!nodes.isEmpty()) {
+            this.rowCount = nodes.get(0).rowCount;
+        }
+        this.nested = nodes;
+    }
+
+    public MySQLPlanNode(MySQLPlanNode parent, ResultSet dbResult) {
         this.parent = parent;
         this.id = JDBCUtils.safeGetLong(dbResult, "id");
         this.selectType = JDBCUtils.safeGetString(dbResult, "select_type");
@@ -79,7 +88,6 @@ public class MySQLPlanNode implements DBCPlanNode {
     public String getNodeType() {
         return type;
     }
-
 
     @Override
     public List<MySQLPlanNode> getNested() {
@@ -134,6 +142,26 @@ public class MySQLPlanNode implements DBCPlanNode {
     @Property(order = 10, viewable = true)
     public String getExtra() {
         return extra;
+    }
+
+    @Override
+    public Number getNodeCost() {
+        return null;
+    }
+
+    @Override
+    public Number getNodePercent() {
+        return null;
+    }
+
+    @Override
+    public Number getNodeDuration() {
+        return null;
+    }
+
+    @Override
+    public Number getNodeRowCount() {
+        return rowCount;
     }
 
     @Override
