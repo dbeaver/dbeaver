@@ -350,12 +350,18 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private void refreshPropertyValues(List<DBPPropertyDescriptor> allProps, boolean disableControls) {
+        DBSObject databaseObject = input.getDatabaseObject();
+        if (databaseObject == null) {
+            // Disposed
+            return;
+        }
+
         disableControls = false;
         ControlEnableState blockEnableState = disableControls ? ControlEnableState.disable(propertiesGroup) : null;
 
         ownerControl.runService(
             LoadingJob.createService(
-                new DatabaseLoadService<Map<DBPPropertyDescriptor, Object>>("Load main properties", input.getDatabaseObject().getDataSource()) {
+                new DatabaseLoadService<Map<DBPPropertyDescriptor, Object>>("Load main properties", databaseObject.getDataSource()) {
                     @Override
                     public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         DBPPropertySource propertySource = TabbedFolderPageForm.this.curPropertySource;
