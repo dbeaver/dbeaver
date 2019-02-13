@@ -1,8 +1,11 @@
 package org.jkiss.dbeaver.ui.e4;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.renderers.swt.StackRenderer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -17,6 +20,7 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -68,18 +72,35 @@ public class DBeaverStackRenderer extends StackRenderer {
                 }
             });
         }
-
+    
         if (inputFile != null) {
+            {
+		        MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
+		        menuItemDelete.setText(CoreMessages.editor_file_delete_this_script);
+		        menuItemDelete.addSelectionListener(new SelectionAdapter() {
+			        @Override
+			        public void widgetSelected(SelectionEvent e) {
+			           if (UIUtils.confirmAction(CoreMessages.editor_file_delete_confirm_delete_title, NLS.bind(CoreMessages.editor_file_delete_confirm_delete_text, inputFile.getName()))) {			      //$NON-NLS-3$
+			        	   try {
+			        		   inputFile.delete(true, true, new NullProgressMonitor());
+			        	   } catch (CoreException e1) {
+			        		   DBWorkbench.getPlatformUI().showError(CoreMessages.editor_file_delete_error_title, NLS.bind(CoreMessages.editor_file_delete_error_text, inputFile.getName(), e1));
+						   }
+			           }
+			        } 
+			    });
+            }
+            
             MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
             String renameText = CoreMessages.editor_file_rename;
             if (workbenchPart instanceof SQLEditor) {
-                renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true);
+                renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
             }
             menuItemOthers.setText(renameText);
             menuItemOthers.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    RenameHandler.renameFile(workbenchPart, inputFile, "file");
+                    RenameHandler.renameFile(workbenchPart, inputFile, "file"); //$NON-NLS-1$
                 }
             });
         }
