@@ -440,7 +440,21 @@
 
     <extension point="org.jkiss.dbeaver.dashboard">
 
-        <dashboard id="mysql.sessions" label="Server sessions" defaultView="pie" group="Standard" updatePeriod="2000" calc="value" value="integer" fetch="rows" showByDefault="true" description="Shows session grouped by command">
+        <mapQuery id="mysql.query.status" updatePeriod="1000">
+SHOW GLOBAL STATUS
+        </mapQuery>
+
+        <dashboard id="mysql.traffic" mapQuery="mysql.query.status" label="Traffic" defaultView="timeseries" group="Status"
+            calc="delta" value="integer" key="Bytes_sent" measue="Kb/s"
+            showByDefault="true" description="Server outbound traffic">
+        </dashboard>
+
+        <dashboard id="mysql.key_efficiency" mapQuery="mysql.query.status" label="Key Efficiency" defaultView="timeseries" group="Status" updatePeriod="1000"
+            calc="delta" value="integer" formula="100 - (((map.key_reads / map.key_read_requests * 100))/options.updateInterval)" measue="%"
+            showByDefault="true" description="Shows session grouped by command">
+        </dashboard>
+
+        <dashboard id="mysql.sessions" label="Server sessions" defaultView="timeseries" group="Standard" updatePeriod="2000" calc="value" value="integer" fetch="rows" showByDefault="true" description="Shows session grouped by command">
             <datasource id="mysql"/>
             <query>
 SELECT Command,count(*) from information_schema.PROCESSLIST
