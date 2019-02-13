@@ -292,7 +292,16 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceMigrateHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceMigrateHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.common.AddBookmarkHandler">
             <enabledWhen>
                 <with variable="selection">
@@ -484,7 +493,6 @@
 
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.new.connection"/>
-                <command commandId="org.jkiss.dbeaver.core.migrate.connection"/>
                 <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
                 <separator name="connection" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
@@ -515,6 +523,10 @@
                     <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
                 </menu>
                 <command commandId="org.jkiss.dbeaver.ui.tools.menu"/>
+                <command commandId="org.jkiss.dbeaver.core.migrate.connection">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+
                 <separator name="additions" visible="false"/>
             </menu>
         </menuContribution>
