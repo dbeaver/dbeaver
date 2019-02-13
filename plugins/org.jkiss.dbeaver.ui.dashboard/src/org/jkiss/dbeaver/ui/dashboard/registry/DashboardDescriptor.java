@@ -16,16 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.registry;
 
+import org.apache.commons.jexl2.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLUtils;
@@ -40,14 +45,23 @@ import java.util.List;
  */
 public class DashboardDescriptor extends AbstractContextDescriptor implements DBPNamedObject
 {
+    private static final Log log = Log.getLog(DashboardDescriptor.class);
+
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dashboard"; //$NON-NLS-1$
 
     private String id;
     private String name;
     private String description;
     private String group;
+    private String measure;
     private boolean showByDefault;
     private DashboardViewTypeDescriptor defaultViewType;
+
+    private DashboardMapQueryDescriptor mapQuery;
+    private String mapKey;
+    private String mapFormula;
+    private Expression mapFormulaExpr;
+
     private String[] tags;
     private final List<DataSourceMapping> dataSourceMappings = new ArrayList<>();
     private final List<QueryMapping> queries = new ArrayList<>();
@@ -141,6 +155,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.group = config.getAttribute("group");
+        this.measure = config.getAttribute("measure");
         this.tags = CommonUtils.notEmpty(config.getAttribute("tags")).split(",");
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
@@ -156,6 +171,24 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD); // Default ratio is 2 to 3
         this.maxItems = CommonUtils.toInt(config.getAttribute("maxItems"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT);
         this.maxAge = CommonUtils.toLong(config.getAttribute("maxAge"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_AGE);
+
+        {
+            String mapQueryId = config.getAttribute("mapQuery");
+            if (!CommonUtils.isEmpty(mapQueryId)) {
+                this.mapQuery = registry.getMapQuery(mapQueryId);
+                if (this.mapQuery != null) {
+                    this.mapKey = config.getAttribute("mapKey");
+                    this.mapFormula = config.getAttribute("mapFormula");
+                    if (!CommonUtils.isEmpty(this.mapFormula)) {
+                        try {
+                            this.mapFormulaExpr = AbstractDescriptor.parseExpression(this.mapFormula);
+                        } catch (DBException e) {
+                            log.warn(e);
+                        }
+                    }
+                }
+            }
+        }
 
         for (IConfigurationElement ds : config.getChildren("datasource")) {
             dataSourceMappings.add(new DataSourceMapping(ds));
@@ -175,6 +208,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.group = config.getAttribute("group");
+        this.measure = config.getAttribute("measure");
 
         this.tags = CommonUtils.notEmpty(config.getAttribute("tags")).split(",");
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
@@ -210,6 +244,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.name = source.name;
         this.description = source.description;
         this.group = source.group;
+        this.measure = source.measure;
         this.tags = source.tags;
         this.showByDefault = source.showByDefault;
 
@@ -236,6 +271,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.name = name;
         this.description = description;
         this.group = group;
+
         this.dataType = DashboardDataType.timeseries;
         this.defaultViewType = DashboardRegistry.getInstance().getViewType(DashboardConstants.DEF_DASHBOARD_VIEW_TYPE);
         this.widthRatio = DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO;
@@ -284,6 +320,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public String getMeasure() {
+        return measure;
+    }
+
+    public void setMeasure(String measure) {
+        this.measure = measure;
     }
 
     public boolean isShowByDefault() {
@@ -381,6 +425,18 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.maxAge = maxAge;
     }
 
+    public DashboardMapQueryDescriptor getMapQuery() {
+        return mapQuery;
+    }
+
+    public String getMapKey() {
+        return mapKey;
+    }
+
+    public Expression getMapFormulaExpr() {
+        return mapFormulaExpr;
+    }
+
     public boolean isCustom() {
         return isCustom;
     }
@@ -439,10 +495,19 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
     void serialize(XMLBuilder xml) throws IOException {
         xml.addAttribute("id", id);
         xml.addAttribute("label", name);
-        xml.addAttribute("description", description);
-        xml.addAttribute("group", group);
+        if (!CommonUtils.isEmpty(description)) {
+            xml.addAttribute("description", description);
+        }
+        if (!CommonUtils.isEmpty(group)) {
+            xml.addAttribute("group", group);
+        }
+        if (!CommonUtils.isEmpty(measure)) {
+            xml.addAttribute("measure", measure);
+        }
 
-        xml.addAttribute("tags", String.join(",", tags));
+        if (!ArrayUtils.isEmpty(tags)) {
+            xml.addAttribute("tags", String.join(",", tags));
+        }
         xml.addAttribute("showByDefault", showByDefault);
 
         xml.addAttribute("viewType", defaultViewType.getId());
@@ -453,6 +518,16 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         xml.addAttribute("updatePeriod", updatePeriod);
         xml.addAttribute("maxItems", maxItems);
         xml.addAttribute("maxAge", maxAge);
+
+        if (mapQuery != null) {
+            xml.addAttribute("mapQuery", mapQuery.getId());
+        }
+        if (!CommonUtils.isEmpty(mapKey)) {
+            xml.addAttribute("mapKey", mapKey);
+        }
+        if (!CommonUtils.isEmpty(mapFormula)) {
+            xml.addAttribute("mapFormula", mapFormula);
+        }
 
         for (DataSourceMapping mapping : dataSourceMappings) {
             xml.startElement("datasource");

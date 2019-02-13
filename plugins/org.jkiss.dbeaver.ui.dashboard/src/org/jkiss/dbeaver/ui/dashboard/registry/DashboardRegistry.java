@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -52,17 +53,27 @@ public class DashboardRegistry {
         return instance;
     }
 
-    private final Map<String, DashboardDescriptor> dashboardList = new LinkedHashMap<>();
     private final List<DashboardViewTypeDescriptor> viewTypeList = new ArrayList<>();
+    private final Map<String, DashboardMapQueryDescriptor> mapQueries = new LinkedHashMap<>();
+    private final Map<String, DashboardDescriptor> dashboardList = new LinkedHashMap<>();
 
     private DashboardRegistry(IExtensionRegistry registry) {
         // Load data dashboardList from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DashboardDescriptor.EXTENSION_ID);
-        // Load types
+        // Load view types
         for (IConfigurationElement ext : extElements) {
             if ("dashboardView".equals(ext.getName())) {
                 viewTypeList.add(
                     new DashboardViewTypeDescriptor(ext));
+            }
+        }
+        // Load map queries
+        for (IConfigurationElement ext : extElements) {
+            if ("mapQuery".equals(ext.getName())) {
+                DashboardMapQueryDescriptor query = new DashboardMapQueryDescriptor(ext);
+                if (!CommonUtils.isEmpty(query.getId()) && !CommonUtils.isEmpty(query.getQueryText())) {
+                    mapQueries.put(query.getId(), query);
+                }
             }
         }
         // Load dashboards from extensions
@@ -211,5 +222,9 @@ public class DashboardRegistry {
 
     public void saveSettings() {
         saveConfigFile();
+    }
+
+    public DashboardMapQueryDescriptor getMapQuery(String id) {
+        return mapQueries.get(id);
     }
 }
