@@ -50,7 +50,7 @@ public class DashboardEditDialog extends BaseDialog {
     private Combo viewTypeCombo;
     private Text updatePeriodText;
     private Text maxItemsText;
-    private Text maxAgeText;
+    //private Text maxAgeText;
     private List<DashboardViewType> viewTypes;
     private Combo dataTypeCombo;
     private Combo calcTypeCombo;
@@ -84,6 +84,10 @@ public class DashboardEditDialog extends BaseDialog {
 
         boolean readOnly = !dashboardDescriptor.isCustom();
         int baseStyle = !readOnly ? SWT.NONE : SWT.READ_ONLY;
+
+        if (readOnly) {
+            UIUtils.createInfoLabel(composite, "Predefined dashboards are read-only. But you can copy them.");
+        }
 
         {
             Group infoGroup = UIUtils.createControlGroup(composite, "Main info", 4, GridData.FILL_HORIZONTAL, 0);
@@ -190,17 +194,8 @@ public class DashboardEditDialog extends BaseDialog {
             viewTypeCombo.setEnabled(!readOnly);
 
             updatePeriodText = UIUtils.createLabelText(updateGroup, "Update period (ms)", String.valueOf(dashboardDescriptor.getUpdatePeriod()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
-//            updatePeriodText.addModifyListener(e -> {
-//                dashboardDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardDescriptor.getUpdatePeriod()));
-//            });
             maxItemsText = UIUtils.createLabelText(updateGroup, "Maximum items", String.valueOf(dashboardDescriptor.getMaxItems()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
-//            maxItemsText.addModifyListener(e -> {
-//                dashboardDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardDescriptor.getMaxItems()));
-//            });
-            maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardDescriptor.getMaxAge()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
-//            maxAgeText.addModifyListener(e -> {
-//                dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));
-//            });
+            //maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardDescriptor.getMaxAge()), SWT.BORDER | baseStyle, new GridData(GridData.FILL_HORIZONTAL));
         }
 
         return parent;
@@ -242,7 +237,7 @@ public class DashboardEditDialog extends BaseDialog {
         dashboardDescriptor.setDefaultViewType((DashboardViewTypeDescriptor) viewTypes.get(viewTypeCombo.getSelectionIndex()));
         dashboardDescriptor.setUpdatePeriod(CommonUtils.toLong(updatePeriodText.getText(), dashboardDescriptor.getUpdatePeriod()));
         dashboardDescriptor.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardDescriptor.getMaxItems()));
-        dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));
+        //dashboardDescriptor.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardDescriptor.getMaxAge()));
     }
 
     @Override
