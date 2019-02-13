@@ -43,6 +43,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBCPlanCostNode, DBPPropert
 
     public static final String ATTR_NODE_TYPE = "Node-Type";
     public static final String ATTR_RELATION_NAME = "Relation-Name";
+    public static final String ATTR_FUNCTION_NAME = "Function-Name";
     public static final String ATTR_ALIAS = "Alias";
     public static final String ATTR_TOTAL_COST = "Total-Cost";
     public static final String ATTR_STARTUP_COST = "Startup-Cost";
@@ -72,6 +73,9 @@ public class PostgrePlanNode implements DBCPlanNode, DBCPlanCostNode, DBPPropert
         }
         nodeType = attributes.remove(ATTR_NODE_TYPE);
         entity = attributes.get(ATTR_RELATION_NAME);
+        if (entity == null) {
+            entity = attributes.get(ATTR_FUNCTION_NAME);
+        }
         if (entity != null) {
             String alias = attributes.get(ATTR_ALIAS);
             if (alias != null && !alias.equals(entity)) {
@@ -97,7 +101,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBCPlanCostNode, DBPPropert
 
     @Override
     public String getNodeName() {
-        return attributes.get(ATTR_RELATION_NAME);
+        return entity;
     }
 
     @Override
