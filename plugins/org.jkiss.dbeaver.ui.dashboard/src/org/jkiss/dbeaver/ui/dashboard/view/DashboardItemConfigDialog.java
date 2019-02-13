@@ -40,6 +40,7 @@ import java.util.List;
 public class DashboardItemConfigDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.DashboardItemConfigDialog";//$NON-NLS-1$
+    private static final boolean SHOW_QUERIES_BUTTON = false;
 
     private final DashboardItemViewConfiguration dashboardConfig;
     private DashboardViewConfiguration viewConfiguration;
@@ -83,40 +84,33 @@ public class DashboardItemConfigDialog extends BaseDialog {
             gd.heightHint = 50;
             descriptionText.setLayoutData(gd);
 
-/*
-            UIUtils.createLabelText(infoGroup, "Group", CommonUtils.notEmpty(dashboardConfig.getDashboardDescriptor().getGroup()), SWT.BORDER | SWT.READ_ONLY)
-                .setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
-            UIUtils.createLabelText(infoGroup, "Data type", dashboardConfig.getDashboardDescriptor().getDataType().name(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(infoGroup, "Calc type", dashboardConfig.getDashboardDescriptor().getCalcType().name(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(infoGroup, "Value type", dashboardConfig.getDashboardDescriptor().getValueType().name(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(infoGroup, "Fetch type", dashboardConfig.getDashboardDescriptor().getFetchType().name(), SWT.BORDER | SWT.READ_ONLY);
-*/
-
-            Composite btnGroup = UIUtils.createComposite(infoGroup, 1);
-            btnGroup.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 4, 1));
-            Button queriesButton = new Button(btnGroup, SWT.PUSH);
-            queriesButton.setText("SQL Queries ...");
-            queriesButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-            queriesButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, false));
-            queriesButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    StringBuilder sql = new StringBuilder();
-                    for (DashboardDescriptor.QueryMapping query : dashboardConfig.getDashboardDescriptor().getQueries()) {
-                        sql.append(query.getQueryText()).append(";\n");
+            if (SHOW_QUERIES_BUTTON) {
+                Composite btnGroup = UIUtils.createComposite(infoGroup, 1);
+                btnGroup.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 4, 1));
+                Button queriesButton = new Button(btnGroup, SWT.PUSH);
+                queriesButton.setText("SQL Queries ...");
+                queriesButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                queriesButton.setLayoutData(new GridData(GridData.END, GridData.BEGINNING, true, false));
+                queriesButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        StringBuilder sql = new StringBuilder();
+                        for (DashboardDescriptor.QueryMapping query : dashboardConfig.getDashboardDescriptor().getQueries()) {
+                            sql.append(query.getQueryText()).append(";\n");
+                        }
+                        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+                        if (serviceSQL != null) {
+                            serviceSQL.openSQLViewer(
+                                DBUtils.getDefaultContext(dashboardContainer.getDataSourceContainer().getDataSource(), true),
+                                "Dashboard read queries",
+                                UIIcon.SQL_SCRIPT,
+                                sql.toString(),
+                                false);
+                        }
                     }
-                    UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-                    if (serviceSQL != null) {
-                        serviceSQL.openSQLViewer(
-                            DBUtils.getDefaultContext(dashboardContainer.getDataSourceContainer().getDataSource(), true),
-                            "Dashboard read queries",
-                            UIIcon.SQL_SCRIPT,
-                            sql.toString(),
-                            false);
-                    }
-                }
-            });
-            queriesButton.setEnabled(dashboardContainer.getDataSourceContainer().isConnected());
+                });
+                queriesButton.setEnabled(dashboardContainer.getDataSourceContainer().isConnected());
+            }
         }
 
         {
@@ -130,10 +124,12 @@ public class DashboardItemConfigDialog extends BaseDialog {
             maxItemsText.addModifyListener(e -> {
                 dashboardConfig.setMaxItems(CommonUtils.toInt(maxItemsText.getText(), dashboardConfig.getMaxItems()));
             });
+/*
             Text maxAgeText = UIUtils.createLabelText(updateGroup, "Maximum age (ISO-8601)", DashboardUtils.formatDuration(dashboardConfig.getMaxAge()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             maxAgeText.addModifyListener(e -> {
                 dashboardConfig.setMaxAge(DashboardUtils.parseDuration(maxAgeText.getText(), dashboardConfig.getMaxAge()));
             });
+*/
         }
 
         {
@@ -183,12 +179,12 @@ public class DashboardItemConfigDialog extends BaseDialog {
                         dashboardConfig.setRangeTicksVisible(((Button)e.widget).getSelection());
                     }
                 });
+/*
             Text widthRatioText = UIUtils.createLabelText(viewGroup, "Width ratio", String.valueOf(dashboardConfig.getWidthRatio()), SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
             widthRatioText.addModifyListener(e -> {
                 dashboardConfig.setWidthRatio((float) CommonUtils.toDouble(widthRatioText.getText(), dashboardConfig.getWidthRatio()));
             });
-
-
+*/
         }
 
         return parent;
@@ -203,7 +199,7 @@ public class DashboardItemConfigDialog extends BaseDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.CANCEL_ID, "Edit", false).addSelectionListener(new SelectionAdapter() {
+        createButton(parent, IDialogConstants.CANCEL_ID, "Configuration", false).addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DashboardEditDialog editDialog = new DashboardEditDialog(getShell(), dashboardConfig.getDashboardDescriptor());
