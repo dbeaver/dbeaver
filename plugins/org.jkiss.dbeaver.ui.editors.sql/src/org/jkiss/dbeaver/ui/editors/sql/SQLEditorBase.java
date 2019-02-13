@@ -1430,13 +1430,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         }
                     }
 
-                    OccurrencesFinder finder = new OccurrencesFinder(document, wordUnderCursor, wordSelected);
-                    List<OccurrencePosition> positions = finder.perform();
-                    if (!CommonUtils.isEmpty(positions)) {
-                        this.occurrencesFinderJob = new OccurrencesFinderJob(positions);
-                        this.occurrencesFinderJob.run(new NullProgressMonitor());
-                    } else {
+                    if (CommonUtils.isEmpty(wordSelected) || wordSelected.length() < 2) {
                         this.removeOccurrenceAnnotations();
+                    } else {
+                        OccurrencesFinder finder = new OccurrencesFinder(document, wordUnderCursor, wordSelected);
+                        List<OccurrencePosition> positions = finder.perform();
+                        if (!CommonUtils.isEmpty(positions)) {
+                            this.occurrencesFinderJob = new OccurrencesFinderJob(positions);
+                            this.occurrencesFinderJob.run(new NullProgressMonitor());
+                        } else {
+                            this.removeOccurrenceAnnotations();
+                        }
                     }
                 }
             }
