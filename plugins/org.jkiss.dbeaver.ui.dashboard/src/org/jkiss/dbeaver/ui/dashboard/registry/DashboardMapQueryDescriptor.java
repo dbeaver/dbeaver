@@ -24,13 +24,14 @@ import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRenderer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardConstants;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardDataType;
+import org.jkiss.dbeaver.ui.dashboard.model.DashboardMapQuery;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewType;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * DashboardMapQueryDescriptor
  */
-public class DashboardMapQueryDescriptor extends AbstractContextDescriptor
+public class DashboardMapQueryDescriptor extends AbstractContextDescriptor implements DashboardMapQuery
 {
     private String id;
     private String queryText;
@@ -46,15 +47,18 @@ public class DashboardMapQueryDescriptor extends AbstractContextDescriptor
         this.updatePeriod = CommonUtils.toInt(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD);
     }
 
+    @Override
     @NotNull
     public String getId() {
         return id;
     }
 
+    @Override
     public long getUpdatePeriod() {
         return updatePeriod;
     }
 
+    @Override
     public String getQueryText() {
         return queryText;
     }
