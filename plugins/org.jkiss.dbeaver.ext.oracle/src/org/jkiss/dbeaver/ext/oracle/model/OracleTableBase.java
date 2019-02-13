@@ -162,7 +162,8 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     protected String queryTableComment(JDBCSession session) throws SQLException {
         return JDBCUtils.queryString(
             session,
-            "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND TABLE_NAME=? AND TABLE_TYPE=?",
+            "SELECT COMMENTS FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), (OracleDataSource) session.getDataSource(), "TAB_COMMENTS") + " " +
+                "WHERE OWNER=? AND TABLE_NAME=? AND TABLE_TYPE=?",
             getSchema().getName(),
             getName(),
             getTableTypeName());
@@ -171,7 +172,10 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     void loadColumnComments(DBRProgressMonitor monitor) {
         try {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table column comments")) {
-                try (JDBCPreparedStatement stat = session.prepareStatement("SELECT COLUMN_NAME,COMMENTS FROM SYS.ALL_COL_COMMENTS cc WHERE CC.OWNER=? AND cc.TABLE_NAME=?")) {
+                try (JDBCPreparedStatement stat = session.prepareStatement("SELECT COLUMN_NAME,COMMENTS FROM " +
+                    OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), (OracleDataSource) session.getDataSource(), "COL_COMMENTS") + " cc " +
+                    "WHERE CC.OWNER=? AND cc.TABLE_NAME=?"))
+                {
                     stat.setString(1, getSchema().getName());
                     stat.setString(2, getName());
                     try (JDBCResultSet resultSet = stat.executeQuery()) {

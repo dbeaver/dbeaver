@@ -160,7 +160,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + OracleUtils.getSysCatalogHint((OracleDataSource) session.getDataSource()) + " OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE\n" +
-                "FROM SYS.ALL_CONSTRAINTS\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, (OracleDataSource) session.getDataSource(), "VIEWS") + "\n" +
                 "WHERE CONSTRAINT_NAME like ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "") +
                 (schema != null ? " AND OWNER=?" : ""))) {
             dbStat.setString(1, constrNameMask);
@@ -238,14 +238,17 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'");
 
         // Seek for objects (join with public synonyms)
+        OracleDataSource dataSource = (OracleDataSource) session.getDataSource();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT " + OracleUtils.getSysCatalogHint((OracleDataSource) session.getDataSource()) + " DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
-                "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
-                (schema == null ? "" : " AND OWNER=?") +
-                "UNION ALL\n" +
-            "SELECT " + OracleUtils.getSysCatalogHint((OracleDataSource) session.getDataSource()) + " O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
-                "FROM ALL_SYNONYMS S,ALL_OBJECTS O\n" +
-                "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)" +
+            "SELECT " + OracleUtils.getSysCatalogHint(dataSource) + " DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM " +
+                "   (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS") + " WHERE " +
+                    "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
+                    (schema == null ? "" : " AND OWNER=?") +
+                    "UNION ALL\n" +
+                "SELECT " + OracleUtils.getSysCatalogHint(dataSource) + " O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "SYNONYMS") + " S," +
+                        OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), dataSource, "OBJECTS") + " O\n" +
+                    "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)" +
                 "\nORDER BY OBJECT_NAME")) {
             if (!caseSensitive) {
                 objectNameMask = objectNameMask.toUpperCase();
@@ -266,7 +269,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     final String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
                     final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
                     if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && oracleObjectTypes.contains(objectType)) {
-                        OracleSchema objectSchema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
+                        OracleSchema objectSchema = this.dataSource.getSchema(session.getProgressMonitor(), schemaName);
                         if (objectSchema == null) {
                             log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
                             continue;
