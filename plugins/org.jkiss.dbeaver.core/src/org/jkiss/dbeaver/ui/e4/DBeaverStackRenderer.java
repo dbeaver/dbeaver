@@ -76,15 +76,15 @@ public class DBeaverStackRenderer extends StackRenderer {
         if (inputFile != null) {
             {
 		        MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
-		        menuItemDelete.setText(CoreMessages.dbeaver_stack_renderer_menu_item_delete_this_script);
+		        menuItemDelete.setText(CoreMessages.editor_file_delete_this_script);
 		        menuItemDelete.addSelectionListener(new SelectionAdapter() {
 			        @Override
 			        public void widgetSelected(SelectionEvent e) {
-			           if (UIUtils.confirmAction(CoreMessages.dbeaver_stack_renderer_widget_selected_confirm_delete_title, NLS.bind(CoreMessages.dbeaver_stack_renderer_widget_selected_confirm_delete_text, inputFile.getName()))) {			      //$NON-NLS-3$
+			           if (UIUtils.confirmAction(CoreMessages.editor_file_delete_confirm_delete_title, NLS.bind(CoreMessages.editor_file_delete_confirm_delete_text, inputFile.getName()))) {			      //$NON-NLS-3$
 			        	   try {
 			        		   inputFile.delete(true, true, new NullProgressMonitor());
 			        	   } catch (CoreException e1) {
-			        		   DBWorkbench.getPlatformUI().showError(CoreMessages.dbeaver_stack_renderer_delete_error_title, NLS.bind(CoreMessages.dbeaver_stack_renderer_delete_error_text, inputFile.getName(), e1));
+			        		   DBWorkbench.getPlatformUI().showError(CoreMessages.editor_file_delete_error_title, NLS.bind(CoreMessages.editor_file_delete_error_text, inputFile.getName(), e1));
 						   }
 			           }
 			        } 
