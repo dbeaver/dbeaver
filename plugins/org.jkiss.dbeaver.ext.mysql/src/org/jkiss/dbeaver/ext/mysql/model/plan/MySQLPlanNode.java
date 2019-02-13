@@ -47,6 +47,7 @@ public class MySQLPlanNode implements DBCPlanNode, DBCPlanCostNode {
 
     public MySQLPlanNode(List<MySQLPlanNode> nodes) {
         // Root node
+        type = "<plan>";
         if (!nodes.isEmpty()) {
             this.rowCount = nodes.get(0).rowCount;
         }
@@ -80,7 +81,7 @@ public class MySQLPlanNode implements DBCPlanNode, DBCPlanCostNode {
 
     @Override
     public String getNodeDescription() {
-        return null;
+        return ref;
     }
 
     @Override
