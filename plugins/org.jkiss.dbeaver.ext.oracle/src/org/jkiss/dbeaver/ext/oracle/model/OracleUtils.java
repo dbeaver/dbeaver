@@ -315,7 +315,7 @@ public class OracleUtils {
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?")) {
+                "SELECT STATUS FROM " + OracleUtils.getAdminAllViewPrefix(monitor, object.getDataSource(), "OBJECTS") + " WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?")) {
                 dbStat.setString(1, objectType.getTypeName());
                 dbStat.setString(2, object.getSchema().getName());
                 dbStat.setString(3, DBObjectNameCaseTransformer.transformObjectName(object, object.getName()));

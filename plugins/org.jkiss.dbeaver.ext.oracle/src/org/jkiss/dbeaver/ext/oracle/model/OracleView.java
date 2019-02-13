@@ -178,7 +178,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             boolean isOracle9 = getDataSource().isAtLeastV9();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE" + (isOracle9 ? ",SUPERVIEW_NAME" : "") + "\n" +
-                    "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?")) {
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "VIEWS") + " WHERE OWNER=? AND VIEW_NAME=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

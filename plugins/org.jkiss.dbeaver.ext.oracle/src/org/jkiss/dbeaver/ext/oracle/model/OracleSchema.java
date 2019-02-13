@@ -512,7 +512,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\n" +
                     "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION," +
                     "col.COLUMN_NAME,col.POSITION\n" +
-                    "FROM SYS.ALL_CONSTRAINTS c, SYS.ALL_CONS_COLUMNS col\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") +
+                    " c, " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\n" +
                     "WHERE c.CONSTRAINT_TYPE<>'R' AND c.OWNER=? AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
@@ -579,10 +580,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
-            sql.append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append(" \r\n" +
+            sql.append("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " \r\n" +
                 "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,rc.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
                 "col.COLUMN_NAME,col.POSITION\r\n" +
-                "FROM SYS.ALL_CONSTRAINTS c, SYS.ALL_CONS_COLUMNS col, SYS.ALL_CONSTRAINTS rc\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") +
+                " c, " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col, " +
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") + " rc\n" +
                 "WHERE c.CONSTRAINT_TYPE='R' AND c.OWNER=?\n" +
                 "AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
                 "AND rc.OWNER=c.r_OWNER AND rc.CONSTRAINT_NAME=c.R_CONSTRAINT_NAME");
@@ -648,9 +651,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             sql.append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append(" " +
                     "i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
                     "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND,iex.COLUMN_EXPRESSION\n" +
-                    "FROM SYS.ALL_INDEXES i\n" +
-                    "JOIN SYS.ALL_IND_COLUMNS ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME \n" +
-                    "LEFT OUTER JOIN SYS.ALL_IND_EXPRESSIONS iex ON iex.INDEX_OWNER=i.OWNER AND iex.INDEX_NAME=i.INDEX_NAME AND iex.COLUMN_POSITION=ic.COLUMN_POSITION\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "INDEXES") + " i\n" +
+                    "JOIN " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "IND_COLUMNS") + " ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME \n" +
+                    "LEFT OUTER JOIN " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "IND_EXPRESSIONS") + " iex ON iex.INDEX_OWNER=i.OWNER AND iex.INDEX_NAME=i.INDEX_NAME AND iex.COLUMN_POSITION=ic.COLUMN_POSITION\n" +
                     "WHERE ");
             if (forTable == null) {
                 sql.append("i.OWNER=?");
@@ -718,7 +721,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_TYPES WHERE OWNER=? ORDER BY TYPE_NAME");
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * " +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "TYPES") + " " +
+                    "WHERE OWNER=? ORDER BY TYPE_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -738,7 +743,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_SEQUENCES WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
+                    OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SEQUENCES") +
+                    " WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -758,7 +765,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_QUEUES WHERE OWNER=? ORDER BY NAME");
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * " +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "QUEUES") + " WHERE OWNER=? ORDER BY NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -862,7 +870,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         @Override
         public JDBCStatement prepareLookupStatement(JDBCSession session, OracleSchema owner, OracleMaterializedView object, String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_MVIEWS WHERE OWNER=? " +
+                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "MVIEWS") + " WHERE OWNER=? " +
                     (object == null && objectName == null ? "" : "AND MVIEW_NAME=? ") +
                 "ORDER BY MVIEW_NAME");
             dbStat.setString(1, owner.getName());
@@ -886,7 +894,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_DB_LINKS WHERE OWNER=? " +
+                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "DB_LINKS") + " WHERE OWNER=? " +
                 " ORDER BY DB_LINK");
             dbStat.setString(1, owner.getName());
             return dbStat;
@@ -928,7 +936,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_JAVA_CLASSES WHERE OWNER=? ");
+                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "JAVA_CLASSES") + " WHERE OWNER=? ");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -949,7 +957,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM SYS.ALL_SCHEDULER_JOBS WHERE OWNER=? ORDER BY JOB_NAME");
+                    "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SCHEDULER_JOBS") + " WHERE OWNER=? ORDER BY JOB_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -970,7 +978,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM SYS.ALL_SCHEDULER_PROGRAMS WHERE OWNER=? ORDER BY PROGRAM_NAME");
+                    "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SCHEDULER_PROGRAMS") + " WHERE OWNER=? ORDER BY PROGRAM_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
