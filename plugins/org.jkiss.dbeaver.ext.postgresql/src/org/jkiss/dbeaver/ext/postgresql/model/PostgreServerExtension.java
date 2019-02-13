@@ -64,6 +64,8 @@ public interface PostgreServerExtension
 
     boolean supportsForeignServers();
 
+    boolean supportsAggregates();
+
     boolean isSupportsLimits();
 
     boolean supportsClientInfo();

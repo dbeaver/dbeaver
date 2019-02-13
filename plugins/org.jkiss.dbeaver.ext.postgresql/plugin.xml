@@ -145,7 +145,7 @@
                                     </folder>
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAggregate" label="%tree.aggregates.node.name" icon="#functions" description="Aggregate functions">
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAggregate" label="%tree.aggregates.node.name" icon="#functions" description="Aggregate functions" visibleIf="object.dataSource.serverType.supportsAggregates()">
                                 <items label="%tree.aggregate.node.name" path="aggregate" property="aggregateFunctions" icon="#function"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">

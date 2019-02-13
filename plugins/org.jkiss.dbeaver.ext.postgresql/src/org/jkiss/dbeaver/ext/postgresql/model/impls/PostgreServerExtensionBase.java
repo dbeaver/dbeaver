@@ -127,6 +127,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsAggregates() {
+        return true;
+    }
+
+    @Override
     public boolean isSupportsLimits() {
         return true;
     }
