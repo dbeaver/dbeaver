@@ -462,6 +462,18 @@ SHOW GLOBAL STATUS
             <datasource id="mysql"/>
         </dashboard>
 
+        <dashboard id="mysql.com.queries" mapQuery="mysql.query.status" label="Queries" defaultView="timeseries" group="Status"
+                   calc="delta" value="integer" mapKeys="Com_select,Com_insert,Com_update,Com_delete"
+                   showByDefault="true" description="Queries stats">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.com.queries" mapQuery="mysql.query.status" label="Queries" defaultView="timeseries" group="Status"
+                   calc="delta" value="integer" mapKeys="Com_select,Com_insert,Com_update,Com_delete" mapLabels="Select,Insert,Update,Delete"
+                   showByDefault="true" description="Queries stats">
+            <datasource id="mysql"/>
+        </dashboard>
+
         <dashboard id="mysql.key_efficiency" mapQuery="mysql.query.status" label="Key Efficiency" defaultView="timeseries" group="Status" updatePeriod="1000"
             calc="delta" value="integer" mapFormula="100 - (((map.key_reads / map.key_read_requests * 100))/options.updateInterval)" measue="%"
             showByDefault="true" description="Shows session grouped by command">

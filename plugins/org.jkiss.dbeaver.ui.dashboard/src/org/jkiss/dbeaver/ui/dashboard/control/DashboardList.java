@@ -141,6 +141,12 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             case SWT.CR:
                 ActionUtils.runCommand(DashboardConstants.CMD_VIEW_DASHBOARD, DashboardList.this.site);
                 break;
+            case SWT.DEL:
+                ActionUtils.runCommand(DashboardConstants.CMD_REMOVE_DASHBOARD, DashboardList.this.site);
+                break;
+            case SWT.INSERT:
+                ActionUtils.runCommand(DashboardConstants.CMD_ADD_DASHBOARD, DashboardList.this.site);
+                break;
             case SWT.ARROW_LEFT:
             case SWT.ARROW_UP:
                 moveSelection(-1);
