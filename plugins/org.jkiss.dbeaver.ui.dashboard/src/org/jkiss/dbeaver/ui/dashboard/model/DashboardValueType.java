@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui.dashboard.model;
 public enum DashboardValueType {
 
     decimal,
-    integer
+    integer,
+    bytes
 
 }
