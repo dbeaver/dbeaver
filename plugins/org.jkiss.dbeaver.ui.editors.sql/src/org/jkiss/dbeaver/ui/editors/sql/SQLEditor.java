@@ -1740,7 +1740,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        if (resultTabs.getItemCount() == 0) {
+        if (queryProcessors.isEmpty()) {
             // If all tabs were closed
             createQueryProcessor(true, true);
         }

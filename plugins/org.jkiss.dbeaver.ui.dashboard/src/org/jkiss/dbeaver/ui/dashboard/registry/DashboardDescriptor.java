@@ -59,6 +59,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     private DashboardMapQueryDescriptor mapQuery;
     private String[] mapKeys;
+    private String[] mapLabels;
     private String mapFormula;
     private Expression mapFormulaExpr;
 
@@ -178,6 +179,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
                 this.mapQuery = registry.getMapQuery(mapQueryId);
                 if (this.mapQuery != null) {
                     this.mapKeys = CommonUtils.notEmpty(config.getAttribute("mapKeys")).split(",");
+                    this.mapLabels = CommonUtils.notEmpty(config.getAttribute("mapLabels")).split(",");
                     this.mapFormula = config.getAttribute("mapFormula");
                     if (!CommonUtils.isEmpty(this.mapFormula)) {
                         try {
@@ -431,6 +433,10 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public String[] getMapKeys() {
         return mapKeys;
+    }
+
+    public String[] getMapLabels() {
+        return mapLabels;
     }
 
     public Expression getMapFormulaExpr() {

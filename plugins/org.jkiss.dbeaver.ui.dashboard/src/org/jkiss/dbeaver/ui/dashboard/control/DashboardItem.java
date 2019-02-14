@@ -53,6 +53,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
 
     public DashboardItem(DashboardList parent, String dashboardId) {
         super(parent, SWT.DOUBLE_BUFFERED);
+        this.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.groupContainer = parent;
         this.dashboardConfig = groupContainer.getView().getViewConfiguration().getDashboardConfig(dashboardId);
 
@@ -173,9 +174,17 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
-        if (groupContainer.getView().isSingleChartMode()) {
+        Point listAreaSize = groupContainer.getSize();
+        if (groupContainer.getView().isSingleChartMode() || listAreaSize.x <= 0 || listAreaSize.y <= 0) {
             return super.computeSize(wHint, hHint, changed);
         }
+        GridLayout listLayout = (GridLayout) groupContainer.getLayout();
+        int listRowCount = groupContainer.getListRowCount();
+        int listColumnCount = groupContainer.getListColumnCount();
+        int width = (listAreaSize.x - listLayout.marginWidth * 2 - listLayout.horizontalSpacing * (listColumnCount - 1)) / listColumnCount;
+        int height = (listAreaSize.y - listLayout.marginHeight * 2 - listLayout.verticalSpacing * (listRowCount - 1)) / listRowCount;
+        return new Point(width, height);
+/*
         Point currentSize = getSize();
 
         int defHeight = getDefaultHeight();
@@ -237,6 +246,7 @@ public class DashboardItem extends Composite implements DashboardContainer {
         } else {
             return new Point(Math.min(defWidth, areaSize.x), Math.min(defHeight, areaSize.y));
         }
+*/
     }
 
     public DashboardItemViewConfiguration getDashboardConfig() {
@@ -311,6 +321,11 @@ public class DashboardItem extends Composite implements DashboardContainer {
     @Override
     public String[] getMapKeys() {
         return dashboardConfig.getDashboardDescriptor().getMapKeys();
+    }
+
+    @Override
+    public String[] getMapLabels() {
+        return dashboardConfig.getDashboardDescriptor().getMapLabels();
     }
 
     @Override

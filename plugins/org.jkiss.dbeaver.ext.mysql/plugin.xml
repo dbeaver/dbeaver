@@ -445,20 +445,20 @@ SHOW GLOBAL STATUS
         </mapQuery>
 
         <dashboard id="mysql.traffic" mapQuery="mysql.query.status" label="Traffic" defaultView="timeseries" group="Status"
-            calc="delta" value="integer" mapKeys="Bytes_sent,Bytes_received" measue="Kb/s"
-            showByDefault="true" description="Server traffic">
+            calc="delta" value="bytes" mapKeys="Bytes_sent,Bytes_received"  mapLabels="Sent,Received" measure="Kb/s"
+            showByDefault="true" description="Server outbound traffic">
             <datasource id="mysql"/>
         </dashboard>
 
-        <dashboard id="mysql.innodb.data" mapQuery="mysql.query.status" label="InnoDB" defaultView="timeseries" group="Status"
-                   calc="delta" value="integer" mapKeys="Innodb_data_read,Innodb_data_write" measue="Kb/s"
-                   showByDefault="true" description="InnoDB reads/writes">
+        <dashboard id="mysql.innodb.data" mapQuery="mysql.query.status" label="InnoDB data" defaultView="timeseries" group="Status"
+                   calc="delta" value="bytes" mapKeys="Innodb_data_read,Innodb_data_written" mapLabels="Read,Write" measure="Kb/s"
+                   showByDefault="true" description="InnoDB data stats">
             <datasource id="mysql"/>
         </dashboard>
 
-        <dashboard id="mysql.com.queries" mapQuery="mysql.query.status" label="Queries" defaultView="timeseries" group="Status"
-                   calc="delta" value="integer" mapKeys="Com_select,Com_insert,Com_update,Com_delete"
-                   showByDefault="true" description="Queries stats">
+        <dashboard id="mysql.innodb.memory" mapQuery="mysql.query.status" label="InnoDB memory" defaultView="timeseries" group="Status"
+                   calc="value" value="bytes" mapKeys="Innodb_mem_total,Innodb_mem_dictionary,Innodb_mem_adaptive_hash" mapLabels="Total,Dict,Hash"
+                   showByDefault="true" description="InnoDB memory stats">
             <datasource id="mysql"/>
         </dashboard>
 
