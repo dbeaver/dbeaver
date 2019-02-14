@@ -103,7 +103,7 @@ public class ResultSetPropertyTester extends PropertyTester
                     if ("inline".equals(expectedValue)) {
                         return !rsv.isAttributeReadOnly(attr);
                     } else {
-                        return true;
+                        return rsv.getCurrentRow() != null;
                     }
                 } else if ("add".equals(expectedValue)) {
                     return rsv.isInsertable();
