@@ -33,7 +33,7 @@ public class BaseChartDrawingSupplier extends DefaultDrawingSupplier {
         new Color(242, 132, 35),
         new Color(124, 38, 19),
         new Color(157, 214, 245),
-        new Color(34, 25, 21),
+        new Color(173, 140, 127),
         new Color(249, 214, 205),
         new Color(71, 28, 18),
         new Color(83, 69, 60),
