@@ -450,6 +450,18 @@ SHOW GLOBAL STATUS
             <datasource id="mysql"/>
         </dashboard>
 
+        <dashboard id="mysql.innodb.data" mapQuery="mysql.query.status" label="InnoDB data" defaultView="timeseries" group="Status"
+                   calc="delta" value="integer" mapKeys="Innodb_data_read,Innodb_data_written" measue="Kb/s"
+                   showByDefault="true" description="InnoDB data stats">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.innodb.memory" mapQuery="mysql.query.status" label="InnoDB memory" defaultView="timeseries" group="Status"
+                   calc="value" value="integer" mapKeys="Innodb_mem_total,Innodb_mem_dictionary,Innodb_mem_adaptive_hash"
+                   showByDefault="true" description="InnoDB memory stats">
+            <datasource id="mysql"/>
+        </dashboard>
+
         <dashboard id="mysql.key_efficiency" mapQuery="mysql.query.status" label="Key Efficiency" defaultView="timeseries" group="Status" updatePeriod="1000"
             calc="delta" value="integer" mapFormula="100 - (((map.key_reads / map.key_read_requests * 100))/options.updateInterval)" measue="%"
             showByDefault="true" description="Shows session grouped by command">
