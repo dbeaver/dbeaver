@@ -19,12 +19,10 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -52,6 +50,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     private List<DashboardItem> items = new ArrayList<>();
     private final Font boldFont;
     private DashboardItem selectedItem;
+    private int listRowCount = 1;
+    private int listColumnCount = 1;
 
     public DashboardList(IWorkbenchSite site, Composite parent, DashboardViewContainer viewContainer) {
         super(parent, SWT.DOUBLE_BUFFERED);
@@ -72,16 +72,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         this.setForeground(UIStyles.getDefaultTextForeground());
         this.setBackground(UIStyles.getDefaultTextBackground());
 
-        if (viewContainer.isSingleChartMode()) {
-            this.setLayout(new FillLayout());
-        } else {
-            RowLayout layout = new RowLayout();
-            layout.spacing = getItemSpacing();
-            layout.pack = false;
-            layout.wrap = true;
-            layout.justify = false;
-            this.setLayout(layout);
-        }
+        GridLayout layout = new GridLayout(1, true);
+        this.setLayout(layout);
 
         registerContextMenu();
 
@@ -98,6 +90,50 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 handleKeyEvent(e);
             }
         });
+
+        addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                computeGridSize();
+                layout(true, true);
+            }
+        });
+    }
+
+    public int getListRowCount() {
+        return listRowCount;
+    }
+
+    public int getListColumnCount() {
+        return listColumnCount;
+    }
+
+    private void computeGridSize() {
+        int totalItems = items.size();
+        Point listAreaSize = getSize();
+        if (listAreaSize.x <= 0 || listAreaSize.y <= 0 || items.isEmpty()) {
+            return;
+        }
+
+        listRowCount = 1;
+        // Calculate pack efficiency for different number of rows
+        for (int rowCount = 1; rowCount < 50; rowCount++) {
+            int itemsPerRow = (int) Math.ceil((float)totalItems / rowCount);
+
+            int itemWidth = listAreaSize.x / itemsPerRow;
+            int itemHeight = itemWidth / 3;
+
+            int totalHeight = itemHeight * rowCount;
+            if (totalHeight > listAreaSize.y) {
+                // Too many
+                if (rowCount > 1) {
+                    listRowCount = rowCount - 1;
+                }
+                break;
+            }
+        }
+        listColumnCount = (int)Math.ceil((float)totalItems / listRowCount);
+        ((GridLayout)getLayout()).numColumns = listColumnCount;
     }
 
     void handleKeyEvent(KeyEvent e) {

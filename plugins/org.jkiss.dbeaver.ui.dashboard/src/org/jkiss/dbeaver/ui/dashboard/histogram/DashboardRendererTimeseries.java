@@ -21,10 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.axis.DateTickMarkPosition;
-import org.jfree.chart.axis.NumberTickUnitSource;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.axis.*;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
@@ -34,12 +31,14 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.charts.BaseChartDrawingSupplier;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererBase;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
+import org.jkiss.utils.ByteNumberFormat;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -88,6 +87,8 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
         // Remove background
         plot.setShadowGenerator(null);
 
+        plot.setDrawingSupplier(new BaseChartDrawingSupplier());
+
         //XYItemRenderer renderer = new XYLine3DRenderer();
         //plot.setRenderer(renderer);
 
@@ -96,7 +97,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 
         {
             DateAxis domainAxis = new DateAxis("Time");
-            domainAxis.setDateFormatOverride(new SimpleDateFormat("MM/dd HH:mm"));
+            domainAxis.setDateFormatOverride(new SimpleDateFormat("HH:mm:ss"));
             domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
             domainAxis.setAutoRange(true);
             domainAxis.setLabel(null);
@@ -105,6 +106,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
             domainAxis.setTickLabelPaint(gridColor);
             domainAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
             domainAxis.setTickLabelInsets(RectangleInsets.ZERO_INSETS);
+            domainAxis.setTickUnit(new DateTickUnit(DateTickUnitType.SECOND, container.getDashboardMaxItems() / 5));
             if (viewConfig != null && !viewConfig.isDomainTicksVisible()) {
                 domainAxis.setVisible(false);
             }
@@ -117,8 +119,16 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
             rangeAxis.setTickLabelPaint(gridColor);
             rangeAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
             rangeAxis.setTickLabelInsets(RectangleInsets.ZERO_INSETS);
-            if (container.getDashboardValueType() == DashboardValueType.integer) {
-                rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true));
+            switch (container.getDashboardValueType()) {
+                case decimal:
+                    rangeAxis.setStandardTickUnits(new NumberTickUnitSource(false));
+                    break;
+                case integer:
+                    rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true));
+                    break;
+                case bytes:
+                    rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true, new ByteNumberFormat()));
+                    break;
             }
             if (viewConfig != null && !viewConfig.isRangeTicksVisible()) {
                 rangeAxis.setVisible(false);
@@ -210,7 +220,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
                             if (newValue instanceof Number && prevValue instanceof Number) {
                                 double deltaValue = ((Number) newValue).doubleValue() - ((Number) prevValue).doubleValue();
                                 deltaValue /= secondsPassed;
-                                if (container.getDashboardValueType() == DashboardValueType.integer) {
+                                if (container.getDashboardValueType() != DashboardValueType.decimal) {
                                     deltaValue = Math.round(deltaValue);
                                 }
                                 series.add(

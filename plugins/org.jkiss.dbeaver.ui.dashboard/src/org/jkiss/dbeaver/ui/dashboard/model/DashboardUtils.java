@@ -58,4 +58,5 @@ public class DashboardUtils {
     public static String formatDuration(long duration) {
         return Duration.ofMillis(duration).toString().substring(2);
     }
+
 }

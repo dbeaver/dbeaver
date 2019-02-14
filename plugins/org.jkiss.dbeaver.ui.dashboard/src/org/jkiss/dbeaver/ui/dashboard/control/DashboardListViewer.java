@@ -19,22 +19,21 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.StructuredViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardViewConfiguration;
@@ -89,30 +88,7 @@ public class DashboardListViewer extends StructuredViewer implements IDataSource
     }
 
     public void createControl(Composite parent) {
-        Composite composite;
-        if (singleChartMode) {
-            composite = UIUtils.createPlaceholder(parent, 1);
-            composite.setLayout(new FillLayout());
-        } else {
-            ScrolledComposite sComposite = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
-            sComposite.setExpandHorizontal( true );
-            sComposite.setExpandVertical( true );
-            sComposite.setMinSize( 10, 10 );
-
-            sComposite.addListener( SWT.Resize, event -> {
-                sComposite.setMinHeight(10);
-                int width = sComposite.getClientArea().width;
-                sComposite.setMinHeight( parent.computeSize( width, SWT.DEFAULT ).y );
-            } );
-
-            composite = sComposite;
-        }
-
-        dashContainer = new DashboardList(site, composite, this);
-
-        if (!singleChartMode) {
-            ((ScrolledComposite)composite).setContent(this.dashContainer);
-        }
+        dashContainer = new DashboardList(site, parent, this);
 
         //dashContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
