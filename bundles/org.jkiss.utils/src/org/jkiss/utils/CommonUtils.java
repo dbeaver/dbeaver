@@ -419,6 +419,15 @@ public class CommonUtils {
     }
 
     @NotNull
+    public static String[] split(@Nullable String str, String delimiter) {
+        if (CommonUtils.isEmpty(str)) {
+            return new String[0];
+        } else {
+            return str.split(delimiter);
+        }
+    }
+
+    @NotNull
     public static String makeString(@Nullable List<String> tokens, char delimiter) {
         if (tokens == null) {
             return "";
