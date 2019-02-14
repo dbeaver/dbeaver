@@ -324,6 +324,11 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
+    public String[] getMapLabels() {
+        return dashboardConfig.getDashboardDescriptor().getMapLabels();
+    }
+
+    @Override
     public Expression getMapFormula() {
         return dashboardConfig.getDashboardDescriptor().getMapFormulaExpr();
     }

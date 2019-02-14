@@ -445,25 +445,25 @@ SHOW GLOBAL STATUS
         </mapQuery>
 
         <dashboard id="mysql.traffic" mapQuery="mysql.query.status" label="Traffic" defaultView="timeseries" group="Status"
-            calc="delta" value="integer" mapKeys="Bytes_sent,Bytes_received" measue="Kb/s"
+            calc="delta" value="integer" mapKeys="Bytes_sent,Bytes_received"  mapLabels="Sent,Received" measure="Kb/s"
             showByDefault="true" description="Server outbound traffic">
             <datasource id="mysql"/>
         </dashboard>
 
         <dashboard id="mysql.innodb.data" mapQuery="mysql.query.status" label="InnoDB data" defaultView="timeseries" group="Status"
-                   calc="delta" value="integer" mapKeys="Innodb_data_read,Innodb_data_written" measue="Kb/s"
+                   calc="delta" value="integer" mapKeys="Innodb_data_read,Innodb_data_written" mapLabels="Read,Write" measure="Kb/s"
                    showByDefault="true" description="InnoDB data stats">
             <datasource id="mysql"/>
         </dashboard>
 
         <dashboard id="mysql.innodb.memory" mapQuery="mysql.query.status" label="InnoDB memory" defaultView="timeseries" group="Status"
-                   calc="value" value="integer" mapKeys="Innodb_mem_total,Innodb_mem_dictionary,Innodb_mem_adaptive_hash"
+                   calc="value" value="integer" mapKeys="Innodb_mem_total,Innodb_mem_dictionary,Innodb_mem_adaptive_hash" mapLabels="Total,Dict,Hash"
                    showByDefault="true" description="InnoDB memory stats">
             <datasource id="mysql"/>
         </dashboard>
 
         <dashboard id="mysql.key_efficiency" mapQuery="mysql.query.status" label="Key Efficiency" defaultView="timeseries" group="Status" updatePeriod="1000"
-            calc="delta" value="integer" mapFormula="100 - (((map.key_reads / map.key_read_requests * 100))/options.updateInterval)" measue="%"
+            calc="delta" value="integer" mapFormula="100 - (((map.key_reads / map.key_read_requests * 100))/options.updateInterval)" measure="%"
             showByDefault="true" description="Shows session grouped by command">
             <datasource id="mysql"/>
         </dashboard>
