@@ -72,12 +72,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         this.setForeground(UIStyles.getDefaultTextForeground());
         this.setBackground(UIStyles.getDefaultTextBackground());
 
-        if (viewContainer.isSingleChartMode()) {
-            this.setLayout(new FillLayout());
-        } else {
-            GridLayout layout = new GridLayout(1, true);
-            this.setLayout(layout);
-        }
+        GridLayout layout = new GridLayout(1, true);
+        this.setLayout(layout);
 
         registerContextMenu();
 
@@ -115,7 +111,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     private void computeGridSize() {
         int totalItems = items.size();
         Point listAreaSize = getSize();
-        if (listAreaSize.x <= 0 || listAreaSize.y <= 0) {
+        if (listAreaSize.x <= 0 || listAreaSize.y <= 0 || items.isEmpty()) {
             return;
         }
 
