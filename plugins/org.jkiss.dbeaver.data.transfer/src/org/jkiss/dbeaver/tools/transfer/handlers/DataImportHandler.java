@@ -69,7 +69,7 @@ public class DataImportHandler extends DataTransferHandler {
                 if (extList == null) {
                     continue;
                 }
-                String[] defExtensions = CommonUtils.toString(extList.getDefaultValue()).split(",");
+                String[] defExtensions = CommonUtils.split(CommonUtils.toString(extList.getDefaultValue()), ",");
                 if (ArrayUtils.contains(defExtensions, extension)) {
                     return processor;
                 }

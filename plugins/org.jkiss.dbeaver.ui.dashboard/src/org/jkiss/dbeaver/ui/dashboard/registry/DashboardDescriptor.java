@@ -157,7 +157,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.description = config.getAttribute("description");
         this.group = config.getAttribute("group");
         this.measure = config.getAttribute("measure");
-        this.tags = CommonUtils.notEmpty(config.getAttribute("tags")).split(",");
+        this.tags = CommonUtils.split(config.getAttribute("tags"), ",");
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
         this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
@@ -178,8 +178,8 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
             if (!CommonUtils.isEmpty(mapQueryId)) {
                 this.mapQuery = registry.getMapQuery(mapQueryId);
                 if (this.mapQuery != null) {
-                    this.mapKeys = CommonUtils.notEmpty(config.getAttribute("mapKeys")).split(",");
-                    this.mapLabels = CommonUtils.notEmpty(config.getAttribute("mapLabels")).split(",");
+                    this.mapKeys = CommonUtils.split(config.getAttribute("mapKeys"), ",");
+                    this.mapLabels = CommonUtils.split(config.getAttribute("mapLabels"), ",");
                     this.mapFormula = config.getAttribute("mapFormula");
                     if (!CommonUtils.isEmpty(this.mapFormula)) {
                         try {
@@ -212,7 +212,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.group = config.getAttribute("group");
         this.measure = config.getAttribute("measure");
 
-        this.tags = CommonUtils.notEmpty(config.getAttribute("tags")).split(",");
+        this.tags = CommonUtils.split(config.getAttribute("tags"), ",");
         this.showByDefault = CommonUtils.toBoolean(config.getAttribute("showByDefault"));
 
         this.dataType = CommonUtils.valueOf(DashboardDataType.class, config.getAttribute("dataType"), DashboardConstants.DEF_DASHBOARD_DATA_TYPE);
