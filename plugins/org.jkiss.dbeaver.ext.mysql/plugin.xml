@@ -446,7 +446,19 @@ SHOW GLOBAL STATUS
 
         <dashboard id="mysql.traffic" mapQuery="mysql.query.status" label="Traffic" defaultView="timeseries" group="Status"
             calc="delta" value="integer" mapKeys="Bytes_sent,Bytes_received" measue="Kb/s"
-            showByDefault="true" description="Server outbound traffic">
+            showByDefault="true" description="Server traffic">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.innodb.data" mapQuery="mysql.query.status" label="InnoDB" defaultView="timeseries" group="Status"
+                   calc="delta" value="integer" mapKeys="Innodb_data_read,Innodb_data_write" measue="Kb/s"
+                   showByDefault="true" description="InnoDB reads/writes">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.com.queries" mapQuery="mysql.query.status" label="Queries" defaultView="timeseries" group="Status"
+                   calc="delta" value="integer" mapKeys="Com_select,Com_insert,Com_update,Com_delete"
+                   showByDefault="true" description="Queries stats">
             <datasource id="mysql"/>
         </dashboard>
 
