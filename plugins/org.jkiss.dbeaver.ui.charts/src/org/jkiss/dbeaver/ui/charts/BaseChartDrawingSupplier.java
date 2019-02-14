@@ -19,13 +19,29 @@ package org.jkiss.dbeaver.ui.charts;
 
 import org.jfree.chart.plot.DefaultDrawingSupplier;
 
+import java.awt.*;
+
 /**
  * Base chart composite
  */
 public class BaseChartDrawingSupplier extends DefaultDrawingSupplier {
 
+    public static final Paint[] DBEAVER_DEFAULT_COLOR_SERIES = new Paint[] {
+        new Color(206, 63, 34),
+        new Color(44, 165, 233),
+        new Color(138, 114, 99),
+        new Color(242, 132, 35),
+        new Color(124, 38, 19),
+        new Color(157, 214, 245),
+        new Color(34, 25, 21),
+        new Color(249, 214, 205),
+        new Color(71, 28, 18),
+        new Color(83, 69, 60),
+    };
+
+
     public BaseChartDrawingSupplier() {
-        super(DEFAULT_PAINT_SEQUENCE,
+        super(DBEAVER_DEFAULT_COLOR_SERIES,
             DEFAULT_FILL_PAINT_SEQUENCE,
             DEFAULT_OUTLINE_PAINT_SEQUENCE,
             DEFAULT_STROKE_SEQUENCE,

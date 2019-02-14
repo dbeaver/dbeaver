@@ -68,6 +68,8 @@ public interface DashboardContainer {
 
     String[] getMapKeys();
 
+    String[] getMapLabels();
+
     Expression getMapFormula();
 
     List<? extends DashboardQuery> getQueryList();
