@@ -124,11 +124,16 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
                     rangeAxis.setStandardTickUnits(new NumberTickUnitSource(false));
                     break;
                 case integer:
+                case percent:
                     rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true));
                     break;
                 case bytes:
                     rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true, new ByteNumberFormat()));
                     break;
+            }
+            if (container.getDashboardValueType() == DashboardValueType.percent) {
+                rangeAxis.setLowerBound(0);
+                rangeAxis.setUpperBound(100);
             }
             if (viewConfig != null && !viewConfig.isRangeTicksVisible()) {
                 rangeAxis.setVisible(false);
