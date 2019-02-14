@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -52,6 +49,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     private List<DashboardItem> items = new ArrayList<>();
     private final Font boldFont;
     private DashboardItem selectedItem;
+    private int listRowCount;
+    private int listColumnCount;
 
     public DashboardList(IWorkbenchSite site, Composite parent, DashboardViewContainer viewContainer) {
         super(parent, SWT.DOUBLE_BUFFERED);
@@ -98,6 +97,40 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
                 handleKeyEvent(e);
             }
         });
+
+        addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                computeGridSize();
+            }
+        });
+    }
+
+    private void computeGridSize() {
+        int totalItems = items.size();
+        Point listAreaSize = getSize();
+        if (listAreaSize.x <= 0 || listAreaSize.y <= 0) {
+            return;
+        }
+
+        listRowCount = 1;
+        // Calculate pack efficiency for different number of rows
+        for (int rowCount = 1; rowCount < 50; rowCount++) {
+            int itemsPerRow = (int) Math.ceil((float)totalItems / rowCount);
+
+            int itemWidth = listAreaSize.x / itemsPerRow;
+            int itemHeight = itemWidth * 2 / 3;
+
+            int totalHeight = itemHeight * rowCount;
+            if (totalHeight > listAreaSize.y) {
+                // Too many
+                if (rowCount > 1) {
+                    listRowCount = rowCount - 1;
+                }
+                break;
+            }
+        }
+        listColumnCount = (int)Math.ceil((float)totalItems / listRowCount);
     }
 
     void handleKeyEvent(KeyEvent e) {
