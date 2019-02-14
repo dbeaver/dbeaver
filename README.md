@@ -69,7 +69,6 @@ That's really cool, we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.
 - You can buy <a href="https://dbeaver.com/download">DBeaver EE</a> version. It includes all features of CE + NoSQL databases support + EE extensions + official online support. Also, licensed users have priorities in bug fixes and new features development.
-Those who read up to this point - you can use community discounts (check our <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">WIKI</a>).
 
 Save wild animals :) Thank you!  
 
