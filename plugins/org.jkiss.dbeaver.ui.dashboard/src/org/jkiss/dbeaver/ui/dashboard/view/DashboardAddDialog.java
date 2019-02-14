@@ -101,6 +101,7 @@ public class DashboardAddDialog extends BaseDialog {
             if (selection instanceof IStructuredSelection) {
                 selectedDashboard = (DashboardDescriptor) ((IStructuredSelection) selection).getFirstElement();
             }
+            getButton(IDialogConstants.OK_ID).setEnabled(selectedDashboard != null);
         });
         table.addPaintListener(e -> {
             if (table.getItemCount() == 0) {
@@ -133,7 +134,7 @@ public class DashboardAddDialog extends BaseDialog {
             }
         });
 
-        createButton(parent, IDialogConstants.OK_ID, "Add", true);
+        createButton(parent, IDialogConstants.OK_ID, "Add", true).setEnabled(false);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
