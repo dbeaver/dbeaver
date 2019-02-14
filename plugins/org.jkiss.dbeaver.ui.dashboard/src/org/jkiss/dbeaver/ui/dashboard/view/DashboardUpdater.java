@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.view;
 
+import org.apache.commons.jexl2.JexlContext;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -128,8 +129,7 @@ public class DashboardUpdater {
             return;
         }
         try (DBCSession session = executionContext.openSession(
-            monitor, DBCExecutionPurpose.UTIL, "Read map query '" + mqInfo.mapQuery.getId() + "' data"))
-        {
+            monitor, DBCExecutionPurpose.UTIL, "Read map query '" + mqInfo.mapQuery.getId() + "' data")) {
             session.enableLogging(false);
             try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, mqInfo.mapQuery.getQueryText(), false, false, false)) {
                 if (dbStat.executeStatement()) {
@@ -167,8 +167,7 @@ public class DashboardUpdater {
             return;
         }
         try (DBCSession session = executionContext.openSession(
-            monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboardTitle() + "' data"))
-        {
+            monitor, DBCExecutionPurpose.UTIL, "Read dashboard '" + dashboard.getDashboardTitle() + "' data")) {
             session.enableLogging(false);
             for (DashboardQuery query : queries) {
                 try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.getQueryText(), false, false, false)) {
@@ -216,7 +215,45 @@ public class DashboardUpdater {
                 dataset.addRow(new DashboardDatasetRow(timestamp, mapValues));
                 dashboard.updateDashboardData(dataset);
             } else if (dashboard.getMapFormula() != null) {
-                log.debug("Formulas are not supported yet");
+                Map<String, Object> ciMap = new HashMap<>(mapValue.size());
+                for (Map.Entry<String, Object> me : mapValue.entrySet()) {
+                    ciMap.put(me.getKey().toLowerCase(Locale.ENGLISH), me.getValue());
+                }
+                JexlContext context = new JexlContext() {
+
+                    @Override
+                    public Object get(String name) {
+                        if (name.equals("map")) {
+                            return ciMap;
+                        } else if (name.equals("dashboard")) {
+                            return dashboard;
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    public void set(String name, Object value) {
+                        log.warn("Set is not implemented in DBX model");
+                    }
+
+                    @Override
+                    public boolean has(String name) {
+                        return name.equals("object") || name.equals("dashboard");
+                    }
+                };
+
+                Object result = dashboard.getMapFormula().evaluate(context);
+                if (result instanceof Number) {
+                    String columnName = dashboard.getDashboardTitle();
+                    if (!ArrayUtils.isEmpty(mapLabels)) {
+                        columnName = mapLabels[0];
+                    }
+                    DashboardDataset dataset = new DashboardDataset(new String[]{ columnName });
+                    dataset.addRow(new DashboardDatasetRow(new Date(), new Object[] { result } ));
+                    dashboard.updateDashboardData(dataset);
+                } else {
+                    log.debug("Wrong expression result: " + result);
+                }
             }
         }
     }
