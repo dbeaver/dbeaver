@@ -38,8 +38,8 @@ import java.awt.*;
  */
 public abstract class DashboardRendererBase implements DashboardRenderer {
 
-    private static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
-    private static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
+    protected static final Font DEFAULT_LEGEND_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
+    protected static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
 
     protected void generateSampleSeries(DashboardContainer container, TimeSeriesCollection dataset) {
         TimeSeries seriesSin = new TimeSeries("Sin");
