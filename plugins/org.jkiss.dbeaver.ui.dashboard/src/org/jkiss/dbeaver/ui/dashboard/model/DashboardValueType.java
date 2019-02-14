@@ -23,6 +23,7 @@ public enum DashboardValueType {
 
     decimal,
     integer,
+    percent,
     bytes
 
 }

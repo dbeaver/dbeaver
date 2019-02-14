@@ -23,6 +23,5 @@ public enum DashboardCalcType {
 
     value,      // Absolute value
     delta,      // Delta between last two value / number of seconds between values obtain time.
-    percent,    // Percent
 
 }
