@@ -106,6 +106,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
             domainAxis.setTickLabelPaint(gridColor);
             domainAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
             domainAxis.setTickLabelInsets(RectangleInsets.ZERO_INSETS);
+            domainAxis.setTickUnit(new DateTickUnit(DateTickUnitType.SECOND, 15));
             if (viewConfig != null && !viewConfig.isDomainTicksVisible()) {
                 domainAxis.setVisible(false);
             }
