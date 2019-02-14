@@ -3078,6 +3078,9 @@ public class ResultSetViewer extends Viewer
         }
         try {
             createDataPersister(true).rejectChanges();
+            if (model.getAllRows().isEmpty()) {
+                curRow = null;
+            }
         } catch (DBException e) {
             log.debug(e);
         }
