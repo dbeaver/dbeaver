@@ -34,6 +34,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.charts.BaseChartDrawingSupplier;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardChartComposite;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardItem;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererBase;
@@ -87,6 +88,8 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
         plot.setOutlinePaint(null);
         // Remove background
         plot.setShadowGenerator(null);
+
+        plot.setDrawingSupplier(new BaseChartDrawingSupplier());
 
         //XYItemRenderer renderer = new XYLine3DRenderer();
         //plot.setRenderer(renderer);
