@@ -22,6 +22,7 @@ import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -49,8 +50,8 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
     private List<DashboardItem> items = new ArrayList<>();
     private final Font boldFont;
     private DashboardItem selectedItem;
-    private int listRowCount;
-    private int listColumnCount;
+    private int listRowCount = 1;
+    private int listColumnCount = 1;
 
     public DashboardList(IWorkbenchSite site, Composite parent, DashboardViewContainer viewContainer) {
         super(parent, SWT.DOUBLE_BUFFERED);
@@ -74,11 +75,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
         if (viewContainer.isSingleChartMode()) {
             this.setLayout(new FillLayout());
         } else {
-            RowLayout layout = new RowLayout();
-            layout.spacing = getItemSpacing();
-            layout.pack = false;
-            layout.wrap = true;
-            layout.justify = false;
+            GridLayout layout = new GridLayout(1, true);
             this.setLayout(layout);
         }
 
@@ -102,8 +99,17 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             @Override
             public void controlResized(ControlEvent e) {
                 computeGridSize();
+                layout(true, true);
             }
         });
+    }
+
+    public int getListRowCount() {
+        return listRowCount;
+    }
+
+    public int getListColumnCount() {
+        return listColumnCount;
     }
 
     private void computeGridSize() {
@@ -119,7 +125,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             int itemsPerRow = (int) Math.ceil((float)totalItems / rowCount);
 
             int itemWidth = listAreaSize.x / itemsPerRow;
-            int itemHeight = itemWidth * 2 / 3;
+            int itemHeight = itemWidth / 3;
 
             int totalHeight = itemHeight * rowCount;
             if (totalHeight > listAreaSize.y) {
@@ -131,6 +137,7 @@ public class DashboardList extends Composite implements DashboardGroupContainer 
             }
         }
         listColumnCount = (int)Math.ceil((float)totalItems / listRowCount);
+        ((GridLayout)getLayout()).numColumns = listColumnCount;
     }
 
     void handleKeyEvent(KeyEvent e) {
