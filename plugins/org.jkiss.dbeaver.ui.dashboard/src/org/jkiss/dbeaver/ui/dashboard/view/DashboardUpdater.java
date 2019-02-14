@@ -192,8 +192,12 @@ public class DashboardUpdater {
         Map<String, Object> mapValue = mqi.mapValue;
         if (mapValue != null) {
             String[] mapKeys = dashboard.getMapKeys();
+            String[] mapLabels = dashboard.getMapLabels();
             if (!ArrayUtils.isEmpty(mapKeys)) {
-                DashboardDataset dataset = new DashboardDataset(mapKeys);
+                if (ArrayUtils.isEmpty(mapLabels)) {
+                    mapLabels = mapKeys;
+                }
+                DashboardDataset dataset = new DashboardDataset(mapLabels);
                 Object[] mapValues = new Object[mapKeys.length];
                 for (int i = 0; i < mapKeys.length; i++) {
                     Object value = mapValue.get(mapKeys[i]);

@@ -97,7 +97,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 
         {
             DateAxis domainAxis = new DateAxis("Time");
-            domainAxis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
+            domainAxis.setDateFormatOverride(new SimpleDateFormat("HH:mm:ss"));
             domainAxis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);
             domainAxis.setAutoRange(true);
             domainAxis.setLabel(null);
