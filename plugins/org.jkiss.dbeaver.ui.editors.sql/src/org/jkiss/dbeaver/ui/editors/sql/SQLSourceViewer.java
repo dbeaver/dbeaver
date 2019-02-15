@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.text.TextSelection;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -43,12 +45,20 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
         @Override
         public void run()
         {
-            final DBPDataSource dataSource = getDataSource();
+            String sqlText = getDocument().get();
+            ISelection selection = getSelectionProvider().getSelection();
+            if (selection instanceof TextSelection) { 
+                sqlText = ((TextSelection) selection).getText();
+                if (sqlText.isEmpty()) {
+                sqlText = getDocument().get();
+            }  
+        }
+            final DBPDataSource dataSource = getDataSource();           
             OpenHandler.openSQLConsole(
                 UIUtils.getActiveWorkbenchWindow(),
                 dataSource == null ? null : dataSource.getContainer(),
                 "Source",
-                getDocument().get()
+                sqlText
             );
         }
     };
