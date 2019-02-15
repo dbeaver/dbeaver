@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.NamedObjectPatternFilter;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
@@ -68,15 +69,7 @@ public class DashboardDatabaseSelectDialog extends BaseDialog {
         Composite dialogArea = super.createDialogArea(parent);
 
         {
-            treeViewer = new FilteredTree(dialogArea, SWT.BORDER, new PatternFilter() {
-                protected boolean isLeafMatch(Viewer viewer, Object element) {
-                    if (element instanceof DBPNamedObject) {
-                        return wordMatches(((DBPNamedObject) element).getName());
-                    }
-                    return false;
-                }
-
-            }, true).getViewer();
+            treeViewer = new FilteredTree(dialogArea, SWT.BORDER, new NamedObjectPatternFilter(), true).getViewer();
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 300;
@@ -178,4 +171,5 @@ public class DashboardDatabaseSelectDialog extends BaseDialog {
     public DBPNamedObject getTarget() {
         return target;
     }
+
 }

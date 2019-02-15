@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTreeEditor;
+import org.jkiss.dbeaver.ui.controls.NamedObjectPatternFilter;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
@@ -112,7 +113,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         {
             Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
 
-            FilteredTree filteredTree = new FilteredTree(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK, new PatternFilter(), true) {
+            FilteredTree filteredTree = new FilteredTree(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK, new NamedObjectPatternFilter(), true) {
                 @Override
                 protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
                     columnsViewer = new CheckboxTreeViewer(parent, style);
