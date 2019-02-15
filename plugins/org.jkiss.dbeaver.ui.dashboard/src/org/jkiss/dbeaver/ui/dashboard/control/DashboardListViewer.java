@@ -128,7 +128,7 @@ public class DashboardListViewer extends StructuredViewer implements IDataSource
         if (useSeparateConnection && isolatedContext != null) {
             return isolatedContext;
         }
-        return dataSourceContainer.getDataSource().getDefaultInstance().getDefaultContext(false);
+        return dataSourceContainer.getDataSource().getDefaultInstance().getDefaultContext(true);
     }
 
     @Override
@@ -197,7 +197,7 @@ public class DashboardListViewer extends StructuredViewer implements IDataSource
     }
 
     private void initConnection() {
-        useSeparateConnection = viewConfiguration.isUseSeparateConnection();
+        useSeparateConnection = false;//viewConfiguration.isUseSeparateConnection();
         if (viewConfiguration.isOpenConnectionOnActivate()) {
             if (!dataSourceContainer.isConnected()) {
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);

@@ -51,20 +51,24 @@ public class DashboardViewConfigDialog extends BaseDialog {
         {
             Group viewGroup = UIUtils.createControlGroup(composite, "View configuration", 2, GridData.FILL_HORIZONTAL, 0);
 
-            UIUtils.createCheckbox(viewGroup, "Connect to on activation", "Open database connection on view activation", viewConfiguration.isOpenConnectionOnActivate(), 2)
+            Button connectOnActivationCheck = UIUtils.createCheckbox(viewGroup, "Connect to on activation", "Open database connection on view activation", viewConfiguration.isOpenConnectionOnActivate(), 2);
+            connectOnActivationCheck
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         viewConfiguration.setOpenConnectionOnActivate(((Button)e.widget).getSelection());
                     }
                 });
-            UIUtils.createCheckbox(viewGroup, "Use separate connection", "Open special connection for charts data reading. Otherwise use main datasource connection", viewConfiguration.isUseSeparateConnection(), 2)
+            //connectOnActivationCheck.setEnabled(false);
+            Button separateConnectionCheck = UIUtils.createCheckbox(viewGroup, "Use separate connection", "Open special connection for charts data reading. Otherwise use main datasource connection", viewConfiguration.isUseSeparateConnection(), 2);
+            separateConnectionCheck
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         viewConfiguration.setUseSeparateConnection(((Button)e.widget).getSelection());
                     }
                 });
+            separateConnectionCheck.setEnabled(false);
         }
 
         return parent;
