@@ -405,6 +405,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_query_manager_logs_folder;
 	public static String pref_page_query_manager_label_days_to_store_log;
 	public static String pref_page_query_manager_label_entries_per_page;
+	public static String pref_page_query_manager_log_file_hint;
 
 	public static String pref_page_ui_general_checkbox_automatic_updates;
 	public static String pref_page_ui_general_combo_language;
@@ -739,7 +740,7 @@ public class CoreMessages extends NLS {
 
 	public static String transaction_log_dialog_error_not_connected;
 
-	static {
+    static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
 	}
