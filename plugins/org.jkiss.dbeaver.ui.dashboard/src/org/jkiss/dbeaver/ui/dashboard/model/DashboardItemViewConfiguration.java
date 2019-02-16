@@ -198,7 +198,6 @@ public class DashboardItemViewConfiguration {
         if (this.viewType == null) {
             this.viewType = dashboard.getDefaultViewType();
         }
-        this.viewType = viewTypeId == null ? dashboard.getDefaultViewType() : DashboardRegistry.getInstance().getViewType(viewTypeId);
         this.index = CommonUtils.toInt(element.getAttribute("index"));
         this.widthRatio = (float) CommonUtils.toDouble(element.getAttribute("widthRatio"), dashboardDescriptor.getWidthRatio());
         this.updatePeriod = CommonUtils.toLong(element.getAttribute("updatePeriod"), dashboardDescriptor.getUpdatePeriod());
