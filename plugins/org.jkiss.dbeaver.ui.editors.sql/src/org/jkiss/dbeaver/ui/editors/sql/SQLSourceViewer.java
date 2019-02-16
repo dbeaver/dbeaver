@@ -44,22 +44,22 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 	private IAction OPEN_CONSOLE_ACTION = new Action("Open in SQL console",
 			DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
 		@Override
-		public void run() {
-		    String sqlText = getDocument().get();
-		    ISelection selection = getSelectionProvider().getSelection();
-		    if (selection instanceof TextSelection) {
-			    if (((TextSelection) selection).getLength() > 0) {
-				    sqlText = ((TextSelection) selection).getText();
-			    }
-			}
-			final DBPDataSource dataSource = getDataSource();
-			OpenHandler.openSQLConsole(
-			    UIUtils.getActiveWorkbenchWindow(),
-			    dataSource == null ? null : dataSource.getContainer(), 
-			    "Source", 
-			    sqlText
-		    );
-	    }
+        public void run() {
+            String sqlText = getDocument().get();
+            ISelection selection = getSelectionProvider().getSelection();
+            if (selection instanceof TextSelection) {
+                if (((TextSelection) selection).getLength() > 0) {
+                    sqlText = ((TextSelection) selection).getText();
+                }
+            }
+            final DBPDataSource dataSource = getDataSource();
+            OpenHandler.openSQLConsole(
+                UIUtils.getActiveWorkbenchWindow(),
+                dataSource == null ? null : dataSource.getContainer(), 
+                "Source", 
+                sqlText
+            );
+        }
     };
 
     @Override
