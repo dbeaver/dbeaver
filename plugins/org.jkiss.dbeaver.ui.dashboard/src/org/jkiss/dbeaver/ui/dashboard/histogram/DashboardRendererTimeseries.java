@@ -203,7 +203,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
                     for (DashboardDatasetRow row : rows) {
                         Object value = row.getValues()[i];
                         if (value instanceof Number) {
-                            series.add(new FixedMillisecond(row.getTimestamp().getTime()), (Number) value, false);
+                            series.addOrUpdate(new FixedMillisecond(row.getTimestamp().getTime()), (Number) value);
                         }
                     }
                     break;
@@ -228,18 +228,16 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
                                 if (container.getDashboardValueType() != DashboardValueType.decimal) {
                                     deltaValue = Math.round(deltaValue);
                                 }
-                                series.add(
+                                series.addOrUpdate(
                                     new FixedMillisecond(
                                         row.getTimestamp().getTime()),
-                                    deltaValue,
-                                    false);
+                                    deltaValue);
                             }
                         }
                     }
                     break;
                 }
             }
-            series.fireSeriesChanged();
         }
 
         if (!rows.isEmpty()) {
