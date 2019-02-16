@@ -27,15 +27,20 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
+import org.eclipse.ui.actions.RetargetAction;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -44,8 +49,7 @@ import java.lang.reflect.InvocationTargetException;
  * Content Editor contributor.
  * Uses text editor contributor to fill status bar and menu for possible integrated text editors.
  */
-public class ContentEditorContributor extends MultiPageEditorActionBarContributor
-{
+public class ContentEditorContributor extends MultiPageEditorActionBarContributor {
     private final BasicTextEditorActionContributor textContributor;
     private ContentEditor activeEditor;
     //private IEditorPart activePage;
@@ -55,40 +59,34 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     private final IAction infoAction = new InfoAction();
     private Combo encodingCombo;
 
-    public ContentEditorContributor()
-    {
+    public ContentEditorContributor() {
         textContributor = new BasicTextEditorActionContributor();
     }
 
-    ContentEditor getEditor()
-    {
+    ContentEditor getEditor() {
         return activeEditor;
     }
 
     @Override
-    public void init(IActionBars bars, IWorkbenchPage page)
-    {
+    public void init(IActionBars bars, IWorkbenchPage page) {
         super.init(bars, page);
         textContributor.init(bars, page);
     }
 
     @Override
-    public void init(IActionBars bars)
-    {
+    public void init(IActionBars bars) {
         super.init(bars);
         textContributor.init(bars);
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         textContributor.dispose();
         super.dispose();
     }
 
     @Override
-    public void setActiveEditor(IEditorPart part)
-    {
+    public void setActiveEditor(IEditorPart part) {
         super.setActiveEditor(part);
         this.activeEditor = (ContentEditor) part;
 
@@ -108,15 +106,13 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     }
 
     @Override
-    public void setActivePage(IEditorPart activeEditor)
-    {
+    public void setActivePage(IEditorPart activeEditor) {
         //this.activePage = activeEditor;
         this.textContributor.setActiveEditor(activeEditor);
     }
 
     @Override
-    public void contributeToMenu(IMenuManager manager)
-    {
+    public void contributeToMenu(IMenuManager manager) {
         super.contributeToMenu(manager);
         textContributor.contributeToMenu(manager);
 
@@ -127,18 +123,21 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         menu.add(new Separator());
         menu.add(infoAction);
         menu.add(new Separator());
+
+        IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
+        if (editMenu != null) {
+            editMenu.add(ActionUtils.makeCommandContribution(UIUtils.getActiveWorkbenchWindow(), BaseTextEditorCommands.CMD_CONTENT_FORMAT));
+        }
     }
 
     @Override
-    public void contributeToStatusLine(IStatusLineManager statusLineManager)
-    {
+    public void contributeToStatusLine(IStatusLineManager statusLineManager) {
         super.contributeToStatusLine(statusLineManager);
         textContributor.contributeToStatusLine(statusLineManager);
     }
 
     @Override
-    public void contributeToToolBar(IToolBarManager manager)
-    {
+    public void contributeToToolBar(IToolBarManager manager) {
         super.contributeToToolBar(manager);
         textContributor.contributeToToolBar(manager);
         // Execution
@@ -147,11 +146,9 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         manager.add(new Separator());
         manager.add(infoAction);
         manager.add(new Separator());
-        manager.add(new ControlContribution("Encoding")
-        {
+        manager.add(new ControlContribution("Encoding") {
             @Override
-            protected Control createControl(Composite parent)
-            {
+            protected Control createControl(Composite parent) {
                 String curCharset = null;
                 if (getEditor() != null) {
                     curCharset = getEditor().getEditorInput().getEncoding();
@@ -188,8 +185,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
     public abstract class SimpleAction extends Action {
 
-        SimpleAction(String id, String text, String toolTip, DBIcon icon)
-        {
+        SimpleAction(String id, String text, String toolTip, DBIcon icon) {
             super(text, DBeaverIcons.getImageDescriptor(icon));
             setId(id);
             //setActionDefinitionId(id);
@@ -201,30 +197,24 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
     }
 
-    private class FileExportAction extends SimpleAction
-    {
-        FileExportAction()
-        {
+    private class FileExportAction extends SimpleAction {
+        FileExportAction() {
             super(IWorkbenchCommandConstants.FILE_EXPORT, "Export", "Save to File", UIIcon.SAVE_AS);
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             getEditor().doSaveAs();
         }
     }
 
-    private class FileImportAction extends SimpleAction
-    {
-        FileImportAction()
-        {
+    private class FileImportAction extends SimpleAction {
+        FileImportAction() {
             super(IWorkbenchCommandConstants.FILE_IMPORT, "Import", "Load from File", UIIcon.LOAD);
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             final ContentEditor editor = getEditor();
             if (editor == null) {
                 return;
@@ -238,12 +228,10 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 editor.getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
                     @Override
                     public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
+                        throws InvocationTargetException, InterruptedException {
                         try {
                             editor.getEditorInput().loadFromExternalFile(loadFile, monitor);
-                        }
-                        catch (CoreException e) {
+                        } catch (CoreException e) {
                             throw new InvocationTargetException(e);
                         }
                     }
@@ -254,29 +242,24 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 }
                 editor.setDirty(true);
                 editor.fireContentChanged();
-            }
-            catch (InvocationTargetException e) {
+            } catch (InvocationTargetException e) {
                 DBWorkbench.getPlatformUI().showError(
-                        "Can't load content",
+                    "Can't load content",
                     "Can't load content from file '" + loadFile.getAbsolutePath() + "'",
                     e.getTargetException());
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 // do nothing
             }
         }
     }
 
-    private class InfoAction extends SimpleAction
-    {
-        InfoAction()
-        {
+    private class InfoAction extends SimpleAction {
+        InfoAction() {
             super("org.jkiss.dbeaver.lob.actions.info", "Info", "Show column information", DBIcon.TREE_INFO);
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             getEditor().toggleInfoBar();
         }
     }

@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.*;
@@ -514,7 +515,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL),
             this,
             ISourceViewer.FORMAT);
-        a.setActionDefinitionId(SQLEditorCommands.CMD_CONTENT_FORMAT);
+        a.setActionDefinitionId(BaseTextEditorCommands.CMD_CONTENT_FORMAT);
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, a);
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new Action(SQLEditorMessages.editor_sql_preference) { //$NON-NLS-1$

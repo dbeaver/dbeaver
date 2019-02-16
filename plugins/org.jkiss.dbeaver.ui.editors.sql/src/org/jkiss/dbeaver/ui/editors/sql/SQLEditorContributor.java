@@ -29,6 +29,7 @@ import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 import java.util.ResourceBundle;
@@ -78,7 +79,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
         contentAssistProposal = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_PROPOSAL));
         contentAssistProposal.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         contentFormatProposal = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_FORMAT_PROPOSAL));
-        contentFormatProposal.setActionDefinitionId(SQLEditorCommands.CMD_CONTENT_FORMAT);
+        contentFormatProposal.setActionDefinitionId(BaseTextEditorCommands.CMD_CONTENT_FORMAT);
 
         contentAssistTip = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_TIP));
         contentAssistTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
