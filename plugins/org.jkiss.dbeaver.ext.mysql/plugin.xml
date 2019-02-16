@@ -468,7 +468,7 @@
 
         <dashboard id="mysql.key_efficiency" mapQuery="mysql.query.status" label="Key Efficiency" defaultView="timeseries" group="Status" updatePeriod="1000"
             calc="value" value="percent" mapFormula="100 - ((map.key_reads * 100 / map.key_read_requests) / 3)" mapLabels="Key Efficiency" measure="%"
-            showByDefault="false" description="Shows session grouped by command">
+            showByDefault="false" description="Key read efficiency">
             <datasource id="mysql"/>
         </dashboard>
 
