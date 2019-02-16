@@ -69,7 +69,13 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     {
         enabled = ModelPreferences.getPreferences().getBoolean(QMConstants.PROP_STORE_LOG_FILE);
         if (enabled) {
-            String logFolder = ModelPreferences.getPreferences().getString(QMConstants.PROP_LOG_DIRECTORY);
+            String logFolderPath = ModelPreferences.getPreferences().getString(QMConstants.PROP_LOG_DIRECTORY);
+            File logFolder = new File(logFolderPath);
+            if (!logFolder.exists()) {
+                if (!logFolder.mkdirs()) {
+                    log.error("Can't create log folder '" + logFolderPath + "'");
+                }
+            }
             String logFileName = "dbeaver_sql_" + RuntimeUtils.getCurrentDate() + ".log";
             logFile = new File(logFolder, logFileName);
             try {
