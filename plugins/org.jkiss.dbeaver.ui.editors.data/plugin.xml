@@ -625,6 +625,14 @@
             </enabledWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.ui.editors.text.content.format" class="org.jkiss.dbeaver.ui.editors.content.ContentFormatHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.content.ContentEditor"/>
+                </with>
+            </enabledWhen>
+        </handler>
+
     </extension>
 
     <extension point="org.eclipse.ui.menus">
