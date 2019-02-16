@@ -45,9 +45,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 			DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
 		@Override
 		public void run() {
-			String sqlText = getDocument().get();
-			ISelection selection = getSelectionProvider().getSelection();
-			if (selection instanceof TextSelection) {
+		    String sqlText = getDocument().get();
+		    ISelection selection = getSelectionProvider().getSelection();
+		    if (selection instanceof TextSelection) {
 			    if (((TextSelection) selection).getLength() > 0) {
 				    sqlText = ((TextSelection) selection).getText();
 			    }
@@ -55,12 +55,12 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
 			final DBPDataSource dataSource = getDataSource();
 			OpenHandler.openSQLConsole(
 			    UIUtils.getActiveWorkbenchWindow(),
-				dataSource == null ? null : dataSource.getContainer(), 
-				"Source", 
+			    dataSource == null ? null : dataSource.getContainer(), 
+			    "Source", 
 			    sqlText
 		    );
 	    }
-	};
+    };
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
