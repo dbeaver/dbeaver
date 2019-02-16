@@ -41,10 +41,10 @@ import java.util.Map;
  */
 public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLEditorNested<T> {
 
-	private IAction OPEN_CONSOLE_ACTION = new Action("Open in SQL console",
-			DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
-		@Override
-        public void run() {
+    private IAction OPEN_CONSOLE_ACTION = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
+        @Override
+        public void run() 
+        {
             String sqlText = getDocument().get();
             ISelection selection = getSelectionProvider().getSelection();
             if (selection instanceof TextSelection) {
