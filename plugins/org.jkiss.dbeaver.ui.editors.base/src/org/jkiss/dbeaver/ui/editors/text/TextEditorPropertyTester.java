@@ -50,7 +50,8 @@ public class TextEditorPropertyTester extends PropertyTester
             case PROP_CAN_LOAD:
                 return !editor.isReadOnly();
             case PROP_CAN_COMMENT:
-                if (editor.getSelectionProvider() == null ||
+                if (editor.isReadOnly() ||
+                    editor.getSelectionProvider() == null ||
                     editor.getSelectionProvider().getSelection() == null ||
                     editor.getSelectionProvider().getSelection().isEmpty()) {
                     return false;
