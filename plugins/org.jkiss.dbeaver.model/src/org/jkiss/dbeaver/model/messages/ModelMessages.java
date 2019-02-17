@@ -29,6 +29,10 @@ public class ModelMessages extends NLS {
 
 	public static String common_error_sql;
 
+	public static String model_constraint_type_foreign_key;
+	public static String model_constraint_type_primary_key;
+	public static String model_constraint_type_unique_key;
+
 	public static String model_navigator__connections;
 	public static String model_navigator_Connection;
 
