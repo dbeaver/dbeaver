@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -224,7 +225,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return null;
     }
 
-    @Property(viewable = true, order = 20)
+    @Property(viewable = true, order = 20, formatter = ByteNumberFormat.class)
     public Long getDatabaseSize(DBRProgressMonitor monitor) throws DBException {
         if (databaseSize == null) {
             try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database size")) {
