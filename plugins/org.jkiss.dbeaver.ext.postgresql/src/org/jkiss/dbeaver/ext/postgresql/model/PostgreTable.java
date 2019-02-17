@@ -263,6 +263,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     @NotNull
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
+            List<PostgreTableInheritance> tables = new ArrayList<>();
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 String sql = "SELECT i.*,c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
@@ -286,10 +287,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
                                 log.warn("Can't find sub-table '" + subTableId + "' in '" + schema.getName() + "'");
                                 continue;
                             }
-                            if (subTables == null) {
-                                subTables = new ArrayList<>();
-                            }
-                            subTables.add(
+                            tables.add(
                                 new PostgreTableInheritance(
                                     subTable,
                                     this,
@@ -301,10 +299,8 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
             } catch (SQLException e) {
                 throw new DBCException(e, getDataSource());
             }
-            if (subTables == null) {
-                subTables = Collections.emptyList();
-            }
-            DBUtils.orderObjects(subTables);
+            DBUtils.orderObjects(tables);
+            this.subTables = tables;
         }
         return subTables == null || subTables.isEmpty() ? null : subTables;
     }
