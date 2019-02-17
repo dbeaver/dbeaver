@@ -551,7 +551,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
         menu.insertBefore(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.navigate.object"));
 
-        {
+        if (!isReadOnly() && getTextViewer().isEditable()) {
             MenuManager formatMenu = new MenuManager(SQLEditorMessages.sql_editor_menu_format, "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
             if (formatAction != null) {
