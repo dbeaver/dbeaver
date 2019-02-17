@@ -32,6 +32,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -138,13 +139,16 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                if (value != null && editorParts == null) {
+                if (editorParts == null) {
                     List<IEditorPart> parts = new ArrayList<>();
-                    if (value instanceof String) {
+                    if (value instanceof String || valueController.getValueType().getDataKind() == DBPDataKind.STRING) {
                         TextStreamValueManager valueManager = new TextStreamValueManager();
                         defaultPart = valueManager.createEditorPart(valueController);
                         parts.add(defaultPart);
-                    } else if (value instanceof DBDContent) {
+                    } else if (value instanceof DBDContent ||
+                        valueController.getValueType().getDataKind() == DBPDataKind.CONTENT ||
+                        valueController.getValueType().getDataKind() == DBPDataKind.BINARY)
+                    {
                         DBDContent content = (DBDContent) value;
                         Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers =
                             ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
@@ -181,7 +185,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                             }
                         }
                     }
-                    editorParts = parts.toArray(new IEditorPart[parts.size()]);
+                    editorParts = parts.toArray(new IEditorPart[0]);
                 }
 
                 if (editorInput == null) {
@@ -317,9 +321,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
         // Fill nested editorParts info
         IEditorPart[] editorParts = getEditorInput().getEditors();
-        for (IEditorPart editorPart : editorParts) {
-            contentParts.add(new ContentPartInfo(editorPart, editorPart == getEditorInput().getDefaultEditor()));
-            //editorPart.init(site, input);
+        if (editorParts != null) {
+            for (IEditorPart editorPart : editorParts) {
+                contentParts.add(new ContentPartInfo(editorPart, editorPart == getEditorInput().getDefaultEditor()));
+                //editorPart.init(site, input);
+            }
         }
 
         //ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
