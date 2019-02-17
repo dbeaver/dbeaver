@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -34,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 
  * @author Denis Forveille
  */
-public class DB2PlanAnalyser implements DBCPlan {
+public class DB2PlanAnalyser extends AbstractExecutionPlan {
 
     private static final Log LOG = Log.getLog(DB2PlanAnalyser.class);
 

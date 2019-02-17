@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ import java.util.List;
 /**
  * @author Karl
  */
-public class ExasolPlanAnalyser implements DBCPlan {
+public class ExasolPlanAnalyser extends AbstractExecutionPlan {
 
     private static final Log LOG = Log.getLog(ExasolPlanAnalyser.class);
 

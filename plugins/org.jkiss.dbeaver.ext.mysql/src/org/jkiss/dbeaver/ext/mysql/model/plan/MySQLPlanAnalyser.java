@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.sql.SQLException;
@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * MySQL execution plan analyser
  */
-public class MySQLPlanAnalyser implements DBCPlan {
+public class MySQLPlanAnalyser extends AbstractExecutionPlan {
 
     private MySQLDataSource dataSource;
     private String query;
