@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
  */
 public abstract class AbstractExecutionPlan implements DBCPlan {
 
-    public Object getPlanFeature() {
+    public Object getPlanFeature(String feature) {
         return null;
     }
 
