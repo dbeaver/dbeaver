@@ -341,14 +341,10 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 }
 
                 final Menu contextMenu = menuManager.createContextMenu(aggregateTable);
-                contextMenu.addMenuListener(new MenuAdapter() {
-                    @Override
-                    public void menuHidden(MenuEvent e) {
-                        menuManager.dispose();
-                    }
-                });
                 contextMenu.setLocation(location);
                 contextMenu.setVisible(true);
+
+                aggregateTable.addDisposeListener(e -> menuManager.dispose());
             }
         }
     }
