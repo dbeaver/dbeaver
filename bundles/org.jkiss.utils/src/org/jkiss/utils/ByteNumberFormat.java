@@ -53,6 +53,9 @@ public class ByteNumberFormat extends NumberFormat {
                 break;
             } else {
                 bytes /= 1024;
+                if (bytes < 10) {
+                    break;
+                }
                 index++;
             }
         }
@@ -130,6 +133,16 @@ public class ByteNumberFormat extends NumberFormat {
     @Override
     public Number parse(String source, ParsePosition parsePosition) {
         return null;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new ByteNumberFormat().format(100));
+        System.out.println(new ByteNumberFormat().format(1000));
+        System.out.println(new ByteNumberFormat().format(10000));
+        System.out.println(new ByteNumberFormat().format(11000));
+        System.out.println(new ByteNumberFormat().format(100000));
+        System.out.println(new ByteNumberFormat().format(1000000));
+        System.out.println(new ByteNumberFormat().format(10000000));
     }
 
 }
