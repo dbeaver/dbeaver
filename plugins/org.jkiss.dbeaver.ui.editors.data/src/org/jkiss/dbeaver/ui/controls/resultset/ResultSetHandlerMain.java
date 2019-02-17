@@ -70,7 +70,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -165,7 +164,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 rsv.toggleMode();
                 break;
             case CMD_TOGGLE_PANELS:
-                rsv.showPanels(!rsv.isPanelsVisible(), true);
+                rsv.showPanels(!rsv.isPanelsVisible(), true, true);
                 break;
             case CMD_TOGGLE_LAYOUT:
                 rsv.toggleVerticalLayout();
