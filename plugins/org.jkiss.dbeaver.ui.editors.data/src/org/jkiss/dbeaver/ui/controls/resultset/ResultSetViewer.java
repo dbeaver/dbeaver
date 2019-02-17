@@ -277,7 +277,7 @@ public class ResultSetViewer extends Viewer
 
                     @Override
                     public void minimize(CTabFolderEvent event) {
-                        showPanels(false, true);
+                        showPanels(false, true, true);
                     }
 
                     @Override
@@ -664,7 +664,7 @@ public class ResultSetViewer extends Viewer
                 }
                 activateDefaultPanels(settings);
             }
-            showPanels(panelsVisible, false);
+            showPanels(panelsVisible, false, false);
             viewerSash.setOrientation(verticalLayout ? SWT.VERTICAL : SWT.HORIZONTAL);
             viewerSash.setWeights(panelWeights);
         }
@@ -823,7 +823,7 @@ public class ResultSetViewer extends Viewer
             activePanelItem.dispose();
         }
         if (panelFolder.getItemCount() <= 0) {
-            showPanels(false, true);
+            showPanels(false, true, true);
         }
     }
 
@@ -838,7 +838,7 @@ public class ResultSetViewer extends Viewer
             return false;
         }
         if (showPanels && !isPanelsVisible()) {
-            showPanels(true, false);
+            showPanels(true, false, false);
         }
 
         PresentationSettings presentationSettings = getPresentationSettings();
@@ -947,7 +947,7 @@ public class ResultSetViewer extends Viewer
         }
         getPresentationSettings().enabledPanelIds.remove(panelId);
         if (activePanels.isEmpty()) {
-            showPanels(false, true);
+            showPanels(false, true, true);
         }
     }
 
@@ -975,7 +975,7 @@ public class ResultSetViewer extends Viewer
         return viewerSash != null && viewerSash.getMaximizedControl() == null;
     }
 
-    void showPanels(boolean show, boolean saveSettings) {
+    void showPanels(boolean show, boolean showDefaults, boolean saveSettings) {
         if (!supportsPanels() || show == isPanelsVisible()) {
             return;
         }
@@ -988,7 +988,9 @@ public class ResultSetViewer extends Viewer
                 activePresentation.getControl().setFocus();
             }
         } else {
-            activateDefaultPanels(getPresentationSettings());
+            if (showDefaults) {
+                activateDefaultPanels(getPresentationSettings());
+            }
             viewerSash.setMaximizedControl(null);
             updatePanelActions();
             updatePanelsContent(false);
