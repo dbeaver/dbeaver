@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.utils.ByteNumberFormat;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -110,7 +111,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
         return rowCount;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 24)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 24, formatter = ByteNumberFormat.class)
     public Long getDiskSpace(DBRProgressMonitor monitor)
     {
         readTableStats(monitor);
@@ -118,7 +119,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
         return diskSpace;
     }
 
-    @Property(category = CAT_STATISTICS, viewable = false, order = 25)
+    @Property(category = CAT_STATISTICS, viewable = false, order = 25, formatter = ByteNumberFormat.class)
     public long getRelationSize(DBRProgressMonitor monitor) {
         readTableStats(monitor);
         return tableRelSize;

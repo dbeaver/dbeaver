@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -141,7 +142,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         return name;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, order = 4, formatter = ByteNumberFormat.class)
     public Long getAvailableSize(DBRProgressMonitor monitor) throws DBException {
         if (availableSize == null) {
             loadSizes(monitor);
@@ -149,7 +150,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         return availableSize;
     }
 
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, order = 5, formatter = ByteNumberFormat.class)
     public Long getUsedSize(DBRProgressMonitor monitor) throws DBException {
         if (usedSize == null) {
             loadSizes(monitor);
@@ -157,7 +158,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         return usedSize;
     }
 
-    @Property(viewable = true, editable = true, order = 22)
+    @Property(viewable = true, editable = true, order = 22, formatter = ByteNumberFormat.class)
     public long getBlockSize()
     {
         return blockSize;
