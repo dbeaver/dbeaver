@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.xml.XMLException;
@@ -51,6 +52,16 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
     {
         this.oldQuery = oldQuery;
         this.query = query;
+    }
+
+    @Override
+    public Object getPlanFeature(String feature) {
+        if (DBCPlanCostNode.FEATURE_PLAN_COST.equalsIgnoreCase(feature) |
+            DBCPlanCostNode.FEATURE_PLAN_DURATION.equalsIgnoreCase(feature))
+        {
+            return true;
+        }
+        return super.getPlanFeature(feature);
     }
 
     @Override
