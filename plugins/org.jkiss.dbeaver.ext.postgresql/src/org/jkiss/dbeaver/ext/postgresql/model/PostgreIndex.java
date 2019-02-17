@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.utils.ByteNumberFormat;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -173,7 +174,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         return predicateExpression;
     }
 
-    @Property(viewable = true, order = 28)
+    @Property(viewable = true, order = 28, formatter = ByteNumberFormat.class)
     public long getIndexRelSize() {
         return indexRelSize;
     }
