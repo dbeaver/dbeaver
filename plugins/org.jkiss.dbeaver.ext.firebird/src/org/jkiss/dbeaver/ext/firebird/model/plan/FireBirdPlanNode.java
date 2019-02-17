@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-
-public class FireBirdPlanNode implements DBCPlanNode {
+public class FireBirdPlanNode extends AbstractExecutionPlanNode {
 
 	String plan;
 	FireBirdPlanNode parent;

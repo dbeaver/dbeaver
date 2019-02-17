@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +38,7 @@ import java.util.List;
 /**
  * Oracle execution plan node
  */
-public class OraclePlanNode implements DBCPlanNode {
+public class OraclePlanNode extends AbstractExecutionPlanNode {
 
     private final OracleDataSource dataSource;
     private String statementId;

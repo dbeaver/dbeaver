@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
@@ -39,7 +40,7 @@ import java.util.Map;
 /**
  * Postgre execution plan node
  */
-public class PostgrePlanNode implements DBCPlanNode, DBCPlanCostNode, DBPPropertySource {
+public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
 
     public static final String ATTR_NODE_TYPE = "Node-Type";
     public static final String ATTR_RELATION_NAME = "Relation-Name";
@@ -142,8 +143,11 @@ public class PostgrePlanNode implements DBCPlanNode, DBCPlanCostNode, DBPPropert
     }
 
     @Property(order = 23, viewable = true)
-    public String getCondition() {
+    public String getNodeCondition() {
         String cond = attributes.get("Index-Cond");
+        if (cond == null) {
+            cond = attributes.get("Hash-Cond");
+        }
         if (cond == null) {
             cond = attributes.get(ATTR_FILTER);
         }
