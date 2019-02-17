@@ -74,6 +74,9 @@
                                             </items>
                                         </items>
                                     </folder>
+                                    <folder label="%tree.dependencies.node.name" icon="#references" description="Table dependencies" virtual="true">
+                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                                    </folder>
                                     <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
                                         <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                             <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
