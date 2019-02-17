@@ -74,7 +74,8 @@ public class PostgreContentJSON extends JDBCContentChars {
 
     @Override
     public String getDisplayString(DBDDisplayFormat format) {
-        return data == null ? null : TextUtils.compactWhiteSpaces(data);
+        return data == null ? null :
+            (format == DBDDisplayFormat.EDIT ? data : TextUtils.compactWhiteSpaces(data));
     }
 
     @Override
