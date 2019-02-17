@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -27,11 +28,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectBase;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkStorage;
 import org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl;
 import org.jkiss.dbeaver.ui.resources.bookmarks.DBNBookmark;
@@ -43,10 +44,9 @@ public class NavigateBookmarkHandler extends NavigatorHandlerObjectBase {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        final IWorkbenchPage activePage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
-        IViewPart activePart = activePage.findView(DatabaseNavigatorView.VIEW_ID);
-        if (activePart instanceof NavigatorViewBase) {
-            NavigatorViewBase navigatorView = (NavigatorViewBase) activePart;
+        NavigatorViewBase activeNavigatorView = NavigatorUtils.getActiveNavigatorView(event);
+
+        if (activeNavigatorView != null) {
             DBNNode selectedNode = NavigatorUtils.getSelectedNode(HandlerUtil.getCurrentSelection(event));
             if (selectedNode instanceof DBNBookmark) {
                 BookmarkStorage storage = ((DBNBookmark) selectedNode).getStorage();
@@ -61,6 +61,22 @@ public class NavigateBookmarkHandler extends NavigatorHandlerObjectBase {
                     log.error("Can't find datasource node for '" + dataSourceContainer.getName() + "'"); //$NON-NLS-2$
                     return null;
                 }
+
+                if (activeNavigatorView instanceof ProjectExplorerView) {
+                    // Show in DB navigator is we are currently in project explorer
+                    final IWorkbenchPage activePage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+                    IViewPart dbNavigatorPart = activePage.findView(DatabaseNavigatorView.VIEW_ID);
+                    if (dbNavigatorPart instanceof NavigatorViewBase) {
+                        activeNavigatorView = (NavigatorViewBase) dbNavigatorPart;
+                        try {
+                            activePage.showView(DatabaseNavigatorView.VIEW_ID);
+                        } catch (PartInitException e) {
+                            log.debug(e);
+                        }
+                    }
+                }
+
+                NavigatorViewBase navigatorView = activeNavigatorView;
                 dsNode.initializeNode(null, status -> {
                     if (status.isOK()) {
                         UIUtils.syncExec(() -> BookmarksHandlerImpl.navigateNodeByPath(navigatorView, dsNode, storage));
