@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**

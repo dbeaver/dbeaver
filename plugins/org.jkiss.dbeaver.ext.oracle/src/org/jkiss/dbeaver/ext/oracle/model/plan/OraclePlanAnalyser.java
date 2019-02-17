@@ -20,11 +20,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.IntKeyMap;
 import org.jkiss.utils.SecurityUtils;
 
@@ -38,7 +37,7 @@ import java.util.List;
 /**
  * Oracle execution plan analyser
  */
-public class OraclePlanAnalyser implements DBCPlan {
+public class OraclePlanAnalyser extends AbstractExecutionPlan {
 
     private static final Log log = Log.getLog(OraclePlanAnalyser.class);
 

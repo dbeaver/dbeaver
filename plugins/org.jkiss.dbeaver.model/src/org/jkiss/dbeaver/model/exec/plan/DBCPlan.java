@@ -30,6 +30,8 @@ public interface DBCPlan {
 
     String getPlanQueryString() throws DBException;
 
+    Object getPlanFeature();
+
     Collection<? extends DBCPlanNode> getPlanNodes();
 
 }

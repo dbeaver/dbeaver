@@ -28,8 +28,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
-public class FireBirdPlanAnalyser implements DBCPlan {
+public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
 	
 	private FireBirdDataSource dataSource;
 	private JDBCSession session;

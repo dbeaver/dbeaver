@@ -15,23 +15,17 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.exec.plan;
+package org.jkiss.dbeaver.model.impl.plan;
+
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 
 /**
- * Execution plan node
+ * Abstract execution plan
  */
-public interface DBCPlanCostNode extends DBCPlanNode {
+public abstract class AbstractExecutionPlan implements DBCPlan {
 
-    String FEATURE_PLAN_COST = "plan.cost";
-    String FEATURE_PLAN_ROWS = "plan.rows";
-    String FEATURE_PLAN_DURATION = "plan.duration";
-
-    Number getNodeCost();
-
-    Number getNodePercent();
-
-    Number getNodeDuration();
-
-    Number getNodeRowCount();
+    public Object getPlanFeature() {
+        return null;
+    }
 
 }

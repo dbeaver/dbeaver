@@ -76,12 +76,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBCPlanCostNode, DBPPropert
         if (entity == null) {
             entity = attributes.get(ATTR_FUNCTION_NAME);
         }
-        if (entity != null) {
-            String alias = attributes.get(ATTR_ALIAS);
-            if (alias != null && !alias.equals(entity)) {
-                entity += " as " + alias;
-            }
-        } else {
+        if (entity == null) {
             entity = attributes.get(ATTR_INDEX_NAME);
         }
         String startCost = attributes.get(ATTR_STARTUP_COST);

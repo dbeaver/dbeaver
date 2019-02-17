@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Postgre execution plan analyser
  */
-public class PostgrePlanAnalyser implements DBCPlan {
+public class PostgrePlanAnalyser extends AbstractExecutionPlan {
 
     private static final Log log = Log.getLog(PostgrePlanAnalyser.class);
 
