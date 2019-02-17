@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +28,7 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public abstract class DB2PlanNode implements DBCPlanNode {
+public abstract class DB2PlanNode extends AbstractExecutionPlanNode {
 
     private DB2PlanNode parent;
     private Collection<DB2PlanNode> listNestedNodes = new ArrayList<>(64);

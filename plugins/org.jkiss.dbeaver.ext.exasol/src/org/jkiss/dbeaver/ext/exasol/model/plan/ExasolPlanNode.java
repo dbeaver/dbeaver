@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.model.plan;
 
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
@@ -28,7 +29,7 @@ import java.util.Collection;
 /**
  * @author Karl Griesser
  */
-public class ExasolPlanNode implements DBCPlanNode {
+public class ExasolPlanNode extends AbstractExecutionPlanNode {
 
     private ExasolPlanNode parent;
     private Collection<ExasolPlanNode> listNestedNodes = new ArrayList<>(64);

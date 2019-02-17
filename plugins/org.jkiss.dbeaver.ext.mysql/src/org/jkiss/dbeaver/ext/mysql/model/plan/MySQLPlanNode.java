@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model.plan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
@@ -27,7 +28,7 @@ import java.util.List;
 /**
  * MySQL execution plan node
  */
-public class MySQLPlanNode implements DBCPlanNode, DBCPlanCostNode {
+public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
 
     private long id;
     private String selectType;
