@@ -92,11 +92,11 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
 
         Font dialogFont = JFaceResources.getDialogFont();
         FontData[] fontData = dialogFont.getFontData();
-        for (FontData fd : fontData) {
-            fd.setHeight(fd.getHeight() + 1);
+        for (int i = 0; i < fontData.length; i++) {
+            FontData fd = fontData[i];
+            fontData[i] = new FontData(fd.getName(), fd.getHeight() + 1, SWT.NONE);
         }
-        //fontData[0].setHeight(fontData[0].getHeight() + 2);
-        Font largeFont = new Font(dialogFont.getDevice(), fontData[0]);
+        Font largeFont = new Font(dialogFont.getDevice(), fontData);
         parent.addDisposeListener(e -> largeFont.dispose());
 
         Composite dialogArea = super.createDialogArea(parent);
