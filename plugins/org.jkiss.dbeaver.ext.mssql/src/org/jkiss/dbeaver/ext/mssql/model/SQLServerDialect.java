@@ -71,7 +71,7 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     @Override
     public boolean isDelimiterAfterQuery() {
-        return true;
+        return SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver());
     }
 
     @Override
