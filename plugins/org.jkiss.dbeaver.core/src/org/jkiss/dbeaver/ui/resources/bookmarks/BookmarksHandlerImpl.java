@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -167,6 +168,22 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+    public static void navigateNodeByPath(NavigatorViewBase view, final DBNDataSource dsNode, final BookmarkStorage storage)
+    {
+        try {
+            BookmarkNodeLoader nodeLoader = new BookmarkNodeLoader(dsNode, storage, null);
+            UIUtils.runInProgressService(nodeLoader);
+            if (nodeLoader.databaseNode != null) {
+                UIUtils.syncExec(() -> view.showNode(nodeLoader.databaseNode));
+            }
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(
+                CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+    }
+
     static DBNDatabaseNode getTargetBookmarkNode(DBRProgressMonitor monitor, DBNBookmark bookmark)
     {
         IFile resource = (IFile) bookmark.getResource();
@@ -281,9 +298,11 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                     currentNode = nextChild;
                 }
                 if (currentNode instanceof DBNDatabaseNode) {
-                    // Update bookmark image
-                    storage.setImage(currentNode.getNodeIconDefault());
-                    file.setContents(storage.serialize(), true, false, RuntimeUtils.getNestedMonitor(monitor));
+                    if (file != null) {
+                        // Update bookmark image
+                        storage.setImage(currentNode.getNodeIconDefault());
+                        file.setContents(storage.serialize(), true, false, RuntimeUtils.getNestedMonitor(monitor));
+                    }
 
                     // Open entity editor
                     databaseNode = (DBNDatabaseNode) currentNode;
