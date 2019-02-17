@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -95,6 +96,11 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public PostgreDatabase getDatabase() {
         return getContainer().getDatabase();
+    }
+
+    @Association
+    public List<PostgreDependency> getDependencies(DBRProgressMonitor monitor) throws DBCException {
+        return PostgreDependency.readDependencies(monitor, this, true);
     }
 
     @Property(viewable = true, editable = false, updatable = false, order = 9)
