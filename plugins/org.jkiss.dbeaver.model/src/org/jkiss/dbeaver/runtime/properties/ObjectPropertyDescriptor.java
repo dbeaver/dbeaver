@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.equinox.http.servlet.internal.util.Throw;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
@@ -207,8 +208,18 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public Format getDisplayFormat() {
         if (displayFormat == null) {
+            Class<? extends Format> formatClass = propInfo.formatter();
+            if (formatClass != Format.class) {
+                try {
+                    displayFormat = formatClass.newInstance();
+                } catch (Throwable e) {
+                    log.error(e);
+                }
+            }
+        }
+        if (displayFormat == null) {
             final String format = propInfo.format();
-            if (format == null || format.isEmpty()) {
+            if (format.isEmpty()) {
                 return null;
             }
             if (isNumeric()) {

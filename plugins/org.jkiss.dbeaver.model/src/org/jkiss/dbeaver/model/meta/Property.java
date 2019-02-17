@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.text.Format;
 
 /**
  * Property
@@ -116,6 +117,8 @@ public @interface Property
      * Can be used to format numbers and date/time property values
      */
     String format() default ""; //NON-NLS-1
+
+    Class<? extends Format> formatter() default Format.class; //NON-NLS-1
 
     Class<? extends IPropertyValueTransformer> valueTransformer() default IPropertyValueTransformer.class;
 
