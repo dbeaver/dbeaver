@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.equinox.http.servlet.internal.util.Throw;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
