@@ -38,7 +38,9 @@ public class ContentFormatHandler extends AbstractHandler {
             IEditorPart editorPart = ((ContentEditor) activeEditor).getActiveEditor();
             ITextViewer textViewer = editorPart.getAdapter(ITextViewer.class);
             if (textViewer instanceof TextViewer) {
-                ((TextViewer)textViewer).doOperation(SourceViewer.FORMAT);
+                if (((TextViewer) textViewer).canDoOperation(SourceViewer.FORMAT)) {
+                    ((TextViewer) textViewer).doOperation(SourceViewer.FORMAT);
+                }
             }
         }
         return null;
