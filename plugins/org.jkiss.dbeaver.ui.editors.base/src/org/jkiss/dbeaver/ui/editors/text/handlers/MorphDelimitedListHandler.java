@@ -98,6 +98,26 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
         int lastLineFeed = 0;
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
+            int leadingSpaces = 0, trailingSpaces = 0;
+            {
+                boolean inIdentifier = false;
+                for (int k = 0; k < token.length(); k++) {
+                    char ch = token.charAt(k);
+                    if (Character.isWhitespace(ch)) {
+                        if (inIdentifier) {
+                            trailingSpaces++;
+                        } else {
+                            buf.append(ch);
+                            leadingSpaces++;
+                        }
+                    } else {
+                        inIdentifier = true;
+                    }
+                }
+            }
+            if (leadingSpaces > 0 || trailingSpaces > 0) {
+                token = token.substring(leadingSpaces, token.length() - trailingSpaces);
+            }
             if (!CommonUtils.isEmpty(settings.getQuoteString())) {
                 buf.append(settings.getQuoteString()).append(token).append(settings.getQuoteString());
                 lastLineFeed += settings.getQuoteString().length() * 2 + token.length();
