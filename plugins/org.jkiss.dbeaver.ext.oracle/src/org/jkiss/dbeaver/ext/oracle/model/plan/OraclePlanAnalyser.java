@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.IntKeyMap;
 import org.jkiss.utils.SecurityUtils;
@@ -32,8 +33,8 @@ import java.sql.ParameterMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Oracle execution plan analyser
@@ -96,7 +97,7 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
     }
 
     @Override
-    public Collection<OraclePlanNode> getPlanNodes()
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options)
     {
         return rootNodes;
     }

@@ -24,14 +24,14 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Karl
@@ -60,7 +60,7 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
     }
 
     @Override
-    public Collection<ExasolPlanNode> getPlanNodes() {
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
         return rootNodes;
     }
 

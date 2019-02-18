@@ -34,8 +34,8 @@ import org.w3c.dom.Element;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Postgre execution plan analyser
@@ -80,7 +80,7 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
     }
 
     @Override
-    public Collection<DBCPlanNode> getPlanNodes()
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options)
     {
         return rootNodes;
     }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -77,6 +78,24 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
     @Override
     public MySQLPlanNode getParent() {
         return parent;
+    }
+
+    void setParent(MySQLPlanNode node) {
+        if (this.parent != null && this.parent.nested != null) {
+            this.parent.nested.remove(this);
+        }
+        this.parent = node;
+        if (this.parent != null) {
+            this.parent.addChild(this);
+        }
+    }
+
+    private void addChild(MySQLPlanNode node) {
+        if (this.nested == null) {
+            this.nested = new ArrayList<>();
+        }
+        this.nested.add(node);
+
     }
 
     @Override
@@ -170,8 +189,14 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
         return rowCount;
     }
 
+    public boolean isCompositeNode() {
+        return "PRIMARY".equals(selectType);
+    }
+
     @Override
     public String toString() {
-        return table + " " + type + " " + key;
+        return id + " " + selectType + " " + table;
     }
+
+
 }

@@ -19,12 +19,19 @@ package org.jkiss.dbeaver.model.exec.plan;
 
 import org.jkiss.dbeaver.DBException;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Execution plan
  */
 public interface DBCPlan {
+
+    /**
+     * Keep original plan nodes structure (produced by server).
+     * Restricts any client-side plan structure modifications.
+     */
+    String OPTION_KEEP_ORIGINAL = "keepOriginal";
 
     String getQueryString();
 
@@ -32,6 +39,6 @@ public interface DBCPlan {
 
     Object getPlanFeature(String feature);
 
-    Collection<? extends DBCPlanNode> getPlanNodes();
+    List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options);
 
 }
