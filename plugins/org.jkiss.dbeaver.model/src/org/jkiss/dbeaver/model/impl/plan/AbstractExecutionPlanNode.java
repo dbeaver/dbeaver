@@ -18,11 +18,17 @@
 package org.jkiss.dbeaver.model.impl.plan;
 
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 
 /**
  * Abstract execution plan
  */
 public abstract class AbstractExecutionPlanNode implements DBCPlanNode {
+
+    @Override
+    public DBCPlanNodeKind getNodeKind() {
+        return null;
+    }
 
     @Override
     public String getNodeCondition() {

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -44,6 +45,14 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
     public MySQLPlanAnalyser(MySQLDataSource dataSource, String query) {
         this.dataSource = dataSource;
         this.query = query;
+    }
+
+    @Override
+    public Object getPlanFeature(String feature) {
+        if (DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
+            return true;
+        }
+        return super.getPlanFeature(feature);
     }
 
     @Override

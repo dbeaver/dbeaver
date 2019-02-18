@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -124,6 +124,18 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
     @Override
     public String getNodeName() {
         return table;
+    }
+
+    @Override
+    public DBCPlanNodeKind getNodeKind() {
+        if ("SIMPLE".equals(selectType)) {
+            return DBCPlanNodeKind.SELECT;
+        } else if ("JOIN".equals(selectType)) {
+            return DBCPlanNodeKind.JOIN;
+        } else if ("UNION".equals(selectType)) {
+            return DBCPlanNodeKind.UNION;
+        }
+        return super.getNodeKind();
     }
 
     @Override

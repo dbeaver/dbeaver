@@ -56,8 +56,9 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
 
     @Override
     public Object getPlanFeature(String feature) {
-        if (DBCPlanCostNode.FEATURE_PLAN_COST.equalsIgnoreCase(feature) |
-            DBCPlanCostNode.FEATURE_PLAN_DURATION.equalsIgnoreCase(feature))
+        if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
+            DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature) ||
+            DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature))
         {
             return true;
         }

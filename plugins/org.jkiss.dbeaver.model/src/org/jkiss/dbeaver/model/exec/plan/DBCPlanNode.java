@@ -26,6 +26,8 @@ import java.util.Collection;
  */
 public interface DBCPlanNode extends DBPObject {
 
+    DBCPlanNodeKind getNodeKind();
+
     String getNodeName();
 
     String getNodeType();
