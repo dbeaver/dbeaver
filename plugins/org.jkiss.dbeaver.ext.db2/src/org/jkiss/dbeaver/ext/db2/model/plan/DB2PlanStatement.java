@@ -103,7 +103,7 @@ public class DB2PlanStatement {
     // ----------------
     // Business Methods
     // ----------------
-    public Collection<DB2PlanNode> buildNodes()
+    public List<DB2PlanNode> buildNodes()
     {
         // Based on streams, establish relationships between nodes
         // DF: Very Important!: The Stream MUST be order by STREAM_ID DESC for the viewer to display things right (from the list

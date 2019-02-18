@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Plan nodes tree
@@ -70,7 +68,9 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
     public void showPlan(DBPDataSource dataSource, DBCPlan plan) {
         this.dataSource = dataSource;
-        List<DBCPlanNode> nodes = new ArrayList<>(plan.getPlanNodes());
+
+        List<DBCPlanNode> nodes = new ArrayList<>(plan.getPlanNodes(
+            Collections.singletonMap(DBCPlan.OPTION_KEEP_ORIGINAL, true)));
 
         final TreeViewer itemsViewer = (TreeViewer) PlanNodesTree.this.getItemsViewer();
         itemsViewer.getControl().setRedraw(false);

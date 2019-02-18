@@ -22,12 +22,13 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -49,7 +50,7 @@ public class DB2PlanAnalyser extends AbstractExecutionPlan {
     private String query;
     private String planTableSchema;
 
-    private Collection<DB2PlanNode> listNodes;
+    private List<DB2PlanNode> listNodes;
     private DB2PlanStatement db2PlanStatement;
 
     // ------------
@@ -78,7 +79,7 @@ public class DB2PlanAnalyser extends AbstractExecutionPlan {
     }
 
     @Override
-    public Collection<? extends DBCPlanNode> getPlanNodes()
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options)
     {
         return listNodes;
     }

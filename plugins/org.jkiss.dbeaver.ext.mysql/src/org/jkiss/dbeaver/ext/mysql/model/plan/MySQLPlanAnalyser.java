@@ -22,12 +22,15 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQL execution plan analyser
@@ -38,15 +41,13 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
     private String query;
     private List<MySQLPlanNode> rootNodes;
 
-    public MySQLPlanAnalyser(MySQLDataSource dataSource, String query)
-    {
+    public MySQLPlanAnalyser(MySQLDataSource dataSource, String query) {
         this.dataSource = dataSource;
         this.query = query;
     }
 
     @Override
-    public String getQueryString()
-    {
+    public String getQueryString() {
         return query;
     }
 
@@ -56,14 +57,16 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
     }
 
     @Override
-    public List<MySQLPlanNode> getPlanNodes()
-    {
-        return rootNodes;
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+        if (CommonUtils.getOption(options, OPTION_KEEP_ORIGINAL)) {
+            return rootNodes;
+        } else {
+            return convertToPlanTree(rootNodes);
+        }
     }
 
     public void explain(DBCSession session)
-        throws DBCException
-    {
+        throws DBCException {
         String plainQuery = SQLUtils.stripComments(SQLUtils.getDialectFromObject(session.getDataSource()), query).toUpperCase();
         if (!plainQuery.startsWith("SELECT")) {
             throw new DBCException("Only SELECT statements could produce execution plan");
@@ -78,7 +81,7 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
                         nodes.add(node);
                     }
 
-                    rootNodes = convertToPlanTree(nodes);
+                    rootNodes = nodes;
                 }
             }
         } catch (SQLException e) {
@@ -94,13 +97,22 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
             roots.add(srcNodes.get(0));
         } else {
             List<MySQLPlanNode> parsed = new ArrayList<>();
+            MySQLPlanNode lastCompositeNode = null;
             for (int id = 1; ; id++) {
                 List<MySQLPlanNode> nodes = getQueriesById(srcNodes, id);
                 if (nodes.isEmpty()) {
                     break;
                 }
                 if (nodes.size() == 1) {
-                    roots.add(nodes.get(0));
+                    MySQLPlanNode firstNode = nodes.get(0);
+                    if (lastCompositeNode != null) {
+                        firstNode.setParent(lastCompositeNode);
+                    } else {
+                        roots.add(firstNode);
+                    }
+                    if (firstNode.isCompositeNode()) {
+                        lastCompositeNode = firstNode;
+                    }
                 } else {
                     roots.add(joinNodes(srcNodes, nodes));
                 }
@@ -128,15 +140,12 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
     }
 
     private MySQLPlanNode joinNodes(List<MySQLPlanNode> srcNodes, List<MySQLPlanNode> nodes) {
-        MySQLPlanNode result = null;
+        //MySQLPlanNode result = null;
         MySQLPlanNode leftNode = nodes.get(0);
-        for (int i = 1 ; i < nodes.size(); i++) {
+        for (int i = 1; i < nodes.size(); i++) {
             leftNode = new MySQLPlanNodeJoin(leftNode.getParent(), leftNode, nodes.get(i));
-            if (result == null) {
-                result = leftNode;
-            }
         }
-        return result;
+        return leftNode;
     }
 
 }

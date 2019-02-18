@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ext.firebird.model.plan;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
@@ -73,7 +72,7 @@ public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
 	}
 
 	@Override
-	public Collection<? extends DBCPlanNode> getPlanNodes() {
+	public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
 		return rootNodes;
 	}
 
