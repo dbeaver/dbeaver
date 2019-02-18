@@ -146,21 +146,8 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         node = node.getParentNode();
                     }
 
-                    IEditorPart nodeEditor = NavigatorHandlerObjectOpen.findEntityEditor(UIUtils.getActiveWorkbenchWindow(), node);
-                    if (nodeEditor != null && nodeEditor.isDirty()) {
-                        if (!new UIConfirmation() {
-                            @Override
-                            protected Boolean runTask() {
-                                return ConfirmationDialog.showConfirmDialog(
-                                    ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
-                                    null,
-                                    NavigatorPreferences.CONFIRM_ENTITY_REVERT,
-                                    ConfirmationDialog.QUESTION,
-                                    nodeEditor.getTitle()) == IDialogConstants.YES_ID;
-                            }
-                        }.execute()) {
-                            continue;
-                        }
+                    if (!showConfirmation(node)) {
+                        continue;
                     }
                     setName("Refresh '" + node.getNodeName() + "'...");
                     try {
@@ -178,5 +165,24 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         };
         refreshJob.setUser(true);
         refreshJob.schedule();
+    }
+
+    private static boolean showConfirmation(DBNNode node) {
+        return new UIConfirmation() {
+            @Override
+            protected Boolean runTask() {
+                IEditorPart nodeEditor = NavigatorHandlerObjectOpen.findEntityEditor(UIUtils.getActiveWorkbenchWindow(), node);
+                if (nodeEditor != null && nodeEditor.isDirty()) {
+                    return ConfirmationDialog.showConfirmDialog(
+                        ResourceBundle.getBundle(UINavigatorMessages.BUNDLE_NAME),
+                        null,
+                        NavigatorPreferences.CONFIRM_ENTITY_REVERT,
+                        ConfirmationDialog.QUESTION,
+                        nodeEditor.getTitle()) == IDialogConstants.YES_ID;
+                } else {
+                    return true;
+                }
+            }
+        }.execute();
     }
 }
