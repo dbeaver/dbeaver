@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.plan;
 
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 
 /**
  * Abstract execution plan
@@ -25,6 +26,9 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 public abstract class AbstractExecutionPlan implements DBCPlan {
 
     public Object getPlanFeature(String feature) {
+        if (DBCPlanCostNode.PLAN_DURATION_MEASURE.equals(feature)) {
+            return "ms";
+        }
         return null;
     }
 

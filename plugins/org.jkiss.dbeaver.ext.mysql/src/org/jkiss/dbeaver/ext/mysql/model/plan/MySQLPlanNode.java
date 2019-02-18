@@ -30,20 +30,20 @@ import java.util.List;
  */
 public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
 
-    private long id;
-    private String selectType;
-    private String table;
-    private String type;
-    private String possibleKeys;
-    private String key;
-    private String keyLength;
-    private String ref;
-    private long rowCount;
-    private double filtered;
-    private String extra;
+    protected Integer id;
+    protected String selectType;
+    protected String table;
+    protected String type;
+    protected String possibleKeys;
+    protected String key;
+    protected String keyLength;
+    protected String ref;
+    protected long rowCount;
+    protected double filtered;
+    protected String extra;
 
-    private MySQLPlanNode parent;
-    private List<MySQLPlanNode> nested;
+    protected MySQLPlanNode parent;
+    protected List<MySQLPlanNode> nested;
 
     public MySQLPlanNode(List<MySQLPlanNode> nodes) {
         // Root node
@@ -56,7 +56,7 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
 
     public MySQLPlanNode(MySQLPlanNode parent, ResultSet dbResult) {
         this.parent = parent;
-        this.id = JDBCUtils.safeGetLong(dbResult, "id");
+        this.id = JDBCUtils.safeGetInteger(dbResult, "id");
         this.selectType = JDBCUtils.safeGetString(dbResult, "select_type");
         this.table = JDBCUtils.safeGetString(dbResult, "table");
         this.type = JDBCUtils.safeGetString(dbResult, "type");
@@ -69,8 +69,13 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
         this.extra = JDBCUtils.safeGetString(dbResult, "extra");
     }
 
+    public MySQLPlanNode(MySQLPlanNode parent, String type) {
+        this.parent = parent;
+        this.type = type;
+    }
+
     @Override
-    public DBCPlanNode getParent() {
+    public MySQLPlanNode getParent() {
         return parent;
     }
 
@@ -96,7 +101,7 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
     }
 
     @Property(order = 0, viewable = true)
-    public long getId() {
+    public Integer getId() {
         return id;
     }
 
