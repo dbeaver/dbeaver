@@ -22,13 +22,11 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,7 +36,7 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
 
     private MySQLDataSource dataSource;
     private String query;
-    private List<DBCPlanNode> rootNodes;
+    private List<MySQLPlanNode> rootNodes;
 
     public MySQLPlanAnalyser(MySQLDataSource dataSource, String query)
     {
@@ -58,7 +56,7 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
     }
 
     @Override
-    public Collection<DBCPlanNode> getPlanNodes()
+    public List<MySQLPlanNode> getPlanNodes()
     {
         return rootNodes;
     }
@@ -79,13 +77,66 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
                         MySQLPlanNode node = new MySQLPlanNode(null, dbResult);
                         nodes.add(node);
                     }
-                    MySQLPlanNode rootNode = new MySQLPlanNode(nodes);
-                    rootNodes = new ArrayList<>();
-                    rootNodes.add(rootNode);
+
+                    rootNodes = convertToPlanTree(nodes);
                 }
             }
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         }
     }
+
+    private List<MySQLPlanNode> convertToPlanTree(List<MySQLPlanNode> srcNodes) {
+        List<MySQLPlanNode> roots = new ArrayList<>();
+
+        if (srcNodes.size() == 1) {
+            // Just one node
+            roots.add(srcNodes.get(0));
+        } else {
+            List<MySQLPlanNode> parsed = new ArrayList<>();
+            for (int id = 1; ; id++) {
+                List<MySQLPlanNode> nodes = getQueriesById(srcNodes, id);
+                if (nodes.isEmpty()) {
+                    break;
+                }
+                if (nodes.size() == 1) {
+                    roots.add(nodes.get(0));
+                } else {
+                    roots.add(joinNodes(srcNodes, nodes));
+                }
+                parsed.addAll(nodes);
+            }
+            // Add the rest
+            for (MySQLPlanNode node : srcNodes) {
+                if (!parsed.contains(node)) {
+                    roots.add(node);
+                }
+            }
+        }
+
+        return roots;
+    }
+
+    private List<MySQLPlanNode> getQueriesById(List<MySQLPlanNode> srcNodes, int id) {
+        List<MySQLPlanNode> subList = new ArrayList<>();
+        for (MySQLPlanNode node : srcNodes) {
+            if (node.getId() != null && node.getId() == id) {
+                subList.add(node);
+            }
+        }
+        return subList;
+    }
+
+    private MySQLPlanNode joinNodes(List<MySQLPlanNode> srcNodes, List<MySQLPlanNode> nodes) {
+        MySQLPlanNode result = null;
+        MySQLPlanNode leftNode = nodes.get(0);
+        for (int i = 1 ; i < nodes.size(); i++) {
+            leftNode = new MySQLPlanNodeJoin(leftNode.getParent(), leftNode, nodes.get(i));
+            if (result == null) {
+                result = leftNode;
+            }
+        }
+        return result;
+    }
+
 }

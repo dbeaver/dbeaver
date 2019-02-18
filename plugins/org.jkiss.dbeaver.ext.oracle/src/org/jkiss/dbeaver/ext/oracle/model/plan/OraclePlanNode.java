@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
@@ -38,7 +39,7 @@ import java.util.List;
 /**
  * Oracle execution plan node
  */
-public class OraclePlanNode extends AbstractExecutionPlanNode {
+public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
 
     private final OracleDataSource dataSource;
     private String statementId;
@@ -197,7 +198,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode {
     @Property(order = 5, viewable = true, supportsPreview = true)
     public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
-        if (monitor == null || CommonUtils.isEmpty(objectOwner)) {
+        if (monitor == null || CommonUtils.isEmpty(objectOwner) || CommonUtils.isEmpty(objectName)) {
             return objectName == null ? "" : objectName;
         }
         String objectTypeName = objectType;
@@ -328,5 +329,25 @@ public class OraclePlanNode extends AbstractExecutionPlanNode {
     public String toString()
     {
         return operation + " " + CommonUtils.toString(options) + " " + CommonUtils.toString(objectName);
+    }
+
+    @Override
+    public Number getNodeCost() {
+        return cost;
+    }
+
+    @Override
+    public Number getNodePercent() {
+        return null;
+    }
+
+    @Override
+    public Number getNodeDuration() {
+        return (double)cpuCost / 1000;
+    }
+
+    @Override
+    public Number getNodeRowCount() {
+        return cardinality;
     }
 }

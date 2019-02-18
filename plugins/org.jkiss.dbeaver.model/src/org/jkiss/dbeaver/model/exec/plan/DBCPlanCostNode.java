@@ -26,6 +26,8 @@ public interface DBCPlanCostNode extends DBCPlanNode {
     String FEATURE_PLAN_ROWS = "plan.rows";
     String FEATURE_PLAN_DURATION = "plan.duration";
 
+    String PLAN_DURATION_MEASURE = "plan.duration.measure";
+
     Number getNodeCost();
 
     Number getNodePercent();

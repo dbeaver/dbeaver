@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.IntKeyMap;
 import org.jkiss.utils.SecurityUtils;
@@ -53,6 +54,19 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
         this.dataSource = dataSource;
         this.session = session;
         this.query = query;
+    }
+
+    @Override
+    public Object getPlanFeature(String feature) {
+        if (DBCPlanCostNode.FEATURE_PLAN_COST.equalsIgnoreCase(feature) |
+            DBCPlanCostNode.FEATURE_PLAN_DURATION.equalsIgnoreCase(feature))
+        {
+            return true;
+        } else if (DBCPlanCostNode.PLAN_DURATION_MEASURE.equals(feature)) {
+            return "KC";
+        }
+
+        return super.getPlanFeature(feature);
     }
 
     @Override
