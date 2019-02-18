@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -41,5 +42,12 @@ public class MySQLPlanNodeJoin extends MySQLPlanNode {
         right.parent = this;
     }
 
+    public MySQLPlanNodeJoin(MySQLPlanNode parent, MySQLPlanNodeJoin source) {
+        super(parent, source);
+    }
 
+    @Override
+    MySQLPlanNode copyNode(MySQLPlanNode parent) {
+        return new MySQLPlanNodeJoin(parent, this);
+    }
 }

@@ -61,7 +61,11 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
         if (CommonUtils.getOption(options, OPTION_KEEP_ORIGINAL)) {
             return rootNodes;
         } else {
-            return convertToPlanTree(rootNodes);
+            List<MySQLPlanNode> rootCopy = new ArrayList<>(rootNodes.size());
+            for (MySQLPlanNode r : rootNodes) {
+                rootCopy.add(r.copyNode(null));
+            }
+            return convertToPlanTree(rootCopy);
         }
     }
 
@@ -124,6 +128,10 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlan {
                     roots.add(node);
                 }
             }
+        }
+
+        for (MySQLPlanNode node : roots) {
+            node.computeStats();
         }
 
         return roots;

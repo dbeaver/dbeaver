@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -39,8 +40,8 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
     protected String key;
     protected String keyLength;
     protected String ref;
-    protected long rowCount;
-    protected double filtered;
+    protected Long rowCount;
+    protected Long filtered;
     protected String extra;
 
     protected MySQLPlanNode parent;
@@ -65,14 +66,36 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
         this.key = JDBCUtils.safeGetString(dbResult, "key");
         this.keyLength = JDBCUtils.safeGetString(dbResult, "key_len");
         this.ref = JDBCUtils.safeGetString(dbResult, "ref");
-        this.rowCount = JDBCUtils.safeGetLong(dbResult, "rows");
-        this.filtered = JDBCUtils.safeGetDouble(dbResult, "filtered");
+        this.rowCount = JDBCUtils.safeGetLongNullable(dbResult, "rows");
+        this.filtered = JDBCUtils.safeGetLongNullable(dbResult, "filtered");
         this.extra = JDBCUtils.safeGetString(dbResult, "extra");
     }
 
     public MySQLPlanNode(MySQLPlanNode parent, String type) {
         this.parent = parent;
         this.type = type;
+    }
+
+    protected MySQLPlanNode(MySQLPlanNode parent, MySQLPlanNode source) {
+        this.id = source.id;
+        this.selectType = source.selectType;
+        this.table = source.table;
+        this.type = source.type;
+        this.possibleKeys = source.possibleKeys;
+        this.key = source.key;
+        this.keyLength = source.keyLength;
+        this.ref = source.ref;
+        this.rowCount = source.rowCount;
+        this.filtered = source.filtered;
+        this.extra = source.extra;
+
+        this.parent = parent;
+        if (source.nested != null) {
+            this.nested = new ArrayList<>(source.nested.size());
+            for (MySQLPlanNode srcNode : source.nested) {
+                this.nested.add(srcNode.copyNode(this));
+            }
+        }
     }
 
     @Override
@@ -155,12 +178,12 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
     }
 
     @Property(order = 8, viewable = true)
-    public long getRowCount() {
+    public Long getRowCount() {
         return rowCount;
     }
 
     @Property(order = 9, viewable = true)
-    public double getFiltered() {
+    public Long getFiltered() {
         return filtered;
     }
 
@@ -198,5 +221,25 @@ public class MySQLPlanNode extends AbstractExecutionPlanNode implements DBCPlanC
         return id + " " + selectType + " " + table;
     }
 
+    void computeStats() {
+        if (rowCount == null) {
+            if (nested != null) {
+                long calcCount = 0;
+                for (MySQLPlanNode child : nested) {
+                    calcCount += CommonUtils.toLong(child.getRowCount());
+                }
+                this.rowCount = calcCount;
+            }
+        }
 
+        if (nested != null) {
+            for (MySQLPlanNode child : nested) {
+                child.computeStats();
+            }
+        }
+    }
+
+    MySQLPlanNode copyNode(MySQLPlanNode parent) {
+        return new MySQLPlanNode(parent, this);
+    }
 }
