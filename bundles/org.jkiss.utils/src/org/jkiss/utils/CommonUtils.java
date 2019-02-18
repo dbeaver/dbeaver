@@ -125,6 +125,33 @@ public class CommonUtils {
         return Character.toUpperCase(str.charAt(0)) + str.substring(1);
     }
 
+
+    public static String toCamelCase(String str) {
+        if (isEmpty(str)) {
+            return null;
+        }
+
+        final StringBuilder ret = new StringBuilder(str.length());
+
+        boolean isWordStart = true;
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if (Character.isLetterOrDigit(ch)) {
+                if (isWordStart) {
+                    ret.append(Character.toUpperCase(ch));
+                    isWordStart = false;
+                } else {
+                    ret.append(Character.toLowerCase(ch));
+                }
+            } else {
+                ret.append(ch);
+                isWordStart = true;
+            }
+        }
+
+        return ret.toString();
+    }
+
     @NotNull
     public static <T> T notNull(@Nullable T value, @NotNull T defaultValue) {
         return value != null ? value : defaultValue;

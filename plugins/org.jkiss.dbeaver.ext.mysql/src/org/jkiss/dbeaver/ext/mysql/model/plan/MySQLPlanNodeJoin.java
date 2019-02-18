@@ -16,23 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.utils.CommonUtils;
-
-import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * MySQL execution plan node
  */
-public class MySQLPlanNodeJoin extends MySQLPlanNode {
+public class MySQLPlanNodeJoin extends MySQLPlanNodePlain {
 
-    public MySQLPlanNodeJoin(MySQLPlanNode parent, MySQLPlanNode left, MySQLPlanNode right) {
+    public MySQLPlanNodeJoin(MySQLPlanNodePlain parent, MySQLPlanNodePlain left, MySQLPlanNodePlain right) {
         super(parent, "JOIN");
         this.id = left.id;
         this.nested = new ArrayList<>(2);
@@ -42,12 +33,12 @@ public class MySQLPlanNodeJoin extends MySQLPlanNode {
         right.parent = this;
     }
 
-    public MySQLPlanNodeJoin(MySQLPlanNode parent, MySQLPlanNodeJoin source) {
+    public MySQLPlanNodeJoin(MySQLPlanNodePlain parent, MySQLPlanNodeJoin source) {
         super(parent, source);
     }
 
     @Override
-    MySQLPlanNode copyNode(MySQLPlanNode parent) {
+    MySQLPlanNodePlain copyNode(MySQLPlanNodePlain parent) {
         return new MySQLPlanNodeJoin(parent, this);
     }
 }
