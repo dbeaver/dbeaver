@@ -1827,6 +1827,7 @@ public class ResultSetViewer extends Viewer
         MenuManager menuManager = new MenuManager();
         fillFiltersMenu(curAttribute, menuManager);
         showContextMenuAtCursor(menuManager);
+        viewerPanel.addDisposeListener(e -> menuManager.dispose());
     }
 
     @Override
@@ -1871,6 +1872,7 @@ public class ResultSetViewer extends Viewer
         MenuManager menuManager = createRefTablesMenu(currentRow, openInNewWindow);
         if (menuManager != null) {
             showContextMenuAtCursor(menuManager);
+            viewerPanel.addDisposeListener(e -> menuManager.dispose());
         }
     }
 
@@ -1880,12 +1882,6 @@ public class ResultSetViewer extends Viewer
             final Menu contextMenu = menuManager.createContextMenu(getActivePresentation().getControl());
             contextMenu.setLocation(location);
             contextMenu.setVisible(true);
-            contextMenu.addMenuListener(new MenuAdapter() {
-                @Override
-                public void menuHidden(MenuEvent e) {
-                    menuManager.dispose();
-                }
-            });
         }
     }
 
