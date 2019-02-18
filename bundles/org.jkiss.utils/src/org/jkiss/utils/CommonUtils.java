@@ -627,4 +627,11 @@ public class CommonUtils {
             return String.valueOf(val);
     }
 
+    public static String niceFormatDouble(double val) {
+        if (val == (long) val)
+            return String.valueOf((long)val);
+        else
+            return String.valueOf(val);
+    }
+
 }
