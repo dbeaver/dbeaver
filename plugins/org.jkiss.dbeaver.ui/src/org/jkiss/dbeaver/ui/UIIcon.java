@@ -32,10 +32,13 @@ public class UIIcon {
     public static final DBIcon SEPARATOR_H = new DBIcon("separator_h", "misc/separator_h.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DOTS_BUTTON = new DBIcon("dots_button", "misc/dots_button.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon LOADING1 = new DBIcon("loading1", "animation/loading1.gif"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon LOADING2 = new DBIcon("loading2", "animation/loading2.gif"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon LOADING3 = new DBIcon("loading3", "animation/loading3.gif"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon LOADING4 = new DBIcon("loading4", "animation/loading4.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING1 = new DBIcon("loading1", "animation/loading01.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING2 = new DBIcon("loading2", "animation/loading02.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING3 = new DBIcon("loading3", "animation/loading03.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING4 = new DBIcon("loading4", "animation/loading04.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING5 = new DBIcon("loading5", "animation/loading05.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING6 = new DBIcon("loading6", "animation/loading06.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING7 = new DBIcon("loading7", "animation/loading07.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PROGRESS0 = new DBIcon("progress0", "animation/progress_0.gif"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PROGRESS1 = new DBIcon("progress1", "animation/progress_1.gif"); //$NON-NLS-1$ //$NON-NLS-2$

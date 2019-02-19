@@ -140,7 +140,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
 
     class LoadingUIJob<RESULT> extends AbstractUIJob {
 
-        private static final long DELAY = 200;
+        private static final long DELAY = 100;
 
         private ILoadVisualizer<RESULT> visualizer;
 
