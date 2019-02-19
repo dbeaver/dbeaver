@@ -31,19 +31,6 @@ import java.util.*;
 
 /**
  * MySQL execution plan node based on JSON format
- *
- * Select type:
- *
- SIMPLE – the query is a simple SELECT query without any subqueries or UNIONs
- PRIMARY – the SELECT is in the outermost query in a JOIN
- DERIVED – the SELECT is part of a subquery within a FROM clause
- SUBQUERY – the first SELECT in a subquery
- DEPENDENT SUBQUERY – a subquery which is dependent upon on outer query
- UNCACHEABLE SUBQUERY – a subquery which is not cacheable (there are certain conditions for a query to be cacheable)
- UNION – the SELECT is the second or later statement of a UNION
- DEPENDENT UNION – the second or later SELECT of a UNION is dependent on an outer query
- UNION RESULT – the SELECT is a result of a UNION
-
  */
 public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySource {
 
@@ -51,7 +38,6 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     private String name;
     private JsonObject object;
     private Map<String, Object> nodeProps = new LinkedHashMap<>();
-    private JsonObject costInfo;
     private List<MySQLPlanNodeJSON> nested;
 
     public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent, String name, JsonObject object) {
@@ -59,12 +45,22 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         this.name = name;
         this.object = object;
 
+        parseObject(name, object);
+    }
+
+    private void parseObject(String objName, JsonObject object) {
         for (Map.Entry<String, JsonElement> prop : object.entrySet()) {
             String propName = prop.getKey();
             JsonElement value = prop.getValue();
             if (value instanceof JsonObject) {
                 if ("cost_info".equals(propName)) {
-                    costInfo = (JsonObject) value;
+                    parseObject(propName, (JsonObject) value);
+                } else if ("query_block".equals(propName)) {
+                    this.name = "query_block";
+                    parseObject(propName, (JsonObject) value);
+                } else if ("table".equals(propName) && "query_block".equals(objName)) {
+                    this.name = "table";
+                    parseObject(propName, (JsonObject) value);
                 } else {
                     addNested(propName, (JsonObject) value);
                 }
@@ -87,7 +83,6 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
                 nodeProps.put(propName, value.getAsString());
             }
         }
-
     }
 
     private void addNested(String name, JsonObject value) {
@@ -116,17 +111,24 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
 
     @Override
     public Number getNodeCost() {
-        if (costInfo == null) {
-            return null;
-        }
-        JsonElement readCost = costInfo.get("read_cost");
+        Object readCost = nodeProps.get("read_cost");
         if (readCost == null) {
-            readCost = costInfo.get("query_cost");
+            readCost = nodeProps.get("query_cost");
         }
         if (readCost == null) {
+            if (nested != null) {
+                long totalCost = 0;
+                for (MySQLPlanNodeJSON child : nested) {
+                    Number childCost = child.getNodeCost();
+                    if (childCost != null) {
+                        totalCost += childCost.longValue();
+                    }
+                }
+                return totalCost;
+            }
             return null;
         }
-        return readCost.getAsDouble();
+        return CommonUtils.toDouble(readCost);
     }
 
     @Override
@@ -143,7 +145,16 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     public Number getNodeRowCount() {
         Object rowCount = nodeProps.get("rows_examined_per_scan");
         if (rowCount == null) {
-
+            if (nested != null) {
+                long totalRC = 0;
+                for (MySQLPlanNodeJSON child : nested) {
+                    Number childRC = child.getNodeRowCount();
+                    if (childRC != null) {
+                        totalRC += childRC.longValue();
+                    }
+                }
+                return totalRC;
+            }
         }
         return rowCount == null ? null : CommonUtils.toLong(rowCount);
     }
