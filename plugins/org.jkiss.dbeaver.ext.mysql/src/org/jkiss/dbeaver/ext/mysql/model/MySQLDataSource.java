@@ -612,7 +612,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     @Override
     public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException
     {
-        return new MySQLPlanAnalyser(this).explain(session, query);
+        return new MySQLPlanAnalyser(this).explain((JDBCSession) session, query);
     }
 
     @NotNull
