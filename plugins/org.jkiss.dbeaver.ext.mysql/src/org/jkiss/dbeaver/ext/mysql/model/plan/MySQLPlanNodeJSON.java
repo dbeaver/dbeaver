@@ -16,14 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * MySQL execution plan node based on JSON format
@@ -41,183 +45,88 @@ import java.util.List;
  UNION RESULT – the SELECT is a result of a UNION
 
  */
-public class MySQLPlanNodeJSON extends MySQLPlanNode {
+public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySource {
 
-    protected Integer id;
-    protected String selectType;
-    protected String table;
-    protected String type;
-    protected String possibleKeys;
-    protected String key;
-    protected String keyLength;
-    protected String ref;
-    protected Long rowCount;
-    protected Long filtered;
-    protected String extra;
+    private MySQLPlanNodeJSON parent;
+    private String name;
+    private JsonObject object;
+    private Map<String, Object> nodeProps = new LinkedHashMap<>();
+    private JsonObject costInfo;
+    private List<MySQLPlanNodeJSON> nested;
 
-    protected MySQLPlanNodeJSON parent;
-    protected List<MySQLPlanNodeJSON> nested;
-
-    public MySQLPlanNodeJSON(List<MySQLPlanNodeJSON> nodes) {
-        // Root node
-        type = "<plan>";
-        if (!nodes.isEmpty()) {
-            this.rowCount = nodes.get(0).rowCount;
-        }
-        this.nested = nodes;
-    }
-
-    public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent, ResultSet dbResult) {
+    public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent, String name, JsonObject object) {
         this.parent = parent;
-        this.id = JDBCUtils.safeGetInteger(dbResult, "id");
-        this.selectType = JDBCUtils.safeGetString(dbResult, "select_type");
-        this.table = JDBCUtils.safeGetString(dbResult, "table");
-        this.type = JDBCUtils.safeGetString(dbResult, "type");
-        this.possibleKeys = JDBCUtils.safeGetString(dbResult, "possible_keys");
-        this.key = JDBCUtils.safeGetString(dbResult, "key");
-        this.keyLength = JDBCUtils.safeGetString(dbResult, "key_len");
-        this.ref = JDBCUtils.safeGetString(dbResult, "ref");
-        this.rowCount = JDBCUtils.safeGetLongNullable(dbResult, "rows");
-        this.filtered = JDBCUtils.safeGetLongNullable(dbResult, "filtered");
-        this.extra = JDBCUtils.safeGetString(dbResult, "extra");
-    }
+        this.name = name;
+        this.object = object;
 
-    public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent, String type) {
-        this.parent = parent;
-        this.selectType = type;
-    }
-
-    protected MySQLPlanNodeJSON(MySQLPlanNodeJSON parent, MySQLPlanNodeJSON source) {
-        this.id = source.id;
-        this.selectType = source.selectType;
-        this.table = source.table;
-        this.type = source.type;
-        this.possibleKeys = source.possibleKeys;
-        this.key = source.key;
-        this.keyLength = source.keyLength;
-        this.ref = source.ref;
-        this.rowCount = source.rowCount;
-        this.filtered = source.filtered;
-        this.extra = source.extra;
-
-        this.parent = parent;
-        if (source.nested != null) {
-            this.nested = new ArrayList<>(source.nested.size());
-            for (MySQLPlanNodeJSON srcNode : source.nested) {
-                this.nested.add(srcNode.copyNode(this));
+        for (Map.Entry<String, JsonElement> prop : object.entrySet()) {
+            String propName = prop.getKey();
+            JsonElement value = prop.getValue();
+            if (value instanceof JsonObject) {
+                if ("cost_info".equals(propName)) {
+                    costInfo = (JsonObject) value;
+                } else {
+                    addNested(propName, (JsonObject) value);
+                }
+            } else if (value instanceof JsonArray) {
+                boolean isProp = false;
+                int itemIndex = 0;
+                for (JsonElement item : (JsonArray) value) {
+                    if (item instanceof JsonObject) {
+                        itemIndex++;
+                        addNested(propName + "#" + itemIndex, (JsonObject) item);
+                    } else {
+                        isProp = true;
+                        break;
+                    }
+                }
+                if (isProp) {
+                    nodeProps.put(propName, value.toString());
+                }
+            } else {
+                nodeProps.put(propName, value.getAsString());
             }
         }
+
     }
 
-    @Override
-    public MySQLPlanNodeJSON getParent() {
-        return parent;
-    }
-
-    void setParent(MySQLPlanNodeJSON node) {
-        if (this.parent != null && this.parent.nested != null) {
-            this.parent.nested.remove(this);
+    private void addNested(String name, JsonObject value) {
+        if (nested == null) {
+            nested = new ArrayList<>();
         }
-        this.parent = node;
-        if (this.parent != null) {
-            this.parent.addChild(this);
-        }
-    }
-
-    private void addChild(MySQLPlanNodeJSON node) {
-        if (this.nested == null) {
-            this.nested = new ArrayList<>();
-        }
-        this.nested.add(node);
-
+        nested.add(
+            new MySQLPlanNodeJSON(this, name, value)
+        );
     }
 
     @Override
     public String getNodeName() {
-        return table;
-    }
+        Object nodeName = nodeProps.get("table_name");
+        if (nodeName == null) {
 
-    @Override
-    public DBCPlanNodeKind getNodeKind() {
-        if ("SIMPLE".equals(selectType)) {
-            return DBCPlanNodeKind.SELECT;
-        } else if ("JOIN".equals(selectType)) {
-            return DBCPlanNodeKind.JOIN;
-        } else if ("UNION".equals(selectType)) {
-            return DBCPlanNodeKind.UNION;
         }
-        return super.getNodeKind();
-    }
-
-    @Override
-    public String getNodeDescription() {
-        return ref;
-    }
-
-    @Override
-    @Property(order = 3, viewable = true)
-    public String getNodeType() {
-        return selectType;
-    }
-
-    @Override
-    public List<MySQLPlanNodeJSON> getNested() {
-        return nested;
+        return nodeName == null ? null : String.valueOf(nodeName);
     }
 
     @Property(order = 0, viewable = true)
-    public Integer getId() {
-        return id;
-    }
-
-    @Property(order = 1, viewable = true)
-    public String getSelectType() {
-        return selectType;
-    }
-
-    @Property(order = 2, viewable = true)
-    public String getTable() {
-        return table;
-    }
-
-    @Property(order = 4, viewable = true)
-    public String getPossibleKeys() {
-        return possibleKeys;
-    }
-
-    @Property(order = 5, viewable = true)
-    public String getKey() {
-        return key;
-    }
-
-    @Property(order = 6, viewable = true)
-    public String getKeyLength() {
-        return keyLength;
-    }
-
-    @Property(order = 7, viewable = true)
-    public String getRef() {
-        return ref;
-    }
-
-    @Property(order = 8, viewable = true)
-    public Long getRowCount() {
-        return rowCount;
-    }
-
-    @Property(order = 9, viewable = true)
-    public Long getFiltered() {
-        return filtered;
-    }
-
-    @Property(order = 10, viewable = true)
-    public String getExtra() {
-        return extra;
+    @Override
+    public String getNodeType() {
+        return name;
     }
 
     @Override
     public Number getNodeCost() {
-        return null;
+        if (costInfo == null) {
+            return null;
+        }
+        JsonElement readCost = costInfo.get("read_cost");
+        if (readCost == null) {
+            readCost = costInfo.get("query_cost");
+        }
+        if (readCost == null) {
+            return null;
+        }
+        return readCost.getAsDouble();
     }
 
     @Override
@@ -232,37 +141,92 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode {
 
     @Override
     public Number getNodeRowCount() {
-        return rowCount;
+        Object rowCount = nodeProps.get("rows_examined_per_scan");
+        if (rowCount == null) {
+
+        }
+        return rowCount == null ? null : CommonUtils.toLong(rowCount);
     }
 
-    public boolean isCompositeNode() {
-        return "PRIMARY".equals(selectType);
+    @Override
+    public MySQLPlanNodeJSON getParent() {
+        return parent;
+    }
+
+    @Override
+    public Collection<MySQLPlanNodeJSON> getNested() {
+        return nested;
+    }
+
+    public Object getProperty(String name) {
+        return nodeProps.get(name);
     }
 
     @Override
     public String toString() {
-        return id + " " + selectType + " " + table;
+        return object.toString();
     }
 
-    void computeStats() {
-        if (nested != null) {
-            for (MySQLPlanNodeJSON child : nested) {
-                child.computeStats();
-            }
-        }
-        if (rowCount == null) {
-            if (nested != null) {
-                long calcCount = 0;
-                for (MySQLPlanNodeJSON child : nested) {
-                    child.computeStats();
-                    calcCount += CommonUtils.toLong(child.getRowCount());
-                }
-                this.rowCount = calcCount;
-            }
-        }
+    //////////////////////////////////////////////////////////
+    // Properties
+
+    @Override
+    public Object getEditableValue() {
+        return this;
     }
 
-    MySQLPlanNodeJSON copyNode(MySQLPlanNodeJSON parent) {
-        return new MySQLPlanNodeJSON(parent, this);
+    @Override
+    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+        DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[nodeProps.size()];
+        int index = 0;
+        for (Map.Entry<String, Object> attr : nodeProps.entrySet()) {
+            props[index++] = new PropertyDescriptor(
+                "Source",
+                attr.getKey(),
+                attr.getKey(),
+                null,
+                String.class,
+                false,
+                null,
+                null,
+                false);
+        }
+        return props;
     }
+
+    @Override
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id) {
+        return nodeProps.get(id.toString());
+    }
+
+    @Override
+    public boolean isPropertySet(Object id) {
+        return false;//attributes.containsKey(id.toString());
+    }
+
+    @Override
+    public boolean isPropertyResettable(Object id) {
+        return false;
+    }
+
+    @Override
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id) {
+
+    }
+
+    @Override
+    public void resetPropertyValueToDefault(Object id) {
+
+    }
+
+    @Override
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value) {
+
+    }
+
+    @Override
+    public boolean isDirty(Object id) {
+        return false;
+    }
+
 }
