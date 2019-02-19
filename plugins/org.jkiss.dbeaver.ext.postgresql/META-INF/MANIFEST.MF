@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
-Bundle-Version: 2.1.76.qualifier
-Bundle-Release-Date: 20190218
+Bundle-Version: 2.1.77.qualifier
+Bundle-Release-Date: 20190311
 Require-Bundle: org.eclipse.osgi.services,
  org.eclipse.e4.core.services,
  org.eclipse.e4.core.contexts,
