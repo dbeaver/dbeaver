@@ -94,21 +94,28 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         );
     }
 
-    @Override
-    public String getNodeName() {
-        Object nodeName = nodeProps.get("table_name");
-        if (nodeName == null) {
-
-        }
-        return nodeName == null ? null : String.valueOf(nodeName);
-    }
-
     @Property(order = 0, viewable = true)
     @Override
     public String getNodeType() {
         return name;
     }
 
+    @Property(order = 1, viewable = true)
+    @Override
+    public String getNodeName() {
+        Object nodeName = nodeProps.get("table_name");
+        if (nodeName == null) {
+
+        } else {
+            Object accessType = nodeProps.get("access_type");
+            if (accessType != null) {
+                return nodeName + " (" + accessType + ")";
+            }
+        }
+        return nodeName == null ? null : String.valueOf(nodeName);
+    }
+
+    @Property(order = 10, viewable = true)
     @Override
     public Number getNodeCost() {
         Object readCost = nodeProps.get("read_cost");
@@ -141,6 +148,7 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         return null;
     }
 
+    @Property(order = 11, viewable = true)
     @Override
     public Number getNodeRowCount() {
         Object rowCount = nodeProps.get("rows_examined_per_scan");
