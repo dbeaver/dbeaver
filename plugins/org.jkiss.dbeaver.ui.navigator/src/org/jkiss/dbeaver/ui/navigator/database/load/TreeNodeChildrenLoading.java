@@ -32,15 +32,20 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
 
     public static final Object LOADING_FAMILY = new Object();
 
-    private static Image IMG_LOADING1 = DBeaverIcons.getImage(UIIcon.LOADING1);
-    private static Image IMG_LOADING2 = DBeaverIcons.getImage(UIIcon.LOADING2);
-    private static Image IMG_LOADING3 = DBeaverIcons.getImage(UIIcon.LOADING3);
-    private static Image IMG_LOADING4 = DBeaverIcons.getImage(UIIcon.LOADING4);
+    private static Image[] IMG_LOADING = new Image[] {
+        DBeaverIcons.getImage(UIIcon.LOADING1),
+        DBeaverIcons.getImage(UIIcon.LOADING2),
+        DBeaverIcons.getImage(UIIcon.LOADING3),
+        DBeaverIcons.getImage(UIIcon.LOADING4),
+        DBeaverIcons.getImage(UIIcon.LOADING5),
+        DBeaverIcons.getImage(UIIcon.LOADING6),
+        DBeaverIcons.getImage(UIIcon.LOADING7)
+    };
 
     private static String loadingText = "Loading";
-    private static String text1 = loadingText + "."; //$NON-NLS-1$;
+    private static String text1 = loadingText + ".."; //$NON-NLS-1$;
     private static String text2 = loadingText + ".."; //$NON-NLS-1$;
-    private static String text3 = loadingText + ".."; //$NON-NLS-1$;
+    private static String text3 = loadingText + "..."; //$NON-NLS-1$;
 
     private int viewCount = 0;
 
@@ -58,6 +63,8 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
 
     @Override
     public String getText(Object element) {
+        return text3;
+/*
         switch (viewCount % 4) {
             case 0:
                 return loadingText;
@@ -69,21 +76,13 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
             default:
                 return text3;
         }
+*/
     }
 
     @Override
     public Image getImage(Object element) {
-        switch (viewCount = (++viewCount % 4)) {
-            case 0:
-                return IMG_LOADING1;
-            case 1:
-                return IMG_LOADING2;
-            case 2:
-                return IMG_LOADING3;
-            case 3:
-            default:
-                return IMG_LOADING4;
-        }
+        int imgIndex = (++viewCount % IMG_LOADING.length);
+        return IMG_LOADING[imgIndex];
     }
 
     public void dispose(Object parent) {
