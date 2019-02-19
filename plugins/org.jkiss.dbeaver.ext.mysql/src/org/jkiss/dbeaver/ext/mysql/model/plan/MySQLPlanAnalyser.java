@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model.plan;
 
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 /**
  * MySQL execution plan analyser
@@ -31,11 +31,11 @@ public class MySQLPlanAnalyser {
         this.dataSource = dataSource;
     }
 
-    public MySQLPlanAbstract explain(DBCSession session, String query) throws DBCException {
+    public MySQLPlanAbstract explain(JDBCSession session, String query) throws DBCException {
         if (supportsExplainJSON()) {
-            return new MySQLPlanJSON(dataSource, query);
+            return new MySQLPlanJSON(session, query);
         } else {
-            return new MySQLPlanClassic(dataSource, query);
+            return new MySQLPlanClassic(session, query);
         }
     }
 
