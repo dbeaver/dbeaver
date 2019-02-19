@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.editors,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.data.gis
+ org.jkiss.dbeaver.data.gis,
+ com.google.gson
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS

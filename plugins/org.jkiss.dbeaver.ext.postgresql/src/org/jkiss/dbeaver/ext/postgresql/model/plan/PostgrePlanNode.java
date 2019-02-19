@@ -170,6 +170,51 @@ public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPla
     }
 
     @Override
+    public Number getNodeCost() {
+        String totalCost = attributes.get(ATTR_TOTAL_COST);
+        return totalCost == null ? null : CommonUtils.toDouble(totalCost);
+    }
+
+    @Override
+    public Number getNodePercent() {
+        return null;
+//        String costPercent = attributes.get(ATTR_TOTAL_COST);
+//        return costPercent == null ? null : CommonUtils.toDouble(costPercent);
+    }
+
+    @Override
+    public Number getNodeDuration() {
+        String time = attributes.get(ATTR_ACTUAL_TOTAL_TIME);
+        return time == null ? null : CommonUtils.toDouble(time);
+    }
+
+    @Override
+    public Number getNodeRowCount() {
+        String rows = attributes.get(ATTR_ACTUAL_ROWS);
+        return rows == null ? null : CommonUtils.toLong(rows);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder title = new StringBuilder();
+        title.append("Type: ").append(nodeType);
+        String joinType = attributes.get("Join-Type");
+        if (!CommonUtils.isEmpty(joinType)) {
+            title.append(" (").append(joinType).append(")");
+        }
+        title.append("; ");
+        if (!CommonUtils.isEmpty(entity)) {
+            title.append("Rel: ").append(entity).append(" ");
+        }
+        title.append("; Cost: ").append(cost);
+
+        return title.toString();
+    }
+
+    //////////////////////////////////////////////////////////
+    // Properties
+
+    @Override
     public Object getEditableValue() {
         return this;
     }
@@ -180,15 +225,15 @@ public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPla
         int index = 0;
         for (Map.Entry<String, String> attr : attributes.entrySet()) {
             props[index++] = new PropertyDescriptor(
-                    "Source",
-                    attr.getKey(),
-                    attr.getKey(),
-                    null,
-                    String.class,
-                    false,
-                    null,
-                    null,
-                    false);
+                "Source",
+                attr.getKey(),
+                attr.getKey(),
+                null,
+                String.class,
+                false,
+                null,
+                null,
+                false);
         }
         return props;
     }
@@ -228,45 +273,4 @@ public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPla
         return false;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder title = new StringBuilder();
-        title.append("Type: ").append(nodeType);
-        String joinType = attributes.get("Join-Type");
-        if (!CommonUtils.isEmpty(joinType)) {
-            title.append(" (").append(joinType).append(")");
-        }
-        title.append("; ");
-        if (!CommonUtils.isEmpty(entity)) {
-            title.append("Rel: ").append(entity).append(" ");
-        }
-        title.append("; Cost: ").append(cost);
-
-        return title.toString();
-    }
-
-    @Override
-    public Number getNodeCost() {
-        String totalCost = attributes.get(ATTR_TOTAL_COST);
-        return totalCost == null ? null : CommonUtils.toDouble(totalCost);
-    }
-
-    @Override
-    public Number getNodePercent() {
-        return null;
-//        String costPercent = attributes.get(ATTR_TOTAL_COST);
-//        return costPercent == null ? null : CommonUtils.toDouble(costPercent);
-    }
-
-    @Override
-    public Number getNodeDuration() {
-        String time = attributes.get(ATTR_ACTUAL_TOTAL_TIME);
-        return time == null ? null : CommonUtils.toDouble(time);
-    }
-
-    @Override
-    public Number getNodeRowCount() {
-        String rows = attributes.get(ATTR_ACTUAL_ROWS);
-        return rows == null ? null : CommonUtils.toLong(rows);
-    }
 }
