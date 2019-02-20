@@ -145,9 +145,9 @@ public class ItemListControl extends NodeListControl
             if (!inlineMetas.isEmpty()) {
                 contributionManager.add(new Separator());
                 contributionManager.add(
-                    ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_COLLAPSE_ALL));
+                    ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_COLLAPSE_ALL, null, UIIcon.TREE_COLLAPSE_ALL));
                 contributionManager.add(
-                    ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_EXPAND_ALL));
+                    ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_EXPAND_ALL, null, UIIcon.TREE_EXPAND_ALL));
             }
         }
 

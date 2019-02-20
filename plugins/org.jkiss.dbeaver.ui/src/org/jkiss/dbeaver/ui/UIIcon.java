@@ -151,7 +151,9 @@ public class UIIcon {
     public static final DBIcon GROUP_BY_ATTR = new DBIcon("group_attr", "misc/group_attributes.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TREE_EXPAND = new DBIcon("expand", "misc/expand.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_EXPAND_ALL = new DBIcon("expand_all", "misc/expand_all.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_COLLAPSE = new DBIcon("collapse", "misc/collapse.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_COLLAPSE_ALL = new DBIcon("collapse_all", "misc/collapse_all.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PROJECTS = new DBIcon("projects", "projects.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DATABASES = new DBIcon("databases", "databases.png"); //$NON-NLS-1$ //$NON-NLS-2$
