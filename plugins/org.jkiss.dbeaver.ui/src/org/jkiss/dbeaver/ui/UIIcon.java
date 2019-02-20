@@ -100,6 +100,7 @@ public class UIIcon {
     public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_UNKNOWN = new DBIcon("sort_unknown", "misc/sort_unknown.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT = new DBIcon("sort", "misc/sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_CONFIG = new DBIcon("sort_config", "misc/sort_config.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon FILTER = new DBIcon("filter", "misc/filter.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_SMALL = new DBIcon("filter_small", "misc/filter_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -133,6 +134,8 @@ public class UIIcon {
     public static final DBIcon CANCEL = new DBIcon("cancel", "misc/cancel.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PRINT = new DBIcon("print", "misc/print.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BROWSER = new DBIcon("browser", "misc/browser.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EDIT = new DBIcon("edit", "edit.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon ROW_ADD = new DBIcon("row_add", "sql/row_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROW_COPY = new DBIcon("row_copy", "sql/row_copy.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -158,6 +161,7 @@ public class UIIcon {
     public static final DBIcon PROJECTS = new DBIcon("projects", "projects.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DATABASES = new DBIcon("databases", "databases.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SCRIPTS = new DBIcon("scripts", "scripts.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PAGE_STACK = new DBIcon("page_stack", "page_stack.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BOOKMARK_FOLDER = new DBIcon("bookmark_folder", "bookmark_folder.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BOOKMARK = new DBIcon("bookmark", "bookmark.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PICTURE = new DBIcon("picture", "picture.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -191,6 +195,9 @@ public class UIIcon {
     public static final DBIcon SQL_PAGE_LOG = new DBIcon("sql/page_error.png"); //$NON-NLS-1$
     public static final DBIcon SQL_PAGE_OUTPUT = new DBIcon("sql/page_output.png"); //$NON-NLS-1$
     public static final DBIcon SQL_PAGE_OUTPUT_ALERT = new DBIcon("sql/page_output_alert.png"); //$NON-NLS-1$
+
+    public static final DBIcon DUPS_ALLOWED = new DBIcon("sql/dup_allowed.png"); //$NON-NLS-1$
+    public static final DBIcon DUPS_RESTRICTED = new DBIcon("sql/dup_restricted.png"); //$NON-NLS-1$
 
     public static final DBIcon SAVE_TO_DATABASE = new DBIcon("save_to_db", "sql/save_to_database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon AUTO_SAVE = new DBIcon("auto_save", "file/auto_save.png"); //$NON-NLS-1$ //$NON-NLS-2$
