@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.core.application;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -27,6 +28,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -118,6 +121,23 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         getDisplay();
 
         DelayedEventsProcessor processor = new DelayedEventsProcessor(display);
+
+        try {
+            // look and see if there's a splash shell we can parent off of
+            Shell shell = WorkbenchPlugin.getSplashShell(display);
+            if (shell != null) {
+                // should should set the icon and message for this shell to be the
+                // same as the chooser dialog - this will be the guy that lives in
+                // the task bar and without these calls you'd have the default icon
+                // with no message.
+                shell.setText(ChooseWorkspaceDialog.getWindowTitle());
+                shell.setImages(Window.getDefaultImages());
+            }
+        } catch (Throwable e) {
+            e.printStackTrace(System.err);
+            System.err.println("Error updating splash shell");
+        }
+
 
         // Add bundle load logger
         Bundle brandingBundle = context.getBrandingBundle();
