@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPart;
@@ -102,6 +103,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
 
         {
             tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
+            ((GridLayout)tabViewFolder.getLayout()).marginTop = 20;
             tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
             for (SQLPlanViewDescriptor viewDesc : SQLPlanViewRegistry.getInstance().getPlanViewDescriptors()) {
