@@ -25,7 +25,7 @@
                         label="%tree.externaltables.node.name"
                         icon="#folder_table">
                     <items label="%tree.externaltable.node.name" path="externalTable" property="externalTables"
-                           icon="#table">
+                           icon="#table_external">
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"
                                 label="%tree.columns.node.name" icon="#columns" description="Table columns">
                             <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
