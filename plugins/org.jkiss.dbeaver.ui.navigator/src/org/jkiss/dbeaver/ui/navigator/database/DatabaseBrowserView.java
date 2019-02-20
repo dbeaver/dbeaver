@@ -23,6 +23,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -37,6 +38,8 @@ import org.jkiss.utils.CommonUtils;
 
 public class DatabaseBrowserView extends NavigatorViewBase {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseBrowser";
+
+    private static final Log log = Log.getLog(DatabaseBrowserView.class);
 
     public DatabaseBrowserView()
     {
@@ -120,7 +123,12 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         }
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
         navigatorModel.ensureProjectLoaded(project);
-        return navigatorModel.getNodeByPath(new VoidProgressMonitor(), project, nodePath);
+        DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), project, nodePath);
+        if (node == null) {
+            log.error("Node " + nodePath + " not found for browse view");
+            node = new DBNEmptyNode();
+        }
+        return node;
     }
 
 }
