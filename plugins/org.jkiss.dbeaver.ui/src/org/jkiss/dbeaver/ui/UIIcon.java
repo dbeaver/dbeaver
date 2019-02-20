@@ -102,14 +102,15 @@ public class UIIcon {
     public static final DBIcon SORT = new DBIcon("sort", "misc/sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_CONFIG = new DBIcon("sort_config", "misc/sort_config.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon FILTER = new DBIcon("filter", "misc/filter.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_SMALL = new DBIcon("filter_small", "misc/filter_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_VALUE = new DBIcon("filter_value", "misc/filter_value.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_INPUT = new DBIcon("filter_input", "misc/filter_input.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_CLIPBOARD = new DBIcon("filter_clipboard", "misc/filter_clipboard.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_APPLY = new DBIcon("filter_apply", "misc/filter_apply.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_RESET = new DBIcon("filter_reset", "misc/filter_reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_SAVE = new DBIcon("filter_save", "misc/filter_save.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER = new DBIcon("misc/filter.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_SMALL = new DBIcon("misc/filter_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_VALUE = new DBIcon("misc/filter_value.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_INPUT = new DBIcon("misc/filter_input.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CLIPBOARD = new DBIcon("misc/filter_clipboard.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_APPLY = new DBIcon("misc/filter_apply.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_RESET = new DBIcon("misc/filter_reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_SAVE = new DBIcon("misc/filter_save.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONFIG = new DBIcon("misc/filter_config.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon EVENT = new DBIcon("event", "misc/event.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon HOME = new DBIcon("home", "misc/home.png"); //$NON-NLS-1$ //$NON-NLS-2$

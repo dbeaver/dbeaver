@@ -307,7 +307,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filtersSaveButton.setEnabled(false);
 
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-            filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
+            filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_CONFIG));
             filtersCustomButton.setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_custom);
             filtersCustomButton.addSelectionListener(new SelectionAdapter() {
                 @Override
