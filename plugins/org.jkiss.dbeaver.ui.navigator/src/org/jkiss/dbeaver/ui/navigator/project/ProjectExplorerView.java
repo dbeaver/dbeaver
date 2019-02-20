@@ -149,7 +149,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
             }
         });
-        columnController.addColumn("Size", "File size", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
+        columnController.addColumn("Size", "File size", SWT.LEFT, false, false, true, null, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
                 DBNNode node = (DBNNode) element;
@@ -161,7 +161,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
                 return "";
             }
-        }));
+        }), null);
         columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
             private SimpleDateFormat sdf = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
