@@ -213,7 +213,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class ClearGroupingAction extends GroupingAction {
         ClearGroupingAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_clear, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ETOOL_CLEAR));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_clear, DBeaverIcons.getImageDescriptor(UIIcon.ERASE));
         }
 
         @Override
@@ -234,7 +234,7 @@ public class GroupingPanel implements IResultSetPanel {
 
         DefaultSortingAction() {
             super(ResultSetMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DROP_DOWN));
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SORT_CONFIG));
         }
 
         @Override
@@ -305,7 +305,7 @@ public class GroupingPanel implements IResultSetPanel {
             try {
                 resultsContainer.rebuildGrouping();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change duplicates presentation", e);
+                DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change sort order", e);
             }
         }
     }
@@ -313,7 +313,11 @@ public class GroupingPanel implements IResultSetPanel {
     class DuplicatesOnlyAction extends Action {
         DuplicatesOnlyAction() {
             super(ResultSetMessages.controls_resultset_grouping_show_duplicates_only, Action.AS_CHECK_BOX);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.GROUP_BY_ATTR));
+            updateImage();
+        }
+
+        private void updateImage() {
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DUPS_RESTRICTED));
         }
 
         @Override
