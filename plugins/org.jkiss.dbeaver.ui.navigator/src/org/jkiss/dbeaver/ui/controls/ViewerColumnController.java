@@ -664,7 +664,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     {
         ColumnViewer viewer;
         ColumnInfo columnInfo;
-        int sortDirection = SWT.DOWN;
+        int sortDirection = SWT.UP;
         Item prevColumn = null;
 
         public SortListener(ColumnViewer viewer, ColumnInfo columnInfo) {
@@ -736,7 +736,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                             result = value1.compareToIgnoreCase(value2);
                         }
                     }
-                    return sortDirection == SWT.DOWN ? result : -result;
+                    return sortDirection == SWT.UP ? result : -result;
                 }
             });
         }
