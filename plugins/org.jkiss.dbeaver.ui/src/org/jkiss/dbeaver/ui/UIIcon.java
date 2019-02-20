@@ -193,6 +193,7 @@ public class UIIcon {
     public static final DBIcon SQL_PAGE_OUTPUT_ALERT = new DBIcon("sql/page_output_alert.png"); //$NON-NLS-1$
 
     public static final DBIcon SAVE_TO_DATABASE = new DBIcon("save_to_db", "sql/save_to_database.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon AUTO_SAVE = new DBIcon("auto_save", "file/auto_save.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PANEL_CUSTOMIZE = new DBIcon("panel_customize", "sql/panel_customize.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PANEL_VALUE = new DBIcon("panel_value", "sql/panel_value.png"); //$NON-NLS-1$ //$NON-NLS-2$

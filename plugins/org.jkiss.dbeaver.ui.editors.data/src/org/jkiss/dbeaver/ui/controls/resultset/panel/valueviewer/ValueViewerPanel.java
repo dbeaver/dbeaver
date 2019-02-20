@@ -332,7 +332,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
         contributionManager.add(
             new Action("Auto-apply value", Action.AS_CHECK_BOX) {
                 {
-                    setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.LINK_TO_EDITOR));
+                    setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
                 }
                 @Override
                 public boolean isChecked() {
