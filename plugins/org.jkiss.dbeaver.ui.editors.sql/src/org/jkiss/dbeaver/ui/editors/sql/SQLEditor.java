@@ -1811,6 +1811,8 @@ public class SQLEditor extends SQLEditorBase implements
                     continue;
                 }
                 item.dispose();
+            } else if (item.getData() instanceof ExplainPlanViewer) {
+                item.dispose();
             }
         }
     }
