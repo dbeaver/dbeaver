@@ -17,15 +17,13 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
-import org.jkiss.dbeaver.data.gis.handlers.GeometryConverter;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
@@ -44,7 +42,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         return getValueFromObject(session, type,
-            resultSet.getString(index),
+            resultSet.getObject(index),
             false);
     }
 
@@ -54,8 +52,10 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else if (value instanceof Geometry) {
             statement.setObject(paramIndex, getStringFromGeometry(session, (Geometry)value), Types.OTHER);
+        } else if (value.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
+            statement.setObject(paramIndex, value, Types.OTHER);
         } else {
-            throw new DBCException("Invalid geometry object: " + value);
+            statement.setObject(paramIndex, value.toString(), Types.OTHER);
         }
     }
 
@@ -72,8 +72,18 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             return object;
         } else if (object instanceof String) {
             return makeGeometryFromString(session, (String) object);
+        } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
+            return makeGeometryFromPGGeometry(session, object);
         } else {
             return makeGeometryFromString(session, object.toString());
+        }
+    }
+
+    private Object makeGeometryFromPGGeometry(DBCSession session, Object pgGeometry) throws DBCException {
+        try {
+            return BeanUtils.invokeObjectMethod(pgGeometry, "getGeometry", null, null);
+        } catch (Throwable e) {
+            throw new DBCException(e, session.getDataSource());
         }
     }
 
@@ -82,7 +92,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             return null;
         }
         try {
-            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), "org.postgis.jts.JtsGeometry");
+            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), PostgreConstants.PG_GEOMETRY_CLASS);
             return BeanUtils.invokeStaticMethod(
                 jtsGeometry, "geomFromString", new Class[] { String.class }, new Object[] { object }
             );
@@ -93,7 +103,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
     private String getStringFromGeometry(JDBCSession session, Geometry geometry) throws DBCException {
         try {
-            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), "org.postgis.jts.JtsGeometry");
+            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), PostgreConstants.PG_GEOMETRY_CLASS);
             Object jtsg = jtsGeometry.getConstructor(Geometry.class).newInstance(geometry);
             return (String)BeanUtils.invokeObjectMethod(
                 jtsg, "getValue", null, null);
