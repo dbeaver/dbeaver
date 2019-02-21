@@ -26,20 +26,24 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.MigrateConnectionWizard;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
 public class DataSourceMigrateHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
-        ActiveWizardDialog dialog = new ActiveWizardDialog(
-            window,
-            new MigrateConnectionWizard(
-                DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(DBWorkbench.getPlatform().getProjectManager().getActiveProject()),
-                currentSelection instanceof IStructuredSelection ? (IStructuredSelection) currentSelection : null));
-        dialog.open();
+        NavigatorViewBase navigatorView = NavigatorUtils.getActiveNavigatorView(event);
+        if (navigatorView != null && navigatorView.getNavigatorViewer() != null) {
+            final ISelection currentSelection = navigatorView.getNavigatorViewer().getSelection();
+            ActiveWizardDialog dialog = new ActiveWizardDialog(
+                HandlerUtil.getActiveWorkbenchWindow(event),
+                new MigrateConnectionWizard(
+                    DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(DBWorkbench.getPlatform().getProjectManager().getActiveProject()),
+                    currentSelection instanceof IStructuredSelection ? (IStructuredSelection) currentSelection : null));
+            dialog.open();
+        }
 
         return null;
     }
