@@ -225,7 +225,7 @@ public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPla
         int index = 0;
         for (Map.Entry<String, String> attr : attributes.entrySet()) {
             props[index++] = new PropertyDescriptor(
-                "Source",
+                "Details",
                 attr.getKey(),
                 attr.getKey(),
                 null,
