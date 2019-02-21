@@ -105,6 +105,9 @@
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
+                                    <folder label="%tree.dependencies.node.name" icon="#references" description="Table dependencies" virtual="true">
+                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="#reference" virtual="true"/>
+                                    </folder>
                                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" label="%tree.triggers.node.name" icon="#triggers" description="View triggers" visibleIf="object.dataSource.serverType.supportsTriggers()">
                                         <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                                     </folder>
