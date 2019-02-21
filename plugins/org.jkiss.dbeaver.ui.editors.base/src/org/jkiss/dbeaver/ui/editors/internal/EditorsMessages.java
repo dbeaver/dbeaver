@@ -38,6 +38,7 @@ public class EditorsMessages extends NLS {
 	public static String dialog_struct_create_sequence_title;
 	public static String dialog_struct_create_sequence_name;
 	public static String dialog_struct_create_sequence_container;
+	public static String dialog_struct_edit_constrain_label_name;
 	public static String dialog_struct_edit_constrain_label_type;
 	public static String dialog_struct_edit_fk_column_col_type;
 	public static String dialog_struct_edit_fk_column_column;

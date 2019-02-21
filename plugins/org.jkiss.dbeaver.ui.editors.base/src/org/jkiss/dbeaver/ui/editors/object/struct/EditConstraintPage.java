@@ -142,7 +142,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
             this.constraintName = DBObjectNameCaseTransformer.transformName(entity.getDataSource(), CommonUtils.escapeIdentifier(entity.getName()) + namePrefix);
         }
 
-        final Text nameText = entity != null ? UIUtils.createLabelText(panel, "Name", constraintName) : null;
+        final Text nameText = entity != null ? UIUtils.createLabelText(panel, EditorsMessages.dialog_struct_edit_constrain_label_name, constraintName) : null;
         if (nameText != null) {
             nameText.addModifyListener(e -> constraintName = nameText.getText());
         }
