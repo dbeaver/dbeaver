@@ -41,6 +41,8 @@ import java.util.List;
  */
 public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
 
+    public final static String CAT_DETAILS = "Details";
+
     private final OracleDataSource dataSource;
     private String statementId;
     private long plan_id;
@@ -241,7 +243,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
         return objectAlias;
     }
 
-    @Property(order = 7, viewable = true)
+    @Property(category = CAT_DETAILS, order = 7, viewable = true)
     public String getOptimizer()
     {
         return optimizer;
@@ -259,68 +261,68 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
         return cardinality;
     }
 
-    @Property(order = 10, viewable = true)
+    @Property(category = CAT_DETAILS, order = 10, viewable = true)
     public long getBytes()
     {
         return bytes;
     }
 
-    @Property(order = 20)
+    @Property(category = CAT_DETAILS, order = 20)
     public String getPartitionStart() {
         return partitionStart;
     }
 
-    @Property(order = 21)
+    @Property(category = CAT_DETAILS, order = 21)
     public String getPartitionStop() {
         return partitionStop;
     }
 
-    @Property(order = 22)
+    @Property(category = CAT_DETAILS, order = 22)
     public long getPartitionId() {
         return partitionId;
     }
 
-    @Property(order = 23)
+    @Property(category = CAT_DETAILS, order = 23)
     public String getDistribution() {
         return distribution;
     }
 
-    @Property(order = 24)
+    @Property(category = CAT_DETAILS, order = 24)
     public long getCpuCost() {
         return cpuCost;
     }
 
-    @Property(order = 25)
+    @Property(category = CAT_DETAILS, order = 25)
     public long getIoCost() {
         return ioCost;
     }
 
-    @Property(order = 26)
+    @Property(category = CAT_DETAILS, order = 26)
     public long getTempSpace() {
         return tempSpace;
     }
 
-    @Property(order = 27)
+    @Property(category = CAT_DETAILS, order = 27)
     public String getAccessPredicates() {
         return accessPredicates;
     }
 
-    @Property(order = 28)
+    @Property(category = CAT_DETAILS, order = 28)
     public String getFilterPredicates() {
         return filterPredicates;
     }
 
-    @Property(order = 29)
+    @Property(category = CAT_DETAILS, order = 29)
     public String getProjection() {
         return projection;
     }
 
-    @Property(order = 30)
+    @Property(category = CAT_DETAILS, order = 30)
     public long getTime() {
         return time;
     }
 
-    @Property(order = 31)
+    @Property(category = CAT_DETAILS, order = 31)
     public String getQblockName() {
         return qblockName;
     }

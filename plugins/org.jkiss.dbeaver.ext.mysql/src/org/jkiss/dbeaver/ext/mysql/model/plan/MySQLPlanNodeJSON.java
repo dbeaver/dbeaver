@@ -200,7 +200,7 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         int index = 0;
         for (Map.Entry<String, Object> attr : nodeProps.entrySet()) {
             props[index++] = new PropertyDescriptor(
-                "Source",
+                "Details",
                 attr.getKey(),
                 attr.getKey(),
                 null,
