@@ -208,7 +208,11 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
         if (usernameText != null) {
-            usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
+            if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+                usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
+            } else if (site.isNew()) {
+                usernameText.setText(MySQLConstants.DEFAULT_USER);
+            }
         }
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
