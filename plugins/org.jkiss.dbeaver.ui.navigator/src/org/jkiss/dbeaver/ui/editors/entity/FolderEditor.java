@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
@@ -212,7 +213,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         @Override
         protected void openNodeEditor(DBNNode node) {
             final DBNNode rootNode = getRootNode();
-            if (!(node instanceof DBNDatabaseNode)) {
+            if (!canOpenNode(node)) {
                 if (node instanceof DBNRoot) {
                     if (rootNode instanceof DBNLocalFolder) {
                         node = ((DBNLocalFolder) rootNode).getLogicalParent();
@@ -259,6 +260,11 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
             contributionManager.add(new Separator());
             super.fillCustomActions(contributionManager);
         }
+    }
+
+    private boolean canOpenNode(DBNNode node) {
+        return node instanceof DBNDatabaseNode ||
+            (node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFile);
     }
 
 }
