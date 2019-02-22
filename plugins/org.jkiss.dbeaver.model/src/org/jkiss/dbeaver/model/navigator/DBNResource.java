@@ -87,7 +87,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     }
 
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeName()
     {
         if (resource == null || handler == null) {
