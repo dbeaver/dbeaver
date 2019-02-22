@@ -34,9 +34,11 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
@@ -45,8 +47,10 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -415,7 +419,33 @@ public class PostgreUtils {
         }
     }
     
-    public static Object convertStringToValue(DBSTypedObject itemType, String string, boolean unescape) {
+    public static Object convertStringToValue(DBCSession session, DBSTypedObject itemType, String string, boolean unescape) throws DBCException {
+        if (itemType.getDataKind() == DBPDataKind.ARRAY) {
+            if (CommonUtils.isEmpty(string)) {
+                return new Object[0];
+            } else if (string.startsWith("{") && string.endsWith("}")) {
+                DBSDataType arrayDataType = itemType instanceof DBSDataType ? (DBSDataType) itemType : ((DBSTypedObjectEx)itemType).getDataType();
+                try {
+                    DBSDataType componentType = arrayDataType.getComponentType(session.getProgressMonitor());
+                    if (componentType == null) {
+                        log.error("Can't get component type from array '" + itemType.getFullTypeName() + "'");
+                        return null;
+                    } else {
+                        String[] itemStrings = parseObjectString(string.substring(1, string.length() - 1));
+                        Object[] itemValues = new Object[itemStrings.length];
+                        for (int i = 0; i < itemStrings.length; i++) {
+                            itemValues[i] = convertStringToValue(session, componentType, itemStrings[i], unescape);
+                        }
+                        return itemValues;
+                    }
+                } catch (Exception e) {
+                    throw new DBCException("Error extracting array '" + itemType.getFullTypeName() + "' items", e);
+                }
+            } else {
+                log.error("Unsupported array string: '" + string + "'");
+                return null;
+            }
+        }
         switch (itemType.getTypeID()) {
             case Types.BOOLEAN: return Boolean.valueOf(string); 
             case Types.TINYINT: return Byte.parseByte(string); 
@@ -425,8 +455,14 @@ public class PostgreUtils {
             case Types.FLOAT: return Float.parseFloat(string); 
             case Types.REAL:
             case Types.DOUBLE: return Double.parseDouble(string); 
-            default:
-                return string; 
+            default: {
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
+                if (valueHandler != null) {
+                    return valueHandler.getValueFromObject(session, itemType, string, false);
+                } else {
+                    return string;
+                }
+            }
         }
     }
 

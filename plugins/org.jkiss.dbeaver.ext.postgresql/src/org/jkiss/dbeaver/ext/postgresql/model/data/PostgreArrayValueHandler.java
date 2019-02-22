@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -73,7 +74,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         return super.getValueFromObject(session, type, object, copy);
     }
 
-    private JDBCCollection convertStringToArray(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String value) {
+    private JDBCCollection convertStringToArray(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String value) throws DBCException {
         List<String> strings = new ArrayList<>(10);
         StringTokenizer st = new StringTokenizer(value, " ");
         while (st.hasMoreTokens()) {
@@ -81,7 +82,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         }
         Object[] contents = new Object[strings.size()];
         for (int i = 0; i < strings.size(); i++) {
-            contents[i] = PostgreUtils.convertStringToValue(itemType, strings.get(i), false);
+            contents[i] = PostgreUtils.convertStringToValue(session, itemType, strings.get(i), false);
         }
         return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
     }

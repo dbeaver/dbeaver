@@ -68,6 +68,7 @@ public class PostgreConstants {
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
     public static final String PG_ARRAY_CLASS = "org.postgresql.jdbc.PgArray";
     public static final String PG_INTERVAL_CLASS = "org.postgresql.util.PGInterval";
+    public static final String PG_GEOMETRY_CLASS = "org.postgis.PGgeometry";
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
         "oid", "oid", "Row identifier", false);

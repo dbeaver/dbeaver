@@ -66,7 +66,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         } else {
             // Modify existing column
             // TODO: implement default constraint create/drop
-            //String defaultValue = CommonUtils.toString(column.getDefaultValue());
+            DefaultModifier.appendModifier(monitor, column, sql, command);
         }
     };
 

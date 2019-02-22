@@ -110,16 +110,24 @@ public class SQLServerDialect extends JDBCSQLDialect {
                 }
             }
         } else if (dataKind == DBPDataKind.STRING) {
-            if (SQLServerConstants.TYPE_UNIQUEIDENTIFIER.equalsIgnoreCase(typeName)) {
-                return null;
-            }
-            long maxLength = column.getMaxLength();
-            if (maxLength == 0) {
-                return null;
-            } else if (maxLength == -1) {
-                return "(MAX)";
-            } else {
-                return "(" + maxLength + ")";
+            switch (typeName) {
+                case "char":
+                case "nchar":
+                case "varchar":
+                case "nvarchar":
+                case "text":
+                case "ntext": {
+                    long maxLength = column.getMaxLength();
+                    if (maxLength == 0) {
+                        return null;
+                    } else if (maxLength == -1) {
+                        return "(MAX)";
+                    } else {
+                        return "(" + maxLength + ")";
+                    }
+                }
+                default:
+                    return null;
             }
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);

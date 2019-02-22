@@ -27,7 +27,9 @@ import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
@@ -43,6 +45,8 @@ import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 public abstract class BaseValueEditor<T extends Control> implements IValueEditor {
 
     private static final String RESULTS_EDIT_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.edit";
+
+    private static final Log log = Log.getLog(BaseValueEditor.class);
 
     protected final IValueController valueController;
     protected T control;
@@ -142,7 +146,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 // Check new focus control in async mode
                 // (because right now focus is still on edit control)
                 if (!valueController.isReadOnly()) {
-                    saveValue();
+                    saveValue(false);
                 }
                 if (valueController instanceof IMultiController) {
                     ((IMultiController) valueController).closeInlineEditor();
@@ -151,8 +155,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         });
     }
 
-    protected void saveValue()
-    {
+    protected void saveValue() {
+        saveValue(true);
+    }
+
+    protected void saveValue(boolean showError) {
         try {
             Object newValue = extractEditorValue();
             if (dirty || control instanceof Combo || control instanceof CCombo || control instanceof List) {
@@ -163,7 +170,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             if (valueController instanceof IMultiController) {
                 ((IMultiController) valueController).closeInlineEditor();
             }
-            DBWorkbench.getPlatformUI().showError("Value save", "Can't save edited value", e);
+            if (showError) {
+                DBWorkbench.getPlatformUI().showError("Value save", "Can't save edited value", e);
+            } else {
+                log.debug("Error saving value: " + e.getMessage());
+            }
         }
     }
 
@@ -195,7 +206,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             }
             setDirty(true);
             if (autoSaveEnabled && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE)) {
-                saveValue();
+                saveValue(false);
             }
         }
 

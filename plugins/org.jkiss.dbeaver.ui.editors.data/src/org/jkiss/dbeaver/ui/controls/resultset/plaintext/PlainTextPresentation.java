@@ -266,23 +266,23 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
 
         List<ResultSetRow> allRows = model.getAllRows();
+        int extraSpacesNum = extraSpaces ? 2 : 0;
         if (colWidths == null) {
             // Calculate column widths
             colWidths = new int[attrs.size()];
 
             for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
-                colWidths[i] = getAttributeName(attr).length();
+                colWidths[i] = getAttributeName(attr).length() + extraSpacesNum;
                 if (showNulls && !attr.isRequired()) {
                     colWidths[i] = Math.max(colWidths[i], DBConstants.NULL_VALUE_LABEL.length());
                 }
                 for (ResultSetRow row : allRows) {
                     String displayString = getCellString(model, attr, row, displayFormat);
-                    colWidths[i] = Math.max(colWidths[i], getStringWidth(displayString));
+                    colWidths[i] = Math.max(colWidths[i], getStringWidth(displayString) + extraSpacesNum);
                 }
             }
             for (int i = 0; i < colWidths.length; i++) {
-                if (extraSpaces) colWidths[i]++;
                 if (colWidths[i] > maxColumnSize) {
                     colWidths[i] = maxColumnSize;
                 }
@@ -294,12 +294,14 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             if (delimLeading) grid.append("|");
             for (int i = 0; i < attrs.size(); i++) {
                 if (i > 0) grid.append("|");
+                if (extraSpaces) grid.append(" ");
                 DBDAttributeBinding attr = attrs.get(i);
                 String attrName = getAttributeName(attr);
                 grid.append(attrName);
-                for (int k = colWidths[i] - attrName.length(); k > 0; k--) {
+                for (int k = colWidths[i] - attrName.length() - extraSpacesNum; k > 0; k--) {
                     grid.append(" ");
                 }
+                if (extraSpaces) grid.append(" ");
             }
             if (delimTrailing) grid.append("|");
             grid.append("\n");
@@ -334,25 +336,24 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 }
 
                 int stringWidth = getStringWidth(displayString);
-                if (extraSpaces) stringWidth++;
 
+                if (extraSpaces) grid.append(" ");
                 DBPDataKind dataKind = attr.getDataKind();
                 if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
                     (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
                 {
                     // Right justify value
-                    for (int j = colWidths[k] - stringWidth; j > 0; j--) {
+                    for (int j = colWidths[k] - stringWidth - extraSpacesNum; j > 0; j--) {
                         grid.append(" ");
                     }
                     grid.append(displayString);
-                    if (extraSpaces) grid.append(" ");
                 } else {
-                    if (extraSpaces) grid.append(" ");
                     grid.append(displayString);
-                    for (int j = colWidths[k] - stringWidth; j > 0; j--) {
+                    for (int j = colWidths[k] - stringWidth - extraSpacesNum; j > 0; j--) {
                         grid.append(" ");
                     }
                 }
+                if (extraSpaces) grid.append(" ");
             }
             if (delimTrailing) grid.append("|");
             grid.append("\n");
