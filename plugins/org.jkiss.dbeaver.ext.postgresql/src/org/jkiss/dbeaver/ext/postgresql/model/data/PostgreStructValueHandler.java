@@ -115,7 +115,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         Iterator<PostgreDataTypeAttribute> attrIter = attributes.iterator();
         for (int i = 0; i < parsedValues.length && attrIter.hasNext(); i++) {
             final PostgreDataTypeAttribute itemAttr = attrIter.next();
-            attrValues[i] = PostgreUtils.convertStringToValue(itemAttr, parsedValues[i], true);
+            attrValues[i] = PostgreUtils.convertStringToValue(session, itemAttr, parsedValues[i], true);
         }
 
         Struct contents = new JDBCStructImpl(compType.getTypeName(), attrValues);

@@ -105,6 +105,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     public void openResource(@NotNull final IResource resource) throws CoreException, DBException
     {
         if (!(resource instanceof IFile)) {
+            super.openResource(resource);
             return;
         }
         final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(resource.getProject());

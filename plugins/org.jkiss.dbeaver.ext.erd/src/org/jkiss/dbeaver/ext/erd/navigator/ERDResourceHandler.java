@@ -110,6 +110,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public void openResource(@NotNull final IResource resource) throws CoreException, DBException
     {
         if (!(resource instanceof IFile)) {
+            super.openResource(resource);
             return;
         }
 
