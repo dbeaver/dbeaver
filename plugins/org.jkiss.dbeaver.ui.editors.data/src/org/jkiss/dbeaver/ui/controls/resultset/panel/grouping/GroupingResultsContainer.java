@@ -202,7 +202,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         sql.append("SELECT ");
         for (int i = 0; i < groupAttributes.size(); i++) {
             if (i > 0) sql.append(", ");
-            sql.append(groupAttributes.get(i));
+            sql.append(DBUtils.getQuotedIdentifier(getDataContainer().getDataSource(), groupAttributes.get(i)));
         }
         for (String func : groupFunctions) {
             sql.append(", ").append(func);

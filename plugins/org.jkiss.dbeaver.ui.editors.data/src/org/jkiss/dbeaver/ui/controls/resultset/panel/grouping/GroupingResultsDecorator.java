@@ -26,7 +26,9 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -156,7 +158,12 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
                 List<String> attributeBindings = new ArrayList<>();
                 for (Object element : dropElements) {
                     if (element instanceof DBDAttributeBinding) {
-                        attributeBindings.add(((DBDAttributeBinding) element).getFullyQualifiedName(DBPEvaluationContext.DML));
+                        DBDAttributeBinding binding = (DBDAttributeBinding) element;
+                        if (binding instanceof DBDAttributeBindingMeta && binding.getMetaAttribute() != null) {
+                            attributeBindings.add(DBUtils.getQuotedIdentifier(binding.getDataSource(), binding.getMetaAttribute().getLabel()));
+                        } else {
+                            attributeBindings.add(binding.getFullyQualifiedName(DBPEvaluationContext.DML));
+                        }
                     }
                 }
                 if (!attributeBindings.isEmpty()) {

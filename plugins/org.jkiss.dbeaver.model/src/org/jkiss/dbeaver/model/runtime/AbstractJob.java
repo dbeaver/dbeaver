@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -144,7 +145,11 @@ public abstract class AbstractJob extends Job
         if (!activeBlocks.isEmpty()) {
             DBPPreferenceStore preferenceStore;
             if (activeBlocks.get(0) instanceof DBCSession) {
-                preferenceStore = ((DBCSession) activeBlocks.get(0)).getDataSource().getContainer().getPreferenceStore();
+                DBPDataSource dataSource = ((DBCSession) activeBlocks.get(0)).getDataSource();
+                if (dataSource == null) {
+                    return;
+                }
+                preferenceStore = dataSource.getContainer().getPreferenceStore();
             } else {
                 preferenceStore = ModelPreferences.getPreferences();
             }
