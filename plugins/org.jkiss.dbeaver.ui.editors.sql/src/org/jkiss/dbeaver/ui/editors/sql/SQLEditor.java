@@ -1084,14 +1084,14 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
-        showExtraView(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, SQLEditorMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
+        showExtraView(SQLEditorCommands.CMD_SQL_SHOW_OUTPUT, SQLEditorMessages.editors_sql_output, SQLEditorMessages.editors_sql_output_tip, IMG_OUTPUT, outputViewer);
     }
 
     public void showExecutionLogPanel() {
         if (resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
-        showExtraView(SQLEditorCommands.CMD_SQL_SHOW_LOG, SQLEditorMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
+        showExtraView(SQLEditorCommands.CMD_SQL_SHOW_LOG, SQLEditorMessages.editors_sql_execution_log, SQLEditorMessages.editors_sql_execution_log_tip, IMG_LOG, logViewer);
     }
 
     public <T> T getExtraPresentationPanel(Class<T> panelClass) {
