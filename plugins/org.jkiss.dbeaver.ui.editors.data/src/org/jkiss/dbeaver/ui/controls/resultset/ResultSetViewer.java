@@ -3843,7 +3843,7 @@ public class ResultSetViewer extends Viewer
     private class TransformComplexTypesToggleAction extends Action {
         TransformComplexTypesToggleAction()
         {
-            super("Structurize complex types", AS_CHECK_BOX);
+            super(ResultSetMessages.actions_name_structurize_complex_types, AS_CHECK_BOX);
             setToolTipText("Visualize complex types (arrays, structures, maps) in results grid as separate columns");
         }
 
@@ -3872,7 +3872,7 @@ public class ResultSetViewer extends Viewer
     private class ColorizeDataTypesToggleAction extends Action {
         ColorizeDataTypesToggleAction()
         {
-            super("Colorize Data Types", AS_CHECK_BOX);
+            super(ResultSetMessages.actions_name_colorize_data_types, AS_CHECK_BOX);
             setToolTipText("Set different foreground color for data types");
         }
 
@@ -3927,7 +3927,7 @@ public class ResultSetViewer extends Viewer
         private final DBDAttributeBinding attribute;
         private final Object value;
         SetRowColorAction(DBDAttributeBinding attr, Object value) {
-            super("Color by " + attr.getName());
+            super(NLS.bind(ResultSetMessages.actions_name_color_by, attr.getName()));
             this.attribute = attr;
             this.value = value;
         }
@@ -3998,7 +3998,7 @@ public class ResultSetViewer extends Viewer
         }
 
         CustomizeColorsAction(DBDAttributeBinding curAttribute, ResultSetRow row) {
-            super("Row colors ...");
+            super(ResultSetMessages.actions_name_row_colors); //$NON-NLS-1$
             this.curAttribute = curAttribute;
             this.row = row;
         }
