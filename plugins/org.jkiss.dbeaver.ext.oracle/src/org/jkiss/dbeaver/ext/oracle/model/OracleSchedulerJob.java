@@ -189,7 +189,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         comments = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
-    @Property(viewable = false, order = 10)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 10)
     public String getOwner() {
         return owner;
     }
@@ -204,22 +204,22 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return jobStyle;
     }
 
-    @Property(viewable = false, order = 12)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 12)
     public String getJobCreator() {
         return jobCreator;
     }
 
-    @Property(viewable = false, order = 13)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 13)
     public String getClientId() {
         return clientId;
     }
 
-    @Property(viewable = false, order = 14)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 14)
     public String getGlobalUid() {
         return globalUid;
     }
 
-    @Property(viewable = false, order = 15)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 15)
     public String getProgramOwner() {
         return programOwner;
     }
@@ -244,7 +244,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return numberOfArguments;
     }
 
-    @Property(viewable = false, order = 20)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 20)
     public String getScheduleOwner() {
         return scheduleOwner;
     }
@@ -459,7 +459,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return instanceId;
     }
 
-    @Property(viewable = false, order = 63)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 63)
     public String getDeferredDrop() {
         return deferredDrop;
     }
