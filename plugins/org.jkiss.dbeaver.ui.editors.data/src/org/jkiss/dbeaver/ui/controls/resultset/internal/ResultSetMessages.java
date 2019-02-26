@@ -112,7 +112,11 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_control_no_data;
     public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
 
-    public static String actions_spreadsheet_copy_special;
+    public static String actions_name_color_by;
+	public static String actions_name_colorize_data_types;
+	public static String actions_name_row_colors;
+	public static String actions_name_structurize_complex_types;
+	public static String actions_spreadsheet_copy_special;
 
     // Data managers (FIXME: model_jdbc_ is a legacy prefix)
     public static String model_jdbc_bad_content_value_;
