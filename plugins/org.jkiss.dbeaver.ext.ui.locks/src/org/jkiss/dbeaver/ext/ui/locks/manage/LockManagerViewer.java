@@ -32,6 +32,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.ui.locks.UIMessages;
 import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraphicalView;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTable;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTableDetail;
@@ -67,7 +68,7 @@ public class LockManagerViewer {
 
     private AutoRefreshControl refreshControl;
 
-    private Action killAction = new Action("Kill waiting session", UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)) {
+    private Action killAction = new Action(UIMessages.actions_refresh_control_kill_waiting_session, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)) {
         @Override
         public void run() {
         	if (curLock != null) {
@@ -236,7 +237,7 @@ public class LockManagerViewer {
             contributionManager.add(killAction);
             contributionManager.add(new Separator());
             refreshControl.populateRefreshButton(contributionManager);
-            contributionManager.add(new Action("Refresh locks", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
+            contributionManager.add(new Action(UIMessages.actions_refresh_control_refresh_locks, DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
                 public void run() {
                     refreshLocks(curLock);
