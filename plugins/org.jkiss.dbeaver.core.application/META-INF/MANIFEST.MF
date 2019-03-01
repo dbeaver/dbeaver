@@ -8,7 +8,8 @@ Bundle-ActivationPolicy: lazy
 Bundle-Version: 6.0.0.qualifier
 Bundle-Release-Date: 20190311
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: org.jkiss.dbeaver.core.application
+Export-Package: org.jkiss.dbeaver.core.application,
+ org.jkiss.dbeaver.core.application.update
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.osgi,
  org.eclipse.equinox.app,

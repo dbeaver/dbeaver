@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.application.DBeaverApplication;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
@@ -116,11 +117,7 @@ public class DBeaverVersionChecker extends AbstractJob {
     private void showUpdaterDialog(final VersionDescriptor versionDescriptor)
     {
         UIUtils.asyncExec(() -> {
-            VersionUpdateDialog dialog = new VersionUpdateDialog(
-                UIUtils.getActiveWorkbenchShell(),
-                versionDescriptor,
-                !showAlways);
-            dialog.open();
+            DBeaverApplication.getInstance().notifyVersionUpgrade(versionDescriptor, !showAlways);
         });
     }
 }

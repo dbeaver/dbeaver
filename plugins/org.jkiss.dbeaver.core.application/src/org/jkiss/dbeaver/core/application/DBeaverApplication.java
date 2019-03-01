@@ -37,10 +37,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
+import org.jkiss.dbeaver.core.application.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.app.DefaultSecureStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
@@ -421,6 +424,14 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         int msgResult = messageBox.open();
         shell.dispose();
         return msgResult;
+    }
+
+    public void notifyVersionUpgrade(VersionDescriptor versionDescriptor, boolean showSkip) {
+        VersionUpdateDialog dialog = new VersionUpdateDialog(
+            UIUtils.getActiveWorkbenchShell(),
+            versionDescriptor,
+            showSkip);
+        dialog.open();
     }
 
     private static class BundleLoadListener implements BundleListener {
