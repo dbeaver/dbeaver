@@ -46,7 +46,7 @@
                 icon="icons/postgresql_icon.png">
             <tree path="postgresql" label="PostgreSQL data source">
                 <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
-                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="%tree.schemas.node.tip">
                         <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
                             <icon if="object.utility || object.external" icon="#schema_util"/>
                             <icon if="object.system" icon="#schema_system"/>
@@ -165,7 +165,7 @@
                         </items>
                     </folder>
 
-                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="Roles and users" visibleIf="object.dataSource.serverType.supportsRoles()">
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="%tree.roles.node.tip" visibleIf="object.dataSource.serverType.supportsRoles()">
                         <items label="%tree.role.node.name" path="users" property="authIds" icon="#user">
                             <icon if="!object.canLogin" icon="#user_group"/>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="Members" visibleIf="!object.canLogin"  navigable="false">
@@ -177,12 +177,12 @@
                         </items>
                     </folder>
 
-                    <folder label="%tree.administer.node.name" icon="#folder_admin" description="Administer">
+                    <folder label="%tree.administer.node.name" icon="#folder_admin" description="%tree.administer.node.tip">
                         <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" visibleIf="object.dataSource.serverType.supportsSessionActivity()"/>
                         <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" visibleIf="object.dataSource.serverType.supportsLocks()"/>
                     </folder>
 
-                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="%tree.information.node.tip">
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAccessMethod" label="%tree.accessMethods.node.name" icon="#languages" description="Access methods">
                             <items label="%tree.accessMethod.node.name" path="accessMethod" property="accessMethods" icon="#accessMethod">
                                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreOperatorClass" label="%tree.opClasses.node.name" icon="#operator" description="Operator classes">
