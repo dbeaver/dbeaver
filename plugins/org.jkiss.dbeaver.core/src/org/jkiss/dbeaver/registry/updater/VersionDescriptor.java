@@ -62,12 +62,20 @@ public class VersionDescriptor {
         return programVersion;
     }
 
+    public void setProgramVersion(Version programVersion) {
+        this.programVersion = programVersion;
+    }
+
     public String getPlainVersion() {
         return programVersion.getMajor() + "." + programVersion.getMinor() + "." + programVersion.getMicro();
     }
 
     public String getUpdateTime() {
         return updateTime;
+    }
+
+    public void setUpdateTime(String updateTime) {
+        this.updateTime = updateTime;
     }
 
     public String getBaseURL() {

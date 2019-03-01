@@ -33,19 +33,27 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-class VersionUpdateDialog extends Dialog {
+public class VersionUpdateDialog extends Dialog {
 
     private VersionDescriptor newVersion;
     private static final int INFO_ID = 1000;
     private Font boldFont;
-    private boolean autoCheck;
+    private boolean showConfig;
     private Button dontShowAgainCheck;
 
-    public VersionUpdateDialog(Shell parentShell, VersionDescriptor newVersion, boolean autoCheck)
+    public VersionUpdateDialog(Shell parentShell, VersionDescriptor newVersion, boolean showConfig)
     {
         super(parentShell);
         this.newVersion = newVersion;
-        this.autoCheck = autoCheck;
+        this.showConfig = showConfig;
+    }
+
+    public VersionDescriptor getNewVersion() {
+        return newVersion;
+    }
+
+    public boolean isShowConfig() {
+        return showConfig;
     }
 
     @Override
@@ -62,6 +70,8 @@ class VersionUpdateDialog extends Dialog {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
         Composite propGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_version_update_title, 2, GridData.FILL_BOTH, 0);
+
+        createTopArea(composite);
 
         boldFont = UIUtils.makeBoldFont(composite.getFont());
 
@@ -104,7 +114,17 @@ class VersionUpdateDialog extends Dialog {
             hintLabel.setFont(boldFont);
         }
 
+        createBottomArea(composite);
+
         return parent;
+    }
+
+    protected void createTopArea(Composite composite) {
+
+    }
+
+    protected void createBottomArea(Composite composite) {
+
     }
 
     @Override
@@ -117,7 +137,7 @@ class VersionUpdateDialog extends Dialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        if (autoCheck && newVersion != null) {
+        if (showConfig && newVersion != null) {
             ((GridLayout) parent.getLayout()).numColumns++;
             dontShowAgainCheck = UIUtils.createCheckbox(parent, "Don't show for the version " + newVersion.getPlainVersion(), false);
         }
