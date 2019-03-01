@@ -27,8 +27,11 @@ import org.xml.sax.Attributes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -76,6 +79,14 @@ public class VersionDescriptor {
 
     public void setUpdateTime(String updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Date getVersionReleaseTimestamp() {
+        try {
+            return new SimpleDateFormat("dd.MM.yyyy").parse(updateTime);
+        } catch (ParseException e) {
+            return new Date();
+        }
     }
 
     public String getBaseURL() {

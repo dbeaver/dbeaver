@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class VersionUpdateDialog extends Dialog {
 
@@ -54,6 +55,10 @@ public class VersionUpdateDialog extends Dialog {
 
     public boolean isShowConfig() {
         return showConfig;
+    }
+
+    public Font getBoldFont() {
+        return boldFont;
     }
 
     @Override
@@ -100,10 +105,16 @@ public class VersionUpdateDialog extends Dialog {
             notesLabel.setLayoutData(gd);
 
             final Text notesText = new Text(propGroup, SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
-            notesText.setText(newVersion.getReleaseNotes());
+            String releaseNotes = CommonUtils.notEmpty(newVersion.getReleaseNotes());
+            if (releaseNotes.isEmpty()) {
+                releaseNotes = "No release notes";
+            }
+            releaseNotes = formatReleaseNotes(releaseNotes);
+
+            notesText.setText(releaseNotes);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
-            gd.heightHint = notesText.getLineHeight() * 20;
+            //gd.heightHint = notesText.getLineHeight() * 20;
             notesText.setLayoutData(gd);
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);
@@ -117,6 +128,30 @@ public class VersionUpdateDialog extends Dialog {
         createBottomArea(composite);
 
         return parent;
+    }
+
+    private static String formatReleaseNotes(String releaseNotes) {
+        while (releaseNotes.startsWith("\n")) {
+            releaseNotes = releaseNotes.substring(1);
+        }
+        String[] rnLines = releaseNotes.split("\n");
+        int leadSpacesNum = 0;
+        for (int i = 0; i < rnLines[0].length(); i++) {
+            if (rnLines[0].charAt(i) == ' ') {
+                leadSpacesNum++;
+            } else {
+                break;
+            }
+        }
+        StringBuilder result = new StringBuilder();
+        for (String rnLine : rnLines) {
+            if (rnLine.length() > leadSpacesNum) {
+                if (result.length() > 0) result.append("\n");
+                result.append(rnLine.substring(leadSpacesNum));
+            }
+        }
+
+        return result.toString();
     }
 
     protected void createTopArea(Composite composite) {
