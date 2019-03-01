@@ -59,6 +59,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
     };
 
     public static final String[] ADVANCED_KEYWORDS = {
+        "REPLACE",
         "PACKAGE",
         "FUNCTION",
         "TYPE",
