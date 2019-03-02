@@ -60,6 +60,13 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         }
     };
 
+    protected final ColumnModifier<SQLServerTableColumn> CollateModifier = (monitor, column, sql, command) -> {
+        String collationName = column.getCollationName();
+        if (!CommonUtils.isEmpty(collationName)) {
+            sql.append(" COLLATE ").append(collationName);
+        }
+    };
+
     protected final ColumnModifier<SQLServerTableColumn> SQLServerDefaultModifier = (monitor, column, sql, command) -> {
         if (!column.isPersisted()) {
             DefaultModifier.appendModifier(monitor, column, sql, command);
@@ -79,7 +86,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
     protected ColumnModifier[] getSupportedModifiers(SQLServerTableColumn column, Map<String, Object> options)
     {
-        return new ColumnModifier[] {DataTypeModifier, IdentityModifier, SQLServerDefaultModifier, NullNotNullModifier};
+        return new ColumnModifier[] {DataTypeModifier, IdentityModifier, CollateModifier, SQLServerDefaultModifier, NullNotNullModifier};
     }
 
     @Override
