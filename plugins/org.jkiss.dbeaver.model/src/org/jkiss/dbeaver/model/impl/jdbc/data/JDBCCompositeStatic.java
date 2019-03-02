@@ -48,6 +48,7 @@ public class JDBCCompositeStatic extends JDBCComposite {
 
     public JDBCCompositeStatic(DBCSession session, @NotNull DBSDataType type, @Nullable Struct contents) throws DBCException
     {
+        super(contents);
         this.type = type;
 
         // Extract structure data

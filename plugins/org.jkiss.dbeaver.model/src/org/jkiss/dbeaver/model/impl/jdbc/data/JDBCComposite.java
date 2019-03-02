@@ -48,6 +48,9 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
 
     private static final Log log = Log.getLog(JDBCComposite.class);
 
+    @Nullable
+    private Struct rawStruct;
+
     @NotNull
     protected DBSDataType type;
     @NotNull
@@ -57,6 +60,10 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     protected boolean modified;
 
     protected JDBCComposite() {
+    }
+
+    public JDBCComposite(Struct rawStruct) {
+        this.rawStruct = rawStruct;
     }
 
     protected JDBCComposite(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
@@ -102,7 +109,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
 
     public String getStringRepresentation()
     {
-        return getTypeName();
+        return CommonUtils.toString(getRawValue());
     }
 
     @NotNull
@@ -111,6 +118,9 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     }
 
     public Struct getStructValue() throws DBCException {
+        if (rawStruct != null) {
+            return rawStruct;
+        }
         Object[] attrs = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
             Object attr = values[i];
@@ -124,7 +134,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             if (session instanceof Connection) {
                 return ((Connection) session).createStruct(dataType.getTypeName(), attrs);
             } else {
-                return new JDBCStructImpl(dataType.getTypeName(), attrs);
+                return new JDBCStructImpl(dataType.getTypeName(), attrs, getStringRepresentation());
             }
         } catch (Throwable e) {
             throw new DBCException("Error creating struct", e);
@@ -139,6 +149,9 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
 
     @Override
     public Struct getRawValue() {
+        if (rawStruct != null) {
+            return rawStruct;
+        }
         try {
             return getStructValue();
         } catch (Throwable e) {
@@ -269,8 +282,8 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             return CommonUtils.equalObjects(name, attr.name) &&
                 valueType == attr.valueType &&
                 maxLength == attr.maxLength &&
-                scale == attr.scale &&
-                precision == attr.precision &&
+                CommonUtils.equalObjects(scale, attr.scale) &&
+                CommonUtils.equalObjects(precision, attr.precision) &&
                 CommonUtils.equalObjects(typeName, attr.typeName) &&
                 ordinalPosition == attr.ordinalPosition;
         }

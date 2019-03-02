@@ -46,6 +46,8 @@ public class JDBCCompositeDynamic extends JDBCComposite {
 
     public JDBCCompositeDynamic(@NotNull DBCSession session, @Nullable Struct contents, @Nullable ResultSetMetaData metaData) throws DBCException
     {
+        super(contents);
+
         this.type = new StructType(session.getDataSource());
 
         // Extract structure data
