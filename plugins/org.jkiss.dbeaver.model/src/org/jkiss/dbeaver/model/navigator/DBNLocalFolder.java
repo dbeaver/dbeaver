@@ -53,6 +53,10 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return folder;
     }
 
+    public void setFolder(DBPDataSourceFolder folder) {
+        this.folder = folder;
+    }
+
     public DBPDataSourceRegistry getDataSourceRegistry() {
         return ((DBNProjectDatabases)parentNode).getDataSourceRegistry();
     }
@@ -199,15 +203,17 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public boolean supportsDrop(DBNNode otherNode)
     {
-        return otherNode == null || otherNode instanceof DBNDataSource;
+        return otherNode == null || otherNode instanceof DBNDataSource ||
+            (otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getFolder().canMoveTo(getFolder()));
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException
-    {
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
                 ((DBNDataSource) node).setFolder(folder);
+            } else if (node instanceof DBNLocalFolder) {
+                ((DBNLocalFolder) node).getFolder().setParent(this.getFolder());
             }
         }
         DBNModel.updateConfigAndRefreshDatabases(this);
@@ -244,4 +250,5 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     public String toString() {
         return folder.getFolderPath();
     }
+
 }

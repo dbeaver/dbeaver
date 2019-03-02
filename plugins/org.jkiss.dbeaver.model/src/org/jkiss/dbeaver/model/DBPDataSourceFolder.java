@@ -29,7 +29,11 @@ public interface DBPDataSourceFolder extends DBPNamedObject2 {
 
     DBPDataSourceFolder getParent();
 
+    void setParent(DBPDataSourceFolder parent);
+
     DBPDataSourceFolder[] getChildren();
 
     DBPDataSourceRegistry getDataSourceRegistry();
+
+    boolean canMoveTo(DBPDataSourceFolder folder);
 }
