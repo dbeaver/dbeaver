@@ -127,7 +127,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
             }
         }
         if (object == null) {
-            return new JDBCCompositeStatic(session, dataType, new JDBCStructImpl(dataType.getTypeName(), null));
+            return new JDBCCompositeStatic(session, dataType, new JDBCStructImpl(dataType.getTypeName(), null, ""));
         } else if (object instanceof JDBCCompositeStatic) {
             return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Struct) {

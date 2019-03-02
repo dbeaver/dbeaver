@@ -81,7 +81,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
         try {
             if (object == null) {
-                return new JDBCCompositeStatic(session, structType, new JDBCStructImpl(structType.getTypeName(), null));
+                return new JDBCCompositeStatic(session, structType, new JDBCStructImpl(structType.getTypeName(), null, ""));
             } else if (object instanceof JDBCCompositeStatic) {
                 return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
             } else {
@@ -118,7 +118,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
             attrValues[i] = PostgreUtils.convertStringToValue(session, itemAttr, parsedValues[i], true);
         }
 
-        Struct contents = new JDBCStructImpl(compType.getTypeName(), attrValues);
+        Struct contents = new JDBCStructImpl(compType.getTypeName(), attrValues, value);
         return new JDBCCompositeStatic(session, compType, contents);
     }
 

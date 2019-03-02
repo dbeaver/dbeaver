@@ -29,10 +29,12 @@ public class JDBCStructImpl implements Struct {
 
     private final String typeName;
     private final Object[] attributes;
+    private final String stringValue;
 
-    public JDBCStructImpl(String typeName, Object[] attributes) {
+    public JDBCStructImpl(String typeName, Object[] attributes, String stringValue) {
         this.typeName = typeName;
         this.attributes = attributes;
+        this.stringValue = stringValue;
     }
 
     @Override
@@ -49,4 +51,10 @@ public class JDBCStructImpl implements Struct {
     public Object[] getAttributes(Map<String, Class<?>> map) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
+
+    @Override
+    public String toString() {
+        return stringValue;
+    }
+
 }
