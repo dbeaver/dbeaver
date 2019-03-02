@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -64,6 +65,8 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     private MySQLCharset characterSetClient;
     private MySQLCollation collationConnection;
     private MySQLCollation databaseCollation;
+    private MySQLCatalog catalog;
+    private transient String clientBody;
 
     public MySQLEvent(MySQLCatalog catalog, ResultSet dbResult)
         throws SQLException
@@ -209,6 +212,9 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     public MySQLCollation getDatabaseCollation() {
         return databaseCollation;
     }
+    public MySQLCatalog getCatalog() {
+        return catalog;
+    }
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
@@ -241,5 +247,15 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
         eventDefinition = sourceText;
+    }
+
+	public String getFullyQualifiedName(DBPEvaluationContext ddl) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+    public String getDeclaration()
+    {
+        return clientBody;
     }
 }
