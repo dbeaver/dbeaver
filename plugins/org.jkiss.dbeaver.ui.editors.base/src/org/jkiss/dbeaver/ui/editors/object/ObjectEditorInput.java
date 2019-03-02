@@ -17,36 +17,60 @@
 package org.jkiss.dbeaver.ui.editors.object;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
  * ObjectEditorInput
  */
-public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseObject>
+public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
 {
-    public ObjectEditorInput(DBNDatabaseObject dbmNode)
+
+    private DBXTreeObject editorMeta;
+
+    public ObjectEditorInput(@NotNull DBNDatabaseObject dbmNode)
     {
         super(dbmNode);
+    }
+
+    public ObjectEditorInput(@NotNull DBNDatabaseNode dbmNode, @NotNull  DBXTreeObject meta)
+    {
+        super(dbmNode);
+        this.editorMeta = meta;
+    }
+
+    public DBXTreeObject getEditorMeta() {
+        if (editorMeta != null) {
+            return editorMeta;
+        } else {
+            return ((DBXTreeObject)getNavigatorNode().getMeta());
+        }
     }
 
     @Override
     public ImageDescriptor getImageDescriptor()
     {
-        DBNDatabaseObject node = getNavigatorNode();
+        DBNDatabaseNode node = getNavigatorNode();
 //        IEditorDescriptor editorDescriptor = node.getEditorDescriptor();
 //        if (editorDescriptor != null) {
 //            return editorDescriptor.getImageDescriptor();
 //        } else {
-            return DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
+            return DBeaverIcons.getImageDescriptor(getEditorMeta().getDefaultIcon());
 //        }
     }
 
     @Override
     public String getToolTipText()
     {
-        return getNavigatorNode().getMeta().getDescription();
+        return getEditorMeta().getDescription();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ObjectEditorInput && super.equals(obj) && getEditorMeta() == ((ObjectEditorInput) obj).getEditorMeta();
+    }
 }

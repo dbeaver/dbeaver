@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -35,8 +36,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.common.ExecuteToolHandler;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -84,13 +85,15 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                 findObjectNodes(dsNode.getMeta(), navigatorObjectEditors, processedNodes);
             }
             if (!navigatorObjectEditors.isEmpty()) {
-                DBNDatabaseNode objectNode = dsNode;
-//                DBNDatabaseNode objectNode = NavigatorUtils.getNodeByObject(selectedObject);
-//                if (objectNode == null) {
-//                    objectNode = dsNode;
-//                }
                 menuItems.add(new Separator());
                 for (DBXTreeObject editorMeta : navigatorObjectEditors) {
+
+                    //DBNDatabaseNode objectNode = dsNode;
+                    DBNDatabaseNode objectNode = NavigatorUtils.getNodeByObject(selectedObject);
+                    if (objectNode == null) {
+                        objectNode = dsNode;
+                    }
+
                     menuItems.add(new ActionContributionItem(new OpenToolsEditorAction(activePage, objectNode, editorMeta)));
                 }
             }
@@ -189,12 +192,16 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
 
         @Override
         public void run() {
-            DatabaseEditorInput<DBNDatabaseNode> objectInput = new DatabaseEditorInput<DBNDatabaseNode>(databaseNode) {
+            ObjectEditorInput editorInput;
+            if (databaseNode instanceof DBNDatabaseObject) {
+                editorInput = new ObjectEditorInput((DBNDatabaseObject) databaseNode);
+            } else {
+                editorInput = new ObjectEditorInput(databaseNode, editorMeta);
+            }
 
-            };
             try {
                 workbenchPage.openEditor(
-                    objectInput,
+                    editorInput,
                     editorMeta.getEditorId());
             } catch (PartInitException e) {
                 DBWorkbench.getPlatformUI().showError("Editor open", "Error opening tool editor '" + editorMeta.getEditorId() + "'", e.getStatus());
