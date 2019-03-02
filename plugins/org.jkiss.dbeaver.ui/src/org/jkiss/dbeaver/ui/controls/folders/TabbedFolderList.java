@@ -1022,18 +1022,27 @@ public class TabbedFolderList extends Composite {
 
     public void handleTraverse(TraverseEvent e) {
         if (e.detail == SWT.TRAVERSE_PAGE_PREVIOUS || e.detail == SWT.TRAVERSE_PAGE_NEXT) {
+            if ((e.stateMask & SWT.ALT) != SWT.ALT) {
+                // Only in case of CTRL+ALT+PG
+                return;
+            }
+            e.doit = false;
+
             int nMax = elements.length - 1;
             int nCurrent = getSelectionIndex();
             if (e.detail == SWT.TRAVERSE_PAGE_PREVIOUS) {
                 nCurrent -= 1;
-                nCurrent = Math.max(0, nCurrent);
+                if (nCurrent < 0) {
+                    return;
+                }
             } else {
                 nCurrent += 1;
-                nCurrent = Math.min(nCurrent, nMax);
+                if (nCurrent > nMax) {
+                    return;
+                }
             }
             select(nCurrent);
             redraw();
-            e.doit = false;
         } else {
             e.doit = true;
         }
