@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.utils.CommonUtils;
@@ -52,7 +54,7 @@ public class FilterMapping {
             return defaultFilter;
         }
         if (!customFilters.isEmpty()) {
-            String objectID = DBUtils.getObjectUniqueName(parentObject);
+            String objectID = getFilterContainerUniqueID(parentObject);
             DBSObjectFilter filter = customFilters.get(objectID);
             if ((filter != null && !filter.isNotApplicable()) || firstMatch) {
                 return filter;
@@ -81,4 +83,15 @@ public class FilterMapping {
             CommonUtils.hashCode(defaultFilter) +
             CommonUtils.hashCode(customFilters);
     }
+
+    public static String getFilterContainerUniqueID(@Nullable DBSObject parentObject) {
+        String objectFullName = DBUtils.getObjectFullName(parentObject, DBPEvaluationContext.UI);
+        DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(parentObject);
+        if (!CommonUtils.equalObjects(ownerInstance.getName(), parentObject.getDataSource().getName())) {
+            return ownerInstance.getName() + ":" + objectFullName;
+        } else {
+            return objectFullName;
+        }
+    }
+
 }

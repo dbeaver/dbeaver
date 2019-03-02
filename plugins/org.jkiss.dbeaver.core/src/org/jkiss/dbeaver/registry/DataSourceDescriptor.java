@@ -500,11 +500,11 @@ public class DataSourceDescriptor
             if (parentObject == null) {
                 filterMapping.defaultFilter = filter;
             } else {
-                filterMapping.customFilters.put(DBUtils.getObjectUniqueName(parentObject), filter);
+                filterMapping.customFilters.put(FilterMapping.getFilterContainerUniqueID(parentObject), filter);
             }
         }
 
-        updateObjectFilter(type.getName(), parentObject == null ? null : DBUtils.getObjectUniqueName(parentObject), filter);
+        updateObjectFilter(type.getName(), parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject), filter);
     }
 
     void clearFilters() {
