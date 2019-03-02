@@ -70,7 +70,7 @@ public class SQLFormatterConfigurationRegistry implements SQLFormatterRegistry
     }
 
     public List<SQLFormatterDescriptor> getFormatters() {
-        return formatters;
+        return new ArrayList<>(formatters);
     }
 
     public SQLFormatterDescriptor getFormatter(String id) {

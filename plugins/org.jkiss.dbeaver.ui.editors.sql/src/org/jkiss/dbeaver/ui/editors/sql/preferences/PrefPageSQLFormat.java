@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -107,6 +108,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         formatterSelector = UIUtils.createLabelCombo(composite, SQLEditorMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         formatters = SQLFormatterConfigurationRegistry.getInstance().getFormatters();
+        formatters.sort(Comparator.comparing(SQLFormatterDescriptor::getLabel));
         for (SQLFormatterDescriptor formatterDesc : formatters) {
             formatterSelector.add(DBPIdentifierCase.capitalizeCaseName(formatterDesc.getLabel()));
         }
