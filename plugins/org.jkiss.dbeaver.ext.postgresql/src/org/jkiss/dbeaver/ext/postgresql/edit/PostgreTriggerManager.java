@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -39,7 +40,7 @@ import java.util.Map;
 /**
  * PostgreTriggerManager
  */
-public class PostgreTriggerManager extends SQLObjectEditor<PostgreTrigger, PostgreTableReal> {//implements DBEObjectRenamer<PostgreTrigger> {
+public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, PostgreTableReal> {//implements DBEObjectRenamer<PostgreTrigger> {
 
     @Override
     public boolean canCreateObject(PostgreTableReal parent) {
@@ -62,11 +63,6 @@ public class PostgreTriggerManager extends SQLObjectEditor<PostgreTrigger, Postg
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-
-    }
-
-    @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTrigger, PropertyHandler> command, Map<String, Object> options) throws DBException {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction(
@@ -77,10 +73,19 @@ public class PostgreTriggerManager extends SQLObjectEditor<PostgreTrigger, Postg
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, PostgreTrigger trigger, boolean create) {
 
     }
 
+
+    @Override
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    {
+        actions.add(
+            new SQLDatabasePersistAction("Drop trigger",
+                "DROP TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
+        );
+    }
 
 }
 
