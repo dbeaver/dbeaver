@@ -67,11 +67,11 @@ public class DataSourceFolder implements DBPDataSourceFolder
         return parent;
     }
 
-    public void setParent(DataSourceFolder parent) {
+    public void setParent(DBPDataSourceFolder parent) {
         if (this.parent != null) {
             this.parent.children.remove(this);
         }
-        this.parent = parent;
+        this.parent = (DataSourceFolder) parent;
         if (this.parent != null) {
             this.parent.children.add(this);
         }
@@ -85,6 +85,20 @@ public class DataSourceFolder implements DBPDataSourceFolder
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         return registry;
+    }
+
+    @Override
+    public boolean canMoveTo(DBPDataSourceFolder folder) {
+        return folder != this && !this.isParentOf(folder);
+    }
+
+    private boolean isParentOf(DBPDataSourceFolder folder) {
+        for (DBPDataSourceFolder p = folder; p != null; p = p.getParent()) {
+            if (p == this) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public DataSourceFolder getChild(String name) {

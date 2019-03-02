@@ -232,7 +232,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
     @Override
     public boolean supportsDrop(DBNNode otherNode)
     {
-        return otherNode == null || otherNode instanceof DBNDataSource;
+        return otherNode == null || otherNode instanceof DBNDataSource ||
+            (otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getFolder().canMoveTo(dataSource.getFolder()));
     }
 
     @Override
@@ -244,6 +245,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, IAda
                 if (!((DBNDataSource) node).setFolder(folder)) {
                     return;
                 }
+            } else if (node instanceof DBNLocalFolder) {
+                ((DBNLocalFolder) node).getFolder().setParent(dataSource.getFolder());
             }
         }
         DBNModel.updateConfigAndRefreshDatabases(this);

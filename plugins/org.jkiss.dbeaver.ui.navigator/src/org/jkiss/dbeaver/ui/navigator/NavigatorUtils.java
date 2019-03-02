@@ -23,10 +23,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -61,6 +58,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * Navigator utils
@@ -386,12 +384,16 @@ public class NavigatorUtils {
 
             private boolean isDropSupported(DropTargetEvent event)
             {
-                if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType) && event.item instanceof TreeItem) {
-                    TreeItem treeItem = (TreeItem)event.item;
-                    Object curObject = treeItem.getData();
+                if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
+                    Object curObject;
+                    if (event.item instanceof Item) {
+                        curObject = event.item.getData();
+                    } else {
+                        curObject = null;
+                    }
+                    @SuppressWarnings("unchecked")
+                    Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
                     if (curObject instanceof DBNNode) {
-                        @SuppressWarnings("unchecked")
-                        Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
                         if (!CommonUtils.isEmpty(nodesToDrop)) {
                             for (DBNNode node : nodesToDrop) {
                                 if (!((DBNNode)curObject).supportsDrop(node)) {
@@ -402,6 +404,22 @@ public class NavigatorUtils {
                         } else {
                             return ((DBNNode)curObject).supportsDrop(null);
                         }
+                    } else if (curObject == null) {
+                        // Drop to empty area
+                        if (!CommonUtils.isEmpty(nodesToDrop)) {
+                            for (DBNNode node : nodesToDrop) {
+                                if (!(node instanceof DBNDataSource)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        } else {
+                            Widget widget = event.widget;
+                            if (widget instanceof DropTarget) {
+                                widget = ((DropTarget) widget).getControl();
+                            }
+                            return widget == viewer.getControl();
+                        }
                     }
                 }
                 return false;
@@ -409,15 +427,30 @@ public class NavigatorUtils {
 
             private void moveNodes(DropTargetEvent event)
             {
-                if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType) && event.item instanceof TreeItem) {
-                    TreeItem treeItem = (TreeItem)event.item;
-                    Object curObject = treeItem.getData();
+                if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
+                    Object curObject;
+                    if (event.item instanceof Item) {
+                        curObject = event.item.getData();
+                    } else {
+                        curObject = null;
+                    }
                     if (curObject instanceof DBNNode) {
                         Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
                         try {
                             ((DBNNode)curObject).dropNodes(nodesToDrop);
                         } catch (DBException e) {
                             DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop node", e);
+                        }
+                    } else if (curObject == null) {
+                        for (DBNNode node : TreeNodeTransfer.getInstance().getObject()) {
+                            if (node instanceof DBNDataSource) {
+                                ((DBNDataSource) node).setFolder(null);
+                            } else if (node instanceof DBNLocalFolder) {
+                                ((DBNLocalFolder) node).getFolder().setParent(null);
+                            } else {
+                                continue;
+                            }
+                            DBNModel.updateConfigAndRefreshDatabases(node);
                         }
                     }
                 }
