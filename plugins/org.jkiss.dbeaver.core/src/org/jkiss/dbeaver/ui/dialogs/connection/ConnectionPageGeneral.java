@@ -111,7 +111,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         this.dataSourceDescriptor = dataSourceDescriptor;
 
         for (FilterInfo filterInfo : filters) {
-            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, false);
+            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, true);
         }
     }
 
