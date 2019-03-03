@@ -51,8 +51,9 @@ public class FilterValueEditDialog extends BaseDialog{
     private GenericFilterValueEdit handler;
     private Object value;
     private static final Log log = Log.getLog(FilterValueEditDialog.class);
-    
-	public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow[] rows, DBCLogicalOperator operator) {
+    private ViewerColumnController columnController;
+
+    public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow[] rows, DBCLogicalOperator operator) {
 		super(viewer.getControl().getShell(), "Edit value", null);
 		handler = new GenericFilterValueEdit(viewer, attr, rows, operator);
 	}
@@ -128,10 +129,9 @@ public class FilterValueEditDialog extends BaseDialog{
 		layoutData.widthHint = 400;
 		layoutData.heightHint = 300;
 		handler.setupTable(composite, SWT.BORDER | SWT.MULTI | SWT.CHECK | SWT.FULL_SELECTION, true, true, layoutData);
-		
 
 
-        ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.tableViewer);
+        columnController = new ViewerColumnController(getClass().getName(), handler.tableViewer);
         columnController.addColumn("Value", "Value", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -144,7 +144,7 @@ public class FilterValueEditDialog extends BaseDialog{
                 return ((DBDLabelValuePair)element).getLabel();
             }
         });
-        columnController.createColumns();
+        columnController.createColumns(true);
 
         Action[] elements = new Action[] {
 	        new Action("Select &All") {
@@ -170,6 +170,8 @@ public class FilterValueEditDialog extends BaseDialog{
 
         handler.filterPattern = null;
         handler.loadValues();
+
+        columnController.createColumns(true);
     }
 
 	public Object getValue() {
