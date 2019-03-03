@@ -1961,8 +1961,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     }
                     setBinding(attr);
                     setCurRow(row);
-                    updateValue(value, true);
+                    updateValue(value, false);
                 }
+                spreadsheet.redrawGrid();
+                controller.updatePanelsContent(true);
             } finally {
                 setBinding(origAttr);
                 setCurRow(origRow);
