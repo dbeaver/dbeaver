@@ -70,9 +70,9 @@ public class MavenArtifact implements IMavenIdentifier
     public MavenArtifact(@NotNull MavenRepository repository, @NotNull String groupId, @NotNull String artifactId, @Nullable String classifier)
     {
         this.repository = repository;
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.classifier = classifier;
+        this.groupId = CommonUtils.trim(groupId);
+        this.artifactId = CommonUtils.trim(artifactId);
+        this.classifier = CommonUtils.trim(classifier);
     }
 
     public void loadMetadata(DBRProgressMonitor monitor) throws IOException {
@@ -141,7 +141,6 @@ public class MavenArtifact implements IMavenIdentifier
             @Override
             public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
                 lastTag = localName;
-
             }
 
             @Override

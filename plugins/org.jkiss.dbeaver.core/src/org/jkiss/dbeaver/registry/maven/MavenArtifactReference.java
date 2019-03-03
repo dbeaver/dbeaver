@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Maven artifact reference
@@ -42,10 +43,10 @@ public class MavenArtifactReference implements IMavenIdentifier
     private final String classifier;
 
     public MavenArtifactReference(@NotNull String groupId, @NotNull String artifactId, @Nullable String classifier, @NotNull String version) {
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = version;
-        this.classifier = classifier;
+        this.groupId = CommonUtils.trim(groupId);
+        this.artifactId = CommonUtils.trim(artifactId);
+        this.version = CommonUtils.trim(version);
+        this.classifier = CommonUtils.trim(classifier);
         this.id = makeId(this);
     }
 

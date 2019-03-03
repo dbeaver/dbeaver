@@ -661,4 +661,7 @@ public class CommonUtils {
             return String.valueOf(val);
     }
 
+    public static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
 }
