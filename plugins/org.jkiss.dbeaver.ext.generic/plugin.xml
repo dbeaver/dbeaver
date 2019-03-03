@@ -990,6 +990,24 @@
                         categories="analytics,sql">
                 </driver>
 
+                <!-- CreateDB -->
+
+                <!--
+                    icon="icons/cratedb_icon.png"
+                    iconBig="icons/cratedb_icon_big.png"
+                -->
+                <driver
+                    id="cratedb"
+                    label="CrateDB"
+                    class="io.crate.client.jdbc.CrateDriver"
+                    sampleURL="crate://{host}[:{port}]/"
+                    defaultPort="5432"
+                    description="CrateDB JDBC driver"
+                    webURL="https://crate.io/docs/clients/jdbc/en/latest/"
+                    categories="sql">
+                    <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
+                </driver>
+
                 <!-- Legacy deprecated drivers -->
 
                 <driver
@@ -1432,6 +1450,9 @@
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="monetdb-maven-repo" name="MonetDB Repository" url="https://clojars.org/repo/" order="20">
             <scope group="monetdb"/>
+        </repository>
+        <repository id="cratedb-maven-repo" name="CrateDB Repository" url="https://dl.bintray.com/crate/crate" order="21">
+            <scope group="io.crate"/>
         </repository>
     </extension>
 
