@@ -992,13 +992,11 @@
 
                 <!-- CreateDB -->
 
-                <!--
-                    icon="icons/cratedb_icon.png"
-                    iconBig="icons/cratedb_icon_big.png"
-                -->
                 <driver
                     id="cratedb"
                     label="CrateDB"
+                    icon="icons/cratedb_icon.png"
+                    iconBig="icons/cratedb_icon_big.png"
                     class="io.crate.client.jdbc.CrateDriver"
                     sampleURL="crate://{host}[:{port}]/"
                     defaultPort="5432"
