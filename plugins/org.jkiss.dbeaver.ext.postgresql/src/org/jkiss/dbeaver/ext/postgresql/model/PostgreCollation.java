@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
@@ -30,22 +32,34 @@ import java.sql.SQLException;
  */
 public class PostgreCollation implements PostgreObject {
 
+    private PostgreDatabase database;
     private PostgreSchema schema;
     private long oid;
     private String name;
+    private long ownerId;
+    private String provider;
+    private long encodingId;
+    private String collate;
+    private String ctype;
 
-    public PostgreCollation(PostgreSchema schema, ResultSet dbResult)
-        throws SQLException
-    {
-        this.schema = schema;
-        this.loadInfo(dbResult);
+    public PostgreCollation(DBRProgressMonitor monitor, PostgreDatabase database, ResultSet dbResult)
+        throws SQLException, DBException {
+        this.database = database;
+        this.loadInfo(monitor, dbResult);
     }
 
-    private void loadInfo(ResultSet dbResult)
-        throws SQLException
-    {
+    private void loadInfo(DBRProgressMonitor monitor, ResultSet dbResult)
+        throws SQLException, DBException {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "collname");
+        this.schema = database.getSchema(monitor, JDBCUtils.safeGetLong(dbResult, "collnamespace"));
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "collowner");
+        if (getDataSource().isServerVersionAtLeast(10, 0)) {
+            this.provider = JDBCUtils.safeGetString(dbResult, "collprovider");
+        }
+        this.encodingId = JDBCUtils.safeGetLong(dbResult, "collencoding");
+        this.collate = JDBCUtils.safeGetString(dbResult, "collcollate");
+        this.ctype = JDBCUtils.safeGetString(dbResult, "collctype");
     }
 
     @NotNull
@@ -62,6 +76,32 @@ public class PostgreCollation implements PostgreObject {
         return name;
     }
 
+    @Property(viewable = true, order = 3)
+    public PostgreRole getOwnerId(DBRProgressMonitor monitor) throws DBException {
+        return database.getRoleById(monitor, ownerId);
+    }
+
+    @Property(viewable = true, order = 5)
+    public String getProvider() {
+        return provider;
+    }
+
+    @Property(viewable = true, order = 6)
+    public long getEncodingId() {
+        return encodingId;
+    }
+
+    @Property(viewable = true, order = 7)
+    public String getCollate() {
+        return collate;
+    }
+
+    @Property(viewable = true, order = 8)
+    public String getCtype() {
+        return ctype;
+    }
+
+    @Property(viewable = false, order = 50)
     @Override
     public long getObjectId() {
         return oid;
@@ -77,13 +117,13 @@ public class PostgreCollation implements PostgreObject {
     @Override
     public DBSObject getParentObject()
     {
-        return schema;
+        return database;
     }
 
     @NotNull
     @Override
     public PostgreDataSource getDataSource() {
-        return schema.getDataSource();
+        return database.getDataSource();
     }
 
     @Override
@@ -94,7 +134,7 @@ public class PostgreCollation implements PostgreObject {
     @NotNull
     @Override
     public PostgreDatabase getDatabase() {
-        return schema.getDatabase();
+        return database;
     }
 
 }

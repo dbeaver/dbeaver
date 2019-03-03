@@ -68,7 +68,6 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     protected long ownerId;
     protected boolean persisted;
 
-    public final CollationCache collationCache = new CollationCache();
     public final ExtensionCache extensionCache = new ExtensionCache();
     public final AggregateCache aggregateCache = new AggregateCache();
     public final TableCache tableCache = new TableCache();
@@ -160,24 +159,6 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         this.persisted = persisted;
     }
 
-
-    @Association
-    public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor)
-        throws DBException {
-        return collationCache.getAllObjects(monitor, this);
-    }
-
-    @Association
-    public PostgreCollation getCollation(DBRProgressMonitor monitor, long id)
-        throws DBException {
-        for (PostgreCollation collation : collationCache.getAllObjects(monitor, this)) {
-            if (collation.getObjectId() == id) {
-                return collation;
-            }
-        }
-        log.debug("Collation '" + id + "' not found in schema " + getName());
-        return null;
-    }
 
     @Association
     public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
@@ -386,27 +367,6 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
         throw new DBException("Schema DDL is read-only");
-    }
-
-    class CollationCache extends JDBCObjectCache<PostgreSchema, PostgreCollation> {
-
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
-            throws SQLException {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.oid,c.* FROM pg_catalog.pg_collation c " +
-                    "\nWHERE c.collnamespace=?" +
-                    "\nORDER BY c.oid"
-            );
-            dbStat.setLong(1, PostgreSchema.this.getObjectId());
-            return dbStat;
-        }
-
-        @Override
-        protected PostgreCollation fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException {
-            return new PostgreCollation(owner, dbResult);
-        }
     }
 
     class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {
