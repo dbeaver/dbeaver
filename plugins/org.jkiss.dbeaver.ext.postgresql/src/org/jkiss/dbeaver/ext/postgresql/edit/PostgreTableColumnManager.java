@@ -125,6 +125,17 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
     };
 
+    protected final ColumnModifier<PostgreTableColumn> PostgreCollateModifier = (monitor, column, sql, command) -> {
+        try {
+            PostgreCollation collation = column.getCollation(monitor);
+            if (collation != null) {
+                sql.append(" COLLATE ").append(collation.getName());
+            }
+        } catch (DBException e) {
+            log.debug(e);
+        }
+    };
+
     protected final ColumnModifier<PostgreTableColumn> PostgreCommentModifier = (monitor, column, sql, command) -> {
         String comment = column.getDescription();
         if (!CommonUtils.isEmpty(comment)) {
@@ -141,7 +152,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
-        ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier};
+        ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier, PostgreCollateModifier};
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS)) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
         }

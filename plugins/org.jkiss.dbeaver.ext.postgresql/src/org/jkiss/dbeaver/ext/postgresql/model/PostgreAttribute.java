@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -60,6 +61,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private PostgreAttributeIdentity identity;
     private boolean isLocal;
     private long objectId;
+    private long collationId;
     private Object acl;
 
     protected PostgreAttribute(
@@ -91,6 +93,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private void loadInfo(DBRProgressMonitor monitor, JDBCResultSet dbResult)
         throws DBException
     {
+        PostgreDataSource dataSource = getDataSource();
+
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
@@ -103,7 +107,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         } else {
             // TODO: [#2824] Perhaps we should just use type names declared in pg_catalog
             // Replacing them with "convenient" types names migh cause some issues
-            if (false && dataType.getCanonicalName() != null && getDataSource().isServerVersionAtLeast(9, 6)) {
+            if (false && dataType.getCanonicalName() != null && dataSource.isServerVersionAtLeast(9, 6)) {
                 // se canonical type names. But only for PG >= 9.6 (because I can't test with earlier versions)
                 PostgreDataType canonicalType = getTable().getDatabase().getDataType(monitor, dataType.getCanonicalName());
                 if (canonicalType != null) {
@@ -137,14 +141,19 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
         this.isLocal =
-            !getDataSource().getServerType().supportsInheritance() ||
+            !dataSource.getServerType().supportsInheritance() ||
             JDBCUtils.safeGetBoolean(dbResult, "attislocal", true);
 
-        if (getDataSource().isServerVersionAtLeast(10, 0)) {
+        if (dataSource.isServerVersionAtLeast(10, 0)) {
             String identityStr = JDBCUtils.safeGetString(dbResult, "attidentity");
             if (!CommonUtils.isEmpty(identityStr)) {
                 identity = PostgreAttributeIdentity.getByCode(identityStr);
             }
+        }
+
+        // Collation
+        if (dataSource.getServerType().supportsCollations()) {
+            this.collationId = JDBCUtils.safeGetLong(dbResult, "attcollation");
         }
 
         this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
@@ -259,6 +268,19 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.description = description;
     }
 
+    @Property(viewable = true, editable = true, order = 30, listProvider = CollationListProvider.class)
+    public PostgreCollation getCollation(DBRProgressMonitor monitor) throws DBException {
+        if (collationId <= 0) {
+            return null;
+        } else {
+            return getDatabase().getCollation(monitor, collationId);
+        }
+    }
+
+    public void setCollation(PostgreCollation collation) {
+        this.collationId = collation == null ? 0 : collation.getObjectId();
+    }
+
     @Override
     public boolean isHidden() {
         return isPersisted() && getOrdinalPosition() < 0;
@@ -310,6 +332,23 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 return (PostgreDataType) value;
             } else {
                 throw new IllegalArgumentException("Invalid type value: " + value);
+            }
+        }
+    }
+
+    public static class CollationListProvider implements IPropertyValueListProvider<PostgreAttribute> {
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(PostgreAttribute object) {
+            try {
+                return object.getDatabase().getCollations(new VoidProgressMonitor()).toArray();
+            } catch (DBException e) {
+                log.error(e);
+                return new Object[0];
             }
         }
     }

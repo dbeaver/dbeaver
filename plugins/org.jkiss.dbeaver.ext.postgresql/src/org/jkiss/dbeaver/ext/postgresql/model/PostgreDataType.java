@@ -419,7 +419,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Property(category = CAT_MODIFIERS)
     public PostgreCollation getCollationId(DBRProgressMonitor monitor) throws DBException {
         if (collationId != 0) {
-            return getParentObject().getCollation(monitor, collationId);
+            return getDatabase().getCollation(monitor, collationId);
         }
         return null;
     }

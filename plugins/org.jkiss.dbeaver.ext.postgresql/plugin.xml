@@ -155,9 +155,6 @@
                                 <items label="%tree.aggregate.node.name" path="aggregate" property="aggregateFunctions" icon="#function"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
-                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCollation" label="%tree.collations.node.name" icon="#collations" description="Collations" visibleIf="object.dataSource.serverType.supportsCollations()">
-                                    <items label="%tree.collation.node.name" path="collation" property="collations" icon="#collation"/>
-                                </folder>
                                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#extensions" description="Extensions" visibleIf="object.dataSource.serverType.supportsExtensions()">
                                     <items label="%tree.extension.node.name" path="extension" property="extensions" icon="#extension"/>
                                 </folder>
@@ -195,6 +192,9 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset" label="%tree.encodings.node.name" icon="#encodings" description="Encodings">
                             <items label="%tree.encoding.node.name" path="encoding" property="encodings" icon="#encoding"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCollation" label="%tree.collations.node.name" icon="#collations" description="Collations" visibleIf="object.dataSource.serverType.supportsCollations()">
+                            <items label="%tree.collation.node.name" path="collation" property="collations" icon="#collation"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper" label="%tree.foreignDataWrappers.node.name" description="Foreign data wrappers" visibleIf="object.dataSource.serverType.supportsForeignServers()">
                             <items label="%tree.foreignDataWrapper.node.name" path="foreignDataWrapper" property="foreignDataWrappers"/>
