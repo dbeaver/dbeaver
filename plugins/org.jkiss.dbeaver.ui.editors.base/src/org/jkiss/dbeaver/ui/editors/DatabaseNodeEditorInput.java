@@ -71,4 +71,8 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
         return toolTip.toString();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DatabaseNodeEditorInput && super.equals(obj);
+    }
 }
