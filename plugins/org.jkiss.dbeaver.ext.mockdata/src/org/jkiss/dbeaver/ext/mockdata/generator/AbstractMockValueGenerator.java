@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -134,7 +135,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
             if (prop instanceof Boolean) {
                 return  (Boolean) prop;
             } else {
-                return Boolean.valueOf(prop.toString());
+                return CommonUtils.toBoolean(prop);
             }
         }
         return null;
@@ -146,7 +147,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
             if (prop instanceof Double) {
                 return  (Double) prop;
             } else {
-                return Double.valueOf(prop.toString());
+                return CommonUtils.toDouble(prop);
             }
         }
         return null;
@@ -158,7 +159,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
             if (prop instanceof Long) {
                 return  (Long) prop;
             } else {
-                return Long.valueOf(prop.toString());
+                return CommonUtils.toLong(prop);
             }
         }
         return null;
