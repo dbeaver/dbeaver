@@ -88,7 +88,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
 
     MavenArtifactVersion(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifact artifact, @NotNull String version) throws IOException {
         this.artifact = artifact;
-        this.version = version;
+        this.version = CommonUtils.trim(version);
 
         loadPOM(monitor);
     }
@@ -250,11 +250,11 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             throw new IOException("Error parsing POM", e);
         }
         Element root = pomDocument.getDocumentElement();
-        name = XMLUtils.getChildElementBody(root, "name");
-        url = XMLUtils.getChildElementBody(root, "url");
-        version = XMLUtils.getChildElementBody(root, "version");
-        packaging = XMLUtils.getChildElementBody(root, "packaging");
-        description = XMLUtils.getChildElementBody(root, "description");
+        name = CommonUtils.trim(XMLUtils.getChildElementBody(root, "name"));
+        url = CommonUtils.trim(XMLUtils.getChildElementBody(root, "url"));
+        version = CommonUtils.trim(XMLUtils.getChildElementBody(root, "version"));
+        packaging = CommonUtils.trim(XMLUtils.getChildElementBody(root, "packaging"));
+        description = CommonUtils.trim(XMLUtils.getChildElementBody(root, "description"));
         if (description != null) {
             description = TextUtils.compactWhiteSpaces(description.trim());
         }
@@ -264,9 +264,9 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             // Parent
             Element parentElement = XMLUtils.getChildElement(root, "parent");
             if (parentElement != null) {
-                String parentGroupId = XMLUtils.getChildElementBody(parentElement, "groupId");
-                String parentArtifactId = XMLUtils.getChildElementBody(parentElement, "artifactId");
-                String parentVersion = XMLUtils.getChildElementBody(parentElement, "version");
+                String parentGroupId = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "groupId"));
+                String parentArtifactId = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "artifactId"));
+                String parentVersion = CommonUtils.trim(XMLUtils.getChildElementBody(parentElement, "version"));
                 if (parentGroupId == null || parentArtifactId == null || parentVersion == null) {
                     log.error("Broken parent reference: " + parentGroupId + ":" + parentArtifactId + ":" + parentVersion);
                 } else {
