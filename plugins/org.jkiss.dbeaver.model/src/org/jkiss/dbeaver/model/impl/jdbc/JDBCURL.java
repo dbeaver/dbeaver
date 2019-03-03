@@ -136,7 +136,7 @@ public class JDBCURL {
             }
             offsetPos = divPos2 + 1;
         }
-        if (offsetPos < sampleURL.length() - 1) {
+        if (offsetPos < sampleURL.length()) {
             metaURL.urlComponents.add(sampleURL.substring(offsetPos));
         }
 /*
