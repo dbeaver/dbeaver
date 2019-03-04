@@ -69,7 +69,7 @@ public class DashboardChartComposite extends BaseChartComposite {
             manager.add(new Separator());
         }
         super.fillContextMenu(manager);
-        {
+        if (!UIUtils.isInDialog(this)) {
             manager.add(new Separator());
             MenuManager viewMenu = new MenuManager("View as");
             List<DashboardViewType> viewTypes = DashboardRegistry.getInstance().getSupportedViewTypes(dashboardContainer.getDashboardDataType());
@@ -92,9 +92,7 @@ public class DashboardChartComposite extends BaseChartComposite {
                 }
                 viewMenu.add(changeViewAction);
             }
-
             manager.add(viewMenu);
-
         }
         if (!isSingleChartMode()) {
             manager.add(new Separator());
