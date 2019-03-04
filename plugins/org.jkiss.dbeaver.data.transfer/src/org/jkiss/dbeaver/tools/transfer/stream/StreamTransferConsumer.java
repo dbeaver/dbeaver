@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -52,7 +51,9 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -102,12 +103,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         // Prepare columns
-        metaColumns = new ArrayList<>();
-        List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
-        for (DBCAttributeMetaData attribute : attributes) {
-            DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(session, attribute);
-            metaColumns.add(columnBinding);
-        }
+        metaColumns = DBUtils.makeResultAttributeBindings(resultSet);
         row = new Object[metaColumns.size()];
 
         if (!initialized) {
