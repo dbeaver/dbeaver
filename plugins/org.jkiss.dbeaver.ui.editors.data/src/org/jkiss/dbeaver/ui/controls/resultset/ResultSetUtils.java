@@ -231,11 +231,13 @@ public class ResultSetUtils
                 }
             }
 
+/*
             monitor.subTask("Load transformers");
             // Load transformers
             for (DBDAttributeBinding binding : bindings) {
                 binding.loadTransformers(session, rows);
             }
+*/
 
             monitor.subTask("Complete metadata load");
             // Reload attributes in row identifiers
