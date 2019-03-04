@@ -20,18 +20,19 @@ import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -62,13 +63,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private boolean useIsolatedConnection;
 
     private static class ColumnMapping {
-        DBCAttributeMetaData sourceAttr;
+        DBDAttributeBinding sourceAttr;
         DatabaseMappingAttribute targetAttr;
         DBDValueHandler sourceValueHandler;
         DBDValueHandler targetValueHandler;
         int targetIndex = -1;
 
-        private ColumnMapping(DBCAttributeMetaData sourceAttr)
+        private ColumnMapping(DBDAttributeBinding sourceAttr)
         {
             this.sourceAttr = sourceAttr;
         }
@@ -104,8 +105,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        DBCResultSetMetaData metaData = resultSet.getMeta();
-        List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
+        List<DBDAttributeBinding> rsAttributes = DBUtils.makeResultAttributeBindings(resultSet);
         columnMappings = new ColumnMapping[rsAttributes.size()];
         targetAttributes = new ArrayList<>(columnMappings.length);
         for (int i = 0; i < rsAttributes.size(); i++) {
@@ -146,9 +146,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     throw new DBCException("Target attribute for [" + columnMapping.sourceAttr.getName() + "] wasn't resolved");
                 }
             }
-            if (session.getDataSource() != null) {
-                columnMapping.sourceValueHandler = DBUtils.findValueHandler(session.getDataSource(), columnMapping.sourceAttr);
-            }
+            columnMapping.sourceValueHandler = columnMapping.sourceAttr.getValueHandler();
             columnMapping.targetValueHandler = DBUtils.findValueHandler(targetSession.getDataSource(), targetAttr);
             columnMapping.targetIndex = targetAttributes.size();
 
