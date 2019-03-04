@@ -20,11 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -37,11 +39,13 @@ import java.util.Map;
 /**
  * MySQLEvent
  */
-public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
+public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
 
     private static final String CAT_DETAILS = "Details";
     private static final String CAT_STATS = "Statistics";
 
+    private MySQLCatalog catalog;
+    private boolean persisted;
     private String name;
     private String definer;
     private String timeZone;
@@ -68,8 +72,17 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     public MySQLEvent(MySQLCatalog catalog, ResultSet dbResult)
         throws SQLException
     {
-        super(catalog.getDataSource());
+        this.catalog = catalog;
+        this.persisted = true;
+
         this.loadInfo(dbResult);
+    }
+
+    public MySQLEvent(MySQLCatalog catalog, boolean persisted, String name) {
+        this.catalog = catalog;
+        this.name = name;
+
+        this.persisted = false;
     }
 
     private void loadInfo(ResultSet dbResult)
@@ -113,6 +126,26 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     public String getDescription()
     {
         return eventComment;
+    }
+
+    @Override
+    public DBSObject getParentObject() {
+        return catalog;
+    }
+
+    @Override
+    public MySQLDataSource getDataSource() {
+        return catalog.getDataSource();
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return persisted;
+    }
+
+    @Override
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
     }
 
     @Property(viewable = true, order = 10)
@@ -242,4 +275,5 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     public void setObjectDefinitionText(String sourceText) throws DBException {
         eventDefinition = sourceText;
     }
+
 }
