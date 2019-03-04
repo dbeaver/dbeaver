@@ -21,6 +21,7 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -183,7 +184,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             try (DBCSession session = DBUtils.openUtilSession(monitor, source, "Read query meta data")) {
                 MetadataReceiver receiver = new MetadataReceiver();
                 source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
-                for (DBCAttributeMetaData attr : receiver.attributes) {
+                for (DBDAttributeBinding attr : receiver.attributes) {
                     if (DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
@@ -265,11 +266,11 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     private static class MetadataReceiver implements DBDDataReceiver {
 
-        private List<DBCAttributeMetaData> attributes;
+        private List<DBDAttributeBinding> attributes;
 
         @Override
         public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
-            attributes = resultSet.getMeta().getAttributes();
+            attributes = DBUtils.makeResultAttributeBindings(resultSet);
         }
 
         @Override
