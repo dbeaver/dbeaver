@@ -276,4 +276,8 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         eventDefinition = sourceText;
     }
 
+	public MySQLCatalog getCatalog() {
+		return catalog;
+	}
+
 }
