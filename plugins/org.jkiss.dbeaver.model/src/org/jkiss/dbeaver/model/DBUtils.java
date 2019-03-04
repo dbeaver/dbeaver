@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -562,6 +563,47 @@ public final class DBUtils {
     public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
     {
         return new DBDAttributeBindingMeta(session, attributeMeta);
+    }
+
+    public static List<DBDAttributeBinding> makeResultAttributeBindings(DBCResultSet resultSet) throws DBCException {
+        List<DBDAttributeBinding> metaColumns = new ArrayList<>();
+        List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
+        DBCSession session = resultSet.getSession();
+        if (attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT) {
+            DBCAttributeMetaData attributeMeta = attributes.get(0);
+            DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(session, attributeMeta);
+            try {
+                docBinding.lateBinding(session, Collections.emptyList());
+            } catch (DBException e) {
+                log.debug("Document attribute '" + docBinding.getName() + "' binding error", e);
+            }
+            List<DBDAttributeBinding> nested = docBinding.getNestedBindings();
+            if (!CommonUtils.isEmpty(nested)) {
+                metaColumns.addAll(nested);
+            } else {
+                // No nested bindings. Try to get entity attributes
+                try {
+                    DBSEntity docEntity = getEntityFromMetaData(session.getProgressMonitor(), session.getDataSource(), attributeMeta.getEntityMetaData());
+                    if (docEntity != null) {
+                        Collection<? extends DBSEntityAttribute> entityAttrs = docEntity.getAttributes(session.getProgressMonitor());
+                        if (!CommonUtils.isEmpty(entityAttrs)) {
+                            for (DBSEntityAttribute ea : entityAttrs) {
+                                metaColumns.add(new DBDAttributeBindingType(docBinding, ea));
+                            }
+                        }
+                    }
+                } catch (DBException e) {
+                    log.debug("Error getting attributes from document entity", e);
+                }
+            }
+        }
+        if (metaColumns.isEmpty()) {
+            for (DBCAttributeMetaData attribute : attributes) {
+                DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(session, attribute);
+                metaColumns.add(columnBinding);
+            }
+        }
+        return metaColumns;
     }
 
     @NotNull
@@ -1729,5 +1771,42 @@ public final class DBUtils {
             }
         }
         return null;
+    }
+
+    public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCEntityMetaData entityMeta) throws DBException {
+        final DBSObjectContainer objectContainer = getAdapter(DBSObjectContainer.class, dataSource);
+        if (objectContainer != null) {
+            DBSEntity entity = getEntityFromMetaData(monitor, objectContainer, entityMeta, false);
+            if (entity == null) {
+                entity = getEntityFromMetaData(monitor, objectContainer, entityMeta, true);
+            }
+            return entity;
+        } else {
+            return null;
+        }
+    }
+
+    public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
+        final DBPDataSource dataSource = objectContainer.getDataSource();
+        String catalogName = entityMeta.getCatalogName();
+        String schemaName = entityMeta.getSchemaName();
+        String entityName = entityMeta.getEntityName();
+        if (transformName) {
+            catalogName = DBObjectNameCaseTransformer.transformName(dataSource, catalogName);
+            schemaName = DBObjectNameCaseTransformer.transformName(dataSource, schemaName);
+            entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityName);
+        }
+        DBSObject entityObject = getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
+        if (entityObject instanceof DBSAlias && !(entityObject instanceof DBSEntity)) {
+            entityObject = ((DBSAlias) entityObject).getTargetObject(monitor);
+        }
+        if (entityObject == null) {
+            return null;
+        } else if (entityObject instanceof DBSEntity) {
+            return (DBSEntity) entityObject;
+        } else {
+            log.debug("Unsupported table class: " + entityObject.getClass().getName());
+            return null;
+        }
     }
 }
