@@ -64,6 +64,7 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     private MySQLCharset characterSetClient;
     private MySQLCollation collationConnection;
     private MySQLCollation databaseCollation;
+    private MySQLCatalog catalog;
 
     public MySQLEvent(MySQLCatalog catalog, ResultSet dbResult)
         throws SQLException
@@ -242,4 +243,8 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     public void setObjectDefinitionText(String sourceText) throws DBException {
         eventDefinition = sourceText;
     }
+
+	public MySQLCatalog getCatalog() {
+		return catalog;
+	}
 }
