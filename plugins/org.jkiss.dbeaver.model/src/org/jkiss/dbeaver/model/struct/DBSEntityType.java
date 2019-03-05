@@ -35,6 +35,7 @@ public class DBSEntityType
     public static final DBSEntityType VIRTUAL_ASSOCIATION = new DBSEntityType("virtual_association", "Virtual Association", DBIcon.TREE_ASSOCIATION, false); //$NON-NLS-1$
     public static final DBSEntityType SEQUENCE = new DBSEntityType("sequence", "Sequence", DBIcon.TREE_SEQUENCE, true);
     public static final DBSEntityType PACKAGE = new DBSEntityType("package", "Package", DBIcon.TREE_PACKAGE, true);
+    public static final DBSEntityType EVENT = new DBSEntityType("event", "Event", DBIcon.TREE_EVENT, true);
 
     private final String id;
     private final String name;
