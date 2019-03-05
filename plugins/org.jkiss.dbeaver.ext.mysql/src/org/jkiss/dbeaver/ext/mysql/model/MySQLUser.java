@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -44,7 +45,7 @@ import java.util.regex.Matcher;
 /**
  * MySQLUser
  */
-public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObject
+public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSaveableObject
 {
     private static final Log log = Log.getLog(MySQLUser.class);
 
