@@ -17,10 +17,17 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Collection;
 
 /**
  * Permission owner
  */
-public interface DBAPermissionOwner extends DBSObject {
+public interface DBAPrivilegeOwner extends DBSObject {
+
+    Collection<? extends DBAPrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
+
 }

@@ -16,112 +16,189 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.access.DBAPrivilege;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 
 /**
  * PostgrePrivilege
  */
-public class PostgrePrivilege {
+public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<PostgrePrivilege> {
 
-    public enum Kind {
-        TABLE,
-        SEQUENCE,
-        FUNCTION,
-        COLUMN
-    }
+    public static final short NONE = 0;
+    public static final short GRANTED = 1;
+    public static final short WITH_GRANT_OPTION = 2;
+    public static final short WITH_HIERARCHY = 4;
 
-    private Kind kind;
-    private String grantor;
-    private String grantee;
-    private String objectCatalog;
-    private String objectSchema;
-    private String objectName;
-    private PostgrePrivilegeType privilegeType;
-    private boolean isGrantable;
-    private boolean withHierarchy;
+    public static class ObjectPermission {
+        @NotNull
+        private PostgrePrivilegeType privilegeType;
+        @NotNull
+        private String grantor;
+        private short permissions;
 
-    public PostgrePrivilege(Kind kind, ResultSet dbResult)
-        throws SQLException
-    {
-        this.kind = kind;
-        this.grantor = JDBCUtils.safeGetString(dbResult, "grantor");
-        this.grantee = JDBCUtils.safeGetString(dbResult, "grantee");
-        this.privilegeType = PostgrePrivilegeType.fromString(JDBCUtils.safeGetString(dbResult, "privilege_type"));
-        this.isGrantable = JDBCUtils.safeGetBoolean(dbResult, "is_grantable");
+        public ObjectPermission(@NotNull PostgrePrivilegeType privilegeType, @NotNull String grantor, short permissions) {
+            this.privilegeType = privilegeType;
+            this.grantor = grantor;
+            this.permissions = permissions;
+        }
 
-        switch (kind) {
-            case FUNCTION:
-                this.objectCatalog = JDBCUtils.safeGetString(dbResult, "specific_catalog");
-                this.objectSchema = JDBCUtils.safeGetString(dbResult, "specific_schema");
-                this.objectName = JDBCUtils.safeGetString(dbResult, "specific_name");
-                break;
-            case SEQUENCE:
-                this.objectCatalog = JDBCUtils.safeGetString(dbResult, "object_catalog");
-                this.objectSchema = JDBCUtils.safeGetString(dbResult, "object_schema");
-                this.objectName = JDBCUtils.safeGetString(dbResult, "object_name");
-                break;
-            default:
-                this.objectCatalog = JDBCUtils.safeGetString(dbResult, "table_catalog");
-                this.objectSchema = JDBCUtils.safeGetString(dbResult, "table_schema");
-                this.objectName = JDBCUtils.safeGetString(dbResult, "table_name");
-                this.withHierarchy = JDBCUtils.safeGetBoolean(dbResult, "with_hierarchy");
-                break;
+        @NotNull
+        public PostgrePrivilegeType getPrivilegeType() {
+            return privilegeType;
+        }
+
+        @NotNull
+        public String getGrantor() {
+            return grantor;
+        }
+
+        public short getPermissions() {
+            return permissions;
+        }
+
+        @Override
+        public String toString() {
+            return privilegeType.toString();
         }
     }
 
-    public PostgrePrivilege(String grantor, String grantee, String objectCatalog, String objectSchema, String objectName, PostgrePrivilegeType privilegeType, boolean isGrantable, boolean withHierarchy) {
-        this.grantor = grantor;
-        this.grantee = grantee;
-        this.objectCatalog = objectCatalog;
-        this.objectSchema = objectSchema;
-        this.objectName = objectName;
-        this.privilegeType = privilegeType;
-        this.isGrantable = isGrantable;
-        this.withHierarchy = withHierarchy;
-    }
+    protected final PostgrePrivilegeOwner owner;
+    private ObjectPermission[] permissions;
 
-    public Kind getKind() {
-        return kind;
-    }
+    public PostgrePrivilege(PostgrePrivilegeOwner owner, List<PostgrePrivilegeGrant> privileges) {
+        this.owner = owner;
+        this.permissions = new ObjectPermission[privileges.size()];
+        for (int i = 0 ; i < privileges.size(); i++) {
+            final PostgrePrivilegeGrant privilege = privileges.get(i);
+            short permission = GRANTED;
+            if (privilege.isGrantable()) permission |= WITH_GRANT_OPTION;
+            if (privilege.isWithHierarchy()) permission |= WITH_HIERARCHY;
+            this.permissions[i] = new ObjectPermission(privilege.getPrivilegeType(), privilege.getGrantor(), permission);
+        }
 
-    public String getGrantor() {
-        return grantor;
-    }
-
-    public String getGrantee() {
-        return grantee;
-    }
-
-    public String getObjectCatalog() {
-        return objectCatalog;
-    }
-
-    public String getObjectSchema() {
-        return objectSchema;
-    }
-
-    public String getObjectName() {
-        return objectName;
-    }
-
-    public PostgrePrivilegeType getPrivilegeType() {
-        return privilegeType;
-    }
-
-    public boolean isGrantable() {
-        return isGrantable;
-    }
-
-    public boolean isWithHierarchy() {
-        return withHierarchy;
     }
 
     @Override
-    public String toString() {
-        return privilegeType.toString();
+    public boolean isPersisted() {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public PostgrePrivilegeOwner getParentObject() {
+        return owner;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSource getDataSource() {
+        return owner.getDataSource();
+    }
+
+    public PostgrePrivilegeOwner getOwner() {
+        return owner;
+    }
+
+    public abstract PostgreObject getTargetObject(DBRProgressMonitor monitor) throws DBException;
+
+    public ObjectPermission[] getPermissions() {
+        return permissions;
+    }
+
+    public PostgrePrivilegeType[] getPrivileges() {
+        PostgrePrivilegeType[] ppt = new PostgrePrivilegeType[permissions.length];
+        for (int i = 0; i < permissions.length; i++) {
+            ppt[i] = permissions[i].getPrivilegeType();
+        }
+        return ppt;
+    }
+
+    public short getPermission(PostgrePrivilegeType privilegeType) {
+        for (int i = 0; i < permissions.length; i++) {
+            if (permissions[i].privilegeType == privilegeType) {
+                return permissions[i].permissions;
+            }
+        }
+        return NONE;
+    }
+
+    public void setPermission(PostgrePrivilegeType privilegeType, boolean permit) {
+        for (int i = 0; i < permissions.length; i++) {
+            if (permissions[i].privilegeType == privilegeType) {
+                if (permit) {
+                    permissions[i].permissions |= GRANTED;
+                } else {
+                    permissions[i].permissions = 0;
+                }
+            }
+        }
+    }
+
+    // Properties for permissions viewer
+
+    @Property(viewable = true, editable = true, updatable = true, order = 100, name = "SELECT")
+    public boolean hasPermissionSelect() {
+        return getPermission(PostgrePrivilegeType.SELECT) != 0;
+    }
+
+    public void setPermissionSelect(boolean permitted) {
+        setPermission(PostgrePrivilegeType.SELECT, permitted);
+    }
+
+    @Property(viewable = true, order = 101, name = "INSERT")
+    public boolean hasPermissionInsert() {
+        return getPermission(PostgrePrivilegeType.INSERT) != 0;
+    }
+
+    @Property(viewable = true, order = 102, name = "UPDATE")
+    public boolean hasPermissionUpdate() {
+        return getPermission(PostgrePrivilegeType.UPDATE) != 0;
+    }
+
+    @Property(viewable = true, order = 103, name = "DELETE")
+    public boolean hasPermissionDelete() {
+        return getPermission(PostgrePrivilegeType.DELETE) != 0;
+    }
+
+    @Property(viewable = true, order = 104, name = "TRUNCATE")
+    public boolean hasPermissionTruncate() {
+        return getPermission(PostgrePrivilegeType.TRUNCATE) != 0;
+    }
+
+    @Property(viewable = true, order = 105, name = "REFERENCES")
+    public boolean hasPermissionReferences() {
+        return getPermission(PostgrePrivilegeType.REFERENCES) != 0;
+    }
+
+    @Property(viewable = true, order = 106, name = "TRIGGER")
+    public boolean hasPermissionTrigger() {
+        return getPermission(PostgrePrivilegeType.TRIGGER) != 0;
+    }
+
+    /**
+     * Checks all privileges
+     */
+    public boolean hasAllPrivileges(Object object) {
+        for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+            if (pt.isValid() && pt.supportsType(object.getClass()) && getPermission(pt) == 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
+

@@ -20,7 +20,12 @@ package org.jkiss.dbeaver.model.access;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * Permission
+ * Privilege type
  */
-public interface DBAPermission extends DBPNamedObject {
+public interface DBAPrivilegeType extends DBPNamedObject {
+
+    boolean isValid();
+
+    boolean supportsType(Class<?> objectType);
+
 }

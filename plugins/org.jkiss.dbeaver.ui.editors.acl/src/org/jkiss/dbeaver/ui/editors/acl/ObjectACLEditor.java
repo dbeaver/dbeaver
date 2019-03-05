@@ -40,21 +40,15 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.access.DBAPermission;
-import org.jkiss.dbeaver.model.access.DBAPermissionOwner;
-import org.jkiss.dbeaver.model.access.DBARole;
-import org.jkiss.dbeaver.model.access.DBAUser;
-import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.access.*;
+import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -74,7 +68,7 @@ import java.util.*;
 /**
  * PostgresRolePrivilegesEditor
  */
-public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionOwner>
+public abstract class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPrivilegeOwner>
 {
     private PageControl pageControl;
 
@@ -85,9 +79,17 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
     private ControlEnableState permissionsEnable;
 
     private DBSObject[] currentObjects;
-    private DBAPermission[] currentPermissions;
-    private Map<String, DBAPermission> permissionMap = new HashMap<>();
+    private DBAPrivilege[] currentPrivileges;
+    private Map<String, DBAPrivilege> privilegeMap = new HashMap<>();
     private Text objectDescriptionText;
+
+    protected abstract DBAPrivilegeType[] getPrivilegeTypes();
+
+    protected abstract DBAPrivilege createNewPrivilege(DBAPrivilegeOwner owner, DBSObject object, DBAPrivilege privilege);
+
+    protected String getObjectUniqueName(DBSObject object) {
+        return DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
+    }
 
     public void createPartControl(Composite parent) {
         this.pageControl = new PageControl(parent);
@@ -107,12 +109,11 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
         treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer) {
             @Override
             public Font getFont(Object element) {
-/*
                 if (element instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) element).getObject();
-                    if (object instanceof PostgreSchema) {
+                    if (object instanceof DBSSchema) {
                         String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
-                        for (String tableName : permissionMap.keySet()) {
+                        for (String tableName : privilegeMap.keySet()) {
                             if (tableName.startsWith(schemaPrefix)) {
                                 return boldFont;
                             }
@@ -121,7 +122,6 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
                         return boldFont;
                     }
                 }
-*/
                 return null;
             }
         });
@@ -133,20 +133,16 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
                     return false;
                 }
                 if (element instanceof DBNDatabaseFolder) {
-/*
                     try {
                         String elementTypeName = ((DBNDatabaseFolder) element).getMeta().getType();
                         if (elementTypeName == null) {
                             return false;
                         }
                         Class<?> childType = Class.forName(elementTypeName);
-                        return PostgreTableReal.class.isAssignableFrom(childType) ||
-                            PostgreSequence.class.isAssignableFrom(childType) ||
-                            PostgreProcedure.class.isAssignableFrom(childType);
+                        return DBAPrivilegeOwner.class.isAssignableFrom(childType);
                     } catch (ClassNotFoundException e) {
                         return false;
                     }
-*/
                 }
                 return true;
             }
@@ -167,9 +163,7 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (e.detail == SWT.CHECK) {
-/*
-                        updateCurrentPrivileges(((TableItem) e.item).getChecked(), (PostgrePrivilegeType) e.item.getData());
-*/
+                        updateCurrentPrivileges(((TableItem) e.item).getChecked(), (DBAPrivilegeType) e.item.getData());
                     }
                 }
             });
@@ -180,18 +174,16 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
                 }
             });
 
-/*
             if (!isRoleEditor()) {
-                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+                for (DBAPrivilegeType pt : getPrivilegeTypes()) {
                     if (!pt.isValid() || !pt.supportsType(getDatabaseObject().getClass())) {
                         continue;
                     }
                     TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
-                    privItem.setText(0, pt.name());
+                    privItem.setText(0, pt.getName());
                     privItem.setData(pt);
                 }
             }
-*/
 
             Composite buttonPanel = new Composite(permEditPanel, SWT.NONE);
             buttonPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -205,9 +197,7 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
                         if (!item.getChecked()) hadNonChecked = true;
                         item.setChecked(true);
                     }
-/*
                     if (hadNonChecked) updateCurrentPrivileges(true, null);
-*/
                 }
             });
             UIUtils.createPushButton(buttonPanel, "Revoke All", null, new SelectionAdapter() {
@@ -218,11 +208,9 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
                         if (item.getChecked()) hadChecked = true;
                         item.setChecked(false);
                     }
-/*
                     if (hadChecked) {
                         updateCurrentPrivileges(false, null);
                     }
-*/
                 }
             });
 
@@ -244,114 +232,85 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
         }
     }
 
+    private DBAPrivilege getObjectPermissions(DBSObject object) {
 /*
-    private PostgrePermission getObjectPermissions(DBSObject object) {
         if (object instanceof PostgreProcedure) {
             String fqProcName = DBUtils.getQuotedIdentifier(((PostgreProcedure) object).getSchema()) + "." + ((PostgreProcedure) object).getSpecificName();
-            return permissionMap.get(fqProcName);
+            return privilegeMap.get(fqProcName);
         } else {
-            return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
+            return privilegeMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
         }
+*/
+        return privilegeMap.get(getObjectUniqueName(object));
     }
 
-    private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType privilegeType) {
+    private void updateCurrentPrivileges(boolean grant, DBAPrivilegeType privilegeType) {
 
         if (ArrayUtils.isEmpty(currentObjects)) {
-            DBeaverUI.getInstance().showError("Update privilege", "Can't update privilege - no current object");
+            DBWorkbench.getPlatformUI().showError("Update privilege", "Can't update privilege - no current object");
             return;
         }
 
         for (int i = 0; i < currentObjects.length; i++) {
             DBSObject currentObject = currentObjects[i];
-            PostgrePermission permission = currentPermissions[i];
-            if (permission == null) {
+            DBAPrivilege privilege = currentPrivileges[i];
+            if (privilege == null) {
                 if (!grant) {
                     // No permission - nothing to revoke
                     continue;
                 }
-                if (isRoleEditor()) {
-                    PostgrePermissionsOwner permissionsOwner = (PostgrePermissionsOwner) currentObject;
-                    PostgrePrivilege.Kind kind;
-                    String objectName;
-                    if (permissionsOwner instanceof PostgreProcedure) {
-                        kind = PostgrePrivilege.Kind.FUNCTION;
-                        objectName = ((PostgreProcedure) permissionsOwner).getUniqueName();
-                    } else {
-                        if (permissionsOwner instanceof PostgreSequence) {
-                            kind = PostgrePrivilege.Kind.SEQUENCE;
-                        } else {
-                            kind = PostgrePrivilege.Kind.TABLE;
-                        }
-                        objectName = permissionsOwner.getName();
-                    }
-                    permission = new PostgreRolePermission(
-                        getDatabaseObject(),
-                        kind,
-                        permissionsOwner.getSchema().getName(),
-                        objectName,
-                        Collections.emptyList());
-                } else {
-                    permission = new PostgreObjectPermission(
-                        getDatabaseObject(),
-                        currentObject.getName(),
-                        Collections.emptyList());
-                }
+                privilege = createNewPrivilege(getDatabaseObject(), currentObject, privilege);
                 // Add to map
-                permissionMap.put(permission.getName(), permission);
+                privilegeMap.put(privilege.getName(), privilege);
             } else if (privilegeType != null) {
                 // Check for privilege was already granted for this object
-                boolean hasPriv = permission.getPermission(privilegeType) != PostgrePermission.NONE;
+/*
+                boolean hasPriv = privilege.getPermission(privilegeType) != PostgrePermission.NONE;
                 if (grant == hasPriv) {
                     continue;
                 }
+*/
             }
 
+/*
             // Add command
             addChangeCommand(
                 new PostgreCommandGrantPrivilege(
                     getDatabaseObject(),
                     grant,
-                    permission,
-                    privilegeType == null ? null : new PostgrePrivilegeType[] { privilegeType }),
-                new DBECommandReflector<PostgrePermissionsOwner, PostgreCommandGrantPrivilege>() {
+                    privilege,
+                    privilegeType == null ? null : new DBAPrivilegeType[] { privilegeType }),
+                new DBECommandReflector<DBAPrivilegeOwner, PostgreCommandGrantPrivilege>() {
                     @Override
                     public void redoCommand(PostgreCommandGrantPrivilege cmd)
                     {
-//                    if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-//                        privTable.checkPrivilege(privilege, isGrant);
-//                    }
-//                    updateLocalData(privilege, isGrant, curCatalog, curTable);
                     }
                     @Override
                     public void undoCommand(PostgreCommandGrantPrivilege cmd)
                     {
-//                    if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-//                        privTable.checkPrivilege(privilege, !isGrant);
-//                    }
-//                    updateLocalData(privilege, !isGrant, curCatalog, curTable);
                     }
                 });
+*/
 
         }
     }
-*/
+
     private void updateObjectPermissions(List<DBSObject> objects) {
 
         boolean hasBadObjects = CommonUtils.isEmpty(objects);
 
-/*
         if (isRoleEditor()) {
             // In role editor each object may have different privilege set
             permissionTable.removeAll();
 
             if (!CommonUtils.isEmpty(objects)) {
                 Class<?> objectType = objects.get(0).getClass();
-                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+                for (DBAPrivilegeType pt : getPrivilegeTypes()) {
                     if (!pt.isValid() || !pt.supportsType(objectType)) {
                         continue;
                     }
                     TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
-                    privItem.setText(0, pt.name());
+                    privItem.setText(0, pt.getName());
                     privItem.setData(pt);
                 }
                 permissionTable.getParent().layout(true);
@@ -362,7 +321,7 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
         StringBuilder objectNames = new StringBuilder();
         if (!hasBadObjects) {
             for (DBSObject object : objects) {
-                if (!(object instanceof PostgrePermissionsOwner)) {
+                if (!(object instanceof DBAPrivilegeOwner)) {
                     hasBadObjects = true;
                     break;
                 }
@@ -374,7 +333,7 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
         if (hasBadObjects) {
             objectDescriptionText.setText("<no objects>");
 
-            this.currentPermissions = null;
+            this.currentPrivileges = null;
             this.currentObjects = null;
             editEnabled = false;
 
@@ -382,9 +341,9 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
             objectDescriptionText.setText(objectNames.toString());
 
             this.currentObjects = objects.toArray(new DBSObject[0]);
-            this.currentPermissions = new PostgrePermission[this.currentObjects.length];
+            this.currentPrivileges = new DBAPrivilege[this.currentObjects.length];
             for (int i = 0; i < currentObjects.length; i++) {
-                this.currentPermissions[i] = getObjectPermissions(currentObjects[i]);
+                this.currentPrivileges[i] = getObjectPermissions(currentObjects[i]);
             }
             editEnabled = !CommonUtils.isEmpty(objects);
         }
@@ -400,7 +359,7 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
             }
         }
 
-        if (ArrayUtils.isEmpty(currentPermissions)) {
+        if (ArrayUtils.isEmpty(currentPrivileges)) {
             // We have object(s) but no permissions for them
             for (TableItem item : permissionTable.getItems()) {
                 item.setChecked(false);
@@ -409,8 +368,9 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
             }
         } else {
             for (TableItem item : permissionTable.getItems()) {
-                PostgrePrivilegeType privType = (PostgrePrivilegeType) item.getData();
-                short perm = currentPermissions[0] == null ? PostgrePermission.NONE : currentPermissions[0].getPermission(privType);
+                DBAPrivilegeType privType = (DBAPrivilegeType) item.getData();
+/*
+                short perm = currentPrivileges[0] == null ? PostgrePermission.NONE : currentPrivileges[0].getPermission(privType);
                 item.setChecked((perm & PostgrePermission.GRANTED) != 0);
                 if ((perm & PostgrePermission.WITH_GRANT_OPTION) != 0) {
                     item.setText(1, "X");
@@ -422,9 +382,9 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
                 } else {
                     item.setText(2, "");
                 }
+*/
             }
         }
-*/
     }
 
     private boolean isRoleEditor() {
@@ -442,7 +402,6 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
         }
     }
 
-/*
     @Override
     public synchronized void activatePart()
     {
@@ -454,13 +413,13 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
         UIUtils.asyncExec(() -> UIUtils.packColumns(permissionTable, false));
 
         LoadingJob.createService(
-            new DatabaseLoadService<Collection<PostgrePermission>>("Load permissions", getExecutionContext()) {
+            new DatabaseLoadService<Collection<? extends DBAPrivilege>>("Load permissions", getExecutionContext()) {
                 @Override
-                public Collection<PostgrePermission> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public Collection<? extends DBAPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
-                        return getDatabaseObject().getPermissions(monitor, false);
+                        return getDatabaseObject().getPrivileges(monitor, false);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -470,7 +429,7 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
             },
             pageControl.createLoadVisualizer()).schedule();
     }
-*/
+
     @Override
     public void refreshPart(Object source, boolean force)
     {
@@ -519,34 +478,39 @@ public class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPermissionO
             super(parent, SWT.SHEET);
         }
 
-        ProgressVisualizer<Collection<DBAPermission>> createLoadVisualizer() {
-            return new ProgressVisualizer<Collection<DBAPermission>>() {
+        ProgressVisualizer<Collection<? extends DBAPrivilege>> createLoadVisualizer() {
+            return new ProgressVisualizer<Collection<? extends DBAPrivilege>>() {
                 @Override
-                public void completeLoading(Collection<DBAPermission> privs) {
+                public void completeLoading(Collection<? extends DBAPrivilege> privs) {
                     super.completeLoading(privs);
                     if (privs == null) {
                         return;
                     }
-                    permissionMap.clear();
-                    for (DBAPermission perm : privs) {
-                        permissionMap.put(perm.getName(), perm);
+                    privilegeMap.clear();
+                    for (DBAPrivilege perm : privs) {
+                        privilegeMap.put(perm.getName(), perm);
                     }
-/*
                     // Load navigator tree
                     DBRProgressMonitor monitor = new VoidProgressMonitor();
-                    DBNDatabaseNode dbNode = NavigatorUtils.getNodeByObject(getDatabaseObject().getDatabase());
+                    DBSObject parentContainer = DBUtils.getParentOfType(DBSCatalog.class, getDatabaseObject());
+                    if (parentContainer == null) {
+                        parentContainer = DBUtils.getParentOfType(DBSSchema.class, getDatabaseObject());
+                    }
+                    if (parentContainer == null) {
+                        parentContainer = getDatabaseObject().getParentObject();
+                    }
+                    DBNDatabaseNode dbNode = NavigatorUtils.getNodeByObject(parentContainer);
                     DBNDatabaseNode rootNode;
                     if (isRoleEditor()) {
-                        rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
+                        rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, DBSSchema.class);
                     } else {
-                        rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, PostgreRole.class);
+                        rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, DBARole.class);
                     }
                     if (rootNode == null) {
-                        DBeaverUI.getInstance().showError("Object tree", "Can't detect root node for objects tree");
+                        DBWorkbench.getPlatformUI().showError("Object tree", "Can't detect root node for objects tree");
                     } else {
                         roleOrObjectTable.reloadTree(rootNode);
                     }
-*/
                     //roleOrObjectTable.getViewer().getControl().setFocus();
                     handleSelectionChange();
                 }

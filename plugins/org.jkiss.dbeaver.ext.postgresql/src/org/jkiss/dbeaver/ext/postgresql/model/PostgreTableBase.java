@@ -43,7 +43,7 @@ import java.util.*;
 /**
  * PostgreTable base
  */
-public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject, PostgrePermissionsOwner, DBPNamedObject2
+public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject, PostgrePrivilegeOwner, DBPNamedObject2
 {
     private static final Log log = Log.getLog(PostgreTableBase.class);
 
@@ -224,7 +224,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         if (!isPersisted()) {
             return Collections.emptyList();
         }

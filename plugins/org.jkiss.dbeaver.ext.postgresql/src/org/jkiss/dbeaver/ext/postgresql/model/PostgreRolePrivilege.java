@@ -27,17 +27,17 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.List;
 
 /**
- * PostgreRolePermission
+ * PostgreRolePrivilege
  */
-public class PostgreRolePermission extends PostgrePermission {
+public class PostgreRolePrivilege extends PostgrePrivilege {
 
-    private static final Log log = Log.getLog(PostgreRolePermission.class);
+    private static final Log log = Log.getLog(PostgreRolePrivilege.class);
 
-    private PostgrePrivilege.Kind kind;
+    private PostgrePrivilegeGrant.Kind kind;
     private String schemaName;
     private String objectName;
 
-    public PostgreRolePermission(PostgrePermissionsOwner owner, PostgrePrivilege.Kind kind, String schemaName, String objectName, List<PostgrePrivilege> privileges) {
+    public PostgreRolePrivilege(PostgrePrivilegeOwner owner, PostgrePrivilegeGrant.Kind kind, String schemaName, String objectName, List<PostgrePrivilegeGrant> privileges) {
         super(owner, privileges);
         this.kind = kind;
         this.schemaName = schemaName;
@@ -61,7 +61,7 @@ public class PostgreRolePermission extends PostgrePermission {
         return null;
     }
 
-    public PostgrePrivilege.Kind getKind() {
+    public PostgrePrivilegeGrant.Kind getKind() {
         return kind;
     }
 
@@ -75,7 +75,7 @@ public class PostgreRolePermission extends PostgrePermission {
 
     public String getFullObjectName() {
         return DBUtils.getQuotedIdentifier(getDataSource(), schemaName) + "." +
-            (kind == PostgrePrivilege.Kind.FUNCTION ? objectName : DBUtils.getQuotedIdentifier(getDataSource(), objectName));
+            (kind == PostgrePrivilegeGrant.Kind.FUNCTION ? objectName : DBUtils.getQuotedIdentifier(getDataSource(), objectName));
     }
 
     @Override
@@ -84,10 +84,10 @@ public class PostgreRolePermission extends PostgrePermission {
     }
 
     @Override
-    public int compareTo(@NotNull PostgrePermission o) {
-        if (o instanceof PostgreRolePermission) {
-            final int res = schemaName.compareTo(((PostgreRolePermission)o).schemaName);
-            return res != 0 ? res : objectName.compareTo(((PostgreRolePermission)o).objectName);
+    public int compareTo(@NotNull PostgrePrivilege o) {
+        if (o instanceof PostgreRolePrivilege) {
+            final int res = schemaName.compareTo(((PostgreRolePrivilege)o).schemaName);
+            return res != 0 ? res : objectName.compareTo(((PostgreRolePrivilege)o).objectName);
         }
         return 0;
     }

@@ -291,8 +291,8 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public List<PostgrePermission> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException {
-        List<PostgrePermission> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl());
+    public List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException {
+        List<PostgrePrivilege> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl());
         if (!includeNestedObjects) {
             return tablePermissions;
         }
@@ -301,7 +301,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             if (column.getAcl() == null || column.isHidden()) {
                 continue;
             }
-            tablePermissions.addAll(column.getPermissions(monitor, true));
+            tablePermissions.addAll(column.getPrivileges(monitor, true));
         }
 
         return tablePermissions;
