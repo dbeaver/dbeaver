@@ -36,23 +36,23 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
         return new UITask<MySQLEvent>() {
             @Override
             protected MySQLEvent runTask() {
-            	EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.EVENT);
-            	if (!editPage.edit()) {
-            		return null;
-            		}
-            	MySQLEvent newEvent = new MySQLEvent(parent, editPage.getEntityName());
-            	newEvent.setObjectDefinitionText("SELECT 1");
-            	return newEvent;
-            	}
+                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.EVENT);
+                if (!editPage.edit()) {
+                    return null;
+                    }
+                MySQLEvent newEvent = new MySQLEvent(parent, editPage.getEntityName());
+                newEvent.setObjectDefinitionText("SELECT 1");
+                return newEvent;
+                }
             }.execute();
             }
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLObjectEditor<MySQLEvent, MySQLCatalog>.ObjectCreateCommand command, Map<String, Object> options) {
-    	final MySQLEvent event = command.getObject();
-    	final StringBuilder script = new StringBuilder();
-    	try {
-    		script.append(event.getObjectDefinitionText(monitor, options));
+        final MySQLEvent event = command.getObject();
+        final StringBuilder script = new StringBuilder();
+        try {
+            script.append(event.getObjectDefinitionText(monitor, options));
         } catch (DBException e) {
             log.error(e);
         }
