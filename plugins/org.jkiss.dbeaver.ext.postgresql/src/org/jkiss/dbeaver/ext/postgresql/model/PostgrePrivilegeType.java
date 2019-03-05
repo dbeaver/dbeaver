@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.access.DBAPrivilegeType;
  */
 public enum PostgrePrivilegeType implements DBAPrivilegeType {
     // ALL privs
-    ALL(' ', true, Object.class),
+    ALL(' ', false, Object.class),
     // TABLE privs
     SELECT('r', true, PostgreTableBase.class, PostgreTableColumn.class),
     INSERT('a', true, PostgreTableReal.class, PostgreTableColumn.class),

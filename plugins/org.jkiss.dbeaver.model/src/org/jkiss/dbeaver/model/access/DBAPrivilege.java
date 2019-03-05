@@ -23,4 +23,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Privilege
  */
 public interface DBAPrivilege extends DBSObject {
+
+    //DBAPrivilegeType[] getTypes();
+
 }
