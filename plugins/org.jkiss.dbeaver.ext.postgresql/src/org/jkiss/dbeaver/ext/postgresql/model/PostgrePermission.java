@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.access.DBAPermission;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -29,7 +30,7 @@ import java.util.List;
 /**
  * PostgrePermission
  */
-public abstract class PostgrePermission implements DBSObject, Comparable<PostgrePermission> {
+public abstract class PostgrePermission implements DBAPermission, DBSObject, Comparable<PostgrePermission> {
 
     public static final short NONE = 0;
     public static final short GRANTED = 1;

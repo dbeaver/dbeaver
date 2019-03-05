@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAPermissionOwner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -27,7 +28,7 @@ import java.util.Collection;
 /**
  * PostgrePermissionsOwner
  */
-public interface PostgrePermissionsOwner extends PostgreObject {
+public interface PostgrePermissionsOwner extends PostgreObject, DBAPermissionOwner {
 
     PostgreSchema getSchema();
 
