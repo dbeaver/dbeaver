@@ -870,7 +870,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
         for (final DBNDatabaseNode databaseNode : nodeList) {
-            createPathRow(breadcrumbsPanel, databaseNode);
+            createBreadcrumbs(breadcrumbsPanel, databaseNode);
         }
 
 
@@ -889,7 +889,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;
 
-    private void createPathRow(ToolBar infoGroup, final DBNDatabaseNode databaseNode)
+    private void createBreadcrumbs(ToolBar infoGroup, final DBNDatabaseNode databaseNode)
     {
         final DBNDatabaseNode curNode = getEditorInput().getNavigatorNode();
 
