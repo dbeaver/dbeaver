@@ -32,7 +32,7 @@ import java.util.Collection;
 /**
  * PostgreTableColumn
  */
-public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePermissionsOwner, GisAttribute
+public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, GisAttribute
 {
     private static final Log log = Log.getLog(PostgreTableColumn.class);
 
@@ -57,7 +57,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
     }
 
     @Override
-    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(monitor, this, getAcl());
     }
 

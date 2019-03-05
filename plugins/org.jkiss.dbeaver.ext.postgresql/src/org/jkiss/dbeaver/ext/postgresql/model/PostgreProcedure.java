@@ -45,7 +45,7 @@ import java.util.*;
 /**
  * PostgreProcedure
  */
-public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, PostgrePermissionsOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject
+public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
     private static final String CAT_FLAGS = "Flags";
@@ -643,7 +643,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(monitor,this, acl);
     }
 

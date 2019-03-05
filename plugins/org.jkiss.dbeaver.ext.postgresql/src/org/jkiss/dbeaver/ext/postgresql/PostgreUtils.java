@@ -534,16 +534,16 @@ public class PostgreUtils {
         return serverType;
     }
 
-    public static List<PostgrePermission> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePermissionsOwner owner, @Nullable Object acl) throws DBException {
+    public static List<PostgrePrivilege> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePrivilegeOwner owner, @Nullable Object acl) throws DBException {
         if (!(acl instanceof java.sql.Array)) {
             if (acl == null) {
                 // Special case. Means ALL permissions are granted to table owner
                 PostgreRole objectOwner = owner.getOwner(monitor);
                 String granteeName = objectOwner == null ? null : objectOwner.getName();
 
-                List<PostgrePrivilege> privileges = new ArrayList<>();
+                List<PostgrePrivilegeGrant> privileges = new ArrayList<>();
                 privileges.add(
-                    new PostgrePrivilege(
+                    new PostgrePrivilegeGrant(
                         granteeName,
                         granteeName,
                         owner.getDatabase().getName(),
@@ -552,7 +552,7 @@ public class PostgreUtils {
                         PostgrePrivilegeType.ALL,
                         false,
                         false));
-                PostgreObjectPermission permission = new PostgreObjectPermission(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
+                PostgreObjectPrivilege permission = new PostgreObjectPrivilege(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
                 return Collections.singletonList(permission);
             }
             return Collections.emptyList();
@@ -564,7 +564,7 @@ public class PostgreUtils {
             log.error(e);
             return Collections.emptyList();
         }
-        List<PostgrePermission> permissions = new ArrayList<>();
+        List<PostgrePrivilege> permissions = new ArrayList<>();
         int itemCount = Array.getLength(itemArray);
         for (int i = 0; i < itemCount; i++) {
             Object aclItem = Array.get(itemArray, i);
@@ -590,7 +590,7 @@ public class PostgreUtils {
             String privString = permString.substring(0, divPos2);
             String grantor = permString.substring(divPos2 + 1);
 
-            List<PostgrePrivilege> privileges = new ArrayList<>();
+            List<PostgrePrivilegeGrant> privileges = new ArrayList<>();
             for (int k = 0; k < privString.length(); k++) {
                 char pCode = privString.charAt(k);
                 boolean withGrantOption = false;
@@ -598,7 +598,7 @@ public class PostgreUtils {
                     withGrantOption = true;
                     k++;
                 }
-                privileges.add(new PostgrePrivilege(
+                privileges.add(new PostgrePrivilegeGrant(
                     grantor, grantee,
                     owner.getDatabase().getName(),
                     owner.getSchema().getName(),
@@ -608,7 +608,7 @@ public class PostgreUtils {
                     false
                 ));
             }
-            permissions.add(new PostgreObjectPermission(owner, grantee, privileges));
+            permissions.add(new PostgreObjectPrivilege(owner, grantee, privileges));
         }
 
         return permissions;
@@ -633,7 +633,7 @@ public class PostgreUtils {
         return opt.toString();
     }
 
-    public static String getObjectTypeName(PostgrePermissionsOwner object) {
+    public static String getObjectTypeName(PostgrePrivilegeOwner object) {
         if (object instanceof PostgreSequence) {
             return "SEQUENCE";
         } else if (object instanceof PostgreProcedure) {
@@ -643,7 +643,7 @@ public class PostgreUtils {
         }
     }
 
-    public static String getObjectUniqueName(PostgrePermissionsOwner object) {
+    public static String getObjectUniqueName(PostgrePrivilegeOwner object) {
         if (object instanceof PostgreProcedure) {
             return ((PostgreProcedure) object).getFullQualifiedSignature();
         } else {
@@ -651,7 +651,7 @@ public class PostgreUtils {
         }
     }
 
-    public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePermissionsOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
+    public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePrivilegeOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
         if (object.isPersisted() && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
 
@@ -665,10 +665,10 @@ public class PostgreUtils {
             }
 
             // Permissions
-            Collection<PostgrePermission> permissions = object.getPermissions(monitor, true);
+            Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
             if (!CommonUtils.isEmpty(permissions)) {
 
-                for (PostgrePermission permission : permissions) {
+                for (PostgrePrivilege permission : permissions) {
                     if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
                             new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[] { PostgrePrivilegeType.ALL })

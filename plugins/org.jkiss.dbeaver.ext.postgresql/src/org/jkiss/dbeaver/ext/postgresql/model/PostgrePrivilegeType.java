@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.dbeaver.model.access.DBAPrivilegeType;
+
 /**
  * PostgrePrivilegeType
  */
-public enum PostgrePrivilegeType {
+public enum PostgrePrivilegeType implements DBAPrivilegeType {
     // ALL privs
-    ALL(' ', false, Object.class),
+    ALL(' ', true, Object.class),
     // TABLE privs
     SELECT('r', true, PostgreTableBase.class, PostgreTableColumn.class),
     INSERT('a', true, PostgreTableReal.class, PostgreTableColumn.class),
@@ -55,8 +57,24 @@ public enum PostgrePrivilegeType {
         return targetType;
     }
 
+    @Override
     public boolean isValid() {
         return valid;
+    }
+
+    @Override
+    public boolean supportsType(Class<?> objectType) {
+        for (int i = 0; i < targetType.length; i++) {
+            if (targetType[i].isAssignableFrom(objectType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String getName() {
+        return name();
     }
 
     public static PostgrePrivilegeType fromString(String type) {
@@ -76,13 +94,5 @@ public enum PostgrePrivilegeType {
         return UNKNOWN;
     }
 
-    public boolean supportsType(Class<?> objectType) {
-        for (int i = 0; i < targetType.length; i++) {
-            if (targetType[i].isAssignableFrom(objectType)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
 

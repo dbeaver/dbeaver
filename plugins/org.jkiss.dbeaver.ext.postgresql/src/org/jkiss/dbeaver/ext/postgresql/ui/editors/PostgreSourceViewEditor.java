@@ -91,7 +91,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     }
                 }, true));
         }
-        if (sourceObject instanceof PostgrePermissionsOwner) {
+        if (sourceObject instanceof PostgrePrivilegeOwner) {
             contributionManager.add(ActionUtils.makeActionContribution(
                 new Action("Show permissions", Action.AS_CHECK_BOX) {
                 {

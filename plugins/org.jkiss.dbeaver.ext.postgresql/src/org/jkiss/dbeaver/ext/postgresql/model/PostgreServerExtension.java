@@ -94,5 +94,5 @@ public interface PostgreServerExtension
     // Initializes SSL config if SSL wasn't enabled explicitly. By default disables SSL explicitly.
     void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
 
-    List<PostgrePermission> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
+    List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
 }

@@ -18,27 +18,26 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.access.DBAPermissionOwner;
+import org.jkiss.dbeaver.model.access.DBAPrivilegeOwner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
 
 /**
- * PostgrePermissionsOwner
+ * PostgrePrivilegeOwner
  */
-public interface PostgrePermissionsOwner extends PostgreObject, DBAPermissionOwner {
+public interface PostgrePrivilegeOwner extends PostgreObject, DBAPrivilegeOwner {
 
     PostgreSchema getSchema();
 
     PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException;
 
     /**
-     * Get object permissions.
+     * Get object privileges.
      * @param includeNestedObjects - include permissions for all nested objects. For exmaple for table columns.
      */
-    Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
+    @Override
+    Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
 
     String generateChangeOwnerQuery(String owner);
 }

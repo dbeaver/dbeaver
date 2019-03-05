@@ -74,7 +74,7 @@ import java.util.*;
 /**
  * PostgresRolePrivilegesEditor
  */
-public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<PostgrePermissionsOwner>
+public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<PostgrePrivilegeOwner>
 {
     private PageControl pageControl;
 
@@ -85,8 +85,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private ControlEnableState permissionsEnable;
 
     private DBSObject[] currentObjects;
-    private PostgrePermission[] currentPermissions;
-    private Map<String, PostgrePermission> permissionMap = new HashMap<>();
+    private PostgrePrivilege[] currentPermissions;
+    private Map<String, PostgrePrivilege> permissionMap = new HashMap<>();
     private Text objectDescriptionText;
 
     public void createPartControl(Composite parent) {
@@ -231,7 +231,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
     }
 
-    private PostgrePermission getObjectPermissions(DBSObject object) {
+    private PostgrePrivilege getObjectPermissions(DBSObject object) {
         if (object instanceof PostgreProcedure) {
             String fqProcName = DBUtils.getQuotedIdentifier(((PostgreProcedure) object).getSchema()) + "." + ((PostgreProcedure) object).getSpecificName();
             return permissionMap.get(fqProcName);
@@ -249,35 +249,35 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
         for (int i = 0; i < currentObjects.length; i++) {
             DBSObject currentObject = currentObjects[i];
-            PostgrePermission permission = currentPermissions[i];
+            PostgrePrivilege permission = currentPermissions[i];
             if (permission == null) {
                 if (!grant) {
                     // No permission - nothing to revoke
                     continue;
                 }
                 if (isRoleEditor()) {
-                    PostgrePermissionsOwner permissionsOwner = (PostgrePermissionsOwner) currentObject;
-                    PostgrePrivilege.Kind kind;
+                    PostgrePrivilegeOwner permissionsOwner = (PostgrePrivilegeOwner) currentObject;
+                    PostgrePrivilegeGrant.Kind kind;
                     String objectName;
                     if (permissionsOwner instanceof PostgreProcedure) {
-                        kind = PostgrePrivilege.Kind.FUNCTION;
+                        kind = PostgrePrivilegeGrant.Kind.FUNCTION;
                         objectName = ((PostgreProcedure) permissionsOwner).getUniqueName();
                     } else {
                         if (permissionsOwner instanceof PostgreSequence) {
-                            kind = PostgrePrivilege.Kind.SEQUENCE;
+                            kind = PostgrePrivilegeGrant.Kind.SEQUENCE;
                         } else {
-                            kind = PostgrePrivilege.Kind.TABLE;
+                            kind = PostgrePrivilegeGrant.Kind.TABLE;
                         }
                         objectName = permissionsOwner.getName();
                     }
-                    permission = new PostgreRolePermission(
+                    permission = new PostgreRolePrivilege(
                         getDatabaseObject(),
                         kind,
                         permissionsOwner.getSchema().getName(),
                         objectName,
                         Collections.emptyList());
                 } else {
-                    permission = new PostgreObjectPermission(
+                    permission = new PostgreObjectPrivilege(
                         getDatabaseObject(),
                         currentObject.getName(),
                         Collections.emptyList());
@@ -286,7 +286,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 permissionMap.put(permission.getName(), permission);
             } else if (privilegeType != null) {
                 // Check for privilege was already granted for this object
-                boolean hasPriv = permission.getPermission(privilegeType) != PostgrePermission.NONE;
+                boolean hasPriv = permission.getPermission(privilegeType) != PostgrePrivilege.NONE;
                 if (grant == hasPriv) {
                     continue;
                 }
@@ -299,7 +299,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     grant,
                     permission,
                     privilegeType == null ? null : new PostgrePrivilegeType[] { privilegeType }),
-                new DBECommandReflector<PostgrePermissionsOwner, PostgreCommandGrantPrivilege>() {
+                new DBECommandReflector<PostgrePrivilegeOwner, PostgreCommandGrantPrivilege>() {
                     @Override
                     public void redoCommand(PostgreCommandGrantPrivilege cmd)
                     {
@@ -347,7 +347,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         StringBuilder objectNames = new StringBuilder();
         if (!hasBadObjects) {
             for (DBSObject object : objects) {
-                if (!(object instanceof PostgrePermissionsOwner)) {
+                if (!(object instanceof PostgrePrivilegeOwner)) {
                     hasBadObjects = true;
                     break;
                 }
@@ -367,7 +367,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             objectDescriptionText.setText(objectNames.toString());
 
             this.currentObjects = objects.toArray(new DBSObject[0]);
-            this.currentPermissions = new PostgrePermission[this.currentObjects.length];
+            this.currentPermissions = new PostgrePrivilege[this.currentObjects.length];
             for (int i = 0; i < currentObjects.length; i++) {
                 this.currentPermissions[i] = getObjectPermissions(currentObjects[i]);
             }
@@ -395,14 +395,14 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         } else {
             for (TableItem item : permissionTable.getItems()) {
                 PostgrePrivilegeType privType = (PostgrePrivilegeType) item.getData();
-                short perm = currentPermissions[0] == null ? PostgrePermission.NONE : currentPermissions[0].getPermission(privType);
-                item.setChecked((perm & PostgrePermission.GRANTED) != 0);
-                if ((perm & PostgrePermission.WITH_GRANT_OPTION) != 0) {
+                short perm = currentPermissions[0] == null ? PostgrePrivilege.NONE : currentPermissions[0].getPermission(privType);
+                item.setChecked((perm & PostgrePrivilege.GRANTED) != 0);
+                if ((perm & PostgrePrivilege.WITH_GRANT_OPTION) != 0) {
                     item.setText(1, "X");
                 } else {
                     item.setText(1, "");
                 }
-                if ((perm & PostgrePermission.WITH_HIERARCHY) != 0) {
+                if ((perm & PostgrePrivilege.WITH_HIERARCHY) != 0) {
                     item.setText(2, "X");
                 } else {
                     item.setText(2, "");
@@ -437,13 +437,13 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         UIUtils.asyncExec(() -> UIUtils.packColumns(permissionTable, false));
 
         LoadingJob.createService(
-            new DatabaseLoadService<Collection<PostgrePermission>>("Load permissions", getExecutionContext()) {
+            new DatabaseLoadService<Collection<PostgrePrivilege>>("Load permissions", getExecutionContext()) {
                 @Override
-                public Collection<PostgrePermission> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public Collection<PostgrePrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
-                        return getDatabaseObject().getPermissions(monitor, false);
+                        return getDatabaseObject().getPrivileges(monitor, false);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -502,16 +502,16 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             super(parent, SWT.SHEET);
         }
 
-        ProgressVisualizer<Collection<PostgrePermission>> createLoadVisualizer() {
-            return new ProgressVisualizer<Collection<PostgrePermission>>() {
+        ProgressVisualizer<Collection<PostgrePrivilege>> createLoadVisualizer() {
+            return new ProgressVisualizer<Collection<PostgrePrivilege>>() {
                 @Override
-                public void completeLoading(Collection<PostgrePermission> privs) {
+                public void completeLoading(Collection<PostgrePrivilege> privs) {
                     super.completeLoading(privs);
                     if (privs == null) {
                         return;
                     }
                     permissionMap.clear();
-                    for (PostgrePermission perm : privs) {
+                    for (PostgrePrivilege perm : privs) {
                         permissionMap.put(perm.getName(), perm);
                     }
                     // Load navigator tree
