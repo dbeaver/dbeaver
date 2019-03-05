@@ -84,8 +84,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     private OraclePlanNode parent;
     private List<OraclePlanNode> nested;
 
-    public OraclePlanNode(OracleDataSource dataSource, IntKeyMap<OraclePlanNode> prevNodes, ResultSet dbResult) throws SQLException
-    {
+    public OraclePlanNode(OracleDataSource dataSource, IntKeyMap<OraclePlanNode> prevNodes, ResultSet dbResult) throws SQLException {
         this.dataSource = dataSource;
         this.statementId = JDBCUtils.safeGetString(dbResult, "statement_id");
         this.plan_id = JDBCUtils.safeGetLong(dbResult, "plan_id");
@@ -128,22 +127,24 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
             parent = prevNodes.get(parent_id);
         }
         if (parent != null) {
-            if (parent.nested == null) {
-                parent.nested = new ArrayList<>();
-            }
-            parent.nested.add(this);
+            parent.addChild(this);
         }
     }
 
+    private void addChild(OraclePlanNode node) {
+        if (this.nested == null) {
+            this.nested = new ArrayList<>();
+        }
+        this.nested.add(node);
+    }
+
     @Override
-    public OraclePlanNode getParent()
-    {
+    public OraclePlanNode getParent() {
         return parent;
     }
 
     @Override
-    public Collection<OraclePlanNode> getNested()
-    {
+    public Collection<OraclePlanNode> getNested() {
         return nested;
     }
 
@@ -163,14 +164,12 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     }
 
     //@Property(name = "ID", order = 0, viewable = true, description = "Node ID")
-    public int getId()
-    {
+    public int getId() {
         return id;
     }
 
     @Property(order = 1, viewable = true)
-    public String getOperation()
-    {
+    public String getOperation() {
         if (CommonUtils.isEmpty(options)) {
             return operation;
         } else {
@@ -179,14 +178,12 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     }
 
     //@Property(name = "Options", order = 2, viewable = true, description = "A variation on the operation described in the Operation column")
-    public String getOptions()
-    {
+    public String getOptions() {
         return options;
     }
 
     //@Property(name = "Type", order = 3, viewable = true, description = "Object type")
-    public String getObjectType()
-    {
+    public String getObjectType() {
         return objectType;
     }
 
@@ -198,8 +195,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
 //    }
 
     @Property(order = 5, viewable = true, supportsPreview = true)
-    public Object getObject(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getObject(DBRProgressMonitor monitor) throws DBException {
         if (monitor == null || CommonUtils.isEmpty(objectOwner) || CommonUtils.isEmpty(objectName)) {
             return objectName == null ? "" : objectName;
         }
@@ -238,32 +234,27 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     }
 
     //@Property(name = "Alias", order = 6, viewable = true, description = "Object alias")
-    public String getAlias()
-    {
+    public String getAlias() {
         return objectAlias;
     }
 
     @Property(category = CAT_DETAILS, order = 7, viewable = true)
-    public String getOptimizer()
-    {
+    public String getOptimizer() {
         return optimizer;
     }
 
     @Property(order = 8, viewable = true)
-    public long getCost()
-    {
+    public long getCost() {
         return cost;
     }
 
     @Property(order = 9, viewable = true)
-    public long getCardinality()
-    {
+    public long getCardinality() {
         return cardinality;
     }
 
     @Property(category = CAT_DETAILS, order = 10, viewable = true)
-    public long getBytes()
-    {
+    public long getBytes() {
         return bytes;
     }
 
@@ -328,8 +319,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return operation + " " + CommonUtils.toString(options) + " " + CommonUtils.toString(objectName);
     }
 
@@ -345,11 +335,26 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
 
     @Override
     public Number getNodeDuration() {
-        return (double)cpuCost / 1000;
+        return (double) cpuCost / 1000;
     }
 
     @Override
     public Number getNodeRowCount() {
         return cardinality;
     }
+
+    public void updateCosts() {
+        if (nested != null) {
+            for (OraclePlanNode child : nested) {
+                child.updateCosts();
+            }
+        }
+        if (this.cost == 0 && this.cpuCost == 0 && nested != null) {
+            for (OraclePlanNode child : nested) {
+                this.cost += child.cost;
+                this.cpuCost += child.cpuCost;
+            }
+        }
+    }
+
 }
