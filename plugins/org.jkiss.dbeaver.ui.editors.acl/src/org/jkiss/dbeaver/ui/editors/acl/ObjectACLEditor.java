@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseAdapter;
@@ -41,7 +42,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.*;
-import org.jkiss.dbeaver.model.access.DBAPrivilege;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -53,6 +54,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -63,12 +65,15 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * PostgresRolePrivilegesEditor
  */
-public abstract class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPrivilegeOwner>
+public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_TYPE extends DBAPrivilegeType> extends AbstractDatabaseObjectEditor<DBAPrivilegeOwner>
 {
     private PageControl pageControl;
 
@@ -83,13 +88,7 @@ public abstract class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPr
     private Map<String, DBAPrivilege> privilegeMap = new HashMap<>();
     private Text objectDescriptionText;
 
-    protected abstract DBAPrivilegeType[] getPrivilegeTypes();
-
-    protected abstract DBAPrivilege createNewPrivilege(DBAPrivilegeOwner owner, DBSObject object, DBAPrivilege privilege);
-
-    protected String getObjectUniqueName(DBSObject object) {
-        return DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
-    }
+    protected abstract ObjectACLManager<PRIVILEGE, PRIVILEGE_TYPE> getACLManager();
 
     public void createPartControl(Composite parent) {
         this.pageControl = new PageControl(parent);
@@ -156,6 +155,8 @@ public abstract class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPr
             permissionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             permissionTable.setHeaderVisible(true);
             permissionTable.setLinesVisible(true);
+
+            //ViewerColumnController controller
             UIUtils.createTableColumn(permissionTable, SWT.LEFT, "Permission");
             UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With GRANT");
             UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With Hierarchy");
@@ -175,7 +176,7 @@ public abstract class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPr
             });
 
             if (!isRoleEditor()) {
-                for (DBAPrivilegeType pt : getPrivilegeTypes()) {
+                for (PRIVILEGE_TYPE pt : getACLManager().getPrivilegeTypes()) {
                     if (!pt.isValid() || !pt.supportsType(getDatabaseObject().getClass())) {
                         continue;
                     }
@@ -241,10 +242,10 @@ public abstract class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPr
             return privilegeMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
         }
 */
-        return privilegeMap.get(getObjectUniqueName(object));
+        return privilegeMap.get(getACLManager().getObjectUniqueName(object));
     }
 
-    private void updateCurrentPrivileges(boolean grant, DBAPrivilegeType privilegeType) {
+    private void updateCurrentPrivileges(boolean grant, @Nullable  DBAPrivilegeType privilegeType) {
 
         if (ArrayUtils.isEmpty(currentObjects)) {
             DBWorkbench.getPlatformUI().showError("Update privilege", "Can't update privilege - no current object");
@@ -259,38 +260,35 @@ public abstract class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPr
                     // No permission - nothing to revoke
                     continue;
                 }
-                privilege = createNewPrivilege(getDatabaseObject(), currentObject, privilege);
+                privilege = getACLManager().createNewPrivilege(getDatabaseObject(), currentObject, null);
                 // Add to map
                 privilegeMap.put(privilege.getName(), privilege);
-            } else if (privilegeType != null) {
+            }/* else if (privilegeType != null) {
                 // Check for privilege was already granted for this object
-/*
-                boolean hasPriv = privilege.getPermission(privilegeType) != PostgrePermission.NONE;
+                boolean hasPriv = ArrayUtils.contains(privilege.getTypes(), privilegeType);
                 if (grant == hasPriv) {
                     continue;
                 }
-*/
-            }
+            }*/
 
-/*
             // Add command
             addChangeCommand(
-                new PostgreCommandGrantPrivilege(
+                new ACLCommandChangePrivilege(
+                    getACLManager(),
                     getDatabaseObject(),
                     grant,
                     privilege,
                     privilegeType == null ? null : new DBAPrivilegeType[] { privilegeType }),
-                new DBECommandReflector<DBAPrivilegeOwner, PostgreCommandGrantPrivilege>() {
+                new DBECommandReflector<DBAPrivilegeOwner, ACLCommandChangePrivilege>() {
                     @Override
-                    public void redoCommand(PostgreCommandGrantPrivilege cmd)
+                    public void redoCommand(ACLCommandChangePrivilege cmd)
                     {
                     }
                     @Override
-                    public void undoCommand(PostgreCommandGrantPrivilege cmd)
+                    public void undoCommand(ACLCommandChangePrivilege cmd)
                     {
                     }
                 });
-*/
 
         }
     }
@@ -305,7 +303,7 @@ public abstract class ObjectACLEditor extends AbstractDatabaseObjectEditor<DBAPr
 
             if (!CommonUtils.isEmpty(objects)) {
                 Class<?> objectType = objects.get(0).getClass();
-                for (DBAPrivilegeType pt : getPrivilegeTypes()) {
+                for (PRIVILEGE_TYPE pt : getACLManager().getPrivilegeTypes()) {
                     if (!pt.isValid() || !pt.supportsType(objectType)) {
                         continue;
                     }
