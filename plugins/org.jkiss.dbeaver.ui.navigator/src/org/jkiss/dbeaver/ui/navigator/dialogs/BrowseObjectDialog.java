@@ -93,9 +93,14 @@ public class BrowseObjectDialog extends Dialog {
             @Override
             public boolean isLeafObject(Object object) {
                 if (leafTypes != null && leafTypes.length > 0) {
-                    for (Class<?> leafType : leafTypes) {
-                        if (leafType.isAssignableFrom(object.getClass())) {
-                            return true;
+                    if (object instanceof DBNDatabaseNode) {
+                        DBSObject dbObject = ((DBNDatabaseNode) object).getObject();
+                        if (dbObject != null) {
+                            for (Class<?> leafType : leafTypes) {
+                                if (leafType.isAssignableFrom(dbObject.getClass())) {
+                                    return true;
+                                }
+                            }
                         }
                     }
                 }
