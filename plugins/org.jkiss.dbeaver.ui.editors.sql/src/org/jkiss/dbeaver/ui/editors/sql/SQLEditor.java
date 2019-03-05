@@ -860,6 +860,9 @@ public class SQLEditor extends SQLEditorBase implements
                 } else if (data instanceof SQLEditorPresentationPanel) {
                     extraPresentationCurrentPanel = ((SQLEditorPresentationPanel) data);
                     extraPresentationCurrentPanel.activatePanel();
+                } else if (data instanceof ExplainPlanViewer) {
+                    SQLQuery planQuery = ((ExplainPlanViewer) data).getQuery();
+                    getSelectionProvider().setSelection(new TextSelection(planQuery.getOffset(), 0));
                 }
             }
         });
@@ -1535,7 +1538,7 @@ public class SQLEditor extends SQLEditorBase implements
             final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
             item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title);
-            item.setToolTipText(SQLEditorMessages.editors_sql_error_execution_plan_title);
+            item.setToolTipText(sqlQuery.getText());
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
             item.addDisposeListener(resultTabDisposeListener);
