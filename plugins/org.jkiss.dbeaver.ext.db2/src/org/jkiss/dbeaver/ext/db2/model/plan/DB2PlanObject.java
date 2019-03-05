@@ -17,19 +17,20 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import java.sql.Timestamp;
-
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+
+import java.sql.Timestamp;
 
 /**
  * DB2 EXPLAIN_OBJECT table
  * 
  * @author Denis Forveille
  */
-public class DB2PlanObject extends DB2PlanNode {
+public class DB2PlanObject extends DB2PlanNode implements DBCPlanCostNode {
 
     private String displayName;
     private String nodeName;
@@ -446,4 +447,26 @@ public class DB2PlanObject extends DB2PlanNode {
         return nullKeys;
     }
 
+    @Override
+    public Number getNodeCost() {
+        return null;
+    }
+
+    @Override
+    public Number getNodePercent() {
+        return null;
+    }
+
+    @Override
+    public Number getNodeDuration() {
+        if (statsTime != null && createTime != null) {
+            return statsTime.getTime() - createTime.getTime();
+        }
+        return 0;
+    }
+
+    @Override
+    public Number getNodeRowCount() {
+        return rowCount;
+    }
 }

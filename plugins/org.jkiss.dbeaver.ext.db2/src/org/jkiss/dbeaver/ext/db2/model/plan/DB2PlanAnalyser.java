@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
@@ -61,6 +62,20 @@ public class DB2PlanAnalyser extends AbstractExecutionPlan {
     {
         this.query = query;
         this.planTableSchema = planTableSchema;
+    }
+
+    @Override
+    public Object getPlanFeature(String feature) {
+        if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
+            DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature) ||
+            DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature))
+        {
+            return true;
+        } else if (DBCPlanCostNode.PLAN_DURATION_MEASURE.equals(feature)) {
+            return "ms";
+        }
+
+        return super.getPlanFeature(feature);
     }
 
     // ----------------
