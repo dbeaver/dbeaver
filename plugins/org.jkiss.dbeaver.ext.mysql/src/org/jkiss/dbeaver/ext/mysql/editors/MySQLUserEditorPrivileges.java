@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -215,7 +216,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 if (privilege.isGrantOption()) {
                     grant.setGrantOption(isGrant);
                 } else if (isGrant) {
-                    if (!grant.getPrivileges().contains(privilege)) {
+                    if (!ArrayUtils.contains(grant.getPrivileges(), privilege)) {
                         grant.addPrivilege(privilege);
                     }
                 } else {

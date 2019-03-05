@@ -21,8 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.access.DBAPrivilegeGrant;
+import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
 
@@ -36,7 +38,7 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
     public static final short WITH_GRANT_OPTION = 2;
     public static final short WITH_HIERARCHY = 4;
 
-    public static class ObjectPermission {
+    public class ObjectPermission implements DBAPrivilegeGrant {
         @NotNull
         private PostgrePrivilegeType privilegeType;
         @NotNull
@@ -49,9 +51,29 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
             this.permissions = permissions;
         }
 
+        @Override
+        public DBARole getSubject(DBRProgressMonitor monitor) throws DBException {
+            return owner instanceof DBARole ? (DBARole) owner : (DBARole) getTargetObject(monitor);
+        }
+
+        @Override
+        public DBSObject getObject(DBRProgressMonitor monitor) throws DBException {
+            return owner instanceof DBARole ? getTargetObject(monitor) : owner;
+        }
+
+        @Override
+        public DBAPrivilege[] getPrivileges() {
+            return new DBAPrivilege[] { PostgrePrivilege.this };
+        }
+
         @NotNull
         public PostgrePrivilegeType getPrivilegeType() {
             return privilegeType;
+        }
+
+        @Override
+        public boolean isGranted() {
+            return (permissions & GRANTED) == GRANTED;
         }
 
         @NotNull
@@ -72,17 +94,21 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
     protected final PostgrePrivilegeOwner owner;
     private ObjectPermission[] permissions;
 
-    public PostgrePrivilege(PostgrePrivilegeOwner owner, List<PostgrePrivilegeGrant> privileges) {
+    public PostgrePrivilege(PostgrePrivilegeOwner owner, List<PostgrePrivilegeGrant> grants) {
         this.owner = owner;
-        this.permissions = new ObjectPermission[privileges.size()];
-        for (int i = 0 ; i < privileges.size(); i++) {
-            final PostgrePrivilegeGrant privilege = privileges.get(i);
+        this.permissions = new ObjectPermission[grants.size()];
+        for (int i = 0 ; i < grants.size(); i++) {
+            final PostgrePrivilegeGrant privilege = grants.get(i);
             short permission = GRANTED;
             if (privilege.isGrantable()) permission |= WITH_GRANT_OPTION;
             if (privilege.isWithHierarchy()) permission |= WITH_HIERARCHY;
             this.permissions[i] = new ObjectPermission(privilege.getPrivilegeType(), privilege.getGrantor(), permission);
         }
 
+    }
+
+    public DBAPrivilegeGrant[] getGrants() {
+        return permissions;
     }
 
     @Override
@@ -149,13 +175,10 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
 
     // Properties for permissions viewer
 
+/*
     @Property(viewable = true, editable = true, updatable = true, order = 100, name = "SELECT")
     public boolean hasPermissionSelect() {
         return getPermission(PostgrePrivilegeType.SELECT) != 0;
-    }
-
-    public void setPermissionSelect(boolean permitted) {
-        setPermission(PostgrePrivilegeType.SELECT, permitted);
     }
 
     @Property(viewable = true, order = 101, name = "INSERT")
@@ -187,6 +210,7 @@ public abstract class PostgrePrivilege implements DBAPrivilege, Comparable<Postg
     public boolean hasPermissionTrigger() {
         return getPermission(PostgrePrivilegeType.TRIGGER) != 0;
     }
+*/
 
     /**
      * Checks all privileges

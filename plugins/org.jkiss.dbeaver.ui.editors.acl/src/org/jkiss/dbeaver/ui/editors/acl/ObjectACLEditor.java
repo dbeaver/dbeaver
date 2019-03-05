@@ -25,8 +25,6 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
@@ -34,8 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
@@ -53,8 +49,9 @@ import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -80,7 +77,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
     private boolean isLoaded;
     private DatabaseNavigatorTree roleOrObjectTable;
     private Composite permEditPanel;
-    private Table permissionTable;
+    private ObjectListControl<DBAPrivilege> permissionTable;
     private ControlEnableState permissionsEnable;
 
     private DBSObject[] currentObjects;
@@ -151,12 +148,20 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
             permEditPanel = new Composite(composite, SWT.NONE);
             permEditPanel.setLayout(new GridLayout(1, true));
 
-            permissionTable = new Table(permEditPanel, SWT.FULL_SELECTION | SWT.CHECK);
-            permissionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            permissionTable.setHeaderVisible(true);
-            permissionTable.setLinesVisible(true);
+            permissionTable = new ObjectListControl<DBAPrivilege>(permEditPanel, SWT.FULL_SELECTION | SWT.CHECK, new ListContentProvider()) {
+                @Override
+                protected String getListConfigId(List<Class<?>> classList) {
+                    return ObjectACLEditor.this.getClass().getName();
+                }
 
-            //ViewerColumnController controller
+                @Override
+                protected LoadingJob<Collection<DBAPrivilege>> createLoadService() {
+                    return null;
+                }
+            };
+            permissionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+/*
             UIUtils.createTableColumn(permissionTable, SWT.LEFT, "Permission");
             UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With GRANT");
             UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With Hierarchy");
@@ -166,12 +171,6 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     if (e.detail == SWT.CHECK) {
                         updateCurrentPrivileges(((TableItem) e.item).getChecked(), (DBAPrivilegeType) e.item.getData());
                     }
-                }
-            });
-            permissionTable.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDown(MouseEvent e) {
-                    super.mouseDown(e);
                 }
             });
 
@@ -185,6 +184,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     privItem.setData(pt);
                 }
             }
+*/
 
             Composite buttonPanel = new Composite(permEditPanel, SWT.NONE);
             buttonPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -193,17 +193,20 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
             UIUtils.createPushButton(buttonPanel, "Grant All", null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+/*
                     boolean hadNonChecked = false;
                     for (TableItem item : permissionTable.getItems()) {
                         if (!item.getChecked()) hadNonChecked = true;
                         item.setChecked(true);
                     }
                     if (hadNonChecked) updateCurrentPrivileges(true, null);
+*/
                 }
             });
             UIUtils.createPushButton(buttonPanel, "Revoke All", null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+/*
                     boolean hadChecked = false;
                     for (TableItem item : permissionTable.getItems()) {
                         if (item.getChecked()) hadChecked = true;
@@ -212,6 +215,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     if (hadChecked) {
                         updateCurrentPrivileges(false, null);
                     }
+*/
                 }
             });
 
@@ -297,6 +301,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
 
         boolean hasBadObjects = CommonUtils.isEmpty(objects);
 
+/*
         if (isRoleEditor()) {
             // In role editor each object may have different privilege set
             permissionTable.removeAll();
@@ -315,6 +320,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                 UIUtils.packColumns(permissionTable, false);
             }
         }
+*/
 
         StringBuilder objectNames = new StringBuilder();
         if (!hasBadObjects) {
@@ -357,6 +363,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
             }
         }
 
+/*
         if (ArrayUtils.isEmpty(currentPrivileges)) {
             // We have object(s) but no permissions for them
             for (TableItem item : permissionTable.getItems()) {
@@ -367,22 +374,9 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
         } else {
             for (TableItem item : permissionTable.getItems()) {
                 DBAPrivilegeType privType = (DBAPrivilegeType) item.getData();
-/*
-                short perm = currentPrivileges[0] == null ? PostgrePermission.NONE : currentPrivileges[0].getPermission(privType);
-                item.setChecked((perm & PostgrePermission.GRANTED) != 0);
-                if ((perm & PostgrePermission.WITH_GRANT_OPTION) != 0) {
-                    item.setText(1, "X");
-                } else {
-                    item.setText(1, "");
-                }
-                if ((perm & PostgrePermission.WITH_HIERARCHY) != 0) {
-                    item.setText(2, "X");
-                } else {
-                    item.setText(2, "");
-                }
-*/
             }
         }
+*/
     }
 
     private boolean isRoleEditor() {
@@ -408,7 +402,9 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
         }
         isLoaded = true;
 
+/*
         UIUtils.asyncExec(() -> UIUtils.packColumns(permissionTable, false));
+*/
 
         LoadingJob.createService(
             new DatabaseLoadService<Collection<? extends DBAPrivilege>>("Load permissions", getExecutionContext()) {

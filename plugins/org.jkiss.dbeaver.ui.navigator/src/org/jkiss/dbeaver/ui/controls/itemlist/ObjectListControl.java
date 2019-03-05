@@ -151,7 +151,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             });
             tree.addTraverseListener(traverseListener);
         } else {
-            TableViewer tableViewer = new TableViewer(this, viewerStyle);
+            TableViewer tableViewer;
+            if ((viewerStyle & SWT.CHECK) == SWT.CHECK) {
+                tableViewer = CheckboxTableViewer.newCheckList(this, viewerStyle);
+            } else {
+                tableViewer = new TableViewer(this, viewerStyle);
+            }
             final Table table = tableViewer.getTable();
             table.setHeaderVisible(true);
             if (showTableGrid) {

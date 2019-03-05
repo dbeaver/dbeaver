@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -147,7 +148,7 @@ public class PrivilegeTableControl extends Composite {
             //Button grantCheck = (Button)item.getData("grant");
             boolean checked = false;//, grantOption = false;
             for (MySQLGrant grant : grants) {
-                if (grant.isAllPrivileges() || grant.getPrivileges().contains(privilege) ||
+                if (grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege) ||
                     (grant.isGrantOption() && privilege.isGrantOption()))
                 {
                     checked = true;

@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.model.access;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * Privilege
+ * Privilege.
+ * Database privilege (e.g. SELECT, CREATE, DROP, CONNECT, etc).
  */
 public interface DBAPrivilege extends DBSObject {
 
-    //DBAPrivilegeType[] getTypes();
+    //boolean isGlobal();
+
 
 }
