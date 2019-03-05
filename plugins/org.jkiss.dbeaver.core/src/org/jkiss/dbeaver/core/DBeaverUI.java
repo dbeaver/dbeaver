@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -284,7 +283,7 @@ public class DBeaverUI implements DBPPlatformUI {
         UIUtils.syncExec(() ->
             NavigatorHandlerObjectOpen.openConnectionEditor(
                 UIUtils.getActiveWorkbenchWindow(),
-                (DataSourceDescriptor) dataSourceContainer));
+                dataSourceContainer));
     }
 
     @Override
