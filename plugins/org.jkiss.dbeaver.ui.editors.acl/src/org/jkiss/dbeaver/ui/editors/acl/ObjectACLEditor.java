@@ -22,7 +22,6 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -34,6 +33,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -249,7 +249,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
         return privilegeMap.get(getACLManager().getObjectUniqueName(object));
     }
 
-    private void updateCurrentPrivileges(boolean grant, @Nullable  DBAPrivilegeType privilegeType) {
+    private void updateCurrentPrivileges(boolean grant, @Nullable DBAPrivilegeType privilegeType) {
 
         if (ArrayUtils.isEmpty(currentObjects)) {
             DBWorkbench.getPlatformUI().showError("Update privilege", "Can't update privilege - no current object");
