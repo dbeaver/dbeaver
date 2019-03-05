@@ -162,6 +162,11 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
                 dbStat.close();
             }
 
+            // Update costs
+            for (OraclePlanNode node : rootNodes) {
+                node.updateCosts();
+            }
+
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         }
