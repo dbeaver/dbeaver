@@ -43,15 +43,18 @@ import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -92,7 +95,12 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         SashForm composite = UIUtils.createPartDivider(getSite().getPart(), this.pageControl, SWT.HORIZONTAL);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        roleOrObjectTable = new DatabaseNavigatorTree(composite, DBWorkbench.getPlatform().getNavigatorModel().getRoot(), SWT.MULTI | SWT.FULL_SELECTION, false, new DatabaseNavigatorTreeFilter());
+        roleOrObjectTable = new DatabaseNavigatorTree(
+            composite,
+            DBWorkbench.getPlatform().getNavigatorModel().getRoot(),
+            SWT.MULTI | SWT.FULL_SELECTION,
+            false,
+            isRoleEditor() ? new DatabaseObjectFilter() : null);
         roleOrObjectTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         final TreeViewer treeViewer = roleOrObjectTable.getViewer();
         treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer) {
@@ -456,6 +464,36 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             isLoaded = false;
             UIUtils.syncExec(() -> updateObjectPermissions(null));
             activatePart();
+        }
+    }
+
+    private static class DatabaseObjectFilter extends DatabaseNavigatorTreeFilter {
+        @Override
+        public boolean filterFolders() {
+            return false;
+        }
+
+        @Override
+        public boolean isLeafObject(Object object) {
+            if (object instanceof DBNDatabaseItem) {
+                DBSObject dbObject = ((DBNDatabaseItem) object).getObject();
+                return
+                    dbObject instanceof DBSEntity ||
+                    dbObject instanceof DBSProcedure ||
+                    dbObject instanceof DBSTableIndex ||
+                    dbObject instanceof DBSPackage ||
+                    dbObject instanceof DBSSequence ||
+                    dbObject instanceof DBAUser;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean select(Object element) {
+            if (!(element instanceof DBNDatabaseItem)) {
+                return true;
+            }
+            return isLeafObject(element);
         }
     }
 

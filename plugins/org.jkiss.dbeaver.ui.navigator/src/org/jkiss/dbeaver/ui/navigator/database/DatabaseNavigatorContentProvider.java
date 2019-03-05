@@ -149,7 +149,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     public boolean hasChildren(Object parent)
     {
         if (parent instanceof DBNDatabaseNode) {
-            if (navigatorTree.getNavigatorFilter() != null && navigatorTree.getNavigatorFilter().isLeafObject(((DBNDatabaseNode) parent).getObject())) {
+            if (navigatorTree.getNavigatorFilter() != null && navigatorTree.getNavigatorFilter().isLeafObject(parent)) {
                 return false;
             }
         }

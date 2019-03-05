@@ -100,7 +100,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
 
             @Override
             public boolean isLeafObject(Object object) {
-                return object instanceof DBPDataSourceContainer;
+                return object instanceof DBNDataSource;
             }
 
             @Override
