@@ -62,6 +62,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         "regprocedure",
         "regoper",
         "regoperator",
+        "regnamespace",
         "regclass",
         "regtype",
         "regconfig",

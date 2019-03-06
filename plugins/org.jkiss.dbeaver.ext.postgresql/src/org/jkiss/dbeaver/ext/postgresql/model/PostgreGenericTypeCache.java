@@ -47,6 +47,7 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache<GenericStruc
         "regprocedure",
         "regoper",
         "regoperator",
+        "regnamespace",
         "regclass",
         "regtype",
         "regconfig",
