@@ -253,7 +253,9 @@ public class ReferenceValueEditor {
             });
         }
         UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(editorSelector, true);
+            if (!editorSelector.isDisposed()) {
+                UIUtils.packColumns(editorSelector, true);
+            }
         });
         final Object curValue = valueController.getValue();
 
