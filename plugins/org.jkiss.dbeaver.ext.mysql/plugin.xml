@@ -254,6 +254,7 @@
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTriggerManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLEventManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
