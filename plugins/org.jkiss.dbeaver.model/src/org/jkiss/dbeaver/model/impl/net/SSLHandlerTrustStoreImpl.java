@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -86,12 +83,16 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
         KeyStore trustStore = securityManager.getKeyStore(dataSource.getContainer(), CERT_TYPE);
 
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+        keyManagerFactory.init(trustStore, DefaultCertificateStorage.DEFAULT_PASSWORD);
+        KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
+
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
         trustManagerFactory.init(trustStore);
         TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
 
         SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustManagers, new SecureRandom());
+        sslContext.init(keyManagers, trustManagers, new SecureRandom());
         return sslContext;
     }
 
