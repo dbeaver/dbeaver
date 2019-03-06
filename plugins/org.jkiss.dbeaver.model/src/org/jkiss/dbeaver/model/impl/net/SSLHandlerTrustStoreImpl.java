@@ -19,11 +19,8 @@ package org.jkiss.dbeaver.model.impl.net;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.net.DBWConfigProvider;
+import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -73,16 +70,19 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
     public static void setGlobalTrustStore(DBPDataSource dataSource) {
         final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
-        System.setProperty(
-            "javax.net.ssl.trustStore",
-            securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).getAbsolutePath());
-        System.setProperty(
-            "javax.net.ssl.trustStoreType",
-            securityManager.getKeyStoreType(dataSource.getContainer()));
+
+        String keyStorePath = securityManager.getKeyStorePath(dataSource.getContainer(), CERT_TYPE).getAbsolutePath();
+        String keyStoreType = securityManager.getKeyStoreType(dataSource.getContainer());
+
+        System.setProperty("javax.net.ssl.trustStore", keyStorePath);
+        System.setProperty("javax.net.ssl.trustStoreType", keyStoreType);
+        System.setProperty("javax.net.ssl.trustStorePassword", String.valueOf(DefaultCertificateStorage.DEFAULT_PASSWORD));
+        System.setProperty("javax.net.ssl.keyStore", keyStorePath);
+        System.setProperty("javax.net.ssl.keyStoreType", keyStoreType);
+        System.setProperty("javax.net.ssl.keyStorePassword", String.valueOf(DefaultCertificateStorage.DEFAULT_PASSWORD));
     }
 
-
-    public static SSLSocketFactory createTrustStoreSslSocketFactory(DBPDataSource dataSource) throws Exception {
+    public static SSLContext createTrustStoreSslContext(DBPDataSource dataSource) throws Exception {
         final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
         KeyStore trustStore = securityManager.getKeyStore(dataSource.getContainer(), CERT_TYPE);
 
@@ -92,7 +92,11 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
         SSLContext sslContext = SSLContext.getInstance("SSL");
         sslContext.init(null, trustManagers, new SecureRandom());
-        return sslContext.getSocketFactory();
+        return sslContext;
+    }
+
+    public static SSLSocketFactory createTrustStoreSslSocketFactory(DBPDataSource dataSource) throws Exception {
+        return createTrustStoreSslContext(dataSource).getSocketFactory();
     }
 
 }

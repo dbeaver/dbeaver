@@ -39,7 +39,7 @@ import java.util.List;
 public class DefaultCertificateStorage implements DBACertificateStorage {
 
     private static final Log log = Log.getLog(DefaultCertificateStorage.class);
-    private static final char[] DEFAULT_PASSWORD = "".toCharArray();
+    public static final char[] DEFAULT_PASSWORD = "".toCharArray();
     public static final String JKS_EXTENSION = ".jks";
 
     private final File localPath;
