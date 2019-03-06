@@ -83,7 +83,7 @@ public abstract class LightGrid extends Canvas {
      * in mode.
      */
     private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
-    private static final boolean MAXIMIZE_SINGLE_COLUMN = true;
+
     // Indicates that last time refreshData was called grid control was hidden (had zero size)
     // In that case columns will be repacked even if keepState is true
     private boolean controlWasHidden;
@@ -548,7 +548,7 @@ public abstract class LightGrid extends Canvas {
 
             scrollValuesObsolete = true;
 
-            if (getColumnCount() == 1 && (fitValue || MAXIMIZE_SINGLE_COLUMN)) {
+            if (getColumnCount() == 1 && (fitValue || getGridController().isMaximizeSingleColumn())) {
                 // Here we going to maximize single column to entire grid's width
                 // Sometimes (when new grid created and filled with data very fast our client area size is zero
                 // So let's add a workaround for it and use column's width in this case
