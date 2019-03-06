@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.gis;
 
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -23,6 +24,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 */
 public interface GisAttribute {
 
-    int getAttributeSRID(DBRProgressMonitor monitor);
+    int getAttributeGeometrySRID(DBRProgressMonitor monitor) throws DBCException;
+
+    String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException;
 
 }
