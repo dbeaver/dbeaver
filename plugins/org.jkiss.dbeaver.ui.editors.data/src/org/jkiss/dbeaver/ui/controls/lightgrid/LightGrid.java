@@ -83,7 +83,7 @@ public abstract class LightGrid extends Canvas {
      * in mode.
      */
     private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
-    private static final boolean MAXIMIZE_SINGLE_COLUMN = false;
+    private static final boolean MAXIMIZE_SINGLE_COLUMN = true;
     // Indicates that last time refreshData was called grid control was hidden (had zero size)
     // In that case columns will be repacked even if keepState is true
     private boolean controlWasHidden;
