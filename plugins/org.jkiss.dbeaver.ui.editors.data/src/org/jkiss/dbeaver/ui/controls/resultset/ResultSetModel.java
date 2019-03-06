@@ -873,6 +873,10 @@ public class ResultSetModel {
                     result = 1;
                 } else if (DBUtils.isNullValue(cell2)) {
                     result = -1;
+                } else if (cell1 instanceof Number && cell2 instanceof Number) {
+                    // Actual data type for the same column may differ (e.g. partially read from server, partially added on client side)
+                    double numDiff = ((Number) cell1).doubleValue() - ((Number) cell2).doubleValue();
+                    result = numDiff < 0 ? -1 : (numDiff > 0 ? 1 : 0);
                 } else if (cell1 instanceof Comparable) {
                     result = ((Comparable) cell1).compareTo(cell2);
                 } else {
