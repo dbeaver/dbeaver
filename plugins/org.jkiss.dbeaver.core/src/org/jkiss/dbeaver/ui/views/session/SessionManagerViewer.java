@@ -182,7 +182,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 sessionProps = new PropertyTreeViewer(detailsFolder, SWT.NONE);
 
                 detailsItem = new CTabItem(detailsFolder, SWT.NONE);
-                detailsItem.setText("Details");
+                detailsItem.setText(CoreMessages.viewer_details_item_details); 
                 detailsItem.setImage(DBeaverIcons.getImage(UIIcon.PROPERTIES));
                 detailsItem.setControl(sessionProps.getControl());
 
