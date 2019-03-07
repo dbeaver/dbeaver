@@ -101,7 +101,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
-        <key commandId="org.jkiss.dbeaver.ui.dashboard.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+Z"/>
+        <key commandId="org.jkiss.dbeaver.ui.dashboard.open" contextId="org.jkiss.dbeaver.ui.perspective" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+D"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">
