@@ -1265,6 +1265,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     }
 
+    @Override
+    public boolean isMaximizeSingleColumn() {
+        return controller.isRecordMode();
+    }
+
     private class SpreadsheetSelectionImpl implements IResultSetSelection {
 
         @Nullable

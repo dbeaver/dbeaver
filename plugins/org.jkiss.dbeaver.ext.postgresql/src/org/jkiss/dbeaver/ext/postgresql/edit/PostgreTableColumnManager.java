@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -99,6 +100,21 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 }
                 break;
         }
+        if (PostgreConstants.TYPE_GEOMETRY.equals(column.getTypeName())) {
+            try {
+                String geometryType = column.getAttributeGeometryType(monitor);
+                int geometrySRID = column.getAttributeGeometrySRID(monitor);
+                if (!PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType)) {
+                    sql.append("(").append(geometryType);
+                    if (geometrySRID > 0) {
+                        sql.append(", ").append(geometrySRID);
+                    }
+                    sql.append(")");
+                }
+            } catch (DBCException e) {
+                log.debug(e);
+            }
+        }
         if (rawType != null) {
             sql.append("[]");
         }
@@ -128,8 +144,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected final ColumnModifier<PostgreTableColumn> PostgreCollateModifier = (monitor, column, sql, command) -> {
         try {
             PostgreCollation collation = column.getCollation(monitor);
-            if (collation != null) {
-                sql.append(" COLLATE ").append(collation.getName());
+            if (collation != null && !PostgreConstants.COLLATION_DEFAULT.equals(collation.getName())) {
+                sql.append(" COLLATE \"").append(collation.getName()).append("\"");
             }
         } catch (DBException e) {
             log.debug(e);

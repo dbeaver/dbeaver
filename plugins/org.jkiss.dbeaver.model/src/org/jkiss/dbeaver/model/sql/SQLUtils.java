@@ -836,10 +836,7 @@ public final class SQLUtils {
                     continue;
                 }
 
-                String delimiter = sqlDialect.getScriptDelimiter();
-                if (!delimiter.isEmpty() && Character.isLetterOrDigit(delimiter.charAt(0))) {
-                    delimiter = ' ' + delimiter;
-                }
+                String delimiter = getScriptLineDelimiter(sqlDialect);
                 if (action.isComplex() && redefiner != null) {
                     script.append(lineSeparator).append(redefiner).append(" ").append(DBEAVER_SCRIPT_DELIMITER).append(lineSeparator);
                     delimiter = DBEAVER_SCRIPT_DELIMITER;
@@ -873,6 +870,14 @@ public final class SQLUtils {
             }
         }
         return script.toString();
+    }
+
+    public static String getScriptLineDelimiter(SQLDialect sqlDialect) {
+        String delimiter = sqlDialect.getScriptDelimiter();
+        if (!delimiter.isEmpty() && Character.isLetterOrDigit(delimiter.charAt(0))) {
+            delimiter = ' ' + delimiter;
+        }
+        return delimiter;
     }
 
     public static String[] splitFullIdentifier(final String fullName, char nameSeparator, String[][] quoteStrings) {
