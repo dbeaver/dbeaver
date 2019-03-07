@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.dashboard.control.DashboardRendererBase;
 import org.jkiss.dbeaver.ui.dashboard.model.*;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDataset;
 import org.jkiss.dbeaver.ui.dashboard.model.data.DashboardDatasetRow;
-import org.jkiss.utils.ByteNumberFormat;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -119,18 +118,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
             rangeAxis.setTickLabelPaint(gridColor);
             rangeAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
             rangeAxis.setTickLabelInsets(RectangleInsets.ZERO_INSETS);
-            switch (container.getDashboardValueType()) {
-                case decimal:
-                    rangeAxis.setStandardTickUnits(new NumberTickUnitSource(false));
-                    break;
-                case integer:
-                case percent:
-                    rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true));
-                    break;
-                case bytes:
-                    rangeAxis.setStandardTickUnits(new NumberTickUnitSource(true, new ByteNumberFormat()));
-                    break;
-            }
+            rangeAxis.setStandardTickUnits(DashboardUtils.getTickUnitsSource(container.getDashboardValueType()));
             if (container.getDashboardValueType() == DashboardValueType.percent) {
                 rangeAxis.setLowerBound(0);
                 rangeAxis.setUpperBound(100);

@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.dashboard.model;
 
+import org.jfree.chart.axis.NumberTickUnitSource;
+import org.jfree.chart.axis.StandardTickUnitSource;
+import org.jfree.chart.axis.TickUnitSource;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardDescriptor;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -59,4 +63,17 @@ public class DashboardUtils {
         return Duration.ofMillis(duration).toString().substring(2);
     }
 
+    public static TickUnitSource getTickUnitsSource(DashboardValueType valueType) {
+        switch (valueType) {
+            case decimal:
+                return new NumberTickUnitSource(false);
+            case integer:
+            case percent:
+                return new NumberTickUnitSource(true);
+            case bytes:
+                return new NumberTickUnitSource(true, new ByteNumberFormat());
+            default:
+                return new StandardTickUnitSource();
+        }
+    }
 }
