@@ -27,4 +27,6 @@ public interface IGridController {
 
     void moveColumn(Object dragColumn, Object dropColumn, DropLocation location);
 
+    boolean isMaximizeSingleColumn();
+
 }

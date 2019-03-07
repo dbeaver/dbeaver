@@ -78,7 +78,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         this.loadInfo(dbResult);
     }
 
-    public MySQLEvent(MySQLCatalog catalog, boolean persisted, String name) {
+    public MySQLEvent(MySQLCatalog catalog, String name) {
         this.catalog = catalog;
         this.name = name;
 
@@ -249,7 +249,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         DateFormat dateFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE EVENT ").append(DBUtils.getQuotedIdentifier(this)).append("\n")
-            .append("ON SCHEDULE EVERY ").append(intervalValue).append(" ").append(intervalField).append("\n");
+            .append("ON SCHEDULE EVERY ").append(intervalValue = "1").append(" ").append(intervalField = "DAY").append("\n");
         if (starts != null) {
             sql.append("STARTS '").append(dateFormat.format(starts)).append("'\n");
         }
@@ -272,8 +272,12 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException {
+    public void setObjectDefinitionText(String sourceText) {
         eventDefinition = sourceText;
+    }
+
+    public MySQLCatalog getCatalog() {
+        return catalog;
     }
 
 }

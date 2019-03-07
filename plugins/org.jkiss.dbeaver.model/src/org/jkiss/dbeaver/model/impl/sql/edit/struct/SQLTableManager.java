@@ -190,10 +190,15 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (isIncludeDropInDDL()) {
             actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Drop table"));
             for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, options)) {
+                String script = delAction.getScript();
+                String delimiter = SQLUtils.getScriptLineDelimiter(SQLUtils.getDialectFromObject(table));
+                if (!script.endsWith(delimiter)) {
+                    script += delimiter;
+                }
                 actions.add(
                     new SQLDatabasePersistActionComment(
                         table.getDataSource(),
-                        delAction.getScript()));
+                        script));
             }
         }
 

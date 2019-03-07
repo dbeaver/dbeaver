@@ -46,7 +46,7 @@ public class GeometryInlineEditor extends StringInlineEditor {
         if (valueSRID == 0) {
             DBSTypedObject column = valueController.getValueType();
             if (column instanceof GisAttribute) {
-                valueSRID = ((GisAttribute) column).getAttributeSRID(new VoidProgressMonitor());
+                valueSRID = ((GisAttribute) column).getAttributeGeometrySRID(new VoidProgressMonitor());
             }
         }
     }
