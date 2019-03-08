@@ -162,19 +162,18 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
             srcDec.setScale(10, 6);
             conn.setTargetDecoration(srcDec);
-        }
-        if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
-            final CircleDecoration targetDecor = new CircleDecoration();
-            targetDecor.setRadius(3);
-            targetDecor.setFill(true);
-            targetDecor.setBackgroundColor(getParent().getViewer().getControl().getForeground());
+        } else if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
+            final CircleDecoration sourceDecor = new CircleDecoration();
+            sourceDecor.setRadius(3);
+            sourceDecor.setFill(true);
+            sourceDecor.setBackgroundColor(getParent().getViewer().getControl().getForeground());
             //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-            conn.setTargetDecoration(targetDecor);
+            conn.setSourceDecoration(sourceDecor);
             if (!identifying) {
-                final RhombusDecoration sourceDecor = new RhombusDecoration();
-                sourceDecor.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+                final RhombusDecoration targetDecor = new RhombusDecoration();
+                targetDecor.setBackgroundColor(getParent().getViewer().getControl().getBackground());
                 //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-                conn.setSourceDecoration(sourceDecor);
+                conn.setTargetDecoration(targetDecor);
             }
         }
 
