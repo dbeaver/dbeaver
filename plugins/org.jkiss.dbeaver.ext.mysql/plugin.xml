@@ -207,7 +207,7 @@
                     defaultPort="3306"
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
-                    description="MySQL standard driver"
+                    description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[1.5.5]" bundle="!drivers.mariadb"/>
