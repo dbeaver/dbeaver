@@ -178,7 +178,7 @@
                 </driver>
                 <driver
                         id="mysql8"
-                        label="MySQL 8.x"
+                        label="MySQL 8+"
                         icon="icons/mysql_icon.png"
                         iconBig="icons/mysql_icon_big.png"
                         class="com.mysql.cj.jdbc.Driver"
@@ -187,7 +187,7 @@
                         defaultPort="3306"
                         webURL="http://www.mysql.com/products/connector/"
                         propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
-                        description="Driver for MySQL 8.x and later"
+                        description="Driver for MySQL 8 and later"
                         promoted="1"
                         categories="sql">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.11]" bundle="!drivers.mysql"/>
