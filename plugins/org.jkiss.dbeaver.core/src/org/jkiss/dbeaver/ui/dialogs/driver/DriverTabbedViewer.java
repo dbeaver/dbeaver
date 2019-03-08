@@ -66,7 +66,7 @@ public class DriverTabbedViewer extends StructuredViewer {
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
         allDrivers.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
-        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 8);
+        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
         dataSources = DataSourceRegistry.getAllDataSources();
 
         folderComposite = new TabbedFolderComposite(parent, style) {
