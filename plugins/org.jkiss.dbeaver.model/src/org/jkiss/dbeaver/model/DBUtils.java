@@ -619,7 +619,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @Nullable DBDPreferences preferences, @NotNull DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(@Nullable DBPDataSource dataSource, @Nullable DBDPreferences preferences, @NotNull DBSTypedObject column)
     {
         DBDValueHandler valueHandler = null;
         // Get handler provider from datasource
@@ -631,11 +631,13 @@ public final class DBUtils {
             }
         }
         // Get handler provider from registry
-
-        handlerProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
-            dataSource, column);
-        if (handlerProvider != null) {
-            valueHandler = handlerProvider.getValueHandler(dataSource, preferences, column);
+        // Note: datasource CAN be null. For example when we import data from local files (csv)
+        if (dataSource != null) {
+            handlerProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
+                dataSource, column);
+            if (handlerProvider != null) {
+                valueHandler = handlerProvider.getValueHandler(dataSource, preferences, column);
+            }
         }
         // Use default handler
         if (valueHandler == null) {
