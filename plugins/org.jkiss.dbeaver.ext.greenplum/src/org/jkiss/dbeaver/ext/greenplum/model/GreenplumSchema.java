@@ -23,10 +23,7 @@ package org.jkiss.dbeaver.ext.greenplum.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -50,7 +47,7 @@ public class GreenplumSchema extends PostgreSchema {
     }
 
     @Override
-    public Collection<? extends JDBCTable> getTables(DBRProgressMonitor monitor) throws DBException {
+    public Collection<GreenplumTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return greenplumTableCache.getTypedObjects(monitor, this, GreenplumTable.class)
                 .stream()
                 .filter(table -> !table.isPartition())
