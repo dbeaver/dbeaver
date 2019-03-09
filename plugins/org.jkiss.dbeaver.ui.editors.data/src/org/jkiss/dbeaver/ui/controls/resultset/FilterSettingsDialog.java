@@ -218,28 +218,28 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 gd.verticalIndent = 3;
                 toolbar.setLayoutData(gd);
                 toolbar.setLayout(new FillLayout());
-                moveTopButton = createToolItem(toolbar, "Move to top", UIIcon.ARROW_TOP, () -> {
+                moveTopButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_to_top, UIIcon.ARROW_TOP, () -> {
                     int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                     moveColumns(selectionIndex, 0);
                 });
                 moveTopButton.setEnabled(false);
-                moveUpButton = createToolItem(toolbar, "Move up", UIIcon.ARROW_UP, () -> {
+                moveUpButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_up, UIIcon.ARROW_UP, () -> {
                     int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                     swapColumns(selectionIndex, selectionIndex - 1);
                 });
                 moveUpButton.setEnabled(false);
-                moveDownButton = createToolItem(toolbar, "Move down", UIIcon.ARROW_DOWN, () -> {
+                moveDownButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_down, UIIcon.ARROW_DOWN, () -> {
                     int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                     swapColumns(selectionIndex, selectionIndex + 1);
                 });
                 moveDownButton.setEnabled(false);
-                moveBottomButton = createToolItem(toolbar, "Move to bottom", UIIcon.ARROW_BOTTOM, () -> {
+                moveBottomButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_to_bottom, UIIcon.ARROW_BOTTOM, () -> {
                     int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                     moveColumns(selectionIndex, getItemsCount() - 1);
                 });
                 moveBottomButton.setEnabled(false);
                 UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
-                createToolItem(toolbar, "Sort", UIIcon.SORT, () -> {
+                createToolItem(toolbar, ResultSetMessages.dialog_toolbar_sort, UIIcon.SORT, () -> {
                     attributes.sort(ALPHA_SORTER);
                     for (int i = 0; i < attributes.size(); i++) {
                         final DBDAttributeConstraint constraint = getBindingConstraint(attributes.get(i));
@@ -248,21 +248,21 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     columnsViewer.refresh();
                 });
                 UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
-                ToolItem showAllButton = createToolItem(toolbar, "Show All", null, () -> {
+                ToolItem showAllButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_show_all, null, () -> {
                     for (DBDAttributeConstraint constraint : constraints) {
                         constraint.setVisible(true);
                     }
                     columnsViewer.refresh();
                 });
                 showAllButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ETOOL_DEF_PERSPECTIVE));
-                ToolItem showNoneButton = createToolItem(toolbar, "Show None", null, () -> {
+                ToolItem showNoneButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_show_none, null, () -> {
                     for (DBDAttributeConstraint constraint : constraints) {
                         constraint.setVisible(false);
                     }
                     columnsViewer.refresh();
                 });
                 showNoneButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_REMOVEALL));
-                createToolItem(toolbar, "Reset", UIIcon.REFRESH, () -> {
+                createToolItem(toolbar, ResultSetMessages.dialog_toolbar_reset, UIIcon.REFRESH, () -> {
                     dataFilter.reset();
                     constraints = new ArrayList<>(dataFilter.getConstraints());
                     refreshData();
