@@ -59,7 +59,7 @@
 	<tip>If you are not much familiar with SQL scripting, use <a href="https://github.com/dbeaver/dbeaver/wiki/Visual-Query-Builder">Visual Query Builder</a> tool.
 		<br/>Note: this tool is available only in DBeaver <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">Enterprise Edition</a>.
 	</tip>
-	<tip>To monitor database health you can open dashboard view using main toolbar or <b>Ctrl+Alt+Shift+D</b>.
+	<tip>To monitor database health you can open dashboard view using main toolbar or <b>Ctrl+Alt+Shift+B</b>.
 		<br/>Note: dashboards are database-specific.
 	</tip>
 </tips>
