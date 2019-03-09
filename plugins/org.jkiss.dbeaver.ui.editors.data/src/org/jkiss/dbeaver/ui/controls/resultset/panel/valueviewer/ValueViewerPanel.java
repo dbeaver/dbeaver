@@ -201,6 +201,15 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
         }
         if (forceRefresh) {
             cleanupPanel();
+
+            referenceValueEditor = new ReferenceValueEditor(previewController, valueEditor);
+            final boolean referenceValue = referenceValueEditor.isReferenceValue();
+            if (referenceValue) {
+                previewController.setEditType(IValueController.EditType.INLINE);
+            } else {
+                previewController.setEditType(IValueController.EditType.PANEL);
+            }
+
             // Create a new one
             valueManager = previewController.getValueManager();
             try {
@@ -221,11 +230,11 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                     presentation.getController().lockActionsByFocus(control);
                 }
 
-                referenceValueEditor = new ReferenceValueEditor(previewController, valueEditor);
-                if (referenceValueEditor.isReferenceValue()) {
+                if (referenceValue) {
                     GridLayout gl = new GridLayout(1, false);
                     viewPlaceholder.setLayout(gl);
                     valueEditor.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                    referenceValueEditor.setValueEditor(valueEditor);
                     referenceValueEditor.createEditorSelector(viewPlaceholder);
                 } else {
                     viewPlaceholder.setLayout(new FillLayout());
