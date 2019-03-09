@@ -19,15 +19,23 @@ package org.jkiss.dbeaver.ext.bigquery.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Snowflake constants
+ * BigQuery meta model
  */
 public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
+
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at \\[([0-9]+)\\:([0-9]+)\\]");
+
     public BigQueryMetaModel() {
     }
 
@@ -36,6 +44,21 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
             return new QueryTransformerLimit(false);
+        }
+        return null;
+    }
+
+    @Override
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(Throwable error) {
+        String message = error.getMessage();
+        if (!CommonUtils.isEmpty(message)) {
+            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
+            if (matcher.find()) {
+                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                pos.line = Integer.parseInt(matcher.group(1)) - 1;
+                pos.position = Integer.parseInt(matcher.group(2)) - 1;
+                return pos;
+            }
         }
         return null;
     }
