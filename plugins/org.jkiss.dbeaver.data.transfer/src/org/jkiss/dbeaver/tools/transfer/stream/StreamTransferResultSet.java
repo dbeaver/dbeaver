@@ -22,12 +22,22 @@ import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetColumn;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
+import org.jkiss.utils.CommonUtils;
 
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stream session
+ * Stream producer result set
  */
 public class StreamTransferResultSet implements DBCResultSet {
 
@@ -38,6 +48,7 @@ public class StreamTransferResultSet implements DBCResultSet {
     private Object[] streamRow;
     private final List<StreamProducerSettings.AttributeMapping> attributeMappings;
     private final int[] targetToSourceMap;
+    private DateTimeFormatter dateTimeFormat;
 
     public StreamTransferResultSet(StreamTransferSession session, DBCStatement statement, StreamProducerSettings.EntityMapping entityMapping) {
         this.session = session;
@@ -79,7 +90,26 @@ public class StreamTransferResultSet implements DBCResultSet {
             return attr.getDefaultValue();
         }
 
-        return streamRow[attr.getSourceAttributeIndex()];
+        Object value = streamRow[attr.getSourceAttributeIndex()];
+        if (value != null && dateTimeFormat != null && attr.getTargetAttribute() != null && attr.getTargetAttribute().getDataKind() == DBPDataKind.DATETIME) {
+            // Convert string to timestamp
+            try {
+                TemporalAccessor ta = dateTimeFormat.parse(CommonUtils.toString(value));
+                try {
+                    ZonedDateTime zdt = ZonedDateTime.from(ta);
+                    value = java.util.Date.from(zdt.toInstant());
+                } catch (Exception e) {
+                    LocalDateTime localDT = LocalDateTime.from(ta);
+                    if (localDT != null) {
+                        value = java.util.Date.from(localDT.atZone(ZoneId.systemDefault()).toInstant());
+                    }
+                }
+            } catch (Exception e) {
+                // Can't parse. Ignore format then
+            }
+        }
+
+        return value;
     }
 
     @Override
@@ -127,4 +157,11 @@ public class StreamTransferResultSet implements DBCResultSet {
 
     }
 
+    public DateTimeFormatter getDateTimeFormat() {
+        return dateTimeFormat;
+    }
+
+    public void setDateTimeFormat(DateTimeFormatter dateTimeFormat) {
+        this.dateTimeFormat = dateTimeFormat;
+    }
 }
