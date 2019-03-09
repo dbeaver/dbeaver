@@ -307,6 +307,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         private final DBCQueryPlanner planner;
         private final DBCExecutionContext executionContext;
         private final String query;
+        private DBCPlan plan;
 
         ExplainPlanService(DBCQueryPlanner planner, DBCExecutionContext executionContext, String query)
         {
@@ -320,12 +321,19 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         public DBCPlan evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException {
             try {
-                try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
-                    return planner.planQueryExecution(session, query);
-                }
+                DBUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+                    try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
+                        try {
+                            plan = planner.planQueryExecution(session, query);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
             } catch (Throwable ex) {
                 throw new InvocationTargetException(ex);
             }
+            return plan;
         }
     }
 
