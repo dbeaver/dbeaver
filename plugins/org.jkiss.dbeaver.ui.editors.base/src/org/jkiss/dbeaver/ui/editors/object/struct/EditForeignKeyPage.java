@@ -436,7 +436,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     Collection<? extends DBSEntityAttribute> tmpColumns = ownTable.getAttributes(new VoidProgressMonitor());
                     ownColumns = tmpColumns == null ?
                         Collections.<DBSTableColumn>emptyList() :
-                        new ArrayList<>(ownTable.getAttributes(new VoidProgressMonitor()));
+                        new ArrayList<>(getValidAttributes(ownTable));
                     if (!CommonUtils.isEmpty(ownColumns)) {
                         for (DBSEntityAttribute ownColumn : ownColumns) {
                             if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && ownTable != pkColumn.getAttribute().getParentObject()) {
@@ -463,6 +463,16 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
         }
         UIUtils.packColumns(columnsTable, true);
+    }
+
+    private static List<DBSEntityAttribute> getValidAttributes(DBSTable table) throws DBException {
+        List<DBSEntityAttribute> result = new ArrayList<>();
+        for (DBSEntityAttribute attr : table.getAttributes(new VoidProgressMonitor())) {
+            if (!DBUtils.isHiddenObject(attr) && !DBUtils.isPseudoAttribute(attr)) {
+                result.add(attr);
+            }
+        }
+        return result;
     }
 
     private Image getColumnIcon(DBSEntityAttribute column)
