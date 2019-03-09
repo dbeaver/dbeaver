@@ -58,6 +58,7 @@
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager" id="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager">
             <supports type="java.util.UUID"/>
+            <supports typeName="uuid"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.URLPreviewValueManager" id="org.jkiss.dbeaver.ui.data.managers.URLPreviewValueManager">
             <supports typeName="URL.Preview"/>

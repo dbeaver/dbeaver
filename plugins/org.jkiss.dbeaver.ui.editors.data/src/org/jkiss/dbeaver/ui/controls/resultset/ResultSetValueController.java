@@ -46,8 +46,8 @@ import java.util.List;
 public class ResultSetValueController implements IAttributeController, IRowController {
 
     protected final ResultSetViewer controller;
-    protected final EditType editType;
     protected final Composite inlinePlaceholder;
+    protected EditType editType;
     protected ResultSetRow curRow;
     protected DBDAttributeBinding binding;
 
@@ -193,6 +193,10 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public EditType getEditType()
     {
         return editType;
+    }
+
+    public void setEditType(EditType editType) {
+        this.editType = editType;
     }
 
     @Override

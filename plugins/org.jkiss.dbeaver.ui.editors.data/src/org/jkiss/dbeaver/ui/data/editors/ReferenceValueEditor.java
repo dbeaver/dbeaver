@@ -84,6 +84,10 @@ public class ReferenceValueEditor {
         this.valueEditor = valueEditor;
     }
 
+    public void setValueEditor(IValueEditor valueEditor) {
+        this.valueEditor = valueEditor;
+    }
+
     public boolean isReferenceValue()
     {
         return getEnumerableConstraint() != null;
