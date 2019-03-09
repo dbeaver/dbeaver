@@ -106,10 +106,10 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         SashForm previewSash = new SashForm(composite, SWT.VERTICAL);
         previewSash.setLayoutData(new GridData(GridData.FILL_BOTH));
         {
-            Group mappingGroup = new Group(previewSash, SWT.NONE);
-            mappingGroup.setText(DTMessages.data_transfer_wizard_settings_group_column_mappings);
+            Composite mappingGroup = new Composite(previewSash, SWT.NONE);
             mappingGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             mappingGroup.setLayout(new GridLayout(1, false));
+            UIUtils.createControlLabel(mappingGroup, DTMessages.data_transfer_wizard_settings_group_column_mappings);
 
             SashForm mapSash = new SashForm(mappingGroup, SWT.HORIZONTAL);
             mapSash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -264,10 +264,10 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
 
         {
-            Group previewGroup = new Group(previewSash, SWT.NONE);
-            previewGroup.setText(DTMessages.data_transfer_wizard_settings_group_preview);
+            Composite previewGroup = new Composite(previewSash, SWT.NONE);
             previewGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             previewGroup.setLayout(new GridLayout(1, false));
+            UIUtils.createControlLabel(previewGroup, DTMessages.data_transfer_wizard_settings_group_preview);
 
             previewTable = new Table(previewGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             previewTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -676,7 +676,11 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                         row[i] = attributes.get(i).getDefaultValue();
                         break;
                     default:
-                        row[i] = resultSet.getAttributeValue(i);
+                        if (attributes.get(i).getMappingType() != StreamProducerSettings.AttributeMapping.MappingType.IMPORT) {
+                            row[i] = null;
+                        } else {
+                            row[i] = resultSet.getAttributeValue(i);
+                        }
                         break;
                 }
             }

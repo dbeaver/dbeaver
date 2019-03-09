@@ -114,6 +114,7 @@
                     <property id="escapeChar" label="%dataTransfer.producer.stream.processor.csv.property.escapeChar.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.escapeChar.description" defaultValue="\" required="false"/>
                     <property id="nullString" label="%dataTransfer.producer.stream.processor.csv.property.nullString.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                     <property id="emptyStringNull" label="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.description" defaultValue="" required="false"/>
+                    <property id="timestampFormat" label="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.description" defaultValue="yyyy-MM-dd[ HH:mm:ss[.SSS]]" required="false"/>
                 </propertyGroup>
             </processor>
         </node>

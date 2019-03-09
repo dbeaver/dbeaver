@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
+    private static final String PROP_TIMESTAMP_FORMAT = "timestampFormat";
 
     enum HeaderPosition {
         none,
@@ -126,10 +129,24 @@ public class DataImporterCSV extends StreamImporterAbstract {
         HeaderPosition headerPosition = getHeaderPosition(properties);
         boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);
         String nullValueMark = CommonUtils.toString(properties.get(PROP_NULL_STRING));
+        DateTimeFormatter tsFormat = null;
+
+        String tsFormatPattern = CommonUtils.toString(properties.get(PROP_TIMESTAMP_FORMAT));
+        if (!CommonUtils.isEmpty(tsFormatPattern)) {
+            try {
+                tsFormat = DateTimeFormatter.ofPattern(tsFormatPattern);
+            } catch (Exception e) {
+                log.error("Wrong timestamp format: " + tsFormatPattern, e);
+            }
+            //Map<Object, Object> defTSProps = site.getSourceObject().getDataSource().getContainer().getDataFormatterProfile().getFormatterProperties(DBDDataFormatter.TYPE_NAME_TIMESTAMP);
+        }
 
         try (StreamTransferSession producerSession = new StreamTransferSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
             LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream");
             StreamTransferResultSet resultSet = new StreamTransferResultSet(producerSession, localStatement, entityMapping);
+            if (tsFormat != null) {
+                resultSet.setDateTimeFormat(tsFormat);
+            }
 
             consumer.fetchStart(producerSession, resultSet, -1, -1);
 
