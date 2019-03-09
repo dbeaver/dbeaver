@@ -16,9 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -37,9 +41,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.registry.functions.AggregateFunctionDescriptor;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.aggregate.AggregateColumnsPanel;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
@@ -198,6 +204,17 @@ public class ReferenceValueEditor {
                 }
             }
         });
+        {
+            MenuManager menuMgr = new MenuManager();
+            menuMgr.addMenuListener(manager -> {
+                manager.add(new CopyAction());
+                manager.add(new Separator());
+            });
+
+            menuMgr.setRemoveAllWhenShown(true);
+            this.editorSelector.setMenu(menuMgr.createContextMenu(this.editorSelector));
+            this.editorSelector.addDisposeListener(e -> menuMgr.dispose());
+        }
 
         Control control = valueEditor.getControl();
         ModifyListener modifyListener = e -> {
@@ -333,6 +350,22 @@ public class ReferenceValueEditor {
             } catch (DBException e) {
                 log.error(e);
             }
+        }
+    }
+
+    private class CopyAction extends Action {
+        public CopyAction() {
+            super("Copy Value");
+        }
+
+        @Override
+        public void run() {
+            StringBuilder result = new StringBuilder();
+            for (TableItem item : editorSelector.getSelection()) {
+                if (result.length() > 0) result.append("\n");
+                result.append(item.getText(0));
+            }
+            UIUtils.setClipboardContents(editorSelector.getDisplay(), TextTransfer.getInstance(), result.toString());
         }
     }
 
