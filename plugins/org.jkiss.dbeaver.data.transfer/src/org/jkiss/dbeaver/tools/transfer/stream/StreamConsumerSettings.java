@@ -203,7 +203,11 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             outputClipboard = dialogSettings.getBoolean("outputClipboard");
         }
         if (!CommonUtils.isEmpty(dialogSettings.get("useSingleFile"))) {
-            useSingleFile = dialogSettings.getBoolean("useSingleFile");
+            if (dataTransferSettings.getDataPipes().size() > 1) {
+                useSingleFile = dialogSettings.getBoolean("useSingleFile");
+            } else {
+                useSingleFile = false;
+            }
         }
 
         if (!CommonUtils.isEmpty(dialogSettings.get("compressResults"))) {
