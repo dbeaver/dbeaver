@@ -145,6 +145,14 @@ public class ResultSetMessages extends NLS {
     public static String dialog_data_label_value;
     public static String dialog_text_view_open_editor;
     public static String dialog_text_view_open_editor_tip;
+    public static String dialog_toolbar_move_down;
+    public static String dialog_toolbar_move_to_bottom;
+    public static String dialog_toolbar_move_to_top;
+    public static String dialog_toolbar_move_up;
+    public static String dialog_toolbar_reset;
+    public static String dialog_toolbar_show_all;
+    public static String dialog_toolbar_show_none;
+    public static String dialog_toolbar_sort;
 
     // Pref pages
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;
