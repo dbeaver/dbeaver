@@ -47,6 +47,9 @@ public class UUIDValueManager extends BaseValueManager {
                     public Object extractEditorValue() throws DBCException {
                         Object strValue = super.extractEditorValue();
                         if (strValue instanceof String) {
+                            if (((String) strValue).isEmpty()) {
+                                return null;
+                            }
                             try {
                                 return UUID.fromString((String) strValue);
                             } catch (Exception e) {
