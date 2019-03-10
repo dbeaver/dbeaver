@@ -4562,7 +4562,7 @@ public abstract class LightGrid extends Canvas {
                     return false;
                 }
                 GridColumn overColumn = getOverColumn(event);
-                return draggingColumn != overColumn;
+                return overColumn != null && draggingColumn != overColumn;
             }
 
             private GridColumn getOverColumn(DropTargetEvent event) {
@@ -4573,7 +4573,7 @@ public abstract class LightGrid extends Canvas {
             private void moveColumns(DropTargetEvent event)
             {
                 GridColumn overColumn = getOverColumn(event);
-                if (draggingColumn == null || draggingColumn == overColumn) {
+                if (overColumn == null || draggingColumn == null || draggingColumn == overColumn) {
                     return;
                 }
                 IGridController gridController = getGridController();
