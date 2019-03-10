@@ -302,7 +302,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         return roleCache.getObject(monitor, owner, roleName);
     }
 
-    @Property(editable = false, updatable = false, order = 5/* , listProvider = CharsetListProvider.class*/)
+    @Property(editable = false, updatable = false, order = 5/*, listProvider = CharsetListProvider.class*/)
     public PostgreCharset getDefaultEncoding(DBRProgressMonitor monitor) throws DBException {
         if (!getDataSource().getServerType().supportsEncodings()) {
             return null;
@@ -383,7 +383,8 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     }
 
     @Association
-    public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor)
+        throws DBException {
         return collationCache.getAllObjects(monitor, this);
     }
 
@@ -398,8 +399,6 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         log.debug("Collation '" + id + "' not found in schema " + getName());
         return null;
     }
-
-    
     ///////////////////////////////////////////////
     // Data types
 
@@ -860,7 +859,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException {
             return session.prepareStatement(
-                "SELECT am.oid,am.* FROM pg_catalog.pg_am am " + 
+                "SELECT am.oid,am.* FROM pg_catalog.pg_am am " +
                     "\nORDER BY am.oid"
             );
         }
@@ -904,8 +903,8 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         }
 
         @Override
-        protected PostgreCollation fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) 
-            throws SQLException, DBException 
+        protected PostgreCollation fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
         {
             return new PostgreCollation(session.getProgressMonitor(), owner, dbResult);
         }
@@ -937,7 +936,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
             return session.prepareStatement(
                 "SELECT l.oid,l.*,p.pronamespace as handler_schema_id " +
                     "\nFROM pg_catalog.pg_foreign_data_wrapper l" +
-                    "\nLEFT OUTER JOIN pg_catalog.pg_proc p ON p.oid=l.fdwhandler " + 
+                    "\nLEFT OUTER JOIN pg_catalog.pg_proc p ON p.oid=l.fdwhandler " +
                     "\nORDER BY l.fdwname"
             );
         }
@@ -1032,7 +1031,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
             return false;
         }
         @Override
-        public Object[] getPossibleValues(PostgreDatabase object) 
+        public Object[] getPossibleValues(PostgreDatabase object)
         {
             try {
                 Collection<PostgreTablespace> tablespaces = object.getTablespaces(new VoidProgressMonitor());
@@ -1052,7 +1051,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         }
 
         @Override
-        public Object[] getPossibleValues(PostgreDatabase object) 
+        public Object[] getPossibleValues(PostgreDatabase object)
         {
             try {
                 Collection<PostgreRole> roles = object.getAuthIds(new VoidProgressMonitor());
