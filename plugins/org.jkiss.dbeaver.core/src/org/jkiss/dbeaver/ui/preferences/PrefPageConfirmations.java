@@ -74,9 +74,9 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         confirmTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         confirmTable.setHeaderVisible(true);
         confirmTable.setLinesVisible(true);
-        UIUtils.createTableColumn(confirmTable, SWT.LEFT, "Confirmation");
-        UIUtils.createTableColumn(confirmTable, SWT.LEFT, "Group");
-        UIUtils.createTableColumn(confirmTable, SWT.RIGHT, "Value");
+        UIUtils.createTableColumn(confirmTable, SWT.LEFT, CoreMessages.pref_page_confirmations_table_column_confirmation);
+        UIUtils.createTableColumn(confirmTable, SWT.LEFT, CoreMessages.pref_page_confirmations_table_column_group);
+        UIUtils.createTableColumn(confirmTable, SWT.RIGHT, CoreMessages.pref_page_confirmations_table_column_value);
 
         final CustomTableEditor tableEditor = new CustomTableEditor(confirmTable) {
             {
