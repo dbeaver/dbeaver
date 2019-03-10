@@ -1969,7 +1969,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     updateValue(value, false);
                 }
                 spreadsheet.redrawGrid();
-                controller.updatePanelsContent(true);
+                controller.updatePanelsContent(false);
             } finally {
                 setBinding(origAttr);
                 setCurRow(origRow);
