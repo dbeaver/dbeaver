@@ -169,6 +169,12 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
         XYPlot plot = (XYPlot) chart.getPlot();
         TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
 
+        long currentTime = System.currentTimeMillis();
+        long secondsPassed = lastUpdateTime == null ? 1 : (currentTime - lastUpdateTime.getTime()) / 1000;
+        if (secondsPassed <= 0) {
+            secondsPassed = 1;
+        }
+
         DashboardDatasetRow lastRow = (DashboardDatasetRow) chartComposite.getData("last_row");
 
         List<DashboardDatasetRow> rows = dataset.getRows();
@@ -201,11 +207,6 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
                         return;
                     }
                     //System.out.println("LAST=" + lastUpdateTime + "; CUR=" + new Date());
-                    long currentTime = System.currentTimeMillis();
-                    long secondsPassed = (currentTime - lastUpdateTime.getTime()) / 1000;
-                    if (secondsPassed <= 0) {
-                        secondsPassed = 1;
-                    }
                     for (DashboardDatasetRow row : rows) {
                         if (lastRow != null) {
                             Object prevValue = lastRow.getValues()[i];
