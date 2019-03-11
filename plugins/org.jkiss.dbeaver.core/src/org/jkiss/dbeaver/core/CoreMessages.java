@@ -740,6 +740,11 @@ public class CoreMessages extends NLS {
 
 	public static String transaction_log_dialog_error_not_connected;
 
+    public static String viewer_details_item_details;
+    public static String viewer_details_item_session_details;
+    public static String viewer_sql_plan_item_execution_plan;
+    public static String viewer_view_item_sql;
+
     static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
