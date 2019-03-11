@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
@@ -158,7 +159,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 parent.addDisposeListener(e -> sqlViewer.dispose());
 
                 CTabItem sqlViewItem = new CTabItem(previewFolder, SWT.NONE);
-                sqlViewItem.setText("SQL");
+                sqlViewItem.setText(CoreMessages.viewer_view_item_sql);
                 sqlViewItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
                 sqlViewItem.setControl(sqlViewer.getEditorControlWrapper());
 
@@ -181,7 +182,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 sessionProps = new PropertyTreeViewer(detailsFolder, SWT.NONE);
 
                 detailsItem = new CTabItem(detailsFolder, SWT.NONE);
-                detailsItem.setText("Details");
+                detailsItem.setText(CoreMessages.viewer_details_item_details); 
                 detailsItem.setImage(DBeaverIcons.getImage(UIIcon.PROPERTIES));
                 detailsItem.setControl(sessionProps.getControl());
 
@@ -228,7 +229,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     private void updatePreview() {
         if (previewFolder.getSelectionIndex() == 0) {
             // Show SQL
-            detailsItem.setText("Session Details");
+            detailsItem.setText(CoreMessages.viewer_details_item_session_details);
             updateSQL();
             if (curSession == null) {
                 sessionProps.clearProperties();
@@ -262,7 +263,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         planViewer.addSelectionChangedListener(event -> showPlanNode());
 
         CTabItem sqlPlanItem = new CTabItem(previewFolder, SWT.NONE);
-        sqlPlanItem.setText("Execution Plan");
+        sqlPlanItem.setText(CoreMessages.viewer_sql_plan_item_execution_plan);
         sqlPlanItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
         sqlPlanItem.setControl(planViewer.getControl());
     }
