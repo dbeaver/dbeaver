@@ -83,6 +83,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     private boolean allowConnect;
     private int connectionLimit;
     private long tablespaceId;
+    private String description;
 
     public final RoleCache roleCache = new RoleCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
@@ -227,6 +228,22 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     @Override
     public String getDescription() {
         return null;
+    }
+
+    @Property(viewable = true, multiline = true, order = 100)
+    public String getDescription(DBRProgressMonitor monitor) throws DBException {
+        if (description != null) {
+            return description;
+        }
+        // Query row count
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database description")) {
+            description = JDBCUtils.queryString(session, "select description from pg_shdescription "
+                    + "join pg_database on objoid = pg_database.oid where datname = ?", getName());
+        } catch (SQLException e) {
+            throw new DBException("Error reading database description ", e, getDataSource()); 
+        }
+        
+        return description;
     }
 
     @Override
@@ -382,8 +399,6 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         log.debug("Collation '" + id + "' not found in schema " + getName());
         return null;
     }
-
-
     ///////////////////////////////////////////////
     // Data types
 
