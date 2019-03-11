@@ -20,6 +20,7 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class TreeNodeChildrenLoading extends TreeNodeSpecial {
         DBeaverIcons.getImage(UIIcon.LOADING7)
     };
 
-    private static String loadingText = "Loading";
+    private static String loadingText = UINavigatorMessages.ui_navigator_loading_text_loading;
     private static String text1 = loadingText + ".."; //$NON-NLS-1$;
     private static String text2 = loadingText + ".."; //$NON-NLS-1$;
     private static String text3 = loadingText + "..."; //$NON-NLS-1$;
