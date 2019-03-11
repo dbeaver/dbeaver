@@ -52,7 +52,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sql.plan.view">
-        <view id="simple" priority="100" label="Simple" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_explain_plan.png" description="Simple execution plan presentation" class="org.jkiss.dbeaver.ui.editors.sql.plan.simple.SQLPlanViewProviderSimple" />
+        <view id="simple" priority="100" label="%sql.plan.view.simple.name" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_explain_plan.png" description="%sql.plan.view.simple.tip" class="org.jkiss.dbeaver.ui.editors.sql.plan.simple.SQLPlanViewProviderSimple" />
     </extension>
 
     <extension point="org.jkiss.dbeaver.sql.covert">
