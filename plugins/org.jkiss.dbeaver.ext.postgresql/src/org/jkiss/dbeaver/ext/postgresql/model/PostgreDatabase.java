@@ -127,7 +127,12 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         this.initCaches();
         checkInstanceConnection(monitor);
 
-        readDatabaseInfo(monitor);
+        try {
+            readDatabaseInfo(monitor);
+        } catch (DBCException e) {
+            // On some multi-tenant servers pg_database is not public so error may gappen here
+            log.debug("Error reading database info", e);
+        }
     }
 
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
