@@ -17,7 +17,7 @@
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
         <!-- SimRel 2018-09 -->
-        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2018-09/</eclipse-p2-repo.url>
+        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2018-12/</eclipse-p2-repo.url>
         <!-- Orbit. From Photon because we need com.ibm.icu.base -->
         <orbit-p2-repo.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180330011457/repository</orbit-p2-repo.url>
         <!-- DBeaver Maven dependencies -->
@@ -104,21 +104,25 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <environments>
+<!--
                         <environment>
                             <os>win32</os>
                             <ws>win32</ws>
                             <arch>x86</arch>
                         </environment>
+-->
                         <environment>
                             <os>win32</os>
                             <ws>win32</ws>
                             <arch>x86_64</arch>
                         </environment>
+<!--
                         <environment>
                             <os>linux</os>
                             <ws>gtk</ws>
                             <arch>x86</arch>
                         </environment>
+-->
                         <environment>
                             <os>linux</os>
                             <ws>gtk</ws>
