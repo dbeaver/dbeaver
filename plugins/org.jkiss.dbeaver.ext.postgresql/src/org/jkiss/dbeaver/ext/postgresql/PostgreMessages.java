@@ -157,6 +157,7 @@ public class PostgreMessages extends NLS {
 	/* Permissions */
 	public static String edit_command_grant_privilege_action_grant_privilege;
 	public static String edit_command_grant_privilege_action_revoke_privilege;
+    public static String edit_constraint_page_add_constraint;
 
 	public static String postgre_foreign_key_manager_checkbox_deferrable;
 	public static String postgre_foreign_key_manager_checkbox_deferred;
