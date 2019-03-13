@@ -660,6 +660,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return dataTypeCache.getCachedObject(typeID);
     }
 
+    @Override
+    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+        switch (dataKind) {
+            case BOOLEAN: return "TINYINT(1)";
+            case NUMERIC: return "BIGINT";
+            case DATETIME: return "TIMESTAMP";
+            case BINARY: return "BINARY";
+            case CONTENT: return "LONGBLOB";
+            case ROWID: return "BINARY";
+            default: return "VARCHAR";
+        }
+    }
+
     static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog>
     {
         @Override
