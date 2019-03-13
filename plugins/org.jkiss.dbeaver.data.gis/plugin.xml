@@ -2,10 +2,17 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.data.gis.geometryViewer" name="Geometry viewer" schema="schema/org.jkiss.dbeaver.data.gis.geometryViewer.exsd"/>
+
     <extension point="org.jkiss.dbeaver.dataManager">
-        <manager class="org.jkiss.dbeaver.ui.data.managers.GeometryValueManager" id="org.jkiss.dbeaver.ui.data.managers.GeometryValueManager">
+        <manager class="org.jkiss.dbeaver.ui.data.managers.gis.GeometryValueManager" id="org.jkiss.dbeaver.ui.data.managers.gis.GeometryValueManager">
             <supports type="com.vividsolutions.jts.geom.Geometry" forceCheck="true"/>
         </manager>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.data.gis.geometryViewer">
+        <geometryViewer label="Text" id="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer"/>
+        <!--<geometryViewer label="Text2" id="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer2" class="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer"/>-->
     </extension>
 
 </plugin>

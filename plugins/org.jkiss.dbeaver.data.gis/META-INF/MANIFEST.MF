@@ -8,6 +8,7 @@ Bundle-Release-Date: 20190325
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.core,
+ org.eclipse.core.runtime,
  org.eclipse.jface,
  com.vividsolutions.jts
 Bundle-ClassPath: .

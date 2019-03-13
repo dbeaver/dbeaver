@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers;
+package org.jkiss.dbeaver.ui.data.managers.gis;
 
 import com.vividsolutions.jts.geom.Geometry;
 import org.jkiss.dbeaver.DBException;
@@ -29,11 +29,11 @@ import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
  * GisAttribute.
  * Edits value as string. Also manager SRID.
 */
-public class GeometryInlineEditor extends StringInlineEditor {
+public class GeometryTextViewer extends StringInlineEditor implements IGeometryViewer {
 
     private int valueSRID;
 
-    public GeometryInlineEditor(IValueController controller) {
+    public GeometryTextViewer(IValueController controller) {
         super(controller);
     }
 
@@ -61,4 +61,5 @@ public class GeometryInlineEditor extends StringInlineEditor {
         }
         return geometry;
     }
+
 }
