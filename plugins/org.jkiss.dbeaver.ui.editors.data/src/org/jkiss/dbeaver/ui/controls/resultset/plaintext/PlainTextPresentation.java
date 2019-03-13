@@ -423,7 +423,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                     c = ' ';
                     break;
             }
-            if (c < ' ' || (c > 127 && c < 255)) {
+            if (c < ' '/* || (c > 127 && c < 255)*/ || c == 127) {
                 c = ' ';
             }
             fixBuffer.append(c);
