@@ -17,9 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -33,7 +31,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * MySQL JSON plan
@@ -103,9 +100,15 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
 
     @Override
     public Object getPlanFeature(String feature) {
-        if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
-            DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
-            return true;
+        if (dataSource.isMariaDB()) {
+            if (DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
+                return true;
+            }
+        } else {
+            if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
+                DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
+                return true;
+            }
         }
         return super.getPlanFeature(feature);
     }
