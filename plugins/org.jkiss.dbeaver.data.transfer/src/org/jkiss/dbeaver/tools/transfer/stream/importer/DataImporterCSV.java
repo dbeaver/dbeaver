@@ -205,7 +205,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
             } catch (IOException e) {
                 throw new DBException("IO error reading CSV", e);
             } finally {
-                consumer.fetchEnd(producerSession, resultSet);
+                try {
+                    consumer.fetchEnd(producerSession, resultSet);
+                } finally {
+                    consumer.close();
+                }
             }
         }
     }
