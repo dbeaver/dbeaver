@@ -16,30 +16,18 @@
  */
 package org.jkiss.dbeaver.ui.data.managers;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.DateTimeInlineEditor;
-import org.jkiss.dbeaver.ui.data.editors.DateTimeStandaloneEditor;
+import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.PagedPanelEditor;
 
 /**
- * Date/time value handler
+ * Paged value manager
  */
-public class DateTimeValueManager extends BaseValueManager {
-
-    protected static final Log log = Log.getLog(DateTimeValueManager.class);
-
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, @Nullable IValueEditor activeEditor)
-        throws DBCException
-    {
-        super.contributeActions(manager, controller, activeEditor);
-    }
+public class PagedValueManager extends BaseValueManager {
 
     @NotNull
     @Override
@@ -47,6 +35,7 @@ public class DateTimeValueManager extends BaseValueManager {
         return new IValueController.EditType[] {IValueController.EditType.INLINE, IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
     }
 
+    @Nullable
     @Override
     public IValueEditor createEditor(@NotNull IValueController controller)
         throws DBException
@@ -54,9 +43,9 @@ public class DateTimeValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new DateTimeInlineEditor(controller);
+                return new PagedPanelEditor(controller);
             case EDITOR:
-                return new DateTimeStandaloneEditor(controller);
+                return new DefaultValueViewDialog(controller);
             default:
                 return null;
         }
