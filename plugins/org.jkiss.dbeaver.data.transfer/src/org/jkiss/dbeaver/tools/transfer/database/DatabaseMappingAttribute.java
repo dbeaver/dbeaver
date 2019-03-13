@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -110,7 +111,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
-                targetName = getSource().getName();
+                targetName = getSourceLabelOrName(getSource());
                 break;
         }
     }
@@ -138,7 +139,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             case create:
                 mappingType = DatabaseMappingType.create;
                 if (CommonUtils.isEmpty(targetName)) {
-                    targetName = source.getName();
+                    targetName = getSourceLabelOrName(source);
                 }
                 break;
             case skip:
@@ -156,6 +157,17 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 targetName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), targetName);
             }
         }
+    }
+
+    private String getSourceLabelOrName(DBSAttributeBase source) {
+        String name = null;
+        if (source instanceof DBDAttributeBinding) {
+            name = ((DBDAttributeBinding) source).getLabel();
+        }
+        if (CommonUtils.isEmpty(name)) {
+            name = source.getName();
+        }
+        return name;
     }
 
     @Override
