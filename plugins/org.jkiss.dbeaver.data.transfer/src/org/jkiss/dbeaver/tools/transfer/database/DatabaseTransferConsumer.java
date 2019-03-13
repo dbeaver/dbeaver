@@ -279,9 +279,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void closeExporter() {
-        if (targetSession != null) {
-            targetSession.close();
-            targetSession = null;
+        try {
+            if (targetSession != null) {
+                targetSession.close();
+                targetSession = null;
+            }
+        } catch (Throwable e) {
+            log.debug(e);
         }
         if (targetContext != null && useIsolatedConnection) {
             targetContext.close();
@@ -470,6 +474,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (!last && settings.isOpenTableOnFinish()) {
             if (containerMapping != null && containerMapping.getTarget() != null) {
+
                 UIUtils.syncExec(() -> {
                     DBWorkbench.getPlatformUI().openEntityEditor(containerMapping.getTarget());
                 });
