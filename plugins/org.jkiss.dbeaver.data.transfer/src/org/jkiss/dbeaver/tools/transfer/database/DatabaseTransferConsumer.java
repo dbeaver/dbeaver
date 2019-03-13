@@ -43,8 +43,8 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 /**
-* Stream transfer consumer
-*/
+ * Stream transfer consumer
+ */
 public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
 
     private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
@@ -69,18 +69,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBDValueHandler targetValueHandler;
         int targetIndex = -1;
 
-        private ColumnMapping(DBDAttributeBinding sourceAttr)
-        {
+        private ColumnMapping(DBDAttributeBinding sourceAttr) {
             this.sourceAttr = sourceAttr;
         }
     }
 
-    public DatabaseTransferConsumer()
-    {
+    public DatabaseTransferConsumer() {
     }
 
-    public DatabaseTransferConsumer(DBSDataManipulator targetObject)
-    {
+    public DatabaseTransferConsumer(DBSDataManipulator targetObject) {
         this.targetObject = targetObject;
     }
 
@@ -90,8 +87,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
-    {
+    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
         initExporter(session.getProgressMonitor());
 
         if (offset <= 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
@@ -141,7 +137,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (targetAttr == null) {
                 if (columnMapping.targetAttr.getSource() instanceof DBSEntityAttribute) {
                     // Use source attr. Some datasource (e.g. document oriented do not have strict set of attributes)
-                    targetAttr = (DBSEntityAttribute)columnMapping.targetAttr.getSource();
+                    targetAttr = (DBSEntityAttribute) columnMapping.targetAttr.getSource();
                 } else {
                     throw new DBCException("Target attribute for [" + columnMapping.sourceAttr.getName() + "] wasn't resolved");
                 }
@@ -163,8 +159,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException
-    {
+    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
         Object[] rowValues = new Object[targetAttributes.size()];
         for (int i = 0; i < columnMappings.length; i++) {
             ColumnMapping column = columnMappings[i];
@@ -194,8 +189,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         insertBatch(false);
     }
 
-    private void insertBatch(boolean force) throws DBCException
-    {
+    private void insertBatch(boolean force) throws DBCException {
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         if (needCommit && executeBatch != null) {
             boolean retryInsert;
@@ -240,8 +234,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException
-    {
+    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
         if (rowsExported > 0) {
             insertBatch(true);
         }
@@ -249,17 +242,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             executeBatch.close();
             executeBatch = null;
         }
-
-        closeExporter();
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
+        closeExporter();
     }
 
-    private void initExporter(DBRProgressMonitor monitor) throws DBCException
-    {
+    private void initExporter(DBRProgressMonitor monitor) throws DBCException {
         DBSObject targetDB = checkTargetContainer();
 
         try {
@@ -288,8 +278,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         return targetObject == null ? settings.getContainer() : targetObject;
     }
 
-    private void closeExporter()
-    {
+    private void closeExporter() {
         if (targetSession != null) {
             targetSession.close();
             targetSession = null;
@@ -301,15 +290,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map<Object, Object> processorProperties)
-    {
-        this.sourceObject = (DBSDataContainer)sourceObject;
+    public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, TransferParameters parameters, IDataTransferProcessor processor, Map<Object, Object> processorProperties) {
+        this.sourceObject = (DBSDataContainer) sourceObject;
         this.settings = settings;
     }
 
     @Override
-    public void startTransfer(DBRProgressMonitor monitor) throws DBException
-    {
+    public void startTransfer(DBRProgressMonitor monitor) throws DBException {
         // Create all necessary database objects
         monitor.beginTask("Create necessary database objects", 1);
         try {
@@ -375,14 +362,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     }
                 }
             }
-        }
-        finally {
+        } finally {
             monitor.done();
         }
     }
 
-    private void createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException
-    {
+    private void createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException {
         DBSObjectContainer schema = settings.getContainer();
         if (schema == null) {
             throw new DBException("No target container selected");
@@ -395,14 +380,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    public static String generateTargetTableDDL(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException
-    {
+    public static String generateTargetTableDDL(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException {
         monitor.subTask("Create table " + containerMapping.getTargetName());
         StringBuilder sql = new StringBuilder(500);
         if (!(dataSource instanceof SQLDataSource)) {
             throw new DBException("Data source doesn't support SQL");
         }
-        SQLDataSource targetDataSource = (SQLDataSource)dataSource;
+        SQLDataSource targetDataSource = (SQLDataSource) dataSource;
 
         String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
@@ -450,16 +434,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         return sql.toString();
     }
 
-    private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr)
-    {
+    private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr) {
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attr.getTargetName())).append(" ").append(attr.getTargetType(dataSource));
         if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
             if (attr.getSource().isRequired()) sql.append(" NOT NULL");
         }
     }
 
-    private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException
-    {
+    private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException {
         session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL) + "." + attribute.getTargetName());
         StringBuilder sql = new StringBuilder(500);
         sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL))
@@ -472,9 +454,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    private void executeDDL(DBCSession  session, String sql)
-        throws DBCException
-    {
+    private void executeDDL(DBCSession session, String sql)
+        throws DBCException {
         try (DBCStatement dbStat = DBUtils.makeStatement(session, sql, false)) {
             dbStat.executeStatement();
         }
@@ -486,8 +467,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void finishTransfer(DBRProgressMonitor monitor, boolean last)
-    {
+    public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (!last && settings.isOpenTableOnFinish()) {
             if (containerMapping != null && containerMapping.getTarget() != null) {
                 UIUtils.syncExec(() -> {
@@ -497,14 +477,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    public DBSDataManipulator getTargetObject()
-    {
+    public DBSDataManipulator getTargetObject() {
         return targetObject;
     }
 
     @Override
-    public String getObjectName()
-    {
+    public String getObjectName() {
         String targetName = null;
         if (targetObject != null) {
             targetName = DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);
@@ -536,7 +514,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 return targetName;// + " [No changes]";
             case skip:
                 return "[Skip]";
-            default: return "?";
+            default:
+                return "?";
         }
     }
 
