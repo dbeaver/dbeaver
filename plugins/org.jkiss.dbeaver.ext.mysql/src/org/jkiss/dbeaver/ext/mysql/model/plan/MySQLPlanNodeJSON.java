@@ -153,15 +153,18 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     public Number getNodeRowCount() {
         Object rowCount = nodeProps.get("rows_examined_per_scan");
         if (rowCount == null) {
-            if (nested != null) {
-                long totalRC = 0;
-                for (MySQLPlanNodeJSON child : nested) {
-                    Number childRC = child.getNodeRowCount();
-                    if (childRC != null) {
-                        totalRC += childRC.longValue();
+            rowCount = nodeProps.get("rows"); // MariaDB-specific plan
+            if (rowCount == null) {
+                if (nested != null) {
+                    long totalRC = 0;
+                    for (MySQLPlanNodeJSON child : nested) {
+                        Number childRC = child.getNodeRowCount();
+                        if (childRC != null) {
+                            totalRC += childRC.longValue();
+                        }
                     }
+                    return totalRC;
                 }
-                return totalRC;
             }
         }
         return rowCount == null ? null : CommonUtils.toLong(rowCount);
