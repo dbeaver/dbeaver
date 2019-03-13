@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.data.editors.NumberInlineEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 
 /**
- * JDBC number value handler
+ * Number value handler
  */
 public class NumericValueManager extends BaseValueManager {
 
