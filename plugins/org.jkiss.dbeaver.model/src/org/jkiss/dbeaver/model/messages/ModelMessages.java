@@ -129,7 +129,11 @@ public class ModelMessages extends NLS {
 	public static String model_struct_Cascade;
 	public static String model_struct_Check;
 	public static String model_struct_Clustered;
-	public static String model_struct_Foreign_Key;
+	public static String model_struct_constraint_type_check;
+    public static String model_struct_constraint_type_foreign_key;
+    public static String model_struct_constraint_type_primary_key;
+    public static String model_struct_constraint_type_unique_key;
+    public static String model_struct_Foreign_Key;
 	public static String model_struct_Hashed;
 	public static String model_struct_No_Action;
 	public static String model_struct_Not_NULL;
