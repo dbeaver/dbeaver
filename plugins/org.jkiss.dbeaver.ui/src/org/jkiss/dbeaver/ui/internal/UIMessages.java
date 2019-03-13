@@ -60,6 +60,8 @@ public class UIMessages extends NLS {
     public static String controls_locale_selector_label_locale;
     public static String controls_locale_selector_label_variant;
 
+    public static String edit_text_dialog_title_edit_value;
+
     public static String ui_properties_name;
     public static String ui_properties_value;
 
