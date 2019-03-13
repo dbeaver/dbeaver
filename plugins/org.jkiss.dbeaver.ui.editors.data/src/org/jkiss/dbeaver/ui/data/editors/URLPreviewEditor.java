@@ -24,11 +24,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.utils.CommonUtils;
 
 /**
 * URLPreviewEditor
 */
 public class URLPreviewEditor extends BaseValueEditor<Browser> {
+
+    private String lastURL;
 
     public URLPreviewEditor(IValueController controller) {
         super(controller);
@@ -48,6 +51,11 @@ public class URLPreviewEditor extends BaseValueEditor<Browser> {
     {
         if (control != null) {
             final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+            if (CommonUtils.equalObjects(lastURL, strValue)) {
+                return;
+            }
+            lastURL = strValue;
+            control.setUrl("about:blank");
             control.setText("<div>Loading " + strValue + "...</div>");
             control.setUrl(strValue);
         }
