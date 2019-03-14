@@ -21,6 +21,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -29,11 +30,14 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ExtensionFactory;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jfree.chart.plot.Zoomable;
 import org.jfree.chart.swt.ChartComposite;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.IOException;
 
@@ -128,6 +132,18 @@ public class BaseChartComposite extends ChartComposite {
                 }
             });
         }
+        if (hasColorsConfiguration()) {
+            manager.add(new Action("Colors ...", DBeaverIcons.getImageDescriptor(UIIcon.PALETTE)) {
+                @Override
+                public void run() {
+                    PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(getShell(), ExtensionFactory.COLORS_AND_FONTS_PREFERENCE_PAGE, null, null);
+                    if (preferenceDialog != null) {
+                        preferenceDialog.open();
+                    }
+                    //showChartConfigDialog();
+                }
+            });
+        }
     }
 
     protected void doCopyToClipboard() {
@@ -149,6 +165,10 @@ public class BaseChartComposite extends ChartComposite {
     }
 
     protected boolean showChartConfigDialog() {
+        return false;
+    }
+
+    protected boolean hasColorsConfiguration() {
         return false;
     }
 
