@@ -137,6 +137,7 @@ public class UIIcon {
     public static final DBIcon BROWSER = new DBIcon("browser", "misc/browser.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon EDIT = new DBIcon("edit", "edit.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PALETTE = new DBIcon("palette", "misc/palette.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon ROW_ADD = new DBIcon("row_add", "sql/row_add.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ROW_COPY = new DBIcon("row_copy", "sql/row_copy.png"); //$NON-NLS-1$ //$NON-NLS-2$

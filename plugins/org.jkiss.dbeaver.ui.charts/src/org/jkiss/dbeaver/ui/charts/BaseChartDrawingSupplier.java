@@ -17,15 +17,21 @@
 
 package org.jkiss.dbeaver.ui.charts;
 
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.swt.graphics.Color;
 import org.jfree.chart.plot.DefaultDrawingSupplier;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base chart composite
  */
 public class BaseChartDrawingSupplier extends DefaultDrawingSupplier {
 
+/*
     public static final Paint[] DBEAVER_DEFAULT_COLOR_SERIES = new Paint[] {
         new Color(206, 63, 34),
         new Color(44, 165, 233),
@@ -38,15 +44,30 @@ public class BaseChartDrawingSupplier extends DefaultDrawingSupplier {
         new Color(71, 28, 18),
         new Color(83, 69, 60),
     };
+*/
 
+    public static final String COLOR_PREF_ID_PREFIX = "org.jkiss.dbeaver.ui.data.chart.color.";
 
     public BaseChartDrawingSupplier() {
-        super(DBEAVER_DEFAULT_COLOR_SERIES,
+        super(getChartColorsDefinitions(),
             DEFAULT_FILL_PAINT_SEQUENCE,
             DEFAULT_OUTLINE_PAINT_SEQUENCE,
             DEFAULT_STROKE_SEQUENCE,
             DEFAULT_OUTLINE_STROKE_SEQUENCE,
             DEFAULT_SHAPE_SEQUENCE);
+    }
+
+    private static Paint[] getChartColorsDefinitions() {
+        ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        List<Paint> result = new ArrayList<>();
+        for (int i = 1; ; i++) {
+            Color swtColor = colorRegistry.get(COLOR_PREF_ID_PREFIX + i);
+            if (swtColor == null) {
+                break;
+            }
+            result.add(new java.awt.Color(swtColor.getRed(), swtColor.getGreen(), swtColor.getBlue()));
+        }
+        return result.toArray(new Paint[0]);
     }
 
 }
