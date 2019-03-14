@@ -118,6 +118,10 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         return false;
     }
 
+    protected boolean needsModelRefresh() {
+        return true;
+    }
+
     public List<BASE_OBJECT> getDatabaseObjects()
     {
         return databaseObjects;
@@ -290,8 +294,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                     isSuccess = false;
                 }
             }
-            refreshObjects = isSuccess && !monitor.isCanceled() && false;
-            if (refreshObjects) {
+            refreshObjects = isSuccess && !monitor.isCanceled();
+            if (refreshObjects && needsModelRefresh()) {
                 // Refresh navigator node (script execution can change everything inside)
                 for (BASE_OBJECT object : databaseObjects) {
                     final DBNDatabaseNode node = dataSourceContainer.getPlatform().getNavigatorModel().findNode(object);

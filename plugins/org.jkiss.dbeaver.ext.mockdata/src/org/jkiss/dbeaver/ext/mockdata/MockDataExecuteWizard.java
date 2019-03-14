@@ -85,6 +85,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     }
 
     @Override
+    protected boolean needsModelRefresh() {
+        return false;
+    }
+
+    @Override
     public boolean performCancel() {
         // Save settings anyway
         mockDataSettings.saveTo(getDialogSettings());
