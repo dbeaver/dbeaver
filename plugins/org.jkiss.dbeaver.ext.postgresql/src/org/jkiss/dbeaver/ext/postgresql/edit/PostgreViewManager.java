@@ -103,7 +103,11 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
             String sql = view.getSource().trim();
             if (!sql.toLowerCase(Locale.ENGLISH).startsWith("create")) {
                 StringBuilder sqlBuf = new StringBuilder();
-                sqlBuf.append("CREATE OR REPLACE ").append(view.getViewType()).append(" ").append(DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL));
+                sqlBuf.append("CREATE ");
+                if (!(view instanceof PostgreMaterializedView)) {
+                    sqlBuf.append("OR REPLACE ");
+                }
+                sqlBuf.append(view.getViewType()).append(" ").append(DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL));
                 appendViewDeclarationPrefix(monitor, sqlBuf, view);
                 sqlBuf.append("\nAS ").append(sql);
                 appendViewDeclarationPostfix(monitor, sqlBuf, view);
