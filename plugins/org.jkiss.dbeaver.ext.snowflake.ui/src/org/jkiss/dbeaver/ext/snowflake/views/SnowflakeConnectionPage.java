@@ -242,7 +242,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE)));
         }
         if (authTypeCombo != null) {
-            roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR)));
+            authTypeCombo.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR)));
         }
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
