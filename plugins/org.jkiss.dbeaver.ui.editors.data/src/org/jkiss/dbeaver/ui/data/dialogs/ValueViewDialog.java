@@ -174,6 +174,10 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
         });
         if (editor != null) {
             editor.createControl();
+            Control control = editor.getControl();
+            if (control != null) {
+                control.setFocus();
+            }
         }
         return editor;
     }
