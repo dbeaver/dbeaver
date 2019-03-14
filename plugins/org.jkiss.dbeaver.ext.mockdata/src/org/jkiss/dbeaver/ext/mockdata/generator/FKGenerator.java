@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mockdata.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mockdata.MockDataUtils;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -60,6 +61,9 @@ public class FKGenerator extends AbstractMockValueGenerator
         if (refValues == null) {
             refValues = new ArrayList<>();
             List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);
+            if (attributeReferrers.isEmpty()) {
+                throw new DBException("Attribute '" + DBUtils.getObjectFullName(attribute, DBPEvaluationContext.UI) + "' is not a part of foreign key");
+            }
             DBSEntityReferrer fk = attributeReferrers.get(0); // TODO only the first
             List<? extends DBSEntityAttributeRef> references = ((DBSEntityReferrer) fk).getAttributeReferences(monitor);
 

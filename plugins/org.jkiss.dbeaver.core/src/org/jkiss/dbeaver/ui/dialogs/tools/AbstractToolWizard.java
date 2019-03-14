@@ -74,6 +74,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     protected final DatabaseWizardPageLog logPage;
     private boolean finished;
     protected boolean transferFinished;
+    private boolean refreshObjects;
 
     protected AbstractToolWizard(Collection<BASE_OBJECT> databaseObjects, String task)
     {
@@ -282,11 +283,15 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
     {
         try {
+            boolean isSuccess = true;
             for (PROCESS_ARG arg : getRunInfo()) {
                 if (monitor.isCanceled()) break;
-                executeProcess(monitor, arg);
+                if (!executeProcess(monitor, arg)) {
+                    isSuccess = false;
+                }
             }
-            if (!monitor.isCanceled()) {
+            refreshObjects = isSuccess && !monitor.isCanceled() && false;
+            if (refreshObjects) {
                 // Refresh navigator node (script execution can change everything inside)
                 for (BASE_OBJECT object : databaseObjects) {
                     final DBNDatabaseNode node = dataSourceContainer.getPlatform().getNavigatorModel().findNode(object);
