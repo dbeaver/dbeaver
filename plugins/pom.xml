@@ -81,6 +81,7 @@
         <module>org.jkiss.dbeaver.data.office</module>
         <module>org.jkiss.dbeaver.data.gis</module>
         <module>org.jkiss.dbeaver.data.transfer</module>
+        <module>org.jkiss.dbeaver.data.gis.view</module>
 
         <module>org.jkiss.dbeaver.net.ssh</module>
         <module>org.jkiss.dbeaver.net.ssh.jsch</module>
