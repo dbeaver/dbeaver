@@ -99,7 +99,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
         if (isInline) {
             inlineControl.setFont(valueController.getEditPlaceholder().getFont());
-            inlineControl.setFocus();
+            //inlineControl.setFocus();
 
             if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
                  inlineControl.addTraverseListener(new TraverseListener() {

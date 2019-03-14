@@ -929,6 +929,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (activeInlineEditor != null) {
             activeInlineEditor.createControl();
             if (activeInlineEditor.getControl() != null) {
+                activeInlineEditor.getControl().setFocus();
                 activeInlineEditor.getControl().setData(DATA_VALUE_CONTROLLER, valueController);
             }
         }
