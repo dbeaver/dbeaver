@@ -82,6 +82,16 @@ public class StringTextGenerator extends AbstractStringValueGenerator {
             int length = minLength + random.nextInt(maxLength - minLength + 1);
             int tplLength = templateString.length();
             int start = random.nextInt(tplLength);
+            if (start > 0) {
+                // Find word begin
+                int wordStart = start;
+                while (wordStart < tplLength && !Character.isWhitespace(templateString.charAt(wordStart - 1))) {
+                    wordStart++;
+                }
+                if (wordStart < tplLength) {
+                    start = wordStart;
+                }
+            }
             if (start + length < tplLength) {
                 return tune(templateString.substring(start, start + length));
             } else {
