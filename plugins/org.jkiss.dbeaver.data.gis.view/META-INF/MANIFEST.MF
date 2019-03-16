@@ -14,6 +14,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.editors.data
+ org.jkiss.dbeaver.ui.editors.data,
+ com.vividsolutions.jts
 Bundle-ClassPath: .
-
+Import-Package: org.jkiss.dbeaver.ui.data.managers.gis
