@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -63,7 +64,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
             @Override
             protected PostgreTableConstraintBase runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
-                    "Add constraint",
+                    PostgreMessages.edit_constraint_page_add_constraint,
                     parent,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
