@@ -13,4 +13,5 @@ Require-Bundle: org.jkiss.dbeaver.model,
  com.vividsolutions.jts
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.data.gis.handlers,
- org.jkiss.dbeaver.model.gis
+ org.jkiss.dbeaver.model.gis,
+ org.jkiss.dbeaver.ui.data.managers.gis
