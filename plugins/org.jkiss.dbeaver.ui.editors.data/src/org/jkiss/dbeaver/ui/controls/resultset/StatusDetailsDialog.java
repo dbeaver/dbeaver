@@ -23,6 +23,7 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewExceptionDialog;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +38,7 @@ class StatusDetailsDialog extends EditTextDialog {
     private Table warnTable;
 
     public StatusDetailsDialog(Shell shell, String message, List<Throwable> warnings) {
-        super(shell, "Status details", message);
+        super(shell, ResultSetMessages.dialog_title_status_details, message);
         this.warnings = warnings;
         textHeight = 100;
         setReadonly(true);
@@ -51,7 +52,7 @@ class StatusDetailsDialog extends EditTextDialog {
 
     @Override
     protected void createControlsBeforeText(Composite composite) {
-        UIUtils.createControlLabel(composite, "Message");
+        UIUtils.createControlLabel(composite, ResultSetMessages.dialog_control_label_massage);
     }
 
     @Override
