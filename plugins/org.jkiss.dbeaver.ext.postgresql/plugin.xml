@@ -155,7 +155,7 @@
                                 <items label="%tree.aggregate.node.name" path="aggregate" property="aggregateFunctions" icon="#function"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="%tree.information.node.tip">
-                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#extensions" description="Extensions" visibleIf="object.dataSource.serverType.supportsExtensions()">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#extensions" description="%tree.extensions.node.tip" visibleIf="object.dataSource.serverType.supportsExtensions()">
                                     <items label="%tree.extension.node.name" path="extension" property="extensions" icon="#extension"/>
                                 </folder>
                             </folder>
@@ -180,12 +180,12 @@
                     </folder>
 
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="%tree.information.node.tip">
-                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAccessMethod" label="%tree.accessMethods.node.name" icon="#languages" description="Access methods">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAccessMethod" label="%tree.accessMethods.node.name" icon="#languages" description="%tree.accessMethods.node.tip">
                             <items label="%tree.accessMethod.node.name" path="accessMethod" property="accessMethods" icon="#accessMethod">
-                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreOperatorClass" label="%tree.opClasses.node.name" icon="#operator" description="Operator classes">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreOperatorClass" label="%tree.opClasses.node.name" icon="#operator" description="%tree.opClasses.node.tip">
                                     <items label="%tree.opClass.node.name" itemLabel="%tree.opClass.node.name" path="operatorClass" property="operatorClasses" icon="#operator"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreOperatorFamily" label="%tree.opFamilies.node.name" icon="#family" description="Operator families">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreOperatorFamily" label="%tree.opFamilies.node.name" icon="#family" description="%tree.opFamilies.node.tip">
                                     <items label="%tree.opFamily.node.name" itemLabel="%tree.opFamily.node.name" path="operatorFamily" property="operatorFamilies" icon="#family"/>
                                 </folder>
                             </items>
