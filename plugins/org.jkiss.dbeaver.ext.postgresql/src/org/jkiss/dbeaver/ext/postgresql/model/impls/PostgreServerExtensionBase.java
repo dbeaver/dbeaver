@@ -307,6 +307,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return tablePermissions;
     }
 
+    @Override
+    public boolean supportsExplainPlanXML() {
+        return dataSource.isServerVersionAtLeast(9, 0);
+    }
+
+    @Override
+    public boolean supportsExplainPlanVerbose() {
+        return true;
+    }
+
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 

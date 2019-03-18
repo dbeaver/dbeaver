@@ -45,12 +45,14 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
     private static final Log log = Log.getLog(PostgrePlanAnalyser.class);
 
     private boolean oldQuery;
+    private boolean verbose;
     private String query;
     private List<DBCPlanNode> rootNodes;
 
-    public PostgrePlanAnalyser(boolean oldQuery, String query)
+    public PostgrePlanAnalyser(boolean oldQuery, boolean verbose, String query)
     {
         this.oldQuery = oldQuery;
+        this.verbose = verbose;
         this.query = query;
     }
 
@@ -74,7 +76,7 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
     @Override
     public String getPlanQueryString() {
         if (oldQuery) {
-            return "EXPLAIN VERBOSE " + query;
+            return "EXPLAIN " + (verbose ? "VERBOSE " : "") + query;
         } else {
             return "EXPLAIN (FORMAT XML, ANALYSE) " + query;
         }
