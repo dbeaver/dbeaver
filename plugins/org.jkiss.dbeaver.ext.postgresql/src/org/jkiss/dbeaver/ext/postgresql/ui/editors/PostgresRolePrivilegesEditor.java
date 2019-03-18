@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -155,9 +156,9 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             permissionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             permissionTable.setHeaderVisible(true);
             permissionTable.setLinesVisible(true);
-            UIUtils.createTableColumn(permissionTable, SWT.LEFT, "Permission");
-            UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With GRANT");
-            UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With Hierarchy");
+            UIUtils.createTableColumn(permissionTable, SWT.LEFT, PostgreMessages.dialog_create_table_column_name_permission);
+            UIUtils.createTableColumn(permissionTable, SWT.CENTER, PostgreMessages.dialog_create_table_column_name_with_garant);
+            UIUtils.createTableColumn(permissionTable, SWT.CENTER, PostgreMessages.dialog_create_table_column_name_with_hierarchy);
             permissionTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -188,7 +189,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             buttonPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             buttonPanel.setLayout(new RowLayout());
 
-            UIUtils.createPushButton(buttonPanel, "Grant All", null, new SelectionAdapter() {
+            UIUtils.createPushButton(buttonPanel, PostgreMessages.dialog_create_push_button_grant_all, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     boolean hadNonChecked = false;
@@ -199,7 +200,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     if (hadNonChecked) updateCurrentPrivileges(true, null);
                 }
             });
-            UIUtils.createPushButton(buttonPanel, "Revoke All", null, new SelectionAdapter() {
+            UIUtils.createPushButton(buttonPanel, PostgreMessages.dialog_create_push_button_revoke_all, null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     boolean hadChecked = false;
@@ -357,7 +358,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
         boolean editEnabled;
         if (hasBadObjects) {
-            objectDescriptionText.setText("<no objects>");
+            objectDescriptionText.setText(PostgreMessages.dialog_object_description_text_no_objects);
 
             this.currentPermissions = null;
             this.currentObjects = null;
