@@ -95,4 +95,8 @@ public interface PostgreServerExtension
     void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
 
     List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
+
+    boolean supportsExplainPlanXML();
+
+    boolean supportsExplainPlanVerbose();
 }

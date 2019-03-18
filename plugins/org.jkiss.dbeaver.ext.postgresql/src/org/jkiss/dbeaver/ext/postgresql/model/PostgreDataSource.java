@@ -381,7 +381,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException
     {
-        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(getPlanStyle() == DBCPlanStyle.QUERY, query);
+        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(
+                getPlanStyle() == DBCPlanStyle.QUERY,
+                getServerType().supportsExplainPlanVerbose(),
+                query);
         if (getPlanStyle() == DBCPlanStyle.PLAN) {
             plan.explain(session);
         }
@@ -391,7 +394,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
-        return isServerVersionAtLeast(9, 0) ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
+        return getServerType().supportsExplainPlanXML() ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
     }
 
     @Override

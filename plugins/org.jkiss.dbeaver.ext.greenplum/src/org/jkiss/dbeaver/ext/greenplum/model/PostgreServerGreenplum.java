@@ -91,6 +91,16 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsExplainPlanXML() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsExplainPlanVerbose() {
+        return false;
+    }
+
+    @Override
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         return GreenplumWithClauseBuilder.generateWithClause(table, tableBase);
     }
