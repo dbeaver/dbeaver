@@ -16,14 +16,39 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.gis.view;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
+import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.managers.gis.IGeometryViewer;
 
-public class GeometryGraphicViewer extends StringInlineEditor implements IGeometryViewer {
+public class GeometryGraphicViewer extends BaseValueEditor<Browser> implements IGeometryViewer {
 
     public GeometryGraphicViewer(IValueController controller) {
         super(controller);
     }
     
+    @Override
+    protected Browser createControl(Composite editPlaceholder)
+    {
+        Browser browser = new Browser(editPlaceholder, SWT.NONE);
+        return browser;
+    }
+    
+    @Override
+    public void primeEditorValue(@Nullable Object value) throws DBException
+    {
+        if (control != null) {
+            control.setUrl("https://www.google.com");
+        }
+    }
+
+    @Override
+    public Object extractEditorValue() throws DBCException {
+        return control == null? null : control.getUrl();
+    }
 }
