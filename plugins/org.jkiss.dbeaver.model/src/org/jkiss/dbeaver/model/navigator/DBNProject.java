@@ -20,6 +20,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -146,12 +148,15 @@ public class DBNProject extends DBNResource
 
     @Override
     protected IResource[] addImplicitMembers(IResource[] members) {
-        DBPProjectManager projectManager = getModel().getPlatform().getProjectManager();
-        for (DBPResourceHandlerDescriptor rh : projectManager.getAllResourceHandlers()) {
-            IFolder rhDefaultRoot = projectManager.getResourceDefaultRoot(getProject(), rh, false);
-            if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
-                // Add as explicit member
-                members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
+            // Add non-existing folders
+            DBPProjectManager projectManager = getModel().getPlatform().getProjectManager();
+            for (DBPResourceHandlerDescriptor rh : projectManager.getAllResourceHandlers()) {
+                IFolder rhDefaultRoot = projectManager.getResourceDefaultRoot(getProject(), rh, false);
+                if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
+                    // Add as explicit member
+                    members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
+                }
             }
         }
         return super.addImplicitMembers(members);
