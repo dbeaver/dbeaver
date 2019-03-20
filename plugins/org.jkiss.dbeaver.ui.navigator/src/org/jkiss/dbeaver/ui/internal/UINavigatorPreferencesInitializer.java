@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.ui.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * Preference initializer.
