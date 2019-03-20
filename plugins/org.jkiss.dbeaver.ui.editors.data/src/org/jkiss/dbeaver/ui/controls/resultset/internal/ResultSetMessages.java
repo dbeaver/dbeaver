@@ -271,6 +271,8 @@ public class ResultSetMessages extends NLS {
 	public static String value_format_selector_display;
 	public static String value_format_selector_editable;
 	public static String value_format_selector_value;
+
+    public static String dialog_text_check_box_record;
     
     static {
         // initialize resource bundle
