@@ -25,11 +25,13 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
@@ -46,8 +48,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 
-public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider
-{
+public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider, DBPPreferenceListener {
+
     public enum DoubleClickBehavior {
         EDIT,
         CONNECT,
@@ -174,6 +176,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         // Add drag and drop support
         NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
 
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
+
         return navigatorTree;
     }
 
@@ -215,6 +219,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     @Override
     public void dispose()
     {
+        DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
+
         model = null;
         super.dispose();
     }
@@ -262,6 +268,22 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
     public void configureView() {
 
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent event) {
+        String property = event.getProperty();
+        if (CommonUtils.equalObjects(event.getOldValue(), event.getNewValue())) {
+            return;
+        }
+        switch (property) {
+            case ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS:
+            case NavigatorPreferences.NAVIGATOR_SORT_ALPHABETICALLY:
+            case NavigatorPreferences.NAVIGATOR_SORT_FOLDERS_FIRST:
+            case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:
+                tree.getViewer().refresh();
+                break;
+        }
     }
 
 }
