@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -127,6 +129,20 @@ public class DBNProject extends DBNResource
     }
 
     @Override
+    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
+            // Remove non-existing resources (placeholders)
+            List<DBNNode> children = new ArrayList<>();
+            Collections.addAll(children, super.getChildren(monitor));
+            children.removeIf(node ->
+                    node instanceof DBNResource && !((DBNResource) node).getResource().exists());
+            return children.toArray(new DBNNode[0]);
+        }
+
+        return super.getChildren(monitor);
+    }
+
+    @Override
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException
     {
         IProject project = getProject();
@@ -148,15 +164,12 @@ public class DBNProject extends DBNResource
 
     @Override
     protected IResource[] addImplicitMembers(IResource[] members) {
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
-            // Add non-existing folders
-            DBPProjectManager projectManager = getModel().getPlatform().getProjectManager();
-            for (DBPResourceHandlerDescriptor rh : projectManager.getAllResourceHandlers()) {
-                IFolder rhDefaultRoot = projectManager.getResourceDefaultRoot(getProject(), rh, false);
-                if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
-                    // Add as explicit member
-                    members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
-                }
+        DBPProjectManager projectManager = getModel().getPlatform().getProjectManager();
+        for (DBPResourceHandlerDescriptor rh : projectManager.getAllResourceHandlers()) {
+            IFolder rhDefaultRoot = projectManager.getResourceDefaultRoot(getProject(), rh, false);
+            if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
+                // Add as explicit member
+                members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
             }
         }
         return super.addImplicitMembers(members);
