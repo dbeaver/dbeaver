@@ -4081,7 +4081,7 @@ public class ResultSetViewer extends Viewer
         }
 
         ToggleModeAction() {
-            super("Record", Action.AS_CHECK_BOX);
+            super(ResultSetMessages.dialog_text_check_box_record, Action.AS_CHECK_BOX);
         }
 
         @Override
