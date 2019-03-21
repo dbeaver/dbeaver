@@ -126,11 +126,24 @@ public class ModelMessages extends NLS {
 
 	public static String model_navigator_Root;
 
-	public static String model_struct_Cascade;
+	public static String model_struct_Association;
+    public static String model_struct_Cascade;
 	public static String model_struct_Check;
 	public static String model_struct_Clustered;
-	public static String model_struct_Foreign_Key;
+	public static String model_struct_constraint_type_association;
+    public static String model_struct_constraint_type_check;
+    public static String model_struct_constraint_type_foreign_key;
+    public static String model_struct_constraint_type_index;
+    public static String model_struct_constraint_type_inheritance;
+    public static String model_struct_constraint_type_not_null;
+    public static String model_struct_constraint_type_primary_key;
+    public static String model_struct_constraint_type_pseudo;
+    public static String model_struct_constraint_type_unique_key;
+    public static String model_struct_constraint_type_virtual_key;
+    public static String model_struct_Foreign_Key;
 	public static String model_struct_Hashed;
+    public static String model_struct_Index;
+    public static String model_struct_Inheritance;
 	public static String model_struct_No_Action;
 	public static String model_struct_Not_NULL;
 	public static String model_struct_Other;
