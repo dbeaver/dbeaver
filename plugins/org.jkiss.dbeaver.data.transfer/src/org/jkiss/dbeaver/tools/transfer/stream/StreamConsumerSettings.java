@@ -55,7 +55,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private String outputFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
     private String outputFilePattern = GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE) + "_" + GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP);
     private String outputEncoding = GeneralUtils.getDefaultFileEncoding();
-    private boolean outputEncodingBOM = true;
+    private boolean outputEncodingBOM = false;
 
     private DBDDataFormatterProfile formatterProfile;
 
