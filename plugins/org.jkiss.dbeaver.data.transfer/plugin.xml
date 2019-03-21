@@ -172,7 +172,7 @@
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/html.png"
                     label="%dataTransfer.processor.html.name"
                     appFileExtension="html"
-                    appName="%dataTransfer.processor.app.name"
+                    appName="%dataTransfer.processor.web.name"
                     order="20">
                 <propertyGroup label="%dataTransfer.processor.html.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.html.property.extension.label" defaultValue="html"/>
