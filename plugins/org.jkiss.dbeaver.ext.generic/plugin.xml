@@ -1006,6 +1006,20 @@
                     <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
                 </driver>
 
+                <!-- CreateDB -->
+
+                <driver
+                        id="foundationdb"
+                        label="FoundationDB"
+                        class="com.foundationdb.sql.jdbc.Driver"
+                        sampleURL="jdbc:fdbsql://{host}[:{port}]/{database}"
+                        defaultPort="15432"
+                        description="FoundationDB JDBC driver"
+                        webURL="https://crate.io/docs/clients/jdbc/en/latest/"
+                        categories="sql">
+                    <file type="jar" path="maven:/com.foundationdb:fdb-sql-layer-jdbc:RELEASE"/>
+                </driver>
+
                 <!-- Legacy deprecated drivers -->
 
                 <driver
