@@ -504,5 +504,14 @@ public class GenericMetaModel {
         return "-- Source code not available";
     }
 
+    // Comments
+
+    public boolean isTableCommentEditable() {
+        return false;
+    }
+
+    public boolean isTableColumnCommentEditable() {
+        return false;
+    }
 
 }

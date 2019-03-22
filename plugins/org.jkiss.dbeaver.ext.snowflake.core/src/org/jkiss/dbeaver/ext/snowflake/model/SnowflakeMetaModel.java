@@ -73,4 +73,13 @@ public class SnowflakeMetaModel extends GenericMetaModel
         return getTableDDL(monitor, sourceObject, options);
     }
 
+    @Override
+    public boolean isTableCommentEditable() {
+        return true;
+    }
+
+    @Override
+    public boolean isTableColumnCommentEditable() {
+        return true;
+    }
 }

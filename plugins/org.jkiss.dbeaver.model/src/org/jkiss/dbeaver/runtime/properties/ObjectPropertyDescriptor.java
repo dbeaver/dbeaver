@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
+import org.apache.commons.jexl2.Expression;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -173,7 +176,22 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             return false;
         }
         // Read-only or non-updatable property for non-new object
-        return isNewObject(object) ? propInfo.editable() : propInfo.updatable();
+        return getEditableValue(object);
+    }
+
+    private boolean getEditableValue(Object object)
+    {
+        boolean isNew = isNewObject(object);
+        String expr = isNew ? propInfo.editableExpr() : propInfo.updatableExpr();
+        if (!expr.isEmpty()) {
+            return Boolean.TRUE.equals(evaluateExpression(object, expr));
+        } else {
+            return isNew ? propInfo.editable() : propInfo.updatable();
+        }
+    }
+
+    private Object evaluateExpression(Object object, String exprString) {
+        return AbstractDescriptor.evalExpression(exprString, object, this);
     }
 
     public boolean isEditPossible()
