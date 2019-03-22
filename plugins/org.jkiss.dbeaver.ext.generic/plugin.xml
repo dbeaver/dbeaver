@@ -1006,8 +1006,7 @@
                     <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
                 </driver>
 
-                <!-- CreateDB -->
-
+                <!-- FoundationDB
                 <driver
                         id="foundationdb"
                         label="FoundationDB"
@@ -1019,6 +1018,7 @@
                         categories="sql">
                     <file type="jar" path="maven:/com.foundationdb:fdb-sql-layer-jdbc:RELEASE"/>
                 </driver>
+                -->
 
                 <!-- Legacy deprecated drivers -->
 
