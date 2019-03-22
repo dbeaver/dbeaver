@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetDecorator;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,9 +59,9 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
     @Override
     public String getEmptyDataMessage() {
         if (container.getGroupAttributes().isEmpty()) {
-            return "No Groupings";
+            return ResultSetMessages.results_decorator_no_groupings;
         } else {
-            return "Grouping failed";
+            return ResultSetMessages.results_decorator_grouping_failed;
         }
     }
 
@@ -68,16 +69,16 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
     public String getEmptyDataDescription() {
         DBPDataSource dataSource = container.getResultSetController().getDataContainer().getDataSource();
         if (dataSource == null) {
-            return "No connected to database";
+            return ResultSetMessages.results_decorator_no_connected_to_db;
         }
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
         if (dialect == null || !dialect.supportsSubqueries()) {
-            return "Grouping is not supported\nby datasource '" + dataSource.getContainer().getDriver().getFullName() + "'";
+            return ResultSetMessages.results_decorator_grouping_is_not_supported + dataSource.getContainer().getDriver().getFullName() + "'"; //$NON-NLS-2$
         } else {
             if (container.getGroupAttributes().isEmpty()) {
-                return "Drag-and-drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
+                return ResultSetMessages.results_decorator_drag_and_drop_results_column;
             } else {
-                return "Grouping attempt failed. Clear grouping to proceed.";
+                return ResultSetMessages.results_decorator_grouping_attempt_failed;
             }
         }
     }
@@ -179,7 +180,7 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
                 try {
                     container.rebuildGrouping();
                 } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Grouping error", "Can't perform grouping query", e);
+                    DBWorkbench.getPlatformUI().showError(ResultSetMessages.results_decorator_error_grouping_error, ResultSetMessages.results_decorator_error_cant_perform_grouping_query, e);
                 }
             }
         });

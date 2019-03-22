@@ -274,6 +274,15 @@ public class ResultSetMessages extends NLS {
 
     public static String dialog_text_check_box_record;
     
+    public static String results_decorator_drag_and_drop_results_column;
+    public static String results_decorator_error_cant_perform_grouping_query;
+    public static String results_decorator_error_grouping_error;
+    public static String results_decorator_grouping_attempt_failed;
+    public static String results_decorator_grouping_failed;
+    public static String results_decorator_grouping_is_not_supported;
+    public static String results_decorator_no_connected_to_db;
+    public static String results_decorator_no_groupings;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);
