@@ -64,11 +64,15 @@ public @interface Property
      */
     boolean editable() default false;
 
+    String editableExpr() default "";
+
     /**
      * Updatable flag. If set to true then property can be changed on any object
      * @return updatable flag
      */
     boolean updatable() default false;
+
+    String updatableExpr() default "";
 
     /**
      * Viewable flag. Viewable properties are displayed in lists.

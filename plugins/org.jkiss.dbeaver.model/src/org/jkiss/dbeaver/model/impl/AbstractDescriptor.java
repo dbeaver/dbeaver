@@ -61,6 +61,42 @@ public abstract class AbstractDescriptor {
         }
     }
 
+    public static JexlContext makeContext(final Object object, final Object context)
+    {
+        return new JexlContext() {
+            @Override
+            public Object get(String name)
+            {
+                return name.equals(VAR_OBJECT) ? object :
+                        (name.equals(VAR_CONTEXT) ? context : null); //$NON-NLS-1$
+            }
+
+            @Override
+            public void set(String name, Object value)
+            {
+                log.warn("Set is not implemented"); //$NON-NLS-1$
+            }
+
+            @Override
+            public boolean has(String name)
+            {
+                return
+                        name.equals(VAR_OBJECT) && object != null || //$NON-NLS-1$
+                                name.equals(VAR_CONTEXT) && context != null; //$NON-NLS-1$
+            }
+        };
+    }
+
+    public static Object evalExpression(String exprString, Object object, Object context) {
+        try {
+            Expression expression = AbstractDescriptor.parseExpression(exprString);
+            return expression.evaluate(AbstractDescriptor.makeContext(object, context));
+        } catch (DBException e) {
+            log.error("Bad expression: " + exprString, e);
+            return null;
+        }
+    }
+
     public class ObjectType {
         private static final String ATTR_NAME = "name";
         private static final String ATTR_IF = "if";
@@ -171,32 +207,6 @@ public abstract class AbstractDescriptor {
             }
             getObjectClass();
             return implClass != null && implClass.isAssignableFrom(clazz);
-        }
-
-        private JexlContext makeContext(final Object object, final Object context)
-        {
-            return new JexlContext() {
-                @Override
-                public Object get(String name)
-                {
-                    return name.equals(VAR_OBJECT) ? object :
-                        (name.equals(VAR_CONTEXT) ? context : null); //$NON-NLS-1$
-                }
-
-                @Override
-                public void set(String name, Object value)
-                {
-                    log.warn("Set is not implemented"); //$NON-NLS-1$
-                }
-
-                @Override
-                public boolean has(String name)
-                {
-                    return
-                        name.equals(VAR_OBJECT) && object != null || //$NON-NLS-1$
-                        name.equals(VAR_CONTEXT) && context != null; //$NON-NLS-1$
-                }
-            };
         }
 
         @Override

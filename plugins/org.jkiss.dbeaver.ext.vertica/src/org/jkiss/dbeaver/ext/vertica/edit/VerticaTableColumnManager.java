@@ -104,11 +104,7 @@ public class VerticaTableColumnManager extends GenericTableColumnManager {
                 actionList.add(new SQLDatabasePersistAction("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue()));
             }
         }
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
-            actionList.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
-                DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                " IS " + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()))));
-        }
+        super.addObjectModifyActions(monitor, actionList, command, options);
     }
 
 }

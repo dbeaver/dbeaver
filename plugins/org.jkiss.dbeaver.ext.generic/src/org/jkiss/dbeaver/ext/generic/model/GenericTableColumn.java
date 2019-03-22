@@ -164,7 +164,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
 
     @Nullable
     @Override
-    @Property(viewable = true, multiline = true, order = 100)
+    @Property(viewable = true, editableExpr = "object.dataSource.metaModel.tableColumnCommentEditable", updatableExpr = "object.dataSource.metaModel.tableColumnCommentEditable", multiline = true, order = 100)
     public String getDescription()
     {
         return remarks;
