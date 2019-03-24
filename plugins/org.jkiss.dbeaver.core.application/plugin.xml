@@ -154,8 +154,8 @@
         <!-- File menu-->
 
         <menuContribution allPopups="false" locationURI="menu:file?before=additions">
-            <command commandId="org.eclipse.ui.newWizard" label="%command.org.jkiss.dbeaver.core.file.new.name" tooltip="%command.org.jkiss.dbeaver.core.file.save.description"/>
-            <command commandId="org.eclipse.ui.file.save" label="%command.org.jkiss.dbeaver.core.file.save.name" tooltip="%command.org.jkiss.dbeaver.core.file.save.description"/>
+            <command commandId="org.eclipse.ui.newWizard" label="%command.org.jkiss.dbeaver.core.file.new.name"/>
+            <command commandId="org.eclipse.ui.file.save" label="%command.org.jkiss.dbeaver.core.file.save.name"/>
             <command commandId="org.eclipse.ui.file.saveAs" label="%command.org.jkiss.dbeaver.core.file.saveas.name"/>
             <command commandId="org.eclipse.ui.file.close" label="%command.org.jkiss.dbeaver.core.file.close.name"/>
             <command commandId="org.eclipse.ui.file.print" label="%command.org.jkiss.dbeaver.core.file.print.name"/>
