@@ -99,4 +99,6 @@ public interface PostgreServerExtension
     boolean supportsExplainPlanXML();
 
     boolean supportsExplainPlanVerbose();
+
+    boolean supportsDatabaseDescription();
 }

@@ -317,6 +317,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return true;
     }
 
+    @Override
+    public boolean supportsDatabaseDescription() {
+        return dataSource.isServerVersionAtLeast(9, 4);
+    }
+
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 
