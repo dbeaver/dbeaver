@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabasePostSaveProcessor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
@@ -71,7 +72,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
  */
 public abstract class SQLEditorNested<T extends DBSObject>
     extends SQLEditorBase
-    implements IActiveWorkbenchPart, IRefreshablePart, DBCSourceHost
+    implements IActiveWorkbenchPart, IRefreshablePart, DBCSourceHost, IDatabasePostSaveProcessor
 {
 
     private EditorPageControl pageControl;
@@ -163,10 +164,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
     @Override
     public void doSave(final IProgressMonitor progressMonitor) {
         UIUtils.syncExec(() -> SQLEditorNested.super.doSave(progressMonitor));
-        postScriptSave();
     }
 
-    private void postScriptSave() {
+    @Override
+    public void runPostSaveCommands() {
         String compileCommandId = getCompileCommandId();
         if (compileCommandId != null) {
             // Compile after save
@@ -348,7 +349,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         String compileCommandId = getCompileCommandId();
         if (compileCommandId != null) {
             toolBarManager.add(new Separator());
-            //toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
+            toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
             toolBarManager.add(new ViewLogAction());
         }
     }

@@ -31,6 +31,7 @@ import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -57,10 +58,6 @@ import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
-import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ui.editors.entity.GlobalContributorManager;
 import org.jkiss.dbeaver.ui.editors.entity.IEntityEditorContext;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -78,7 +75,7 @@ import java.util.Map;
  * ObjectPropertiesEditor
  */
 public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObject>
-    implements IRefreshablePart, IProgressControlProvider, ITabbedFolderContainer, ISearchContextProvider, INavigatorModelView, IEntityEditorContext
+    implements IRefreshablePart, IProgressControlProvider, ITabbedFolderContainer, ISearchContextProvider, INavigatorModelView, IEntityEditorContext, IDatabasePostSaveProcessor
 {
     private static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
@@ -639,4 +636,15 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         return false;
     }
 
+    @Override
+    public void runPostSaveCommands() {
+        for (ISaveablePart sp : nestedSaveable) {
+            if (sp instanceof TabbedFolderPageEditor) {
+                IEditorPart editor = ((TabbedFolderPageEditor) sp).getEditor();
+                if (editor instanceof IDatabasePostSaveProcessor) {
+                    ((IDatabasePostSaveProcessor) editor).runPostSaveCommands();
+                }
+            }
+        }
+    }
 }

@@ -281,6 +281,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
         finally {
             saveInProgress = false;
         }
+
+        // Run post-save commands (e.g. compile)
+        for (IEditorPart editor : editorMap.values()) {
+            if (editor instanceof IDatabasePostSaveProcessor) {
+                ((IDatabasePostSaveProcessor) editor).runPostSaveCommands();
+            }
+            if (monitor.isCanceled()) {
+                return;
+            }
+        }
     }
 
     private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options)

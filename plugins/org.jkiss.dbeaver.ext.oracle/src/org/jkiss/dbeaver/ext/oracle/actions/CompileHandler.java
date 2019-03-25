@@ -65,6 +65,7 @@ public class CompileHandler extends OracleTaskHandler
         final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
         final List<OracleSourceObject> objects = getSelectedObjects(event);
         if (!objects.isEmpty()) {
+/*
             if (activePart instanceof EntityEditor) {
                 // Save editor before compile
                 // USe null monitor as entity editor has its own detached job for save
@@ -78,6 +79,7 @@ public class CompileHandler extends OracleTaskHandler
                     }
                 }
             }
+*/
             final Shell activeShell = HandlerUtil.getActiveShell(event);
             if (objects.size() == 1) {
                 final OracleSourceObject unit = objects.get(0);
