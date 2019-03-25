@@ -89,7 +89,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
     @Override
     protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
-        MySQLDatabase catalog = parentObject instanceof MySQLDatabase ? (MySQLDatabase) parentObject : null;
+        MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
         if (catalog == null && !globalSearch) {
             catalog = dataSource.getDefaultObject();
         }
@@ -104,7 +104,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findTablesByMask(JDBCSession session, @Nullable final MySQLDatabase catalog, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTablesByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -130,7 +130,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     objects.add(new AbstractObjectReference(tableName, dataSource.getCatalog(catalogName), null, MySQLTableBase.class, RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            MySQLDatabase tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
+                            MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Table catalog '" + catalogName + "' not found");
                             }
@@ -146,7 +146,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, @Nullable final MySQLDatabase catalog, String procNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findProceduresByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, String procNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -172,7 +172,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     objects.add(new AbstractObjectReference(procName, dataSource.getCatalog(catalogName), null, MySQLProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            MySQLDatabase procCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
+                            MySQLCatalog procCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (procCatalog == null) {
                                 throw new DBException("Procedure catalog '" + catalogName + "' not found");
                             }
@@ -188,7 +188,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findConstraintsByMask(JDBCSession session, @Nullable final MySQLDatabase catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findConstraintsByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -217,7 +217,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     objects.add(new AbstractObjectReference(constrName, dataSource.getCatalog(catalogName), null, isFK ? MySQLTableForeignKey.class : MySQLTableConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            MySQLDatabase tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
+                            MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Constraint catalog '" + catalogName + "' not found");
                             }
@@ -242,7 +242,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findTableColumnsByMask(JDBCSession session, @Nullable final MySQLDatabase catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTableColumnsByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -280,7 +280,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
 
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            MySQLDatabase tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
+                            MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Column catalog '" + catalogName + "' not found");
                             }

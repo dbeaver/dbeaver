@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -39,11 +39,11 @@ import java.util.Map;
 /**
  * MySQLProcedureManager
  */
-public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQLDatabase> {
+public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQLCatalog> {
 
     @Nullable
     @Override
-    public DBSObjectCache<MySQLDatabase, MySQLProcedure> getObjectsCache(MySQLProcedure object)
+    public DBSObjectCache<MySQLCatalog, MySQLProcedure> getObjectsCache(MySQLProcedure object)
     {
         return object.getContainer().getProceduresCache();
     }
@@ -67,7 +67,7 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     }
 
     @Override
-    protected MySQLProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLDatabase parent, Object copyFrom)
+    protected MySQLProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLCatalog parent, Object copyFrom)
     {
         return new UITask<MySQLProcedure>() {
             @Override

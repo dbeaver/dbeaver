@@ -107,13 +107,13 @@ public class MySQLTable extends MySQLTableBase
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
-    public MySQLTable(MySQLDatabase catalog)
+    public MySQLTable(MySQLCatalog catalog)
     {
         super(catalog);
     }
 
     // Copy constructor
-    public MySQLTable(DBRProgressMonitor monitor, MySQLDatabase catalog, DBSEntity source) throws DBException {
+    public MySQLTable(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
         super(monitor, catalog, source);
         if (source instanceof MySQLTable) {
             AdditionalInfo sourceAI = ((MySQLTable)source).getAdditionalInfo(monitor);
@@ -166,7 +166,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     public MySQLTable(
-        MySQLDatabase catalog,
+        MySQLCatalog catalog,
         ResultSet dbResult)
     {
         super(catalog, dbResult);

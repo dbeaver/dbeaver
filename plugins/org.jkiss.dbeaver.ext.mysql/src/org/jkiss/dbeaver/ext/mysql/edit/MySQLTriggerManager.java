@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -76,7 +76,7 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
                     "DROP TRIGGER IF EXISTS " + trigger.getFullyQualifiedName(DBPEvaluationContext.DDL))
             );
         }
-        MySQLDatabase curCatalog = trigger.getCatalog().getDataSource().getDefaultObject();
+        MySQLCatalog curCatalog = trigger.getCatalog().getDataSource().getDefaultObject();
         if (curCatalog != trigger.getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(trigger.getCatalog()), false)); //$NON-NLS-2$
         }
