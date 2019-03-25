@@ -124,6 +124,17 @@ public class GenericMetaModel {
                     // Use general schema reading method
                     log.debug("Error reading schemas in catalog '" + catalog.getName() + "' - " + e.getClass().getSimpleName() + " - " + e.getMessage());
                 }
+            } else {
+                try {
+                    dbResult = session.getMetaData().getSchemas(
+                        null,
+                        schemaFilters != null && schemaFilters.hasSingleMask() ?
+                            schemaFilters.getSingleMask() :
+                            dataSource.getAllObjectsPattern());
+                } catch (SQLException e) {
+                    log.debug("Error reading global schemas " + " - " + e.getMessage());
+                }
+
             }
             if (dbResult == null) {
                 dbResult = session.getMetaData().getSchemas();
