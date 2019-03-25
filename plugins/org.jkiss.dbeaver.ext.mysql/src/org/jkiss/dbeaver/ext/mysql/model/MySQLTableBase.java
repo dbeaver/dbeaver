@@ -43,18 +43,18 @@ import java.util.*;
 /**
  * MySQLTable base
  */
-public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCatalog>
+public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLDatabase>
     implements DBPNamedObject2,DBPRefreshableObject, MySQLSourceObject
 {
     private static final Log log = Log.getLog(MySQLTableBase.class);
 
-    protected MySQLTableBase(MySQLCatalog catalog)
+    protected MySQLTableBase(MySQLDatabase catalog)
     {
         super(catalog, false);
     }
 
     // Copy constructor
-    protected MySQLTableBase(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
+    protected MySQLTableBase(DBRProgressMonitor monitor, MySQLDatabase catalog, DBSEntity source) throws DBException {
         super(catalog, source, false);
 
         DBSObjectCache<MySQLTableBase, MySQLTableColumn> colCache = getContainer().getTableCache().getChildrenCache(this);
@@ -69,14 +69,14 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     protected MySQLTableBase(
-        MySQLCatalog catalog,
+        MySQLDatabase catalog,
         ResultSet dbResult)
     {
         super(catalog, JDBCUtils.safeGetString(dbResult, 1), true);
     }
 
     @Override
-    public JDBCStructCache<MySQLCatalog, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
+    public JDBCStructCache<MySQLDatabase, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
     {
         return getContainer().getTableCache();
     }

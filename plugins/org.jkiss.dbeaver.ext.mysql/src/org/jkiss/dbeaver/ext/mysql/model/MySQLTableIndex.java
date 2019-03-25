@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * MySQLTableIndex
  */
-public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> implements DBPNamedObject2
+public class MySQLTableIndex extends JDBCTableIndex<MySQLDatabase, MySQLTable> implements DBPNamedObject2
 {
     private boolean nonUnique;
     private String additionalInfo;

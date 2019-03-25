@@ -36,7 +36,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
 
     @Nullable
     @Override
-    public DBSObjectCache<MySQLCatalog, MySQLTableConstraint> getObjectsCache(MySQLTableConstraint object)
+    public DBSObjectCache<MySQLDatabase, MySQLTableConstraint> getObjectsCache(MySQLTableConstraint object)
     {
         return object.getTable().getContainer().getConstraintCache();
     }

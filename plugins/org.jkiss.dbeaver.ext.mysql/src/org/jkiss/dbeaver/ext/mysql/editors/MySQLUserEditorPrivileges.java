@@ -57,7 +57,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private Table tablesTable;
 
     private boolean isLoaded = false;
-    private MySQLCatalog selectedCatalog;
+    private MySQLDatabase selectedCatalog;
     private MySQLTableBase selectedTable;
     private PrivilegeTableControl tablePrivilegesTable;
     private PrivilegeTableControl otherPrivilegesTable;
@@ -93,7 +93,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     if (selIndex <= 0) {
                         selectedCatalog = null;
                     } else {
-                        selectedCatalog = (MySQLCatalog) catalogsTable.getItem(selIndex).getData();
+                        selectedCatalog = (MySQLDatabase) catalogsTable.getItem(selIndex).getData();
                     }
                     showCatalogTables();
                     showGrants();
@@ -105,7 +105,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 item.setText("% (All)"); //$NON-NLS-1$
                 item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
             }
-            for (MySQLCatalog catalog : getDatabaseObject().getDataSource().getCatalogs()) {
+            for (MySQLDatabase catalog : getDatabaseObject().getDataSource().getCatalogs()) {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
                 item.setText(catalog.getName());
                 item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
@@ -172,7 +172,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             {
                 final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
                 final boolean isGrant = event.detail == 1;
-                final MySQLCatalog curCatalog = selectedCatalog;
+                final MySQLDatabase curCatalog = selectedCatalog;
                 final MySQLTableBase curTable = selectedTable;
                 updateLocalData(privilege, isGrant, curCatalog, curTable);
 
@@ -206,7 +206,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         });
     }
 
-    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, MySQLCatalog curCatalog, MySQLTableBase curTable)
+    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, MySQLDatabase curCatalog, MySQLTableBase curTable)
     {
         // Modify local grants (and clear grants cache in user objects)
         getDatabaseObject().clearGrantsCache();
@@ -330,7 +330,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         // Highlight granted catalogs
         if (catalogsTable != null && !catalogsTable.isDisposed()) {
             for (TableItem item : catalogsTable.getItems()) {
-                MySQLCatalog catalog = (MySQLCatalog)item.getData();
+                MySQLDatabase catalog = (MySQLDatabase)item.getData();
                 item.setFont(null);
                 if (grants != null) {
                     for (MySQLGrant grant : grants) {

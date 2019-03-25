@@ -194,7 +194,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
-            MySQLCatalog object = getDefaultObject();
+            MySQLDatabase object = getDefaultObject();
             if (object != null) {
                 useDatabase(monitor, context, object);
             }
@@ -211,12 +211,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return catalogCache;
     }
 
-    public Collection<MySQLCatalog> getCatalogs()
+    public Collection<MySQLDatabase> getCatalogs()
     {
         return catalogCache.getCachedObjects();
     }
 
-    public MySQLCatalog getCatalog(String name)
+    public MySQLDatabase getCatalog(String name)
     {
         return catalogCache.getCachedObject(name);
     }
@@ -311,7 +311,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         if (CommonUtils.isEmpty(catalogName)) {
             return null;
         }
-        MySQLCatalog catalog = getCatalog(catalogName);
+        MySQLDatabase catalog = getCatalog(catalogName);
         if (catalog == null) {
             log.error("Catalog " + catalogName + " not found");
             return null;
@@ -320,24 +320,24 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends MySQLDatabase> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getCatalogs();
     }
 
     @Override
-    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+    public MySQLDatabase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         return getCatalog(childName);
     }
 
     @Override
-    public Class<? extends MySQLCatalog> getChildType(@NotNull DBRProgressMonitor monitor)
+    public Class<? extends MySQLDatabase> getChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return MySQLCatalog.class;
+        return MySQLDatabase.class;
     }
 
     @Override
@@ -354,7 +354,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public MySQLCatalog getDefaultObject()
+    public MySQLDatabase getDefaultObject()
     {
         return CommonUtils.isEmpty(activeCatalogName) ? null : getCatalog(activeCatalogName);
     }
@@ -363,12 +363,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
         throws DBException
     {
-        final MySQLCatalog oldSelectedEntity = getDefaultObject();
-        if (!(object instanceof MySQLCatalog)) {
+        final MySQLDatabase oldSelectedEntity = getDefaultObject();
+        if (!(object instanceof MySQLDatabase)) {
             throw new DBException("Invalid object type: " + object);
         }
         for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
-            useDatabase(monitor, context, (MySQLCatalog) object);
+            useDatabase(monitor, context, (MySQLDatabase) object);
         }
         activeCatalogName = object.getName();
 
@@ -385,7 +385,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
         final String newCatalogName = MySQLUtils.determineCurrentDatabase((JDBCSession) session);
         if (!CommonUtils.equalObjects(newCatalogName, activeCatalogName)) {
-            final MySQLCatalog newCatalog = getCatalog(newCatalogName);
+            final MySQLDatabase newCatalog = getCatalog(newCatalogName);
             if (newCatalog != null) {
                 setDefaultObject(session.getProgressMonitor(), newCatalog);
                 return true;
@@ -394,7 +394,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return false;
     }
 
-    private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, MySQLCatalog catalog) throws DBCException {
+    private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, MySQLDatabase catalog) throws DBCException {
         if (catalog == null) {
             log.debug("Null current database");
             return;
@@ -673,13 +673,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
     }
 
-    static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog>
+    static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLDatabase>
     {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException
         {
             StringBuilder catalogQuery = new StringBuilder("show databases");
-            DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
+            DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLDatabase.class, null, false);
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_DATABASE_NAME, true);
             }
@@ -691,9 +691,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
 
         @Override
-        protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
+        protected MySQLDatabase fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
-            return new MySQLCatalog(owner, resultSet);
+            return new MySQLDatabase(owner, resultSet);
         }
 
     }

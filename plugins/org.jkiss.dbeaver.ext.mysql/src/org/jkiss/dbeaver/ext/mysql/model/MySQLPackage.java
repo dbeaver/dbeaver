@@ -45,7 +45,7 @@ import java.util.Map;
 public class MySQLPackage
     implements DBPScriptObject, DBPScriptObjectExt, DBSObjectContainer, DBPRefreshableObject, DBSProcedureContainer, DBSPackage, DBPQualifiedObject
 {
-    private MySQLCatalog catalog;
+    private MySQLDatabase catalog;
     private String name;
     private String description;
     private boolean persisted;
@@ -54,7 +54,7 @@ public class MySQLPackage
     private String sourceDefinition;
 
     public MySQLPackage(
-        MySQLCatalog catalog,
+        MySQLDatabase catalog,
         ResultSet dbResult)
     {
         this.catalog = catalog;
@@ -63,7 +63,7 @@ public class MySQLPackage
         this.persisted = true;
     }
 
-    public MySQLPackage(MySQLCatalog catalog, String name)
+    public MySQLPackage(MySQLDatabase catalog, String name)
     {
         this.catalog = catalog;
         this.name = name;
@@ -104,7 +104,7 @@ public class MySQLPackage
         return description;
     }
 
-    public MySQLCatalog getCatalog() {
+    public MySQLDatabase getCatalog() {
         return catalog;
     }
 

@@ -40,10 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,9 +51,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * GenericCatalog
+ * MySQLDatabase
  */
-public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
+public class MySQLDatabase implements DBSSchema, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
 {
 
     final TableCache tableCache = new TableCache();
@@ -113,9 +110,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
     }
 
-    public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLCatalog> {
+    public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLDatabase> {
         @Override
-        public boolean isPropertyCached(MySQLCatalog object, Object propertyId)
+        public boolean isPropertyCached(MySQLDatabase object, Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -164,7 +161,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
     }
 
-    public MySQLCatalog(MySQLDataSource dataSource, ResultSet dbResult)
+    public MySQLDatabase(MySQLDataSource dataSource, ResultSet dbResult)
     {
         tableCache.setCaseSensitive(false);
         this.dataSource = dataSource;
@@ -408,7 +405,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return name + " [" + dataSource.getContainer().getName() + "]";
     }
 
-    public static class TableCache extends JDBCStructLookupCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> {
+    public static class TableCache extends JDBCStructLookupCache<MySQLDatabase, MySQLTableBase, MySQLTableColumn> {
 
         TableCache()
         {
@@ -417,7 +414,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @Nullable MySQLTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             if (!session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
                 // Client side filter
@@ -454,7 +451,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLTableBase fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
+        protected MySQLTableBase fetchObject(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
@@ -466,7 +463,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase forTable)
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @Nullable MySQLTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -487,7 +484,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLTableColumn fetchChild(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLTableBase table, @NotNull JDBCResultSet dbResult)
+        protected MySQLTableColumn fetchChild(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @NotNull MySQLTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLTableColumn(table, dbResult);
@@ -498,7 +495,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Index cache implementation
      */
-    static class IndexCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
+    static class IndexCache extends JDBCCompositeCache<MySQLDatabase, MySQLTable, MySQLTableIndex, MySQLTableIndexColumn> {
         IndexCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
@@ -506,7 +503,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLDatabase owner, MySQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -528,7 +525,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Nullable
         @Override
-        protected MySQLTableIndex fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String indexName, JDBCResultSet dbResult)
+        protected MySQLTableIndex fetchObject(JDBCSession session, MySQLDatabase owner, MySQLTable parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String indexTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_INDEX_TYPE);
@@ -590,7 +587,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Constraint cache implementation
      */
-    static class ConstraintCache extends JDBCCompositeCache<MySQLCatalog, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
+    static class ConstraintCache extends JDBCCompositeCache<MySQLDatabase, MySQLTable, MySQLTableConstraint, MySQLTableConstraintColumn> {
         ConstraintCache(TableCache tableCache)
         {
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
@@ -598,7 +595,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLDatabase owner, MySQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -620,7 +617,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Nullable
         @Override
-        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String constraintName, JDBCResultSet dbResult)
+        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLDatabase owner, MySQLTable parent, String constraintName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             if (constraintName.equals("PRIMARY")) {
@@ -663,7 +660,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Procedures cache implementation
      */
-    static class ProceduresCache extends JDBCStructLookupCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> {
+    static class ProceduresCache extends JDBCStructLookupCache<MySQLDatabase, MySQLProcedure, MySQLProcedureParameter> {
 
         ProceduresCache()
         {
@@ -671,14 +668,14 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLProcedure fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
+        protected MySQLProcedure fetchObject(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLProcedure(owner, dbResult);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLProcedure procedure)
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @Nullable MySQLProcedure procedure)
             throws SQLException
         {
             // Load procedure columns through MySQL metadata
@@ -693,7 +690,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLProcedureParameter fetchChild(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLProcedure parent, @NotNull JDBCResultSet dbResult)
+        protected MySQLProcedureParameter fetchChild(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @NotNull MySQLProcedure parent, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
@@ -732,7 +729,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLProcedure object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @Nullable MySQLProcedure object, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
                     "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
@@ -748,17 +745,17 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
     }
 
-    static class PackageCache extends JDBCObjectLookupCache<MySQLCatalog, MySQLPackage> {
+    static class PackageCache extends JDBCObjectLookupCache<MySQLDatabase, MySQLPackage> {
 
         @Override
-        protected MySQLPackage fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
+        protected MySQLPackage fetchObject(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLPackage(owner, dbResult);
         }
 
         @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, MySQLCatalog owner, MySQLPackage object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(JDBCSession session, MySQLDatabase owner, MySQLPackage object, String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT name,comment FROM mysql.proc\n" +
                     "WHERE db = ? AND type = 'PACKAGE'" +
@@ -772,10 +769,10 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
     }
 
-    static class TriggerCache extends JDBCObjectLookupCache<MySQLCatalog, MySQLTrigger> {
+    static class TriggerCache extends JDBCObjectLookupCache<MySQLDatabase, MySQLTrigger> {
 
         @Override
-        protected MySQLTrigger fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
+        protected MySQLTrigger fetchObject(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, "EVENT_OBJECT_TABLE");
@@ -784,7 +781,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, MySQLCatalog owner, MySQLTrigger object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(JDBCSession session, MySQLDatabase owner, MySQLTrigger object, String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS\n" +
                     "WHERE TRIGGER_SCHEMA = ?" +
@@ -798,9 +795,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
     }
 
-    static class EventCache extends JDBCObjectCache<MySQLCatalog, MySQLEvent> {
+    static class EventCache extends JDBCObjectCache<MySQLDatabase, MySQLEvent> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDatabase owner)
             throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -810,7 +807,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLEvent fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
+        protected MySQLEvent fetchObject(@NotNull JDBCSession session, @NotNull MySQLDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLEvent(owner, dbResult);
@@ -818,27 +815,27 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
     }
 
-    public static class CharsetListProvider implements IPropertyValueListProvider<MySQLCatalog> {
+    public static class CharsetListProvider implements IPropertyValueListProvider<MySQLDatabase> {
         @Override
         public boolean allowCustomValue()
         {
             return false;
         }
         @Override
-        public Object[] getPossibleValues(MySQLCatalog object)
+        public Object[] getPossibleValues(MySQLDatabase object)
         {
             return object.getDataSource().getCharsets().toArray();
         }
     }
 
-    public static class CollationListProvider implements IPropertyValueListProvider<MySQLCatalog> {
+    public static class CollationListProvider implements IPropertyValueListProvider<MySQLDatabase> {
         @Override
         public boolean allowCustomValue()
         {
             return false;
         }
         @Override
-        public Object[] getPossibleValues(MySQLCatalog object)
+        public Object[] getPossibleValues(MySQLDatabase object)
         {
             if (object.additionalInfo.defaultCharset == null) {
                 return null;

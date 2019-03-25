@@ -27,7 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -49,9 +49,9 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private Table catalogTable;
     private Table tablesTable;
-    private Map<MySQLCatalog, Set<MySQLTableBase>> checkedObjects = new HashMap<>();
+    private Map<MySQLDatabase, Set<MySQLTableBase>> checkedObjects = new HashMap<>();
 
-    private MySQLCatalog curCatalog;
+    private MySQLDatabase curCatalog;
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -85,7 +85,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                 public void handleEvent(Event event) {
                     TableItem item = (TableItem) event.item;
                     if (item != null) {
-                        MySQLCatalog catalog = (MySQLCatalog) item.getData();
+                        MySQLDatabase catalog = (MySQLDatabase) item.getData();
                         if (event.detail == SWT.CHECK) {
                             catalogTable.select(catalogTable.indexOf(item));
                             checkedObjects.remove(catalog);
@@ -138,13 +138,13 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         }
 
         MySQLDataSource dataSource = null;
-        Set<MySQLCatalog> activeCatalogs = new LinkedHashSet<>();
+        Set<MySQLDatabase> activeCatalogs = new LinkedHashSet<>();
         for (DBSObject object : wizard.getDatabaseObjects()) {
-            if (object instanceof MySQLCatalog) {
-                activeCatalogs.add((MySQLCatalog) object);
-                dataSource = ((MySQLCatalog) object).getDataSource();
+            if (object instanceof MySQLDatabase) {
+                activeCatalogs.add((MySQLDatabase) object);
+                dataSource = ((MySQLDatabase) object).getDataSource();
             } else if (object instanceof MySQLTableBase) {
-                MySQLCatalog catalog = ((MySQLTableBase) object).getContainer();
+                MySQLDatabase catalog = ((MySQLTableBase) object).getContainer();
                 dataSource = catalog.getDataSource();
                 activeCatalogs.add(catalog);
                 Set<MySQLTableBase> tables = checkedObjects.get(catalog);
@@ -163,7 +163,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         }
         if (dataSource != null) {
             boolean tablesLoaded = false;
-            for (MySQLCatalog catalog : dataSource.getCatalogs()) {
+            for (MySQLDatabase catalog : dataSource.getCatalogs()) {
                 TableItem item = new TableItem(catalogTable, SWT.NONE);
                 item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
                 item.setText(0, catalog.getName());
@@ -199,7 +199,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         }
     }
 
-    private boolean isChecked(MySQLCatalog catalog) {
+    private boolean isChecked(MySQLDatabase catalog) {
         for (TableItem item : catalogTable.getItems()) {
             if (item.getData() == catalog) {
                 return item.getChecked();
@@ -208,7 +208,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         return false;
     }
 
-    private void loadTables(final MySQLCatalog catalog) {
+    private void loadTables(final MySQLDatabase catalog) {
         if (catalog != null) {
             curCatalog = catalog;
         }
@@ -255,7 +255,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         wizard.objects.clear();
         for (TableItem item : catalogTable.getItems()) {
             if (item.getChecked()) {
-                MySQLCatalog catalog = (MySQLCatalog) item.getData();
+                MySQLDatabase catalog = (MySQLDatabase) item.getData();
                 MySQLDatabaseExportInfo info = new MySQLDatabaseExportInfo(catalog, checkedObjects.get(catalog));
                 wizard.objects.add(info);
             }

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -44,7 +44,7 @@ public class MySQLViewManager extends MySQLTableManager {
 
     @Nullable
     @Override
-    public DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
+    public DBSObjectCache<MySQLDatabase, MySQLTableBase> getObjectsCache(MySQLTableBase object)
     {
         return object.getContainer().getTableCache();
     }
@@ -63,7 +63,7 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
+    protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLDatabase parent, Object copyFrom)
     {
         MySQLView newView = new MySQLView(parent);
         try {

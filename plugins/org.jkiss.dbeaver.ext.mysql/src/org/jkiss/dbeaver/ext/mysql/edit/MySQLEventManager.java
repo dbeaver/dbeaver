@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEvent;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -19,9 +19,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
-public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog> {
+public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLDatabase> {
 
-    public DBSObjectCache<MySQLCatalog, MySQLEvent> getObjectsCache(MySQLEvent object) {
+    public DBSObjectCache<MySQLDatabase, MySQLEvent> getObjectsCache(MySQLEvent object) {
         return object.getCatalog().getEventCache();
     }
 
@@ -32,7 +32,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
 
     @Nullable
     @Override
-    protected MySQLEvent createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom) {
+    protected MySQLEvent createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLDatabase parent, Object copyFrom) {
         return new UITask<MySQLEvent>() {
             @Override
             protected MySQLEvent runTask() {
@@ -48,7 +48,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
             }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLObjectEditor<MySQLEvent, MySQLCatalog>.ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLObjectEditor<MySQLEvent, MySQLDatabase>.ObjectCreateCommand command, Map<String, Object> options) {
         final MySQLEvent event = command.getObject();
         final StringBuilder script = new StringBuilder();
         try {
@@ -66,7 +66,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, SQLObjectEditor<MySQLEvent, MySQLCatalog>.ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, SQLObjectEditor<MySQLEvent, MySQLDatabase>.ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(new SQLDatabasePersistAction("Drop event", "DROP EVENT " + DBUtils.getQuotedIdentifier(command.getObject())));
 
     }
