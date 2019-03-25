@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog, MySQLCatalog> {
+class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLDatabase, MySQLDatabase> {
 
     enum LogLevel {
         Normal,
@@ -47,7 +47,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     private boolean isImport;
     private MySQLScriptExecuteWizardPageSettings mainPage;
 
-    public MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport)
+    public MySQLScriptExecuteWizard(MySQLDatabase catalog, boolean isImport)
     {
         super(Collections.singleton(catalog), isImport ? MySQLMessages.tools_script_execute_wizard_db_import : MySQLMessages.tools_script_execute_wizard_execute_script);
         this.isImport = isImport;
@@ -85,7 +85,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd, MySQLCatalog arg) throws IOException
+    public void fillProcessParameters(List<String> cmd, MySQLDatabase arg) throws IOException
     {
         String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
@@ -112,12 +112,12 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     }
 
     @Override
-    public Collection<MySQLCatalog> getRunInfo() {
+    public Collection<MySQLDatabase> getRunInfo() {
         return getDatabaseObjects();
     }
 
     @Override
-    protected List<String> getCommandLine(MySQLCatalog arg) throws IOException
+    protected List<String> getCommandLine(MySQLDatabase arg) throws IOException
     {
         List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this, arg);
         cmd.add(arg.getName());
@@ -128,7 +128,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
      * Use binary file transform job (#2863)
      */
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, final MySQLCatalog arg, ProcessBuilder processBuilder, Process process) {
+    protected void startProcessHandler(DBRProgressMonitor monitor, final MySQLDatabase arg, ProcessBuilder processBuilder, Process process) {
         if (isImport) {
             logPage.startLogReader(
                 processBuilder,

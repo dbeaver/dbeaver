@@ -44,7 +44,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
     private static final String CAT_DETAILS = "Details";
     private static final String CAT_STATS = "Statistics";
 
-    private MySQLCatalog catalog;
+    private MySQLDatabase catalog;
     private boolean persisted;
     private String name;
     private String definer;
@@ -69,7 +69,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
     private MySQLCollation collationConnection;
     private MySQLCollation databaseCollation;
 
-    public MySQLEvent(MySQLCatalog catalog, ResultSet dbResult)
+    public MySQLEvent(MySQLDatabase catalog, ResultSet dbResult)
         throws SQLException
     {
         this.catalog = catalog;
@@ -78,7 +78,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         this.loadInfo(dbResult);
     }
 
-    public MySQLEvent(MySQLCatalog catalog, String name) {
+    public MySQLEvent(MySQLDatabase catalog, String name) {
         this.catalog = catalog;
         this.name = name;
 
@@ -276,7 +276,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
         eventDefinition = sourceText;
     }
 
-    public MySQLCatalog getCatalog() {
+    public MySQLDatabase getCatalog() {
         return catalog;
     }
 

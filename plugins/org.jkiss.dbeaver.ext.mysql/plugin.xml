@@ -30,7 +30,7 @@
                   icon="icons/mysql_icon.png"
                   label="MySQL data source"
                   path="mysql">
-                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
                     <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                             <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
@@ -246,7 +246,7 @@
 
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
-        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLCatalogManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%manager.catalog.name"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLDatabaseManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase" label="%manager.catalog.name"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint"/>
@@ -351,7 +351,7 @@
                     icon="#export"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource"/>
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase"/>
                 <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
             </tool>
             <tool
@@ -361,7 +361,7 @@
                     label="Restore database"
                     icon="#import"
                     singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
@@ -369,7 +369,7 @@
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
                     label="Execute script"
                     singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"

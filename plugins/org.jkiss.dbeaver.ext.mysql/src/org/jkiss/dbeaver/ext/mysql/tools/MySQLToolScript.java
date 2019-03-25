@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
@@ -42,10 +42,10 @@ public class MySQLToolScript implements IExternalTool
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
         for (DBSObject object : objects) {
-            if (object instanceof MySQLCatalog) {
+            if (object instanceof MySQLDatabase) {
                 ToolWizardDialog dialog = new ToolWizardDialog(
                     window,
-                    new MySQLScriptExecuteWizard((MySQLCatalog) object, false));
+                    new MySQLScriptExecuteWizard((MySQLDatabase) object, false));
                 dialog.open();
             }
         }

@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.struct.rdb;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 /**
- * Catalog is a simple entity container.
+ * Catalog is a simple schema container.
  * Do not provides any additional attributes but may be used in some JDBC specific issues
  * to determine difference in catalog/schema containment.
  */

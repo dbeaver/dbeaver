@@ -106,13 +106,13 @@ public class MySQLView extends MySQLTableBase
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
-    public MySQLView(MySQLCatalog catalog)
+    public MySQLView(MySQLDatabase catalog)
     {
         super(catalog);
     }
 
     public MySQLView(
-        MySQLCatalog catalog,
+        MySQLDatabase catalog,
         ResultSet dbResult)
     {
         super(catalog, dbResult);
