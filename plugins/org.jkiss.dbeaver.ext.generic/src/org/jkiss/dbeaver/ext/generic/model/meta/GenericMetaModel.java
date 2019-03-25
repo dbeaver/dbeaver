@@ -400,12 +400,23 @@ public class GenericMetaModel {
     public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable object, @Nullable String objectName)
         throws SQLException
     {
+        final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getObjectFilter(GenericTable.class, owner, false);
+
+        String tableNamePattern;
+        if (object == null && objectName == null) {
+            if (tableFilters != null && tableFilters.hasSingleMask()) {
+                tableNamePattern = tableFilters.getSingleMask();
+            } else {
+                tableNamePattern = owner.getDataSource().getAllObjectsPattern();
+            }
+        } else {
+            tableNamePattern = JDBCUtils.escapeWildCards(session, (object != null ? object.getName() : objectName));
+        }
+
         return session.getMetaData().getTables(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
-            object == null && objectName == null ?
-                owner.getDataSource().getAllObjectsPattern() :
-                JDBCUtils.escapeWildCards(session, (object != null ? object.getName() : objectName)),
+            tableNamePattern,
             null).getSourceStatement();
     }
 
