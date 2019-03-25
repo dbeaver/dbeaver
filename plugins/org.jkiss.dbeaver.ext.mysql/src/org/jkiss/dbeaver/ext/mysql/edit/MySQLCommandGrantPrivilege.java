@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -37,11 +37,11 @@ import java.util.Map;
 public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
 
     private boolean grant;
-    private MySQLDatabase schema;
+    private MySQLCatalog schema;
     private MySQLTableBase table;
     private MySQLPrivilege privilege;
 
-    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, MySQLDatabase schema, MySQLTableBase table, MySQLPrivilege privilege)
+    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, MySQLCatalog schema, MySQLTableBase table, MySQLPrivilege privilege)
     {
         super(user, grant ? MySQLMessages.edit_command_grant_privilege_action_grant_privilege : MySQLMessages.edit_command_grant_privilege_name_revoke_privilege);
         this.grant = grant;

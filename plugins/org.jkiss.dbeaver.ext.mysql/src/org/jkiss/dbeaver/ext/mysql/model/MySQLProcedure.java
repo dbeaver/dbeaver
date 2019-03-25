@@ -44,7 +44,7 @@ import java.util.Map;
 /**
  * MySQLProcedure
  */
-public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLDatabase> implements MySQLSourceObject, DBPRefreshableObject
+public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(MySQLProcedure.class);
 
@@ -55,7 +55,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLData
     private transient String clientBody;
     private String charset;
 
-    public MySQLProcedure(MySQLDatabase catalog)
+    public MySQLProcedure(MySQLCatalog catalog)
     {
         super(catalog, false);
         this.procedureType = DBSProcedureType.PROCEDURE;
@@ -65,7 +65,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLData
     }
 
     public MySQLProcedure(
-        MySQLDatabase catalog,
+        MySQLCatalog catalog,
         ResultSet dbResult)
     {
         super(catalog, true);

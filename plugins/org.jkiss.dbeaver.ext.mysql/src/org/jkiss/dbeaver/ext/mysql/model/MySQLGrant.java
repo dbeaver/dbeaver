@@ -60,7 +60,7 @@ public class MySQLGrant implements DBAPrivilegeGrant {
     public Object getObject(DBRProgressMonitor monitor) throws DBException {
         if (catalogName != null) {
             if (!isAllCatalogs()) {
-                MySQLDatabase catalog = user.getDataSource().getCatalog(catalogName);
+                MySQLCatalog catalog = user.getDataSource().getCatalog(catalogName);
                 if (catalog != null) {
                     if (!isAllTables()) {
                         MySQLTable table = catalog.getTable(monitor, tableName);
@@ -136,7 +136,7 @@ public class MySQLGrant implements DBAPrivilegeGrant {
         return privileges.isEmpty() && !isAllPrivileges() && !isGrantOption();
     }
 
-    public boolean matches(MySQLDatabase catalog)
+    public boolean matches(MySQLCatalog catalog)
     {
         return (catalog == null && isAllCatalogs()) || (catalog != null && catalog.getName().equalsIgnoreCase(catalogName));
     }

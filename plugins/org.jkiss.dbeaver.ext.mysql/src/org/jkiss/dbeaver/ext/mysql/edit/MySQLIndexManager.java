@@ -46,7 +46,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
 
     @Nullable
     @Override
-    public DBSObjectCache<MySQLDatabase, MySQLTableIndex> getObjectsCache(MySQLTableIndex object)
+    public DBSObjectCache<MySQLCatalog, MySQLTableIndex> getObjectsCache(MySQLTableIndex object)
     {
         return object.getTable().getContainer().getIndexCache();
     }

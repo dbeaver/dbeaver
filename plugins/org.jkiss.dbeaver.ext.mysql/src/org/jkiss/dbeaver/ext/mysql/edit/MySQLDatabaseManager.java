@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.views.MySQLCreateDatabaseDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -40,7 +40,7 @@ import java.util.Map;
 /**
  * MySQLDatabaseManager
  */
-public class MySQLDatabaseManager extends SQLObjectEditor<MySQLDatabase, MySQLDataSource> implements DBEObjectRenamer<MySQLDatabase> {
+public class MySQLDatabaseManager extends SQLObjectEditor<MySQLCatalog, MySQLDataSource> implements DBEObjectRenamer<MySQLCatalog> {
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource)
@@ -50,23 +50,23 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLDatabase, MySQLDa
 
     @Nullable
     @Override
-    public DBSObjectCache<MySQLDataSource, MySQLDatabase> getObjectsCache(MySQLDatabase object)
+    public DBSObjectCache<MySQLDataSource, MySQLCatalog> getObjectsCache(MySQLCatalog object)
     {
         return object.getDataSource().getCatalogCache();
     }
 
     @Override
-    protected MySQLDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLDataSource parent, Object copyFrom)
+    protected MySQLCatalog createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLDataSource parent, Object copyFrom)
     {
-        return new UITask<MySQLDatabase>() {
+        return new UITask<MySQLCatalog>() {
             @Override
-            protected MySQLDatabase runTask() {
+            protected MySQLCatalog runTask() {
                 MySQLCreateDatabaseDialog dialog = new MySQLCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), parent);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
                 String schemaName = dialog.getName();
-                MySQLDatabase newCatalog = new MySQLDatabase(parent, null);
+                MySQLCatalog newCatalog = new MySQLCatalog(parent, null);
                 newCatalog.setName(schemaName);
                 newCatalog.getAdditionalInfo().setDefaultCharset(dialog.getCharset());
                 newCatalog.getAdditionalInfo().setDefaultCollation(dialog.getCollation());
@@ -78,7 +78,7 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLDatabase, MySQLDa
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
-        final MySQLDatabase catalog = command.getObject();
+        final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
         appendDatabaseModifiers(catalog, script);
         actions.add(
@@ -87,7 +87,7 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLDatabase, MySQLDa
     }
 
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
-        final MySQLDatabase catalog = command.getObject();
+        final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("ALTER DATABASE `" + catalog.getName() + "`");
         appendDatabaseModifiers(catalog, script);
         actionList.add(
@@ -95,7 +95,7 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLDatabase, MySQLDa
         );
     }
 
-    private void appendDatabaseModifiers(MySQLDatabase catalog, StringBuilder script) {
+    private void appendDatabaseModifiers(MySQLCatalog catalog, StringBuilder script) {
         if (catalog.getAdditionalInfo().getDefaultCharset() != null) {
             script.append("\nDEFAULT CHARACTER SET ").append(catalog.getAdditionalInfo().getDefaultCharset().getName());
         }
@@ -111,7 +111,7 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLDatabase, MySQLDa
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, MySQLDatabase catalog, String newName) throws DBException
+    public void renameObject(DBECommandContext commandContext, MySQLCatalog catalog, String newName) throws DBException
     {
         throw new DBException("Direct database rename is not yet implemented in MySQL. You should use export/import functions for that.");
     }

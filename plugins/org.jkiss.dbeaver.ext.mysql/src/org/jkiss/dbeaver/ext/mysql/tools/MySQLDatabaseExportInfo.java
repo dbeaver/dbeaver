@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDatabase;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 
 import java.util.Collection;
@@ -29,17 +29,17 @@ import java.util.Collection;
 */
 public class MySQLDatabaseExportInfo {
     @NotNull
-    private MySQLDatabase database;
+    private MySQLCatalog database;
     @Nullable
     private Collection<MySQLTableBase> tables;
 
-    public MySQLDatabaseExportInfo(@NotNull MySQLDatabase database, @Nullable Collection<MySQLTableBase> tables) {
+    public MySQLDatabaseExportInfo(@NotNull MySQLCatalog database, @Nullable Collection<MySQLTableBase> tables) {
         this.database = database;
         this.tables = tables;
     }
 
     @NotNull
-    public MySQLDatabase getDatabase() {
+    public MySQLCatalog getDatabase() {
         return database;
     }
 

@@ -42,14 +42,14 @@ import java.util.Map;
  */
 public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, DBPRefreshableObject
 {
-    private MySQLDatabase catalog;
+    private MySQLCatalog catalog;
     private MySQLTable table;
     private String body;
     private String charsetClient;
     private String sqlMode;
 
     public MySQLTrigger(
-        MySQLDatabase catalog,
+        MySQLCatalog catalog,
         MySQLTable table,
         ResultSet dbResult)
     {
@@ -64,7 +64,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, 
     }
 
     public MySQLTrigger(
-        MySQLDatabase catalog,
+        MySQLCatalog catalog,
         MySQLTable table,
         String name)
     {
@@ -77,7 +77,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, 
         this.body = "";
     }
 
-    public MySQLTrigger(MySQLDatabase catalog, MySQLTable table, MySQLTrigger source) {
+    public MySQLTrigger(MySQLCatalog catalog, MySQLTable table, MySQLTrigger source) {
         super(source.name, source.getDescription(), false);
         this.catalog = catalog;
         this.table = table;
@@ -91,7 +91,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, 
         return body;
     }
 
-    public MySQLDatabase getCatalog() {
+    public MySQLCatalog getCatalog() {
         return catalog;
     }
 

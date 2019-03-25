@@ -46,7 +46,7 @@ import java.util.Map;
 /**
  * MySQL table manager
  */
-public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLDatabase> implements DBEObjectRenamer<MySQLTableBase> {
+public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCatalog> implements DBEObjectRenamer<MySQLTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
         MySQLTableColumn.class,
@@ -57,13 +57,13 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLData
 
     @Nullable
     @Override
-    public DBSObjectCache<MySQLDatabase, MySQLTableBase> getObjectsCache(MySQLTableBase object)
+    public DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
     {
         return object.getContainer().getTableCache();
     }
 
     @Override
-    protected MySQLTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLDatabase parent, Object copyFrom) throws DBException
+    protected MySQLTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom) throws DBException
     {
         final MySQLTable table;
         if (copyFrom instanceof DBSEntity) {
