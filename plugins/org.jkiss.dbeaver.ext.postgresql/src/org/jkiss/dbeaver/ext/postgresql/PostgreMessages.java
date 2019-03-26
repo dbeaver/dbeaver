@@ -159,7 +159,13 @@ public class PostgreMessages extends NLS {
 	public static String edit_command_grant_privilege_action_revoke_privilege;
     public static String edit_constraint_page_add_constraint;
 
-	public static String postgre_foreign_key_manager_checkbox_deferrable;
+	public static String dialog_create_push_button_grant_all;
+    public static String dialog_create_push_button_revoke_all;
+    public static String dialog_object_description_text_no_objects;
+    public static String dialog_create_table_column_name_permission;
+    public static String dialog_create_table_column_name_with_garant;
+    public static String dialog_create_table_column_name_with_hierarchy;
+    public static String postgre_foreign_key_manager_checkbox_deferrable;
 	public static String postgre_foreign_key_manager_checkbox_deferred;
 	public static String postgre_foreign_key_manager_header_edit_foreign_key;
 
