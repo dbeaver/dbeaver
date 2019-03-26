@@ -24,7 +24,7 @@
 	<build>
 		<plugins>
 
-			<!-- Maven -> OSGI repository -->
+			<!-- Maven -> P2 repository -->
 			<plugin>
 				<groupId>org.reficio</groupId>
 				<artifactId>p2-maven-plugin</artifactId>
