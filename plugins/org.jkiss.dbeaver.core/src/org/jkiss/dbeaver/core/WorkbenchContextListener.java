@@ -121,7 +121,10 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
             }
         };
         window.addPerspectiveListener(perspectiveListener);
-        perspectiveListener.perspectiveActivated(window.getActivePage(), window.getActivePage().getPerspective());
+        IWorkbenchPage activePage = window.getActivePage();
+        if (activePage != null) {
+            perspectiveListener.perspectiveActivated(activePage, activePage.getPerspective());
+        }
 
         window.addPageListener(this);
         for (IWorkbenchPage page : window.getPages()) {
