@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.gis.IGeometryViewer;
+import org.jkiss.utils.CommonUtils;
 
 public class GeometryViewerDescriptor extends AbstractDescriptor {
 
@@ -34,13 +35,15 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
     private final String id;
     private final String label;
     private final DBPImage icon;
+    private boolean supportsInline;
 
     GeometryViewerDescriptor(IConfigurationElement config) {
         super(config);
-        type = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        id = config.getAttribute(RegistryConstants.ATTR_ID);
-        label = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.type = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.supportsInline = CommonUtils.getBoolean(config.getAttribute("supportsInline"), false);
     }
 
     public String getId() {
@@ -63,4 +66,7 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
         }
     }
 
+    public boolean supportsInlineView() {
+        return supportsInline;
+    }
 }

@@ -186,6 +186,10 @@ public class GeometryPanelEditor extends BaseValueEditor<Control> {
             viewerId = DEFAULT_VIEWER_ID;
         }
         GeometryViewerDescriptor viewerDescriptor = GeometryViewerRegistry.getInstance().getViewer(viewerId);
+        if (valueController.getEditType() == IValueController.EditType.INLINE && !viewerDescriptor.supportsInlineView()) {
+            viewerId = DEFAULT_VIEWER_ID;
+            viewerDescriptor = GeometryViewerRegistry.getInstance().getViewer(viewerId);
+        }
         if (viewerDescriptor != null) {
             setViewer(viewerDescriptor);
         }

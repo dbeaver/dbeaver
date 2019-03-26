@@ -11,7 +11,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.data.gis.geometryViewer">
-        <geometryViewer label="Text" id="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer"/>
+        <geometryViewer label="Text" id="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer" supportsInline="true"/>
         <!--<geometryViewer label="Text2" id="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer2" class="org.jkiss.dbeaver.ui.data.managers.gis.GeometryTextViewer"/>-->
     </extension>
 
