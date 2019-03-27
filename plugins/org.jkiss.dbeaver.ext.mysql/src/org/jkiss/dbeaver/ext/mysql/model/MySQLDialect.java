@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
@@ -87,6 +88,11 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @Override
+    public int getSchemaUsage() {
+        return SQLDialect.USAGE_ALL;
     }
 
     @Override
