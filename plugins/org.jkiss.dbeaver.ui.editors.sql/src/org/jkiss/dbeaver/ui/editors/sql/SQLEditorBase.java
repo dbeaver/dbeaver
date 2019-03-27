@@ -576,14 +576,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         syntaxManager.init(dialect, getActivePreferenceStore());
         ruleManager.refreshRules(getDataSource(), getEditorInput());
 
-        Document document = getDocument();
-        if (document != null) {
+        IDocument document = getDocument();
+        if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
                 new SQLPartitionScanner(dialect),
                 SQLPartitionScanner.SQL_CONTENT_TYPES);
             partitioner.connect(document);
             try {
-                document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+                ((IDocumentExtension3)document).setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
             } catch (Throwable e) {
                 log.warn("Error setting SQL partitioner", e); //$NON-NLS-1$
             }
@@ -624,7 +624,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public boolean hasActiveQuery() {
-        Document document = getDocument();
+        IDocument document = getDocument();
         if (document == null) {
             return false;
         }
@@ -683,12 +683,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     public SQLScriptElement extractQueryAtPos(int currentPos) {
-        Document document = getDocument();
+        IDocument document = getDocument();
         if (document == null || document.getLength() == 0) {
             return null;
         }
         final int docLength = document.getLength();
-        IDocumentPartitioner partitioner = document.getDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING);
+        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING) : null;
         if (partitioner != null) {
             // Move to default partition. We don't want to be in the middle of multi-line comment or string
             while (currentPos < docLength && isMultiCommentPartition(partitioner, currentPos)) {
@@ -772,7 +772,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             return null;
         }
 
-        Document document = getDocument();
+        IDocument document = getDocument();
         if (document == null) {
             return null;
         }
@@ -1289,7 +1289,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
 
     @Override
     public boolean visualizeError(@NotNull DBRProgressMonitor monitor, @NotNull Throwable error) {
-        Document document = getDocument();
+        IDocument document = getDocument();
         SQLQuery query = new SQLQuery(getDataSource(), document.get(), 0, document.getLength());
         return scrollCursorToError(monitor, query, error);
     }
@@ -1318,7 +1318,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         }
                     } else {
                         // Line + position
-                        Document document = getDocument();
+                        IDocument document = getDocument();
                         if (document != null) {
                             int startLine = document.getLineOfOffset(queryStartOffset);
                             int errorOffset = document.getLineOffset(startLine + pos.line);

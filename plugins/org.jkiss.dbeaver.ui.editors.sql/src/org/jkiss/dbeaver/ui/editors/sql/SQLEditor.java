@@ -255,7 +255,7 @@ public class SQLEditor extends SQLEditorBase implements
     public int[] getCurrentLines()
     {
         synchronized (runningQueries) {
-            Document document = getDocument();
+            IDocument document = getDocument();
             if (document == null || runningQueries.isEmpty()) {
                 return null;
             }
@@ -420,7 +420,7 @@ public class SQLEditor extends SQLEditorBase implements
     private DBPDataSourceContainer getDataSourceFromContent() {
 
         IProject project = getProject();
-        Document document = getDocument();
+        IDocument document = getDocument();
 
         int totalLines = document.getNumberOfLines();
         if (totalLines == 0) {
@@ -451,7 +451,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (getDataSourceFromContent() == dataSourceContainer) {
             return;
         }
-        Document document = getDocument();
+        IDocument document = getDocument();
 
         try {
 
