@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Quick Start - Leaflet</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="inc/leaflet.css"/>
+    <script src="inc/leaflet.js"></script>
+    <script src="inc/wkx.min.js"></script>
+</head>
+<body>
+
+<div id="mapid" style="width: 100%; height: 400px;"></div>
+<script>
+	var wkx = require('wkx');
+
+	var mymap = L.map('mapid');//.setView([51.505, -0.09], 13);
+
+	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+		maxZoom: 18,
+		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors ' +
+			'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery <a href="https://www.mapbox.com/">Mapbox</a>',
+		id: 'mapbox.streets'
+	}).addTo(mymap);
+
+  const geojsonMarkerOptions = {
+    radius: 4,
+    weight: 3,
+  };
+  const geojsonStyle = {
+    weight: 2,
+  };
+  const popupOption = {
+    closeButton: false,
+    minWidth: 260,
+    maxWidth: 300,
+    maxHeight: 300,
+  };
+
+  var vectorLayer = L.geoJSON([], {
+    style: geojsonStyle,
+    pointToLayer: function (feature, latlng) {
+      return L.circleMarker(latlng, geojsonMarkerOptions);
+    },
+  });
+  vectorLayer.addTo(mymap);
+
+	var polyTest = wkx.Geometry.parse('${geomValue}');
+	var geoJSON = polyTest.toGeoJSON();
+	var SRID = geoJSON.selectedSRID;
+	vectorLayer.addData(geoJSON);
+
+	var bounds = vectorLayer.getBounds();
+	/*
+	bounds = bounds.pad(0.1);
+	let maxLength = Math.max(bounds.getNorth() - bounds.getSouth(),
+	bounds.getEast() - bounds.getWest());
+	if (SRID === 4326) {
+		alert("setEPSG3857");
+		setEPSG3857();
+	} else {
+		//setSimpleCRS();
+		if (maxLength >= 180) {
+			// calculate the min zoom level to enable the map to fit the whole geometry.
+			let minZoom = Math.floor(Math.log2(360 / maxLength)) - 2;
+			mymap.setMinZoom(minZoom);
+		} else {
+			mymap.setMinZoom(0);
+		}
+	}
+	*/
+
+	mymap.setView(bounds.getCenter(), 13);//mymap.getZoom());
+
+	var popup = L.popup();
+
+	function onMapClick(e) {
+		popup
+			.setLatLng(e.latlng)
+			.setContent("You clicked the map at " + e.latlng.toString())
+			.openOn(mymap);
+	}
+
+	mymap.on('click', onMapClick);
+
+</script>
+
+
+
+</body>
+</html>
