@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -253,7 +254,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         public void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             {
-                contributionManager.add(new Action(isAttached() ? "Detach properties to top panel" : "Move properties to tab", DBeaverIcons.getImageDescriptor(UIIcon.ASTERISK)) {
+                contributionManager.add(new Action(isAttached() ? UINavigatorMessages.editors_entity_properties_custom_actions_detach : UINavigatorMessages.editors_entity_properties_custom_actions_move, DBeaverIcons.getImageDescriptor(UIIcon.ASTERISK)) {
                     @Override
                     public void run() {
                         detachPropertiesPanel();
