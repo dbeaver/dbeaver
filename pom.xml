@@ -16,8 +16,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 
-        <!-- SimRel 2018-12 -->
-        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2018-12/</eclipse-p2-repo.url>
+        <!-- SimRel 2019-03 -->
+        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2019-03/</eclipse-p2-repo.url>
         <!-- Orbit. From Photon because we need com.ibm.icu.base -->
         <orbit-p2-repo.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180330011457/repository</orbit-p2-repo.url>
         <!-- DBeaver Maven dependencies (see product/localRepository for details) -->
