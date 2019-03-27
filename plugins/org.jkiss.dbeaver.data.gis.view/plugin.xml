@@ -3,6 +3,6 @@
 
 <plugin>
     <extension point="org.jkiss.dbeaver.data.gis.geometryViewer">
-        <geometryViewer label="Graphic" id="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryGraphicViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryGraphicViewer"/>
+        <geometryViewer label="Graphic" id="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer"/>
     </extension>
 </plugin>

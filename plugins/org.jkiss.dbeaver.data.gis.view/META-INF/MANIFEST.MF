@@ -7,6 +7,7 @@ Bundle-Version: 1.0.1.qualifier
 Bundle-Release-Date: 20190325
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.ui.data.managers.gis.internal.GISViewerActivator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,
