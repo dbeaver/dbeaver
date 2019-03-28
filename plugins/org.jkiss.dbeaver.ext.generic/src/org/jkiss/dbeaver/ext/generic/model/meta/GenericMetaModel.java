@@ -400,10 +400,10 @@ public class GenericMetaModel {
     public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable object, @Nullable String objectName)
         throws SQLException
     {
-        final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getObjectFilter(GenericTable.class, owner, false);
-
         String tableNamePattern;
         if (object == null && objectName == null) {
+            final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getObjectFilter(GenericTable.class, owner, false);
+
             if (tableFilters != null && tableFilters.hasSingleMask()) {
                 tableNamePattern = tableFilters.getSingleMask();
             } else {
