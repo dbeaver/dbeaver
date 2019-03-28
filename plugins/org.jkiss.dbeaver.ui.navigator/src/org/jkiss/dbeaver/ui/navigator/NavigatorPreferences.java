@@ -47,4 +47,6 @@ public class NavigatorPreferences {
     public static final String CONFIRM_EDITOR_CLOSE = "close_editor_edit"; //$NON-NLS-1$
     public static final String CONFIRM_ENTITY_EDIT_CLOSE = "close_entity_edit"; //$NON-NLS-1$
 
+    public static final int MIN_LONG_LIST_FETCH_SIZE = 100;
+
 }
