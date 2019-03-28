@@ -169,7 +169,11 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 if (element instanceof DBNResource) {
                     IResource resource = ((DBNResource) element).getResource();
                     if (resource instanceof IFile || resource instanceof IFolder) {
-                        return sdf.format(new Date(resource.getLocation().toFile().lastModified()));
+                        long lastModified = resource.getLocation().toFile().lastModified();
+                        if (lastModified <= 0) {
+                            return "";
+                        }
+                        return sdf.format(new Date(lastModified));
                     }
                 }
                 return "";
