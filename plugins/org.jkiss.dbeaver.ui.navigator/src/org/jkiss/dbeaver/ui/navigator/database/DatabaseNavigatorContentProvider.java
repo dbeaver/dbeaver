@@ -120,7 +120,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 if (ArrayUtils.isEmpty(children)) {
                     return EMPTY_CHILDREN;
                 } else {
-                    int longListFetchSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
+                    int longListFetchSize = Math.max(NavigatorPreferences.MIN_LONG_LIST_FETCH_SIZE, DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
                     if (children.length > longListFetchSize) {
                         Object[] curChildren = new Object[longListFetchSize + 1];
                         System.arraycopy(children, 0, curChildren, 0, longListFetchSize);

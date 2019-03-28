@@ -55,7 +55,7 @@ public class TreeNodeLazyExpander extends TreeNodeSpecial {
 
     @Override
     public boolean handleDefaultAction(DatabaseNavigatorTree tree) {
-        int longListFetchSize = DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE);
+        int longListFetchSize = Math.max(NavigatorPreferences.MIN_LONG_LIST_FETCH_SIZE, DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
         boolean lastSegment = visibleChildren + longListFetchSize > allChildren.length;
         int nextSegmentSize = lastSegment ? allChildren.length - visibleChildren : longListFetchSize;
         Object[] nodes = new Object[lastSegment ? nextSegmentSize : nextSegmentSize + 1];
