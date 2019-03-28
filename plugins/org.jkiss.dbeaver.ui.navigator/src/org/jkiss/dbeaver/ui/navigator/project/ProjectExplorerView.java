@@ -152,9 +152,8 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         columnController.addColumn("Size", "File size", SWT.LEFT, false, false, true, null, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
-                DBNNode node = (DBNNode) element;
-                if (node instanceof DBNResource) {
-                    IResource resource = ((DBNResource) node).getResource();
+                if (element instanceof DBNResource) {
+                    IResource resource = ((DBNResource) element).getResource();
                     if (resource instanceof IFile) {
                         return String.valueOf(resource.getLocation().toFile().length());
                     }
@@ -167,9 +166,8 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
 
             @Override
             public String getText(Object element) {
-                DBNNode node = (DBNNode) element;
-                if (node instanceof DBNResource) {
-                    IResource resource = ((DBNResource) node).getResource();
+                if (element instanceof DBNResource) {
+                    IResource resource = ((DBNResource) element).getResource();
                     if (resource instanceof IFile || resource instanceof IFolder) {
                         return sdf.format(new Date(resource.getLocation().toFile().lastModified()));
                     }
@@ -180,9 +178,8 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         columnController.addColumn("Type", "Resource type", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
-                DBNNode node = (DBNNode) element;
-                if (node instanceof DBNResource) {
-                    IResource resource = ((DBNResource) node).getResource();
+                if (element instanceof DBNResource) {
+                    IResource resource = ((DBNResource) element).getResource();
                     ProgramInfo program = ProgramInfo.getProgram(resource);
                     if (program != null) {
                         return program.getProgram().getName();
