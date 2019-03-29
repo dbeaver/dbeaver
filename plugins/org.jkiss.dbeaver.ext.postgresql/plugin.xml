@@ -176,7 +176,7 @@
 
                     <folder label="%tree.administer.node.name" icon="#folder_admin" description="%tree.administer.node.tip">
                         <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" visibleIf="object.dataSource.serverType.supportsSessionActivity()"/>
-                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" visibleIf="object.dataSource.serverType.supportsLocks()"/>
+                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" label="%tree.locks.node.name" icon="#locks" description="%tree.locks.node.tip" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" visibleIf="object.dataSource.serverType.supportsLocks()"/>
                     </folder>
 
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="%tree.information.node.tip">
