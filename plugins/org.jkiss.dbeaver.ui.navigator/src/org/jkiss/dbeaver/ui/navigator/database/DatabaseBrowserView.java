@@ -104,7 +104,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
             }
         }
         if (project == null) {
-            throw new IllegalStateException("Bad navigator node: " + node.getNodeItemPath());
+            throw new IllegalStateException("Navigator node " + node.getNodeItemPath() + " doesn't belong to a project");
         }
         // We can't use colon in secondary ID
         return project.getName() + "|" + node.getNodeItemPath().replace(":", "~");
