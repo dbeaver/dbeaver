@@ -4,6 +4,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 
@@ -19,8 +20,8 @@ public class ChangeZOrderAction extends SelectionAction {
         this.selection = selection;
         this.front = front;
 
-        this.setText(front ? "Bring to front" : "Send to back");
-        this.setToolTipText(front ? "Bring to front" : "Send to back");
+        this.setText(front ? ERDMessages.erd_tool_set_text_text_bring_to_front : ERDMessages.erd_tool_set_text_text_send_to_back);
+        this.setToolTipText(front ? ERDMessages.erd_tool_set_text_tip_text_bring_to_front : ERDMessages.erd_tool_set_text_tip_text_send_to_back);
         this.setId(front ? "bringToFront" : "sendToBack");
     }
 

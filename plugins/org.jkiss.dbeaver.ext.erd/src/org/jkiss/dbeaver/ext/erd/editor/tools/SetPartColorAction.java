@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.part.IColorizedPart;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -23,9 +24,9 @@ public class SetPartColorAction extends SelectionAction {
         super(part);
         this.selection = selection;
 
-        this.setText("Set color");
-        this.setToolTipText("Set figure color");
-        this.setId("setFigureColor");
+        this.setText(ERDMessages.erd_tool_color_action_text_set_color);
+        this.setToolTipText(ERDMessages.erd_tool_color_action_tip_text_set_figure_color);
+        this.setId("setFigureColor"); //$NON-NLS-1$
     }
 
     protected boolean calculateEnabled() {
