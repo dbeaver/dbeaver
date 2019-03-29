@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -34,27 +33,25 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
-import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.IProgressControlProvider;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.ISearchExecutor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -252,14 +249,6 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         @Override
         public void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
-            {
-                contributionManager.add(new Action(isAttached() ? "Detach properties to top panel" : "Move properties to tab", DBeaverIcons.getImageDescriptor(UIIcon.ASTERISK)) {
-                    @Override
-                    public void run() {
-                        detachPropertiesPanel();
-                    }
-                });
-            }
             if (part != null) {
                 DatabaseEditorUtils.contributeStandardEditorActions(part.getSite(), contributionManager);
             }
@@ -288,34 +277,6 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
 
     private boolean isAttached() {
         return attached;
-    }
-
-    private void detachPropertiesPanel() {
-        boolean attached = isAttached();
-        String title = attached ? "Detach properties to top panel" : "Move properties to tab";
-        if (UIUtils.confirmAction(part.getSite().getShell(),
-            title,
-            title + " will require to reopen editor.\nAre you sure?")) {
-            DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
-            prefs.setValue(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO, attached);
-            IEditorPart editor;
-            if (part.getSite() instanceof MultiPageEditorSite) {
-                editor = ((MultiPageEditorSite) part.getSite()).getMultiPageEditor();
-            } else {
-                editor = (IEditorPart) part;
-            }
-            if (editor != null) {
-                DBNDatabaseNode node = null;
-                if (editor.getEditorInput() instanceof DatabaseEditorInput) {
-                    node = ((DatabaseEditorInput) editor.getEditorInput()).getNavigatorNode();
-                }
-                UIUtils.getActiveWorkbenchWindow().getActivePage().closeEditor(editor, false);
-
-                if (node != null) {
-                    NavigatorHandlerObjectOpen.openEntityEditor(node, null, UIUtils.getActiveWorkbenchWindow());
-                }
-            }
-        }
     }
 
     private class PropertyLabelProvider extends ColumnLabelProvider implements IFontProvider {
