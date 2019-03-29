@@ -72,11 +72,17 @@ public class ERDMessages extends NLS {
 	public static String erd_preference_page_title_attributes_visibility;
 	public static String erd_preference_page_title_diagram_contents;
 	public static String erd_preference_page_title_shows_views;
-	public static String erd_tool_create_connection;
+	public static String erd_tool_color_action_text_set_color;
+    public static String erd_tool_color_action_tip_text_set_figure_color;
+    public static String erd_tool_create_connection;
 	public static String erd_tool_create_connection_tip;
 	public static String erd_tool_create_note;
 	public static String erd_tool_create_note_tip;
 	public static String erd_tool_create_default;
+    public static String erd_tool_set_text_text_bring_to_front;
+    public static String erd_tool_set_text_text_send_to_back;
+    public static String erd_tool_set_text_tip_text_bring_to_front;
+    public static String erd_tool_set_text_tip_text_send_to_back;
 
 	public static String erd_view_style_selection_item_comments;
 	public static String erd_view_style_selection_item_data_types;
