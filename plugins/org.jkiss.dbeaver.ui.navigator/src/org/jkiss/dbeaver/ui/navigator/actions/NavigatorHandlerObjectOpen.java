@@ -234,6 +234,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     }
 
     public static IEditorPart findEntityEditor(IWorkbenchWindow workbenchWindow, DBNNode node) {
+        if (node == null) {
+            return null;
+        }
         DatabaseEditorInputFactory.setLookupEditor(true);
         try {
             for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {

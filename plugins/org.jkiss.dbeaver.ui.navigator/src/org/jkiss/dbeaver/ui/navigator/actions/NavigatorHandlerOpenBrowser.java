@@ -42,10 +42,10 @@ public class NavigatorHandlerOpenBrowser extends NavigatorHandlerObjectBase {
             }
             DBNNode node = (DBNNode)element;
             IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-            String nodeId = DatabaseBrowserView.getSecondaryIdFromNode(node);
             try {
+                String nodeId = DatabaseBrowserView.getSecondaryIdFromNode(node);
                 workbenchWindow.getActivePage().showView(DatabaseBrowserView.VIEW_ID, nodeId, IWorkbenchPage.VIEW_ACTIVATE);
-            } catch (PartInitException e) {
+            } catch (Throwable e) {
                 DBWorkbench.getPlatformUI().showError("Database browser", "Error opening database browser", e);
             }
         }
