@@ -1020,6 +1020,19 @@
                 </driver>
                 -->
 
+                <!-- CreateDB -->
+
+                <driver
+                    id="pervasice_jdbc"
+                    label="Pervasive"
+                    class="com.pervasive.jdbc.v2.Driver"
+                    sampleURL="jdbc:pervasive://{host}:{port}/{database}"
+                    defaultPort="1583"
+                    description="Pervasive JDBC driver"
+                    webURL="https://docs.actian.com/psql/PSQLv11/jdbc/wwhelp/wwhimpl/common/html/wwhelp.htm#href=jdbc_gd.1.3.html&amp;single=true"
+                    categories="sql">
+                </driver>
+
                 <!-- Legacy deprecated drivers -->
 
                 <driver
