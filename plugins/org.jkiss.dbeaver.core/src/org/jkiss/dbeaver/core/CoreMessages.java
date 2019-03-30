@@ -604,6 +604,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_connection_types_label_auto_commit_by_default;
 	public static String pref_page_connection_types_label_confirm_sql_execution;
 
+	public static String pref_page_connection_label_general;
+
+	public static String pref_page_connection_label_use_environment;
     public static String pref_page_connections_application_name_text;
 
 	public static String transaction_info_dialog_checkbox_show_all_queries;
