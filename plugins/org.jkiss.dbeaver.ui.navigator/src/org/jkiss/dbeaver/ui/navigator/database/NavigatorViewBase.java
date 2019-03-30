@@ -105,6 +105,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
         getViewSite().setSelectionProvider(tree.getViewer());
         EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
     }
 
     private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
