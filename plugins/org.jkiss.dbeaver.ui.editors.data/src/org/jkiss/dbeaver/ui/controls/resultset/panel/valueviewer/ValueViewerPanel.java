@@ -25,13 +25,13 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -224,13 +224,19 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
                 } catch (Exception e) {
                     log.error(e);
                 }
+                boolean singleLineEditor = false;
                 Control control = valueEditor.getControl();
                 if (control != null) {
+                    singleLineEditor =
+                        control instanceof Combo ||
+                        control instanceof CCombo ||
+                        control instanceof Button ||
+                        (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
                     UIUtils.addFocusTracker(presentation.getController().getSite(), VALUE_VIEW_CONTROL_ID, control);
                     presentation.getController().lockActionsByFocus(control);
                 }
 
-                if (referenceValue) {
+                if (referenceValue || singleLineEditor) {
                     GridLayout gl = new GridLayout(1, false);
                     viewPlaceholder.setLayout(gl);
                     valueEditor.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
