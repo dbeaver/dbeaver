@@ -37,6 +37,11 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
     }
 
     @Override
+    public void displayDynamicHelp() {
+        displayHelp();
+    }
+
+    @Override
     public void displayContext(IContext context, int x, int y)
     {
         try {
