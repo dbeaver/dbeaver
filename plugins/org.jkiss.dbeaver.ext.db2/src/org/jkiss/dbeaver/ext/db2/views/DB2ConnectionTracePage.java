@@ -155,7 +155,9 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
             CommonUtils.getBoolean(
                 providerProperties.get(DB2Constants.PROP_TRACE_ENABLED), false));
         if (!enableTraceCheck.getSelection()) {
-            traceEnableState = ControlEnableState.disable(traceGroup);
+            if (traceEnableState == null) {
+                traceEnableState = ControlEnableState.disable(traceGroup);
+            }
         }
         if (providerProperties.containsKey(DB2Constants.PROP_TRACE_FOLDER)) {
             folderText.setText(
