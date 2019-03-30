@@ -24,6 +24,8 @@ public class UIMessages extends NLS {
 
     public static String output_label_directory;
 
+    public static String pref_page_connections_tool_tip_text_allowed_variables;
+
     public static String properties_name;
     public static String properties_value;
 
