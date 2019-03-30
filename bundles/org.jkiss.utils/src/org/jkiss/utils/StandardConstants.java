@@ -56,4 +56,7 @@ public abstract class StandardConstants {
     public static final String ENV_JAVA_VENDOR = "java.vendor";
     public static final String ENV_JAVA_ARCH = "sun.arch.data.model";
     public static final String ENV_JAVA_CLASSPATH = "java.class.path";
+
+    public static final int MIN_PORT_VALUE = 0;
+    public static final int MAX_PORT_VALUE = 65535;
 }
