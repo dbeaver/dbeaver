@@ -37,4 +37,8 @@ public class HSQLDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new HSQLDialect());
     }
 
+    @Override
+    protected boolean isPopulateClientAppName() {
+        return false;
+    }
 }
