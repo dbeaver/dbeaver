@@ -122,4 +122,18 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
     protected int getDoubleClickTimeout() {
         return 0;
     }
+
+    @Override
+    protected void focusLost() {
+        Control newFocus = getControl().getDisplay().getFocusControl();
+        if (newFocus == null) {
+            return;
+        }
+        if (newFocus.getShell() != getControl().getShell()) {
+            // It is probably content assist popup - do no close editor
+            return;
+        }
+        super.focusLost();
+    }
+
 }
