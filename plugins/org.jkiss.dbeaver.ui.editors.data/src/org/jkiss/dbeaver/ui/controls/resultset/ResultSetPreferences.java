@@ -57,9 +57,13 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_AUTO_SWITCH_MODE = "resultset.behavior.autoSwitchMode"; //$NON-NLS-1$
     public static final String RESULT_SET_DOUBLE_CLICK = "resultset.behavior.doubleClick"; //$NON-NLS-1$
     public static final String RESULT_SET_ROW_BATCH_SIZE = "resultset.show.row.batch.size"; //$NON-NLS-1$
+
     public static final String RESULT_SET_PRESENTATION = "resultset.presentation.active"; //$NON-NLS-1$
     public static final String RESULT_SET_STRING_USE_CONTENT_EDITOR = "resultset.string.use.content.editor"; //$NON-NLS-1$
     public static final String RESULT_SET_USE_NAVIGATOR_FILTERS = "resultset.filter.use.navigator"; //$NON-NLS-1$
+
+    public static final String RESULT_SET_SHOW_ERRORS_IN_DIALOG = "resultset.show.errorDialog"; //$NON-NLS-1$
+
     public static final String RESULT_TEXT_TAB_SIZE = "resultset.text.tab.size"; //$NON-NLS-1$
     public static final String RESULT_TEXT_MAX_COLUMN_SIZE = "resultset.text.max.column.size"; //$NON-NLS-1$
     public static final String RESULT_TEXT_VALUE_FORMAT = "resultset.text.value.format"; //$NON-NLS-1$

@@ -30,7 +30,10 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -68,6 +71,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
+import org.jkiss.dbeaver.model.sql.DBSQLException;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
@@ -86,6 +91,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.view.ErrorPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
@@ -297,7 +303,7 @@ public class ResultSetViewer extends Viewer
                 this.panelFolder.addDisposeListener(e -> panelsMenuManager.dispose());
             }
 
-            setEmptyPresentation();
+            showEmptyPresentation();
 
             if (supportsStatusBar()) {
                 createStatusBar();
@@ -480,9 +486,19 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void setEmptyPresentation() {
-        setActivePresentation(new EmptyPresentation());
+    public void showEmptyPresentation() {
         activePresentationDescriptor = null;
+        setActivePresentation(new EmptyPresentation());
+        updatePresentationInToolbar();
+    }
+
+    void showErrorPresentation(String sqlText, String message, Throwable error) {
+        activePresentationDescriptor = null;
+        setActivePresentation(
+            new ErrorPresentation(
+                sqlText,
+                GeneralUtils.makeErrorStatus(message, error)));
+        updatePresentationInToolbar();
     }
 
     void updatePresentation(final DBCResultSet resultSet, boolean metadataChanged) {
@@ -642,7 +658,7 @@ public class ResultSetViewer extends Viewer
         if (activePresentationDescriptor != null) {
             availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(
                     getDataSource(), activePresentationDescriptor.getId(), activePresentationDescriptor.getPresentationType()));
-        } else {
+        } else if (activePresentation instanceof StatisticsPresentation) {
             // Stats presentation
             availablePanels.addAll(ResultSetPresentationRegistry.getInstance().getSupportedPanels(
                     getDataSource(), null, IResultSetPresentation.PresentationType.COLUMNS));
@@ -2964,11 +2980,24 @@ public class ResultSetViewer extends Viewer
                         model.setUpdateInProgress(false);
                         final boolean metadataChanged = model.isMetadataChanged();
                         if (error != null) {
-                            setStatus(error.getMessage(), DBPMessageType.ERROR);
-                            DBWorkbench.getPlatformUI().showError(
-                                    "Error executing query",
-                                "Query execution failed",
-                                error);
+                            String errorMessage = error.getMessage();
+                            setStatus(errorMessage, DBPMessageType.ERROR);
+
+                            String sqlText;
+                            if (error instanceof DBSQLException) {
+                                sqlText = ((DBSQLException) error).getSqlQuery();
+                            } else if (dataContainer instanceof SQLQueryContainer) {
+                                sqlText = ((SQLQueryContainer) dataContainer).getQuery().getText();
+                            } else {
+                                sqlText = filtersPanel.getActiveQueryText();
+                            }
+
+                            if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {
+                                DBWorkbench.getPlatformUI().showError("Error executing query", "Query execution failed", error);
+                            } else {
+                                showErrorPresentation(sqlText, CommonUtils.isEmpty(errorMessage) ? "Error executing query" : errorMessage, error);
+                                log.error("Error executing query", error);
+                            }
                         } else {
                             if (!metadataChanged && focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                                 // Seems to be refresh

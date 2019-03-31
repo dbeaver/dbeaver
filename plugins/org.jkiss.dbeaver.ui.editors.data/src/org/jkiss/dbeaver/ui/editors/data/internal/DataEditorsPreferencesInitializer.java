@@ -75,6 +75,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE, 1);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, true);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, false);
 
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_TEXT_TAB_SIZE, 4);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, 255);
