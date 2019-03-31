@@ -118,6 +118,7 @@ public class UIIcon {
     public static final DBIcon COMPILE_LOG = new DBIcon("compile_log", "misc/compile_log.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SAVE = new DBIcon("save", "file/save.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SAVE_AS = new DBIcon("save_as", "file/save_as.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SAVE_ALL = new DBIcon("saveall", "file/saveall.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LOAD = new DBIcon("load", "file/load.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RESET = new DBIcon("reset", "file/reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon COMPARE = new DBIcon("compare", "file/compare.png"); //$NON-NLS-1$ //$NON-NLS-2$
