@@ -59,6 +59,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button refreshAfterUpdate;
     private Button useNavigatorFilters;
 
+    private Button showErrorsInDialog;
+
     private Button advUseFetchSize;
 
     public PrefPageResultSetMain()
@@ -84,7 +86,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.KEEP_STATEMENT_OPEN) ||
             store.contains(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
-            store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS)
+            store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)
             ;
     }
 
@@ -98,9 +101,13 @@ public class PrefPageResultSetMain extends TargetPrefPage
     protected Control createPreferenceContent(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite leftPane = UIUtils.createComposite(composite, 1);
+        leftPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        Composite rightPane = UIUtils.createComposite(composite, 1);
+        rightPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         {
-            Group queriesGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
+            Group queriesGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
             queriesGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             resultSetSize = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_max_size, "0", SWT.BORDER);
@@ -128,10 +135,17 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 }
             });
         }
+        {
+            Group advGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
+        }
+
 
         // Misc settings
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group miscGroup = UIUtils.createControlGroup(rightPane, ResultSetMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            miscGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_general_checkbox_keep_cursor, false);
             alwaysUseAllColumns = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
@@ -141,9 +155,10 @@ public class PrefPageResultSetMain extends TargetPrefPage
         }
 
         {
-            Group advGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group uiGroup = UIUtils.createControlGroup(rightPane, "UI", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            uiGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
+            showErrorsInDialog = UIUtils.createCheckbox(uiGroup, "Show errors in dialog", "Show errors in modal dialog. Otherwise show errors in special data presentation (default)", false, 1);
         }
 
         return composite;
@@ -175,6 +190,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
             advUseFetchSize.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
 
+            showErrorsInDialog.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG));
+
             updateOptionsEnablement();
         } catch (Exception e) {
             log.warn(e);
@@ -202,6 +219,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
 
             store.setValue(ModelPreferences.RESULT_SET_USE_FETCH_SIZE, advUseFetchSize.getSelection());
+
+            store.setValue(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG, showErrorsInDialog.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -228,6 +247,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);
 
         store.setToDefault(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
+
+        store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG);
 
         updateOptionsEnablement();
     }

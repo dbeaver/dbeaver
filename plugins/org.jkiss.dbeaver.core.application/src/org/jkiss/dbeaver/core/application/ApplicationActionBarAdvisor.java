@@ -153,8 +153,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     private void patchImages() {
         // We have to patch images manually because using commandImages extension point doesn't guarantee order
-        WorkbenchImages.declareImage(IWorkbenchGraphicConstants.IMG_WIZBAN_IMPORT_WIZ, DBeaverIcons.getImageDescriptor(UIIcon.IMPORT), true);
-        WorkbenchImages.declareImage(IWorkbenchGraphicConstants.IMG_WIZBAN_EXPORT_WIZ, DBeaverIcons.getImageDescriptor(UIIcon.EXPORT), true);
+        //WorkbenchImages.declareImage(IWorkbenchGraphicConstants.IMG_WIZBAN_IMPORT_WIZ, DBeaverIcons.getImageDescriptor(UIIcon.IMPORT), true);
+        //WorkbenchImages.declareImage(IWorkbenchGraphicConstants.IMG_WIZBAN_EXPORT_WIZ, DBeaverIcons.getImageDescriptor(UIIcon.EXPORT), true);
 
         IWorkbenchWindow workbenchWindow = getActionBarConfigurer().getWindowConfigurer().getWindow();
         if (workbenchWindow != null) {

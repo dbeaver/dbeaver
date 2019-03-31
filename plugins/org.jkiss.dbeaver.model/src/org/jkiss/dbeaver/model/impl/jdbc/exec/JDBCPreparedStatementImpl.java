@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.io.InputStream;
@@ -204,7 +205,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             return execute();
         }
         catch (SQLException e) {
-            throw new DBCException(e, connection.getDataSource());
+            throw new DBSQLException(query, e, connection.getDataSource());
         }
     }
 

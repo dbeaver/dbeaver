@@ -1708,7 +1708,11 @@ public final class DBUtils {
             }
         }
         if (lastError != null) {
-            throw new DBException(lastError, dataSource);
+            if (lastError instanceof DBException) {
+                throw (DBException) lastError;
+            } else {
+                throw new DBException(lastError, dataSource);
+            }
         }
         return true;
     }

@@ -176,7 +176,7 @@ public interface IResultSetController extends DBPContextProvider {
     @NotNull
     IResultSetPresentation getActivePresentation();
 
-    void setEmptyPresentation();
+    void showEmptyPresentation();
 
     IResultSetPanel getVisiblePanel();
 

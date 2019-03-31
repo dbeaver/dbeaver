@@ -166,13 +166,13 @@ public class GroupingResultsContainer implements IResultSetContainer {
         groupingViewer.resetHistory();
         dataContainer.setGroupingQuery(null);
         if (!(groupingViewer.getActivePresentation() instanceof EmptyPresentation)) {
-            groupingViewer.setEmptyPresentation();
+            groupingViewer.showEmptyPresentation();
         }
     }
 
     public void rebuildGrouping() throws DBException {
         if (groupAttributes.isEmpty() || groupFunctions.isEmpty()) {
-            getResultSetController().setEmptyPresentation();
+            getResultSetController().showEmptyPresentation();
             return;
         }
         DBCStatistics statistics = presentation.getController().getModel().getStatistics();

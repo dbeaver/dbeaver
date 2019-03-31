@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -452,12 +453,15 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     @NotNull
-    private String getActiveQueryText() {
+    public String getActiveQueryText() {
         DBCStatistics statistics = viewer.getModel().getStatistics();
         String queryText = statistics == null ? null : statistics.getQueryText();
         if (queryText == null || queryText.isEmpty()) {
             DBSDataContainer dataContainer = viewer.getDataContainer();
             if (dataContainer != null) {
+                if (dataContainer instanceof SQLQueryContainer) {
+                    return ((SQLQueryContainer) dataContainer).getQuery().getText();
+                }
                 return dataContainer.getName();
             }
             queryText = DEFAULT_QUERY_TEXT;
