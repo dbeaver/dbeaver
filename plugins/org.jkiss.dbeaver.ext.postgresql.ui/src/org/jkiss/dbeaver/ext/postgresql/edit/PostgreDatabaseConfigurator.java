@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
@@ -41,17 +40,12 @@ public class PostgreDatabaseConfigurator implements DBEObjectConfigurator<Postgr
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                try {
-                    database.setName(dialog.getName());
-                    database.setInitialOwner(dialog.getOwner());
-                    database.setTemplateName(dialog.getTemplateName());
-                    database.setDefaultTablespace(dialog.getTablespace());
-                    database.setDefaultEncoding(dialog.getEncoding());
-                    return database;
-                } catch (DBException e) {
-                    // Never be here
-                    return null;
-                }
+                database.setName(dialog.getName());
+                database.setInitialOwner(dialog.getOwner());
+                database.setTemplateName(dialog.getTemplateName());
+                database.setInitialTablespace(dialog.getTablespace());
+                database.setInitialEncoding(dialog.getEncoding());
+                return database;
             }
         }.execute();
     }

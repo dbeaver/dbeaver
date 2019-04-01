@@ -177,8 +177,16 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         return initialTablespace;
     }
 
+    public void setInitialTablespace(PostgreTablespace initialTablespace) {
+        this.initialTablespace = initialTablespace;
+    }
+
     public PostgreCharset getInitialEncoding() {
         return initialEncoding;
+    }
+
+    public void setInitialEncoding(PostgreCharset initialEncoding) {
+        this.initialEncoding = initialEncoding;
     }
 
     @Override
