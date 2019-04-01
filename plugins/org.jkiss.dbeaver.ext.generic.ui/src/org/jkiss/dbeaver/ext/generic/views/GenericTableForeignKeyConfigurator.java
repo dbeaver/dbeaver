@@ -53,6 +53,7 @@ public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator
                 foreignKey.setUpdateRule(editPage.getOnUpdateRule());
                 foreignKey.setReferencedKey((DBSEntityReferrer) editPage.getUniqueConstraint());
                 foreignKey.setDeferability(DBSForeignKeyDeferability.NOT_DEFERRABLE);
+
                 int colIndex = 1;
                 for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(
