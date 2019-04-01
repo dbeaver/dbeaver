@@ -24,10 +24,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.convert.ISQLTextConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.Map;
@@ -77,7 +77,7 @@ public class UnformattedSQLConverter implements ISQLTextConverter {
                             break;
                         }
                     }
-                    comment = TextUtils.compactWhiteSpaces(comment);
+                    comment = CommonUtils.compactWhiteSpaces(comment);
                     result.append(comment);
                 } else {
                     lastWhitespace = false;

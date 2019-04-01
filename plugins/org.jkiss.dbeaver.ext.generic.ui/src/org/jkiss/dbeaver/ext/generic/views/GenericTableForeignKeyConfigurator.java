@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKeyColumnTable;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
@@ -33,7 +34,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
  */
 public class GenericTableForeignKeyConfigurator implements DBEObjectConfigurator<GenericTable, GenericTableForeignKey> {
     @Override
-    public GenericTableForeignKey configureObject(GenericTable table, GenericTableForeignKey foreignKey) {
+    public GenericTableForeignKey configureObject(DBRProgressMonitor monitor, GenericTable table, GenericTableForeignKey foreignKey) {
         return new UITask<GenericTableForeignKey>() {
             @Override
             protected GenericTableForeignKey runTask() {

@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -272,7 +271,7 @@ public class ScriptSelectorPanel {
                         @Override
                         public void run() {
                             if (!item.isDisposed()) {
-                                item.setText(2, TextUtils.getSingleLineString(CommonUtils.notEmpty(ri.getDescription())));
+                                item.setText(2, CommonUtils.getSingleLineString(CommonUtils.notEmpty(ri.getDescription())));
                             }
                         }
                     });

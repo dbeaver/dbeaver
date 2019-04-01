@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
@@ -750,7 +749,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         item.setData(event);
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             ColumnDescriptor cd = columns.get(i);
-            item.setText(i, TextUtils.getSingleLineString(cd.logColumn.getText(event)));
+            item.setText(i, CommonUtils.getSingleLineString(cd.logColumn.getText(event)));
         }
         item.setFont(getObjectFont(event));
         item.setForeground(getObjectForeground(event));

@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.registry.driver.LocalNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 
 /**
  * MySQLServerHome

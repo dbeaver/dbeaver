@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
@@ -34,7 +35,7 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
 
 
     @Override
-    public GenericPrimaryKey configureObject(GenericTable table, GenericPrimaryKey primaryKey) {
+    public GenericPrimaryKey configureObject(DBRProgressMonitor monitor, GenericTable table, GenericPrimaryKey primaryKey) {
         return new UITask<GenericPrimaryKey>() {
             @Override
             protected GenericPrimaryKey runTask() {

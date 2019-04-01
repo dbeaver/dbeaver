@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateSequencePage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -69,18 +67,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     @Override
     protected PostgreSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreSchema parent, Object copyFrom)
     {
-        return new UITask<PostgreSequence>() {
-            @Override
-            protected PostgreSequence runTask() {
-                CreateSequencePage editPage = new CreateSequencePage(parent);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                PostgreSequence newProcedure = new PostgreSequence(parent);
-                newProcedure.setName(editPage.getSequenceName());
-                return newProcedure;
-            }
-        }.execute();
+        return new PostgreSequence(parent);
     }
 
     @Override

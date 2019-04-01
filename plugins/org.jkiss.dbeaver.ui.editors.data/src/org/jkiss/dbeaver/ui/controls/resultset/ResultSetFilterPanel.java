@@ -408,7 +408,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
 
             displayName = displayName.replaceAll("--.+", "");
-            displayName = TextUtils.compactWhiteSpaces(displayName);
+            displayName = CommonUtils.compactWhiteSpaces(displayName);
             activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
             if (CommonUtils.isEmpty(activeDisplayName)) {
                 activeDisplayName = DEFAULT_QUERY_TEXT;
