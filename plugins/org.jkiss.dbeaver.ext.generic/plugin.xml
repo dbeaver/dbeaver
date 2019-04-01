@@ -1022,7 +1022,7 @@
                 <!-- CreateDB -->
 
                 <driver
-                    id="pervasice_jdbc"
+                    id="pervasive_jdbc"
                     label="Pervasive"
                     class="com.pervasive.jdbc.v2.Driver"
                     sampleURL="jdbc:pervasive://{host}:{port}/{database}"
