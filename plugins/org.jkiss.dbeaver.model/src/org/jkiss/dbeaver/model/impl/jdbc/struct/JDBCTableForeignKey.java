@@ -99,6 +99,10 @@ public abstract class JDBCTableForeignKey<
         return referencedKey == null ? null : (TABLE) referencedKey.getParentObject();
     }
 
+    public void setReferencedKey(PRIMARY_KEY referencedKey) {
+        this.referencedKey = referencedKey;
+    }
+
     @Nullable
     @Override
     @Property(id = "reference", viewable = true, order = 4)

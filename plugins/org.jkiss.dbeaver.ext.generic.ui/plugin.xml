@@ -51,6 +51,19 @@
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject"/>
         </editor>
+
+        <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTableColumnConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTableForeignKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTableIndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.generic.views.GenericTablePrimaryKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"/>
+        </configurator>
     </extension>
 
 </plugin>

@@ -91,6 +91,10 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         return constraintType;
     }
 
+    public void setConstraintType(DBSEntityConstraintType constraintType) {
+        this.constraintType = constraintType;
+    }
+
     @NotNull
     @Override
     public TABLE getParentObject()

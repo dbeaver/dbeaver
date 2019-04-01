@@ -93,6 +93,10 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
         return !nonUnique;
     }
 
+    public void setUnique(boolean unique) {
+        this.nonUnique = !unique;
+    }
+
     @Property(viewable = true, order = 5)
     public String getQualifier()
     {

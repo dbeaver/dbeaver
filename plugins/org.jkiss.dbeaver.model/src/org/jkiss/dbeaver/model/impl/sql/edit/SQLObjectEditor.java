@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -83,6 +84,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + parent.getClass().getSimpleName());
         }
+        newObject = configureObject(parent, newObject);
         if (newObject == null) {
             return null;
         }
@@ -177,6 +179,14 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     {
         ObjectReorderCommand command = new ObjectReorderCommand(object, siblings, ModelMessages.model_jdbc_reorder_object, newPosition);
         commandContext.addCommand(command, new ReorderObjectReflector(), true);
+    }
+
+    protected OBJECT_TYPE configureObject(CONTAINER_TYPE parent, OBJECT_TYPE object) {
+        DBEObjectConfigurator<CONTAINER_TYPE, OBJECT_TYPE> configurator = (DBEObjectConfigurator<CONTAINER_TYPE, OBJECT_TYPE>) DBWorkbench.getPlatform().getEditorsRegistry().getObjectConfigurator(object);
+        if (configurator != null) {
+            return configurator.configureObject(parent, object);
+        }
+        return object;
     }
 
     protected class PropertyHandler

@@ -79,12 +79,12 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
- org.eclipse.core.runtime,
+ org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,
- org.eclipse.core.commands,
- org.eclipse.core.resources,
  org.apache.commons.logging,
- org.apache.commons.jexl,
+ org.eclipse.core.commands;visibility:=reexport,
+ org.eclipse.core.resources;visibility:=reexport,
+ org.apache.commons.jexl;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport
 Bundle-Localization: OSGI-INF/l10n/bundle
