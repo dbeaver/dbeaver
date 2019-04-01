@@ -31,8 +31,6 @@ Bundle-ClassPath: .
 Bundle-Activator: org.jkiss.dbeaver.ext.postgresql.PostgreUIActivator
 Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.edit,
- org.jkiss.dbeaver.ext.postgresql.model,
- org.jkiss.dbeaver.ext.postgresql.model.impls,
  org.jkiss.dbeaver.ext.postgresql.ui,
  org.jkiss.dbeaver.ext.postgresql.ui.editors
 Bundle-Localization: OSGI-INF/l10n/bundle
