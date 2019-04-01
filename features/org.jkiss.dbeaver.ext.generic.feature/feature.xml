@@ -22,6 +22,9 @@
         <import feature="org.jkiss.dbeaver.core.feature" version="1.0.0"/>
     </requires>
 
+    <plugin id="org.jkiss.dbeaver.ext.generic" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.generic.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
     <plugin id="org.jkiss.dbeaver.ext.athena" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.bigquery" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.clickhouse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
@@ -30,7 +33,6 @@
     <plugin id="org.jkiss.dbeaver.ext.es.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.firebird" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.greenplum" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.generic" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.h2" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.hana" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.hive" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

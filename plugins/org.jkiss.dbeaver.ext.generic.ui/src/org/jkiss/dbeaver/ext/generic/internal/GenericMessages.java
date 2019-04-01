@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.generic;
+package org.jkiss.dbeaver.ext.generic.internal;
 
 import org.eclipse.osgi.util.NLS;
 
 public class GenericMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.generic.GenericResources"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.generic.internal.GenericResources"; //$NON-NLS-1$
     public static String dialog_connection_advanced_tab;
 
     public static String dialog_connection_advanced_tab_tooltip;

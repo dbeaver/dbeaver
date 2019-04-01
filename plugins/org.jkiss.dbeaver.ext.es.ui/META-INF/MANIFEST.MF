@@ -6,7 +6,7 @@ Bundle-Version: 1.0.17.qualifier
 Bundle-Release-Date: 20190408
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

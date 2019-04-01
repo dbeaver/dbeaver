@@ -1,22 +1,21 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Generic Plug-in
-Bundle-SymbolicName: org.jkiss.dbeaver.ext.generic; singleton:=true
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.generic;singleton:=true
 Bundle-Version: 2.3.92.qualifier
 Bundle-Release-Date: 20190408
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.jkiss.dbeaver.core,
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
  org.eclipse.jface.text,
  org.eclipse.ui.views,
  org.eclipse.ui.workbench,
- org.eclipse.ui.workbench.texteditor,
- org.apache.commons.logging
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.editors.base
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
 Export-Package: org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.generic.edit,
  org.jkiss.dbeaver.ext.generic.model,
- org.jkiss.dbeaver.ext.generic.model.meta,
- org.jkiss.dbeaver.ext.generic.views
+ org.jkiss.dbeaver.ext.generic.model.meta

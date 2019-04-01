@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.generic.model.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -32,8 +31,8 @@ public class GenericMetaColumn {
 
     public GenericMetaColumn(IConfigurationElement cfg)
     {
-        this.id = cfg.getAttribute(RegistryConstants.ATTR_ID);
-        this.columnName = cfg.getAttribute(RegistryConstants.ATTR_NAME);
+        this.id = cfg.getAttribute("id");
+        this.columnName = cfg.getAttribute("name");
         String indexStr = cfg.getAttribute("index");
         if (!CommonUtils.isEmpty(indexStr)) {
             this.columnIndex = Integer.valueOf(indexStr);

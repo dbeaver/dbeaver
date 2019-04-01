@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.generic.model.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +32,7 @@ public class GenericMetaObject {
 
     public GenericMetaObject(IConfigurationElement cfg)
     {
-        this.type = cfg.getAttribute(RegistryConstants.ATTR_TYPE);
+        this.type = cfg.getAttribute("type");
         this.readQuery = cfg.getAttribute("read-query");
         for (IConfigurationElement columnCfg : cfg.getChildren("column")) {
             GenericMetaColumn column = new GenericMetaColumn(columnCfg);
