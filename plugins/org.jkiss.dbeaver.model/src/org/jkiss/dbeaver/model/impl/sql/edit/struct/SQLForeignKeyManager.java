@@ -153,11 +153,11 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     protected String getNewConstraintName(DBRProgressMonitor monitor, OBJECT_TYPE foreignKey) {
 
         DBSEntityConstraint uniqueKey = foreignKey.getReferencedConstraint();
-        DBSEntity targetTable = uniqueKey.getParentObject();
+        DBSEntity targetTable = uniqueKey == null ? null : uniqueKey.getParentObject();
 
         TABLE_TYPE table = foreignKey.getParentObject();
         String baseName = CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                CommonUtils.escapeIdentifier(targetTable.getName()) + "_FK"; //$NON-NLS-1$
+            (uniqueKey == null ? "" : CommonUtils.escapeIdentifier(targetTable.getName()) + "_") + "FK"; //$NON-NLS-1$
 
         DBSObjectCache<? extends DBSObject, OBJECT_TYPE> objectsCache = getObjectsCache(foreignKey);
         if (objectsCache == null) {
