@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -40,7 +39,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
     public PostgreCommandGrantPrivilege(PostgrePrivilegeOwner user, boolean grant, PostgrePrivilege permission, PostgrePrivilegeType[] privilege)
     {
-        super(user, grant ? PostgreMessages.edit_command_grant_privilege_action_grant_privilege : PostgreMessages.edit_command_grant_privilege_action_revoke_privilege);
+        super(user, grant ? "Grant" : "Revoke");
         this.grant = grant;
         this.permission = permission;
         this.privilege = privilege;
@@ -103,7 +102,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         }
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
-                PostgreMessages.edit_command_grant_privilege_action_grant_privilege,
+                "Grant",
                 grantScript)
         };
     }

@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -33,8 +31,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -60,16 +56,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     @Override
     protected PostgreSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreDatabase parent, Object copyFrom)
     {
-        return new UITask<PostgreSchema>() {
-            @Override
-            protected PostgreSchema runTask() {
-                PostgreCreateSchemaDialog dialog = new PostgreCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), parent);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                return new PostgreSchema(parent, dialog.getName(), dialog.getOwner());
-            }
-        }.execute();
+        return new PostgreSchema(parent, "NewSchema", (PostgreRole) null);
     }
 
     @Override

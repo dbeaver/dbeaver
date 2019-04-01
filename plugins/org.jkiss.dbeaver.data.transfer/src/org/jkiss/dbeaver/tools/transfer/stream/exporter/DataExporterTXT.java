@@ -26,10 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
@@ -160,7 +158,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
         if (showNulls && displayString.isEmpty() && DBUtils.isNullValue(value)) {
             return DBConstants.NULL_VALUE_LABEL;
         }
-        return TextUtils.getSingleLineString(displayString);
+        return CommonUtils.getSingleLineString(displayString);
     }
 
 }

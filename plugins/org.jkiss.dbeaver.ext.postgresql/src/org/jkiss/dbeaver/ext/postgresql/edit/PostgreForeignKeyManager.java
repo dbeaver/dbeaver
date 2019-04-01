@@ -16,15 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -35,10 +31,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -64,36 +56,13 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     @Override
     protected PostgreTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase table, Object from)
     {
-        return new UITask<PostgreTableForeignKey>() {
-            @Override
-            protected PostgreTableForeignKey runTask() {
-                EditPGForeignKeyPage editPage = new EditPGForeignKeyPage(
-                    PostgreMessages.postgre_foreign_key_manager_header_edit_foreign_key,
-                    table);
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
-                    table,
-                    editPage.getUniqueConstraint(),
-                    editPage.getOnDeleteRule(),
-                    editPage.getOnUpdateRule());
-                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
-                    foreignKey.addColumn(
-                        new PostgreTableForeignKeyColumn(
-                            foreignKey,
-                            (PostgreTableColumn) tableColumn.getOwnColumn(),
-                            colIndex++,
-                            (PostgreTableColumn) tableColumn.getRefColumn()));
-                }
-                foreignKey.setDeferrable(editPage.isDeferrable);
-                foreignKey.setDeferred(editPage.isDeferred);
-                return foreignKey;
-            }
-        }.execute();
+        final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
+            table,
+            null,
+            DBSForeignKeyModifyRule.NO_ACTION,
+            DBSForeignKeyModifyRule.NO_ACTION);
+        foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+        return foreignKey;
     }
 
     @Override
@@ -135,47 +104,6 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     protected String getDropForeignKeyPattern(PostgreTableForeignKey foreignKey)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
-    }
-
-    private static class EditPGForeignKeyPage extends EditForeignKeyPage {
-
-        private boolean isDeferrable;
-        private boolean isDeferred;
-
-        public EditPGForeignKeyPage(String title, DBSTable table) {
-            super(title, table, new DBSForeignKeyModifyRule[] {
-                DBSForeignKeyModifyRule.NO_ACTION,
-                DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                DBSForeignKeyModifyRule.SET_NULL,
-                DBSForeignKeyModifyRule.SET_DEFAULT });
-        }
-
-        @Override
-        protected Composite createPageContents(Composite parent) {
-            Composite panel = super.createPageContents(parent);
-
-            final Composite defGroup = UIUtils.createComposite(panel, 2);
-            {
-                // Cascades
-                defGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                final Button deferrableCheck = UIUtils.createCheckbox(defGroup, PostgreMessages.postgre_foreign_key_manager_checkbox_deferrable, false);
-                deferrableCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        isDeferrable = deferrableCheck.getSelection();
-                    }
-                });
-                final Button deferredCheck = UIUtils.createCheckbox(defGroup, PostgreMessages.postgre_foreign_key_manager_checkbox_deferred, false);
-                deferredCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        isDeferred = deferredCheck.getSelection();
-                    }
-                });
-            }
-
-            return panel;
-        }
     }
 
 }

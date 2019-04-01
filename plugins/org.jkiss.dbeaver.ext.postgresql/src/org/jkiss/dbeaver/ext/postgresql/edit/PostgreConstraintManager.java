@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -33,10 +35,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -60,39 +59,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
         DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase parent,
         Object from)
     {
-        return new UITask<PostgreTableConstraintBase>() {
-            @Override
-            protected PostgreTableConstraintBase runTask() {
-                EditConstraintPage editPage = new EditConstraintPage(
-                    PostgreMessages.edit_constraint_page_add_constraint,
-                    parent,
-                    new DBSEntityConstraintType[] {
-                        DBSEntityConstraintType.PRIMARY_KEY,
-                        DBSEntityConstraintType.UNIQUE_KEY,
-                        DBSEntityConstraintType.CHECK });
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                final PostgreTableConstraint constraint = new PostgreTableConstraint(
-                    parent,
-                    editPage.getConstraintName(),
-                    editPage.getConstraintType());
-                if (constraint.getConstraintType().isCustom()) {
-                    constraint.setSource(editPage.getConstraintExpression());
-                } else {
-                    int colIndex = 1;
-                    for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                        constraint.addColumn(
-                            new PostgreTableConstraintColumn(
-                                constraint,
-                                (PostgreAttribute) tableColumn,
-                                colIndex++));
-                    }
-                }
-                return constraint;
-            }
-        }.execute();
+        return new PostgreTableConstraint(parent, "NewConstraint", DBSEntityConstraintType.UNIQUE_KEY);
     }
 
     @Override

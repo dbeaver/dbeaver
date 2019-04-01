@@ -50,7 +50,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
@@ -413,7 +412,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             char c = displayString.charAt(i);
             switch (c) {
                 case '\n':
-                    c = TextUtils.PARAGRAPH_CHAR;
+                    c = CommonUtils.PARAGRAPH_CHAR;
                     break;
                 case '\r':
                     continue;

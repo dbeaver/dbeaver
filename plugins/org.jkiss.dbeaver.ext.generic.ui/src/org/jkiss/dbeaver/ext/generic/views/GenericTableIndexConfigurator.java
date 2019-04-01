@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.UITask;
@@ -37,7 +38,7 @@ import java.util.Collections;
 public class GenericTableIndexConfigurator implements DBEObjectConfigurator<GenericTable, GenericTableIndex> {
 
     @Override
-    public GenericTableIndex configureObject(GenericTable table, GenericTableIndex index) {
+    public GenericTableIndex configureObject(DBRProgressMonitor monitor, GenericTable table, GenericTableIndex index) {
         return new UITask<GenericTableIndex>() {
             @Override
             protected GenericTableIndex runTask() {

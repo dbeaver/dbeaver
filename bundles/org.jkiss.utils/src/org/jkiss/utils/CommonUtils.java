@@ -28,6 +28,8 @@ import java.util.*;
  */
 public class CommonUtils {
 
+    public static final char PARAGRAPH_CHAR = (char) 182;
+
     public static boolean isJavaIdentifier(@NotNull CharSequence str) {
         if (str.length() == 0 || !Character.isJavaIdentifierStart(str.charAt(0))) {
             return false;
@@ -663,5 +665,17 @@ public class CommonUtils {
 
     public static String trim(String str) {
         return str == null ? null : str.trim();
+    }
+
+    public static String compactWhiteSpaces(String str) {
+        return str.replaceAll("\\s+", " ");
+    }
+
+    public static String getSingleLineString(String displayString) {
+        return displayString
+            .replace('\n', PARAGRAPH_CHAR)
+            .replace("\r", "")
+            .replace("\t", " ")
+            .replace((char)0, ' ');
     }
 }

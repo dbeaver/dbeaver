@@ -16,12 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateRoleDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -31,8 +29,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -58,16 +54,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
 
     @Override
     protected PostgreRole createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreDatabase parent, Object copyFrom) throws DBException {
-        return new UITask<PostgreRole>() {
-            @Override
-            protected PostgreRole runTask() {
-                PostgreCreateRoleDialog dialog = new PostgreCreateRoleDialog(UIUtils.getActiveWorkbenchShell(), parent);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                return new PostgreRole(parent, dialog.getName(), dialog.getPassword(), dialog.isUser());
-            }
-        }.execute();
+        return new PostgreRole(parent, "NewRole", "", true);
     }
 
     @Override

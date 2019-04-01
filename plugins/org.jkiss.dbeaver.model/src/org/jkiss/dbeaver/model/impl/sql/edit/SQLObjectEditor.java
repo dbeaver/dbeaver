@@ -84,7 +84,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + parent.getClass().getSimpleName());
         }
-        newObject = configureObject(parent, newObject);
+        newObject = configureObject(monitor, parent, newObject);
         if (newObject == null) {
             return null;
         }
@@ -181,10 +181,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         commandContext.addCommand(command, new ReorderObjectReflector(), true);
     }
 
-    protected OBJECT_TYPE configureObject(CONTAINER_TYPE parent, OBJECT_TYPE object) {
+    protected OBJECT_TYPE configureObject(DBRProgressMonitor monitor, CONTAINER_TYPE parent, OBJECT_TYPE object) {
         DBEObjectConfigurator<CONTAINER_TYPE, OBJECT_TYPE> configurator = (DBEObjectConfigurator<CONTAINER_TYPE, OBJECT_TYPE>) DBWorkbench.getPlatform().getEditorsRegistry().getObjectConfigurator(object);
         if (configurator != null) {
-            return configurator.configureObject(parent, object);
+            return configurator.configureObject(monitor, parent, object);
         }
         return object;
     }

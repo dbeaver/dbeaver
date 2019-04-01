@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.WebUtils;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -256,7 +255,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         packaging = CommonUtils.trim(XMLUtils.getChildElementBody(root, "packaging"));
         description = CommonUtils.trim(XMLUtils.getChildElementBody(root, "description"));
         if (description != null) {
-            description = TextUtils.compactWhiteSpaces(description.trim());
+            description = CommonUtils.compactWhiteSpaces(description.trim());
         }
         repositories.addAll(parseRepositories(root));
 

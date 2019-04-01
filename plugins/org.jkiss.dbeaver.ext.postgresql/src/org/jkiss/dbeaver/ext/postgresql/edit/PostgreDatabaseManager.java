@@ -16,13 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,8 +33,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -49,15 +44,13 @@ import java.util.Map;
 public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, PostgreDataSource> implements DBEObjectRenamer<PostgreDatabase> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreDataSource, PostgreDatabase> getObjectsCache(PostgreDatabase object)
-    {
+    public DBSObjectCache<PostgreDataSource, PostgreDatabase> getObjectsCache(PostgreDatabase object) {
         return object.getDataSource().getDatabaseCache();
     }
 
@@ -65,34 +58,18 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     public void deleteObject(DBECommandContext commandContext, PostgreDatabase object, Map<String, Object> options) throws DBException {
         if (object == object.getDataSource().getDefaultInstance()) {
             throw new DBException("Cannot drop the currently open database." +
-                "\nSwitch to another database and try again\n(Note: enable '" + PostgreMessages.dialog_setting_connection_nondefaultDatabase + "' option to see them).");
+                "\nSwitch to another database and try again\n(Note: enable 'Show all databases' option to see them).");
         }
         super.deleteObject(commandContext, object, options);
     }
 
     @Override
-    protected PostgreDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreDataSource parent, Object copyFrom)
-    {
-        return new UITask<PostgreDatabase>() {
-            @Override
-            protected PostgreDatabase runTask() {
-                PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), parent);
-                if (dialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-                try {
-                    return new PostgreDatabase(monitor, parent, dialog.getName(), dialog.getOwner(), dialog.getTemplateName(), dialog.getTablespace(), dialog.getEncoding());
-                } catch (DBException e) {
-                    // Never be here
-                    return null;
-                }
-            }
-        }.execute();
+    protected PostgreDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreDataSource parent, Object copyFrom) throws DBException {
+        return new PostgreDatabase(monitor, parent, "NewDatabase", null, null, null, null);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final PostgreDatabase database = command.getObject();
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE DATABASE ").append(DBUtils.getQuotedIdentifier(database));
@@ -113,20 +90,17 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         actions.add(new DeleteDatabaseAction(command));
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, PostgreDatabase database, String newName) throws DBException
-    {
+    public void renameObject(DBECommandContext commandContext, PostgreDatabase database, String newName) throws DBException {
         processObjectRename(commandContext, database, newName);
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
-    {
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename database",
@@ -136,8 +110,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             try {
                 generateAlterActions(monitor, actionList, command);
@@ -185,6 +158,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
 
     private static class CreateDatabaseAction extends SQLDatabasePersistActionAtomic {
         private final PostgreDatabase database;
+
         public CreateDatabaseAction(PostgreDatabase database, StringBuilder sql) {
             super("Create database", sql.toString());
             this.database = database;

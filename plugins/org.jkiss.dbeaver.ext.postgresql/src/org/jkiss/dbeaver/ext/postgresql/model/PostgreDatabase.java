@@ -169,6 +169,10 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         return initialOwner;
     }
 
+    public void setInitialOwner(PostgreRole initialOwner) {
+        this.initialOwner = initialOwner;
+    }
+
     public PostgreTablespace getInitialTablespace() {
         return initialTablespace;
     }
@@ -280,6 +284,10 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     public String getTemplateName() {
         return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
     }
 
     @Nullable

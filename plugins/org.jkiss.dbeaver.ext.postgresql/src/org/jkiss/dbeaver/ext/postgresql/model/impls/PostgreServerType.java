@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 public class PostgreServerType extends AbstractDescriptor {
@@ -41,9 +40,9 @@ public class PostgreServerType extends AbstractDescriptor {
 
     protected PostgreServerType(IConfigurationElement config) {
         super(config);
-        type = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        id = config.getAttribute(RegistryConstants.ATTR_ID);
-        name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        type = new ObjectType(config.getAttribute("class"));
+        id = config.getAttribute("id");
+        name = config.getAttribute("name");
         icon = iconToImage(config.getAttribute("logo"));
 
         defaultDatabase = config.getAttribute("defaultDatabase");

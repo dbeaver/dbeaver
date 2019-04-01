@@ -127,6 +127,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return database.getRoleById(monitor, ownerId);
     }
 
+    public void setOwner(PostgreRole role) {
+        this.ownerId = role == null ? 0 : role.getObjectId();
+    }
+
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Nullable
     @Override

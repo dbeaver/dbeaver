@@ -34,9 +34,6 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.TextUtils;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -155,7 +152,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected final ColumnModifier<PostgreTableColumn> PostgreCommentModifier = (monitor, column, sql, command) -> {
         String comment = column.getDescription();
         if (!CommonUtils.isEmpty(comment)) {
-            sql.append(" -- ").append(TextUtils.getSingleLineString(comment));
+            sql.append(" -- ").append(CommonUtils.getSingleLineString(comment));
         }
     };
 
@@ -186,27 +183,12 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     @Override
     protected PostgreTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final PostgreTableBase parent, Object copyFrom)
     {
-        return new UITask<PostgreTableColumn>() {
-            @Override
-            protected PostgreTableColumn runTask() {
-                final PostgreTableColumn column = new PostgreTableColumn(parent);
-                column.setName(getNewColumnName(monitor, context, parent));
-                final PostgreDataType dataType = parent.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
-                column.setDataType(dataType); //$NON-NLS-1$
-                column.setOrdinalPosition(-1);
-
-                AttributeEditPage page = new AttributeEditPage(null, column);
-                if (!page.edit()) {
-                    return null;
-                }
-                // Varchar length doesn't make much sense for PG
-//                if (column.getDataKind() == DBPDataKind.STRING && !column.getTypeName().contains("text") && column.getMaxLength() <= 0) {
-//                    column.setMaxLength(100);
-//                }
-                return column;
-            }
-        }.execute();
-
+        final PostgreTableColumn column = new PostgreTableColumn(parent);
+        column.setName(getNewColumnName(monitor, context, parent));
+        final PostgreDataType dataType = parent.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
+        column.setDataType(dataType); //$NON-NLS-1$
+        column.setOrdinalPosition(-1);
+        return column;
     }
 
     @Override

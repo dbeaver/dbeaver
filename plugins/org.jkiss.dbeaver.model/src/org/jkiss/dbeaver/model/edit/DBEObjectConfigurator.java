@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -25,6 +26,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface DBEObjectConfigurator<CONTAINER extends DBSObject, OBJECT_TYPE extends DBSObject> {
 
-    OBJECT_TYPE configureObject(CONTAINER container, OBJECT_TYPE object);
+    OBJECT_TYPE configureObject(DBRProgressMonitor monitor, CONTAINER container, OBJECT_TYPE object);
 
 }

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Grid cell renderer
@@ -105,7 +106,7 @@ class GridCellRenderer extends AbstractRenderer
             // Get shortern version of string
             text = TextUtils.getShortString(grid.fontMetrics, text, width);
             // Replace linefeeds with space
-            text = TextUtils.getSingleLineString(text);
+            text = CommonUtils.getSingleLineString(text);
 
             gc.setFont(grid.normalFont);
 

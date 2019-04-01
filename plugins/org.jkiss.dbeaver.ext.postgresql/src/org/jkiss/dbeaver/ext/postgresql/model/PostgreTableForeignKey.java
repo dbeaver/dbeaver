@@ -135,6 +135,10 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         return refConstraint;
     }
 
+    public void setReferencedConstraint(DBSEntityConstraint refConstraint) {
+        this.refConstraint = refConstraint;
+    }
+
     @Property(viewable = true, specific = true, order = 54)
     public MatchType getMatchType() {
         return matchType;
@@ -147,11 +151,19 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         return deleteRule;
     }
 
+    public void setDeleteRule(DBSForeignKeyModifyRule deleteRule) {
+        this.deleteRule = deleteRule;
+    }
+
     @NotNull
     @Override
     @Property(viewable = true, specific = true, order = 56)
     public DBSForeignKeyModifyRule getUpdateRule() {
         return updateRule;
+    }
+
+    public void setUpdateRule(DBSForeignKeyModifyRule updateRule) {
+        this.updateRule = updateRule;
     }
 
     @Nullable
