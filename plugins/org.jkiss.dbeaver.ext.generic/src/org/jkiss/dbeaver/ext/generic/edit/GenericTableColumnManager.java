@@ -36,8 +36,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -80,16 +78,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
                 false
         );
         column.setPersisted(false);
-        return new UITask<GenericTableColumn>() {
-            @Override
-            protected GenericTableColumn runTask() {
-                AttributeEditPage page = new AttributeEditPage(null, column);
-                if (!page.edit()) {
-                    return null;
-                }
-                return column;
-            }
-        }.execute();
+        return column;
     }
 
     @Override

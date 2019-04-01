@@ -6,8 +6,7 @@ Bundle-Version: 1.0.26.qualifier
 Bundle-Release-Date: 20190408
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.model;visibility:=reexport,
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.snowflake,
  org.jkiss.dbeaver.ext.snowflake.model

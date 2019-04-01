@@ -37,8 +37,7 @@ import java.util.List;
 /**
  * GenericTableForeignKey
  */
-public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, DBSEntityReferrer>
-{
+public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, DBSEntityReferrer> {
     private static final Log log = Log.getLog(GenericTableForeignKey.class);
 
     private DBSForeignKeyDeferability deferability;
@@ -52,41 +51,39 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, DB
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
         DBSForeignKeyDeferability deferability,
-        boolean persisted)
-    {
+        boolean persisted) {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
         this.deferability = deferability;
     }
 
     @NotNull
     @Override
-    public GenericDataSource getDataSource()
-    {
+    public GenericDataSource getDataSource() {
         return getTable().getDataSource();
     }
 
     @Property(viewable = true, order = 7)
-    public DBSForeignKeyDeferability getDeferability()
-    {
+    public DBSForeignKeyDeferability getDeferability() {
         return deferability;
     }
 
+    public void setDeferability(DBSForeignKeyDeferability deferability) {
+        this.deferability = deferability;
+    }
+
     @Override
-    public List<GenericTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor)
-    {
+    public List<GenericTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor) {
         return columns;
     }
 
-    public void addColumn(GenericTableForeignKeyColumnTable column)
-    {
+    public void addColumn(GenericTableForeignKeyColumnTable column) {
         if (columns == null) {
             columns = new ArrayList<>();
         }
         this.columns.add(column);
     }
 
-    void setColumns(DBRProgressMonitor monitor, List<GenericTableForeignKeyColumnTable> columns)
-    {
+    void setColumns(DBRProgressMonitor monitor, List<GenericTableForeignKeyColumnTable> columns) {
         this.columns = columns;
         final List<? extends DBSEntityAttributeRef> refColumns;
         try {
@@ -117,8 +114,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, DB
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getCatalog(),
             getTable().getSchema(),

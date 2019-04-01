@@ -17,16 +17,15 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
 /**
  * Generic constraint manager
@@ -55,35 +54,12 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
         DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
         Object from)
     {
-        return new UITask<GenericPrimaryKey>() {
-            @Override
-            protected GenericPrimaryKey runTask() {
-                EditConstraintPage editPage = new EditConstraintPage(
-                    "Create constraint",
-                    parent,
-                    new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                final GenericPrimaryKey primaryKey = new GenericPrimaryKey(
-                    parent,
-                    null,
-                    null,
-                    editPage.getConstraintType(),
-                    false);
-                primaryKey.setName(editPage.getConstraintName());
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    primaryKey.addColumn(
-                        new GenericTableConstraintColumn(
-                            primaryKey,
-                            (GenericTableColumn) tableColumn,
-                            colIndex++));
-                }
-                return primaryKey;
-            }
-        }.execute();
+        return new GenericPrimaryKey(
+            parent,
+            null,
+            null,
+            DBSEntityConstraintType.PRIMARY_KEY,
+            false);
     }
 
     @Override

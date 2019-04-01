@@ -7,7 +7,8 @@ Bundle-Release-Date: 20190408
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.ext.generic.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor

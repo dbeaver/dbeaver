@@ -31,8 +31,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
  */
 public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE extends JDBCTable>
     extends AbstractTableIndex
-    implements DBPSaveableObject
-{
+    implements DBPSaveableObject {
     private final CONTAINER container;
     private final TABLE table;
     protected String name;
@@ -56,8 +55,7 @@ public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE
         this.persisted = persisted;
     }
 
-    protected JDBCTableIndex(JDBCTableIndex<CONTAINER, TABLE> source)
-    {
+    protected JDBCTableIndex(JDBCTableIndex<CONTAINER, TABLE> source) {
         this.container = source.container;
         this.table = source.table;
         this.name = source.name;
@@ -66,54 +64,50 @@ public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE
     }
 
     @Override
-    public CONTAINER getContainer()
-    {
+    public CONTAINER getContainer() {
         return container;
     }
 
     @NotNull
     @Override
-    public TABLE getParentObject()
-    {
+    public TABLE getParentObject() {
         return table;
     }
 
     @NotNull
     @Override
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String indexName)
-    {
+    public void setName(String indexName) {
         this.name = indexName;
     }
 
     @Override
     @Property(viewable = true, order = 2)
-    public TABLE getTable()
-    {
+    public TABLE getTable() {
         return table;
     }
 
     @Override
     @Property(viewable = true, order = 3)
-    public DBSIndexType getIndexType()
-    {
+    public DBSIndexType getIndexType() {
         return this.indexType;
     }
 
+    public void setIndexType(DBSIndexType indexType) {
+        this.indexType = indexType;
+    }
+
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return persisted;
     }
 
     @Override
-    public void setPersisted(boolean persisted)
-    {
+    public void setPersisted(boolean persisted) {
         this.persisted = persisted;
     }
 

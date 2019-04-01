@@ -12,6 +12,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench,
  org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ext.generic.ui,
  org.jkiss.dbeaver.ext.snowflake.core
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

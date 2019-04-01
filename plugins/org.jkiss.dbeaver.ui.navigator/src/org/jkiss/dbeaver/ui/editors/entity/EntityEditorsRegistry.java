@@ -34,6 +34,7 @@ import java.util.Map;
 public class EntityEditorsRegistry {
 
     private static final String TAG_EDITOR = "editor"; //NON-NLS-1
+    private static final String TAG_CONFIGURATOR = "configurator"; //NON-NLS-1
     private static final String TAG_MANAGER = "manager"; //NON-NLS-1
 
     private static EntityEditorsRegistry instance = null;
@@ -47,6 +48,7 @@ public class EntityEditorsRegistry {
 
     private EntityEditorDescriptor defaultEditor;
     private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
+    private List<EntityConfiguratorDescriptor> entityConfigurators = new ArrayList<>();
     private Map<String, List<EntityEditorDescriptor>> positionsMap = new HashMap<String, List<EntityEditorDescriptor>>();
 
     public EntityEditorsRegistry(IExtensionRegistry registry) {
@@ -64,11 +66,15 @@ public class EntityEditorsRegistry {
                     positionsMap.put(descriptor.getPosition(), list);
                 }
                 list.add(descriptor);
+            } else if (TAG_CONFIGURATOR.equals(ext.getName())) {
+                EntityConfiguratorDescriptor descriptor = new EntityConfiguratorDescriptor(ext);
+                entityConfigurators.add(descriptor);
             }
         }
     }
 
     public void dispose() {
+        entityConfigurators.clear();
         entityEditors.clear();
     }
 
@@ -93,6 +99,15 @@ public class EntityEditorsRegistry {
             }
         }
         return editors;
+    }
+
+    public EntityConfiguratorDescriptor getEntityConfigurator(DBPObject object) {
+        for (EntityConfiguratorDescriptor descriptor : entityConfigurators) {
+            if (descriptor.appliesTo(object)) {
+                return descriptor;
+            }
+        }
+        return null;
     }
 
 }

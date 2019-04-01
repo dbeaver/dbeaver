@@ -20,8 +20,12 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.ui.editors.entity.EntityConfiguratorDescriptor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorsRegistry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,6 +110,12 @@ public class ObjectManagerRegistry implements DBERegistry {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public DBEObjectConfigurator getObjectConfigurator(DBPObject object) {
+        EntityConfiguratorDescriptor configurator = EntityEditorsRegistry.getInstance().getEntityConfigurator(object);
+        return configurator == null ? null : configurator.createConfigurator();
     }
 
 }
