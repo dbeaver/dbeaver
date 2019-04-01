@@ -7,6 +7,7 @@ Bundle-Release-Date: 20190408
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-Activator: org.jkiss.dbeaver.ext.bigquery.BigQueryActivator
 Bundle-ActivationPolicy: lazy
