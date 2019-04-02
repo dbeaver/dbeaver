@@ -4,10 +4,7 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.greenplum;singleton:=true
 Bundle-Version: 1.0.7.qualifier
 Bundle-Release-Date: 20190408
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.ui.views,
- org.jkiss.dbeaver.model,
+Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.postgresql
 Bundle-ActivationPolicy: lazy
