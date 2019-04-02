@@ -58,32 +58,32 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         </editor>
 
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         </configurator>
-        <configurator class="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn">
-            <objectType name="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnConfigurator"/>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
         </configurator>
     </extension>
 
