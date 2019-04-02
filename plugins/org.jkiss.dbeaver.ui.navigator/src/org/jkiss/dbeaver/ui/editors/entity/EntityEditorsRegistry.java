@@ -62,7 +62,7 @@ public class EntityEditorsRegistry {
                 entityEditors.add(descriptor);
                 List<EntityEditorDescriptor> list = positionsMap.get(descriptor.getPosition());
                 if (list == null) {
-                    list = new ArrayList<EntityEditorDescriptor>();
+                    list = new ArrayList<>();
                     positionsMap.put(descriptor.getPosition(), list);
                 }
                 list.add(descriptor);
@@ -88,7 +88,7 @@ public class EntityEditorsRegistry {
     }
 
     public List<EntityEditorDescriptor> getEntityEditors(DBPObject object, IEntityEditorContext context, String position) {
-        List<EntityEditorDescriptor> editors = new ArrayList<EntityEditorDescriptor>();
+        List<EntityEditorDescriptor> editors = new ArrayList<>();
         final List<EntityEditorDescriptor> positionList =
             CommonUtils.isEmpty(position) ? entityEditors : positionsMap.get(position);
         if (positionList != null) {

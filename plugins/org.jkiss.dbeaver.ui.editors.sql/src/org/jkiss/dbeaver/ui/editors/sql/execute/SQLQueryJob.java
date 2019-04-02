@@ -600,7 +600,7 @@ public class SQLQueryJob extends DataSourceJob
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
 
-    private boolean prepareStatementParameters(SQLQuery sqlStatement) {
+    public boolean prepareStatementParameters(SQLQuery sqlStatement) {
         // Bind parameters
         List<SQLQueryParameter> parameters = sqlStatement.getParameters();
         if (CommonUtils.isEmpty(parameters)) {
@@ -931,4 +931,7 @@ public class SQLQueryJob extends DataSourceJob
         }.execute();
     }
 
+    public boolean transformQueryWithParameters(SQLQuery query) {
+        return prepareStatementParameters(query);
+    }
 }
