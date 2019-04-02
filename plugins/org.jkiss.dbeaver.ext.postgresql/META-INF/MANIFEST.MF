@@ -17,6 +17,12 @@ Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.edit,
  org.jkiss.dbeaver.ext.postgresql.model,
- org.jkiss.dbeaver.ext.postgresql.model.impls
+ org.jkiss.dbeaver.ext.postgresql.model.data,
+ org.jkiss.dbeaver.ext.postgresql.model.impls,
+ org.jkiss.dbeaver.ext.postgresql.model.jdbc,
+ org.jkiss.dbeaver.ext.postgresql.model.lock,
+ org.jkiss.dbeaver.ext.postgresql.model.net,
+ org.jkiss.dbeaver.ext.postgresql.model.plan,
+ org.jkiss.dbeaver.ext.postgresql.model.session
 Bundle-Localization: OSGI-INF/l10n/bundle
 
