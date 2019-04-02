@@ -1023,9 +1023,10 @@
 
                 <driver
                     id="pervasice_jdbc"
-                    label="Pervasive"
+                    label="Pervasive SQL"
+                    iconBig="icons/pervasive_icon_big.png"
                     class="com.pervasive.jdbc.v2.Driver"
-                    sampleURL="jdbc:pervasive://{host}:{port}/{database}"
+                    sampleURL="jdbc:pervasive://{host}:{port}/{database}?transport=tcp"
                     defaultPort="1583"
                     description="Pervasive JDBC driver"
                     webURL="https://docs.actian.com/psql/PSQLv11/jdbc/wwhelp/wwhimpl/common/html/wwhelp.htm#href=jdbc_gd.1.3.html&amp;single=true"
