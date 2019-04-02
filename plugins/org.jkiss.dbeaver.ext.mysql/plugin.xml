@@ -215,6 +215,27 @@
                 </driver>
             </drivers>
 
+            <driver
+                    id="mysql_ndb"
+                    label="MySQL NDB Cluster"
+                    icon="icons/mysql_icon.png"
+                    iconBig="icons/mysql_icon_big.png"
+                    class="com.mysql.jdbc.Driver"
+                    sampleURL="jdbc:mysql:loadbalance://{host}[:{port}]/[{database}]"
+                    useURL="false"
+                    defaultPort="3306"
+                    webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
+                    propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                    description="Driver for MySQL NDB 8 and later"
+                    categories="sql">
+                <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
+                <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
+                <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
+                <property name="connectTimeout" value="20000"/>
+                <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+            </driver>
+
             <nativeClients>
                 <client id="mysql_client" label="MySQL Binaries">
                     <dist os="win32" targetPath="clients/mysql/win" remotePath="repo:/drivers/mysql/client/win" resourcePath="clients/mysql/win">
