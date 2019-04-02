@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -228,7 +229,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         return databaseCache.getCachedObject(name);
     }
 
-
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
@@ -237,6 +237,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         // Read databases
         getDefaultInstance().cacheDataTypes(monitor, true);
+
+        // Set default parameter prefix
+        PrefUtils.setPreferenceValue(getContainer().getPreferenceStore(), ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX, "$");
     }
 
     @Override
