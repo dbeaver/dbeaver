@@ -1023,8 +1023,6 @@
 
                 <driver
                     id="pervasive_jdbc"
-                    label="Pervasive"
-                    id="pervasice_jdbc"
                     label="Pervasive SQL"
                     iconBig="icons/pervasive_icon_big.png"
                     class="com.pervasive.jdbc.v2.Driver"
