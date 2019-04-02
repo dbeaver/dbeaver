@@ -1514,6 +1514,10 @@ public class SQLEditor extends SQLEditorBase implements
             DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan explain isn't supported by current datasource");
             return;
         }
+        // Transform query parameters
+        new SQLQueryJob(getSite(), "Plan query", getExecutionContext(), null, Collections.emptyList(), this.globalScriptContext, null, null)
+            .transformQueryWithParameters(sqlQuery);
+
         DBCPlanStyle planStyle = planner.getPlanStyle();
         if (planStyle == DBCPlanStyle.QUERY) {
             explainPlanFromQuery(planner, sqlQuery);
