@@ -81,18 +81,22 @@ public class ErrorPresentation extends AbstractPresentation {
         try {
             boolean widthSet = false;
             IDialogSettings viewSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_ERROR_PANEL);
-            if (viewSettings.get(PROP_ERROR_WIDTH) != null) {
-                int errorWidth = viewSettings.getInt(PROP_ERROR_WIDTH);
-                if (errorWidth > 0) {
-                    partDivider.setWeights(new int[] { errorWidth, 1000 - errorWidth } );
-                    widthSet = true;
+            String errorWidth = viewSettings.get(PROP_ERROR_WIDTH);
+            if (errorWidth != null) {
+                String[] widthStrs = errorWidth.split(":");
+                if (widthStrs.length == 2) {
+                    partDivider.setWeights(new int[]{
+                        Integer.parseInt(widthStrs[0]),
+                        Integer.parseInt(widthStrs[1])});
                 }
+                widthSet = true;
             }
             if (!widthSet) {
-                partDivider.setWeights(new int[] { 750, 250 } );
+                partDivider.setWeights(new int[] { 700, 300 } );
             }
             partDivider.addCustomSashFormListener((firstControlWeight, secondControlWeight) -> {
-                viewSettings.put(PROP_ERROR_WIDTH, partDivider.getWeights()[0]);
+                int[] weights = partDivider.getWeights();
+                viewSettings.put(PROP_ERROR_WIDTH, weights[0] + ":" + weights[1]);
             });
         } catch (Throwable e) {
             log.debug(e);
