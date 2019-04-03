@@ -26,4 +26,6 @@ public interface DBAServerSession extends DBPObject {
 
     String getActiveQuery();
 
+    Object getActiveQueryId();
+
 }

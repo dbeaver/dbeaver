@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.session;
 
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
+import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -25,7 +25,7 @@ import java.sql.ResultSet;
 /**
  * MySQL session
  */
-public class MySQLSession implements DBAServerSession {
+public class MySQLSession extends AbstractServerSession {
     private long pid;
     private String user;
     private String host;

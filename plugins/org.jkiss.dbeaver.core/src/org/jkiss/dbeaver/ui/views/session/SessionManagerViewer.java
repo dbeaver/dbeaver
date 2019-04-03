@@ -242,7 +242,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             // Show execution plan
             String sqlText = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
             if (!CommonUtils.isEmpty(sqlText)) {
-                planViewer.explainQueryPlan(new SQLQuery(sessionManager.getDataSource(), sqlText));
+                planViewer.explainQueryPlan(new SQLQuery(sessionManager.getDataSource(), sqlText), curSession.getActiveQueryId());
             }
         }
         if (detailsFolder.getSelectionIndex() > 0) {
