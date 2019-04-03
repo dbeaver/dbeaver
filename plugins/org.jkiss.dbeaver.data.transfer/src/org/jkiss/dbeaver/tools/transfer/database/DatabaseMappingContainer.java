@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -183,7 +182,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             assert (dataSource != null);
             try (DBCSession session = DBUtils.openUtilSession(monitor, source, "Read query meta data")) {
                 MetadataReceiver receiver = new MetadataReceiver();
-                source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
+                source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, 1);
                 for (DBDAttributeBinding attr : receiver.attributes) {
                     if (DBUtils.isHiddenObject(attr)) {
                         continue;

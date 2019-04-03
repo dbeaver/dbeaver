@@ -2662,10 +2662,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         @NotNull
         @Override
-        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
         {
             if (dataContainer != null) {
-                return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags);
+                return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, 0);
             }
             final SQLQueryJob job = queryProcessor.curJob;
             if (job == null) {

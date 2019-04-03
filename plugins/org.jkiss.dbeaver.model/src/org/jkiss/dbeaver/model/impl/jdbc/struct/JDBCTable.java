@@ -112,7 +112,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @Nullable DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @Nullable DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize)
         throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
@@ -173,12 +173,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (monitor.isCanceled()) {
                 return statistics;
             }
-            if (dbStat instanceof JDBCStatement && maxRows > 0) {
-                boolean useFetchSize = getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
+            if (dbStat instanceof JDBCStatement && (fetchSize > 0 || maxRows > 0)) {
+                boolean useFetchSize = fetchSize > 0 || getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
                 if (useFetchSize) {
+                    if (fetchSize <= 0) {
+                        fetchSize = DEFAULT_READ_FETCH_SIZE;
+                    }
                     try {
                         ((JDBCStatement) dbStat).setFetchSize(
-                            firstRow < 0 || maxRows <= 0 ? DEFAULT_READ_FETCH_SIZE : (int) (firstRow + maxRows));
+                            firstRow < 0 || maxRows <= 0 ? fetchSize : (int) (firstRow + maxRows));
                     } catch (Exception e) {
                         log.warn(e);
                     }

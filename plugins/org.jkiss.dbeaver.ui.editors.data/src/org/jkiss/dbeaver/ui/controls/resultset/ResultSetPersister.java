@@ -855,7 +855,7 @@ class ResultSetPersister {
                         DBDDataFilter filter = new DBDDataFilter(constraints);
 
                         RowDataReceiver dataReceiver = new RowDataReceiver(curAttributes);
-                        final DBCStatistics stats = dataContainer.readData(executionSource, session, dataReceiver, filter, 0, 0, DBSDataContainer.FLAG_NONE);
+                        final DBCStatistics stats = dataContainer.readData(executionSource, session, dataReceiver, filter, 0, 0, DBSDataContainer.FLAG_NONE, 0);
                         refreshValues[i] = dataReceiver.rowValues;
                     }
                 }
