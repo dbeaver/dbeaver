@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.db2.model.app;
 
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -29,7 +30,7 @@ import java.sql.ResultSet;
  * 
  * @author Denis Forveille
  */
-public class DB2ServerApplication implements DBAServerSession {
+public class DB2ServerApplication extends AbstractServerSession {
 
     private String databaseName;
     private Long agentId;

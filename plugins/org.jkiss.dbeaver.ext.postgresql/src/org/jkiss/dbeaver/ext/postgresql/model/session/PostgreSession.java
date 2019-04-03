@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.session;
 
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
+import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.CommonUtils;
@@ -27,7 +27,7 @@ import java.util.Date;
 /**
  * PostgreSQL session
  */
-public class PostgreSession implements DBAServerSession {
+public class PostgreSession extends AbstractServerSession {
     private static final String CAT_CLIENT = "Client";
     private static final String CAT_TIMING = "Timings";
 

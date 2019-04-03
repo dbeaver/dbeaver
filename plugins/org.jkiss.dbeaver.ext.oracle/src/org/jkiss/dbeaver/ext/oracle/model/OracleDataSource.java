@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
+import org.jkiss.dbeaver.ext.oracle.model.plan.OracleQueryPlanner;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
@@ -60,7 +61,7 @@ import java.util.regex.Pattern;
  * GenericDataSource
  */
 public class OracleDataSource extends JDBCDataSource
-    implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
+    implements DBSObjectSelector, IAdaptable {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
     final public SchemaCache schemaCache = new SchemaCache();
@@ -524,20 +525,6 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
-    @NotNull
-    @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBException {
-        OraclePlanAnalyser plan = new OraclePlanAnalyser(this, (JDBCSession) session, query);
-        plan.explain();
-        return plan;
-    }
-
-    @NotNull
-    @Override
-    public DBCPlanStyle getPlanStyle() {
-        return DBCPlanStyle.PLAN;
-    }
-
     @Nullable
     @Override
     public <T> T getAdapter(Class<T> adapter) {
@@ -547,6 +534,8 @@ public class OracleDataSource extends JDBCDataSource
             return adapter.cast(outputReader);
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new OracleServerSessionManager(getDefaultInstance().getDefaultContext(false)));
+        } else if (adapter == DBCQueryPlanner.class) {
+            return adapter.cast(new OracleQueryPlanner(this));
         }
         return super.getAdapter(adapter);
     }

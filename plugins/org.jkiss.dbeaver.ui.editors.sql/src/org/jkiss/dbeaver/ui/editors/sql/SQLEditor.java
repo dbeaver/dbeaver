@@ -1550,7 +1550,7 @@ public class SQLEditor extends SQLEditorBase implements
             resultTabs.setSelection(item);
         }
 
-        planView.explainQueryPlan(sqlQuery);
+        planView.explainQueryPlan(sqlQuery, null);
     }
 
     private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {

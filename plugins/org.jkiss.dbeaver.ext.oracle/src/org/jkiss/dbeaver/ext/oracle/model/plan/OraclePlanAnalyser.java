@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model.plan;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -46,23 +47,28 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
     private OracleDataSource dataSource;
     private JDBCSession session;
     private String query;
+    private Object savedQueryId;
     private List<OraclePlanNode> rootNodes;
     private String planStmtId;
     private String planTableName;
 
-    public OraclePlanAnalyser(OracleDataSource dataSource, JDBCSession session, String query)
-    {
+    OraclePlanAnalyser(OracleDataSource dataSource, JDBCSession session, String query) {
         this.dataSource = dataSource;
         this.session = session;
         this.query = query;
+    }
+
+    OraclePlanAnalyser(OracleDataSource dataSource, JDBCSession session, Object savedQueryId) {
+        this.dataSource = dataSource;
+        this.session = session;
+        this.savedQueryId = savedQueryId;
     }
 
     @Override
     public Object getPlanFeature(String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
             DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature) ||
-            DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature))
-        {
+            DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
             return true;
         } else if (DBCPlanCostNode.PLAN_DURATION_MEASURE.equals(feature)) {
             return "KC";
@@ -72,8 +78,7 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
     }
 
     @Override
-    public String getQueryString()
-    {
+    public String getQueryString() {
         return query;
     }
 
@@ -92,20 +97,17 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
         }
 
         return "EXPLAIN PLAN " + "\n" +
-                "SET STATEMENT_ID = '" + planStmtId + "'\n" +
-                "INTO " + planTableName + "\n" +
-                "FOR " + query;
+            "SET STATEMENT_ID = '" + planStmtId + "'\n" +
+            "INTO " + planTableName + "\n" +
+            "FOR " + query;
     }
 
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options)
-    {
+    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
         return rootNodes;
     }
 
-    public void explain()
-        throws DBException
-    {
+    public void explain() throws DBException {
         String planQuery = getPlanQueryString();
         try {
 
@@ -114,7 +116,7 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
             // but let's do it, just in case)
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "DELETE FROM " + planTableName +
-                " WHERE STATEMENT_ID=? ");
+                    " WHERE STATEMENT_ID=? ");
             try {
                 dbStat.setString(1, planStmtId);
                 dbStat.execute();
@@ -144,31 +146,48 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
             // Read explained plan
             dbStat = session.prepareStatement(
                 "SELECT * FROM " + planTableName +
-                " WHERE STATEMENT_ID=? ORDER BY ID");
-            try {
-                dbStat.setString(1, planStmtId);
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    rootNodes = new ArrayList<>();
-                    IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<>();
-                    while (dbResult.next()) {
-                        OraclePlanNode node = new OraclePlanNode(dataSource, allNodes, dbResult);
-                        allNodes.put(node.getId(), node);
-                        if (node.getParent() == null) {
-                            rootNodes.add(node);
-                        }
-                    }
-                }
-            } finally {
-                dbStat.close();
-            }
-
-            // Update costs
-            for (OraclePlanNode node : rootNodes) {
-                node.updateCosts();
-            }
+                    " WHERE STATEMENT_ID=? ORDER BY ID");
+            readPlanNodes(dbStat);
 
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
+        }
+    }
+
+    public void readHistoric() throws DBException {
+        try {
+            // Read explained plan
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM " + OracleConstants.SCHEMA_SYS + ".DBA_HIST_SQL_PLAN" +
+                    " WHERE SQL_ID=? ORDER BY ID");
+            readPlanNodes(dbStat);
+
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getDataSource());
+        }
+    }
+
+    private void readPlanNodes(JDBCPreparedStatement dbStat) throws SQLException {
+        try {
+            dbStat.setString(1, planStmtId);
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                rootNodes = new ArrayList<>();
+                IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<>();
+                while (dbResult.next()) {
+                    OraclePlanNode node = new OraclePlanNode(dataSource, allNodes, dbResult);
+                    allNodes.put(node.getId(), node);
+                    if (node.getParent() == null) {
+                        rootNodes.add(node);
+                    }
+                }
+            }
+        } finally {
+            dbStat.close();
+        }
+
+        // Update costs
+        for (OraclePlanNode node : rootNodes) {
+            node.updateCosts();
         }
     }
 

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCSavedQueryPlanner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -85,6 +86,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
 
     private PlanViewInfo activeViewInfo;
     private SQLQuery lastQuery;
+    private Object lastQueryId;
     private DBCPlan lastPlan;
 
     private RefreshPlanAction refreshPlanAction;
@@ -159,8 +161,9 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         return lastQuery;
     }
 
-    public void explainQueryPlan(SQLQuery query) {
+    public void explainQueryPlan(SQLQuery query, Object queryId) {
         this.lastQuery = query;
+        this.lastQueryId = queryId;
 
         refresh();
     }
@@ -233,7 +236,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             DBWorkbench.getPlatformUI().showError("No SQL Plan","This datasource doesn't support execution plans");
         } else {
             LoadingJob<DBCPlan> service = LoadingJob.createService(
-                new ExplainPlanService(planner, executionContext, lastQuery.getText()),
+                new ExplainPlanService(planner, executionContext, lastQuery.getText(), lastQueryId),
                 planPresentationContainer.createVisualizer());
             service.schedule();
         }
@@ -307,14 +310,16 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         private final DBCQueryPlanner planner;
         private final DBCExecutionContext executionContext;
         private final String query;
+        private final Object savedQueryId;
         private DBCPlan plan;
 
-        ExplainPlanService(DBCQueryPlanner planner, DBCExecutionContext executionContext, String query)
+        ExplainPlanService(DBCQueryPlanner planner, DBCExecutionContext executionContext, String query, Object savedQueryId)
         {
             super("Explain plan", planner.getDataSource());
             this.planner = planner;
             this.executionContext = executionContext;
             this.query = query;
+            this.savedQueryId = savedQueryId;
         }
 
         @Override
@@ -324,7 +329,11 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                 DBUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
                         try {
-                            plan = planner.planQueryExecution(session, query);
+                            if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
+                                plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
+                            } else {
+                                plan = planner.planQueryExecution(session, query);
+                            }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }

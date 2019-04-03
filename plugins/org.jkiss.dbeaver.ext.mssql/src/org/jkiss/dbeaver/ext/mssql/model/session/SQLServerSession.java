@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model.session;
 
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
+import org.jkiss.dbeaver.model.admin.sessions.AbstractServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Date;
@@ -27,7 +26,7 @@ import java.util.Date;
 /**
  * SQL Server session
  */
-public class SQLServerSession implements DBAServerSession {
+public class SQLServerSession extends AbstractServerSession {
     private static final String CAT_CLIENT = "Client";
     private static final String CAT_TIMING = "Timings";
     private static final String CAT_STATISTICS = "Statistics";
