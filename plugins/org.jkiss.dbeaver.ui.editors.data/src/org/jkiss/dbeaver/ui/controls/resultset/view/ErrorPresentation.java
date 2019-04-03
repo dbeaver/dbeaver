@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -51,6 +53,8 @@ public class ErrorPresentation extends AbstractPresentation {
     private final IStatus status;
     private Composite errorComposite;
     private StatusPart statusPart;
+    private Composite sqlPanel;
+    private StyledText textWidget;
 
     public ErrorPresentation(String sqlText, IStatus status) {
         this.sqlText = sqlText;
@@ -68,14 +72,17 @@ public class ErrorPresentation extends AbstractPresentation {
         errorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         statusPart = new StatusPart(errorComposite, status);
 
-        Composite sqlPanel = UIUtils.createComposite(partDivider, 1);
+        sqlPanel = UIUtils.createComposite(partDivider, 1);
         sqlPanel.setLayout(new FillLayout());
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         try {
-            serviceSQL.createSQLPanel(controller.getSite(), sqlPanel, controller, "SQL", sqlText);
+            Object panel = serviceSQL.createSQLPanel(controller.getSite(), sqlPanel, controller, "SQL", sqlText);
+            if (panel instanceof TextViewer) {
+                textWidget = ((TextViewer) panel).getTextWidget();
+            }
         } catch (DBException e) {
-            Text text = new Text(sqlPanel, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(sqlText);
+            textWidget = new StyledText(sqlPanel, SWT.BORDER | SWT.READ_ONLY);
+            textWidget.setText(sqlText);
         }
 
         try {
@@ -105,7 +112,7 @@ public class ErrorPresentation extends AbstractPresentation {
 
     @Override
     public Control getControl() {
-        return errorComposite;
+        return textWidget;
     }
 
     @Override
