@@ -16,9 +16,19 @@
  */
 package org.jkiss.dbeaver.ext.greenplum;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class GreenplumDataSourceProvider extends PostgreDataSourceProvider {
     public GreenplumDataSourceProvider() {
+    }
+
+    @Override
+    public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        return new GreenplumDataSource(monitor, container);
     }
 }
