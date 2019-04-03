@@ -221,6 +221,16 @@ public class ResultSetViewer extends Viewer
 
         this.mainPanel = UIUtils.createPlaceholder(parent, 2);
 
+        this.autoRefreshControl = new AutoRefreshControl(
+            this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
+
+        if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_FILTERS) != 0) {
+            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            this.filtersPanel.setLayoutData(gd);
+        }
+
         this.presentationSwitchFolder = new VerticalFolder(mainPanel, SWT.LEFT);
         this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
         CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -232,12 +242,6 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel.setRedraw(false);
 
         try {
-            this.autoRefreshControl = new AutoRefreshControl(
-                this.viewerPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
-
-            if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_FILTERS) != 0) {
-                this.filtersPanel = new ResultSetFilterPanel(this);
-            }
             this.findReplaceTarget = new DynamicFindReplaceTarget();
 
             this.viewerSash = UIUtils.createPartDivider(site.getPart(), this.viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
@@ -616,9 +620,6 @@ public class ResultSetViewer extends Viewer
                 recordModeButton = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.CHECK);
                 recordModeButton.setAction(new ToggleModeAction(), true);
 
-                if (filtersPanel != null) {
-                    ((GridLayout) presentationSwitchFolder.getLayout()).marginTop = filtersPanel.getSize().y;
-                }
                 if (statusBar != null) {
                     ((GridLayout) presentationSwitchFolder.getLayout()).marginBottom = statusBar.getSize().y;
                 }
