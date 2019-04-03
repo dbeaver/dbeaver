@@ -61,8 +61,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner
-{
+public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner {
     private static final Log log = Log.getLog(MySQLDataSource.class);
 
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
@@ -72,12 +71,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLUser> users;
     private List<MySQLCharset> charsets;
     private Map<String, MySQLCollation> collations;
+    private String defaultCharset, defaultCollation;
     private String activeCatalogName;
     private SQLHelpProvider helpProvider;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
-        throws DBException
-    {
+        throws DBException {
         super(monitor, container, new MySQLDialect());
         dataTypeCache = new JDBCBasicDataTypeCache<>(this);
     }
@@ -97,8 +96,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo)
-        throws DBCException
-    {
+        throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(MySQLDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getDeclaredHandler(MySQLConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
@@ -201,30 +199,25 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
     }
 
-    public String[] getTableTypes()
-    {
+    public String[] getTableTypes() {
         return MySQLConstants.TABLE_TYPES;
     }
 
-    public CatalogCache getCatalogCache()
-    {
+    public CatalogCache getCatalogCache() {
         return catalogCache;
     }
 
-    public Collection<MySQLCatalog> getCatalogs()
-    {
+    public Collection<MySQLCatalog> getCatalogs() {
         return catalogCache.getCachedObjects();
     }
 
-    public MySQLCatalog getCatalog(String name)
-    {
+    public MySQLCatalog getCatalog(String name) {
         return catalogCache.getCachedObject(name);
     }
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.initialize(monitor);
 
         dataTypeCache.getAllObjects(monitor, this);
@@ -260,8 +253,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 } catch (SQLException ex) {
                     // Engines are not supported. Shame on it. Leave this list empty
                 }
-                Collections.sort(charsets, DBUtils.<MySQLCharset>nameComparator());
-
+                charsets.sort(DBUtils.<MySQLCharset>nameComparator());
 
                 collations = new LinkedHashMap<>();
                 try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW COLLATION")) {
@@ -281,6 +273,18 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 } catch (SQLException ex) {
                     // Engines are not supported. Shame on it. Leave this list empty
                 }
+
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT @@GLOBAL.character_set_server,@@GLOBAL.collation_server")) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.next()) {
+                            defaultCharset = JDBCUtils.safeGetString(dbResult, 1);
+                            defaultCollation = JDBCUtils.safeGetString(dbResult, 2);
+                        }
+                    }
+                } catch (Throwable ex) {
+                    log.debug("Error reading default server charset/collation", ex);
+                }
+
             }
 
             // Read catalogs
@@ -291,8 +295,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.refreshObject(monitor);
 
         this.engines = null;
@@ -306,8 +309,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
-        throws DBException
-    {
+        throws DBException {
         if (CommonUtils.isEmpty(catalogName)) {
             return null;
         }
@@ -321,48 +323,41 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @Override
     public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return getCatalogs();
     }
 
     @Override
     public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException
-    {
+        throws DBException {
         return getCatalog(childName);
     }
 
     @Override
     public Class<? extends MySQLCatalog> getChildType(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return MySQLCatalog.class;
     }
 
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException
-    {
-        
+        throws DBException {
+
     }
 
     @Override
-    public boolean supportsDefaultChange()
-    {
+    public boolean supportsDefaultChange() {
         return true;
     }
 
     @Override
-    public MySQLCatalog getDefaultObject()
-    {
+    public MySQLCatalog getDefaultObject() {
         return CommonUtils.isEmpty(activeCatalogName) ? null : getCatalog(activeCatalogName);
     }
 
     @Override
     public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
-        throws DBException
-    {
+        throws DBException {
         final MySQLCatalog oldSelectedEntity = getDefaultObject();
         if (!(object instanceof MySQLCatalog)) {
             throw new DBException("Invalid object type: " + object);
@@ -426,8 +421,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     public List<MySQLUser> getUsers(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (users == null) {
             users = loadUsers(monitor);
         }
@@ -435,14 +429,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     public MySQLUser getUser(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
+        throws DBException {
         return DBUtils.findObject(getUsers(monitor), name);
     }
 
     private List<MySQLUser> loadUsers(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load users")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM mysql.user ORDER BY user")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -459,18 +451,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
     }
 
-    public List<MySQLEngine> getEngines()
-    {
+    public List<MySQLEngine> getEngines() {
         return engines;
     }
 
-    public MySQLEngine getEngine(String name)
-    {
+    public MySQLEngine getEngine(String name) {
         return DBUtils.findObject(engines, name);
     }
 
-    public MySQLEngine getDefaultEngine()
-    {
+    public MySQLEngine getDefaultEngine() {
         for (MySQLEngine engine : engines) {
             if (engine.getSupport() == MySQLEngine.Support.DEFAULT) {
                 return engine;
@@ -479,13 +468,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return null;
     }
 
-    public Collection<MySQLCharset> getCharsets()
-    {
+    public Collection<MySQLCharset> getCharsets() {
         return charsets;
     }
 
-    public MySQLCharset getCharset(String name)
-    {
+    public MySQLCharset getCharset(String name) {
         for (MySQLCharset charset : charsets) {
             if (charset.getName().equals(name)) {
                 return charset;
@@ -494,14 +481,20 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return null;
     }
 
-    public MySQLCollation getCollation(String name)
-    {
+    public MySQLCollation getCollation(String name) {
         return collations.get(name);
     }
 
+    public MySQLCharset getDefaultCharset() {
+        return getCharset(defaultCharset);
+    }
+
+    public MySQLCollation getDefaultCollation() {
+        return getCollation(defaultCollation);
+    }
+
     public List<MySQLPrivilege> getPrivileges(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (privileges == null) {
             privileges = loadPrivileges(monitor);
         }
@@ -509,8 +502,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     public List<MySQLPrivilege> getPrivilegesByKind(DBRProgressMonitor monitor, MySQLPrivilege.Kind kind)
-        throws DBException
-    {
+        throws DBException {
         List<MySQLPrivilege> privs = new ArrayList<>();
         for (MySQLPrivilege priv : getPrivileges(monitor)) {
             if (priv.getKind() == kind) {
@@ -521,14 +513,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     public MySQLPrivilege getPrivilege(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
+        throws DBException {
         return DBUtils.findObject(getPrivileges(monitor), name);
     }
 
     private List<MySQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load privileges")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PRIVILEGES")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -546,36 +536,30 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     public List<MySQLParameter> getSessionStatus(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return loadParameters(monitor, true, false);
     }
 
     public List<MySQLParameter> getGlobalStatus(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return loadParameters(monitor, true, true);
     }
 
     public List<MySQLParameter> getSessionVariables(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return loadParameters(monitor, false, false);
     }
 
     public List<MySQLParameter> getGlobalVariables(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return loadParameters(monitor, false, true);
     }
 
-    public List<MySQLDataSource> getInformation()
-    {
+    public List<MySQLDataSource> getInformation() {
         return Collections.singletonList(this);
     }
 
-    private List<MySQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
-    {
+    private List<MySQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW " +
@@ -610,8 +594,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @NotNull
     @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException
-    {
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
         return new MySQLPlanAnalyser(this).explain((JDBCSession) session, query);
     }
 
@@ -622,8 +605,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter)
-    {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new MySQLStructureAssistant(this));
         } else if (adapter == SQLHelpProvider.class) {
@@ -644,14 +626,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public Collection<? extends DBSDataType> getLocalDataTypes()
-    {
+    public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName)
-    {
+    public DBSDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
@@ -663,21 +643,26 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     @Override
     public String getDefaultDataTypeName(DBPDataKind dataKind) {
         switch (dataKind) {
-            case BOOLEAN: return "TINYINT(1)";
-            case NUMERIC: return "BIGINT";
-            case DATETIME: return "TIMESTAMP";
-            case BINARY: return "BINARY";
-            case CONTENT: return "LONGBLOB";
-            case ROWID: return "BINARY";
-            default: return "VARCHAR";
+            case BOOLEAN:
+                return "TINYINT(1)";
+            case NUMERIC:
+                return "BIGINT";
+            case DATETIME:
+                return "TIMESTAMP";
+            case BINARY:
+                return "BINARY";
+            case CONTENT:
+                return "LONGBLOB";
+            case ROWID:
+                return "BINARY";
+            default:
+                return "VARCHAR";
         }
     }
 
-    static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog>
-    {
+    static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
             if (catalogFilters != null) {
@@ -691,8 +676,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
 
         @Override
-        protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new MySQLCatalog(owner, resultSet);
         }
 
@@ -704,8 +688,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public ErrorType discoverErrorType(@NotNull Throwable error)
-    {
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (isMariaDB()) {
             // MariaDB-specific. They have bad SQLState support
             if ("08".equals(SQLState.getStateFromException(error))) {
@@ -726,7 +709,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             if (matcher.find()) {
                 DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
                 pos.line = Integer.parseInt(matcher.group(1)) - 1;
-                return new ErrorPosition[] { pos };
+                return new ErrorPosition[]{pos};
             }
         }
         return null;
