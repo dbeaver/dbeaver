@@ -64,41 +64,37 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
         for (MySQLCharset cs : dataSource.getCharsets()) {
             charsetCombo.add(cs.getName());
         }
-        charsetCombo.setText(DEFAULT_CHARSET_NAME);
-        charset = dataSource.getCharset(DEFAULT_CHARSET_NAME);
-        assert charset != null;
+        charset = dataSource.getDefaultCharset();
+        if (charset == null) {
+            charset = dataSource.getCharset(DEFAULT_CHARSET_NAME);
+        }
+        collation = dataSource.getDefaultCollation();
+        if (collation == null) {
+            collation = charset.getDefaultCollation();
+        }
+        charsetCombo.setText(charset.getName());
 
         final Combo collationCombo = UIUtils.createLabelCombo(group, "Collation", SWT.BORDER | SWT.DROP_DOWN);
         for (MySQLCollation col : charset.getCollations()) {
             collationCombo.add(col.getName());
         }
-        collation = charset.getDefaultCollation();
         if (collation != null) {
             UIUtils.setComboSelection(collationCombo, collation.getName());
         }
+        charsetCombo.addModifyListener(e -> {
+            charset = dataSource.getCharset(charsetCombo.getText());
+            assert charset != null;
 
-        charsetCombo.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                charset = dataSource.getCharset(charsetCombo.getText());
-                assert charset != null;
-
-                collationCombo.removeAll();
-                for (MySQLCollation col : charset.getCollations()) {
-                    collationCombo.add(col.getName());
-                }
-                collation = charset.getDefaultCollation();
-                if (collation != null) {
-                    UIUtils.setComboSelection(collationCombo, collation.getName());
-                }
+            collationCombo.removeAll();
+            for (MySQLCollation col : charset.getCollations()) {
+                collationCombo.add(col.getName());
+            }
+            collation = charset.getDefaultCollation();
+            if (collation != null) {
+                UIUtils.setComboSelection(collationCombo, collation.getName());
             }
         });
-        collationCombo.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                collation = charset.getCollation(collationCombo.getText());
-            }
-        });
+        collationCombo.addModifyListener(e -> collation = charset.getCollation(collationCombo.getText()));
 
         return composite;
     }
