@@ -30,6 +30,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -58,6 +59,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     public static final String SETTINGS_SECTION_AGGREGATE = "panel-" + PANEL_ID;
     public static final String PARAM_GROUP_BY_COLUMNS = "groupByColumns";
+    public static final String PARAM_GROUP_AS_STRINGS = "groupAsStrings";
 
     private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("###,###,###,###,###,##0.###");
     private static final DecimalFormat INTEGER_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
@@ -66,6 +68,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private Tree aggregateTable;
 
     private boolean groupByColumns;
+    private boolean aggregateAsStrings;
     //private boolean runServerQueries;
 
     private IDialogSettings panelSettings;
@@ -124,6 +127,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     private void loadSettings() {
+        aggregateAsStrings = panelSettings.getBoolean(PARAM_GROUP_AS_STRINGS);
         groupByColumns = panelSettings.getBoolean(PARAM_GROUP_BY_COLUMNS);
         IDialogSettings functionsSection = panelSettings.getSection("functions");
         if (functionsSection != null) {
@@ -161,6 +165,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private void saveSettings() {
         panelSettings.put(PARAM_GROUP_BY_COLUMNS, groupByColumns);
+        panelSettings.put(PARAM_GROUP_AS_STRINGS, aggregateAsStrings);
         IDialogSettings functionsSection = UIUtils.getSettingsSection(panelSettings, "functions");
 
         for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getFunctions()) {
@@ -264,7 +269,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         int[] funcCount = new int[funcs.length];
         for (Object element : values) {
             for (int i = 0; i < funcs.length; i++) {
-                if (funcs[i].accumulate(element)) {
+                if (funcs[i].accumulate(element, aggregateAsStrings)) {
                     funcCount[i]++;
                 }
             }
@@ -302,6 +307,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         contributionManager.add(new ResetFunctionsAction());
         contributionManager.add(new Separator());
         contributionManager.add(new GroupByColumnsAction());
+        contributionManager.add(new ValueTypeToggleAction());
     }
 
     private class GroupByColumnsAction extends Action {
@@ -315,6 +321,23 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         public void run() {
             groupByColumns = !groupByColumns;
             setChecked(groupByColumns);
+            refresh(false);
+        }
+    }
+
+    private class ValueTypeToggleAction extends Action {
+        public ValueTypeToggleAction() {
+            super("Toggle numbers/strings aggregation", IAction.AS_CHECK_BOX);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(
+                aggregateAsStrings ? DBIcon.TYPE_STRING : DBIcon.TYPE_NUMBER));
+            setChecked(aggregateAsStrings);
+        }
+
+        @Override
+        public void run() {
+            aggregateAsStrings = !aggregateAsStrings;
+            setChecked(aggregateAsStrings);
+            presentation.getController().updatePanelActions();
             refresh(false);
         }
     }

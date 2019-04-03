@@ -39,10 +39,12 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         return null;
     }
 
-    protected static Comparable getComparable(Object value) {
-        Number num = FunctionNumeric.getNumeric(value);
-        if (num != null) {
-            value = num;
+    protected static Comparable getComparable(Object value, boolean aggregateAsStrings) {
+        if (!aggregateAsStrings) {
+            Number num = FunctionNumeric.getNumeric(value);
+            if (num != null) {
+                value = num;
+            }
         }
         if (value instanceof Comparable) {
             return (Comparable)value;
