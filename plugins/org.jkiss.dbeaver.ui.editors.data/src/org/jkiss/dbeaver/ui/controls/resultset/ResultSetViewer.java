@@ -727,7 +727,7 @@ public class ResultSetViewer extends Viewer
                     panelButton.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            boolean isPanelVisible = isPanelVisible(panel.getId());
+                            boolean isPanelVisible = isPanelsVisible() && isPanelVisible(panel.getId());
                             if (isPanelVisible) {
                                 closePanel(panel.getId());
                             } else {
@@ -1096,6 +1096,7 @@ public class ResultSetViewer extends Viewer
         if (saveSettings) {
             savePresentationSettings();
         }
+        updatePanelsButtons();
     }
 
     boolean isPanelVisible(String panelId) {
