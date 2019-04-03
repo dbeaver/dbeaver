@@ -983,6 +983,7 @@ public class ResultSetViewer extends Viewer
         if (setActive) {
             setActivePanel(id);
         }
+        updatePanelsButtons();
         return true;
     }
 
