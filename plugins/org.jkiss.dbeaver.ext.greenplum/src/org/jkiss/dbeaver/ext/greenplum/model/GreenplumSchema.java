@@ -47,6 +47,11 @@ public class GreenplumSchema extends PostgreSchema {
     }
 
     @Override
+    public GreenplumDataSource getDataSource() {
+        return (GreenplumDataSource) super.getDataSource();
+    }
+
+    @Override
     public Collection<GreenplumTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return greenplumTableCache.getTypedObjects(monitor, this, GreenplumTable.class)
                 .stream()
@@ -99,8 +104,10 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @NotNull PostgreSchema postgreSchema,
                                                     @Nullable PostgreTableBase object,
                                                     @Nullable String objectName) throws SQLException {
+            String uriLocationColumn =
+                getDataSource().isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "urilocation" : "location";
             StringBuilder sqlQuery = new StringBuilder("SELECT c.oid,d.description, c.*,\n" +
-                    "CASE WHEN x.urilocation IS NOT NULL THEN array_to_string(x.urilocation, ',') ELSE '' END AS urilocation,\n" +
+                    "CASE WHEN x." + uriLocationColumn + " IS NOT NULL THEN array_to_string(x." + uriLocationColumn + ", ',') ELSE '' END AS urilocation,\n" +
                     "CASE WHEN x.command IS NOT NULL THEN x.command ELSE '' END AS command,\n" +
                     "x.fmttype, x.fmtopts,\n" +
                     "coalesce(x.rejectlimit, 0) AS rejectlimit,\n" +
@@ -115,14 +122,10 @@ public class GreenplumSchema extends PostgreSchema {
                             "case when c.relstorage = 'x' then true else false end as \"is_ext_table\",\n" +
                                     "case when (ns.nspname !~ '^pg_toast' and ns.nspname like 'pg_temp%') then true else false end as \"is_temp_table\"\n" +
                                     "FROM pg_catalog.pg_class c\n" +
-                                    "inner join pg_catalog.pg_namespace ns\n" +
-                                    "\ton ns.oid = c.relnamespace\n" +
-                                    "LEFT OUTER JOIN pg_catalog.pg_description d\n" +
-                                    "\tON d.objoid=c.oid AND d.objsubid=0\n" +
-                                    "left outer join pg_catalog.pg_exttable x\n" +
-                                    "\ton x.reloid = c.oid\n" +
-                                    "left outer join pg_catalog.pg_partitions p\n" +
-                                    "\ton c.relname = p.partitiontablename and ns.nspname = p.schemaname\n" +
+                                    "INNER JOIN pg_catalog.pg_namespace ns\n\ton ns.oid = c.relnamespace\n" +
+                                    "LEFT OUTER JOIN pg_catalog.pg_description d\n\tON d.objoid=c.oid AND d.objsubid=0\n" +
+                                    "LEFT OUTER JOIN pg_catalog.pg_exttable x\n\ton x.reloid = c.oid\n" +
+                                    "LEFT OUTER JOIN pg_catalog.pg_partitions p\n\ton c.relname = p.partitiontablename and ns.nspname = p.schemaname\n" +
                                     "WHERE c.relnamespace= ? AND c.relkind not in ('i','c') AND p.partitiontablename is null ")
                     .append((object == null && objectName == null ? "" : " AND relname=?"));
 
