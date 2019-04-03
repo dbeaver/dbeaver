@@ -30,12 +30,14 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
+import java.util.Locale;
+
 public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTransferWizard> {
 
     private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
     private static final int EXTRACT_TYPE_SEGMENTS = 1;
 
-    private Spinner threadsNumText;
+    private Text threadsNumText;
     private Combo rowsExtractType;
     private Label segmentSizeLabel;
     private Text segmentSizeText;
@@ -43,6 +45,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
     private Button rowCountCheckbox;
     private Button selectedColumnsOnlyCheckbox;
     private Button selectedRowsOnlyCheckbox;
+    private Text fetchSizeText;
 
     public DatabaseProducerPageExtractSettings() {
         super("Extraction settings");
@@ -68,9 +71,9 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
             Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
 
             Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_max_threads);
-            threadsNumText = new Spinner(generalSettings, SWT.BORDER);
-            threadsNumText.setMinimum(1);
-            threadsNumText.setMaximum(10);
+            threadsNumText = new Text(generalSettings, SWT.BORDER);
+            threadsNumText.setToolTipText("Number of simultaneous export threads. Can't be greater than number of source tables.");
+            threadsNumText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
             threadsNumText.addModifyListener(e -> {
                 try {
                     getWizard().getSettings().setMaxJobCount(Integer.parseInt(threadsNumText.getText()));
@@ -115,7 +118,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
             }
 
-            newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, null, true, 4);
+            newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, "Open new physical connection for data reading.\nMakes great sense if you are going to continue to work with your database during export process.", true, 4);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -123,12 +126,19 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 }
             });
 
-            rowCountCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_select_row_count, null, true, 4);
+            rowCountCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_select_row_count, "Query row count before performing export.\nThis will let you to track export progress but may cause performance faults in some cases.", true, 4);
             rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setQueryRowCount(rowCountCheckbox.getSelection());
                 }
+            });
+
+            fetchSizeText = UIUtils.createLabelText(generalSettings, "Fetch size", "", SWT.BORDER);
+            fetchSizeText.setToolTipText("Number of rows to fetch per one server roundtrip. May greatly affect extraction performance.");
+            fetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+            fetchSizeText.addModifyListener(e -> {
+                settings.setFetchSize(Integer.parseInt(fetchSizeText.getText()));
             });
 
             IStructuredSelection curSelection = getWizard().getCurrentSelection();
@@ -172,7 +182,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
     {
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
-        threadsNumText.setSelection(getWizard().getSettings().getMaxJobCount());
+        threadsNumText.setText(String.valueOf(getWizard().getSettings().getMaxJobCount()));
         newConnectionCheckbox.setSelection(settings.isOpenNewConnections());
         rowCountCheckbox.setSelection(settings.isQueryRowCount());
 
@@ -183,6 +193,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
             }
         }
+        fetchSizeText.setText(String.valueOf(settings.getFetchSize()));
         if (selectedColumnsOnlyCheckbox != null) {
             selectedColumnsOnlyCheckbox.setSelection(settings.isSelectedColumnsOnly());
         }

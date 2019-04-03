@@ -270,7 +270,7 @@ public class SearchDataQuery implements ISearchQuery {
             dataReceiver.filter = new DBDDataFilter(constraints);
             dataReceiver.filter.setAnyConstraint(true);
             DBCExecutionSource searchSource = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), this);
-            return dataContainer.readData(searchSource, session, dataReceiver, dataReceiver.filter, -1, -1, 0);
+            return dataContainer.readData(searchSource, session, dataReceiver, dataReceiver.filter, -1, -1, 0, 0);
         } catch (DBException e) {
             throw new DBCException("Error finding rows", e);
         }

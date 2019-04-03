@@ -64,6 +64,7 @@ public interface DBSDataContainer extends DBSObject {
      * @param firstRow first row number (<= 0 means do not use it)
      * @param maxRows total rows to fetch (<= 0 means fetch everything)
      * @param flags read flags. See FLAG_ constants
+     * @param fetchSize
      * @return number of fetched rows
      * @throws DBCException on any error
      */
@@ -75,7 +76,8 @@ public interface DBSDataContainer extends DBSObject {
         @Nullable DBDDataFilter dataFilter,
         long firstRow,
         long maxRows,
-        long flags)
+        long flags,
+        int fetchSize)
         throws DBCException;
 
     /**

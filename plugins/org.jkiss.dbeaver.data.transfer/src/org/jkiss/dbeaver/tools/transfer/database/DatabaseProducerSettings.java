@@ -35,6 +35,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     }
 
     private static final int DEFAULT_SEGMENT_SIZE = 100000;
+    private static final int DEFAULT_FETCH_SIZE = 10000;
 
     private int segmentSize = DEFAULT_SEGMENT_SIZE;
 
@@ -43,31 +44,35 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     private boolean selectedRowsOnly = false;
     private boolean selectedColumnsOnly = false;
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
+    private int fetchSize = DEFAULT_FETCH_SIZE;
 
-    public DatabaseProducerSettings()
-    {
+    public DatabaseProducerSettings() {
     }
 
-    public int getSegmentSize()
-    {
+    public int getSegmentSize() {
         return segmentSize;
     }
 
-    public void setSegmentSize(int segmentSize)
-    {
+    public void setSegmentSize(int segmentSize) {
         if (segmentSize > 0) {
             this.segmentSize = segmentSize;
         }
     }
 
-    public boolean isQueryRowCount()
-    {
+    public boolean isQueryRowCount() {
         return queryRowCount;
     }
 
-    public void setQueryRowCount(boolean queryRowCount)
-    {
+    public void setQueryRowCount(boolean queryRowCount) {
         this.queryRowCount = queryRowCount;
+    }
+
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
     }
 
     public boolean isSelectedRowsOnly() {
@@ -86,29 +91,24 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         this.selectedColumnsOnly = selectedColumnsOnly;
     }
 
-    public boolean isOpenNewConnections()
-    {
+    public boolean isOpenNewConnections() {
         return openNewConnections;
     }
 
-    public void setOpenNewConnections(boolean openNewConnections)
-    {
+    public void setOpenNewConnections(boolean openNewConnections) {
         this.openNewConnections = openNewConnections;
     }
 
-    public ExtractType getExtractType()
-    {
+    public ExtractType getExtractType() {
         return extractType;
     }
 
-    public void setExtractType(ExtractType extractType)
-    {
+    public void setExtractType(ExtractType extractType) {
         this.extractType = extractType;
     }
 
     @Override
-    public void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings)
-    {
+    public void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings) {
         if (dialogSettings.get("extractType") != null) {
             try {
                 extractType = ExtractType.valueOf(dialogSettings.get("extractType"));
@@ -136,8 +136,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void saveSettings(IDialogSettings dialogSettings)
-    {
+    public void saveSettings(IDialogSettings dialogSettings) {
         dialogSettings.put("extractType", extractType.name());
         dialogSettings.put("segmentSize", segmentSize);
         dialogSettings.put("openNewConnections", openNewConnections);

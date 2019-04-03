@@ -106,8 +106,8 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
                         dataFilter,
                         offset,
                         maxRows,
-                        flags
-                    );
+                        flags,
+                        0);
                 } catch (Throwable e) {
                     throw new InvocationTargetException(e);
                 }

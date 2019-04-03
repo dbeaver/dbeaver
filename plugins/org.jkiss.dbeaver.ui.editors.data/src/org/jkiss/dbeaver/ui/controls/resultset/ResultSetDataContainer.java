@@ -76,7 +76,7 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
     }
 
     @Override
-    public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException {
+    public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
         if (proceedSelectedRowsOnly(flags) || proceedSelectedColumnsOnly(flags)) {
 
             long startTime = System.currentTimeMillis();
@@ -107,7 +107,7 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
             statistics.setRowsFetched(resultCount);
             return statistics;
         } else {
-            return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags);
+            return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, 0);
         }
     }
 

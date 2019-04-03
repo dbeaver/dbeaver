@@ -46,7 +46,7 @@ class SQLQueryDataContainer implements DBSDataContainer, IDataSourceContainerPro
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
     {
         SQLQuery query = (SQLQuery) this.query;
         if (query.getResultsMaxRows() >= 0) {
