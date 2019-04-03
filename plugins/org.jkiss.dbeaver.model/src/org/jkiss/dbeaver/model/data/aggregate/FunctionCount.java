@@ -24,7 +24,7 @@ public class FunctionCount implements IAggregateFunction {
     private int count = 0;
 
     @Override
-    public boolean accumulate(Object value) {
+    public boolean accumulate(Object value, boolean aggregateAsStrings) {
         count++;
         return true;
     }

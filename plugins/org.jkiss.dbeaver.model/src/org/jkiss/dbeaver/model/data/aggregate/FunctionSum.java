@@ -24,7 +24,7 @@ public class FunctionSum extends FunctionNumeric {
     protected double result = Double.NaN;
 
     @Override
-    public boolean accumulate(Object value) {
+    public boolean accumulate(Object value, boolean aggregateAsStrings) {
         Number num = getNumeric(value);
         if (num != null) {
             if (Double.isNaN(result)) {

@@ -28,7 +28,7 @@ public class FunctionCountDistinct implements IAggregateFunction {
     private Set<Object> cache = new HashSet<>();
 
     @Override
-    public boolean accumulate(Object value) {
+    public boolean accumulate(Object value, boolean aggregateAsStrings) {
         if (!cache.contains(value)) {
             count++;
             cache.add(value);

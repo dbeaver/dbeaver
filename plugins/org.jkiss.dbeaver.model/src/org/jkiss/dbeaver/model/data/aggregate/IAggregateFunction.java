@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.data.aggregate;
  */
 public interface IAggregateFunction {
 
-    boolean accumulate(Object value);
+    boolean accumulate(Object value, boolean aggregateAsStrings);
 
     Object getResult(int valueCount);
 
