@@ -150,6 +150,7 @@ public class ResultSetViewer extends Viewer
     private ResultSetFilterPanel filtersPanel;
     private SashForm viewerSash;
 
+    private final VerticalFolder panelSwitchFolder;
     private CTabFolder panelFolder;
     private ToolBarManager panelToolBar;
 
@@ -219,7 +220,9 @@ public class ResultSetViewer extends Viewer
         this.defaultBackground = UIStyles.getDefaultTextBackground();
         this.defaultForeground = UIStyles.getDefaultTextForeground();
 
-        this.mainPanel = UIUtils.createPlaceholder(parent, 2);
+        boolean supportsPanels = supportsPanels();
+
+        this.mainPanel = UIUtils.createPlaceholder(parent, supportsPanels ? 3 : 2);
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -227,7 +230,7 @@ public class ResultSetViewer extends Viewer
         if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_FILTERS) != 0) {
             this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
+            gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
             this.filtersPanel.setLayoutData(gd);
         }
 
@@ -240,6 +243,14 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel.setData(CONTROL_ID, this);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
+
+        if (supportsPanels) {
+            this.panelSwitchFolder = new VerticalFolder(mainPanel, SWT.RIGHT);
+            this.panelSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            CSSUtils.setCSSClass(this.panelSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        } else {
+            panelSwitchFolder = null;
+        }
 
         try {
             this.findReplaceTarget = new DynamicFindReplaceTarget();
@@ -684,9 +695,55 @@ public class ResultSetViewer extends Viewer
             showPanels(panelsVisible, false, false);
             viewerSash.setOrientation(verticalLayout ? SWT.VERTICAL : SWT.HORIZONTAL);
             viewerSash.setWeights(panelWeights);
+
+            // Update panels toolbar
+            for (Control child : panelSwitchFolder.getChildren()) {
+                child.dispose();
+            }
+
+            if (!availablePanels.isEmpty()) {
+                VerticalButton panelsButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
+                panelsButton.setText(ResultSetMessages.controls_resultset_config_panels);
+                panelsButton.setImage(DBeaverIcons.getImage(UIIcon.PANEL_CUSTOMIZE));
+                panelsButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        showPanels(!isPanelsVisible(), true, true);
+                        panelsButton.setChecked(isPanelsVisible());
+                        updatePanelsButtons();
+                    }
+                });
+                panelsButton.setChecked(panelsVisible);
+                // Add all panels
+                for (final ResultSetPanelDescriptor panel : availablePanels) {
+                    VerticalButton panelButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
+                    GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+                    gd.verticalIndent = 2;
+                    gd.horizontalIndent = 1;
+                    panelButton.setLayoutData(gd);
+                    panelButton.setData(panel);
+                    panelButton.setImage(DBeaverIcons.getImage(panel.getIcon()));
+                    panelButton.setToolTipText(panel.getLabel());
+                    panelButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            boolean isPanelVisible = isPanelVisible(panel.getId());
+                            if (isPanelVisible) {
+                                closePanel(panel.getId());
+                            } else {
+                                activatePanel(panel.getId(), true, true);
+                            }
+                            panelButton.setChecked(!isPanelVisible);
+                            panelsButton.setChecked(isPanelsVisible());
+                            panelSwitchFolder.redraw();
+                        }
+                    });
+                    panelButton.setChecked(panelsVisible && isPanelVisible(panel.getId()));
+                }
+            }
         }
 
-        presentationPanel.layout();
+        mainPanel.layout(true, true);
         if (recordModeButton != null) {
             recordModeButton.setVisible(activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode());
         }
@@ -721,6 +778,20 @@ public class ResultSetViewer extends Viewer
                     control.setFocus();
                 }
             });
+        }
+    }
+
+    private void updatePanelsButtons() {
+        boolean panelsVisible = isPanelsVisible();
+        for (Control child : panelSwitchFolder.getChildren()) {
+            if (child instanceof VerticalButton && child.getData() instanceof ResultSetPanelDescriptor) {
+                boolean newChecked = panelsVisible &&
+                    isPanelVisible(((ResultSetPanelDescriptor) child.getData()).getId());
+                if (((VerticalButton) child).isChecked() != newChecked) {
+                    ((VerticalButton) child).setChecked(newChecked);
+                    child.redraw();
+                }
+            }
         }
     }
 
@@ -806,7 +877,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void savePresentationSettings() {
-        if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
+        if (supportsPanels()) {
             IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
             for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
                 if (pEntry.getKey() == null) {
@@ -966,6 +1037,7 @@ public class ResultSetViewer extends Viewer
         if (activePanels.isEmpty()) {
             showPanels(false, true, true);
         }
+        updatePanelsButtons();
     }
 
     private ResultSetPanelDescriptor getPanelDescriptor(String id) {
@@ -1026,7 +1098,7 @@ public class ResultSetViewer extends Viewer
     }
 
     boolean isPanelVisible(String panelId) {
-        return getPanelTab(panelId) != null;
+        return getPresentationSettings().enabledPanelIds.contains(panelId);
     }
 
     void closePanel(String panelId) {
@@ -1324,7 +1396,8 @@ public class ResultSetViewer extends Viewer
             ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             configToolBarManager.add(new ToolbarSeparatorContribution(true));
 
-            {
+/*
+            if (supportsPanels()) {
                 CommandContributionItemParameter ciParam = new CommandContributionItemParameter(
                     site,
                     "org.jkiss.dbeaver.core.resultset.panels",
@@ -1335,6 +1408,7 @@ public class ResultSetViewer extends Viewer
                 configToolBarManager.add(new CommandContributionItem(ciParam));
             }
             configToolBarManager.add(new ToolbarSeparatorContribution(true));
+*/
 
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
