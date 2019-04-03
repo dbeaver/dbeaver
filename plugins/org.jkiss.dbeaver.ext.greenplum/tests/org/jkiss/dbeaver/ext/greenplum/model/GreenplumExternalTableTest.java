@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.Assert;
@@ -33,7 +34,7 @@ public class GreenplumExternalTableTest {
     JDBCResultSet mockResults;
 
     @Mock
-    PostgreDataSource mockDataSource;
+    GreenplumDataSource mockDataSource;
 
     @Mock
     PostgreSchema.TableCache mockTableCache;
