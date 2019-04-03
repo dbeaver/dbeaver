@@ -117,12 +117,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private Menu historyMenu;
     private boolean filterExpanded = false;
 
-    ResultSetFilterPanel(ResultSetViewer rsv) {
-        super(rsv.getViewerPanel(), SWT.NONE);
+    ResultSetFilterPanel(ResultSetViewer rsv, Composite parent) {
+        super(parent, SWT.NONE);
         this.viewer = rsv;
         CSSUtils.setCSSClass(this, DBStyles.COLORED_BY_CONNECTION_TYPE);
-
-        this.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         this.sizingGC = new GC(this);
 
