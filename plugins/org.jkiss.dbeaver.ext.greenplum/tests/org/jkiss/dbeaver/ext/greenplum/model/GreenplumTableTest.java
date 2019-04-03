@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -36,7 +37,7 @@ public class GreenplumTableTest {
     JDBCExecutionContext mockContext;
 
     @Mock
-    PostgreDataSource mockDataSource;
+    GreenplumDataSource mockDataSource;
 
     @Mock
     DBRProgressMonitor mockMonitor;
