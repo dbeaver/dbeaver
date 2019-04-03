@@ -365,7 +365,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         itemsControl.setRedraw(false);
         try {
-            final boolean reload = !append && (objectList == null) || (columnController == null);
+            final boolean reload = !append && (CommonUtils.isEmpty(objectList)) || (columnController == null);
 
             {
                 // Collect list of items' classes
