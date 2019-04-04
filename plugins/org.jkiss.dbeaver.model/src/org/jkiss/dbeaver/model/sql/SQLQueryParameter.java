@@ -102,9 +102,12 @@ public class SQLQueryParameter {
     public String getTitle() {
         if (GeneralUtils.isVariablePattern(name)) {
             return GeneralUtils.stripVariablePattern(name);
-        } else if (!name.isEmpty() && name.charAt(0) == syntaxManager.getNamedParameterPrefix()) {
-            return name.substring(1);
         } else {
+            for (String prefix : syntaxManager.getNamedParameterPrefixes()) {
+                if (name.startsWith(prefix)) {
+                    return name.substring(prefix.length());
+                }
+            }
             return name;
         }
     }

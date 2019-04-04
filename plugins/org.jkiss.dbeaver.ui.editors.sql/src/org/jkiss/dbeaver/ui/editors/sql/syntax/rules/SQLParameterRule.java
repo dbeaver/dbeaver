@@ -31,14 +31,14 @@ public class SQLParameterRule implements IRule {
     private final SQLParameterToken parameterToken;
     private final StringBuilder buffer;
     private final char anonymousParameterMark;
-    private final char namedParameterPrefix;
+    private final String namedParameterPrefix;
 
-    public SQLParameterRule(SQLSyntaxManager syntaxManager, SQLParameterToken parameterToken) {
+    public SQLParameterRule(SQLSyntaxManager syntaxManager, SQLParameterToken parameterToken, String prefix) {
         this.syntaxManager = syntaxManager;
         this.parameterToken = parameterToken;
-        buffer = new StringBuilder();
-        anonymousParameterMark = syntaxManager.getAnonymousParameterMark();
-        namedParameterPrefix = syntaxManager.getNamedParameterPrefix();
+        this.buffer = new StringBuilder();
+        this.anonymousParameterMark = syntaxManager.getAnonymousParameterMark();
+        this.namedParameterPrefix = prefix;
     }
 
     @Override
@@ -47,12 +47,12 @@ public class SQLParameterRule implements IRule {
         scanner.unread();
         int prevChar = scanner.read();
         if (Character.isJavaIdentifierPart(prevChar) ||
-            prevChar == namedParameterPrefix || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/')
+            prevChar == namedParameterPrefix.charAt(0) || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/')
         {
             return Token.UNDEFINED;
         }
         int c = scanner.read();
-        if (c != ICharacterScanner.EOF && (c == anonymousParameterMark || c == namedParameterPrefix)) {
+        if (c != ICharacterScanner.EOF && (c == anonymousParameterMark || c == namedParameterPrefix.charAt(0))) {
             buffer.setLength(0);
             do {
                 buffer.append((char) c);
@@ -67,7 +67,7 @@ public class SQLParameterRule implements IRule {
                 }
             }
             if (syntaxManager.isParametersEnabled()) {
-                if (buffer.charAt(0) == namedParameterPrefix && buffer.length() > 1) {
+                if (buffer.charAt(0) == namedParameterPrefix.charAt(0) && buffer.length() > 1) {
                     boolean validChars = true;
                     for (int i = 1; i < buffer.length(); i++) {
                         if (!Character.isJavaIdentifierPart(buffer.charAt(i))) {

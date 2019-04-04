@@ -312,7 +312,9 @@ public class SQLRuleManager extends RuleBasedScanner {
             rules.add(wordRule);
 
             // Parameter rule
-            rules.add(new SQLParameterRule(syntaxManager, parameterToken));
+            for (String npPrefix : syntaxManager.getNamedParameterPrefixes()) {
+                rules.add(new SQLParameterRule(syntaxManager, parameterToken, npPrefix));
+            }
         }
 
         IRule[] result = new IRule[rules.size()];
