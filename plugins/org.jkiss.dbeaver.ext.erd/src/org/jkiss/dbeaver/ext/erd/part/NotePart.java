@@ -174,9 +174,8 @@ public class NotePart extends NodePart
         } else if (noteFigure.getSize().isEmpty()) {
             noteFigure.setPreferredSize(new Dimension(100, 50));
         }
-        this.customBackground = visualInfo.bgColor;
-        if (this.customBackground != null) {
-            noteFigure.setBackgroundColor(this.customBackground);
+        if (visualInfo.bgColor != null) {
+            noteFigure.setBackgroundColor(visualInfo.bgColor);
         }
         return noteFigure;
     }

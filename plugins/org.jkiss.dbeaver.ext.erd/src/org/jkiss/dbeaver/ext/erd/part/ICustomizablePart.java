@@ -22,21 +22,31 @@ package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 
 /**
  * Figure with customizable background color
  */
-public interface IColorizedPart {
+public interface ICustomizablePart {
 
-    /**
-     * @return custom color or null
-     */
+    boolean getCustomTransparency();
+
+    void setCustomTransparency(boolean transparency);
+
+    int getCustomBorderWidth();
+
+    void setCustomBorderWidth(int borderWidth);
+
     Color getCustomBackgroundColor();
 
-    /**
-     * Sets custom bg color.
-     * @param color color or null (to reset bg color to original)
-     */
-    void customizeBackgroundColor(Color color);
+    void setCustomBackgroundColor(Color color);
+
+    Color getCustomForegroundColor();
+
+    void setCustomForegroundColor(Color color);
+
+    Font getCustomFont();
+
+    void setCustomFont(Font color);
 
 }

@@ -192,9 +192,8 @@ public class EntityPart extends NodePart {
             if (visualInfo.initBounds != null) {
                 figure.setLocation(visualInfo.initBounds.getLocation());
             }
-            this.customBackground = visualInfo.bgColor;
-            if (this.customBackground != null) {
-                figure.setBackgroundColor(this.customBackground);
+            if (visualInfo.bgColor != null) {
+                figure.setBackgroundColor(visualInfo.bgColor);
             }
             if (getEntity().getAttributeVisibility() == null && visualInfo.attributeVisibility != null) {
                 getEntity().setAttributeVisibility(visualInfo.attributeVisibility);
