@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * SQLSyntaxManager.
@@ -165,7 +162,7 @@ public class SQLSyntaxManager {
         } else {
             this.anonymousParameterMark = markString.charAt(0);
         }
-        List<String> paramsPrefixes = new ArrayList<>();
+        Set<String> paramsPrefixes = new LinkedHashSet<>();
         String paramPrefixString = preferenceStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         if (!CommonUtils.isEmpty(paramPrefixString)) {
             paramsPrefixes.add(paramPrefixString);
