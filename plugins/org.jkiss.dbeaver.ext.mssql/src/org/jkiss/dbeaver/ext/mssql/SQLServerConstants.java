@@ -57,6 +57,7 @@ public class SQLServerConstants {
     public static final String AUTH_SQL_SERVER_PASSWORD = "SqlPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_PASSWORD = "ActiveDirectoryPassword";
     public static final String AUTH_ACTIVE_DIRECTORY_INTEGRATED = "ActiveDirectoryIntegrated";
+    public static final String AUTH_ACTIVE_DIRECTORY_MSI = "ActiveDirectoryMSI";
 
     public static final String AUTH_SCHEME_KERBEROS = "JavaKerberos";
 
