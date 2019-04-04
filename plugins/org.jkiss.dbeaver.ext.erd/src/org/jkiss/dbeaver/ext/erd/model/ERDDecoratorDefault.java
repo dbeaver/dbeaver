@@ -171,8 +171,10 @@ public class ERDDecoratorDefault implements ERDDecorator {
             }
             try {
 
-                DBSObjectFilter columnFilter = entity.getDataSource().getContainer().getObjectFilter(DBSEntityAttribute.class, entity, false);
                 Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
+                DBSEntityAttribute firstAttr = CommonUtils.isEmpty(attributes) ? null : attributes.iterator().next();
+                DBSObjectFilter columnFilter = firstAttr == null ? null :
+                    entity.getDataSource().getContainer().getObjectFilter(firstAttr.getClass(), entity, false);
                 if (!CommonUtils.isEmpty(attributes)) {
                     for (DBSEntityAttribute attribute : attributes) {
                         if (attribute instanceof DBSEntityAssociation) {
