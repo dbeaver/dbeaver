@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -337,7 +338,12 @@ public class Spreadsheet extends LightGrid implements Listener {
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
-        site.registerContextMenu(menuMgr, presentation);
+        if (site instanceof IEditorSite) {
+            // Exclude editor input contributions from context menu
+            ((IEditorSite)site).registerContextMenu(menuMgr, presentation, false);
+        } else {
+            site.registerContextMenu(menuMgr, presentation);
+        }
     }
 
     public void cancelInlineEditor()
