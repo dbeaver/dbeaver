@@ -340,7 +340,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.setMenu(menu);
         if (site instanceof IEditorSite) {
             // Exclude editor input contributions from context menu
-            ((IEditorSite)site).registerContextMenu(menuMgr, presentation, false);
+            ((IEditorSite)site).registerContextMenu("spreadsheet_menu", menuMgr, presentation, false);
         } else {
             site.registerContextMenu(menuMgr, presentation);
         }
