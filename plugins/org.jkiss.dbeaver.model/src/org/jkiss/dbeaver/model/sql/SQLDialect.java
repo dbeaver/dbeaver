@@ -157,6 +157,9 @@ public interface SQLDialect {
      */
     char getStructSeparator();
 
+    @NotNull
+    String[] getParametersPrefixes();
+
     /**
      * Script delimiter character
      * @return script delimiter mark

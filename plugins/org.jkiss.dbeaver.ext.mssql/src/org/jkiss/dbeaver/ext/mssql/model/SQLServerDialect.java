@@ -70,6 +70,11 @@ public class SQLServerDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public String[] getParametersPrefixes() {
+        return new String[] { "@" };
+    }
+
+    @Override
     public boolean isDelimiterAfterQuery() {
         return SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver());
     }
