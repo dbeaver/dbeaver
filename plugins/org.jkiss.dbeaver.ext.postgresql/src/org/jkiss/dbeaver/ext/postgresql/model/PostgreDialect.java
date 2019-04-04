@@ -720,6 +720,11 @@ public class PostgreDialect extends JDBCSQLDialect {
         return SQLDialect.USAGE_ALL;
     }
 
+    @Override
+    public String[] getParametersPrefixes() {
+        return new String[] { "$" };
+    }
+
     @Nullable
     @Override
     public String getBlockToggleString() {

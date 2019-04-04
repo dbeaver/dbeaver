@@ -288,10 +288,15 @@ public class DashboardUpdater {
                 values[i] = dbResults.getAttributeValue(colNames.get(i));
             }
             dataset.addRow(new DashboardDatasetRow(timestamp, values));
+            if (dataset.getRows().size() >= dashboard.getDashboardMaxItems()) {
+                break;
+            }
         }
 
-        if (dashboard.getDashboardFetchType() == DashboardFetchType.rows) {
-            dataset = transposeDataset(dataset);
+        switch (dashboard.getDashboardFetchType()) {
+            case rows:
+                dataset = transposeDataset(dataset);
+                break;
         }
         dashboard.updateDashboardData(dataset);
     }

@@ -55,6 +55,7 @@ public class DashboardEditDialog extends BaseDialog {
     private Combo dataTypeCombo;
     private Combo calcTypeCombo;
     private Combo valueTypeCombo;
+    private Combo intervalCombo;
     private Combo fetchTypeCombo;
 
     private DBPNamedObject targetDatabase;
@@ -147,12 +148,21 @@ public class DashboardEditDialog extends BaseDialog {
             valueTypeCombo.setText(dashboardDescriptor.getValueType().name());
             valueTypeCombo.setEnabled(!readOnly);
 
+            intervalCombo = UIUtils.createLabelCombo(infoGroup, "Interval", "Values interval", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (DashboardInterval dvt : DashboardInterval.values()) {
+                intervalCombo.add(dvt.name());
+            }
+            intervalCombo.setText(dashboardDescriptor.getInterval().name());
+            intervalCombo.setEnabled(!readOnly);
+
             fetchTypeCombo = UIUtils.createLabelCombo(infoGroup, "Fetch type", "Values fetch type", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             for (DashboardFetchType dft : DashboardFetchType.values()) {
                 fetchTypeCombo.add(dft.name());
             }
             fetchTypeCombo.setText(dashboardDescriptor.getFetchType().name());
             fetchTypeCombo.setEnabled(!readOnly);
+
+            UIUtils.createEmptyLabel(infoGroup, 2, 1);
 
             descriptionText = UIUtils.createLabelText(infoGroup, "Description", CommonUtils.notEmpty(dashboardDescriptor.getDescription()), SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | baseStyle);
             ((GridData) descriptionText.getLayoutData()).heightHint = 30;
@@ -231,6 +241,7 @@ public class DashboardEditDialog extends BaseDialog {
         dashboardDescriptor.setDataType(DashboardDataType.values()[dataTypeCombo.getSelectionIndex()]);
         dashboardDescriptor.setCalcType(DashboardCalcType.values()[calcTypeCombo.getSelectionIndex()]);
         dashboardDescriptor.setValueType(DashboardValueType.values()[valueTypeCombo.getSelectionIndex()]);
+        dashboardDescriptor.setInterval(DashboardInterval.values()[intervalCombo.getSelectionIndex()]);
         dashboardDescriptor.setFetchType(DashboardFetchType.values()[fetchTypeCombo.getSelectionIndex()]);
         dashboardDescriptor.setQueries(queryText.getText().split("\\n\\s*\\n"));
 

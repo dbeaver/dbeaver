@@ -43,7 +43,7 @@ public class FireBirdTable extends GenericTable implements DBPNamedObject2 {
     }
 
     @Override
-    public synchronized Collection<FireBirdTableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException {
+    public synchronized List<FireBirdTableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException {
         Collection<? extends GenericTableColumn> childColumns = super.getAttributes(monitor);
         if (childColumns == null) {
             return Collections.emptyList();

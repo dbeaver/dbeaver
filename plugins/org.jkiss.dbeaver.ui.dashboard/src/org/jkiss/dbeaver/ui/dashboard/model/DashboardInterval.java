@@ -14,29 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * Created on Jul 13, 2004
- */
-package org.jkiss.dbeaver.ext.erd.part;
-
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.swt.graphics.Color;
+package org.jkiss.dbeaver.ui.dashboard.model;
 
 /**
- * Figure with customizable background color
+ * Dashboard tick interval
  */
-public interface IColorizedPart {
+public enum DashboardInterval {
 
-    /**
-     * @return custom color or null
-     */
-    Color getCustomBackgroundColor();
-
-    /**
-     * Sets custom bg color.
-     * @param color color or null (to reset bg color to original)
-     */
-    void customizeBackgroundColor(Color color);
+    millisecond,
+    second,
+    minute,
+    hour,
+    day,
+    week,
+    month,
+    year
 
 }

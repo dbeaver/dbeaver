@@ -190,6 +190,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         CoreMessages.dialog_connection_wizard_start_dialog_error_title,
                         null,
                         GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+            } catch (Throwable ex) {
+                DBWorkbench.getPlatformUI().showError(
+                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    null,
+                    GeneralUtils.makeExceptionStatus(ex));
             }
         } finally {
             testDataSource.dispose();

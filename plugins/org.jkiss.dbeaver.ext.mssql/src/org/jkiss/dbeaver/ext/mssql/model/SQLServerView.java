@@ -77,7 +77,7 @@ public class SQLServerView extends SQLServerTableBase
     }
 
     @Override
-    public Collection<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<SQLServerTableColumn> childColumns = getContainer().getTableCache().getChildren(monitor, getContainer(), this);
