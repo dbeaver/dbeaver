@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
+import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
@@ -63,8 +64,7 @@ import java.util.regex.Pattern;
 /**
  * PostgreDataSource
  */
-public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, DBCQueryPlanner, IAdaptable
-{
+public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, IAdaptable {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
 
@@ -373,29 +373,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         return pgConnection;
     }
 
-    ////////////////////////////////////////////
-    // Explain plan
-
-    @NotNull
-    @Override
-    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException
-    {
-        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(
-                getPlanStyle() == DBCPlanStyle.QUERY,
-                getServerType().supportsExplainPlanVerbose(),
-                query);
-        if (getPlanStyle() == DBCPlanStyle.PLAN) {
-            plan.explain(session);
-        }
-        return plan;
-    }
-
-    @NotNull
-    @Override
-    public DBCPlanStyle getPlanStyle() {
-        return getServerType().supportsExplainPlanXML() ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
-    }
-
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
@@ -405,6 +382,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             return adapter.cast(new AsyncServerOutputReader());
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new PostgreSessionManager(this));
+        } else if (adapter == DBCQueryPlanner.class) {
+            return adapter.cast(new PostgreQueryPlaner(this));
         }
         return super.getAdapter(adapter);
     }
