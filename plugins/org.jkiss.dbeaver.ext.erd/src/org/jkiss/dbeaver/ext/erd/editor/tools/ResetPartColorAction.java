@@ -5,7 +5,7 @@ import org.eclipse.gef.ui.actions.SelectionAction;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
-import org.jkiss.dbeaver.ext.erd.part.IColorizedPart;
+import org.jkiss.dbeaver.ext.erd.part.ICustomizablePart;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +25,7 @@ public class ResetPartColorAction extends SelectionAction {
 
     protected boolean calculateEnabled() {
         for (Object item : selection.toArray()) {
-            if (item instanceof IColorizedPart && ((IColorizedPart) item).getCustomBackgroundColor() != null) {
+            if (item instanceof ICustomizablePart && ((ICustomizablePart) item).getCustomBackgroundColor() != null) {
                 return true;
             }
         }
@@ -42,14 +42,14 @@ public class ResetPartColorAction extends SelectionAction {
 
     private Command createColorCommand(final Object[] objects) {
         return new Command() {
-            private final Map<IColorizedPart, Color> oldColors = new HashMap<>();
+            private final Map<ICustomizablePart, Color> oldColors = new HashMap<>();
             @Override
             public void execute() {
                 for (Object item : objects) {
-                    if (item instanceof IColorizedPart) {
-                        IColorizedPart colorizedPart = (IColorizedPart) item;
+                    if (item instanceof ICustomizablePart) {
+                        ICustomizablePart colorizedPart = (ICustomizablePart) item;
                         oldColors.put(colorizedPart, colorizedPart.getCustomBackgroundColor());
-                        colorizedPart.customizeBackgroundColor(null);
+                        colorizedPart.setCustomBackgroundColor(null);
                     }
                 }
             }
@@ -57,9 +57,9 @@ public class ResetPartColorAction extends SelectionAction {
             @Override
             public void undo() {
                 for (Object item : objects) {
-                    if (item instanceof IColorizedPart) {
-                        IColorizedPart colorizedPart = (IColorizedPart) item;
-                        colorizedPart.customizeBackgroundColor(oldColors.get(colorizedPart));
+                    if (item instanceof ICustomizablePart) {
+                        ICustomizablePart colorizedPart = (ICustomizablePart) item;
+                        colorizedPart.setCustomBackgroundColor(oldColors.get(colorizedPart));
                     }
                 }
             }
@@ -67,9 +67,9 @@ public class ResetPartColorAction extends SelectionAction {
             @Override
             public void redo() {
                 for (Object item : objects) {
-                    if (item instanceof IColorizedPart) {
-                        IColorizedPart colorizedPart = (IColorizedPart) item;
-                        colorizedPart.customizeBackgroundColor(null);
+                    if (item instanceof ICustomizablePart) {
+                        ICustomizablePart colorizedPart = (ICustomizablePart) item;
+                        colorizedPart.setCustomBackgroundColor(null);
                     }
                 }
             }

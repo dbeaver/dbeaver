@@ -17,20 +17,19 @@
 
 package org.jkiss.dbeaver.ext.erd.part;
 
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.NodeEditPart;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Abstract node part
  */
-public abstract class NodePart extends PropertyAwarePart implements NodeEditPart, IColorizedPart {
+public abstract class NodePart extends PropertyAwarePart implements NodeEditPart, ICustomizablePart {
 
-    protected Color customBackground;
     private Rectangle bounds;
 
 
@@ -66,20 +65,91 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
     }
 
     @Override
-    public Color getCustomBackgroundColor() {
-        return customBackground;
+    public boolean getCustomTransparency() {
+        IFigure figure = getFigure();
+        return figure != null && !figure.isOpaque();
     }
 
     @Override
-    public void customizeBackgroundColor(Color color) {
-        this.customBackground = color;
+    public void setCustomTransparency(boolean transparency) {
         IFigure figure = getFigure();
         if (figure != null) {
-            figure.setBackgroundColor(
-                customBackground == null ?
-                    UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_BACKGROUND) :
-                    customBackground);
+            figure.setOpaque(!transparency);
         }
     }
 
+    @Override
+    public int getCustomBorderWidth() {
+        IFigure figure = getFigure();
+        if (figure != null) {
+            Border border = figure.getBorder();
+            if (border instanceof LineBorder) {
+                return ((LineBorder) border).getWidth();
+            } else if (border instanceof CompoundBorder) {
+                if (((CompoundBorder) border).getOuterBorder() instanceof LineBorder) {
+                    return ((LineBorder) ((CompoundBorder) border).getOuterBorder()).getWidth();
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public void setCustomBorderWidth(int borderWidth) {
+        IFigure figure = getFigure();
+        if (figure != null) {
+            figure.setBorder(new CompoundBorder(
+                new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND), borderWidth),
+                new MarginBorder(5)
+            ));
+        }
+    }
+
+    @Override
+    public Color getCustomBackgroundColor() {
+        IFigure figure = getFigure();
+        return figure == null ? null : figure.getBackgroundColor();
+    }
+
+    @Override
+    public void setCustomBackgroundColor(Color color) {
+        IFigure figure = getFigure();
+        if (figure != null) {
+            figure.setBackgroundColor(
+                color == null ?
+                    UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_BACKGROUND) :
+                    color);
+        }
+    }
+
+    @Override
+    public Color getCustomForegroundColor() {
+        IFigure figure = getFigure();
+        return figure == null ? null : figure.getForegroundColor();
+    }
+
+    @Override
+    public void setCustomForegroundColor(Color color) {
+        IFigure figure = getFigure();
+        if (figure != null) {
+            figure.setForegroundColor(
+                color == null ?
+                    UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_FOREGROUND) :
+                    color);
+        }
+    }
+
+    @Override
+    public Font getCustomFont() {
+        IFigure figure = getFigure();
+        return figure == null ? null : figure.getFont();
+    }
+
+    @Override
+    public void setCustomFont(Font font) {
+        IFigure figure = getFigure();
+        if (figure != null) {
+            figure.setFont(font);
+        }
+    }
 }
