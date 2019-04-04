@@ -124,11 +124,11 @@ public class TextUtils {
         if (width <= 0) {
             return ""; //$NON-NLS-1$
         }
-        int avgCharWidth = fontMetrics.getAverageCharWidth();
-        float length = t.length();
+        double avgCharWidth = fontMetrics.getAverageCharacterWidth();
+        double length = t.length();
         if (width < length * avgCharWidth) {
-            length = (float) width / avgCharWidth;
-            length *= 1.5;
+            length = (double) width / avgCharWidth;
+            length *= 2; // In case of big number of narrow characters
             if (length < t.length()) {
                 t = t.substring(0, (int) length);
                 //return getShortText(gc, t, width);
