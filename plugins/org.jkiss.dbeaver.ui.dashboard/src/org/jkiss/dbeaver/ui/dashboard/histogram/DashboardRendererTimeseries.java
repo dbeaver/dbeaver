@@ -25,9 +25,7 @@ import org.jfree.chart.axis.*;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.data.time.FixedMillisecond;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.*;
 import org.jfree.ui.RectangleInsets;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -50,6 +48,7 @@ import java.util.List;
 public class DashboardRendererTimeseries extends DashboardRendererBase {
 
     private static final Font DEFAULT_TICK_LABEL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 8);
+    public static final int MAX_TIMESERIES_RANGE_LABELS = 25;
 
     @Override
     public DashboardChartComposite createDashboard(Composite composite, DashboardContainer container, DashboardViewContainer viewContainer, Point preferredSize) {
@@ -105,7 +104,29 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
             domainAxis.setTickLabelPaint(gridColor);
             domainAxis.setTickLabelFont(DEFAULT_TICK_LABEL_FONT);
             domainAxis.setTickLabelInsets(RectangleInsets.ZERO_INSETS);
-            domainAxis.setTickUnit(new DateTickUnit(DateTickUnitType.SECOND, container.getDashboardMaxItems() / 5));
+            DateTickUnitType unitType;
+            switch (container.getDashboardInterval()) {
+                case minute:
+                    unitType = DateTickUnitType.MINUTE;
+                    break;
+                case hour:
+                    unitType = DateTickUnitType.HOUR;
+                    break;
+                case day:
+                case week:
+                    unitType = DateTickUnitType.DAY;
+                    break;
+                case month:
+                    unitType = DateTickUnitType.MONTH;
+                    break;
+                case year:
+                    unitType = DateTickUnitType.YEAR;
+                    break;
+                default:
+                    unitType = DateTickUnitType.SECOND;
+                    break;
+            }
+            domainAxis.setTickUnit(new DateTickUnit(unitType, Math.min(MAX_TIMESERIES_RANGE_LABELS, container.getDashboardMaxItems() / 5)));
             if (viewConfig != null && !viewConfig.isDomainTicksVisible()) {
                 domainAxis.setVisible(false);
             }
@@ -169,6 +190,11 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
         XYPlot plot = (XYPlot) chart.getPlot();
         TimeSeriesCollection chartDataset = (TimeSeriesCollection) plot.getDataset();
 
+        if (container.getDashboardFetchType() == DashboardFetchType.stats) {
+            // Clean previous data before stats update
+            chartDataset.removeAllSeries();
+        }
+
         long currentTime = System.currentTimeMillis();
         long secondsPassed = lastUpdateTime == null ? 1 : (currentTime - lastUpdateTime.getTime()) / 1000;
         if (secondsPassed <= 0) {
@@ -197,7 +223,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
                     for (DashboardDatasetRow row : rows) {
                         Object value = row.getValues()[i];
                         if (value instanceof Number) {
-                            series.addOrUpdate(new FixedMillisecond(row.getTimestamp().getTime()), (Number) value);
+                            series.addOrUpdate(makeDataItem(container, row), (Number) value);
                         }
                     }
                     break;
@@ -218,8 +244,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
                                     deltaValue = Math.round(deltaValue);
                                 }
                                 series.addOrUpdate(
-                                    new FixedMillisecond(
-                                        row.getTimestamp().getTime()),
+                                    makeDataItem(container, row),
                                     deltaValue);
                             }
                         }
@@ -231,6 +256,20 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 
         if (!rows.isEmpty()) {
             chartComposite.setData("last_row", rows.get(rows.size() - 1));
+        }
+    }
+
+    private RegularTimePeriod makeDataItem(DashboardContainer container, DashboardDatasetRow row) {
+        switch (container.getDashboardInterval()) {
+            case second: return new Second(row.getTimestamp());
+            case minute: return new Minute(row.getTimestamp());
+            case hour: return new Hour(row.getTimestamp());
+            case day: return new Day(row.getTimestamp());
+            case week: return new Week(row.getTimestamp());
+            case month: return new Month(row.getTimestamp());
+            case year: return new Year(row.getTimestamp());
+            default:
+                return new FixedMillisecond(row.getTimestamp().getTime());
         }
     }
 
