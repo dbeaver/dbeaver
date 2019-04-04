@@ -60,6 +60,7 @@ public class ChangeZOrderAction extends SelectionAction {
                             }
                             child.repaint();
                         }
+                        //((NodePart) item).getDiagram().
                     }
                 }
             }

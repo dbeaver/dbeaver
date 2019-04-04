@@ -23,5 +23,6 @@ public enum DashboardFetchType {
 
     columns,
     rows,
+    stats,
 
 }

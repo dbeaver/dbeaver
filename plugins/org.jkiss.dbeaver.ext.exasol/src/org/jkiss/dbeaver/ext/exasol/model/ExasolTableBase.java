@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -111,7 +112,7 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
     // Columns
     // -----------------
     @Override
-    public Collection<ExasolTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (this instanceof ExasolTable)
             return getContainer().getTableCache().getChildren(monitor, getContainer(), (ExasolTable) this);
 

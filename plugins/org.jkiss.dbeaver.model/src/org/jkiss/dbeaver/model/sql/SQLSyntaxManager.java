@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * SQLSyntaxManager.
@@ -46,7 +46,7 @@ public class SQLSyntaxManager {
     private boolean parametersEnabled;
     private boolean anonymousParametersEnabled;
     private char anonymousParameterMark;
-    private char namedParameterPrefix;
+    private String[] namedParameterPrefixes;
     private String controlCommandPrefix;
     private boolean variablesEnabled;
     @NotNull
@@ -114,8 +114,8 @@ public class SQLSyntaxManager {
         return anonymousParameterMark;
     }
 
-    public char getNamedParameterPrefix() {
-        return namedParameterPrefix;
+    public String[] getNamedParameterPrefixes() {
+        return namedParameterPrefixes;
     }
 
     public String getControlCommandPrefix() {
@@ -162,12 +162,13 @@ public class SQLSyntaxManager {
         } else {
             this.anonymousParameterMark = markString.charAt(0);
         }
+        Set<String> paramsPrefixes = new LinkedHashSet<>();
         String paramPrefixString = preferenceStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
-        if (CommonUtils.isEmpty(paramPrefixString)) {
-            this.namedParameterPrefix = SQLConstants.DEFAULT_PARAMETER_PREFIX;
-        } else {
-            this.namedParameterPrefix = paramPrefixString.charAt(0);
+        if (!CommonUtils.isEmpty(paramPrefixString)) {
+            paramsPrefixes.add(paramPrefixString);
         }
+        Collections.addAll(paramsPrefixes, dialect.getParametersPrefixes());
+        namedParameterPrefixes = paramsPrefixes.toArray(new String[0]);
 
         this.controlCommandPrefix = preferenceStore.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX);
         if (CommonUtils.isEmpty(this.controlCommandPrefix)) {

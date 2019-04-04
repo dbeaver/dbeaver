@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -43,6 +44,9 @@ import java.util.Map;
 public class PostgrePlanAnalyser extends AbstractExecutionPlan {
 
     private static final Log log = Log.getLog(PostgrePlanAnalyser.class);
+
+    private static final String NODE_PREFIX = "->  ";
+    private static final String PROP_PREFIX = "  ";
 
     private boolean oldQuery;
     private boolean verbose;
@@ -100,9 +104,20 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
             }
             try (JDBCPreparedStatement dbStat = connection.prepareStatement(getPlanQueryString())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        SQLXML planXML = dbResult.getSQLXML(1);
-                        parsePlan(session, planXML);
+                    if (oldQuery) {
+                        List<String> planLines = new ArrayList<>();
+                        while (dbResult.next()) {
+                            String planLine = dbResult.getString(1);
+                            if (!CommonUtils.isEmpty(planLine)) {
+                                planLines.add(planLine);
+                            }
+                        }
+                        parsePlanText(session, planLines);
+                    } else {
+                        if (dbResult.next()) {
+                            SQLXML planXML = dbResult.getSQLXML(1);
+                            parsePlanXML(session, planXML);
+                        }
                     }
                 } catch (XMLException e) {
                     throw new DBCException("Can't parse plan XML", e);
@@ -123,13 +138,62 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
         }
     }
 
-    private void parsePlan(DBCSession session, SQLXML planXML) throws SQLException, XMLException {
+    private void parsePlanXML(DBCSession session, SQLXML planXML) throws SQLException, XMLException {
         rootNodes = new ArrayList<>();
         Document planDocument = XMLUtils.parseDocument(planXML.getBinaryStream());
         Element queryElement = XMLUtils.getChildElement(planDocument.getDocumentElement(), "Query");
         for (Element planElement : XMLUtils.getChildElementList(queryElement, "Plan")) {
-            rootNodes.add(new PostgrePlanNode((PostgreDataSource) session.getDataSource(), null, planElement));
+            rootNodes.add(new PostgrePlanNodeXML((PostgreDataSource) session.getDataSource(), null, planElement));
         }
+    }
+
+    private void parsePlanText(DBCSession session, List<String> lines) {
+        PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
+
+        PostgrePlanNodeText rootNode = null, curNode = null;
+        int curIndent = 0;
+        for (String line : lines) {
+            int lineIndent = 0;
+            for (int i = 0; i < line.length(); i++) {
+                if (line.charAt(i) != ' ') {
+                    break;
+                }
+                lineIndent++;
+            }
+            if (curIndent == 0 && lineIndent == 0) {
+                // Root node
+                curNode = rootNode = new PostgrePlanNodeText(dataSource, null, line, lineIndent);
+            } else if (lineIndent >= curIndent) {
+                // Child node
+                if (line.substring(lineIndent).startsWith(NODE_PREFIX)) {
+                    //log.debug("New child " + line);
+
+                    lineIndent += NODE_PREFIX.length();
+                } else if (lineIndent == curIndent || lineIndent == curIndent + 2) {
+                    // Property
+                    //log.debug("New prop " + line);
+
+                } else {
+                    log.debug("Wrong text opening line (must start with nested node prefix): " + line);
+                }
+                curIndent = lineIndent;
+            } else if (lineIndent < curIndent) {
+                // Go to parent node
+                if (lineIndent == 0) {
+                    // Trailing plan statuses
+                } else {
+                    //log.debug("Go upper " + line);
+                    if (!line.substring(lineIndent).startsWith(NODE_PREFIX)) {
+                        log.debug("Wrong text closing line (must start with nested node prefix): " + line);
+                    } else {
+                        lineIndent += NODE_PREFIX.length();
+                    }
+                }
+                curIndent = lineIndent;
+            }
+        }
+        rootNodes = new ArrayList<>();
+        rootNodes.add(rootNode);
     }
 
 }

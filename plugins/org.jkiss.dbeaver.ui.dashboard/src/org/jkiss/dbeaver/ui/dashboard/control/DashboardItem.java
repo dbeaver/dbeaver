@@ -289,6 +289,11 @@ public class DashboardItem extends Composite implements DashboardContainer {
     }
 
     @Override
+    public DashboardInterval getDashboardInterval() {
+        return dashboardConfig.getDashboardDescriptor().getInterval();
+    }
+
+    @Override
     public DashboardFetchType getDashboardFetchType() {
         return dashboardConfig.getDashboardDescriptor().getFetchType();
     }

@@ -380,8 +380,8 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         children.addAll(entities);
         children.addAll(notes);
         children.sort((o1, o2) -> {
-            NodeVisualInfo vi1 = o1 instanceof ERDNote ? noteVisuals.get(o1) : entityVisuals.get(o1);
-            NodeVisualInfo vi2 = o2 instanceof ERDNote ? noteVisuals.get(o2) : entityVisuals.get(o2);
+            NodeVisualInfo vi1 = o1 instanceof ERDNote ? noteVisuals.get(o1) : entityVisuals.get(o1.getObject());
+            NodeVisualInfo vi2 = o2 instanceof ERDNote ? noteVisuals.get(o2) : entityVisuals.get(o2.getObject());
             return vi1 != null && vi2 != null ? vi1.zOrder - vi2.zOrder : 0;
         });
         return children;

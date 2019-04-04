@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTrigger;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTypeCache;
-import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -204,7 +203,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
-        return new PostgreQueryPlaner(dataSource);
+        return new PostgreGenericQueryPlaner(dataSource);
     }
 
     @Override

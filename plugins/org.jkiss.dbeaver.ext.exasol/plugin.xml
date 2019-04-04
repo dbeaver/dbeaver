@@ -564,4 +564,28 @@
         <command id="exasol.define" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Define" description="Defines variable"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dashboard">
+
+        <dashboard id="exasol.usageHourly" label="User activity" defaultView="timeseries" group="Standard" updatePeriod="3600000"
+                   calc="value" value="integer" fetch="stats" interval="hour" maxItems="48" maxAge="172800000" showByDefault="true" description="Shows users activity statistics">
+            <datasource id="exasol"/>
+            <query>
+                SELECT INTERVAL_START AS STAT_TIMESTAMP, USERS_AVG AS "Users Avg", USERS_MAX AS "Users Max", QUERIES_AVG AS "Queries Avg", QUERIES_MAX AS "Queries Max", IDLE AS "Idle"
+                FROM EXA_STATISTICS.EXA_USAGE_HOURLY
+                ORDER BY 1 DESC
+            </query>
+        </dashboard>
+
+        <dashboard id="exasol.usageLastDay" label="Connections" defaultView="timeseries" group="Standard" updatePeriod="2000"
+                   calc="value" value="integer" fetch="stats" interval="second" maxItems="120" maxAge="172800000" showByDefault="true" description="Shows connections statistics">
+            <datasource id="exasol"/>
+            <query>
+                SELECT MEASURE_TIME AS STAT_TIMESTAMP, USERS as "Established Connections", QUERIES as "Executing Connections"
+                FROM EXA_STATISTICS.EXA_USAGE_LAST_DAY
+                ORDER BY 1 DESC
+            </query>
+        </dashboard>
+
+    </extension>
+
 </plugin>

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -29,14 +30,14 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
  */
 public class PostgreQueryPlaner implements DBCQueryPlanner
 {
-    private final GenericDataSource dataSource;
+    private final PostgreDataSource dataSource;
 
-    public PostgreQueryPlaner(GenericDataSource dataSource) {
+    public PostgreQueryPlaner(PostgreDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
-    public GenericDataSource getDataSource() {
+    public PostgreDataSource getDataSource() {
         return dataSource;
     }
 
@@ -44,9 +45,9 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
     @Override
     public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
         PostgrePlanAnalyser plan = new PostgrePlanAnalyser(
-                getPlanStyle() == DBCPlanStyle.QUERY,
-                true,
-                query);
+            getPlanStyle() == DBCPlanStyle.QUERY,
+            dataSource.getServerType().supportsExplainPlanVerbose(),
+            query);
         plan.explain(session);
         return plan;
     }
@@ -54,6 +55,6 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
     @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
-        return dataSource.isServerVersionAtLeast(9, 0) ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
+        return dataSource.getServerType().supportsExplainPlanXML() ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
     }
 }

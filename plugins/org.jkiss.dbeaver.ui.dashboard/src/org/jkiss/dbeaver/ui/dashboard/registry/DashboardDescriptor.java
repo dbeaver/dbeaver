@@ -77,6 +77,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     private boolean isCustom;
     private DashboardValueType valueType;
+    private DashboardInterval interval;
 
     private static class DataSourceMapping {
         private final String dataSourceProvider;
@@ -168,6 +169,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO); // Default ratio is 2 to 3
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
         this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
+        this.interval = CommonUtils.valueOf(DashboardInterval.class, config.getAttribute("interval"), DashboardConstants.DEF_DASHBOARD_INTERVAL);
         this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardConstants.DEF_DASHBOARD_FETCH_TYPE);
         this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD); // Default ratio is 2 to 3
         this.maxItems = CommonUtils.toInt(config.getAttribute("maxItems"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT);
@@ -223,6 +225,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.widthRatio = (float) CommonUtils.toDouble(config.getAttribute("ratio"), DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO);
         this.calcType = CommonUtils.valueOf(DashboardCalcType.class, config.getAttribute("calc"), DashboardConstants.DEF_DASHBOARD_CALC_TYPE);
         this.valueType = CommonUtils.valueOf(DashboardValueType.class, config.getAttribute("value"), DashboardConstants.DEF_DASHBOARD_VALUE_TYPE);
+        this.interval = CommonUtils.valueOf(DashboardInterval.class, config.getAttribute("interval"), DashboardConstants.DEF_DASHBOARD_INTERVAL);
         this.fetchType = CommonUtils.valueOf(DashboardFetchType.class, config.getAttribute("fetch"), DashboardConstants.DEF_DASHBOARD_FETCH_TYPE);
         this.updatePeriod = CommonUtils.toLong(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD); // Default ratio is 2 to 3
         this.maxItems = CommonUtils.toInt(config.getAttribute("maxItems"), DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT);
@@ -255,6 +258,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.widthRatio = source.widthRatio;
         this.calcType = source.calcType;
         this.valueType = source.valueType;
+        this.interval = source.interval;
         this.fetchType = source.fetchType;
         this.updatePeriod = source.updatePeriod;
         this.maxItems = source.maxItems;
@@ -279,6 +283,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         this.widthRatio = DashboardConstants.DEF_DASHBOARD_WIDTH_RATIO;
         this.calcType = DashboardConstants.DEF_DASHBOARD_CALC_TYPE;
         this.valueType = DashboardConstants.DEF_DASHBOARD_VALUE_TYPE;
+        this.interval = DashboardConstants.DEF_DASHBOARD_INTERVAL;
         this.fetchType = DashboardConstants.DEF_DASHBOARD_FETCH_TYPE;
         this.updatePeriod = DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD;
         this.maxItems = DashboardConstants.DEF_DASHBOARD_MAXIMUM_ITEM_COUNT;
@@ -382,6 +387,14 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
 
     public void setValueType(DashboardValueType valueType) {
         this.valueType = valueType;
+    }
+
+    public DashboardInterval getInterval() {
+        return interval;
+    }
+
+    public void setInterval(DashboardInterval interval) {
+        this.interval = interval;
     }
 
     public DashboardFetchType getFetchType() {
@@ -520,6 +533,7 @@ public class DashboardDescriptor extends AbstractContextDescriptor implements DB
         xml.addAttribute("ratio", widthRatio);
         xml.addAttribute("calc", calcType.name());
         xml.addAttribute("value", valueType.name());
+        xml.addAttribute("interval", interval.name());
         xml.addAttribute("fetch", fetchType.name());
         xml.addAttribute("updatePeriod", updatePeriod);
         xml.addAttribute("maxItems", maxItems);
