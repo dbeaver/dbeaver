@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
@@ -32,15 +32,12 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Postgre execution plan node
  */
-public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
+public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
 
     public static final String ATTR_NODE_TYPE = "Node-Type";
     public static final String ATTR_RELATION_NAME = "Relation-Name";
@@ -55,23 +52,22 @@ public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPla
     public static final String ATTR_FILTER = "Filter";
 
     private PostgreDataSource dataSource;
-    private PostgrePlanNode parent;
-    private List<PostgrePlanNode> nested;
+    protected NODE parent;
+    protected List<NODE> nested;
 
     private String nodeType;
     private String entity;
     private String cost;
-    private Map<String, String> attributes = new LinkedHashMap<>();
+    private Map<String, String> attributes = Collections.emptyMap();
 
-    public PostgrePlanNode(PostgreDataSource dataSource, PostgrePlanNode parent, Element element) {
+    protected PostgrePlanNodeBase(PostgreDataSource dataSource, NODE parent) {
         this.parent = parent;
         this.dataSource = dataSource;
 
-        for (Node child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
-            if (child instanceof Element && !"Plans".equals(child.getNodeName())) {
-                attributes.put(child.getNodeName(), child.getTextContent());
-            }
-        }
+    }
+
+    protected void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
         nodeType = attributes.remove(ATTR_NODE_TYPE);
         entity = attributes.get(ATTR_RELATION_NAME);
         if (entity == null) {
@@ -83,16 +79,6 @@ public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPla
         String startCost = attributes.get(ATTR_STARTUP_COST);
         String totalCost = attributes.get(ATTR_TOTAL_COST);
         cost = startCost + " - " + totalCost;
-
-        Element nestedPlansElement = XMLUtils.getChildElement(element, "Plans");
-        if (nestedPlansElement != null) {
-            for (Element planElement : XMLUtils.getChildElementList(nestedPlansElement, "Plan")) {
-                if (nested == null) {
-                    nested = new ArrayList<>();
-                }
-                nested.add(new PostgrePlanNode(dataSource, null, planElement));
-            }
-        }
     }
 
     @Override
@@ -158,13 +144,13 @@ public class PostgrePlanNode extends AbstractExecutionPlanNode implements DBCPla
     }
 
     @Override
-    public DBCPlanNode getParent()
+    public NODE getParent()
     {
         return parent;
     }
 
     @Override
-    public List<PostgrePlanNode> getNested()
+    public List<NODE> getNested()
     {
         return nested;
     }
