@@ -2,7 +2,7 @@ package org.jkiss.dbeaver.ext.greenplum.edit;
 
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.greenplum.model.GreenplumDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -32,7 +32,7 @@ public class GreenplumExternalTableManagerTest {
     private ResultSet mockResults;
 
     @Mock
-    private PostgreDataSource mockDataSource;
+    private GreenplumDataSource mockDataSource;
 
     private GreenplumExternalTableManager greenplumExternalTableManager;
 
