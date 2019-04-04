@@ -51,6 +51,14 @@ public enum SQLServerAuthentication {
             properties.put("Password", connectionInfo.getUserPassword());
         }
     }),
+    AD_MSI(SQLServerMessages.authentication_ad_msi_title, SQLServerMessages.authentication_ad_msi_description, false, true, (connectionInfo, properties) -> {
+        properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_MSI);
+        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+            properties.put("msiClientId", connectionInfo.getUserName());
+            properties.remove(DBConstants.DATA_SOURCE_PROPERTY_USER);
+            properties.remove(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD);
+        }
+    }),
     AD_INTEGRATED(SQLServerMessages.authentication_ad_integrated_title, SQLServerMessages.authentication_ad_integrated_description, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTEGRATED);
     }),
