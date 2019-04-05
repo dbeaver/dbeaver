@@ -307,12 +307,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             indent = indenter.computeIndentation(command.offset);
 
             beginIndentaion = indenter.getReferenceIndentation(command.offset);
+        } else if (nextToken == SQLIndentSymbols.Tokenend || nextToken == SQLIndentSymbols.TokenEND) {
+            indent = indenter.getReferenceIndentation(command.offset + 1);
+        } else if (previousToken == SQLIndentSymbols.TokenKeyword) {
+            indent = indenter.computeIndentation(command.offset);
         } else {
-            if (nextToken == SQLIndentSymbols.Tokenend || nextToken == SQLIndentSymbols.TokenEND) {
-                indent = indenter.getReferenceIndentation(command.offset + 1);
-            } else {
-                indent = indenter.getReferenceIndentation(command.offset);
-            }
+            indent = indenter.getReferenceIndentation(command.offset);
         }
 
         if (indent == null) {
