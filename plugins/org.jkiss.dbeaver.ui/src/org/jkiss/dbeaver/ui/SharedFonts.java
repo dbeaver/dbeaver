@@ -62,4 +62,12 @@ public class SharedFonts {
         return toString(font.getFontData()[0]);
     }
 
+    public static boolean equalFonts(Font font1, Font font2) {
+        FontData data1 = font1.getFontData()[0];
+        FontData data2 = font2.getFontData()[0];
+        return CommonUtils.equalObjects(data1.getName(), data2.getName()) &&
+            data1.getHeight() == data2.getHeight() &&
+            data1.getStyle() == data2.getStyle();
+    }
+
 }

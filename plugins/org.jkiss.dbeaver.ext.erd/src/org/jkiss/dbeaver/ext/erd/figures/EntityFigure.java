@@ -91,7 +91,7 @@ public class EntityFigure extends Figure {
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
 
-        LineBorder border = new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND), 2);
+        LineBorder border = new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND), ERDConstants.DEFAULT_ENTITY_BORDER_WIDTH);
 
         setBorder(border);
         setOpaque(true);

@@ -48,7 +48,7 @@ public class NoteFigure extends FlowPage {
         setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_NOTE_FOREGROUND));
         setOpaque(true);
         setBorder(new CompoundBorder(
-            new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND), 1),
+            new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND), ERDConstants.DEFAULT_NOTE_BORDER_WIDTH),
             new MarginBorder(5)
         ));
     }
