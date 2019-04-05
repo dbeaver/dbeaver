@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.NativeClientDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UITask;
@@ -1046,7 +1043,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             final Collection<String> availableVersions = library.getAvailableVersions(monitor);
             if (!CommonUtils.isEmpty(availableVersions)) {
                 final String curVersion = library.getVersion();
-                String latestVersion = DriverUtils.findLatestVersion(availableVersions);
+                String latestVersion = VersionUtils.findLatestVersion(availableVersions);
                 if (latestVersion != null && !latestVersion.equals(curVersion)) {
                     log.debug("Update driver " + getName() + " " + curVersion + "->" + latestVersion);
                 }

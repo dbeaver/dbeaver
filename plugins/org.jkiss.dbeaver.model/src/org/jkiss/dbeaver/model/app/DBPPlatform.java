@@ -99,6 +99,9 @@ public interface DBPPlatform
     @NotNull
     File getConfigurationFile(String fileName);
 
+    @NotNull
+    File getCustomDriversHome();
+
     boolean isShuttingDown();
 
 }
