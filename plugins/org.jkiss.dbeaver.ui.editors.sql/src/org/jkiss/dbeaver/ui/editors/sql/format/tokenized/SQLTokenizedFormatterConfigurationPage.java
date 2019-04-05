@@ -39,10 +39,11 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
     private Combo keywordCaseCombo;
     private Button lineFeedBeforeCommaCheck;
     private Button breakLineBeforeCloseBracket;
+    private Button insertDelimiterInEmptyLines;
 
     @Override
     protected Composite createFormatSettings(Composite parent) {
-        Group settings = UIUtils.createControlGroup(parent, SQLEditorMessages.pref_page_sql_format_label_settings, 5, GridData.FILL_HORIZONTAL, 0);
+        Group settings = UIUtils.createControlGroup(parent, SQLEditorMessages.pref_page_sql_format_label_settings, 4, GridData.FILL_HORIZONTAL, 0);
 
         keywordCaseCombo = UIUtils.createLabelCombo(settings, SQLEditorMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
         keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -54,16 +55,21 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
         this.indentSizeSpinner = UIUtils.createLabelSpinner(settings,
                 SQLEditorMessages.pref_page_sql_format_label_indent_size,
                 SQLEditorMessages.pref_page_sql_format_label_indent_size, 4, 0, 100);
+
         this.useSpacesCheck = UIUtils.createCheckbox(settings,
                 SQLEditorMessages.pref_page_sql_format_label_insert_spaces_for_tabs,
-                SQLEditorMessages.pref_page_sql_format_label_insert_spaces_for_tabs, true, 1);
+                SQLEditorMessages.pref_page_sql_format_label_insert_spaces_for_tabs, true, 2);
         this.lineFeedBeforeCommaCheck = UIUtils.createCheckbox(settings,
                 SQLEditorMessages.pref_page_sql_format_label_insert_line_feed_before_commas,
-                SQLEditorMessages.pref_page_sql_format_label_insert_line_feed_before_commas, true, 5);
+                SQLEditorMessages.pref_page_sql_format_label_insert_line_feed_before_commas, true, 2);
         this.breakLineBeforeCloseBracket = UIUtils.createCheckbox(settings,
                 SQLEditorMessages.pref_page_sql_format_label_add_line_feed_before_close_bracket,
                 SQLEditorMessages.pref_page_sql_format_label_add_line_feed_before_close_bracket,
-                true, 5);
+                true, 2);
+        this.insertDelimiterInEmptyLines = UIUtils.createCheckbox(settings,
+            SQLEditorMessages.pref_page_sql_format_label_insert_delimiters_in_empty_lines,
+            SQLEditorMessages.pref_page_sql_format_tip_insert_delimiters_in_empty_lines,
+            true, 2);
 
         return parent;
     }
@@ -88,6 +94,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
         }
         lineFeedBeforeCommaCheck.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA));
         breakLineBeforeCloseBracket.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET));
+        insertDelimiterInEmptyLines.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES));
 
 
         {
@@ -110,6 +117,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
         preferenceStore.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE, caseName);
         preferenceStore.setValue(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA, lineFeedBeforeCommaCheck.getSelection());
         preferenceStore.setValue(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET, breakLineBeforeCloseBracket.getSelection());
+        preferenceStore.setValue(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES, insertDelimiterInEmptyLines.getSelection());
 
         {
             // Text editor settings
@@ -125,5 +133,8 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
         super.resetSettings(preferenceStore);
         preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
         preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
+        preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET);
+        preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES);
     }
+
 }

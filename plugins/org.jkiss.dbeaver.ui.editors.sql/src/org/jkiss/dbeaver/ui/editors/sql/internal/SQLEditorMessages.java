@@ -144,6 +144,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_format_group_formatter;
     public static String pref_page_sql_format_label_formatter;
     public static String pref_page_sql_format_label_add_line_feed_before_close_bracket;
+    public static String pref_page_sql_format_label_insert_delimiters_in_empty_lines;
+    public static String pref_page_sql_format_tip_insert_delimiters_in_empty_lines;
     public static String pref_page_sql_format_label_keyword_case;
     public static String pref_page_sql_format_label_external_command_line;
     public static String pref_page_sql_format_label_external_set_content_tool_tip;
