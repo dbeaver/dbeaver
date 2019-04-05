@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
@@ -94,6 +95,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
         transformCase(argList);
 
+        if (formatterCfg.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES)) {
+            convertEmptyLinesIntoDelimiters(argList);
+        }
         removeSpacesAroundCommentToken(argList);
 
         concatenateDoublewordedKeywords(argList);
@@ -216,6 +220,28 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 argList.remove(index - 1);
             } else if (token.getType() == TokenType.SPACE) {
                 token.setString(" "); //$NON-NLS-1$
+            }
+        }
+    }
+
+    private void convertEmptyLinesIntoDelimiters(List<FormatterToken> argList) {
+        for (int i= 0; i < argList.size(); i++) {
+            FormatterToken token = argList.get(i);
+            if (token.getType() == TokenType.SPACE) {
+                int lfCount = 0;
+                for (int k = 0; k < token.getString().length(); k++) {
+                    if (token.getString().charAt(k) == '\n') {
+                        lfCount++;
+                    }
+                }
+                if (lfCount > 1) {
+                    if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
+                        // Do nothing - there is a delimiter already
+                    } else {
+                        argList.add(i, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
+                        i++;
+                    }
+                }
             }
         }
     }
