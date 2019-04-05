@@ -157,7 +157,9 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     makeProposalsFromChildren(rootObject, request.wordPart, false);
                 } else {
                     // Get root object or objects from active database (if any)
-                    makeDataSourceProposals();
+                    if (request.queryType != SQLCompletionProcessor.QueryType.COLUMN) {
+                        makeDataSourceProposals();
+                    }
                 }
             }
 
