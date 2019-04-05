@@ -91,6 +91,24 @@
                 contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
     </extension>
+    
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <toolGroup
+                    id="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance"
+                    label="Table Maintenance"
+                    icon="#tools"/>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolRebuild"
+                    description="Alter index"
+                    id="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolRebuild"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Rebuild"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
+            </tool>
+        </tools>
+    </extension>
 
 
 </plugin>
