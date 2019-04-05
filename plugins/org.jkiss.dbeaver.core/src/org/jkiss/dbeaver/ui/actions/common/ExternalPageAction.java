@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.actions.common;
 
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 public class ExternalPageAction extends Action {
     private final String url;
@@ -31,6 +31,6 @@ public class ExternalPageAction extends Action {
 
     @Override
     public void run() {
-        WebUtils.openWebBrowser(url);
+        UIUtils.openWebBrowser(url);
     }
 }

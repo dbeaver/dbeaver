@@ -65,7 +65,10 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
-        getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));
+        UIUtils.asyncExec(() -> {
+            getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));
+        });
+
     }
 
 }

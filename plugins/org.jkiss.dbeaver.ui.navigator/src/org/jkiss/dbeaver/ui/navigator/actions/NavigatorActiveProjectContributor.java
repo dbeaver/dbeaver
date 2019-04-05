@@ -49,7 +49,7 @@ public class NavigatorActiveProjectContributor extends ContributionItem
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    DBWorkbench.getPlatform().getProjectManager().setActiveProject(project);
+                    NavigatorHandlerProjectSetActive.setActiveProject(project);
                 }
             });
         }

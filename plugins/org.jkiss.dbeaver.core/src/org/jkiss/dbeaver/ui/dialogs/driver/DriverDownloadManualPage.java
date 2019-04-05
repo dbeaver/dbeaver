@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverFileSource;
-import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -75,7 +74,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         driverLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                WebUtils.openWebBrowser(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl());
+                UIUtils.openWebBrowser(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl());
             }
         });
 
@@ -131,7 +130,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
-                WebUtils.openWebBrowser(fileSource.getUrl());
+                UIUtils.openWebBrowser(fileSource.getUrl());
             }
         });
         return false;

@@ -211,9 +211,9 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     @Override
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
-        getNavigatorTree().reloadTree(getRootNode());
-        updateTitle();
         UIUtils.asyncExec(() -> {
+            getNavigatorTree().reloadTree(getRootNode());
+            updateTitle();
             UIUtils.packColumns(getNavigatorTree().getViewer().getTree(), true, null);
         });
     }

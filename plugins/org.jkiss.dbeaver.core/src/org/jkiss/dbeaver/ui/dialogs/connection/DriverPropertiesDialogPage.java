@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -168,7 +167,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
                         if (CommonUtils.isEmpty(url)) {
                             url = site.getDriver().getWebURL();
                         }
-                        WebUtils.openWebBrowser(url);
+                        UIUtils.openWebBrowser(url);
                     }
                 });
             }
