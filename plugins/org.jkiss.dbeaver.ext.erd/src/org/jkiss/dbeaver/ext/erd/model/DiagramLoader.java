@@ -281,8 +281,6 @@ public class DiagramLoader
                     }
                     String locX = entityElem.getAttribute(ATTR_X);
                     String locY = entityElem.getAttribute(ATTR_Y);
-                    String attrVis = entityElem.getAttribute(ATTR_ATTRIBUTE_VISIBILITY);
-
 
                     DBSEntity table = (DBSEntity) child;
                     EntityDiagram.NodeVisualInfo visualInfo = new EntityDiagram.NodeVisualInfo();
@@ -294,17 +292,11 @@ public class DiagramLoader
                         visualInfo.initBounds.x = Integer.parseInt(locX);
                         visualInfo.initBounds.y = Integer.parseInt(locY);
                     }
-                    String colorBg = entityElem.getAttribute(ATTR_COLOR_BG);
-                    if (!CommonUtils.isEmpty(colorBg)) {
-                        visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
-                    }
-                    String orderStr = entityElem.getAttribute(ATTR_ORDER);
-                    if (!CommonUtils.isEmpty(orderStr)) {
-                        visualInfo.zOrder = Integer.parseInt(orderStr);
-                    }
+                    String attrVis = entityElem.getAttribute(ATTR_ATTRIBUTE_VISIBILITY);
                     if (!CommonUtils.isEmpty(attrVis)) {
                         visualInfo.attributeVisibility = ERDAttributeVisibility.valueOf(attrVis);
                     }
+                    loadNodeVisualInfo(entityElem, visualInfo);
 
                     TableLoadInfo info = new TableLoadInfo(tableId, table, visualInfo);
                     tableInfos.add(info);
@@ -385,14 +377,7 @@ public class DiagramLoader
                     visualInfo.initBounds = new Rectangle(
                         Integer.parseInt(locX), Integer.parseInt(locY), Integer.parseInt(locW), Integer.parseInt(locH));
                 }
-                String colorBg = noteElem.getAttribute(ATTR_COLOR_BG);
-                if (!CommonUtils.isEmpty(colorBg)) {
-                    visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
-                }
-                String orderStr = noteElem.getAttribute(ATTR_ORDER);
-                if (!CommonUtils.isEmpty(orderStr)) {
-                    visualInfo.zOrder = Integer.parseInt(orderStr);
-                }
+                loadNodeVisualInfo(noteElem, visualInfo);
                 diagram.addVisualInfo(note, visualInfo);
             }
         }
@@ -668,5 +653,31 @@ public class DiagramLoader
         }
     }
 
+    private static void loadNodeVisualInfo(Element entityElem, EntityDiagram.NodeVisualInfo visualInfo) {
+        String isTransparent = entityElem.getAttribute(ATTR_TRANSPARENT);
+        if (!CommonUtils.isEmpty(isTransparent)) {
+            visualInfo.transparent = CommonUtils.toBoolean(isTransparent);
+        }
+        String colorBg = entityElem.getAttribute(ATTR_COLOR_BG);
+        if (!CommonUtils.isEmpty(colorBg)) {
+            visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
+        }
+        String colorFg = entityElem.getAttribute(ATTR_COLOR_FG);
+        if (!CommonUtils.isEmpty(colorFg)) {
+            visualInfo.fgColor = UIUtils.getSharedColor(colorFg);
+        }
+        String borderWidth = entityElem.getAttribute(ATTR_BORDER_WIDTH);
+        if (!CommonUtils.isEmpty(borderWidth)) {
+            visualInfo.borderWidth = CommonUtils.toInt(borderWidth);
+        }
+        String fontStr = entityElem.getAttribute(ATTR_FONT);
+        if (!CommonUtils.isEmpty(fontStr)) {
+            visualInfo.font = UIUtils.getSharedFonts().getFont(Display.getCurrent(), fontStr);
+        }
+        String orderStr = entityElem.getAttribute(ATTR_ORDER);
+        if (!CommonUtils.isEmpty(orderStr)) {
+            visualInfo.zOrder = Integer.parseInt(orderStr);
+        }
+    }
 
 }

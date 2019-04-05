@@ -98,17 +98,21 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
     public void setCustomBorderWidth(int borderWidth) {
         IFigure figure = getFigure();
         if (figure != null) {
-            Border newBorder;
-            if (borderWidth == 0) {
-                newBorder = new MarginBorder(5);
-            } else {
-                newBorder = new CompoundBorder(
-                    new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND), borderWidth),
-                    new MarginBorder(5)
-                );
-            }
-            figure.setBorder(newBorder);
+            figure.setBorder(createBorder(borderWidth));
         }
+    }
+
+    protected Border createBorder(int borderWidth) {
+        Border newBorder;
+        if (borderWidth == 0) {
+            newBorder = new MarginBorder(5);
+        } else {
+            newBorder = new CompoundBorder(
+                new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND), borderWidth),
+                new MarginBorder(5)
+            );
+        }
+        return newBorder;
     }
 
     @Override
