@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.part.ICustomizablePart;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
+import org.jkiss.dbeaver.ext.erd.part.NotePart;
 import org.jkiss.dbeaver.ui.SharedFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -130,10 +131,12 @@ public class SetPartSettingsAction extends SelectionAction {
                 part.setCustomTransparency(settings.transparency);
                 part.setCustomBackgroundColor(settings.background);
                 part.setCustomForegroundColor(settings.foreground);
-                part.setCustomBorderWidth(settings.borderWidth);
-                part.setCustomFont(UIUtils.getSharedFonts().getFont(
-                    Display.getCurrent(),
-                    settings.fontInfo));
+                if (part instanceof NotePart) {
+                    part.setCustomBorderWidth(settings.borderWidth);
+                    part.setCustomFont(UIUtils.getSharedFonts().getFont(
+                        Display.getCurrent(),
+                        settings.fontInfo));
+                }
             }
         };
     }
