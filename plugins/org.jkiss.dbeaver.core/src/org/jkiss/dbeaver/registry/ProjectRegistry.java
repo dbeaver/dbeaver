@@ -21,16 +21,11 @@ import org.eclipse.core.runtime.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
-import org.jkiss.dbeaver.model.app.DBPProjectListener;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
-import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
-import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -80,10 +75,10 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     public void loadProjects(IProgressMonitor monitor)
         throws DBException
     {
-        final DBeaverCore core = DBeaverCore.getInstance();
-        String activeProjectName = DBWorkbench.getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        DBPPlatform platform = DBWorkbench.getPlatform();
 
-        List<IProject> projects = core.getLiveProjects();
+        String activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        List<IProject> projects = platform.getLiveProjects();
 
         monitor.beginTask("Open active project", projects.size());
         try {
@@ -114,7 +109,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             monitor.done();
         }
 
-        if (DBeaverCore.isStandalone() && CommonUtils.isEmpty(projects)) {
+        if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
             // Create initial project (only for standalone version)
             monitor.beginTask("Create general project", 1);
             try {
@@ -228,7 +223,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             }
         }
         if (handler == null) {
-            handler = DefaultResourceHandlerImpl.INSTANCE;
+            handler = DBWorkbench.getPlatform().getDefaultResourceHandler();
         }
         return handler;
     }
@@ -357,7 +352,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
 
     private IProject createGeneralProject(IProgressMonitor monitor) throws CoreException
     {
-        final String baseProjectName = DBeaverCore.isStandalone() ? "General" : "DBeaver";
+        final String baseProjectName = DBWorkbench.getPlatform().getApplication().isStandalone() ? "General" : "DBeaver";
         String projectName = baseProjectName;
         for (int i = 1; ; i++) {
             final IProject project = workspace.getRoot().getProject(projectName);
@@ -389,7 +384,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             log.warn("Project [" + project + "] already added");
             return;
         }
-        projectDatabases.put(project, new DataSourceRegistry(DBeaverCore.getInstance(), project));
+        projectDatabases.put(project, new DataSourceRegistry(DBWorkbench.getPlatform(), project));
     }
 
     @Override
