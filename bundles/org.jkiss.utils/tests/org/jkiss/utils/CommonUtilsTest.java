@@ -1,10 +1,15 @@
 package org.jkiss.utils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import org.jkiss.utils.CommonUtils;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.mockito.AdditionalMatchers.or;
@@ -16,6 +21,17 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
 public class CommonUtilsTest {
+
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
+
+  @Test
+  public void testIsJavaIdentifier() {
+    Assert.assertEquals(false, CommonUtils.isJavaIdentifier(""));
+    Assert.assertEquals(false, CommonUtils.isJavaIdentifier("|"));
+    Assert.assertEquals(false, CommonUtils.isJavaIdentifier("a-b"));
+    Assert.assertEquals(true, CommonUtils.isJavaIdentifier("aa"));
+  }
 
   @Test
   public void testEscapeJavaString() throws Exception {
@@ -80,6 +96,89 @@ public class CommonUtilsTest {
   }
 
   @Test
+  public void testNotNull() {
+    final Object value = "value";
+    final Object defaultValue = "defaultValue";
+    Assert.assertEquals(value, CommonUtils.notNull(value, defaultValue));
+    Assert.assertEquals(defaultValue, CommonUtils.notNull(null, defaultValue));
+  }
+
+  @Test
+  public void testIsEmptyCharSequence() {
+    final CharSequence nullValue = null;
+    final CharSequence emptyValue = "";
+    final CharSequence value = "abc";
+    Assert.assertTrue(CommonUtils.isEmpty(nullValue));
+    Assert.assertTrue(CommonUtils.isEmpty(emptyValue));
+    Assert.assertFalse(CommonUtils.isEmpty(value));
+  }
+
+  @Test
+  public void testIsEmptyString() {
+    final String nullValue = null;
+    final String emptyValue = "";
+    final String value = "abc";
+    Assert.assertTrue(CommonUtils.isEmpty(nullValue));
+    Assert.assertTrue(CommonUtils.isEmpty(emptyValue));
+    Assert.assertFalse(CommonUtils.isEmpty(value));
+  }
+
+  @Test
+  public void testIsNotEmpty() {
+    final String nullValue = null;
+    final String emptyValue = "";
+    final String value = "abc";
+    Assert.assertFalse(CommonUtils.isNotEmpty(nullValue));
+    Assert.assertFalse(CommonUtils.isNotEmpty(emptyValue));
+    Assert.assertTrue(CommonUtils.isNotEmpty(value));
+  }
+
+  @Test
+  public void testIsEmptyCollection() {
+    final ArrayList<Character> nullValue = null;
+    final ArrayList<Character> emptyValue = new ArrayList<>();
+    final ArrayList<Character> value = new ArrayList<>();
+    value.add('a');
+    Assert.assertTrue(CommonUtils.isEmpty(nullValue));
+    Assert.assertTrue(CommonUtils.isEmpty(emptyValue));
+    Assert.assertFalse(CommonUtils.isEmpty(value));
+  }
+
+  @Test
+  public void testIsEmptyMap() {
+    final HashMap<Integer, Character> nullValue = null;
+    final HashMap<Integer, Character> emptyValue = new HashMap<>();
+    final HashMap<Integer, Character> value = new HashMap<>();
+    value.put(0, 'a');
+    Assert.assertTrue(CommonUtils.isEmpty(nullValue));
+    Assert.assertTrue(CommonUtils.isEmpty(emptyValue));
+    Assert.assertFalse(CommonUtils.isEmpty(value));
+  }
+
+  @Test
+  public void testSafeCollection() {
+    final ArrayList<Character> theList = new ArrayList<>();
+    Assert.assertEquals(theList, CommonUtils.safeCollection(null));
+    Assert.assertEquals(theList, CommonUtils.safeCollection(theList));
+  }
+
+  @Test
+  public void testSafeList() {
+    final ArrayList<Character> theList = new ArrayList<>();
+    Assert.assertEquals(theList, CommonUtils.safeList(null));
+    Assert.assertEquals(theList, CommonUtils.safeList(theList));
+  }
+
+  @Test
+  public void testCopyList() {
+    final ArrayList<Integer> theList = new ArrayList<>();
+    Assert.assertEquals(theList, CommonUtils.copyList(null));
+
+    theList.add(0);
+    Assert.assertEquals(theList, CommonUtils.copyList(theList));
+  }
+
+  @Test
   public void testNotEmpty() {
     Assert.assertEquals("", CommonUtils.notEmpty(null));
     Assert.assertEquals("abc", CommonUtils.notEmpty("abc"));
@@ -90,6 +189,35 @@ public class CommonUtilsTest {
     Assert.assertNull(CommonUtils.nullIfEmpty(null));
     Assert.assertNull(CommonUtils.nullIfEmpty(""));
     Assert.assertEquals("abc", CommonUtils.nullIfEmpty("abc"));
+  }
+
+  @Test
+  public void testIsTrue() {
+    Assert.assertTrue(CommonUtils.isTrue(true));
+    Assert.assertFalse(CommonUtils.isTrue(false));
+    Assert.assertFalse(CommonUtils.isTrue(null));
+  }
+
+  @Test
+  public void testGetBooleanString() {
+    Assert.assertTrue(CommonUtils.getBoolean("true"));
+    Assert.assertFalse(CommonUtils.getBoolean("false"));
+    Assert.assertFalse(CommonUtils.getBoolean("null"));
+  }
+
+  @Test
+  public void testGetBooleanStringDefault() {
+    Assert.assertTrue(CommonUtils.getBoolean("", true));
+    Assert.assertFalse(CommonUtils.getBoolean("false", true));
+  }
+
+  @Test
+  public void testGetBooleanObjectDefault() {
+    final Object nullValue = null;
+    final Object value = 0;
+    Assert.assertTrue(CommonUtils.getBoolean(nullValue, true));
+    Assert.assertTrue(CommonUtils.getBoolean(true, false));
+    Assert.assertFalse(CommonUtils.getBoolean(value, true));
   }
 
   @PrepareForTest({ CommonUtils.class, System.class })
@@ -104,6 +232,22 @@ public class CommonUtilsTest {
   }
 
   @Test
+  public void testGetRootCause() {
+    Assert.assertEquals("def", CommonUtils.getRootCause(new Throwable("abc", new Throwable("def"))).getMessage());
+    Assert.assertEquals("abc", CommonUtils.getRootCause(new Throwable("abc")).getMessage());
+    Assert.assertNull(CommonUtils.getRootCause(new InvocationTargetException(null)).getMessage());
+  }
+
+  @Test
+  public void testEqualOrEmptyStrings() {
+    Assert.assertTrue(CommonUtils.equalOrEmptyStrings("abc", "abc"));
+    Assert.assertFalse(CommonUtils.equalOrEmptyStrings("abc", null));
+    Assert.assertFalse(CommonUtils.equalOrEmptyStrings(null, "def"));
+    Assert.assertFalse(CommonUtils.equalOrEmptyStrings("abc", "def"));
+    Assert.assertTrue(CommonUtils.equalOrEmptyStrings("", ""));
+  }
+
+  @Test
   public void testToStringObject() {
     Assert.assertEquals("", CommonUtils.toString(null));
     Assert.assertEquals("a", CommonUtils.toString(new String("a")));
@@ -115,6 +259,71 @@ public class CommonUtilsTest {
     Assert.assertEquals("", CommonUtils.toString(null, ""));
     Assert.assertEquals("a", CommonUtils.toString(new String("a"), ""));
     Assert.assertEquals("1", CommonUtils.toString(new Integer(1), ""));
+  }
+
+  @Test
+  public void testToBoolean() {
+    Assert.assertFalse(CommonUtils.toBoolean(null));
+    Assert.assertFalse(CommonUtils.toBoolean("false"));
+    Assert.assertTrue(CommonUtils.toBoolean("true"));
+  }
+
+  @Test
+  public void testToIntDef() {
+    Assert.assertEquals(1, CommonUtils.toInt(null, 1));
+    Assert.assertEquals(2, CommonUtils.toInt(2, 1));
+    Assert.assertEquals(2, CommonUtils.toInt("2", 1));
+    Assert.assertEquals(1, CommonUtils.toInt("a", 1));
+  }
+
+  @Test
+  public void testToInt() {
+    Assert.assertEquals(1, CommonUtils.toInt(1));
+  }
+
+  @Test
+  public void testIsInt() {
+    Assert.assertFalse(CommonUtils.isInt(null));
+    Assert.assertTrue(CommonUtils.isInt(1));
+    Assert.assertTrue(CommonUtils.isInt("2"));
+    Assert.assertFalse(CommonUtils.isInt("a"));
+  }
+
+  @Test
+  public void testToLong() {
+    Assert.assertEquals(1, CommonUtils.toLong(1L));
+  }
+
+  @Test
+  public void testToLongDef() {
+    Assert.assertEquals(1, CommonUtils.toLong(null, 1L));
+    Assert.assertEquals(2, CommonUtils.toLong(2L, 1L));
+    Assert.assertEquals(2, CommonUtils.toLong("2", 1L));
+    Assert.assertEquals(1, CommonUtils.toLong("a", 1L));
+  }
+
+  @Test
+  public void testIsLong() {
+    Assert.assertFalse(CommonUtils.isLong(null));
+    Assert.assertTrue(CommonUtils.isLong(1L));
+    Assert.assertTrue(CommonUtils.isLong("2"));
+    Assert.assertFalse(CommonUtils.isLong("a"));
+  }
+
+  @Test
+  public void testToDouble() {
+    Assert.assertEquals(0.0, CommonUtils.toDouble(null), 0);
+    Assert.assertEquals(0.1, CommonUtils.toDouble(0.1), 0);
+    Assert.assertEquals(0.1, CommonUtils.toDouble("0.1"), 0);
+    Assert.assertEquals(Double.NaN, CommonUtils.toDouble("a"), 0);
+  }
+
+  @Test
+  public void testToDoubleDef() {
+    Assert.assertEquals(0.1, CommonUtils.toDouble(null, 0.1), 0);
+    Assert.assertEquals(0.2, CommonUtils.toDouble(0.2, 0.1), 0);
+    Assert.assertEquals(0.2, CommonUtils.toDouble("0.2", 0.1), 0);
+    Assert.assertEquals(0.1, CommonUtils.toDouble("a", 0.1), 0);
   }
 
   @Test
@@ -189,6 +398,69 @@ public class CommonUtilsTest {
   }
 
   @Test
+  public void testIsEmptyTrimmed() {
+    Assert.assertTrue(CommonUtils.isEmptyTrimmed(null));
+    Assert.assertTrue(CommonUtils.isEmptyTrimmed(""));
+    Assert.assertTrue(CommonUtils.isEmptyTrimmed(" "));
+    Assert.assertFalse(CommonUtils.isEmptyTrimmed(":"));
+  }
+
+  @Test
+  public void testIsBitSet() {
+    Assert.assertTrue(CommonUtils.isBitSet(1, 1));
+    Assert.assertFalse(CommonUtils.isBitSet(1, 2));
+  }
+
+  enum enumClass {
+    A_B,
+  }
+
+  enum enumClassEmpty {
+  }
+
+  @Test
+  public void testValueOf() {
+    Assert.assertNull(CommonUtils.valueOf(enumClass.class, null));
+
+    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, null, enumClass.A_B, false));
+    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, " ", enumClass.A_B, false));
+    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "A B", enumClass.A_B, false));
+    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "A B", enumClass.A_B, true));
+
+    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "", enumClass.A_B));
+    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "A_B", enumClass.A_B));
+    Assert.assertEquals(enumClass.A_B, CommonUtils.valueOf(enumClass.class, "A B", enumClass.A_B));
+  }
+
+  @Test
+  public void testGetItem() {
+    final ArrayList<String> collectionList = new ArrayList<>();
+    collectionList.add("a");
+    Assert.assertEquals("a", CommonUtils.getItem(collectionList, 0));
+
+    final HashSet<String> collectionSet = new HashSet<>();
+    collectionSet.add("a");
+    collectionSet.add("b");
+    Assert.assertEquals("b", CommonUtils.getItem(collectionSet, 1));
+  }
+
+  @Test
+  public void testFromOrdinal() {
+    Assert.assertEquals(enumClass.A_B, CommonUtils.fromOrdinal(enumClass.class, 0));
+    Assert.assertEquals(enumClass.A_B, CommonUtils.fromOrdinal(enumClass.class, 3));
+    thrown.expect(IllegalArgumentException.class);
+    CommonUtils.fromOrdinal(enumClassEmpty.class, 3);
+  }
+
+  @Test
+  public void testFilterCollection() {
+    final ArrayList<Object> collection = new ArrayList<>();
+    collection.add("a");
+    collection.add(1);
+    Assert.assertEquals(new String[] { "a" }, CommonUtils.filterCollection(collection, String.class).toArray());
+  }
+
+  @Test
   public void testEscapeDisplayString() {
     Assert.assertEquals("\\n\\r\\t:", CommonUtils.escapeDisplayString("\n\r\t:"));
   }
@@ -199,8 +471,38 @@ public class CommonUtilsTest {
   }
 
   @Test
+  public void testHashCode() {
+    Assert.assertEquals(0, CommonUtils.hashCode(null));
+    Assert.assertEquals(96354, CommonUtils.hashCode("abc"));
+  }
+
+  @Test
+  public void testGetOption() {
+    final HashMap<String, Boolean> options = new HashMap<>();
+    options.put("A", false);
+    options.put("B", false);
+    options.put("C", true);
+
+    Assert.assertEquals("default", CommonUtils.getOption(options, "D", "default"));
+    Assert.assertEquals(true, CommonUtils.getOption(options, "C", "default"));
+
+    Assert.assertFalse(CommonUtils.getOption(null, "A"));
+
+    Assert.assertFalse(CommonUtils.getOption(options, "D", false));
+    Assert.assertTrue(CommonUtils.getOption(options, "C", false));
+  }
+
+  @Test
   public void testFixedLengthString() {
     Assert.assertEquals("abc", CommonUtils.fixedLengthString("abc", 3));
+  }
+
+  @Test
+  public void testStartsWithIgnoreCase() {
+    Assert.assertFalse(CommonUtils.startsWithIgnoreCase("", "a"));
+    Assert.assertFalse(CommonUtils.startsWithIgnoreCase("abc", ""));
+    Assert.assertTrue(CommonUtils.startsWithIgnoreCase("abc", "a"));
+    Assert.assertTrue(CommonUtils.startsWithIgnoreCase("Abc", "aB"));
   }
 
   @Test
