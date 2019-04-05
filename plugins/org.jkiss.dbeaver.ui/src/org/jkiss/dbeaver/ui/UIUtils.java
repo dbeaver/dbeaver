@@ -102,6 +102,7 @@ public class UIUtils {
     public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
 
     private static SharedTextColors sharedTextColors = new SharedTextColors();
+    private static SharedFonts sharedFonts = new SharedFonts();
 
     public static VerifyListener getIntegerVerifyListener(Locale locale)
     {
@@ -1426,6 +1427,10 @@ public class UIUtils {
 
     public static SharedTextColors getSharedTextColors() {
         return sharedTextColors;
+    }
+
+    public static SharedFonts getSharedFonts() {
+        return sharedFonts;
     }
 
     public static void run(
