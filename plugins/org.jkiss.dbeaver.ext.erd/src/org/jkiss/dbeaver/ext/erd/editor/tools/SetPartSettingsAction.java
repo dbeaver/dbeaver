@@ -2,21 +2,38 @@ package org.jkiss.dbeaver.ext.erd.editor.tools;
 
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.ui.actions.SelectionAction;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.ColorDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.part.ICustomizablePart;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
+import org.jkiss.dbeaver.ui.SharedFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class SetPartSettingsAction extends SelectionAction {
+
+    private static class ViewSettings {
+        private Color background;
+        private Color foreground;
+        private int borderWidth;
+        private boolean transparency;
+        private String fontInfo;
+
+    }
 
     private IStructuredSelection selection;
 
@@ -24,8 +41,8 @@ public class SetPartSettingsAction extends SelectionAction {
         super(part);
         this.selection = selection;
 
-        this.setText("View settings");
-        this.setToolTipText("Figure view settings");
+        this.setText("Customize node ...");
+        this.setToolTipText("Figure node view settings");
         this.setId("setPartSettings"); //$NON-NLS-1$
     }
 
@@ -48,27 +65,38 @@ public class SetPartSettingsAction extends SelectionAction {
 
     private Command createColorCommand(final Object[] objects) {
         return new Command() {
-            private final Map<ICustomizablePart, Color> oldColors = new HashMap<>();
-            private Color newBackground;
-            private Color newForeground;
-            private int newBorderWidth;
-            private int newTransparency;
-            private String newFontName;
+            private ViewSettings newSettings;
+            private final Map<ICustomizablePart, ViewSettings> oldSettings = new HashMap<>();
             @Override
             public void execute() {
                 final Shell shell = UIUtils.createCenteredShell(getWorkbenchPart().getSite().getShell());
                 try {
-                    ColorDialog colorDialog = new ColorDialog(shell);
-                    RGB color = colorDialog.open();
-                    if (color == null) {
+                    NodePart nodePart = null;
+                    for (Object item : objects) {
+                        if (item instanceof NodePart) {
+                            nodePart = (NodePart) item;
+                            break;
+                        }
+                    }
+
+                    PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart);
+                    if (settingsDialog.open() != IDialogConstants.OK_ID) {
                         return;
                     }
-                    newBackground = new Color(Display.getCurrent(), color);
+                    newSettings = settingsDialog.newSettings;
+
                     for (Object item : objects) {
                         if (item instanceof ICustomizablePart) {
-                            ICustomizablePart colorizedPart = (ICustomizablePart) item;
-                            oldColors.put(colorizedPart, colorizedPart.getCustomBackgroundColor());
-                            colorizedPart.setCustomBackgroundColor(newBackground);
+                            ICustomizablePart part = (ICustomizablePart) item;
+                            ViewSettings oldSettings = new ViewSettings();
+                            oldSettings.transparency = part.getCustomTransparency();
+                            oldSettings.background = part.getCustomBackgroundColor();
+                            oldSettings.foreground = part.getCustomForegroundColor();
+                            oldSettings.borderWidth = part.getCustomBorderWidth();
+                            oldSettings.fontInfo = SharedFonts.toString(part.getCustomFont());
+                            this.oldSettings.put(part, oldSettings);
+
+                            setNodeSettings(part, newSettings);
                         }
                     }
                 } finally {
@@ -81,7 +109,10 @@ public class SetPartSettingsAction extends SelectionAction {
                 for (Object item : objects) {
                     if (item instanceof ICustomizablePart) {
                         ICustomizablePart colorizedPart = (ICustomizablePart) item;
-                        colorizedPart.setCustomBackgroundColor(oldColors.get(colorizedPart));
+                        ViewSettings viewSettings = oldSettings.get(colorizedPart);
+                        if (viewSettings != null) {
+                            setNodeSettings(colorizedPart, viewSettings);
+                        }
                     }
                 }
             }
@@ -90,13 +121,124 @@ public class SetPartSettingsAction extends SelectionAction {
             public void redo() {
                 for (Object item : objects) {
                     if (item instanceof ICustomizablePart) {
-                        ICustomizablePart colorizedPart = (ICustomizablePart) item;
-                        colorizedPart.setCustomBackgroundColor(newBackground);
+                        setNodeSettings((ICustomizablePart) item, newSettings);
                     }
                 }
+            }
+
+            private void setNodeSettings(ICustomizablePart part, ViewSettings settings) {
+                part.setCustomTransparency(settings.transparency);
+                part.setCustomBackgroundColor(settings.background);
+                part.setCustomForegroundColor(settings.foreground);
+                part.setCustomBorderWidth(settings.borderWidth);
+                part.setCustomFont(UIUtils.getSharedFonts().getFont(
+                    Display.getCurrent(),
+                    settings.fontInfo));
             }
         };
     }
 
+    private static class PartSettingsDialog extends BaseDialog {
+
+        private final NodePart node;
+        private Button transparentCheckbox;
+        private ColorSelector backgroundColorPicker;
+        private ColorSelector foregroundColorPicker;
+        private Text borderWidthText;
+        private String fontData;
+        private ViewSettings newSettings = new ViewSettings();
+
+        public PartSettingsDialog(Shell parentShell, NodePart node) {
+            super(parentShell, "Node view settings", null);
+            this.node = node;
+        }
+
+        @Override
+        protected Composite createDialogArea(Composite parent) {
+            Composite dialogArea = super.createDialogArea(parent);
+
+            Group settingsGroup = UIUtils.createControlGroup(dialogArea, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
+
+            transparentCheckbox = UIUtils.createCheckbox(settingsGroup, "Transparent", "Make figure transparent (no background)",
+                node != null && node.getCustomTransparency(), 2);
+            UIUtils.createControlLabel(settingsGroup, "Background");
+            backgroundColorPicker = new ColorSelector(settingsGroup);
+            if (node != null) {
+                backgroundColorPicker.setColorValue(node.getCustomBackgroundColor().getRGB());
+            }
+            UIUtils.createControlLabel(settingsGroup, "Foreground");
+            foregroundColorPicker = new ColorSelector(settingsGroup);
+            if (node != null) {
+                foregroundColorPicker.setColorValue(node.getCustomForegroundColor().getRGB());
+            }
+
+            borderWidthText = UIUtils.createLabelText(settingsGroup, "Border width", String.valueOf(node == null ? 1 : node.getCustomBorderWidth()));
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = 30;
+            borderWidthText.setLayoutData(gd);
+            borderWidthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+
+            UIUtils.createControlLabel(settingsGroup, "Font");
+            Button changeFontButton = UIUtils.createPushButton(settingsGroup, "Customize...", null, null);
+            changeFontButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
+            Text previewText = new Text(settingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI);
+            previewText.setText("ERD Node Text");
+            gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 2;
+            previewText.setLayoutData(gd);
+            if (node != null) {
+                previewText.setFont(node.getCustomFont());
+                fontData = SharedFonts.toString(node.getCustomFont().getFontData()[0]);
+            }
+
+            changeFontButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    FontDialog fontDialog = new FontDialog(getShell(), SWT.NONE);
+                    fontDialog.setFontList(previewText.getFont().getFontData());
+                    FontData result = fontDialog.open();
+                    if (result != null) {
+                        fontData = SharedFonts.toString(result);
+                        previewText.setFont(UIUtils.getSharedFonts().getFont(previewText.getDisplay(), result));
+                        settingsGroup.layout(true, true);
+                    }
+                }
+            });
+
+            return dialogArea;
+        }
+
+        @Override
+        protected void okPressed() {
+            newSettings = new ViewSettings();
+            newSettings.background = getBackgroundColor();
+            newSettings.foreground = getForegroundColorPicker();
+            newSettings.transparency = isTransparent();
+            newSettings.borderWidth = getBorderWidth();
+            newSettings.fontInfo = getFontData();
+            super.okPressed();
+        }
+
+        public boolean isTransparent() {
+            return transparentCheckbox.getSelection();
+        }
+
+        public Color getBackgroundColor() {
+            return UIUtils.getSharedTextColors().getColor(backgroundColorPicker.getColorValue());
+        }
+
+        public Color getForegroundColorPicker() {
+            return UIUtils.getSharedTextColors().getColor(foregroundColorPicker.getColorValue());
+        }
+
+        public int getBorderWidth() {
+            return CommonUtils.toInt(borderWidthText.getText());
+        }
+
+        public String getFontData() {
+            return fontData;
+        }
+    }
 
 }
