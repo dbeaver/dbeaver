@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
@@ -545,6 +546,11 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public File getConfigurationFile(String fileName) {
         return DBeaverActivator.getConfigurationFile(fileName);
+    }
+
+    @Override
+    public File getCustomDriversHome() {
+        return DriverDescriptor.getCustomDriversHome();
     }
 
     @Override

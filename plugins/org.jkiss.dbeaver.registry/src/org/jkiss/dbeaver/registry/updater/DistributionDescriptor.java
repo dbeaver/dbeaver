@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.connection;
 
-import java.util.List;
+package org.jkiss.dbeaver.registry.updater;
+
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.w3c.dom.Element;
 
 /**
- * Data source provider
+ * Update distribution descriptor
  */
-public interface DBPDataSourceProviderRegistry {
+public class DistributionDescriptor {
 
-    List<? extends DBPDataSourceProviderDescriptor> getDataSourceProviders();
+    private OSDescriptor os;
+    private String type;
 
-    List<? extends DBPDataSourceProviderDescriptor> getEnabledDataSourceProviders();
+    public DistributionDescriptor(Element element)
+    {
 
-    DBPDataSourceProviderDescriptor getDataSourceProvider(String id);
-
-    void saveConnectionTypes();
-
-    DBPDriver findDriver(String driverIdOrName);
+    }
 }

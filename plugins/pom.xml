@@ -14,6 +14,7 @@
 
     <modules>
         <module>org.jkiss.dbeaver.model</module>
+        <module>org.jkiss.dbeaver.registry</module>
         <module>org.jkiss.dbeaver.core</module>
         <module>org.jkiss.dbeaver.ui</module>
         <module>org.jkiss.dbeaver.ui.editors.acl</module>
