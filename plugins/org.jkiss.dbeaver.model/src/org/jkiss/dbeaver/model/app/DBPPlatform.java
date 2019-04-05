@@ -42,7 +42,11 @@ public interface DBPPlatform
     @NotNull
     DBPApplication getApplication();
 
+    @NotNull
     DBPWorkspace getWorkspace();
+
+    @NotNull
+    DBPResourceHandler getDefaultResourceHandler();
 
     @NotNull
     DBPPlatformLanguage getLanguage();

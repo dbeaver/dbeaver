@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
+import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -336,6 +337,11 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public DBPWorkspace getWorkspace() {
         return workspace;
+    }
+
+    @Override
+    public DBPResourceHandler getDefaultResourceHandler() {
+        return DefaultResourceHandlerImpl.INSTANCE;
     }
 
     @NotNull
