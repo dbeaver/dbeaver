@@ -30,8 +30,6 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -45,6 +43,8 @@ import java.util.Map;
 
 public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManager {
     private static final Log log = Log.getLog(ProjectRegistry.class);
+
+    public static final String DEFAULT_RESOURCES_ROOT = "Resources"; //$NON-NLS-1$
 
     private static final String PROP_PROJECT_ACTIVE = "project.active";
     private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
@@ -290,7 +290,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
                 return realFolder;
             }
         }
-        return project.getFolder(DefaultResourceHandlerImpl.DEFAULT_ROOT);
+        return project.getFolder(DEFAULT_RESOURCES_ROOT);
     }
 
     @Override
@@ -346,21 +346,13 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         this.activeProject = project;
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
 
-        GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_ACTIVE_PROJECT);
-
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run()
-            {
-                DBPProjectListener[] listeners;
-                synchronized (projectListeners) {
-                    listeners = projectListeners.toArray(new DBPProjectListener[projectListeners.size()]);
-                }
-                for (DBPProjectListener listener : listeners) {
-                    listener.handleActiveProjectChange(oldValue, activeProject);
-                }
-            }
-        });
+        DBPProjectListener[] listeners;
+        synchronized (projectListeners) {
+            listeners = projectListeners.toArray(new DBPProjectListener[projectListeners.size()]);
+        }
+        for (DBPProjectListener listener : listeners) {
+            listener.handleActiveProjectChange(oldValue, activeProject);
+        }
     }
 
     private IProject createGeneralProject(IProgressMonitor monitor) throws CoreException

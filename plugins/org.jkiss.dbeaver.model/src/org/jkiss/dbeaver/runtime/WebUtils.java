@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.runtime;
 
-import org.eclipse.swt.program.Program;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -114,15 +113,6 @@ public class WebUtils {
         }
 
         return connection;
-    }
-
-    public static void openWebBrowser(String url)
-    {
-        url = url.trim();
-        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("ftp://")) {
-            url = "http://" + url;
-        }
-        Program.launch(url);
     }
 
     public static void downloadRemoteFile(@NotNull DBRProgressMonitor monitor, String taskName, String externalURL, File localFile, DBAAuthInfo authInfo) throws IOException, InterruptedException {

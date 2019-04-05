@@ -1783,4 +1783,12 @@ public class UIUtils {
         return greyLevel(rgb) < 128;
     }
 
+    public static void openWebBrowser(String url)
+    {
+        url = url.trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("ftp://")) {
+            url = "http://" + url;
+        }
+        Program.launch(url);
+    }
 }

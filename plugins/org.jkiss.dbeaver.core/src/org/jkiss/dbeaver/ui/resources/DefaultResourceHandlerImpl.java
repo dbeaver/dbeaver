@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
 
-    public static final String DEFAULT_ROOT = "Resources"; //$NON-NLS-1$
     public static final DefaultResourceHandlerImpl INSTANCE = new DefaultResourceHandlerImpl();
 
     @Override

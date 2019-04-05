@@ -251,7 +251,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
     @Override
     public void handleActiveProjectChange(IProject oldValue, IProject newValue) {
-        recomputeTitle();
+        UIUtils.asyncExec(this::recomputeTitle);
     }
 
     public class EditorAreaDropAdapter extends DropTargetAdapter {
