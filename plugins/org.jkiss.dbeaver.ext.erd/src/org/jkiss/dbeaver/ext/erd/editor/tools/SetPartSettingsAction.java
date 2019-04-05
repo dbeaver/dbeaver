@@ -42,7 +42,7 @@ public class SetPartSettingsAction extends SelectionAction {
         super(part);
         this.selection = selection;
 
-        this.setText("Customize node ...");
+        this.setText("Customize ...");
         this.setToolTipText("Figure node view settings");
         this.setId("setPartSettings"); //$NON-NLS-1$
     }
