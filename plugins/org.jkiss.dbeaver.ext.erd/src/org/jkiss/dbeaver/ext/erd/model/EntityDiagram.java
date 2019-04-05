@@ -23,6 +23,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
@@ -44,8 +45,13 @@ import java.util.*;
 public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer {
     public static class NodeVisualInfo {
         public Rectangle initBounds;
+        public boolean transparent;
         public Color bgColor;
+        public Color fgColor;
+        public Font font;
         public int zOrder = 0;
+        public int borderWidth = -1;
+
         public ERDAttributeVisibility attributeVisibility;
     }
 

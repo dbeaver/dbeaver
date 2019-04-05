@@ -127,14 +127,13 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             return false;
         }
         // Let's check that source code has some whitespaces
-        boolean hasWhitespaces = false;
+        int wsCount = 0;
         for (int i = quoteStart + 1; i < quoteEnd; i++) {
             if (Character.isWhitespace(sourceCode.charAt(i))) {
-                hasWhitespaces = true;
-                break;
+                wsCount++;
             }
         }
-        if (!hasWhitespaces) {
+        if (wsCount < 3) {
             return false;
         }
         StringBuilder result = new StringBuilder(sourceCode.length());
@@ -308,12 +307,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             indent = indenter.computeIndentation(command.offset);
 
             beginIndentaion = indenter.getReferenceIndentation(command.offset);
+        } else if (nextToken == SQLIndentSymbols.Tokenend || nextToken == SQLIndentSymbols.TokenEND) {
+            indent = indenter.getReferenceIndentation(command.offset + 1);
+        } else if (previousToken == SQLIndentSymbols.TokenKeyword) {
+            indent = indenter.computeIndentation(command.offset);
         } else {
-            if (nextToken == SQLIndentSymbols.Tokenend || nextToken == SQLIndentSymbols.TokenEND) {
-                indent = indenter.getReferenceIndentation(command.offset + 1);
-            } else {
-                indent = indenter.getReferenceIndentation(command.offset);
-            }
+            indent = indenter.getReferenceIndentation(command.offset);
         }
 
         if (indent == null) {

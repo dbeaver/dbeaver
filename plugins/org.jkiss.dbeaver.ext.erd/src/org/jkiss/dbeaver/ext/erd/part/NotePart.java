@@ -29,6 +29,7 @@ import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.FigureEditorLocator;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
@@ -174,8 +175,20 @@ public class NotePart extends NodePart
         } else if (noteFigure.getSize().isEmpty()) {
             noteFigure.setPreferredSize(new Dimension(100, 50));
         }
+        if (visualInfo.transparent) {
+            noteFigure.setOpaque(false);
+        }
         if (visualInfo.bgColor != null) {
             noteFigure.setBackgroundColor(visualInfo.bgColor);
+        }
+        if (visualInfo.fgColor != null) {
+            noteFigure.setForegroundColor(visualInfo.fgColor);
+        }
+        if (visualInfo.borderWidth != ERDConstants.DEFAULT_NOTE_BORDER_WIDTH) {
+            noteFigure.setBorder(createBorder(visualInfo.borderWidth));
+        }
+        if (visualInfo.font != null) {
+            noteFigure.setFont(visualInfo.font);
         }
         return noteFigure;
     }

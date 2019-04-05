@@ -29,6 +29,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.SharedFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -79,7 +81,11 @@ public class DiagramLoader
     private static final String ATTR_ALIAS = "alias";
     private static final String ATTR_ID = "id";
     private static final String ATTR_ORDER = "order";
+    private static final String ATTR_TRANSPARENT = "transparent";
     private static final String ATTR_COLOR_BG = "color-bg";
+    private static final String ATTR_COLOR_FG = "color-fg";
+    private static final String ATTR_FONT = "font";
+    private static final String ATTR_BORDER_WIDTH = "border-width";
     private static final String ATTR_FQ_NAME = "fq-name";
     private static final String ATTR_REF_NAME = "ref-name";
     private static final String ATTR_TYPE = "type";
@@ -275,8 +281,6 @@ public class DiagramLoader
                     }
                     String locX = entityElem.getAttribute(ATTR_X);
                     String locY = entityElem.getAttribute(ATTR_Y);
-                    String attrVis = entityElem.getAttribute(ATTR_ATTRIBUTE_VISIBILITY);
-
 
                     DBSEntity table = (DBSEntity) child;
                     EntityDiagram.NodeVisualInfo visualInfo = new EntityDiagram.NodeVisualInfo();
@@ -288,17 +292,11 @@ public class DiagramLoader
                         visualInfo.initBounds.x = Integer.parseInt(locX);
                         visualInfo.initBounds.y = Integer.parseInt(locY);
                     }
-                    String colorBg = entityElem.getAttribute(ATTR_COLOR_BG);
-                    if (!CommonUtils.isEmpty(colorBg)) {
-                        visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
-                    }
-                    String orderStr = entityElem.getAttribute(ATTR_ORDER);
-                    if (!CommonUtils.isEmpty(orderStr)) {
-                        visualInfo.zOrder = Integer.parseInt(orderStr);
-                    }
+                    String attrVis = entityElem.getAttribute(ATTR_ATTRIBUTE_VISIBILITY);
                     if (!CommonUtils.isEmpty(attrVis)) {
                         visualInfo.attributeVisibility = ERDAttributeVisibility.valueOf(attrVis);
                     }
+                    loadNodeVisualInfo(entityElem, visualInfo);
 
                     TableLoadInfo info = new TableLoadInfo(tableId, table, visualInfo);
                     tableInfos.add(info);
@@ -379,14 +377,7 @@ public class DiagramLoader
                     visualInfo.initBounds = new Rectangle(
                         Integer.parseInt(locX), Integer.parseInt(locY), Integer.parseInt(locW), Integer.parseInt(locH));
                 }
-                String colorBg = noteElem.getAttribute(ATTR_COLOR_BG);
-                if (!CommonUtils.isEmpty(colorBg)) {
-                    visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
-                }
-                String orderStr = noteElem.getAttribute(ATTR_ORDER);
-                if (!CommonUtils.isEmpty(orderStr)) {
-                    visualInfo.zOrder = Integer.parseInt(orderStr);
-                }
+                loadNodeVisualInfo(noteElem, visualInfo);
                 diagram.addVisualInfo(note, visualInfo);
             }
         }
@@ -634,12 +625,59 @@ public class DiagramLoader
     private static void saveColorAndOrder(List allNodeFigures, XMLBuilder xml, NodePart nodePart) throws IOException {
         if (nodePart != null) {
             xml.addAttribute(ATTR_ORDER, allNodeFigures.indexOf(nodePart.getFigure()));
-            Color color = nodePart.getCustomBackgroundColor();
-            if (color != null) {
-                xml.addAttribute(ATTR_COLOR_BG, StringConverter.asString(color.getRGB()));
+            if (nodePart.getCustomTransparency()) {
+                xml.addAttribute(ATTR_TRANSPARENT, true);
+            }
+            Color bgColor = nodePart.getCustomBackgroundColor();
+            if (bgColor != null) {
+                Color defBgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDConstants.COLOR_ERD_NOTE_BACKGROUND : ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND);
+                if (!CommonUtils.equalObjects(bgColor, defBgColor)) {
+                    xml.addAttribute(ATTR_COLOR_BG, StringConverter.asString(bgColor.getRGB()));
+                }
+            }
+            Color fgColor = nodePart.getCustomForegroundColor();
+            if (fgColor != null) {
+                Color defFgColor = UIUtils.getColorRegistry().get(nodePart instanceof NotePart ? ERDConstants.COLOR_ERD_NOTE_FOREGROUND : ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND);
+                if (!CommonUtils.equalObjects(fgColor, defFgColor)) {
+                    xml.addAttribute(ATTR_COLOR_FG, StringConverter.asString(fgColor.getRGB()));
+                }
+            }
+            int borderWidth = nodePart.getCustomBorderWidth();
+            int defBorderWidth = nodePart instanceof NotePart ? ERDConstants.DEFAULT_NOTE_BORDER_WIDTH : ERDConstants.DEFAULT_ENTITY_BORDER_WIDTH;
+            if (borderWidth != defBorderWidth) {
+                xml.addAttribute(ATTR_BORDER_WIDTH, borderWidth);
+            }
+            if (!SharedFonts.equalFonts(nodePart.getCustomFont(), Display.getCurrent().getSystemFont())) {
+                xml.addAttribute(ATTR_FONT, SharedFonts.toString(nodePart.getCustomFont()));
             }
         }
     }
 
+    private static void loadNodeVisualInfo(Element entityElem, EntityDiagram.NodeVisualInfo visualInfo) {
+        String isTransparent = entityElem.getAttribute(ATTR_TRANSPARENT);
+        if (!CommonUtils.isEmpty(isTransparent)) {
+            visualInfo.transparent = CommonUtils.toBoolean(isTransparent);
+        }
+        String colorBg = entityElem.getAttribute(ATTR_COLOR_BG);
+        if (!CommonUtils.isEmpty(colorBg)) {
+            visualInfo.bgColor = UIUtils.getSharedColor(colorBg);
+        }
+        String colorFg = entityElem.getAttribute(ATTR_COLOR_FG);
+        if (!CommonUtils.isEmpty(colorFg)) {
+            visualInfo.fgColor = UIUtils.getSharedColor(colorFg);
+        }
+        String borderWidth = entityElem.getAttribute(ATTR_BORDER_WIDTH);
+        if (!CommonUtils.isEmpty(borderWidth)) {
+            visualInfo.borderWidth = CommonUtils.toInt(borderWidth);
+        }
+        String fontStr = entityElem.getAttribute(ATTR_FONT);
+        if (!CommonUtils.isEmpty(fontStr)) {
+            visualInfo.font = UIUtils.getSharedFonts().getFont(Display.getCurrent(), fontStr);
+        }
+        String orderStr = entityElem.getAttribute(ATTR_ORDER);
+        if (!CommonUtils.isEmpty(orderStr)) {
+            visualInfo.zOrder = Integer.parseInt(orderStr);
+        }
+    }
 
 }
