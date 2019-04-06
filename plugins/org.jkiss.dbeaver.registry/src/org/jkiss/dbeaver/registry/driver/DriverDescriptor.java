@@ -23,7 +23,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -807,7 +806,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             // Multi-platform
             return true;
         }
-        OSDescriptor localSystem = DBeaverCore.getInstance().getLocalSystem();
+        OSDescriptor localSystem = DBWorkbench.getPlatform().getLocalSystem();
         for (OSDescriptor system : supportedSystems) {
             if (system.matches(localSystem)) {
                 return true;
@@ -848,7 +847,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         loadLibraries();
 
-        if (!CommonUtils.isEmpty(getLicense()) && !acceptLicense(getLicense())) {
+        String licenseText = getLicense();
+        if (!CommonUtils.isEmpty(licenseText) && !acceptLicense(licenseText)) {
             throw new DBException("You have to accept driver '" + getFullName() + "' license to be able to connect");
         }
 

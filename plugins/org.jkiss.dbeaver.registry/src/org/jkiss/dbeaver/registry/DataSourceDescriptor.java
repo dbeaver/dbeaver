@@ -21,12 +21,14 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -47,15 +49,18 @@ import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
@@ -660,11 +665,6 @@ public class DataSourceDescriptor
         return dataSource != null;
     }
 
-    @Override
-    public void initConnection(DBRProgressMonitor monitor, DBRProgressListener onFinish) {
-        DataSourceHandler.connectToDataSource(monitor, this, onFinish);
-    }
-
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
         throws DBException
     {
@@ -682,8 +682,8 @@ public class DataSourceDescriptor
         //final String oldPassword = getConnectionConfiguration().getUserPassword();
         if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
             // Ask for password
-            if (!DataSourceHandler.askForPassword(this, null, false)) {
-                DataSourceHandler.updateDataSourceObject(this);
+            if (!askForPassword(this, null, false)) {
+                updateDataSourceObject(this);
                 return false;
             }
         }
@@ -725,8 +725,8 @@ public class DataSourceDescriptor
                     if (!tunnelConfiguration.isSavePassword()) {
                         DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
                         if (rc != DBWTunnel.AuthCredentials.NONE) {
-                            if (!DataSourceHandler.askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
-                                DataSourceHandler.updateDataSourceObject(this);
+                            if (!askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
+                                updateDataSourceObject(this);
                                 tunnelHandler = null;
                                 return false;
                             }
@@ -1345,6 +1345,48 @@ public class DataSourceDescriptor
                 default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
+    }
+
+    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)
+    {
+        final String prompt = networkHandler != null ?
+            NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
+            "'" + dataSourceContainer.getName() + RegistryMessages.dialog_connection_auth_title; //$NON-NLS-1$
+        final String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
+        final String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
+
+        DBAAuthInfo authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
+        if (authInfo == null) {
+            return false;
+        }
+
+        if (networkHandler != null) {
+            if (!passwordOnly) {
+                networkHandler.setUserName(authInfo.getUserName());
+            }
+            networkHandler.setPassword(authInfo.getUserPassword());
+            networkHandler.setSavePassword(authInfo.isSavePassword());
+        } else {
+            if (!passwordOnly) {
+                dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());
+            }
+            dataSourceContainer.getConnectionConfiguration().setUserPassword(authInfo.getUserPassword());
+            dataSourceContainer.setSavePassword(authInfo.isSavePassword());
+        }
+        if (authInfo.isSavePassword()) {
+            // Update connection properties
+            dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
+        }
+
+        return true;
+    }
+
+    public void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor)
+    {
+        getRegistry().notifyDataSourceListeners(new DBPEvent(
+            DBPEvent.Action.OBJECT_UPDATE,
+            dataSourceDescriptor,
+            false));
     }
 
 }

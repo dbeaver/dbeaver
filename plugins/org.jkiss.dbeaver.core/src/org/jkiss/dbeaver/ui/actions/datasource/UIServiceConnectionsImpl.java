@@ -62,4 +62,9 @@ public class UIServiceConnectionsImpl implements UIServiceConnections {
     public boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts) {
         return DataSourceHandler.checkAndCloseActiveTransaction(contexts);
     }
+
+    @Override
+    public void initConnection(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish) {
+        DataSourceHandler.connectToDataSource(monitor, dataSourceContainer, onFinish);
+    }
 }

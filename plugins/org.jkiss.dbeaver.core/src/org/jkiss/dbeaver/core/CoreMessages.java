@@ -116,8 +116,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_auth_group_user_cridentials;
 	public static String dialog_connection_auth_label_password;
 	public static String dialog_connection_auth_label_username;
-	public static String dialog_connection_auth_title;
-	public static String dialog_connection_auth_title_for_handler;
 	public static String dialog_connection_button_test;
 	public static String dialog_connection_events_checkbox_show_process;
 	public static String dialog_connection_events_checkbox_terminate_at_disconnect;

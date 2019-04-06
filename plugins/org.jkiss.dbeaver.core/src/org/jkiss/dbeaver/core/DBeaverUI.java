@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
@@ -155,10 +156,15 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public boolean acceptLicense(String message, String licenseText) {
-        return AcceptLicenseDialog.acceptLicense(
-            UIUtils.getActiveWorkbenchShell(),
-            message,
-            licenseText);
+        return new UITask<Boolean>() {
+            @Override
+            protected Boolean runTask() {
+                return AcceptLicenseDialog.acceptLicense(
+                    UIUtils.getActiveWorkbenchShell(),
+                    message,
+                    licenseText);
+            }
+        }.execute();
     }
 
     @Override
@@ -218,6 +224,11 @@ public class DBeaverUI implements DBPPlatformUI {
             title,
             message,
             error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+    }
+
+    @Override
+    public UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue) {
+        return ExecutionQueueErrorJob.showError(task, error, queue);
     }
 
     @Override

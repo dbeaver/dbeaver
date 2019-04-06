@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public class TasksJob extends AbstractJob
                     DBWorkbench.getPlatformUI().showError(getName(), null, e.getTargetException());
                 } else if (!ignoreErrors) {
                     boolean keepRunning = true;
-                    switch (ExecutionQueueErrorJob.showError(getName(), e.getTargetException(), true)) {
+                    switch (DBWorkbench.getPlatformUI().showErrorStopRetryIgnore(getName(), e.getTargetException(), true)) {
                         case STOP:
                             keepRunning = false;
                             break;

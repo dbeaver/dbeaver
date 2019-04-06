@@ -52,13 +52,13 @@ import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
-import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLQueryParameterBindDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -219,7 +219,7 @@ public class SQLQueryJob extends DataSourceJob
                         // Ask to continue
                         log.error(lastError);
                         boolean isQueue = queryNum < queries.size() - 1;
-                        ExecutionQueueErrorResponse response = ExecutionQueueErrorJob.showError(
+                        DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
                             isQueue ? "SQL script execution" : "SQL query execution",
                             lastError,
                             isQueue);

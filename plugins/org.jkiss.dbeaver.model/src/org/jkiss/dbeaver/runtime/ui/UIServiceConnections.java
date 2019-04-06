@@ -37,4 +37,5 @@ public interface UIServiceConnections {
 
     boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts);
 
+    void initConnection(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish);
 }
