@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -257,7 +256,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @NotNull
     @Override
     public DBIcon getIcon() {
-        return UIIcon.APACHE;
+        return DBIcon.APACHE;
     }
 
     public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {

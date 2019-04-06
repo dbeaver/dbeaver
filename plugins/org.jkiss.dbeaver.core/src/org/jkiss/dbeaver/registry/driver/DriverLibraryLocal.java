@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.io.File;
 import java.io.IOException;
@@ -170,8 +169,8 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
             return DBIcon.TREE_FOLDER;
         } else {
             switch (type) {
-                case lib: return UIIcon.LIBRARY;
-                case jar: return UIIcon.JAR;
+                case lib: return DBIcon.LIBRARY;
+                case jar: return DBIcon.JAR;
                 default: return DBIcon.TYPE_UNKNOWN;
             }
         }

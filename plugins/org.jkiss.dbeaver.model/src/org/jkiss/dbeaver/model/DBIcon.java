@@ -141,6 +141,10 @@ public class DBIcon implements DBPImage
     public static final DBIcon DATABASE_DEFAULT = new DBIcon("database_icon_default", "connection/database_icon.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon DATABASE_BIG_DEFAULT = new DBIcon("database_icon_big_default", "connection/database_icon_big.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon APACHE = new DBIcon("apache", "misc/apache.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon JAR = new DBIcon("jar", "misc/jar.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LIBRARY = new DBIcon("library", "misc/library.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     private static Map<String, DBPImage> iconMap = new HashMap<>();
 
 
