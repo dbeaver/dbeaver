@@ -38,8 +38,6 @@ import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -53,7 +51,6 @@ import org.xml.sax.Attributes;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -703,11 +700,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     private void addLibraryFile(DBPDriverLibrary library, DriverFileInfo fileInfo) {
-        List<DriverFileInfo> files = resolvedFiles.get(library);
-        if (files == null) {
-            files = new ArrayList<>();
-            resolvedFiles.put(library, files);
-        }
+        List<DriverFileInfo> files = resolvedFiles.computeIfAbsent(library, k -> new ArrayList<>());
         files.add(fileInfo);
     }
 
@@ -1017,7 +1010,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         // Now check driver version
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
             // TODO: implement new version check
-            if (false) {
+/*
+            {
                 try {
                     UIUtils.runInProgressService(monitor -> {
                         try {
@@ -1032,6 +1026,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     // ignore
                 }
             }
+*/
         }
 
         // Check if local files are zip archives with jars inside
@@ -1113,7 +1108,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
-        UIUtils.syncExec(licenceAcceptor);
+        licenceAcceptor.run();
         if (licenceAcceptor.result) {
             // Save in registry
             prefs.setValue(LICENSE_ACCEPT_KEY + getId(), true + ":" + System.currentTimeMillis() + ":" + System.getProperty(StandardConstants.ENV_USER_NAME));
@@ -1516,10 +1511,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         @Override
         public void run() {
-            result = AcceptLicenseDialog.acceptLicense(
-                    UIUtils.getActiveWorkbenchShell(),
-                    "You have to accept license of '" + getFullName() + " ' to continue",
-                    licenseText);
+            result = DBWorkbench.getPlatformUI().acceptLicense(
+                "You have to accept license of '" + getFullName() + " ' to continue",
+                licenseText);
         }
     }
 

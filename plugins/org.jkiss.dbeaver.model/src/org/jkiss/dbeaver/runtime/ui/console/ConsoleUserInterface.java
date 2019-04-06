@@ -90,6 +90,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
+    public boolean acceptLicense(String message, String licenseText) {
+        return false;
+    }
+
+    @Override
     public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         return null;
     }
