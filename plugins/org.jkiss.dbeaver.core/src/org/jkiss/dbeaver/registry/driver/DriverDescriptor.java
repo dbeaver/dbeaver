@@ -37,8 +37,6 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -818,6 +816,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return false;
     }
 
+    @Override
     public String getLicense() {
         for (DBPDriverLibrary file : libraries) {
             if (file.getType() == DBPDriverLibrary.FileType.license) {
@@ -849,7 +848,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         loadLibraries();
 
-        if (!acceptDriverLicenses()) {
+        if (!CommonUtils.isEmpty(getLicense()) && !acceptLicense(getLicense())) {
             throw new DBException("You have to accept driver '" + getFullName() + "' license to be able to connect");
         }
 
@@ -955,12 +954,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
             final DriverDependencies dependencies = new DriverDependencies(downloadCandidates);
-            boolean downloadOk = new UITask<Boolean>() {
-                @Override
-                protected Boolean runTask() {
-                    return DriverDownloadDialog.downloadDriverFiles(null, DriverDescriptor.this, dependencies);
-                }
-            }.execute();
+            boolean downloadOk = DBWorkbench.getPlatformUI().downloadDriverFiles(this, dependencies);
             if (!downloadOk) {
                 return Collections.emptyList();
             }
@@ -1065,40 +1059,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    public boolean acceptDriverLicenses() {
-/*
-        // User must accept all licenses before actual drivers download
-        for (final DBPDriverLibrary file : libraries) {
-            if (file.getType() == DBPDriverLibrary.FileType.license) {
-                final File libraryFile = file.getLocalFile();
-                if (libraryFile == null || !libraryFile.exists()) {
-                    try {
-                        runnableContext.run(true, true, new DBRRunnableWithProgress() {
-                            @Override
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                            {
-                                try {
-                                    file.downloadLibraryFile(monitor, false);
-                                } catch (final Exception e) {
-                                    log.warn("Can't obtain driver license", e);
-                                }
-                            }
-                        });
-                    } catch (Exception e) {
-                        log.warn(e);
-                    }
-                }
-            }
-        }
-        String licenseText = getLicense();
-        if (!CommonUtils.isEmpty(licenseText)) {
-            return acceptLicense(licenseText);
-        }
-*/
-        // No license
-        return true;
-    }
-
     private boolean acceptLicense(String licenseText) {
         // Check registry
         DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
@@ -1107,9 +1067,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             return true;
         }
 
-        LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
-        licenceAcceptor.run();
-        if (licenceAcceptor.result) {
+        if (DBWorkbench.getPlatformUI().acceptLicense(
+            "You have to accept license of '" + getFullName() + " ' to continue",
+            licenseText))
+        {
             // Save in registry
             prefs.setValue(LICENSE_ACCEPT_KEY + getId(), true + ":" + System.currentTimeMillis() + ":" + System.getProperty(StandardConstants.ENV_USER_NAME));
             return true;
@@ -1498,22 +1459,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     break;
             }
 
-        }
-    }
-
-    private class LicenceAcceptor implements Runnable {
-        private boolean result;
-        private String licenseText;
-
-        private LicenceAcceptor(String licenseText) {
-            this.licenseText = licenseText;
-        }
-
-        @Override
-        public void run() {
-            result = DBWorkbench.getPlatformUI().acceptLicense(
-                "You have to accept license of '" + getFullName() + " ' to continue",
-                licenseText);
         }
     }
 

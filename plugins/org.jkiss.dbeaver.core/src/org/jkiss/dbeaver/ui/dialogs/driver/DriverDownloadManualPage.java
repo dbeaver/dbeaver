@@ -23,15 +23,16 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.registry.driver.DriverFileSource;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverFileInfo;
+import org.jkiss.dbeaver.model.connection.DBPDriverFileSource;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 class DriverDownloadManualPage extends DriverDownloadPage {
 
-    private DriverFileSource fileSource;
+    private DBPDriverFileSource fileSource;
     private Table filesTable;
 
     DriverDownloadManualPage() {
@@ -41,7 +42,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
 
     @Override
     public void createControl(Composite parent) {
-        final DriverDescriptor driver = getWizard().getDriver();
+        final DBPDriver driver = getWizard().getDriver();
 
         setMessage(NLS.bind(CoreMessages.dialog_driver_download_manual_page_download_config_driver_file, driver.getFullName()));
 
@@ -65,7 +66,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         filesGroup.setLayoutData(gd);
 
         final Combo sourceCombo = new Combo(filesGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-        for (DriverFileSource source : driver.getDriverFileSources()) {
+        for (DBPDriverFileSource source : driver.getDriverFileSources()) {
             sourceCombo.add(source.getName());
         }
         final Link driverLink = new Link(filesGroup, SWT.NONE);
@@ -104,10 +105,10 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         setControl(composite);
     }
 
-    private void selectFileSource(DriverFileSource source) {
+    private void selectFileSource(DBPDriverFileSource source) {
         fileSource = source;
         filesTable.removeAll();
-        for (DriverFileSource.FileInfo file : fileSource.getFiles()) {
+        for (DBPDriverFileInfo file : fileSource.getFiles()) {
             new TableItem(filesTable, SWT.NONE).setText(new String[] {
                 file.getName(),
                 !file.isOptional() ? CoreMessages.dialog_driver_download_manual_page_yes : CoreMessages.dialog_driver_download_manual_page_no,
@@ -127,12 +128,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
 
     @Override
     boolean performFinish() {
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                UIUtils.openWebBrowser(fileSource.getUrl());
-            }
-        });
+        UIUtils.asyncExec(() -> UIUtils.openWebBrowser(fileSource.getUrl()));
         return false;
 //        DriverEditDialog dialog = new DriverEditDialog(null, getWizard().getDriver());
 //        dialog.open();
