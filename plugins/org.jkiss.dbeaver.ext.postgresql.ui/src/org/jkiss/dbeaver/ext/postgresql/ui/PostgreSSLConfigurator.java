@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -106,17 +107,14 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
                     configuration.getDriver(),
                     "javax/net/ssl/SSLSocketFactory",
                     false);
-                finder.run(monitor);
-                UIUtils.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (String cn : finder.getDriverClassNames()) {
-                            sslFactoryCombo.add(cn);
-                        }
-                        final String factoryValue = configuration.getProperties().get(PostgreConstants.PROP_SSL_FACTORY);
-                        if (!CommonUtils.isEmpty(factoryValue)) {
-                            sslFactoryCombo.setText(factoryValue);
-                        }
+                finder.run(new DefaultProgressMonitor(monitor));
+                UIUtils.syncExec(() -> {
+                    for (String cn : finder.getDriverClassNames()) {
+                        sslFactoryCombo.add(cn);
+                    }
+                    final String factoryValue = configuration.getProperties().get(PostgreConstants.PROP_SSL_FACTORY);
+                    if (!CommonUtils.isEmpty(factoryValue)) {
+                        sslFactoryCombo.setText(factoryValue);
                     }
                 });
                 return Status.OK_STATUS;

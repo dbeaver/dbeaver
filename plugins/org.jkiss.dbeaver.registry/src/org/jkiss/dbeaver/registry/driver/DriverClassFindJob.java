@@ -1,10 +1,10 @@
 package org.jkiss.dbeaver.registry.driver;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.objectweb.asm.ClassReader;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class DriverClassFindJob implements IRunnableWithProgress {
+public class DriverClassFindJob implements DBRRunnableWithProgress {
 
     private static final Log log = Log.getLog(DriverClassFindJob.class);
 
@@ -46,11 +46,11 @@ public class DriverClassFindJob implements IRunnableWithProgress {
     }
 
     @Override
-    public void run(IProgressMonitor monitor) {
+    public void run(DBRProgressMonitor monitor) {
         findDriverClasses(monitor);
     }
 
-    private void findDriverClasses(IProgressMonitor monitor) {
+    private void findDriverClasses(DBRProgressMonitor monitor) {
         java.util.List<File> libFiles = new ArrayList<>();
         java.util.List<URL> libURLs = new ArrayList<>();
         for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
@@ -83,7 +83,7 @@ public class DriverClassFindJob implements IRunnableWithProgress {
         }
     }
 
-    private void findDriverClasses(IProgressMonitor monitor, ClassLoader findCL, File libFile) {
+    private void findDriverClasses(DBRProgressMonitor monitor, ClassLoader findCL, File libFile) {
         try {
             JarFile currentFile = new JarFile(libFile, false);
             monitor.beginTask(libFile.getName(), currentFile.size());

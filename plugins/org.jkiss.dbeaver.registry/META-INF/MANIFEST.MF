@@ -21,5 +21,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.net,
  org.eclipse.equinox.security,
+ org.objectweb.asm,
  org.jkiss.dbeaver.model;visibility:=reexport
 Bundle-Localization: OSGI-INF/l10n/bundle
