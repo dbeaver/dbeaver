@@ -7,7 +7,6 @@ Bundle-Version: 1.1.91.qualifier
 Bundle-Release-Date: 20190408
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.model,
+Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ClassPath: .
