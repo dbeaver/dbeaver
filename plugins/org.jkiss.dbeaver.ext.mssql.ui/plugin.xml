@@ -100,10 +100,10 @@
                     icon="#tools"/>
             <tool
                     class="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolRebuild"
-                    description="Alter index"
+                    description="Rebuild table indexes"
                     id="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolRebuild"
                     group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
-                    label="Rebuild"
+                    label="Rebuild indexes"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
             </tool>
