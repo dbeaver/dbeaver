@@ -24,9 +24,9 @@
     <extension-point id="org.jkiss.dbeaver.commandLine" name="Command line extension" schema="schema/org.jkiss.dbeaver.commandLine.exsd"/>
 
     <extension point="org.eclipse.core.runtime.applications" id="standalone" name="%extension.standalone.name">
-    <application visible="true">
-        <run class="org.jkiss.dbeaver.core.application.DBeaverApplication"/>
-    </application>
+        <application visible="true">
+            <run class="org.jkiss.dbeaver.core.application.DBeaverApplication"/>
+        </application>
     </extension>
 
     <extension point="org.eclipse.core.runtime.products" id="product">
