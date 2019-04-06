@@ -71,6 +71,11 @@ public interface DBPPlatformUI {
     DBAPasswordChangeInfo promptUserPasswordChange(String prompt, @Nullable String userName, @Nullable String oldPassword);
 
     /**
+     * Ask user to accept license agreement
+     */
+    boolean acceptLicense(String message, String licenseText);
+
+    /**
      * UI utilities
      */
     DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes);

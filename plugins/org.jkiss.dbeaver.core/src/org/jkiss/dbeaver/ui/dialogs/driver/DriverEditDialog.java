@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -104,10 +105,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
         return dialogCount;
     }
 
-    public DriverEditDialog(Shell shell, DriverDescriptor driver) {
+    public DriverEditDialog(Shell shell, DBPDriver driver) {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
-        this.driver = driver;
-        this.provider = driver.getProviderDescriptor();
+        this.driver = (DriverDescriptor) driver;
+        this.provider = this.driver.getProviderDescriptor();
         this.defaultCategory = driver.getCategory();
         this.newDriver = false;
         this.origLibList = new ArrayList<>(driver.getDriverLibraries());

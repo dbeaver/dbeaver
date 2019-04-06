@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
+import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
@@ -147,6 +148,14 @@ public class DBeaverUI implements DBPPlatformUI {
             return;
         }
         getInstance().trayItem.notify(message, status);
+    }
+
+    @Override
+    public boolean acceptLicense(String message, String licenseText) {
+        return AcceptLicenseDialog.acceptLicense(
+            UIUtils.getActiveWorkbenchShell(),
+            message,
+            licenseText);
     }
 
     @Override
