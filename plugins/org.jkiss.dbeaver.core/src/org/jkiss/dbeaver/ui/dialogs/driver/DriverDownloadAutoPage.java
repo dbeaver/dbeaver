@@ -246,6 +246,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             return acceptLicense(licenseText);
         }
 */
+        if (!driver.isLicenseRequired()) {
+            return true;
+        }
         String license = driver.getLicense();
         if (CommonUtils.isEmpty(license)) {
             return true;

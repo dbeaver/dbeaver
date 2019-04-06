@@ -115,6 +115,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean clientRequired;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess;
+    private boolean licenseRequired;
     private boolean customDriverLoader;
     private boolean useURLTemplate;
     private boolean custom;
@@ -193,6 +194,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.clientRequired = copyFrom.clientRequired;
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
             this.anonymousAccess = copyFrom.anonymousAccess;
+            this.licenseRequired = copyFrom.licenseRequired;
             this.customDriverLoader = copyFrom.customDriverLoader;
             this.useURLTemplate = copyFrom.customDriverLoader;
             this.promoted = copyFrom.promoted;
@@ -244,6 +246,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
         this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
+        this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
         this.custom = false;
         this.isLoaded = false;
 
@@ -610,6 +613,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
+    public boolean isLicenseRequired() {
+        return licenseRequired;
+    }
+
+    @Override
     public boolean isCustomDriverLoader() {
         return customDriverLoader;
     }
@@ -847,9 +855,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         loadLibraries();
 
-        String licenseText = getLicense();
-        if (!CommonUtils.isEmpty(licenseText) && !acceptLicense(licenseText)) {
-            throw new DBException("You have to accept driver '" + getFullName() + "' license to be able to connect");
+        if (licenseRequired) {
+            String licenseText = getLicense();
+            if (!CommonUtils.isEmpty(licenseText) && !acceptLicense(licenseText)) {
+                throw new DBException("You have to accept driver '" + getFullName() + "' license to be able to connect");
+            }
         }
 
         try {
