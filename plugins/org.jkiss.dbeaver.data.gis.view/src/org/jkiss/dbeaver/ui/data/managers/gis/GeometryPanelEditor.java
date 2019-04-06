@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerDescriptor;
 import org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerRegistry;
+import org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;

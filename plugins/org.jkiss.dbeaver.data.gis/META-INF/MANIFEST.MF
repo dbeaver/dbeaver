@@ -7,11 +7,9 @@ Bundle-Version: 1.0.30.qualifier
 Bundle-Release-Date: 20190408
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.model,
  org.eclipse.core.runtime,
- org.eclipse.jface,
  com.vividsolutions.jts
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.data.gis.handlers,
- org.jkiss.dbeaver.model.gis,
- org.jkiss.dbeaver.ui.data.managers.gis
+ org.jkiss.dbeaver.model.gis
