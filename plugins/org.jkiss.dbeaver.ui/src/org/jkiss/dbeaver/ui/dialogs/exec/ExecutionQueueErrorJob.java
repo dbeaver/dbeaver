@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -32,7 +33,7 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
     private String errorName;
     private Throwable error;
     private boolean queue;
-    private ExecutionQueueErrorResponse response = ExecutionQueueErrorResponse.STOP;
+    private DBPPlatformUI.UserResponse response = DBPPlatformUI.UserResponse.STOP;
 
     public ExecutionQueueErrorJob(String errorName, Throwable error, boolean queue)
     {
@@ -56,31 +57,31 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
         switch (result) {
             case IDialogConstants.CANCEL_ID:
             case IDialogConstants.STOP_ID:
-                response = ExecutionQueueErrorResponse.STOP;
+                response = DBPPlatformUI.UserResponse.STOP;
                 break;
             case IDialogConstants.SKIP_ID:
-                response = ExecutionQueueErrorResponse.IGNORE;
+                response = DBPPlatformUI.UserResponse.IGNORE;
                 break;
             case IDialogConstants.RETRY_ID:
-                response = ExecutionQueueErrorResponse.RETRY;
+                response = DBPPlatformUI.UserResponse.RETRY;
                 break;
             case IDialogConstants.IGNORE_ID:
-                response = ExecutionQueueErrorResponse.IGNORE_ALL;
+                response = DBPPlatformUI.UserResponse.IGNORE_ALL;
                 break;
             default:
-                response = ExecutionQueueErrorResponse.STOP;
+                response = DBPPlatformUI.UserResponse.STOP;
                 break;
         }
 
         return Status.OK_STATUS;
     }
 
-    public ExecutionQueueErrorResponse getResponse()
+    public DBPPlatformUI.UserResponse getResponse()
     {
         return response;
     }
 
-    public static ExecutionQueueErrorResponse showError(String task, Throwable error, boolean queue) {
+    public static DBPPlatformUI.UserResponse showError(String task, Throwable error, boolean queue) {
         ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(task, error, queue);
         errorJob.schedule();
         try {

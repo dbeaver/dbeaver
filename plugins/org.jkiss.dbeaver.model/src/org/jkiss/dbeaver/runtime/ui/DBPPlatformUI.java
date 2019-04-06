@@ -47,6 +47,7 @@ public interface DBPPlatformUI {
         OK,
         CANCEL,
         IGNORE,
+        IGNORE_ALL,
         STOP,
         RETRY,
     }
@@ -55,6 +56,9 @@ public interface DBPPlatformUI {
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final Throwable e);
     UserResponse showError(@NotNull final String title, @Nullable final String message);
     void showMessageBox(@NotNull final String title, @Nullable final String message, boolean error);
+
+    UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue);
+
 
     /**
      * Notification agent

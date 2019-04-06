@@ -135,11 +135,6 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     boolean isConnected();
 
     /**
-     * Initiate connection job.
-     */
-    void initConnection(DBRProgressMonitor monitor, DBRProgressListener onFinish);
-
-    /**
      * Connects to datasource.
      * This is sync method and returns after actual connection establishment.
      * @param monitor progress monitor

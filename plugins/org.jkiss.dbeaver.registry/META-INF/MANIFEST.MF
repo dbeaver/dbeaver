@@ -9,6 +9,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.registry.datatype,
+ org.jkiss.dbeaver.registry.driver,
  org.jkiss.dbeaver.registry.language,
  org.jkiss.dbeaver.registry.maven,
  org.jkiss.dbeaver.registry.network,

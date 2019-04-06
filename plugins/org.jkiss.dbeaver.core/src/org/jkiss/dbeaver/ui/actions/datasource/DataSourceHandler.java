@@ -141,53 +141,6 @@ public class DataSourceHandler
         }
     }
 
-    public static void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor)
-    {
-        dataSourceDescriptor.getRegistry().notifyDataSourceListeners(new DBPEvent(
-            DBPEvent.Action.OBJECT_UPDATE,
-            dataSourceDescriptor,
-            false));
-    }
-
-    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler, final boolean passwordOnly)
-    {
-        final String prompt = networkHandler != null ?
-            NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
-            "'" + dataSourceContainer.getName() + CoreMessages.dialog_connection_auth_title; //$NON-NLS-1$
-        final String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
-        final String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
-
-        DBAAuthInfo authInfo = new UITask<DBAAuthInfo>() {
-            @Override
-            protected DBAAuthInfo runTask() {
-                return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
-            }
-        }.execute();
-        if (authInfo == null) {
-            return false;
-        }
-
-        if (networkHandler != null) {
-            if (!passwordOnly) {
-                networkHandler.setUserName(authInfo.getUserName());
-            }
-            networkHandler.setPassword(authInfo.getUserPassword());
-            networkHandler.setSavePassword(authInfo.isSavePassword());
-        } else {
-            if (!passwordOnly) {
-                dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());
-            }
-            dataSourceContainer.getConnectionConfiguration().setUserPassword(authInfo.getUserPassword());
-            dataSourceContainer.setSavePassword(authInfo.isSavePassword());
-        }
-        if (authInfo.isSavePassword()) {
-            // Update connection properties
-            dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
-        }
-
-        return true;
-    }
-
     public static void disconnectDataSource(DBPDataSourceContainer dataSourceContainer, @Nullable final Runnable onFinish) {
 
         // Save users

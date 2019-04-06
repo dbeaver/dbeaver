@@ -11,7 +11,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.registry.driver,
  org.jkiss.dbeaver.registry.tools,
  org.jkiss.dbeaver.ui.dialogs,
  org.jkiss.dbeaver.tools,
