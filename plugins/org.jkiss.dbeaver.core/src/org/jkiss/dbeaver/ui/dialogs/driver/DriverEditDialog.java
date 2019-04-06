@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -42,7 +43,6 @@ import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
@@ -382,7 +382,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                     } else {
                         cell.setText(element.toString());
-                        cell.setImage(DBeaverIcons.getImage(UIIcon.JAR));
+                        cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
                     }
                 }
 

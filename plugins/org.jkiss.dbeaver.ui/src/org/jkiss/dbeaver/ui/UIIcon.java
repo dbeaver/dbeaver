@@ -130,8 +130,6 @@ public class UIIcon {
     public static final DBIcon REFRESH = new DBIcon("refresh", "/refresh.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CONFIRM = new DBIcon("confirm", "misc/confirm.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CLOSE = new DBIcon("close", "misc/close.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon JAR = new DBIcon("jar", "misc/jar.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon LIBRARY = new DBIcon("library", "misc/library.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SOURCES = new DBIcon("sources", "misc/sources.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CANCEL = new DBIcon("cancel", "misc/cancel.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PRINT = new DBIcon("print", "misc/print.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -175,7 +173,6 @@ public class UIIcon {
     public static final DBIcon LINK = new DBIcon("link", "misc/link.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LINK2 = new DBIcon("link2", "misc/link2.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon APACHE = new DBIcon("apache", "misc/apache.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon GEN_DATABASE = new DBIcon("gen_database", "database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GEN_DATABASE_TYPE = new DBIcon("gen_database_type", "database_type.png"); //$NON-NLS-1$ //$NON-NLS-2$
