@@ -116,6 +116,8 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isSupportedByLocalSystem();
 
+    String getLicense();
+
     /**
      * Client manager or null
      */

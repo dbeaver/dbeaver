@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -55,6 +57,7 @@ import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.BrowseObjectDialog;
@@ -156,6 +159,16 @@ public class DBeaverUI implements DBPPlatformUI {
             UIUtils.getActiveWorkbenchShell(),
             message,
             licenseText);
+    }
+
+    @Override
+    public boolean downloadDriverFiles(DBPDriver driver, DBPDriverDependencies dependencies) {
+        return new UITask<Boolean>() {
+            @Override
+            protected Boolean runTask() {
+                return DriverDownloadDialog.downloadDriverFiles(null, driver, dependencies);
+            }
+        }.execute();
     }
 
     @Override

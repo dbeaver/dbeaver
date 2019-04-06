@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -57,7 +58,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     @Override
     public void createControl(Composite parent) {
         final DriverDownloadWizard wizard = getWizard();
-        final DriverDescriptor driver = wizard.getDriver();
+        final DBPDriver driver = wizard.getDriver();
 
         setMessage(NLS.bind(CoreMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getFullName()));
         initializeDialogUnits(parent);
@@ -151,7 +152,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     private void downloadLibraryFiles(final DBRProgressMonitor monitor) throws InterruptedException {
-        if (!getWizard().getDriver().acceptDriverLicenses()) {
+        if (!acceptDriverLicenses()) {
             return;
         }
 
@@ -210,8 +211,48 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             }
         }
 
-        getWizard().getDriver().setModified(true);
+        ((DriverDescriptor)getWizard().getDriver()).setModified(true);
         //DataSourceProviderRegistry.getInstance().saveDrivers();
+    }
+
+    private boolean acceptDriverLicenses() {
+        // User must accept all licenses before actual drivers download
+        DBPDriver driver = getWizard().getDriver();
+/*
+        for (final DBPDriverLibrary file : driver.getDriverLibraries()) {
+            if (file.getType() == DBPDriverLibrary.FileType.license) {
+                final File libraryFile = file.getLocalFile();
+                if (libraryFile == null || !libraryFile.exists()) {
+                    try {
+                        runnableContext.run(true, true, new DBRRunnableWithProgress() {
+                            @Override
+                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                            {
+                                try {
+                                    file.downloadLibraryFile(monitor, false);
+                                } catch (final Exception e) {
+                                    log.warn("Can't obtain driver license", e);
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        log.warn(e);
+                    }
+                }
+            }
+        }
+        String licenseText = driver.getLicense();
+        if (!CommonUtils.isEmpty(licenseText)) {
+            return acceptLicense(licenseText);
+        }
+*/
+        String license = driver.getLicense();
+        if (CommonUtils.isEmpty(license)) {
+            return true;
+        }
+        return DBWorkbench.getPlatformUI().acceptLicense(
+            "You have to accept driver '" + driver.getFullName() + "' license to continue",
+            license);
     }
 
     public static class DownloadErrorDialog extends StandardErrorDialog {

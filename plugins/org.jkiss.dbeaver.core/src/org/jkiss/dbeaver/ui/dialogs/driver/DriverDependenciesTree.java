@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -49,14 +48,14 @@ class DriverDependenciesTree {
     private DBRRunnableContext runnableContext;
     private DBPDriver driver;
     private Collection<? extends DBPDriverLibrary> libraries;
-    private final DriverDependencies dependencies;
+    private final DBPDriverDependencies dependencies;
     private boolean editable;
 
     private Tree filesTree;
     private TreeEditor treeEditor;
     private Font boldFont;
 
-    public DriverDependenciesTree(Composite parent, DBRRunnableContext runnableContext, DriverDependencies dependencies, DBPDriver driver, Collection<? extends DBPDriverLibrary> libraries, boolean editable) {
+    public DriverDependenciesTree(Composite parent, DBRRunnableContext runnableContext, DBPDriverDependencies dependencies, DBPDriver driver, Collection<? extends DBPDriverLibrary> libraries, boolean editable) {
         this.runnableContext = runnableContext;
         this.driver = driver;
         this.libraries = libraries;

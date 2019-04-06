@@ -24,8 +24,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.registry.driver.DriverDependencies;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -34,12 +33,12 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     private static final String DRIVER_DOWNLOAD_DIALOG_SETTINGS = "DriverDownload";//$NON-NLS-1$
 
     private DBPDriver driver;
-    private DriverDependencies dependencies;
+    private DBPDriverDependencies dependencies;
     private boolean updateVersion;
     private boolean forceDownload;
     private DriverDownloadPage downloadPage;
 
-    public DriverDownloadWizard(@NotNull DBPDriver driver, DriverDependencies dependencies, boolean updateVersion, boolean forceDownload) {
+    public DriverDownloadWizard(@NotNull DBPDriver driver, DBPDriverDependencies dependencies, boolean updateVersion, boolean forceDownload) {
         this.driver = driver;
         this.dependencies = dependencies;
         this.updateVersion = updateVersion;
@@ -53,7 +52,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         return driver;
     }
 
-    public DriverDependencies getDependencies() {
+    public DBPDriverDependencies getDependencies() {
         return dependencies;
     }
 

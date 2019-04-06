@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDrivers;
@@ -45,7 +46,7 @@ abstract class DriverDownloadPage extends WizardPage {
     abstract boolean performFinish();
 
     protected void createLinksPanel(Composite composite) {
-        final DriverDescriptor driver = getWizard().getDriver();
+        final DBPDriver driver = getWizard().getDriver();
 
         //UIUtils.createPlaceholder(composite, 1).setLayoutData(new GridData(GridData.FILL_BOTH));
 
