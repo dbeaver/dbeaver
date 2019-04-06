@@ -6,7 +6,6 @@ Bundle-Version: 2.1.79.qualifier
 Bundle-Release-Date: 20190408
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
- org.jkiss.dbeaver.ext.ui.locks,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
  com.vividsolutions.jts;visibility:=reexport,
  net.sf.opencsv;visibility:=reexport
