@@ -88,6 +88,7 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isEmbedded();
     boolean isAnonymousAccess();
+    boolean isLicenseRequired();
     boolean isCustomDriverLoader();
     boolean isUseURL();
     boolean isInstantiable();
