@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -428,7 +427,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             findClassButton.addListener(SWT.Selection, event -> {
                 try {
                     DriverClassFindJob classFinder = new DriverClassFindJob(driver, "java/sql/Driver", true);
-                    new ProgressMonitorDialog(getShell()).run(true, true, classFinder);
+                    UIUtils.runInProgressDialog(classFinder);
 
                     if (classListCombo != null && !classListCombo.isDisposed()) {
                         List<String> classNames = classFinder.getDriverClassNames();
@@ -438,8 +437,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
                 } catch (InvocationTargetException e) {
                     log.error(e.getTargetException());
-                } catch (InterruptedException e) {
-                    log.error(e);
                 }
             });
             findClassButton.setEnabled(!isReadOnly);
