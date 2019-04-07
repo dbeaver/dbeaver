@@ -35,8 +35,9 @@ public class OracleServerSession extends AbstractServerSession {
     public static final String CAT_WAIT = "Wait";
     //public static final String CAT_STAT = "Statistics";
 
+    private long instId;
     private long sid;
-    private String serial;
+    private long serial;
     private String user;
     private String schema;
     private String type;
@@ -69,8 +70,9 @@ public class OracleServerSession extends AbstractServerSession {
 
 
     public OracleServerSession(ResultSet dbResult) {
+        this.instId = JDBCUtils.safeGetLong(dbResult, "INST_ID");
         this.sid = JDBCUtils.safeGetLong(dbResult, "SID");
-        this.serial = JDBCUtils.safeGetString(dbResult, "SERIAL#");
+        this.serial = JDBCUtils.safeGetLong(dbResult, "SERIAL#");
         this.user = JDBCUtils.safeGetString(dbResult, "USERNAME");
         this.schema = JDBCUtils.safeGetString(dbResult, "SCHEMANAME");
         this.type = JDBCUtils.safeGetString(dbResult, "TYPE");
@@ -104,52 +106,57 @@ public class OracleServerSession extends AbstractServerSession {
 
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 1)
+    @Property(category = CAT_SESSION, viewable = false, order = 1)
+    public long getInstId() {
+        return instId;
+    }
+
+    @Property(category = CAT_SESSION, viewable = true, order = 2)
     public long getSid() {
         return sid;
     }
 
-    @Property(category = CAT_SESSION, viewable = false, order = 2)
-    public String getSerial() {
+    @Property(category = CAT_SESSION, viewable = false, order = 3)
+    public long getSerial() {
         return serial;
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 2)
+    @Property(category = CAT_SESSION, viewable = true, order = 4)
     public String getUser() {
         return user;
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 3)
+    @Property(category = CAT_SESSION, viewable = true, order = 5)
     public String getSchema() {
         return schema;
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 4)
+    @Property(category = CAT_SESSION, viewable = true, order = 6)
     public String getType() {
         return type;
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 5)
+    @Property(category = CAT_SESSION, viewable = true, order = 7)
     public String getStatus() {
         return status;
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 6)
+    @Property(category = CAT_SESSION, viewable = true, order = 8)
     public String getState() {
         return state;
     }
 
-    @Property(category = CAT_SESSION, viewable = true, order = 8)
+    @Property(category = CAT_SESSION, viewable = true, order = 9)
     public long getElapsedTime() {
         return elapsedTime;
     }
 
-    @Property(category = CAT_SESSION, order = 9)
+    @Property(category = CAT_SESSION, order = 10)
     public Timestamp getLogonTime() {
         return logonTime;
     }
 
-    @Property(category = CAT_SESSION, order = 10)
+    @Property(category = CAT_SESSION, order = 11)
     public String getServiceName() {
         return serviceName;
     }
