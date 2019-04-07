@@ -51,13 +51,14 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         if (inline) {
             final Text editor = new Text(valueController.getEditPlaceholder(), SWT.BORDER);
-            editor.setTextLimit(MAX_STRING_LENGTH);
+            //editor.setTextLimit(MAX_STRING_LENGTH);
+            //editor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
             editor.setEditable(!valueController.isReadOnly());
             return editor;
         } else {
             final StyledText editor = new StyledText(valueController.getEditPlaceholder(),
                 SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-            editor.setTextLimit(MAX_STRING_LENGTH);
+            //editor.setTextLimit(MAX_STRING_LENGTH);
             editor.setEditable(!valueController.isReadOnly());
             editor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
             editor.setBackground(UIStyles.getDefaultTextBackground());

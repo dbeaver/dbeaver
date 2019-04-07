@@ -98,32 +98,29 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         EditorUtils.trackControlContext(valueController.getValueSite(), inlineControl, RESULTS_EDIT_CONTEXT_ID);
 
         if (isInline) {
-            inlineControl.setFont(valueController.getEditPlaceholder().getFont());
+            //inlineControl.setFont(valueController.getEditPlaceholder().getFont());
             //inlineControl.setFocus();
 
             if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
-                 inlineControl.addTraverseListener(new TraverseListener() {
-                    @Override
-                    public void keyTraversed(TraverseEvent e) {
-                        if (e.detail == SWT.TRAVERSE_RETURN) {
-                            if (!valueController.isReadOnly()) {
-                                saveValue();
-                            }
-                            ((IMultiController) valueController).closeInlineEditor();
-                            e.doit = false;
-                            e.detail = SWT.TRAVERSE_NONE;
-                        } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                            ((IMultiController) valueController).closeInlineEditor();
-                            e.doit = false;
-                            e.detail = SWT.TRAVERSE_NONE;
-                        } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
-                            saveValue();
-                            ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
-                            e.doit = false;
-                            e.detail = SWT.TRAVERSE_NONE;
-                        }
-                      }
-                 });
+                 inlineControl.addTraverseListener(e -> {
+                     if (e.detail == SWT.TRAVERSE_RETURN) {
+                         if (!valueController.isReadOnly()) {
+                             saveValue();
+                         }
+                         ((IMultiController) valueController).closeInlineEditor();
+                         e.doit = false;
+                         e.detail = SWT.TRAVERSE_NONE;
+                     } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                         ((IMultiController) valueController).closeInlineEditor();
+                         e.doit = false;
+                         e.detail = SWT.TRAVERSE_NONE;
+                     } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                         saveValue();
+                         ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+                         e.doit = false;
+                         e.detail = SWT.TRAVERSE_NONE;
+                     }
+                   });
                  if (!UIUtils.isInDialog(inlineControl)) {
                      addAutoSaveSupport(inlineControl);
                  }
