@@ -227,6 +227,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                 oracleObjectTypes.add(OracleObjectType.FUNCTION);
             }
         }
+        oracleObjectTypes.add(OracleObjectType.SYNONYM);
         for (OracleObjectType objectType : oracleObjectTypes) {
             if (objectTypeClause.length() > 0) objectTypeClause.append(",");
             objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
@@ -268,23 +269,32 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     final String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
                     final String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
                     final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
-                    if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && oracleObjectTypes.contains(objectType)) {
+                    if (objectType != null && objectType.isBrowsable() && oracleObjectTypes.contains(objectType)) {
                         OracleSchema objectSchema = this.dataSource.getSchema(session.getProgressMonitor(), schemaName);
                         if (objectSchema == null) {
                             log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
                             continue;
                         }
-                        objects.add(new AbstractObjectReference(objectName, objectSchema, null, objectType.getTypeClass(), objectType) {
-                            @Override
-                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                                OracleSchema tableSchema = (OracleSchema) getContainer();
-                                DBSObject object = objectType.findObject(session.getProgressMonitor(), tableSchema, objectName);
-                                if (object == null) {
-                                    throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
+                        objects.add(
+                            new AbstractObjectReference(objectName, objectSchema, null, objectType.getTypeClass(), objectType) {
+                                @Override
+                                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                    OracleSchema tableSchema = (OracleSchema) getContainer();
+                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), tableSchema, objectName);
+                                    if (object == null) {
+                                        throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
+                                    }
+                                    return object;
                                 }
-                                return object;
-                            }
-                        });
+
+                                @Override
+                                public String getFullyQualifiedName(DBPEvaluationContext context) {
+                                    if (objectType == OracleObjectType.SYNONYM && OracleConstants.USER_PUBLIC.equals(schemaName)) {
+                                        return DBUtils.getQuotedIdentifier(dataSource, objectName);
+                                    }
+                                    return super.getFullyQualifiedName(context);
+                                }
+                            });
                     }
                 }
             }
