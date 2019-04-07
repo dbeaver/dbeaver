@@ -41,8 +41,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 {
     private static final Log log = Log.getLog(ERDAssociation.class);
 
-	private ERDEntity sourceEntity;
-    private ERDEntity targetEntity;
+	private ERDElement sourceEntity;
+    private ERDElement targetEntity;
     private List<ERDEntityAttribute> sourceAttributes;
     private List<ERDEntityAttribute> targetAttributes;
 
@@ -54,11 +54,11 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
      * @param targetEntity pk table
      * @param reflect reflect flag
      */
-    public ERDAssociation(ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect)
+    public ERDAssociation(ERDElement sourceEntity, ERDElement targetEntity, boolean reflect)
     {
         super(new ERDLogicalAssociation(
             sourceEntity,
-            sourceEntity.getObject().getName() + " -> " + targetEntity.getObject().getName(),
+            sourceEntity.getName() + " -> " + targetEntity.getName(),
             "",
             new ERDLogicalPrimaryKey(targetEntity, "Logical primary key", "")));
         this.targetEntity = targetEntity;
@@ -123,7 +123,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @return Returns the sourceEntity.
 	 */
-	public ERDEntity getSourceEntity()
+	public ERDElement getSourceEntity()
 	{
 		return sourceEntity;
 	}
@@ -131,12 +131,12 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @return Returns the targetEntity.
 	 */
-	public ERDEntity getTargetEntity()
+	public ERDElement getTargetEntity()
 	{
 		return targetEntity;
 	}
 
-	public void setTargetEntity(ERDEntity targetPrimaryKey)
+	public void setTargetEntity(ERDElement targetPrimaryKey)
 	{
 		this.targetEntity = targetPrimaryKey;
 	}
@@ -144,7 +144,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	/**
 	 * @param sourceForeignKey the foreign key table you are connecting from
 	 */
-	public void setSourceEntity(ERDEntity sourceForeignKey)
+	public void setSourceEntity(ERDElement sourceForeignKey)
 	{
 		this.sourceEntity = sourceForeignKey;
 	}

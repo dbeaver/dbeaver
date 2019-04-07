@@ -38,7 +38,7 @@ import java.util.*;
  * restored following a save, although ideally this should be
  * in a separate diagram specific model hierarchy
  */
-public class ERDEntity extends ERDObject<DBSEntity> {
+public class ERDEntity extends ERDElement<DBSEntity> {
 
     static final Log log = Log.getLog(ERDEntity.class);
 
@@ -46,8 +46,6 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     private String alias;
     private List<ERDEntityAttribute> attributes;
 
-    private List<ERDAssociation> references;
-    private List<ERDAssociation> associations;
     private List<DBSEntityAssociation> unresolvedKeys;
 
     private boolean primary = false;
@@ -58,7 +56,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
      * This entity will be initialized at the moment of creation within diagram.
      */
     public ERDEntity(DBPDataSource dataSource) {
-        super(null);
+        super();
         this.dataSource = dataSource;
     }
 
@@ -114,60 +112,6 @@ public class ERDEntity extends ERDObject<DBSEntity> {
         }
     }
 
-    /**
-     * Adds relationship where the current object is the foreign key table in a relationship
-     *
-     * @param rel the primary key relationship
-     */
-    public void addAssociation(ERDAssociation rel, boolean reflect) {
-        if (associations == null) {
-            associations = new ArrayList<>();
-        }
-        associations.add(rel);
-        if (reflect) {
-            firePropertyChange(OUTPUT, null, rel);
-        }
-    }
-
-    /**
-     * Adds relationship where the current object is the primary key table in a relationship
-     *
-     * @param table the foreign key relationship
-     */
-    public void addReferenceAssociation(ERDAssociation table, boolean reflect) {
-        if (references == null) {
-            references = new ArrayList<>();
-        }
-        references.add(table);
-        if (reflect) {
-            firePropertyChange(INPUT, null, table);
-        }
-    }
-
-    /**
-     * Removes relationship where the current object is the foreign key table in a relationship
-     *
-     * @param table the primary key relationship
-     */
-    public void removeAssociation(ERDAssociation table, boolean reflect) {
-        associations.remove(table);
-        if (reflect) {
-            firePropertyChange(OUTPUT, table, null);
-        }
-    }
-
-    /**
-     * Removes relationship where the current object is the primary key table in a relationship
-     *
-     * @param table the foreign key relationship
-     */
-    public void removeReferenceAssociation(ERDAssociation table, boolean reflect) {
-        references.remove(table);
-        if (reflect) {
-            firePropertyChange(INPUT, table, null);
-        }
-    }
-
     @NotNull
     public List<ERDEntityAttribute> getAttributes() {
         return CommonUtils.safeList(attributes);
@@ -193,39 +137,12 @@ public class ERDEntity extends ERDObject<DBSEntity> {
         diagram.getDecorator().fillEntityFromObject(new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
     }
 
-    /**
-     * @return Returns the associations.
-     */
-    @NotNull
-    public List<ERDAssociation> getAssociations() {
-        return CommonUtils.safeList(associations);
-    }
-
-    /**
-     * @return Returns the references.
-     */
-    @NotNull
-    public List<ERDAssociation> getReferences() {
-        return CommonUtils.safeList(references);
-    }
-
     public boolean isPrimary() {
         return primary;
     }
 
     public void setPrimary(boolean primary) {
         this.primary = primary;
-    }
-
-    public boolean hasSelfLinks() {
-        if (associations != null) {
-            for (ERDAssociation association : associations) {
-                if (association.getTargetEntity() == this) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -319,14 +236,4 @@ public class ERDEntity extends ERDObject<DBSEntity> {
         return false;
     }
 
-    public boolean hasAssociationsWith(ERDEntity entity) {
-        if (associations != null) {
-            for (ERDAssociation assoc : associations) {
-                if (assoc.getTargetEntity() == entity) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
