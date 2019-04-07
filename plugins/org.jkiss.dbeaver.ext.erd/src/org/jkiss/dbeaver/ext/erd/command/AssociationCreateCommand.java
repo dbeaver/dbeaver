@@ -57,7 +57,7 @@ public class AssociationCreateCommand extends Command {
             }
 
         }
-System.out.println("caConnect: " + returnValue);
+
         return returnValue;
 
     }

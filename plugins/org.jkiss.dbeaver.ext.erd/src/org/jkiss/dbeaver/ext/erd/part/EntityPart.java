@@ -259,15 +259,6 @@ public class EntityPart extends NodePart {
         entityFigure.repaint();
     }
 
-    public AssociationPart getConnectionPart(ERDAssociation rel, boolean source) {
-        for (Object conn : source ? getSourceConnections() : getTargetConnections()) {
-            if (conn instanceof AssociationPart && ((AssociationPart) conn).getAssociation() == rel) {
-                return (AssociationPart) conn;
-            }
-        }
-        return null;
-    }
-
     @Override
     public ERDGraphicalViewer getViewer() {
         return (ERDGraphicalViewer) super.getViewer();

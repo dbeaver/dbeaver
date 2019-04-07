@@ -373,7 +373,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         this.needsAutoLayout = needsAutoLayout;
     }
 
-    public void addInitRelationBends(ERDEntity sourceEntity, ERDEntity targetEntity, String relName, List<Point> bends) {
+    public void addInitRelationBends(ERDElement<?> sourceEntity, ERDElement<?> targetEntity, String relName, List<Point> bends) {
         for (ERDAssociation rel : sourceEntity.getReferences()) {
             if (rel.getSourceEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
                 rel.setInitBends(bends);
