@@ -22,10 +22,7 @@ import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.gef.ConnectionEditPart;
-import org.eclipse.gef.EditPolicy;
-import org.eclipse.gef.Request;
-import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.*;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
@@ -33,8 +30,10 @@ import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.FigureEditorLocator;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
+import org.jkiss.dbeaver.ext.erd.model.ERDElement;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.NoteDirectEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.NoteEditPolicy;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -67,7 +66,7 @@ public class NotePart extends NodePart
 	{
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
-            //installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
+            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
@@ -77,6 +76,16 @@ public class NotePart extends NodePart
             //installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE, new ResizableEditPolicy());
         }
 	}
+
+    @Override
+    public EditPart getTargetEditPart(Request request) {
+        if (RequestConstants.REQ_CONNECTION_START.equals(request.getType()) ||
+            RequestConstants.REQ_CONNECTION_END.equals(request.getType()))
+        {
+            return this;
+        }
+        return super.getTargetEditPart(request);
+    }
 
 	@Override
     public void performRequest(Request request)
@@ -256,4 +265,8 @@ public class NotePart extends NodePart
         return super.getAdapter(key);
     }
 
+    @Override
+    public ERDElement getElement() {
+        return getNote();
+    }
 }

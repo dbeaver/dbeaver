@@ -75,7 +75,7 @@ public class AssociationReconnectSourceCommand extends Command {
         }
     }
 
-    public void setSourceEntity(ERDEntity sourceEntity) {
+    public void setSourceEntity(ERDElement sourceEntity) {
         this.sourceEntity = sourceEntity;
     }
 

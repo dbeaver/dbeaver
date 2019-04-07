@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.erd.command.AssociationReconnectSourceCommand;
 import org.jkiss.dbeaver.ext.erd.command.AssociationReconnectTargetCommand;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.ext.erd.part.NodePart;
 
 /**
  * Handles manipulation of relationships between tables
@@ -34,8 +35,8 @@ public class EntityConnectionEditPolicy extends GraphicalNodeEditPolicy {
     @Override
     protected Command getConnectionCreateCommand(CreateConnectionRequest request) {
         AssociationCreateCommand cmd = makeCreateCommand();
-        EntityPart part = (EntityPart) getHost();
-        cmd.setSourceEntity(part.getEntity());
+        NodePart part = (NodePart) getHost();
+        cmd.setSourceEntity(part.getElement());
         request.setStartCommand(cmd);
         return cmd;
     }
@@ -43,8 +44,8 @@ public class EntityConnectionEditPolicy extends GraphicalNodeEditPolicy {
     @Override
     protected Command getConnectionCompleteCommand(CreateConnectionRequest request) {
         AssociationCreateCommand cmd = (AssociationCreateCommand) request.getStartCommand();
-        EntityPart part = (EntityPart) request.getTargetEditPart();
-        cmd.setTargetEntity(part.getEntity());
+        NodePart part = (NodePart) request.getTargetEditPart();
+        cmd.setTargetEntity(part.getElement());
         return cmd;
     }
 
@@ -53,8 +54,8 @@ public class EntityConnectionEditPolicy extends GraphicalNodeEditPolicy {
 
         AssociationReconnectSourceCommand cmd = makeReconnectSourceCommand();
         cmd.setAssociation((ERDAssociation) request.getConnectionEditPart().getModel());
-        EntityPart entityPart = (EntityPart) getHost();
-        cmd.setSourceEntity(entityPart.getEntity());
+        NodePart entityPart = (NodePart) getHost();
+        cmd.setSourceEntity(entityPart.getElement());
         return cmd;
     }
 
@@ -62,8 +63,8 @@ public class EntityConnectionEditPolicy extends GraphicalNodeEditPolicy {
     protected Command getReconnectTargetCommand(ReconnectRequest request) {
         AssociationReconnectTargetCommand cmd = makeReconnectTargetCommand();
         cmd.setRelationship((ERDAssociation) request.getConnectionEditPart().getModel());
-        EntityPart entityPart = (EntityPart) getHost();
-        cmd.setTargetEntity(entityPart.getEntity());
+        NodePart entityPart = (NodePart) getHost();
+        cmd.setTargetEntity(entityPart.getElement());
         return cmd;
     }
 

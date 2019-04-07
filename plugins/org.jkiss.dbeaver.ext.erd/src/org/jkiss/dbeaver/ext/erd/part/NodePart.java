@@ -23,7 +23,11 @@ import org.eclipse.gef.NodeEditPart;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDElement;
 import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.util.List;
 
 /**
  * Abstract node part
@@ -31,6 +35,20 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public abstract class NodePart extends PropertyAwarePart implements NodeEditPart, ICustomizablePart {
 
     private Rectangle bounds;
+
+
+    public abstract ERDElement getElement();
+
+
+    @Override
+    protected List<ERDAssociation> getModelSourceConnections() {
+        return getElement().getAssociations();
+    }
+
+    @Override
+    protected List<ERDAssociation> getModelTargetConnections() {
+        return getElement().getReferences();
+    }
 
 
     /**

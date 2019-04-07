@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDElement;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
 import java.util.List;
@@ -28,8 +29,8 @@ import java.util.List;
 public class AssociationCreateCommand extends Command {
 
     protected ERDAssociation association;
-    protected ERDEntity sourceEntity;
-    protected ERDEntity targetEntity;
+    protected ERDElement sourceEntity;
+    protected ERDElement targetEntity;
 
     public AssociationCreateCommand() {
     }
@@ -56,6 +57,7 @@ public class AssociationCreateCommand extends Command {
             }
 
         }
+System.out.println("caConnect: " + returnValue);
         return returnValue;
 
     }
@@ -65,19 +67,19 @@ public class AssociationCreateCommand extends Command {
         association = createAssociation(sourceEntity, targetEntity, true);
     }
 
-    public ERDEntity getSourceEntity() {
+    public ERDElement getSourceEntity() {
         return sourceEntity;
     }
 
-    public void setSourceEntity(ERDEntity sourceEntity) {
+    public void setSourceEntity(ERDElement sourceEntity) {
         this.sourceEntity = sourceEntity;
     }
 
-    public ERDEntity getTargetEntity() {
+    public ERDElement getTargetEntity() {
         return targetEntity;
     }
 
-    public void setTargetEntity(ERDEntity targetEntity) {
+    public void setTargetEntity(ERDElement targetEntity) {
         this.targetEntity = targetEntity;
     }
 
@@ -101,7 +103,7 @@ public class AssociationCreateCommand extends Command {
         targetEntity.removeReferenceAssociation(association, true);
     }
 
-    protected ERDAssociation createAssociation(ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect) {
+    protected ERDAssociation createAssociation(ERDElement sourceEntity, ERDElement targetEntity, boolean reflect) {
         return new ERDAssociation(sourceEntity, targetEntity, true);
     }
 
