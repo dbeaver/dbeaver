@@ -220,7 +220,21 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
 
             switch (container.getDashboardCalcType()) {
                 case value: {
+                    int maxDP = 200;
+                    Date startTime = null;
+
                     for (DashboardDatasetRow row : rows) {
+                        if (startTime == null) {
+                            startTime = row.getTimestamp();
+                        } else {
+                            if (container.getDashboardInterval() == DashboardInterval.second || container.getDashboardInterval() == DashboardInterval.millisecond) {
+                                long diffSeconds = (row.getTimestamp().getTime() - startTime.getTime()) / 1000;
+                                if (diffSeconds > maxDP) {
+                                    // Too big difference between start and end points. Stop here otherwise we'll flood chart with too many ticks
+                                    break;
+                                }
+                            }
+                        }
                         Object value = row.getValues()[i];
                         if (value instanceof Number) {
                             series.addOrUpdate(makeDataItem(container, row), (Number) value);
