@@ -130,6 +130,9 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
             if (tickCount > 40) {
                 tickCount = container.getDashboardMaxItems() / 5;
             }
+            if (tickCount <= 1) {
+                tickCount = 10;
+            }
             domainAxis.setTickUnit(new DateTickUnit(unitType, Math.min(MAX_TIMESERIES_RANGE_LABELS, tickCount)));
             if (viewConfig != null && !viewConfig.isDomainTicksVisible()) {
                 domainAxis.setVisible(false);
