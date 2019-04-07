@@ -126,7 +126,11 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
                     unitType = DateTickUnitType.SECOND;
                     break;
             }
-            domainAxis.setTickUnit(new DateTickUnit(unitType, Math.min(MAX_TIMESERIES_RANGE_LABELS, container.getDashboardMaxItems() / 5)));
+            int tickCount = container.getDashboardMaxItems();
+            if (tickCount > 40) {
+                tickCount = container.getDashboardMaxItems() / 5;
+            }
+            domainAxis.setTickUnit(new DateTickUnit(unitType, Math.min(MAX_TIMESERIES_RANGE_LABELS, tickCount)));
             if (viewConfig != null && !viewConfig.isDomainTicksVisible()) {
                 domainAxis.setVisible(false);
             }
