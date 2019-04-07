@@ -111,6 +111,9 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
                             leadingSpaces++;
                         }
                     } else {
+                        if (trailingSpaces > 0) {
+                            trailingSpaces = 0;
+                        }
                         inIdentifier = true;
                     }
                 }
