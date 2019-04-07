@@ -326,7 +326,7 @@ public class DashboardRendererTimeseries extends DashboardRendererBase {
     private XYPlot getDashboardPlot(DashboardContainer container) {
         DashboardChartComposite chartComposite = getChartComposite(container);
         JFreeChart chart = chartComposite.getChart();
-        return (XYPlot) chart.getPlot();
+        return chart == null ? null : (XYPlot) chart.getPlot();
     }
 
 }
