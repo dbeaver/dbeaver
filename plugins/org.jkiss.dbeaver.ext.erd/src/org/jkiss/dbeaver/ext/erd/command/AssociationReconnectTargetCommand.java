@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDElement;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
 import java.util.List;
@@ -28,10 +29,10 @@ import java.util.List;
  */
 public class AssociationReconnectTargetCommand extends Command {
 
-    protected ERDEntity sourceEntity;
-    protected ERDEntity targetEntity;
+    protected ERDElement sourceEntity;
+    protected ERDElement targetEntity;
     protected ERDAssociation relationship;
-    protected ERDEntity oldTargetEntity;
+    protected ERDElement oldTargetEntity;
 
     /**
      * Makes sure that foreign key doesn't reconnect to itself or try to create
@@ -42,7 +43,7 @@ public class AssociationReconnectTargetCommand extends Command {
 
         boolean returnVal = true;
 
-        ERDEntity foreignKeyEntity = relationship.getSourceEntity();
+        ERDElement foreignKeyEntity = relationship.getSourceEntity();
 
         if (foreignKeyEntity.equals(targetEntity)) {
             returnVal = false;

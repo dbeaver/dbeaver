@@ -538,12 +538,12 @@ public class DiagramLoader
                     xml.addAttribute(ATTR_TYPE, association.getConstraintType().getId());
                     TableSaveInfo pkInfo = infoMap.get(rel.getTargetEntity());
                     if (pkInfo == null) {
-                        log.error("Cannot find PK table '" + DBUtils.getObjectFullName(rel.getTargetEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
+                        log.error("Cannot find PK table '" + rel.getTargetEntity().getName() + "' in info map");
                         continue;
                     }
                     TableSaveInfo fkInfo = infoMap.get(rel.getSourceEntity());
                     if (fkInfo == null) {
-                        log.error("Cannot find FK table '" + DBUtils.getObjectFullName(rel.getSourceEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
+                        log.error("Cannot find FK table '" + rel.getSourceEntity().getName() + "' in info map");
                         continue;
                     }
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);

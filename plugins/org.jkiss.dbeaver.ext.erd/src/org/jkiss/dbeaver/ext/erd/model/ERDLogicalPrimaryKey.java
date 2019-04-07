@@ -31,12 +31,12 @@ import java.util.List;
  */
 public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferrer {
 
-    private DBSEntity entity;
+    private Object entity;
     private String name;
     private String description;
     private List<? extends DBSTableConstraintColumn> columns = new ArrayList<>();
 
-    public ERDLogicalPrimaryKey(ERDEntity entity, String name, String description)
+    public ERDLogicalPrimaryKey(ERDElement entity, String name, String description)
     {
         this.entity = entity.getObject();
         this.name = name;
@@ -47,7 +47,7 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
     @Override
     public DBPDataSource getDataSource()
     {
-        return entity.getDataSource();
+        return entity instanceof DBSObject ? ((DBSObject) entity).getDataSource() : null;
     }
 
     @Nullable
@@ -60,7 +60,7 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
     @Override
     public DBSEntity getParentObject()
     {
-        return entity;
+        return entity instanceof DBSEntity ? (DBSEntity) entity : null;
     }
 
     @NotNull

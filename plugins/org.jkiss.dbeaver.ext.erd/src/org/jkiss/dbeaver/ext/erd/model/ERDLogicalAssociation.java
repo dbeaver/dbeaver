@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,14 +31,14 @@ import java.util.List;
  */
 public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityReferrer {
 
-    private DBSEntity entity;
+    private ERDElement entity;
     private String name;
     private String description;
     private ERDLogicalPrimaryKey pk;
 
-    public ERDLogicalAssociation(ERDEntity entity, String name, String description, ERDLogicalPrimaryKey pk)
+    public ERDLogicalAssociation(ERDElement entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
-        this.entity = entity.getObject();
+        this.entity = entity;
         this.name = name;
         this.description = description;
         this.pk = pk;
@@ -62,7 +61,7 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
     @Override
     public DBPDataSource getDataSource()
     {
-        return entity.getDataSource();
+        return entity instanceof ERDEntity ? ((ERDEntity) entity).getDataSource() : null;
     }
 
     @Nullable
@@ -76,7 +75,7 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
     @Override
     public DBSEntity getParentObject()
     {
-        return entity;
+        return entity instanceof ERDEntity ? ((ERDEntity)entity).getObject() : null;
     }
 
     @NotNull

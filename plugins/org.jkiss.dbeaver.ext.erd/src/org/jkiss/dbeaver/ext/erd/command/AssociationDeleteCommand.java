@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDElement;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 
@@ -30,8 +31,8 @@ import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 public class AssociationDeleteCommand extends Command {
 
     protected final AssociationPart part;
-    protected final ERDEntity sourceEntity;
-    protected final ERDEntity targetEntity;
+    protected final ERDElement sourceEntity;
+    protected final ERDElement targetEntity;
     protected final ERDAssociation association;
 
     public AssociationDeleteCommand(AssociationPart part) {

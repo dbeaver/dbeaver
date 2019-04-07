@@ -22,7 +22,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Simple text note
  */
-public class ERDNote extends ERDObject<String> {
+public class ERDNote extends ERDElement<String> {
 
     public ERDNote(String text) {
         super(CommonUtils.notEmpty(text));
