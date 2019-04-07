@@ -72,7 +72,7 @@ public class AssociationReconnectTargetCommand extends Command {
         }
     }
 
-    public void setTargetEntity(ERDEntity targetEntity) {
+    public void setTargetEntity(ERDElement targetEntity) {
         this.targetEntity = targetEntity;
     }
 

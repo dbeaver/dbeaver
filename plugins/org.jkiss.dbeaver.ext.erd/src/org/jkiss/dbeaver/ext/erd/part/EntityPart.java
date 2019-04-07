@@ -68,16 +68,6 @@ public class EntityPart extends NodePart {
         return getEntity().getAttributes();
     }
 
-    @Override
-    protected List<ERDAssociation> getModelSourceConnections() {
-        return getEntity().getAssociations();
-    }
-
-    @Override
-    protected List<ERDAssociation> getModelTargetConnections() {
-        return getEntity().getReferences();
-    }
-
     //******************* Editing related methods *********************/
 
     /**
@@ -326,5 +316,10 @@ public class EntityPart extends NodePart {
     @Override
     public DragTracker getDragTracker(Request request) {
         return super.getDragTracker(request);
+    }
+
+    @Override
+    public ERDElement getElement() {
+        return getEntity();
     }
 }
