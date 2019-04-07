@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -100,5 +102,13 @@ public class OracleSynonym extends OracleSchemaObject implements DBSAlias {
             return (DBSObject) object;
         }
         return null;
+    }
+
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        if (OracleConstants.USER_PUBLIC.equals(getSchema().getName())) {
+            return DBUtils.getQuotedIdentifier(this);
+        }
+        return super.getFullyQualifiedName(context);
     }
 }

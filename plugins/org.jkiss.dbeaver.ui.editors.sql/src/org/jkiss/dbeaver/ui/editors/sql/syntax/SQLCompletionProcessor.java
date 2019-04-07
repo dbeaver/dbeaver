@@ -353,7 +353,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         ProposalSearchJob(SQLCompletionAnalyzer.CompletionRequest request) {
             super("Search proposals...");
-            setSystem(true);
+            setSystem(false);
             this.request = request;
         }
 
