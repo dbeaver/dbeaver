@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ext.erd.part.ICustomizablePart;
 import org.jkiss.dbeaver.ext.erd.part.NodePart;
 import org.jkiss.dbeaver.ext.erd.part.NotePart;
@@ -73,14 +74,21 @@ public class SetPartSettingsAction extends SelectionAction {
                 final Shell shell = UIUtils.createCenteredShell(getWorkbenchPart().getSite().getShell());
                 try {
                     NodePart nodePart = null;
+                    boolean hasNotes = false, hasEntities = false;
                     for (Object item : objects) {
                         if (item instanceof NodePart) {
-                            nodePart = (NodePart) item;
-                            break;
+                            if (nodePart == null) {
+                                nodePart = (NodePart) item;
+                            }
+                            if (item instanceof NotePart) {
+                                hasNotes = true;
+                            } else if (item instanceof EntityPart) {
+                                hasEntities = true;
+                            }
                         }
                     }
 
-                    PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart);
+                    PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart, hasNotes, hasEntities);
                     if (settingsDialog.open() != IDialogConstants.OK_ID) {
                         return;
                     }
@@ -128,10 +136,12 @@ public class SetPartSettingsAction extends SelectionAction {
             }
 
             private void setNodeSettings(ICustomizablePart part, ViewSettings settings) {
-                part.setCustomTransparency(settings.transparency);
-                part.setCustomBackgroundColor(settings.background);
-                part.setCustomForegroundColor(settings.foreground);
                 if (part instanceof NotePart) {
+                    part.setCustomTransparency(settings.transparency);
+                }
+                part.setCustomBackgroundColor(settings.background);
+                if (part instanceof NotePart) {
+                    part.setCustomForegroundColor(settings.foreground);
                     part.setCustomBorderWidth(settings.borderWidth);
                     part.setCustomFont(UIUtils.getSharedFonts().getFont(
                         Display.getCurrent(),
@@ -144,6 +154,8 @@ public class SetPartSettingsAction extends SelectionAction {
     private static class PartSettingsDialog extends BaseDialog {
 
         private final NodePart node;
+        private final boolean noteStyles;
+        private final boolean entityStyles;
         private Button transparentCheckbox;
         private ColorSelector backgroundColorPicker;
         private ColorSelector foregroundColorPicker;
@@ -151,9 +163,11 @@ public class SetPartSettingsAction extends SelectionAction {
         private String fontData;
         private ViewSettings newSettings = new ViewSettings();
 
-        public PartSettingsDialog(Shell parentShell, NodePart node) {
+        public PartSettingsDialog(Shell parentShell, NodePart node, boolean noteStyles, boolean entityStyles) {
             super(parentShell, "Node view settings", null);
             this.node = node;
+            this.noteStyles = noteStyles;
+            this.entityStyles = entityStyles;
         }
 
         @Override
@@ -162,52 +176,56 @@ public class SetPartSettingsAction extends SelectionAction {
 
             Group settingsGroup = UIUtils.createControlGroup(dialogArea, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
 
-            transparentCheckbox = UIUtils.createCheckbox(settingsGroup, "Transparent", "Make figure transparent (no background)",
-                node != null && node.getCustomTransparency(), 2);
+            if (noteStyles) {
+                transparentCheckbox = UIUtils.createCheckbox(settingsGroup, "Transparent", "Make figure transparent (no background)",
+                    node != null && node.getCustomTransparency(), 2);
+            }
             UIUtils.createControlLabel(settingsGroup, "Background");
             backgroundColorPicker = new ColorSelector(settingsGroup);
             if (node != null) {
                 backgroundColorPicker.setColorValue(node.getCustomBackgroundColor().getRGB());
             }
-            UIUtils.createControlLabel(settingsGroup, "Foreground");
-            foregroundColorPicker = new ColorSelector(settingsGroup);
-            if (node != null) {
-                foregroundColorPicker.setColorValue(node.getCustomForegroundColor().getRGB());
-            }
-
-            borderWidthText = UIUtils.createLabelText(settingsGroup, "Border width", String.valueOf(node == null ? 1 : node.getCustomBorderWidth()));
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.widthHint = 30;
-            borderWidthText.setLayoutData(gd);
-            borderWidthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
-
-            UIUtils.createControlLabel(settingsGroup, "Font");
-            Button changeFontButton = UIUtils.createPushButton(settingsGroup, "Customize...", null, null);
-            changeFontButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-
-            Text previewText = new Text(settingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI);
-            previewText.setText("ERD Node Text");
-            gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
-                gd.horizontalSpan = 2;
-            previewText.setLayoutData(gd);
-            if (node != null) {
-                previewText.setFont(node.getCustomFont());
-                fontData = SharedFonts.toString(node.getCustomFont().getFontData()[0]);
-            }
-
-            changeFontButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    FontDialog fontDialog = new FontDialog(getShell(), SWT.NONE);
-                    fontDialog.setFontList(previewText.getFont().getFontData());
-                    FontData result = fontDialog.open();
-                    if (result != null) {
-                        fontData = SharedFonts.toString(result);
-                        previewText.setFont(UIUtils.getSharedFonts().getFont(previewText.getDisplay(), result));
-                        settingsGroup.layout(true, true);
-                    }
+            if (noteStyles) {
+                UIUtils.createControlLabel(settingsGroup, "Foreground");
+                foregroundColorPicker = new ColorSelector(settingsGroup);
+                if (node != null) {
+                    foregroundColorPicker.setColorValue(node.getCustomForegroundColor().getRGB());
                 }
-            });
+
+                borderWidthText = UIUtils.createLabelText(settingsGroup, "Border width", String.valueOf(node == null ? 1 : node.getCustomBorderWidth()));
+                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.widthHint = 30;
+                borderWidthText.setLayoutData(gd);
+                borderWidthText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+
+                UIUtils.createControlLabel(settingsGroup, "Font");
+                Button changeFontButton = UIUtils.createPushButton(settingsGroup, "Customize...", null, null);
+                changeFontButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
+                Text previewText = new Text(settingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI);
+                previewText.setText("ERD Node Text");
+                gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 2;
+                previewText.setLayoutData(gd);
+                if (node != null) {
+                    previewText.setFont(node.getCustomFont());
+                    fontData = SharedFonts.toString(node.getCustomFont().getFontData()[0]);
+                }
+
+                changeFontButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        FontDialog fontDialog = new FontDialog(getShell(), SWT.NONE);
+                        fontDialog.setFontList(previewText.getFont().getFontData());
+                        FontData result = fontDialog.open();
+                        if (result != null) {
+                            fontData = SharedFonts.toString(result);
+                            previewText.setFont(UIUtils.getSharedFonts().getFont(previewText.getDisplay(), result));
+                            settingsGroup.layout(true, true);
+                        }
+                    }
+                });
+            }
 
             return dialogArea;
         }
@@ -224,19 +242,19 @@ public class SetPartSettingsAction extends SelectionAction {
         }
 
         public boolean isTransparent() {
-            return transparentCheckbox.getSelection();
+            return transparentCheckbox != null && transparentCheckbox.getSelection();
         }
 
         public Color getBackgroundColor() {
-            return UIUtils.getSharedTextColors().getColor(backgroundColorPicker.getColorValue());
+            return backgroundColorPicker == null ? null : UIUtils.getSharedTextColors().getColor(backgroundColorPicker.getColorValue());
         }
 
         public Color getForegroundColorPicker() {
-            return UIUtils.getSharedTextColors().getColor(foregroundColorPicker.getColorValue());
+            return foregroundColorPicker == null ? null : UIUtils.getSharedTextColors().getColor(foregroundColorPicker.getColorValue());
         }
 
         public int getBorderWidth() {
-            return CommonUtils.toInt(borderWidthText.getText());
+            return borderWidthText == null ? 0 : CommonUtils.toInt(borderWidthText.getText());
         }
 
         public String getFontData() {
