@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.StandardConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -76,7 +77,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
 
             hostText = UIUtils.createLabelText(settingsGroup, SSHUIMessages.model_ssh_configurator_label_host_ip, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL)); //$NON-NLS-2$
-            portText = UIUtils.createLabelSpinner(settingsGroup, SSHUIMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, 0, 65535);
+            portText = UIUtils.createLabelSpinner(settingsGroup, SSHUIMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, StandardConstants.MIN_PORT_VALUE, StandardConstants.MAX_PORT_VALUE);
             userNameText = UIUtils.createLabelText(settingsGroup, SSHUIMessages.model_ssh_configurator_label_user_name, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL)); //$NON-NLS-2$
 
             authMethodCombo = UIUtils.createLabelCombo(settingsGroup, SSHUIMessages.model_ssh_configurator_combo_auth_method, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -110,7 +111,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
-            localPortSpinner = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_port, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            localPortSpinner = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_port, 0, StandardConstants.MIN_PORT_VALUE, StandardConstants.MAX_PORT_VALUE);
             localPortSpinner.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_port_description);
             keepAliveText = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
             tunnelTimeout = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
