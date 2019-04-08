@@ -23,9 +23,15 @@ import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -33,6 +39,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExasolSQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
@@ -49,21 +56,50 @@ public class ExasolSQLDialect extends JDBCSQLDialect implements SQLRuleProvider 
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        
+        
         try {
             for (String kw : metaData.getSQLKeywords().split(",")) {
                 this.addSQLKeyword(kw);
-            }
+            } 
             
-            this.addSQLKeyword("PRIORITY");
-            this.addSQLKeyword("IDENTIFIED");
-            this.addSQLKeyword("JDBC");
-            this.addSQLKeyword("EXA");
-            this.addSQLKeyword("KERBEROS");
-            this.addSQLKeyword("LDAP");
+        	JDBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), dataSource, "" );
+        	try (JDBCStatement stmt = session.createStatement())
+        	{
+        		try (JDBCResultSet dbResult = stmt.executeQuery("SELECT KEYWORD,RESERVED FROM  EXA_SQL_KEYWORDS")) 
+        		{
+        			
+        			while(dbResult.next())
+        			{
+        				Boolean isReserved = dbResult.getBoolean(2);
+        				String keyWord = dbResult.getString(1);
+        				DBPKeywordType type = DBPKeywordType.OTHER;
+        				if (isReserved)
+        					type = DBPKeywordType.KEYWORD;
+        				
+        				if (  
+        					! (this.getMatchedKeywords(keyWord).stream().anyMatch(k -> k.equals(keyWord)))
+        				) {
+        					@SuppressWarnings("serial")
+							ArrayList<String> value = new ArrayList<String>() {{
+    							add(keyWord);
+    						}};
+        					this.addKeywords(value, type);;
+        				}
+        			}
+        		}
+        	}
         } catch (SQLException e) {
             LOG.warn("Could not retrieve reserved keyword list from Exasol dictionary");
         }
-
+        
+		@SuppressWarnings("serial")
+		ArrayList<String> value = new ArrayList<String>() {{
+			add("KERBEROS");
+			add("JDBC");
+		}};
+		
+		this.addKeywords(value, DBPKeywordType.OTHER);
     }
 
     @NotNull
