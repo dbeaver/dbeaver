@@ -83,7 +83,7 @@ public final class ExasolTableForeignKeyCache
             "			where\r\n" +
             "				CONSTRAINT_SCHEMA = '%s' and\r\n" +
             "				CONSTRAINT_TYPE = 'FOREIGN KEY'  \r\n" +
-            "        ORDER BY 1,2,3 c\r\n" +
+            "        ORDER BY 1,2,3 \r\n" +
             " 		) cc\r\n" +
             "	using\r\n" +
             "			(\r\n" +
