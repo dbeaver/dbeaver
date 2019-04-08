@@ -31,8 +31,10 @@ import org.jkiss.dbeaver.ui.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.ui.dashboard.registry.DashboardViewTypeDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -179,9 +181,20 @@ public class DashboardEditDialog extends BaseDialog {
             queryText.setLayoutData(gd);
             UIUtils.createInfoLabel(sqlGroup, "Use blank line as query separator");
 
+            String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+
             StringBuilder sql = new StringBuilder();
             for (DashboardDescriptor.QueryMapping query : dashboardDescriptor.getQueries()) {
-                sql.append(query.getQueryText().trim()).append(GeneralUtils.getDefaultLineSeparator()).append(GeneralUtils.getDefaultLineSeparator());
+                sql.append(query.getQueryText().trim()).append(lineSeparator).append(lineSeparator);
+            }
+            if (dashboardDescriptor.getMapQuery() != null) {
+                sql.append(dashboardDescriptor.getMapQuery().getQueryText()).append(lineSeparator).append(lineSeparator);
+                if (!ArrayUtils.isEmpty(dashboardDescriptor.getMapKeys())) {
+                    sql.append("Map keys: ").append(Arrays.toString(dashboardDescriptor.getMapKeys())).append(lineSeparator);
+                }
+                if (!ArrayUtils.isEmpty(dashboardDescriptor.getMapLabels())) {
+                    sql.append("Map labels: ").append(Arrays.toString(dashboardDescriptor.getMapLabels())).append(lineSeparator);
+                }
             }
             queryText.setText(sql.toString().trim());
         }
