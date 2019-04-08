@@ -106,13 +106,15 @@ public class GreenplumSchema extends PostgreSchema {
                                                     @Nullable String objectName) throws SQLException {
             String uriLocationColumn =
                 getDataSource().isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "urilocation" : "location";
+            String execLocationColumn =
+                getDataSource().isGreenplumVersionAtLeast(session.getProgressMonitor(), 5, 0) ? "execlocation" : "location";
             StringBuilder sqlQuery = new StringBuilder("SELECT c.oid,d.description, c.*,\n" +
                     "CASE WHEN x." + uriLocationColumn + " IS NOT NULL THEN array_to_string(x." + uriLocationColumn + ", ',') ELSE '' END AS urilocation,\n" +
                     "CASE WHEN x.command IS NOT NULL THEN x.command ELSE '' END AS command,\n" +
                     "x.fmttype, x.fmtopts,\n" +
                     "coalesce(x.rejectlimit, 0) AS rejectlimit,\n" +
                     "coalesce(x.rejectlimittype, '') AS rejectlimittype,\n" +
-                    "array_to_string(x.execlocation, ',') AS execlocation,\n" +
+                    "array_to_string(x." + execLocationColumn + ", ',') AS execlocation,\n" +
                     "pg_encoding_to_char(x.encoding) AS encoding,\n" +
                     "x.writable,\n")
                     .append(postgreSchema.getDataSource().isServerVersionAtLeast(9,4) ?
