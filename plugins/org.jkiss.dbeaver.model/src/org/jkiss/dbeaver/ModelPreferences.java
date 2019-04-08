@@ -207,7 +207,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_ANONYMOUS_PARAMETERS_MARK, String.valueOf(SQLConstants.DEFAULT_PARAMETER_MARK));
         PrefUtils.setDefaultPreferenceValue(store, SQL_NAMED_PARAMETERS_PREFIX, String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX));
         PrefUtils.setDefaultPreferenceValue(store, SQL_CONTROL_COMMAND_PREFIX, String.valueOf(SQLConstants.DEFAULT_CONTROL_COMMAND_PREFIX));
-        PrefUtils.setDefaultPreferenceValue(store, SQL_VARIABLES_ENABLED, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_VARIABLES_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FILTER_FORCE_SUBSELECT, false);
 
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_FORMATTER, SQLFormatterTokenized.FORMATTER_ID);
