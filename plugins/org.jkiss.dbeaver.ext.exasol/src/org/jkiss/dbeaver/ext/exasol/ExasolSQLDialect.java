@@ -60,6 +60,10 @@ public class ExasolSQLDialect extends JDBCSQLDialect implements SQLRuleProvider 
             this.addSQLKeyword("EXA");
             this.addSQLKeyword("KERBEROS");
             this.addSQLKeyword("LDAP");
+            this.addSQLKeyword("PYTHON");
+            this.addSQLKeyword("JAVA");
+            this.addSQLKeyword("LUA");
+            this.addSQLKeyword("R");
         } catch (SQLException e) {
             LOG.warn("Could not retrieve reserved keyword list from Exasol dictionary");
         }
