@@ -25,7 +25,9 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 
 /**
@@ -79,8 +81,9 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider {
 
             menu.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
             menu.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
-            //menu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-            //menu.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
+            menu.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS_END));
+            menu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            menu.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 
         }
     }
