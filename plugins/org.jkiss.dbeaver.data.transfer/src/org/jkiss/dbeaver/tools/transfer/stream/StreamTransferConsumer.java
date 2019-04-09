@@ -167,7 +167,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             // Check for file split
             if (settings.isSplitOutFiles() && !parameters.isBinary) {
                 writer.flush();
-                if (bytesWritten > settings.getMaxOutFileSize()) {
+                if (bytesWritten >= settings.getMaxOutFileSize()) {
                     // Make new file
                     createNewOutFile();
                 }
@@ -294,6 +294,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private void closeOutputStreams() {
         if (this.writer != null) {
+            this.writer.flush();
             ContentUtils.close(this.writer);
             this.writer = null;
         }
@@ -314,6 +315,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         if (outputStream != null) {
+            try {
+                outputStream.flush();
+            } catch (IOException e) {
+                log.debug(e);
+            }
             ContentUtils.close(outputStream);
             outputStream = null;
         }
@@ -637,5 +643,16 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             this.out.write(b, off, len);
             bytesWritten += len;
         }
+
+        @Override
+        public void flush() throws IOException {
+            out.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+            out.close();
+        }
+
     }
 }
