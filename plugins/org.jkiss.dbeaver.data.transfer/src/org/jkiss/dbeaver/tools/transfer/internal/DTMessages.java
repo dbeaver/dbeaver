@@ -45,6 +45,8 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_job_task_export_table_data;
 	public static String data_transfer_wizard_job_task_retrieve;
 	public static String data_transfer_wizard_output_checkbox_compress;
+	public static String data_transfer_wizard_output_checkbox_split_files;
+	public static String data_transfer_wizard_output_checkbox_split_files_tip;
 	public static String data_transfer_wizard_output_checkbox_new_connection;
 	public static String data_transfer_wizard_output_checkbox_open_folder;
 	public static String data_transfer_wizard_output_checkbox_select_row_count;

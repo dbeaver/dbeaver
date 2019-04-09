@@ -62,6 +62,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean outputClipboard = false;
     private boolean useSingleFile = false;
     private boolean compressResults = false;
+    private boolean splitOutFiles = false;
+    private long maxOutFileSize = 10 * 1000 * 1000;
     private boolean openFolderOnFinish = true;
     private boolean executeProcessOnFinish = false;
     private String finishProcessCommand = null;
@@ -136,6 +138,22 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     public void setCompressResults(boolean compressResults) {
         this.compressResults = compressResults;
+    }
+
+    public boolean isSplitOutFiles() {
+        return splitOutFiles;
+    }
+
+    public void setSplitOutFiles(boolean splitOutFiles) {
+        this.splitOutFiles = splitOutFiles;
+    }
+
+    public long getMaxOutFileSize() {
+        return maxOutFileSize;
+    }
+
+    public void setMaxOutFileSize(long maxOutFileSize) {
+        this.maxOutFileSize = maxOutFileSize;
     }
 
     public boolean isOpenFolderOnFinish() {
@@ -213,6 +231,12 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         if (!CommonUtils.isEmpty(dialogSettings.get("compressResults"))) {
             compressResults = dialogSettings.getBoolean("compressResults");
         }
+        if (!CommonUtils.isEmpty(dialogSettings.get("splitOutFiles"))) {
+            splitOutFiles = dialogSettings.getBoolean("splitOutFiles");
+        }
+        if (!CommonUtils.isEmpty(dialogSettings.get("maxOutFileSize"))) {
+            maxOutFileSize = dialogSettings.getInt("maxOutFileSize");
+        }
         if (dialogSettings.get("openFolderOnFinish") != null) {
             openFolderOnFinish = dialogSettings.getBoolean("openFolderOnFinish");
         }
@@ -241,6 +265,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("useSingleFile", useSingleFile);
 
         dialogSettings.put("compressResults", compressResults);
+        dialogSettings.put("splitOutFiles", splitOutFiles);
+        dialogSettings.put("maxOutFileSize", maxOutFileSize);
 
         dialogSettings.put("openFolderOnFinish", openFolderOnFinish);
         dialogSettings.put("executeProcessOnFinish", executeProcessOnFinish);
