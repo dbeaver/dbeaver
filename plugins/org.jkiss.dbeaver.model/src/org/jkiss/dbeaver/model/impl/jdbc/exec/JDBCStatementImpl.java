@@ -647,6 +647,15 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Override
+    public void setResultsFetchSize(int fetchSize) throws DBCException {
+        try {
+            getOriginal().setFetchSize(fetchSize);
+        } catch (SQLException e) {
+            throw new DBCException(e, connection.getDataSource());
+        }
+    }
+
+    @Override
     public int getUpdateCount() throws SQLException
     {
         return (updateCount = getOriginal().getUpdateCount());

@@ -152,6 +152,11 @@ public class WMIStatement implements DBCStatement {
 
     }
 
+    @Override
+    public void setResultsFetchSize(int fetchSize) throws DBCException {
+        // not supported
+    }
+
     @Nullable
     @Override
     public DBCExecutionSource getStatementSource()
