@@ -68,7 +68,6 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private String rowDelimiter;
     private String nullString;
     private HeaderPosition headerPosition;
-    private PrintWriter out;
     private List<DBDAttributeBinding> columns;
 
     private final StringBuilder buffer = new StringBuilder();
@@ -92,7 +91,6 @@ public class DataExporterCSV extends StreamExporterAbstract {
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';
         quoteAlways = CommonUtils.toBoolean(properties.get(PROP_QUOTE_ALWAYS));
-        out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         try {
             headerPosition = HeaderPosition.valueOf(String.valueOf(properties.get(PROP_HEADER)));
@@ -104,7 +102,6 @@ public class DataExporterCSV extends StreamExporterAbstract {
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
@@ -148,7 +145,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
             DBDAttributeBinding column = columns.get(i);
             if (DBUtils.isNullValue(row[i])) {
                 if (!CommonUtils.isEmpty(nullString)) {
-                    out.write(nullString);
+                    getWriter().write(nullString);
                 }
             } else if (row[i] instanceof DBDContent) {
                 // Content
@@ -224,6 +221,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
             }
             value = buffer.toString();
         }
+        PrintWriter out = getWriter();
         if (quote && useQuotes) out.write(quoteChar);
         out.write(value);
         if (quote && useQuotes) out.write(quoteChar);
@@ -232,6 +230,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private void writeCellValue(Reader reader) throws IOException
     {
         try {
+            PrintWriter out = getWriter();
             if (useQuotes) out.write(quoteChar);
             // Copy reader
             char buffer[] = new char[2000];
@@ -255,12 +254,12 @@ public class DataExporterCSV extends StreamExporterAbstract {
 
     private void writeDelimiter()
     {
-        out.write(delimiter);
+        getWriter().write(delimiter);
     }
 
     private void writeRowLimit()
     {
-        out.write(rowDelimiter);
+        getWriter().write(rowDelimiter);
     }
 
 }

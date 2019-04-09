@@ -45,7 +45,6 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private static final int IMAGE_FRAME_SIZE = 200;
 
-    private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private int rowCount = 0;
 
@@ -53,13 +52,11 @@ public class DataExporterHTML extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        out = site.getWriter();
     }
 
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
@@ -72,6 +69,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private void printHeader()
     {
+        PrintWriter out = getWriter();
         out.write("<html>");
         out.write("\t<head>" +
             "\n\t<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">" +
@@ -97,6 +95,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
+        PrintWriter out = getWriter();
         out.write("<tr" + (rowCount++ % 2 == 0 ? " class=\"odd\"" : "") + ">");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
@@ -138,11 +137,12 @@ public class DataExporterHTML extends StreamExporterAbstract {
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
-        out.write("</table></body></html>");
+        getWriter().write("</table></body></html>");
     }
 
     private void writeTextCell(String value, boolean header)
     {
+        PrintWriter out = getWriter();
         out.write(header ? "<th>" : "<td>");
         if (value == null) {
             out.write("&nbsp;");
@@ -156,6 +156,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private void writeImageCell(File file) throws DBException
     {
+        PrintWriter out = getWriter();
         out.write("<td>");
         if (file == null || !file.exists()) {
             out.write("&nbsp;");
@@ -202,6 +203,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
     private void writeCellValue(Reader reader) throws IOException
     {
         try {
+            PrintWriter out = getWriter();
             // Copy reader
             char buffer[] = new char[2000];
             for (;;) {

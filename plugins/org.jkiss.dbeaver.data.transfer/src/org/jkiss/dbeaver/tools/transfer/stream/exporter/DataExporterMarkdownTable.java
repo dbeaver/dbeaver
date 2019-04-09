@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.List;
 
@@ -53,7 +52,6 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     private String nullString;
     private boolean showHeaderSeparator;
     private boolean confluenceFormat;
-    private PrintWriter out;
     private List<DBDAttributeBinding> columns;
 
     private final StringBuilder buffer = new StringBuilder();
@@ -65,7 +63,6 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
 
         Object nullStringProp = site.getProperties().get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
-        out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         showHeaderSeparator = CommonUtils.getBoolean(site.getProperties().get(PROP_SHOW_HEADER_SEPARATOR), true);
         confluenceFormat = CommonUtils.getBoolean(site.getProperties().get(PROP_CONFLUENCE_FORMAT), false);
@@ -74,7 +71,6 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
@@ -111,7 +107,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                 writeCellValue(colName);
             } else {
                 for (int k = 0; k < colName.length(); k++) {
-                    out.write('-');
+                    getWriter().write('-');
                 }
             }
             writeDelimiter();
@@ -128,7 +124,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
             DBDAttributeBinding column = columns.get(i);
             if (DBUtils.isNullValue(row[i])) {
                 if (!CommonUtils.isEmpty(nullString)) {
-                    out.write(nullString);
+                    getWriter().write(nullString);
                 }
             } else if (row[i] instanceof DBDContent) {
                 // Content
@@ -174,7 +170,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
         }
         value = buffer.toString();
 
-        out.write(value);
+        getWriter().write(value);
     }
 
     private void writeCellValue(Reader reader) throws IOException
@@ -189,9 +185,9 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                 }
                 for (int i = 0; i < count; i++) {
                     if (buffer[i] == '|') {
-                        out.write(PIPE_ESCAPE);
+                        getWriter().write(PIPE_ESCAPE);
                     } else {
-                        out.write(buffer[i]);
+                        getWriter().write(buffer[i]);
                     }
                 }
             }
@@ -202,12 +198,12 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
 
     private void writeDelimiter()
     {
-        out.write('|');
+        getWriter().write('|');
     }
 
     private void writeRowLimit()
     {
-        out.write(rowDelimiter);
+        getWriter().write(rowDelimiter);
     }
 
 }

@@ -75,12 +75,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public static final String VARIABLE_PROJECT = "project";
     public static final String VARIABLE_FILE = "file";
 
+    public static final int OUT_FILE_BUFFER_SIZE = 100000;
+
     private IStreamDataExporter processor;
     private StreamConsumerSettings settings;
     private DBSObject sourceObject;
+
     private OutputStream outputStream;
     private ZipOutputStream zipStream;
     private PrintWriter writer;
+    private int multiFileNumber;
+    private long bytesWritten = 0;
+
     private List<DBDAttributeBinding> metaColumns;
     private Object[] row;
     private File lobDirectory;
@@ -118,7 +124,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
             }
         }
-
 
         initialized = true;
     }
@@ -158,6 +163,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
             // Export row
             processor.exportRow(session, resultSet, row);
+
+            // Check for file split
+            if (settings.isSplitOutFiles() && !parameters.isBinary) {
+                writer.flush();
+                if (bytesWritten > settings.getMaxOutFileSize()) {
+                    // Make new file
+                    createNewOutFile();
+                }
+            }
         } catch (IOException e) {
             throw new DBCException("IO error", e);
         } catch (Throwable e) {
@@ -217,26 +231,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 this.outputBuffer = new StringWriter(2048);
                 this.writer = new PrintWriter(this.outputBuffer, true);
             } else {
-                this.outputStream = new BufferedOutputStream(
-                    new FileOutputStream(outputFile, settings.isUseSingleFile()),
-                    10000);
-                if (settings.isCompressResults()) {
-                    zipStream = new ZipOutputStream(this.outputStream);
-                    zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
-                    StreamTransferConsumer.this.outputStream = zipStream;
-                }
-                if (!parameters.isBinary) {
-                    this.writer = new PrintWriter(new OutputStreamWriter(this.outputStream, settings.getOutputEncoding()), true);
-                }
-            }
-
-            // Check for BOM
-            if (!parameters.isBinary && !outputClipboard && settings.isOutputEncodingBOM()) {
-                byte[] bom = GeneralUtils.getCharsetBOM(settings.getOutputEncoding());
-                if (bom != null) {
-                    outputStream.write(bom);
-                    outputStream.flush();
-                }
+                openOutputStreams();
             }
         } catch (IOException e) {
             closeExporter();
@@ -265,6 +260,43 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             processor.dispose();
             processor = null;
         }
+        closeOutputStreams();
+    }
+
+    private void openOutputStreams() throws IOException {
+        this.outputStream = new BufferedOutputStream(
+            new FileOutputStream(outputFile, settings.isUseSingleFile()),
+            OUT_FILE_BUFFER_SIZE);
+        if (settings.isCompressResults()) {
+            this.zipStream = new ZipOutputStream(this.outputStream);
+            this.zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
+            this.outputStream = zipStream;
+        }
+
+        // If we need to split files - use stream wrapper to calculate fiel size
+        if (settings.isSplitOutFiles()) {
+            this.outputStream = new OutputStreamStatProxy(this.outputStream);
+        }
+
+        // Check for BOM and write it to the stream
+        if (!parameters.isBinary && settings.isOutputEncodingBOM()) {
+            byte[] bom = GeneralUtils.getCharsetBOM(settings.getOutputEncoding());
+            if (bom != null) {
+                outputStream.write(bom);
+                outputStream.flush();
+            }
+        }
+
+        if (!parameters.isBinary) {
+            this.writer = new PrintWriter(new OutputStreamWriter(this.outputStream, settings.getOutputEncoding()), true);
+        }
+    }
+
+    private void closeOutputStreams() {
+        if (this.writer != null) {
+            ContentUtils.close(this.writer);
+            this.writer = null;
+        }
 
         // Finish zip stream
         if (zipStream != null) {
@@ -280,15 +312,21 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
             zipStream = null;
         }
-        if (this.writer != null) {
-            ContentUtils.close(this.writer);
-            this.writer = null;
-        }
 
         if (outputStream != null) {
             ContentUtils.close(outputStream);
             outputStream = null;
         }
+    }
+
+    private void createNewOutFile() throws IOException {
+        closeOutputStreams();
+
+        bytesWritten = 0;
+        multiFileNumber++;
+        outputFile = makeOutputFile();
+
+        openOutputStreams();
     }
 
     @Override
@@ -386,6 +424,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         String fileName = translatePattern(
             settings.getOutputFilePattern(),
             null).trim();
+        if (multiFileNumber > 0) {
+            fileName += "_" + String.valueOf(multiFileNumber + 1);
+        }
         if (extension != null) {
             return fileName + "." + extension;
         } else {
@@ -570,6 +611,31 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public String getOutputEncoding() {
             return settings == null ? null : settings.getOutputEncoding();
+        }
+    }
+
+    private class OutputStreamStatProxy extends OutputStream {
+        private final OutputStream out;
+        OutputStreamStatProxy(OutputStream outputStream) {
+            this.out = outputStream;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            this.out.write(b);
+            bytesWritten++;
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            this.out.write(b);
+            bytesWritten += b.length;
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            this.out.write(b, off, len);
+            bytesWritten += len;
         }
     }
 }

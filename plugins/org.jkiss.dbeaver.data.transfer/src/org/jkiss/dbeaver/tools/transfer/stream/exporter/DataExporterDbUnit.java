@@ -17,17 +17,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Locale;
-
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -44,6 +33,17 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * DbUnit Dataset Exporter
  * 
@@ -58,7 +58,6 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     private static final String PROP_UPPER_CASE_COLUMN_NAMES = "upperCaseColumnNames";
     private static final String PROP_INCLUDE_NULL_VALUES = "includeNullValues";
 
-    private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
     private boolean upperCaseTableName;
@@ -69,7 +68,6 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        out = site.getWriter();
         upperCaseTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_UPPER_CASE_TABLE_NAME), true);
         upperCaseColumnNames = CommonUtils.getBoolean(site.getProperties().get(PROP_UPPER_CASE_COLUMN_NAMES), true);
         includeNullValues = CommonUtils.getBoolean(site.getProperties().get(PROP_INCLUDE_NULL_VALUES), true);
@@ -78,7 +76,6 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     @Override
     public void dispose()
     {
-        out = null;
         tableName = null;
         columns = null;
         super.dispose();
@@ -104,6 +101,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     @Override
     public void exportHeader(DBCSession session) throws DBException, IOException
     {
+        PrintWriter out = getWriter();
         columns = getSite().getAttributes();
         tableName = getTableName();
         String outputEncoding = getSite().getOutputEncoding() == null || getSite().getOutputEncoding().length() == 0 ? "UTF-8" : getSite().getOutputEncoding(); 
@@ -114,6 +112,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
+        PrintWriter out = getWriter();
         out.write("    <" + tableName);
         for (int i = 0; i < row.length; i++) {
             if (DBUtils.isNullValue(row[i]) && !includeNullValues) {
@@ -190,19 +189,20 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
-        out.write("</dataset>\n");
+        getWriter().write("</dataset>\n");
     }
 
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
-            out.write(value);
+            getWriter().write(value);
         }
     }
 
     private void writeCellValue(Reader reader) throws IOException
     {
+        PrintWriter out = getWriter();
         // Copy reader
         char buffer[] = new char[2000];
         for (;;) {
