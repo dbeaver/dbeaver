@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.ContextMenuProvider;
+import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -32,8 +33,6 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 
 /**
  * Provides a context menu for the schema diagram editor. A virtual cut and paste from the flow example
- *
- * @author Daniel Lee
  */
 public class ERDEditorContextMenuProvider extends ContextMenuProvider {
     private ERDEditorPart editor;
@@ -44,7 +43,7 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider {
      *
      * @param editor the editor
      */
-    public ERDEditorContextMenuProvider(ERDEditorPart editor) {
+    ERDEditorContextMenuProvider(ERDEditorPart editor) {
         super(editor.getViewer());
         this.editor = editor;
     }
@@ -66,16 +65,16 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider {
 
             menu.add(new Separator());
 
-            menu.add(new Separator("org.eclipse.gef.group.undo"));
-            menu.add(new Separator("org.eclipse.gef.group.copy"));
+            menu.add(new Separator(GEFActionConstants.GROUP_UNDO));
+            menu.add(new Separator(GEFActionConstants.GROUP_COPY));
             //menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_COPY));
 
-            menu.add(new Separator("org.eclipse.gef.group.print"));
-            menu.add(new Separator("org.eclipse.gef.group.edit"));
-            menu.add(new Separator("org.eclipse.gef.group.view"));
-            menu.add(new Separator("org.eclipse.gef.group.find"));
-            menu.add(new Separator("org.eclipse.gef.group.rest"));
-            menu.add(new Separator("org.eclipse.gef.group.save"));
+            menu.add(new Separator(GEFActionConstants.GROUP_PRINT));
+            menu.add(new Separator(GEFActionConstants.GROUP_EDIT));
+            menu.add(new Separator(GEFActionConstants.GROUP_VIEW));
+            menu.add(new Separator(GEFActionConstants.GROUP_FIND));
+            menu.add(new Separator(GEFActionConstants.GROUP_REST));
+            menu.add(new Separator(GEFActionConstants.GROUP_SAVE));
 
             menu.add(new Separator());
 
