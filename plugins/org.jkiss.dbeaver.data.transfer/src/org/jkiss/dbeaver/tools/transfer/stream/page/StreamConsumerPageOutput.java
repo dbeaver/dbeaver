@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.tools.transfer.stream.page;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -34,10 +36,11 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
+
 public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> {
 
     private Combo encodingCombo;
-    private Label encodingBOMLabel;
     private Button encodingBOMCheckbox;
     private Text directoryText;
     private Text fileNameText;
@@ -48,6 +51,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     private Button clipboardCheck;
     private Button singleFileCheck;
     private Button showFinalMessageCheckbox;
+    private Button splitFilesCheckbox;
+    private Label maximumFileSizeLabel;
+    private Text maximumFileSizeText;
 
     public StreamConsumerPageOutput() {
         super(DTMessages.data_transfer_wizard_output_name);
@@ -71,25 +77,18 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
         {
             Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
-            clipboardCheck = UIUtils.createLabelCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, false);
-            clipboardCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 4, 1));
+            clipboardCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, null, false, 5);
             clipboardCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOutputClipboard(clipboardCheck.getSelection());
-                    toggleClipboardOutput();
+                    updateControlsEnablement();
                     updatePageCompletion();
                 }
             });
-            singleFileCheck = UIUtils.createLabelCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_use_single_file, DTMessages.data_transfer_wizard_output_label_use_single_file_tip, false);
-            singleFileCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 4, 1));
-            singleFileCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setUseSingleFile(singleFileCheck.getSelection());
-                    updatePageCompletion();
-                }
-            });
+
+            // Output path/pattern
+
             directoryText = DialogUtils.createOutputFolderChooser(generalSettings, null, e -> {
                 settings.setOutputFolder(directoryText.getText());
                 updatePageCompletion();
@@ -137,27 +136,53 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     }
                     updatePageCompletion();
                 });
-                encodingBOMLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bom);
-                encodingBOMLabel.setToolTipText(DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip);
-                encodingBOMCheckbox = new Button(generalSettings, SWT.CHECK);
-                encodingBOMCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
+                encodingBOMCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bom, DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip, false, 3);
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         settings.setOutputEncodingBOM(encodingBOMCheckbox.getSelection());
                     }
                 });
-                new Label(generalSettings, SWT.NONE);
             }
 
-            compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_compress, false);
-            compressCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 4, 1));
-            compressCheckbox.addSelectionListener(new SelectionAdapter() {
+            singleFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_use_single_file, DTMessages.data_transfer_wizard_output_label_use_single_file_tip, false, 5);
+            singleFileCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    settings.setCompressResults(compressCheckbox.getSelection());
+                    settings.setUseSingleFile(singleFileCheck.getSelection());
+                    updatePageCompletion();
                 }
             });
+
+            {
+                Composite outFilesSettings = UIUtils.createComposite(generalSettings, 4);
+                outFilesSettings.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 5, 1));
+                compressCheckbox = UIUtils.createCheckbox(outFilesSettings, DTMessages.data_transfer_wizard_output_checkbox_compress, null, false, 1);
+                compressCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setCompressResults(compressCheckbox.getSelection());
+                        updateControlsEnablement();
+                    }
+                });
+
+                splitFilesCheckbox = UIUtils.createCheckbox(outFilesSettings, DTMessages.data_transfer_wizard_output_checkbox_split_files, DTMessages.data_transfer_wizard_output_checkbox_split_files_tip, false, 1);
+                splitFilesCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setSplitOutFiles(splitFilesCheckbox.getSelection());
+                        updateControlsEnablement();
+                    }
+                });
+                maximumFileSizeLabel = UIUtils.createControlLabel(outFilesSettings, "Maximum file size");
+                maximumFileSizeText = new Text(outFilesSettings, SWT.BORDER);
+                maximumFileSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+                maximumFileSizeText.addModifyListener(e ->
+                    settings.setMaxOutFileSize(CommonUtils.toLong(maximumFileSizeText.getText())));
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.widthHint = UIUtils.getFontHeight(maximumFileSizeText) * 10;
+                maximumFileSizeText.setLayoutData(gd);
+            }
         }
 
         {
@@ -216,7 +241,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
     }
 
-    private void toggleClipboardOutput() {
+    private void updateControlsEnablement() {
         boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
         boolean isMulti = getWizard().getSettings().getDataPipes().size() > 1;
@@ -226,8 +251,10 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard);
+        splitFilesCheckbox.setEnabled(!clipboard);
+        maximumFileSizeLabel.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
+        maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         encodingCombo.setEnabled(!isBinary && !clipboard);
-        encodingBOMLabel.setEnabled(!isBinary && !clipboard);
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         showFolderCheckbox.setEnabled(!clipboard);
         execProcessCheckbox.setEnabled(!clipboard);
@@ -252,6 +279,8 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         directoryText.setText(CommonUtils.toString(settings.getOutputFolder()));
         fileNameText.setText(CommonUtils.toString(settings.getOutputFilePattern()));
         compressCheckbox.setSelection(settings.isCompressResults());
+        splitFilesCheckbox.setSelection(settings.isSplitOutFiles());
+        maximumFileSizeText.setText(String.valueOf(settings.getMaxOutFileSize()));
         encodingCombo.setText(CommonUtils.toString(settings.getOutputEncoding()));
         encodingBOMCheckbox.setSelection(settings.isOutputEncodingBOM());
         showFolderCheckbox.setSelection(settings.isOpenFolderOnFinish());
@@ -266,7 +295,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
         updatePageCompletion();
-        toggleClipboardOutput();
+        updateControlsEnablement();
         toggleExecProcessControls();
     }
 
