@@ -171,6 +171,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public void close() {
+        closeExporter();
+
         metaColumns = null;
         row = null;
     }
@@ -276,6 +278,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             } catch (IOException e) {
                 log.debug(e);
             }
+            zipStream = null;
         }
         if (this.writer != null) {
             ContentUtils.close(this.writer);
