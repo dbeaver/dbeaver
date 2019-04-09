@@ -43,7 +43,6 @@ import java.util.List;
  */
 public class DataExporterXML extends StreamExporterAbstract {
 
-    private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
 
@@ -51,13 +50,11 @@ public class DataExporterXML extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        out = site.getWriter();
     }
 
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
@@ -70,6 +67,7 @@ public class DataExporterXML extends StreamExporterAbstract {
 
     private void printHeader()
     {
+        PrintWriter out = getWriter();
         out.write("<?xml version=\"1.0\" ?>\n");
         tableName = escapeXmlElementName(getSite().getSource().getName());
         out.write("<!DOCTYPE " + tableName + " [\n");
@@ -97,6 +95,7 @@ public class DataExporterXML extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
+        PrintWriter out = getWriter();
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
@@ -134,14 +133,14 @@ public class DataExporterXML extends StreamExporterAbstract {
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
-        out.write("</" + tableName + ">\n");
+        getWriter().write("</" + tableName + ">\n");
     }
 
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
-            out.write(value);
+            getWriter().write(value);
         }
     }
 
@@ -158,7 +157,7 @@ public class DataExporterXML extends StreamExporterAbstract {
             if (image != null) {
                 String imagePath = file.getAbsolutePath();
                 imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
-                out.write(imagePath);
+                getWriter().write(imagePath);
             }
         }
     }
@@ -174,14 +173,14 @@ public class DataExporterXML extends StreamExporterAbstract {
             }
             for (int i = 0; i < count; i++) {
                 if (buffer[i] == '<') {
-                    out.write("&lt;");
+                    getWriter().write("&lt;");
                 }
                 else if (buffer[i] == '>') {
-                    out.write("&gt;");
+                    getWriter().write("&gt;");
                 } else if (buffer[i] == '&') {
-                    out.write("&amp;");
+                    getWriter().write("&amp;");
                 } else {
-                    out.write(buffer[i]);
+                    getWriter().write(buffer[i]);
                 }
             }
         }

@@ -58,7 +58,6 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private String rowDelimiter;
     private boolean omitSchema;
     private int rowsInStatement;
-    private PrintWriter out;
     private String tableName;
     private List<DBDAttributeBinding> columns;
 
@@ -86,7 +85,6 @@ public class DataExporterSQL extends StreamExporterAbstract {
         } catch (NumberFormatException e) {
             rowsInStatement = 10;
         }
-        out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         dialect = SQLUtils.getDialectFromObject(site.getSource());
     }
@@ -94,7 +92,6 @@ public class DataExporterSQL extends StreamExporterAbstract {
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
@@ -111,6 +108,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
+        PrintWriter out = getWriter();
         SQLDialect.MultiValueInsertMode insertMode = rowsInStatement == 1 ? SQLDialect.MultiValueInsertMode.NOT_SUPPORTED : getMultiValueInsertMode();
         int columnsSize = columns.size();
         boolean firstRow = false;
@@ -215,12 +213,12 @@ public class DataExporterSQL extends StreamExporterAbstract {
         switch (getMultiValueInsertMode()) {
             case GROUP_ROWS:
                 if (rowCount > 0) {
-                    out.write(";");
+                    getWriter().write(";");
                 }
                 break;
             case PLAIN:
                 if (rowCount > 0) {
-                    out.write(");");
+                    getWriter().write(");");
                 }
                 break;
             default:
@@ -230,6 +228,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
 
     private void writeStringValue(String value)
     {
+        PrintWriter out = getWriter();
         out.write(STRING_QUOTE);
         if (dialect != null) {
             out.write(dialect.escapeString(value));
@@ -242,6 +241,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     private void writeStringValue(Reader reader) throws IOException
     {
         try {
+            PrintWriter out = getWriter();
             out.write(STRING_QUOTE);
             // Copy reader
             char buffer[] = new char[2000];

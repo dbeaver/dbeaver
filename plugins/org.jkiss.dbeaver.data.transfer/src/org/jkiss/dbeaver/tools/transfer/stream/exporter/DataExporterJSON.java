@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -51,7 +50,6 @@ public class DataExporterJSON extends StreamExporterAbstract {
     public static final String PROP_FORMAT_DATE_ISO = "formatDateISO";
     public static final String PROP_PRINT_TABLE_NAME = "printTableName";
 
-    private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
     private int rowNum = 0;
@@ -63,7 +61,6 @@ public class DataExporterJSON extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        out = site.getWriter();
         formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
         printTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_PRINT_TABLE_NAME), true);
     }
@@ -71,7 +68,6 @@ public class DataExporterJSON extends StreamExporterAbstract {
     @Override
     public void dispose()
     {
-        out = null;
         super.dispose();
     }
 
@@ -85,6 +81,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
 
     private void printHeader()
     {
+        PrintWriter out = getWriter();
         if (printTableName) {
             out.write("{\n");
             out.write("\"" + JSONUtils.escapeJsonString(tableName) + "\": ");
@@ -95,6 +92,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
+        PrintWriter out = getWriter();
         if (rowNum > 0) {
             out.write(",\n");
         }
@@ -170,6 +168,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
+        PrintWriter out = getWriter();
         out.write("\n]");
         if (printTableName) {
             out.write("}");
@@ -180,9 +179,9 @@ public class DataExporterJSON extends StreamExporterAbstract {
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            out.write("\"" + JSONUtils.escapeJsonString(value) + "\"");
+            getWriter().write("\"" + JSONUtils.escapeJsonString(value) + "\"");
         } else {
-            out.write("null");
+            getWriter().write("null");
         }
     }
 
@@ -195,7 +194,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
             if (count <= 0) {
                 break;
             }
-            out.write(JSONUtils.escapeJsonString(new String(buffer, 0, count)));
+            getWriter().write(JSONUtils.escapeJsonString(new String(buffer, 0, count)));
         }
     }
 

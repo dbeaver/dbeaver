@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 
+import java.io.OutputStream;
+import java.io.PrintWriter;
+
 /**
  * Abstract Exporter
  */
@@ -34,6 +37,14 @@ public abstract class StreamExporterAbstract implements IStreamDataExporter {
     public IStreamDataExporterSite getSite()
     {
         return site;
+    }
+
+    protected PrintWriter getWriter() {
+        return site.getWriter();
+    }
+
+    protected OutputStream getOutputStream() {
+        return site.getOutputStream();
     }
 
     @Override

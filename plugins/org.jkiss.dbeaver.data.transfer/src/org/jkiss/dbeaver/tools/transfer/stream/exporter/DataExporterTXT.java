@@ -42,7 +42,6 @@ public class DataExporterTXT extends StreamExporterAbstract {
     private static final String PROP_DELIM_LEADING = "delimLeading";
     private static final String PROP_DELIM_TRAILING = "delimTrailing";
 
-    private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
     private int maxColumnSize = 100;
@@ -55,7 +54,6 @@ public class DataExporterTXT extends StreamExporterAbstract {
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
         super.init(site);
-        out = site.getWriter();
         Map<Object, Object> properties = site.getProperties();
         this.maxColumnSize = CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 100);
         this.showNulls = CommonUtils.getBoolean(properties.get(PROP_SHOW_NULLS), false);
@@ -65,7 +63,6 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
     @Override
     public void dispose() {
-        out = null;
         super.dispose();
     }
 
@@ -124,7 +121,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
         }
         if (delimTrailing) txt.append("|");
         txt.append("\n");
-        out.print(txt);
+        getWriter().print(txt);
     }
 
     @Override
@@ -145,7 +142,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
         }
         if (delimTrailing) txt.append("|");
         txt.append("\n");
-        out.print(txt);
+        getWriter().print(txt);
     }
 
     @Override

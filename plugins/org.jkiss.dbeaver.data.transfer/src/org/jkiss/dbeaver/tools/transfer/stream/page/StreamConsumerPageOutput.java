@@ -246,15 +246,16 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
         boolean isMulti = getWizard().getSettings().getDataPipes().size() > 1;
+        boolean singleFile = singleFileCheck.getSelection();
 
         clipboardCheck.setEnabled(!isBinary);
         singleFileCheck.setEnabled(isMulti && !clipboard && getWizard().getSettings().getMaxJobCount() <= 1);
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard);
-        splitFilesCheckbox.setEnabled(!clipboard);
-        maximumFileSizeLabel.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
-        maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
+        splitFilesCheckbox.setEnabled(!clipboard && !singleFile);
+        maximumFileSizeLabel.setEnabled(!clipboard && !singleFile && splitFilesCheckbox.getSelection());
+        maximumFileSizeText.setEnabled(!clipboard && !singleFile && splitFilesCheckbox.getSelection());
         encodingCombo.setEnabled(!isBinary && !clipboard);
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         showFolderCheckbox.setEnabled(!clipboard);
