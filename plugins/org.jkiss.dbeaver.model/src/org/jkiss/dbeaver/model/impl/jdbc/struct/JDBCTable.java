@@ -180,7 +180,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         fetchSize = DEFAULT_READ_FETCH_SIZE;
                     }
                     try {
-                        ((JDBCStatement) dbStat).setFetchSize(
+                        dbStat.setResultsFetchSize(
                             firstRow < 0 || maxRows <= 0 ? fetchSize : (int) (firstRow + maxRows));
                     } catch (Exception e) {
                         log.warn(e);

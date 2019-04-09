@@ -109,6 +109,7 @@ public class SQLQueryJob extends DataSourceJob
     private SQLQuery lastGoodQuery;
 
     private boolean skipConfirmation;
+    private int fetchSize;
     private long readFlags;
 
     public SQLQueryJob(
@@ -165,6 +166,10 @@ public class SQLQueryJob extends DataSourceJob
     public void setResultSetLimit(long offset, long maxRows) {
         this.rsOffset = offset;
         this.rsMaxRows = maxRows;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
     }
 
     public void setReadFlags(long readFlags) {
@@ -440,7 +445,11 @@ public class SQLQueryJob extends DataSourceJob
             session,
             DBCStatementType.SCRIPT,
             sqlQuery,
-            rsOffset, rsMaxRows);
+            rsOffset,
+            rsMaxRows);
+        if (fetchSize > 0) {
+            dbcStatement.setResultsFetchSize(fetchSize);
+        }
         curStatement = dbcStatement;
 
         int statementTimeout = getDataSourceContainer().getPreferenceStore().getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT);
@@ -834,20 +843,18 @@ public class SQLQueryJob extends DataSourceJob
 
         statistics = new DBCStatistics();
         resultSetNumber = resultNumber;
-        session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getText(), 512), 1);
-        try {
-            boolean result = executeSingleQuery(session, query, true);
-            if (!result && lastError != null) {
-                if (lastError instanceof DBCException) {
-                    throw (DBCException) lastError;
-                } else {
-                    throw new DBCException(lastError, getExecutionContext().getDataSource());
-                }
-            } else if (result && statistics.getStatementsCount() > 0) {
-                showExecutionResult(session);
+        //session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getText(), 512), 1);
+        session.getProgressMonitor().subTask(CommonUtils.truncateString(query.getText(), 512));
+
+        boolean result = executeSingleQuery(session, query, true);
+        if (!result && lastError != null) {
+            if (lastError instanceof DBCException) {
+                throw (DBCException) lastError;
+            } else {
+                throw new DBCException(lastError, getExecutionContext().getDataSource());
             }
-        } finally {
-            session.getProgressMonitor().done();
+        } else if (result && statistics.getStatementsCount() > 0) {
+            showExecutionResult(session);
         }
     }
 

@@ -107,7 +107,7 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
             statistics.setRowsFetched(resultCount);
             return statistics;
         } else {
-            return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, 0);
+            return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
         }
     }
 

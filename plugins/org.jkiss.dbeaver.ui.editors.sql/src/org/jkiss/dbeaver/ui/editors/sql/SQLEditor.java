@@ -2665,7 +2665,7 @@ public class SQLEditor extends SQLEditorBase implements
         public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
         {
             if (dataContainer != null) {
-                return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, 0);
+                return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
             }
             final SQLQueryJob job = queryProcessor.curJob;
             if (job == null) {
@@ -2696,6 +2696,7 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setReadFlags(flags);
                 job.setDataFilter(dataFilter);
+                job.setFetchSize(fetchSize);
 
                 job.extractData(session, this.query, resultCounts > 1 ? 0 : resultSetNumber);
 

@@ -114,6 +114,11 @@ public class LocalStatement implements DBCStatement
     }
 
     @Override
+    public void setResultsFetchSize(int fetchSize) throws DBCException {
+
+    }
+
+    @Override
     public void close() {
 
     }
