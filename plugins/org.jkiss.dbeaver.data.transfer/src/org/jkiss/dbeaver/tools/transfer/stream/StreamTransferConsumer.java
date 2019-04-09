@@ -308,10 +308,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (!last) {
-            try {
-                processor.exportFooter(monitor);
-            } catch (Exception e) {
-                log.warn("Error while exporting table footer", e);
+            if (processor != null) {
+                try {
+                    processor.exportFooter(monitor);
+                } catch (Exception e) {
+                    log.warn("Error while exporting table footer", e);
+                }
             }
 
             closeExporter();
