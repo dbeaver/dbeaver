@@ -154,17 +154,18 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 }
             });
 
+            compressCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_compress, null, false, 1);
+            compressCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setCompressResults(compressCheckbox.getSelection());
+                    updateControlsEnablement();
+                }
+            });
+
             {
-                Composite outFilesSettings = UIUtils.createComposite(generalSettings, 4);
+                Composite outFilesSettings = UIUtils.createComposite(generalSettings, 3);
                 outFilesSettings.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 5, 1));
-                compressCheckbox = UIUtils.createCheckbox(outFilesSettings, DTMessages.data_transfer_wizard_output_checkbox_compress, null, false, 1);
-                compressCheckbox.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        settings.setCompressResults(compressCheckbox.getSelection());
-                        updateControlsEnablement();
-                    }
-                });
 
                 splitFilesCheckbox = UIUtils.createCheckbox(outFilesSettings, DTMessages.data_transfer_wizard_output_checkbox_split_files, DTMessages.data_transfer_wizard_output_checkbox_split_files_tip, false, 1);
                 splitFilesCheckbox.addSelectionListener(new SelectionAdapter() {
