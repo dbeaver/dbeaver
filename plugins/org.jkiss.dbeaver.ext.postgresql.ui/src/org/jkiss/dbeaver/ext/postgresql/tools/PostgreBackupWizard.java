@@ -137,7 +137,8 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
                 cmd.add("-t");
                 cmd.add(table.getFullyQualifiedName(DBPEvaluationContext.DDL));
             }
-        } else if (!CommonUtils.isEmpty(arg.getSchemas())) {
+        }
+        if (!CommonUtils.isEmpty(arg.getSchemas())) {
             for (PostgreSchema schema : arg.getSchemas()) {
                 cmd.add("-n");
                 cmd.add(DBUtils.getQuotedIdentifier(schema));
