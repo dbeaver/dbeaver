@@ -45,6 +45,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button hideEmptySchemasCheckbox;
     private Button showDBAAlwaysCheckbox;
     private Button useDBAViewsCheckbox;
+    private Button useSysSchemaCheckbox;
     private Button useRuleHint;
 
     public OracleConnectionExtraPage()
@@ -101,6 +102,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_show, OracleMessages.edit_create_checkbox_content_group_show_discription, false, 1);
             useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use,  OracleMessages.edit_create_checkbox_content_group_use_discription, false, 1);
+            useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
         }
 
         {
@@ -154,6 +156,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
         useDBAViewsCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS), false));
+        useSysSchemaCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA), false));
+        useSysSchemaCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA), false));
         useRuleHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
     }
 
@@ -192,6 +196,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                 OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS,
                 String.valueOf(useDBAViewsCheckbox.getSelection()));
+            providerProperties.put(
+                OracleConstants.PROP_METADATA_USE_SYS_SCHEMA,
+                String.valueOf(useSysSchemaCheckbox.getSelection()));
 
             providerProperties.put(
                 OracleConstants.PROP_USE_RULE_HINT,

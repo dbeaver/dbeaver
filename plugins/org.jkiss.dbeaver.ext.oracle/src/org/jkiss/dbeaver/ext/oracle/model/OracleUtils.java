@@ -192,6 +192,15 @@ public class OracleUtils {
         }
     }
 
+    public static String getSysSchemaPrefix(OracleDataSource dataSource) {
+        boolean useSysView = CommonUtils.toBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA));
+        if (useSysView) {
+            return OracleConstants.SCHEMA_SYS + ".";
+        } else {
+            return "";
+        }
+    }
+
     public static String getSource(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body, boolean insertCreateReplace) throws DBCException
     {
         if (sourceObject.getSourceType().isCustom()) {
@@ -211,7 +220,7 @@ public class OracleUtils {
         }
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, sourceOwner, "Load source code for " + sourceType + " '" + sourceObject.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT TEXT FROM " + OracleConstants.SCHEMA_SYS + "." + sysViewName + " " +
+                "SELECT TEXT FROM " + getSysSchemaPrefix(sourceObject.getDataSource()) + sysViewName + " " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
                     "ORDER BY LINE")) {
                 dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
@@ -254,9 +263,9 @@ public class OracleUtils {
     {
         String dbaView = "DBA_" + viewName;
         if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
-            return OracleConstants.SCHEMA_SYS + "." + dbaView;
+            return OracleUtils.getSysSchemaPrefix(dataSource) + dbaView;
         } else {
-            return OracleConstants.SCHEMA_SYS + ".USER_" + viewName;
+            return OracleUtils.getSysSchemaPrefix(dataSource) + "USER_" + viewName;
         }
     }
 
@@ -266,10 +275,10 @@ public class OracleUtils {
         if (useDBAView) {
             String dbaView = "DBA_" + viewName;
             if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
-                return OracleConstants.SCHEMA_SYS + "." + dbaView;
+                return OracleUtils.getSysSchemaPrefix(dataSource) + dbaView;
             }
         }
-        return OracleConstants.SCHEMA_SYS + ".ALL_" + viewName;
+        return OracleUtils.getSysSchemaPrefix(dataSource) + "ALL_" + viewName;
     }
 
     public static String getSysCatalogHint(OracleDataSource dataSource)

@@ -244,7 +244,7 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
     {
         try {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE")) {
+                "SELECT * FROM ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE")) {
                 dbStat.setString(1, unit.getSchema().getName());
                 dbStat.setString(2, unit.getName());
                 dbStat.setString(3, objectType.getTypeName());

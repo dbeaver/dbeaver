@@ -488,7 +488,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchedulerJob job) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM SYS.ALL_SCHEDULER_JOB_ARGS " +
+                    "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(job.getDataSource()) + "ALL_SCHEDULER_JOB_ARGS " +
                             "WHERE OWNER=? AND JOB_NAME=? " +
                             "ORDER BY ARGUMENT_POSITION");
             dbStat.setString(1, job.getSchema().getName());
@@ -531,7 +531,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
         	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
         		try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "SELECT STATE FROM " + OracleConstants.SCHEMA_SYS + ".ALL_SCHEDULER_JOBS " +
+                        "SELECT STATE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_SCHEDULER_JOBS " +
                             "WHERE OWNER=? AND JOB_NAME=? ")) {
                     dbStat.setString(1, getOwner() );
                     dbStat.setString(2, getName());
@@ -585,7 +585,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
         	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
         		try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "SELECT JOB_ACTION FROM " + OracleConstants.SCHEMA_SYS + ".ALL_SCHEDULER_JOBS " +
+                        "SELECT JOB_ACTION FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_SCHEDULER_JOBS " +
                             "WHERE OWNER=? AND JOB_NAME=? ")) {
                     dbStat.setString(1, getOwner() );
                     dbStat.setString(2, getName());

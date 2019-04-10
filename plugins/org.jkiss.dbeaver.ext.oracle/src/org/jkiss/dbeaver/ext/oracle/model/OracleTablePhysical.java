@@ -203,7 +203,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTablePhysical table) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_TAB_PARTITIONS " +
+                "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(table.getDataSource()) + "ALL_TAB_PARTITIONS " +
                 "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
                 "ORDER BY PARTITION_POSITION");
             dbStat.setString(1, table.getContainer().getName());
@@ -221,7 +221,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OracleTablePhysical table, @Nullable OracleTablePartition forObject) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_TAB_SUBPARTITIONS " +
+                "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(table.getDataSource()) + "ALL_TAB_SUBPARTITIONS " +
                 "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
                 (forObject == null ? "" : "AND PARTITION_NAME=?") +
                 "ORDER BY SUBPARTITION_POSITION");

@@ -108,6 +108,8 @@ public class OracleMessages extends NLS {
 	public static String edit_create_checkbox_content_group_show_discription;
 	public static String edit_create_checkbox_content_group_use;
 	public static String edit_create_checkbox_content_group_use_discription;
+	public static String edit_create_checkbox_content_group_use_sys_schema;
+	public static String edit_create_checkbox_content_group_use_sys_schema_description;
 	public static String dialog_controlgroup_performance;
 	public static String edit_create_checkbox_group_use_rule;
 	public static String edit_create_checkbox_adds_rule_tool_tip_text;
