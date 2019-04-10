@@ -51,7 +51,7 @@ public class DashboardViewConfigDialog extends BaseDialog {
         {
             Group viewGroup = UIUtils.createControlGroup(composite, "View configuration", 2, GridData.FILL_HORIZONTAL, 0);
 
-            Button connectOnActivationCheck = UIUtils.createCheckbox(viewGroup, "Connect to on activation", "Open database connection on view activation", viewConfiguration.isOpenConnectionOnActivate(), 2);
+            Button connectOnActivationCheck = UIUtils.createCheckbox(viewGroup, "Connect to database on activation", "Open database connection on view activation", viewConfiguration.isOpenConnectionOnActivate(), 2);
             connectOnActivationCheck
                 .addSelectionListener(new SelectionAdapter() {
                     @Override
