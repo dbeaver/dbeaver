@@ -618,24 +618,7 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
             </toolbar>
-            <toolbar id="dbeaver-datasource-selector" label="%toolbar.dbeaver-datasource-selector.label">
-<!--
-                <command
-                        commandId="org.jkiss.dbeaver.core.select.connection"
-                        id="org.jkiss.dbeaver.core.menu.select.connection"
-                        style="pulldown"
-                        mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
-                </command>
-                <command
-                        commandId="org.jkiss.dbeaver.core.select.schema"
-                        id="org.jkiss.dbeaver.core.menu.select.schema"
-                        style="pulldown"
-                        mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
-                </command>
--->
-
+            <!--toolbar id="dbeaver-datasource-selector" label="%toolbar.dbeaver-datasource-selector.label">
                 <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </control>
@@ -646,7 +629,7 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
                 <separator name="additions" visible="false"/>
-            </toolbar>
+            </toolbar-->
 
             <toolbar id="dbeaver-edit" label="%toolbar.dbeaver-edit.label">
                 <command commandId="org.eclipse.ui.file.save">
@@ -689,6 +672,30 @@
                         </and>
                     </visibleWhen>
                 </command>
+            </toolbar>
+
+            <toolbar id="dbeaver-connection-selector" label="%toolbar.dbeaver-datasource-selector.label">
+                <command
+                    commandId="org.jkiss.dbeaver.core.select.connection"
+                    id="org.jkiss.dbeaver.core.menu.select.connection"
+                    style="pulldown"
+                    mode="FORCE_TEXT">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
+                <command
+                    commandId="org.jkiss.dbeaver.core.select.schema"
+                    id="org.jkiss.dbeaver.core.menu.select.schema"
+                    style="pulldown"
+                    mode="FORCE_TEXT">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
+                <command
+                    commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"
+                    id="org.jkiss.dbeaver.core.menu.sql.sync"
+                    style="pulldown">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
+                <separator name="additions" visible="false"/>
             </toolbar>
 
         </menuContribution>
