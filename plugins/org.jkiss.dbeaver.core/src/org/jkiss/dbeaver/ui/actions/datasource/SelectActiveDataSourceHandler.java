@@ -16,24 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -47,7 +40,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBPDataSourceContainer dataSource = getCurrentDataSource(HandlerUtil.getActiveWorkbenchWindow(event));
+        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(HandlerUtil.getActiveWorkbenchWindow(event));
         IProject activeProject = dataSource != null ? dataSource.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
 
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
@@ -69,9 +62,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
 
         ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(newDataSource);
 
-        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
-        commandService.refreshElements("org.jkiss.dbeaver.core.select.connection", null);
-        commandService.refreshElements("org.jkiss.dbeaver.core.select.schema", null);
+        DataSourceToolbarUtils.refreshSelectorToolbar(event);
 
         return null;
     }
@@ -79,46 +70,24 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
     @Override
     public void updateElement(UIElement element, Map parameters) {
         IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
-        DBPDataSourceContainer dataSource = getCurrentDataSource(workbenchWindow);
+        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         String connectionName;
+        DBPImage connectionIcon;
         if (dataSource == null) {
             connectionName = "<No active connection>";
-            element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TREE_DATABASE));
+            connectionIcon = DBIcon.TREE_DATABASE;
         } else {
             connectionName = dataSource.getName();
-            element.setIcon(DBeaverIcons.getImageDescriptor(dataSource.getDriver().getIcon()));
+            connectionIcon = dataSource.getDriver().getIcon();
         }
         GC gc = new GC(workbenchWindow.getShell());
         try {
-            connectionName = TextUtils.getShortText(gc, connectionName, 150);
-            for (;;) {
-                int textWidth = gc.textExtent(connectionName).x;
-                if (textWidth >= 150) {
-                    break;
-                }
-                connectionName += " ";
-            }
-            if (connectionName.endsWith(" ")) {
-                connectionName = connectionName.substring(0, connectionName.length() - 1) + ".";
-            }
+            connectionName = TextUtils.getShortText(gc, connectionName, 200);
         } finally {
             gc.dispose();
         }
         element.setText(connectionName);
+        element.setIcon(DBeaverIcons.getImageDescriptor(connectionIcon));
     }
 
-    private DBPDataSourceContainer getCurrentDataSource(IWorkbenchWindow workbenchWindow) {
-        if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
-            return null;
-        }
-        IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
-        if (activeEditor == null) {
-            return null;
-        }
-
-        if (activeEditor instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
-        }
-        return null;
-    }
 }
