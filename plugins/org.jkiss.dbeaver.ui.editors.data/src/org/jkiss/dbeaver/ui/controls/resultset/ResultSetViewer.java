@@ -3778,7 +3778,7 @@ public class ResultSetViewer extends Viewer
                     ResultSetRow[] rows = null;
                     if (operator.getArgumentCount() < 0) {
                         Collection<ResultSetRow> selectedRows = viewer.getSelection().getSelectedRows();
-                        rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
+                        rows = selectedRows.toArray(new ResultSetRow[0]);
                     } else {
                         ResultSetRow focusRow = viewer.getCurrentRow();
                         if (focusRow != null) {
