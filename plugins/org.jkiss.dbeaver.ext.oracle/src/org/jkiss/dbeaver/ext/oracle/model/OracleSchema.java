@@ -468,8 +468,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             StringBuilder sql = new StringBuilder(500);
             sql
                 .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\nc.* " +
-                    "FROM SYS.").append(colsView).append(" c\n" +
-//                    "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
+                    "FROM ").append(OracleUtils.getSysSchemaPrefix(owner.getDataSource())).append(colsView).append(" c\n" +
+//                    "LEFT OUTER JOIN " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
                     "WHERE c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
@@ -1012,8 +1012,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             final boolean isPublic = owner.isPublic();
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 isPublic ?
-                    "SELECT * FROM SYS.USER_RECYCLEBIN" :
-                    "SELECT * FROM SYS.DBA_RECYCLEBIN WHERE OWNER=?");
+                    "SELECT * FROM " + OracleUtils.getSysSchemaPrefix(owner.getDataSource()) + "USER_RECYCLEBIN" :
+                    "SELECT * FROM " + OracleUtils.getSysSchemaPrefix(owner.getDataSource())+ "DBA_RECYCLEBIN WHERE OWNER=?");
             if (!isPublic) {
                 dbStat.setString(1, owner.getName());
             }

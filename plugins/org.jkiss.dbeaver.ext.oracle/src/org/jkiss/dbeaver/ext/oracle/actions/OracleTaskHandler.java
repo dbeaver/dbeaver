@@ -26,6 +26,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
+import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
@@ -83,7 +84,7 @@ public abstract class OracleTaskHandler extends AbstractHandler implements IElem
     {
         try {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE")) {
+                "SELECT * FROM " + OracleUtils.getSysSchemaPrefix(schemaObject.getDataSource()) + "ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE")) {
                 dbStat.setString(1, schemaObject.getSchema().getName());
                 dbStat.setString(2, schemaObject.getName());
                 dbStat.setString(3, objectType.getTypeName());

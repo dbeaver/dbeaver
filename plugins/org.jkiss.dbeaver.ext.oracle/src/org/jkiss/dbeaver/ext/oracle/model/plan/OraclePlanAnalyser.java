@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -158,7 +159,7 @@ public class OraclePlanAnalyser extends AbstractExecutionPlan {
         try {
             // Read explained plan
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + OracleConstants.SCHEMA_SYS + ".DBA_HIST_SQL_PLAN" +
+                "SELECT * FROM " + OracleUtils.getSysSchemaPrefix(dataSource) + "DBA_HIST_SQL_PLAN" +
                     " WHERE SQL_ID=? ORDER BY ID");
             readPlanNodes(dbStat);
 
