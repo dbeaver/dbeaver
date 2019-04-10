@@ -1033,6 +1033,22 @@
                     categories="sql">
                 </driver>
 
+                <!-- KDB -->
+
+                <driver
+                        id="kdb_jdbc"
+                        label="KDB+"
+                        icon="icons/kx_icon.png"
+                        iconBig="icons/kx_icon_big.png"
+                        class="jdbc"
+                        sampleURL="jdbc:q:{host}:{port}"
+                        defaultPort="5000"
+                        description="KX Systems KDB JDBC driver"
+                        webURL="https://code.kx.com/q/interfaces/jdbc-client-for-kdb/"
+                        categories="timeseries">
+                    <file type="jar" path="https://github.com/KxSystems/kdb/raw/master/c/jdbc.jar"/>
+                </driver>
+
                 <!-- Legacy deprecated drivers -->
 
                 <driver
