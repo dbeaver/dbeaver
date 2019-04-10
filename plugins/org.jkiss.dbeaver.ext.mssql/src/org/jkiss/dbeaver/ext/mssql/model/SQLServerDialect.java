@@ -71,7 +71,9 @@ public class SQLServerDialect extends JDBCSQLDialect {
 
     @Override
     public String[] getParametersPrefixes() {
-        return new String[] { "@" };
+        return super.getParametersPrefixes();
+        // Do not use @ as prefix - it can be used as a regular SQL construct (#5674)
+        //return new String[] { "@" };
     }
 
     @Override
