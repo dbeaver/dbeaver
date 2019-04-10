@@ -107,6 +107,8 @@ public interface SQLDialect {
 
     boolean isAttributeQueryWord(@NotNull String word);
 
+    int getKeywordNextLineIndent(@NotNull String word);
+
     /**
      * Retrieves the string that can be used to escape wildcard characters.
      * This is the string that can be used to escape '_' or '%' in

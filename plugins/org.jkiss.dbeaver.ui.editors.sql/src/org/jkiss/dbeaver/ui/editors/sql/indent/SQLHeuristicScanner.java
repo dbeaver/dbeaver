@@ -113,26 +113,28 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     /**
      * The document being scanned.
      */
-    private IDocument _document;
+    private IDocument document;
     /**
      * The partitioning being used for scanning.
      */
-    private String _partitioning;
+    private String partitioning;
     /**
      * The partition to scan in.
      */
-    private String _partition;
+    private String partition;
 
     private SQLSyntaxManager syntaxManager;
 
     /**
      * the most recently read character.
      */
-    private char _char;
+    private char lastChar;
     /**
      * the most recently read position.
      */
-    private int _pos;
+    private int lastPos;
+    // Last parsed token value
+    private String lastToken;
 
     /* preset stop conditions */
     private final StopCondition _nonWSDefaultPart = new NonWhitespaceDefaultPartition();
@@ -144,9 +146,9 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         assert (document != null);
         assert (partitioning != null);
         assert (partition != null);
-        _document = document;
-        _partitioning = partitioning;
-        _partition = partition;
+        this.document = document;
+        this.partitioning = partitioning;
+        this.partition = partition;
 
         this.syntaxManager = syntaxManager;
     }
@@ -156,7 +158,11 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     }
 
     public int getPosition() {
-        return _pos;
+        return lastPos;
+    }
+
+    public String getLastToken() {
+        return lastToken;
     }
 
     /**
@@ -175,27 +181,26 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
             return TokenEOF;
         }
 
-        _pos++;
+        lastPos++;
 
-        if (Character.isJavaIdentifierPart(_char)) {
+        if (Character.isJavaIdentifierPart(lastChar)) {
             // assume an ident or keyword
             int from = pos, to;
             pos = scanForward(pos + 1, bound, _nonIdent);
             if (pos == NOT_FOUND) {
-                to = bound == UNBOUND ? _document.getLength() : bound;
+                to = bound == UNBOUND ? document.getLength() : bound;
             } else {
                 to = pos;
             }
 
-            String identOrKeyword;
             try {
-                identOrKeyword = _document.get(from, to - from);
+                lastToken = document.get(from, to - from);
             } catch (BadLocationException e) {
 //                _log.debug(EditorMessages.error_badLocationException, e);
                 return TokenEOF;
             }
 
-            return getToken(identOrKeyword);
+            return getToken(lastToken);
 
         } else {
             // operators, number literals etc
@@ -219,9 +224,9 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
             return TokenEOF;
         }
 
-        _pos--;
+        lastPos--;
 
-        if (Character.isJavaIdentifierPart(_char)) {
+        if (Character.isJavaIdentifierPart(lastChar)) {
             // assume an ident or keyword
             int from, to = pos + 1;
             pos = scanBackward(pos - 1, bound, _nonIdent);
@@ -231,18 +236,18 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
                 from = pos + 1;
             }
 
-            String identOrKeyword;
             try {
-                identOrKeyword = _document.get(from, to - from);
+                lastToken = document.get(from, to - from);
             } catch (BadLocationException e) {
 //                _log.debug(EditorMessages.error_badLocationException, e);
                 return TokenEOF;
             }
 
-            return getToken(identOrKeyword);
+            return getToken(lastToken);
 
         } else {
             // operators, number literals etc
+            lastToken = String.valueOf(lastChar);
             return TokenOTHER;
         }
 
@@ -304,7 +309,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     public boolean endsWithDelimiter(int position, int bound) {
         int endPos = scanBackward(bound, position, DELIMITER_CONDITION);
         try {
-            return endPos > position && DELIMITER_CONDITION.isDelimiterChar(_document.getChar(endPos));
+            return endPos > position && DELIMITER_CONDITION.isDelimiterChar(document.getChar(endPos));
         } catch (BadLocationException e) {
             return false;
         }
@@ -325,21 +330,21 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         assert (start >= 0);
 
         if (bound == UNBOUND) {
-            bound = _document.getLength();
+            bound = document.getLength();
         }
 
-        assert (bound <= _document.getLength());
+        assert (bound <= document.getLength());
 
         try {
-            _pos = start;
-            while (_pos < bound) {
+            lastPos = start;
+            while (lastPos < bound) {
 
-                _char = _document.getChar(_pos);
-                if (condition.stop(_char, _pos, true)) {
-                    return _pos;
+                lastChar = document.getChar(lastPos);
+                if (condition.stop(lastChar, lastPos, true)) {
+                    return lastPos;
                 }
 
-                _pos++;
+                lastPos++;
             }
         } catch (BadLocationException e) {
 //            _log.debug(EditorMessages.error_badLocationException, e);
@@ -365,18 +370,18 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         }
 
         assert (bound >= -1);
-        assert (start < _document.getLength());
+        assert (start < document.getLength());
 
         try {
-            _pos = start;
-            while (_pos > bound) {
+            lastPos = start;
+            while (lastPos > bound) {
 
-                _char = _document.getChar(_pos);
-                if (condition.stop(_char, _pos, false)) {
-                    return _pos;
+                lastChar = document.getChar(lastPos);
+                if (condition.stop(lastChar, lastPos, false)) {
+                    return lastPos;
                 }
 
-                _pos--;
+                lastPos--;
             }
         } catch (BadLocationException e) {
 //            _log.debug(EditorMessages.error_badLocationException, e);
@@ -385,19 +390,19 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     }
 
     /**
-     * Checks whether <code>position</code> resides in a default (SQL) partition of <code>_document</code>.
+     * Checks whether <code>position</code> resides in a default (SQL) partition of <code>document</code>.
      *
      * @param position the position to be checked
-     * @return <code>true</code> if <code>position</code> is in the default partition of <code>_document</code>,
+     * @return <code>true</code> if <code>position</code> is in the default partition of <code>document</code>,
      * <code>false</code> otherwise
      */
     public boolean isDefaultPartition(int position) {
         assert (position >= 0);
-        assert (position <= _document.getLength());
+        assert (position <= document.getLength());
 
         try {
-            ITypedRegion region = TextUtilities.getPartition(_document, _partitioning, position, false);
-            return region.getType().equals(_partition);
+            ITypedRegion region = TextUtilities.getPartition(document, partitioning, position, false);
+            return region.getType().equals(partition);
 
         } catch (BadLocationException e) {
 //            _log.debug(EditorMessages.error_badLocationException, e);
@@ -421,7 +426,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
     public int findOpeningPeer(int start, int openingPeer, int closingPeer) {
-        assert (start < _document.getLength());
+        assert (start < document.getLength());
 
         int depth = 1;
         start += 1;
@@ -462,7 +467,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
     public int findClosingPeer(int start, int openingPeer, int closingPeer) {
-        assert (start <= _document.getLength());
+        assert (start <= document.getLength());
 
         int depth = 1;
         start += 1;
@@ -470,7 +475,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         int offset = start;
         while (true) {
 
-            token = nextToken(offset, _document.getLength());
+            token = nextToken(offset, document.getLength());
             offset = getPosition();
 
             if (token == SQLIndentSymbols.TokenEOF) {

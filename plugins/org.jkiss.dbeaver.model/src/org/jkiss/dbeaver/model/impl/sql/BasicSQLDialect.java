@@ -42,7 +42,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
     private static final String[] EXEC_KEYWORDS = new String[0];
-    private static final String[] DDL_KEYWORDS = new String[] {
+    private static final String[] DDL_KEYWORDS = new String[]{
         "CREATE", "ALTER", "DROP"
     };
 
@@ -54,10 +54,10 @@ public class BasicSQLDialect implements SQLDialect {
     };
     protected static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
         //SQLConstants.KEYWORD_SELECT, "WITH",
-        "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET", "COMMIT", "ROLLBACK" };
+        "EXPLAIN", "DESCRIBE", "DESC", "USE", "SET", "COMMIT", "ROLLBACK"};
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
-            SQLConstants.KEYWORD_SELECT,
-            };
+        SQLConstants.KEYWORD_SELECT,
+    };
     public static final String[][] DEFAULT_QUOTE_STRINGS = {{"\"", "\""}};
 
     // Keywords
@@ -70,11 +70,11 @@ public class BasicSQLDialect implements SQLDialect {
     protected final TreeSet<String> columnQueryWords = new TreeSet<>();
     // Comments
     private Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
+    private Map<String, Integer> keywordsIndent = new HashMap<>();
 
     public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
-    protected BasicSQLDialect()
-    {
+    protected BasicSQLDialect() {
         loadStandardKeywords();
     }
 
@@ -86,8 +86,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Nullable
     @Override
-    public String[][] getIdentifierQuoteStrings()
-    {
+    public String[][] getIdentifierQuoteStrings() {
         return DEFAULT_QUOTE_STRINGS;
     }
 
@@ -103,14 +102,12 @@ public class BasicSQLDialect implements SQLDialect {
         return DDL_KEYWORDS;
     }
 
-    protected void addSQLKeyword(String keyword)
-    {
+    protected void addSQLKeyword(String keyword) {
         reservedWords.add(keyword);
         allKeywords.put(keyword, DBPKeywordType.KEYWORD);
     }
 
-    protected void removeSQLKeyword(String keyword)
-    {
+    protected void removeSQLKeyword(String keyword) {
         reservedWords.remove(keyword);
         allKeywords.remove(keyword);
     }
@@ -119,6 +116,10 @@ public class BasicSQLDialect implements SQLDialect {
         for (String kw : allKeywords) {
             addSQLKeyword(kw);
         }
+    }
+
+    protected void setKeywordIndent(String ketyword, int indent) {
+        keywordsIndent.put(ketyword, indent);
     }
 
     protected void addFunctions(Collection<String> allFunctions) {
@@ -135,11 +136,11 @@ public class BasicSQLDialect implements SQLDialect {
 
     /**
      * Add keywords.
-     * @param set     keywords. Must be in upper case.
-     * @param type    keyword type
+     *
+     * @param set  keywords. Must be in upper case.
+     * @param type keyword type
      */
-    protected void addKeywords(Collection<String> set, DBPKeywordType type)
-    {
+    protected void addKeywords(Collection<String> set, DBPKeywordType type) {
         if (set != null) {
             for (String keyword : set) {
                 keyword = keyword.toUpperCase(Locale.ENGLISH);
@@ -156,35 +157,30 @@ public class BasicSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public Set<String> getReservedWords()
-    {
+    public Set<String> getReservedWords() {
         return reservedWords;
     }
 
     @NotNull
     @Override
-    public Set<String> getFunctions(@NotNull DBPDataSource dataSource)
-    {
+    public Set<String> getFunctions(@NotNull DBPDataSource dataSource) {
         return functions;
     }
 
     @NotNull
     @Override
-    public TreeSet<String> getDataTypes(@NotNull DBPDataSource dataSource)
-    {
+    public TreeSet<String> getDataTypes(@NotNull DBPDataSource dataSource) {
         return types;
     }
 
     @Override
-    public DBPKeywordType getKeywordType(@NotNull String word)
-    {
+    public DBPKeywordType getKeywordType(@NotNull String word) {
         return allKeywords.get(word.toUpperCase(Locale.ENGLISH));
     }
 
     @NotNull
     @Override
-    public List<String> getMatchedKeywords(@NotNull String word)
-    {
+    public List<String> getMatchedKeywords(@NotNull String word) {
         word = word.toUpperCase(Locale.ENGLISH);
         List<String> result = new ArrayList<>();
         for (String keyword : allKeywords.tailMap(word).keySet()) {
@@ -198,28 +194,30 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean isKeywordStart(@NotNull String word)
-    {
+    public boolean isKeywordStart(@NotNull String word) {
         SortedMap<String, DBPKeywordType> map = allKeywords.tailMap(word.toUpperCase(Locale.ENGLISH));
         return !map.isEmpty() && map.firstKey().startsWith(word);
     }
 
     @Override
-    public boolean isEntityQueryWord(@NotNull String word)
-    {
+    public boolean isEntityQueryWord(@NotNull String word) {
         return tableQueryWords.contains(word.toUpperCase(Locale.ENGLISH));
     }
 
     @Override
-    public boolean isAttributeQueryWord(@NotNull String word)
-    {
+    public boolean isAttributeQueryWord(@NotNull String word) {
         return columnQueryWords.contains(word.toUpperCase(Locale.ENGLISH));
+    }
+
+    @Override
+    public int getKeywordNextLineIndent(String word) {
+        Integer indent = keywordsIndent.get(word.toUpperCase(Locale.ENGLISH));
+        return indent == null ? 0 : indent;
     }
 
     @NotNull
     @Override
-    public String getSearchStringEscape()
-    {
+    public String getSearchStringEscape() {
         return null;
     }
 
@@ -229,52 +227,45 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public int getCatalogUsage()
-    {
+    public int getCatalogUsage() {
         return USAGE_NONE;
     }
 
     @Override
-    public int getSchemaUsage()
-    {
+    public int getSchemaUsage() {
         return USAGE_NONE;
     }
 
     @NotNull
     @Override
-    public String getCatalogSeparator()
-    {
+    public String getCatalogSeparator() {
         return String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     }
 
     @Override
-    public char getStructSeparator()
-    {
+    public char getStructSeparator() {
         return SQLConstants.STRUCT_SEPARATOR;
     }
 
     @Override
     public String[] getParametersPrefixes() {
-        return new String[] { String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX) };
+        return new String[]{String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)};
     }
 
     @Override
-    public boolean isCatalogAtStart()
-    {
+    public boolean isCatalogAtStart() {
         return true;
     }
 
     @NotNull
     @Override
-    public SQLStateType getSQLStateType()
-    {
+    public SQLStateType getSQLStateType() {
         return SQLStateType.SQL99;
     }
 
     @NotNull
     @Override
-    public String getScriptDelimiter()
-    {
+    public String getScriptDelimiter() {
         return ";"; //$NON-NLS-1$
     }
 
@@ -307,34 +298,29 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean validIdentifierPart(char c)
-    {
+    public boolean validIdentifierPart(char c) {
         return Character.isLetter(c) || Character.isDigit(c) || c == '_';
     }
 
     @Override
-    public boolean supportsUnquotedMixedCase()
-    {
+    public boolean supportsUnquotedMixedCase() {
         return true;
     }
 
     @Override
-    public boolean supportsQuotedMixedCase()
-    {
+    public boolean supportsQuotedMixedCase() {
         return true;
     }
 
     @NotNull
     @Override
-    public DBPIdentifierCase storesUnquotedCase()
-    {
+    public DBPIdentifierCase storesUnquotedCase() {
         return DBPIdentifierCase.UPPER;
     }
 
     @NotNull
     @Override
-    public DBPIdentifierCase storesQuotedCase()
-    {
+    public DBPIdentifierCase storesQuotedCase() {
         return DBPIdentifierCase.MIXED;
     }
 
@@ -371,8 +357,7 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean supportsSubqueries()
-    {
+    public boolean supportsSubqueries() {
         return true;
     }
 
@@ -407,14 +392,12 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public Pair<String, String> getMultiLineComments()
-    {
+    public Pair<String, String> getMultiLineComments() {
         return multiLineComments;
     }
 
     @Override
-    public String[] getSingleLineComments()
-    {
+    public String[] getSingleLineComments() {
         return DEFAULT_LINE_COMMENTS;
     }
 
@@ -481,8 +464,7 @@ public class BasicSQLDialect implements SQLDialect {
         return true;
     }
 
-    private void loadStandardKeywords()
-    {
+    private void loadStandardKeywords() {
         // Add default set of keywords
         Set<String> all = new HashSet<>();
         if (isStandardSQL()) {
@@ -496,9 +478,21 @@ public class BasicSQLDialect implements SQLDialect {
 
         for (String executeKeyword : ArrayUtils.safeArray(getExecuteKeywords())) {
             addSQLKeyword(executeKeyword);
+            setKeywordIndent(executeKeyword, 1);
         }
         for (String ddlKeyword : ArrayUtils.safeArray(getDDLKeywords())) {
             addSQLKeyword(ddlKeyword);
+            setKeywordIndent(ddlKeyword, 1);
+        }
+        for (String kw : tableQueryWords) {
+            setKeywordIndent(kw, 1);
+        }
+        for (String kw : columnQueryWords) {
+            setKeywordIndent(kw, 1);
+        }
+        for (String[] beKeywords : getBlockBoundStrings()) {
+            setKeywordIndent(beKeywords[0], 1);
+            setKeywordIndent(beKeywords[1], -1);
         }
 
         if (isStandardSQL()) {
@@ -524,9 +518,8 @@ public class BasicSQLDialect implements SQLDialect {
                 dataType = DBUtils.getLocalDataType(((DBSObject) column).getDataSource(), column.getTypeName());
             }
             if (dataType != null && CommonUtils.equalObjects(dataType.getScale(), column.getScale()) &&
-                    ((CommonUtils.toInt(dataType.getPrecision()) > 0 && CommonUtils.equalObjects(dataType.getPrecision(), column.getPrecision())) ||
-                            (dataType.getMaxLength() > 0 && dataType.getMaxLength() == column.getMaxLength())))
-            {
+                ((CommonUtils.toInt(dataType.getPrecision()) > 0 && CommonUtils.equalObjects(dataType.getPrecision(), column.getPrecision())) ||
+                    (dataType.getMaxLength() > 0 && dataType.getMaxLength() == column.getMaxLength()))) {
                 return null;
             }
         }

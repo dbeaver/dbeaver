@@ -156,21 +156,32 @@ public class SQLIndenter {
      *
      * @param indent the indentation to be modified
      */
-    private void unindent(StringBuilder indent) {
+    public void unindent(StringBuilder indent) {
+        unindent(indent, 1);
+    }
+
+    public void unindent(StringBuilder indent, int number) {
         CharSequence oneIndent = createIndent();
-        int i = indent.lastIndexOf(oneIndent.toString()); //$NON-NLS-1$
-        if (i != -1) {
-            indent.delete(i, i + oneIndent.length());
+        for (int k = 0; k < number; k++) {
+            int i = indent.lastIndexOf(oneIndent.toString()); //$NON-NLS-1$
+            if (i != -1) {
+                indent.delete(i, i + oneIndent.length());
+            }
         }
     }
 
+    public String unindent(String indent, int number) {
+        StringBuilder newIndent = new StringBuilder(indent);
+        unindent(newIndent, number);
+        return newIndent.toString();
+    }
     /**
      * Creates a string that represents the given number of indents (can be spaces or tabs..)
      *
      * @param indent the requested indentation level.
      * @return the indentation specified by <code>indent</code>
      */
-    private StringBuilder createIndent(int indent) {
+    public StringBuilder createIndent(int indent) {
         StringBuilder oneIndent = createIndent();
 
         StringBuilder ret = new StringBuilder();
