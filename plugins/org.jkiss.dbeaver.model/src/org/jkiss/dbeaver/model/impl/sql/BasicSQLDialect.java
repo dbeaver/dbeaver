@@ -490,7 +490,7 @@ public class BasicSQLDialect implements SQLDialect {
         for (String kw : columnQueryWords) {
             setKeywordIndent(kw, 1);
         }
-        for (String[] beKeywords : getBlockBoundStrings()) {
+        for (String[] beKeywords : ArrayUtils.safeArray(getBlockBoundStrings())) {
             setKeywordIndent(beKeywords[0], 1);
             setKeywordIndent(beKeywords[1], -1);
         }
