@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,10 +39,10 @@ import java.util.List;
 public class DBDRowIdentifier implements DBPObject {
 
     private final DBSEntity entity;
-    private final DBSEntityReferrer entityIdentifier;
+    private final DBSEntityConstraint entityIdentifier;
     private final List<DBDAttributeBinding> attributes = new ArrayList<>();
 
-    public DBDRowIdentifier(@NotNull DBSEntity entity, @NotNull DBSEntityReferrer entityIdentifier)
+    public DBDRowIdentifier(@NotNull DBSEntity entity, @NotNull DBSEntityConstraint entityIdentifier)
     {
         this.entity = entity;
         this.entityIdentifier = entityIdentifier;
@@ -55,7 +56,7 @@ public class DBDRowIdentifier implements DBPObject {
 
     @NotNull
     @Property(viewable = true, order = 2)
-    public DBSEntityReferrer getUniqueKey() {
+    public DBSEntityConstraint getUniqueKey() {
         return entityIdentifier;
     }
 
@@ -70,19 +71,29 @@ public class DBDRowIdentifier implements DBPObject {
         return attributes;
     }
 
+    public boolean isValidIdentifier() {
+        if (entityIdentifier instanceof DBSEntityReferrer && CommonUtils.isEmpty(attributes)) {
+            return false;
+        }
+        return true;
+    }
+
     public void reloadAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding[] bindings) throws DBException
     {
         this.attributes.clear();
-        Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(entityIdentifier.getAttributeReferences(monitor));
-        for (DBSEntityAttributeRef cColumn : refs) {
-            DBDAttributeBinding binding = DBUtils.findBinding(bindings, cColumn.getAttribute());
-            if (binding != null) {
-                this.attributes.add(binding);
-            } else {
-                // If at least one attribute is missing - this ID won't work anyway
-                // so let's just clean it up
-                this.attributes.clear();
-                break;
+        if (entityIdentifier instanceof DBSEntityReferrer) {
+            DBSEntityReferrer referrer = (DBSEntityReferrer) entityIdentifier;
+            Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(referrer.getAttributeReferences(monitor));
+            for (DBSEntityAttributeRef cColumn : refs) {
+                DBDAttributeBinding binding = DBUtils.findBinding(bindings, cColumn.getAttribute());
+                if (binding != null) {
+                    this.attributes.add(binding);
+                } else {
+                    // If at least one attribute is missing - this ID won't work anyway
+                    // so let's just clean it up
+                    this.attributes.clear();
+                    break;
+                }
             }
         }
     }
