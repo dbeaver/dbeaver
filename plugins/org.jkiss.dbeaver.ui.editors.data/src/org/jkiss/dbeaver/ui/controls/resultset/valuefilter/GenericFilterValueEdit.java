@@ -23,6 +23,8 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -40,6 +43,9 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -101,6 +107,26 @@ class GenericFilterValueEdit {
         this.tableViewer.setContentProvider(new ListContentProvider());
 
         isCheckedTable = (style & SWT.CHECK) == SWT.CHECK;
+
+        if (isCheckedTable) {
+            Composite buttonsPanel = UIUtils.createComposite(composite, 2);
+            UIUtils.createPushButton(buttonsPanel, "Select All", null, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    for (TableItem item : table.getItems()) {
+                        item.setChecked(true);
+                    }
+                }
+            });
+            UIUtils.createPushButton(buttonsPanel, "Select None", null, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    for (TableItem item : table.getItems()) {
+                        item.setChecked(false);
+                    }
+                }
+            });
+        }
     }
 
     void addContextMenu(Action[] actions) {
@@ -275,6 +301,13 @@ class GenericFilterValueEdit {
         for (ResultSetRow row : rows) {
             Object value = viewer.getModel().getCellValue(attr, row);
             checkedValues.add(value);
+        }
+        DBDAttributeConstraint constraint = viewer.getModel().getDataFilter().getConstraint(attr);
+        if (constraint != null && constraint.getOperator() == DBCLogicalOperator.IN) {
+            //checkedValues.add(constraint.getValue());
+            if (constraint.getValue() instanceof Object[]) {
+                Collections.addAll(checkedValues, (Object[]) constraint.getValue());
+            }
         }
 
         tableViewer.setInput(sortedList);
