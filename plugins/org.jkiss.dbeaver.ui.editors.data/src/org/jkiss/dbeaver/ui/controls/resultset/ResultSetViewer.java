@@ -3382,8 +3382,8 @@ public class ResultSetViewer extends Viewer
             return null;
         }
         DBDRowIdentifier rowIdentifier = model.getVisibleAttribute(0).getRowIdentifier();
-        DBSEntityReferrer identifier = rowIdentifier == null ? null : rowIdentifier.getUniqueKey();
-        if (identifier != null && identifier instanceof DBVEntityConstraint) {
+        DBSEntityConstraint identifier = rowIdentifier == null ? null : rowIdentifier.getUniqueKey();
+        if (identifier instanceof DBVEntityConstraint) {
             return rowIdentifier;
         } else {
             return null;
@@ -3432,7 +3432,7 @@ public class ResultSetViewer extends Viewer
             DBDRowIdentifier defIdentifier = persister.getDefaultRowIdentifier();
             if (defIdentifier == null) {
                 throw new DBCException("No unique row identifier is result set. Cannot proceed with row(s) delete.");
-            } else if (CommonUtils.isEmpty(defIdentifier.getAttributes())) {
+            } else if (!defIdentifier.isValidIdentifier()) {
                 throw new DBCException("Attributes of unique key '" + DBUtils.getObjectFullName(defIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set. Cannot proceed with row(s) delete.");
             }
         }
@@ -3445,7 +3445,7 @@ public class ResultSetViewer extends Viewer
                     // We shouldn't be here ever!
                     // Virtual id should be created if we missing natural one
                     throw new DBCException("Attribute " + attr.getName() + " was changed but it hasn't associated unique key");
-                } else if (CommonUtils.isEmpty(rowIdentifier.getAttributes())) {
+                } else if (!rowIdentifier.isValidIdentifier()) {
                     throw new DBCException(
                         "Can't update attribute '" + attr.getName() +
                             "' - attributes of key '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
