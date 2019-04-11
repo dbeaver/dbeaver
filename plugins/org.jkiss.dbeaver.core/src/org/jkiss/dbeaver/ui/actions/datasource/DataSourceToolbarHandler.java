@@ -199,11 +199,9 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
             return;
         }
         if (activeFile.equals(((DBNResource) node).getResource())) {
-            DBPDataSourceContainer visibleContainer = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
-            DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
-            if (newContainer != visibleContainer) {
-                updateToolbar();
-            }
+            //DBPDataSourceContainer visibleContainer = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
+            //DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
+            updateToolbar();
         }
     }
 
