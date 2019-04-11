@@ -20,10 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.ui.IEditorPart;
@@ -32,11 +29,9 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -48,10 +43,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler implements IElementUpdater
 {
@@ -151,6 +143,23 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
             List<? extends DBPDataSourceContainer> dataSources = getAvailableDataSources();
             List<? extends DBPDataSourceContainer> connectedDataSources = new ArrayList<>(dataSources);
             connectedDataSources.removeIf(o -> !o.isConnected());
+            dataSources.removeAll(connectedDataSources);
+
+            List<DBPDataSourceContainer> singleDataSources = new ArrayList<>();
+            Map<DBPDriver, List<DBPDataSourceContainer>> driverMap = new TreeMap<>(DBUtils.nameComparator());
+            for (DBPDataSourceContainer ds : dataSources) {
+                List<DBPDataSourceContainer> driverDS = driverMap.computeIfAbsent(ds.getDriver(), k -> new ArrayList<>());
+                driverDS.add(ds);
+            }
+            for (Iterator<Map.Entry<DBPDriver, List<DBPDataSourceContainer>>> driverIter = driverMap.entrySet().iterator(); driverIter.hasNext(); ) {
+                List<DBPDataSourceContainer> dsList = driverIter.next().getValue();
+                if (dsList.size() == 1) {
+                    singleDataSources.add(dsList.get(0));
+                    driverIter.remove();
+                }
+            }
+            singleDataSources.sort(DBUtils.nameComparator());
+
             DBPDataSourceContainer curDataSource = getDataSourceContainer(workbenchWindow.getActivePage().getActivePart());
             for (DBPDataSourceContainer ds : connectedDataSources) {
                 DBNDatabaseNode dsNode = NavigatorUtils.getNodeByObject(ds);
@@ -159,6 +168,25 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                         createDataSourceChangeAction((IDataSourceContainerProviderEx) activeEditor, curDataSource, ds, dsNode)));
             }
             menuItems.add(new Separator());
+            for (Map.Entry<DBPDriver, List<DBPDataSourceContainer>> de : driverMap.entrySet()) {
+                DBPDriver driver = de.getKey();
+                MenuManager driverMenu = new MenuManager(
+                    driver.getName(),
+                    DBeaverIcons.getImageDescriptor(driver.getIcon()),
+                    driver.getId());
+                for (DBPDataSourceContainer ds : de.getValue()) {
+                    driverMenu.add(
+                        createDataSourceChangeAction(
+                            (IDataSourceContainerProviderEx)activeEditor, curDataSource, ds, null));
+                }
+                menuItems.add(driverMenu);
+            }
+            menuItems.add(new Separator());
+            for (DBPDataSourceContainer ds : singleDataSources) {
+                menuItems.add(
+                    new ActionContributionItem(
+                        createDataSourceChangeAction((IDataSourceContainerProviderEx)activeEditor, curDataSource, ds, NavigatorUtils.getNodeByObject(ds))));
+            }
         }
 
         private Action createDataSourceChangeAction(IDataSourceContainerProviderEx activeEditor, DBPDataSourceContainer curDataSource, DBPDataSourceContainer newDataSource, DBNDatabaseNode dsNode) {
