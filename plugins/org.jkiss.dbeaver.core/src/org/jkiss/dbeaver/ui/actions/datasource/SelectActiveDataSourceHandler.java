@@ -47,32 +47,39 @@ import java.util.*;
 
 public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler implements IElementUpdater
 {
+    private static final int MAX_MENU_ITEM_SIZE = 25;
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(HandlerUtil.getActiveWorkbenchWindow(event));
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
+        openDataSourceSelector(workbenchWindow, dataSource);
+
+        return null;
+    }
+
+    private static void openDataSourceSelector(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSource) {
         IProject activeProject = dataSource != null ? dataSource.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
 
-        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+        IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
         if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {
-            return null;
+            return;
         }
 
         SelectDataSourceDialog dialog = new SelectDataSourceDialog(
-            HandlerUtil.getActiveShell(event),
+            UIUtils.getActiveWorkbenchShell(),
             activeProject, dataSource);
         dialog.setModeless(true);
         if (dialog.open() == IDialogConstants.CANCEL_ID) {
-            return null;
+            return;
         }
         DBPDataSourceContainer newDataSource = dialog.getDataSource();
         if (newDataSource == dataSource) {
-            return null;
+            return;
         }
 
         ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(newDataSource);
-
-        return null;
     }
 
     @Override
@@ -129,6 +136,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
     }
 
     public static class MenuContributor extends DataSourceMenuContributor {
+
         @Override
         protected void fillContributionItems(List<IContributionItem> menuItems) {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
@@ -167,25 +175,42 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                     new ActionContributionItem(
                         createDataSourceChangeAction((IDataSourceContainerProviderEx) activeEditor, curDataSource, ds, dsNode)));
             }
-            menuItems.add(new Separator());
-            for (Map.Entry<DBPDriver, List<DBPDataSourceContainer>> de : driverMap.entrySet()) {
-                DBPDriver driver = de.getKey();
-                MenuManager driverMenu = new MenuManager(
-                    driver.getName(),
-                    DBeaverIcons.getImageDescriptor(driver.getIcon()),
-                    driver.getId());
-                for (DBPDataSourceContainer ds : de.getValue()) {
-                    driverMenu.add(
-                        createDataSourceChangeAction(
-                            (IDataSourceContainerProviderEx)activeEditor, curDataSource, ds, null));
+            if (!driverMap.isEmpty()) {
+                menuItems.add(new Separator());
+                for (Map.Entry<DBPDriver, List<DBPDataSourceContainer>> de : driverMap.entrySet()) {
+                    DBPDriver driver = de.getKey();
+                    MenuManager driverMenu = new MenuManager(
+                        driver.getName(),
+                        DBeaverIcons.getImageDescriptor(driver.getIcon()),
+                        driver.getId());
+                    for (DBPDataSourceContainer ds : de.getValue()) {
+                        driverMenu.add(
+                            createDataSourceChangeAction(
+                                (IDataSourceContainerProviderEx) activeEditor, curDataSource, ds, null));
+                    }
+                    menuItems.add(driverMenu);
                 }
-                menuItems.add(driverMenu);
             }
-            menuItems.add(new Separator());
-            for (DBPDataSourceContainer ds : singleDataSources) {
-                menuItems.add(
-                    new ActionContributionItem(
-                        createDataSourceChangeAction((IDataSourceContainerProviderEx)activeEditor, curDataSource, ds, NavigatorUtils.getNodeByObject(ds))));
+            if (!singleDataSources.isEmpty()) {
+                menuItems.add(new Separator());
+                for (DBPDataSourceContainer ds : singleDataSources) {
+                    menuItems.add(
+                        new ActionContributionItem(
+                            createDataSourceChangeAction((IDataSourceContainerProviderEx) activeEditor, curDataSource, ds, NavigatorUtils.getNodeByObject(ds))));
+                }
+            }
+            // Cut too long lists
+            if (menuItems.size() > MAX_MENU_ITEM_SIZE) {
+                while (menuItems.size() > MAX_MENU_ITEM_SIZE) {
+                    menuItems.remove(menuItems.size() - 1);
+                }
+                menuItems.add(new Separator());
+                menuItems.add(new ActionContributionItem(new Action("Other ...") {
+                    @Override
+                    public void run() {
+                        openDataSourceSelector(workbenchWindow, curDataSource);
+                    }
+                }));
             }
         }
 
