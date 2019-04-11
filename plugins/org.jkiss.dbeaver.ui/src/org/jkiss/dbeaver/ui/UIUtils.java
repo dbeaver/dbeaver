@@ -1629,7 +1629,7 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
-        return sharedTextColors.getColor(StringConverter.asRGB(rgbString));
+        return getColorByRGB(rgbString);
     }
 
     public static Shell createCenteredShell(Shell parent) {
@@ -1790,5 +1790,16 @@ public class UIUtils {
             url = "http://" + url;
         }
         Program.launch(url);
+    }
+
+    public static void setBackgroundForAll(Control control, Color color) {
+        if (!(control instanceof Button)) {
+            control.setBackground(color);
+        }
+        if (control instanceof Composite) {
+            for (Control ch : ((Composite) control).getChildren()) {
+                setBackgroundForAll(ch, color);
+            }
+        }
     }
 }
