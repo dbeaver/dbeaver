@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -62,8 +63,6 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
 
         ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(newDataSource);
 
-        DataSourceToolbarUtils.refreshSelectorToolbar(event);
-
         return null;
     }
 
@@ -88,6 +87,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
         }
         element.setText(connectionName);
         element.setIcon(DBeaverIcons.getImageDescriptor(connectionIcon));
+        element.setTooltip(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
     }
 
 }

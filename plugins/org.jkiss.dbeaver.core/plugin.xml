@@ -376,7 +376,11 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.select.schema" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveSchemaHandler">
             <enabledWhen>
-                <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.supportsTransactions" value="true"/>
+                    </adapt>
+                </with>
             </enabledWhen>
         </handler>
 
