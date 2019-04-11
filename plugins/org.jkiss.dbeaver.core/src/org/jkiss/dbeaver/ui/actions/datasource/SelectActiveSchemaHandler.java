@@ -20,6 +20,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
@@ -118,24 +120,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         if (dataSource != null && dataSource.isConnected()) {
             schemaName = "<no schema>";
-            //DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-            if (objectSelector != null && objectSelector.supportsDefaultChange()) {
-                DBSObject defObject = objectSelector.getDefaultObject();
-
-                if (defObject instanceof DBSObjectContainer) {
-                    // Default object can be object container + object selector (e.g. in PG)
-                    objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
-                    if (objectSelector != null && objectSelector.supportsDefaultChange()) {
-                        //objectContainer = (DBSObjectContainer) defObject;
-                        defObject = objectSelector.getDefaultObject();
-                    }
-                }
-
-                if (defObject != null) {
-                    schemaName = defObject.getName();
-                    schemaIcon = DBIcon.TREE_SCHEMA;
-                }
+            DBSObject defObject = getSelectedSchema(dataSource);
+            if (defObject != null) {
+                schemaName = defObject.getName();
+                schemaIcon = DBIcon.TREE_SCHEMA;
             }
         }
         element.setText(schemaName);
@@ -143,7 +131,25 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         element.setTooltip(schemaTooltip);
     }
 
-    private void changeDataBaseSelection(DBPDataSourceContainer dsContainer, @Nullable String curInstanceName, @Nullable String newInstanceName, @NotNull String newSchemaName) {
+    public static DBSObject getSelectedSchema(DBPDataSourceContainer dataSource) {
+        //DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
+        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+        if (objectSelector != null && objectSelector.supportsDefaultChange()) {
+            DBSObject defObject = objectSelector.getDefaultObject();
+
+            if (defObject instanceof DBSObjectContainer) {
+                // Default object can be object container + object selector (e.g. in PG)
+                objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
+                if (objectSelector != null && objectSelector.supportsDefaultChange()) {
+                    //objectContainer = (DBSObjectContainer) defObject;
+                    return objectSelector.getDefaultObject();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, @Nullable String curInstanceName, @Nullable String newInstanceName, @NotNull String newSchemaName) {
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
@@ -190,7 +196,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         }
     }
 
-    private class DatabaseListReader implements DBRRunnableWithProgress {
+    private static class DatabaseListReader implements DBRRunnableWithProgress {
         private final DBPDataSource dataSource;
         private final List<DBNDatabaseNode> nodeList = new ArrayList<>();
         // Remote instance node
@@ -198,7 +204,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         private boolean enabled;
         private String currentDatabaseInstanceName;
 
-        public DatabaseListReader(DBPDataSource dataSource) {
+        DatabaseListReader(DBPDataSource dataSource) {
             this.dataSource = dataSource;
         }
 
@@ -255,7 +261,39 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     public static class MenuContributor extends DataSourceMenuContributor {
         @Override
         protected void fillContributionItems(List<IContributionItem> menuItems) {
+            DBPDataSourceContainer dataSourceContainer = DataSourceToolbarUtils.getCurrentDataSource(UIUtils.getActiveWorkbenchWindow());
+            if (dataSourceContainer == null) {
+                return;
+            }
 
+            DatabaseListReader databaseListReader = new DatabaseListReader(dataSourceContainer.getDataSource());
+            try {
+                UIUtils.runInProgressService(databaseListReader);
+            } catch (InvocationTargetException e) {
+                DBWorkbench.getPlatformUI().showError("Schema list", "Error reading schema list", e.getTargetException());
+                return;
+            } catch (InterruptedException e) {
+                return;
+            }
+
+            DBSObject defObject = getSelectedSchema(dataSourceContainer);
+            for (DBNDatabaseNode node : databaseListReader.nodeList) {
+                menuItems.add(
+                    new ActionContributionItem(new Action(node.getName(), Action.AS_CHECK_BOX) {
+                        {
+                            setImageDescriptor(DBeaverIcons.getImageDescriptor(node.getNodeIcon()));
+                        }
+                        @Override
+                        public boolean isChecked() {
+                            return node.getObject() == defObject;
+                        }
+                        @Override
+                        public void run() {
+                            changeDataBaseSelection(dataSourceContainer, databaseListReader.currentDatabaseInstanceName, databaseListReader.currentDatabaseInstanceName, node.getNodeName());
+                        }
+                    }
+                ));
+            }
         }
     }
 }
