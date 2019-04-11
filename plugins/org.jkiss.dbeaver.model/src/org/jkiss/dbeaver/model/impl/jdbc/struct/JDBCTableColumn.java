@@ -183,13 +183,22 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 //        }
         query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML));
         if (valuePattern instanceof String) {
-            query.append("\nWHERE ").append(DBUtils.getQuotedIdentifier(this)).append(" LIKE ?");
+            query.append("\nWHERE ").append(DBUtils.getQuotedIdentifier(this));
+            if (getDataKind() == DBPDataKind.STRING) {
+                query.append(" LIKE ?");
+            } else {
+                query.append(" = ?");
+            }
         }
         query.append("\nGROUP BY ").append(DBUtils.getQuotedIdentifier(this));
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
             if (valuePattern instanceof String) {
-                valueHandler.bindValueObject(session, dbStat, this, 0, "%" + valuePattern + "%");
+                if (getDataKind() == DBPDataKind.STRING) {
+                    valueHandler.bindValueObject(session, dbStat, this, 0, "%" + valuePattern + "%");
+                } else {
+                    valueHandler.bindValueObject(session, dbStat, this, 0, valuePattern);
+                }
             }
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
