@@ -24,6 +24,7 @@ public class DataEditorsMessages extends NLS {
 	public static String grid_tooltip_sort_by_column;
 	public static String grid_tooltip_filter_by_column;
     public static String controls_column_info_panel_property_key;
+	public static String resultset_segment_size;
 
     static {
 		// initialize resource bundle
