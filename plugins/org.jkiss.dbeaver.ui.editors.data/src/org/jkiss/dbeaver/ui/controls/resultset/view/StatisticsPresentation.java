@@ -111,7 +111,7 @@ public class StatisticsPresentation extends AbstractPresentation {
                     }
                     line = line.replace("\t", "    ");
                     TableItem item = new TableItem(table, SWT.LEFT);
-                    item.setText(0, k == 0 ? attr.getName() : "    |");
+                    item.setText(0, k == 0 ? attr.getName() : "");
                     item.setText(1, line);
                     item.setData(attr);
                 }
