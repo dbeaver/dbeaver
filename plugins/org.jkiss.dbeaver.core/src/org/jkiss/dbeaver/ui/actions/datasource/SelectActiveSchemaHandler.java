@@ -57,6 +57,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DBPDataSourceContainer dataSourceContainer = DataSourceToolbarUtils.getCurrentDataSource(HandlerUtil.getActiveWorkbenchWindow(event));
+        if (dataSourceContainer == null) {
+            log.debug("No active connection. Action is in disabled state.");
+            return null;
+        }
 
         DatabaseListReader databaseListReader = new DatabaseListReader(dataSourceContainer.getDataSource());
         try {
@@ -108,28 +112,26 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBIcon schemaIcon = DBIcon.TREE_SCHEMA;
         String schemaTooltip = CoreMessages.toolbar_datasource_selector_combo_database_tooltip;
 
-        if (activeEditor instanceof DBPContextProvider) {
-            DBCExecutionContext executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
-            if (executionContext != null) {
-                schemaName = "<no schema>";
-                //DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
-                DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, executionContext.getDataSource());
-                if (objectSelector != null && objectSelector.supportsDefaultChange()) {
-                    DBSObject defObject = objectSelector.getDefaultObject();
+        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
+        if (dataSource != null && dataSource.isConnected()) {
+            schemaName = "<no schema>";
+            //DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+            if (objectSelector != null && objectSelector.supportsDefaultChange()) {
+                DBSObject defObject = objectSelector.getDefaultObject();
 
-                    if (defObject instanceof DBSObjectContainer) {
-                        // Default object can be object container + object selector (e.g. in PG)
-                        objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
-                        if (objectSelector != null && objectSelector.supportsDefaultChange()) {
-                            //objectContainer = (DBSObjectContainer) defObject;
-                            defObject = objectSelector.getDefaultObject();
-                        }
+                if (defObject instanceof DBSObjectContainer) {
+                    // Default object can be object container + object selector (e.g. in PG)
+                    objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
+                    if (objectSelector != null && objectSelector.supportsDefaultChange()) {
+                        //objectContainer = (DBSObjectContainer) defObject;
+                        defObject = objectSelector.getDefaultObject();
                     }
+                }
 
-                    if (defObject != null) {
-                        schemaName = defObject.getName();
-                        schemaIcon = DBIcon.TREE_SCHEMA;
-                    }
+                if (defObject != null) {
+                    schemaName = defObject.getName();
+                    schemaIcon = DBIcon.TREE_SCHEMA;
                 }
             }
         }
