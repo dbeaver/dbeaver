@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.ui.IEditorPart;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -43,8 +45,10 @@ import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -145,21 +149,34 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
             }
 
             List<? extends DBPDataSourceContainer> dataSources = getAvailableDataSources();
+            List<? extends DBPDataSourceContainer> connectedDataSources = new ArrayList<>(dataSources);
+            connectedDataSources.removeIf(o -> !o.isConnected());
             DBPDataSourceContainer curDataSource = getDataSourceContainer(workbenchWindow.getActivePage().getActivePart());
-            for (DBPDataSourceContainer ds : dataSources) {
+            for (DBPDataSourceContainer ds : connectedDataSources) {
+                DBNDatabaseNode dsNode = NavigatorUtils.getNodeByObject(ds);
                 menuItems.add(
                     new ActionContributionItem(
-                        new Action(ds.getName(), Action.AS_CHECK_BOX) {
-                            @Override
-                            public boolean isChecked() {
-                                return ds == curDataSource;
-                            }
-                            @Override
-                            public void run() {
-                                ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(ds);
-                            }
-                        }));
+                        createDataSourceChangeAction((IDataSourceContainerProviderEx) activeEditor, curDataSource, ds, dsNode)));
             }
+            menuItems.add(new Separator());
+        }
+
+        private Action createDataSourceChangeAction(IDataSourceContainerProviderEx activeEditor, DBPDataSourceContainer curDataSource, DBPDataSourceContainer newDataSource, DBNDatabaseNode dsNode) {
+            return new Action(newDataSource.getName(), Action.AS_CHECK_BOX) {
+                {
+                    if (dsNode != null) {
+                        setImageDescriptor(DBeaverIcons.getImageDescriptor(dsNode.getNodeIcon()));
+                    }
+                }
+                @Override
+                public boolean isChecked() {
+                    return newDataSource == curDataSource;
+                }
+                @Override
+                public void run() {
+                    activeEditor.setDataSourceContainer(newDataSource);
+                }
+            };
         }
     }
 
