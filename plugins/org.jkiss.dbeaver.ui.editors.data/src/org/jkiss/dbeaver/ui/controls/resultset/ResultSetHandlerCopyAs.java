@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -48,25 +47,22 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Open results in external application
+ * Copy results in external format
  */
-public class ResultSetHandlerOpenWith extends AbstractHandler implements IElementUpdater {
+public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementUpdater {
 
-    private static final Log log = Log.getLog(ResultSetHandlerOpenWith.class);
+    private static final Log log = Log.getLog(ResultSetHandlerCopyAs.class);
 
-    public static final String CMD_OPEN_WITH = "org.jkiss.dbeaver.core.resultset.openWith";
+    public static final String CMD_COPY_AS = "org.jkiss.dbeaver.core.resultset.copyAs";
     public static final String PARAM_PROCESSOR_ID = "processorId";
-
-    public static final String PARAM_ACTIVE_APP = "org.jkiss.dbeaver.core.resultset.openWith.currentApp";
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
@@ -81,7 +77,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             return null;
         }
         switch (event.getCommand().getId()) {
-            case CMD_OPEN_WITH:
+            case CMD_COPY_AS:
                 openResultsWith(resultSet, processor);
                 break;
         }
@@ -89,9 +85,6 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
     }
 
     static DataTransferProcessorDescriptor getActiveProcessor(String processorId) {
-        if (CommonUtils.isEmpty(processorId)) {
-            processorId = DBWorkbench.getPlatform().getPreferenceStore().getString(PARAM_ACTIVE_APP);
-        }
         if (CommonUtils.isEmpty(processorId)) {
             DataTransferProcessorDescriptor defaultAppProcessor = getDefaultProcessor();
             if (defaultAppProcessor != null) {
@@ -133,19 +126,11 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         }
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(resultSet.getDataContainer(), resultSet.getModel(), options);
         if (dataContainer.getDataSource() == null) {
-            DBWorkbench.getPlatformUI().showError("Open " + processor.getAppName(), ModelMessages.error_not_connected_to_database);
+            DBWorkbench.getPlatformUI().showError("Copy As " + processor.getName(), ModelMessages.error_not_connected_to_database);
             return;
         }
 
-        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        String prevActiveApp = preferenceStore.getString(PARAM_ACTIVE_APP);
-        if (!CommonUtils.equalObjects(prevActiveApp, processor.getFullId())) {
-            //preferenceStore.setValue(PARAM_ACTIVE_APP, processor.getFullId());
-            //resultSet.updateEditControls();
-            //resultSet.getControl().layout(true);
-        }
-
-        AbstractJob exportJob = new AbstractJob("Open " + processor.getAppName()) {
+        AbstractJob exportJob = new AbstractJob("Copy As " + processor.getName()) {
 
             {
                 setUser(true);
@@ -155,11 +140,6 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    File tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "data-files");
-                    File tempFile = new File(tempDir, new SimpleDateFormat(
-                        "yyyyMMdd-HHmmss").format(System.currentTimeMillis()) + "." + processor.getAppFileExtension());
-                    tempFile.deleteOnExit();
-
                     IDataTransferProcessor processorInstance = processor.getInstance();
                     if (!(processorInstance instanceof IStreamDataExporter)) {
                         return Status.CANCEL_STATUS;
@@ -169,17 +149,14 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     StreamTransferConsumer consumer = new StreamTransferConsumer();
                     StreamConsumerSettings settings = new StreamConsumerSettings();
 
+                    settings.setOutputClipboard(true);
                     settings.setOutputEncodingBOM(false);
                     settings.setOpenFolderOnFinish(false);
-                    settings.setOutputFolder(tempDir.getAbsolutePath());
-                    settings.setOutputFilePattern(tempFile.getName());
 
                     Map<Object, Object> properties = new HashMap<>();
                     for (DBPPropertyDescriptor prop : processor.getProperties()) {
                         properties.put(prop.getId(), prop.getDefaultValue());
                     }
-                    // Remove extension property (we specify file name directly)
-                    properties.remove(StreamConsumerSettings.PROP_FILE_EXTENSION);
 
                     consumer.initTransfer(
                         dataContainer,
@@ -199,14 +176,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     producer.transferData(monitor, consumer, null, producerSettings);
 
                     consumer.finishTransfer(monitor, false);
-
-                    UIUtils.asyncExec(() -> {
-                        if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
-                            DBWorkbench.getPlatformUI().showError(
-                                "Open " + processor.getAppName(),
-                                "Can't open " + processor.getAppFileExtension() + " file '" + tempFile.getAbsolutePath() + "'");
-                        }
-                    });
+                    consumer.finishTransfer(monitor, true);
                 } catch (Exception e) {
                     DBWorkbench.getPlatformUI().showError("Error opening in " + processor.getAppName(), null, e);
                 }
@@ -221,7 +191,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         // Put processor name in command label
         DataTransferProcessorDescriptor processor = getActiveProcessor((String) parameters.get(PARAM_PROCESSOR_ID));
         if (processor != null) {
-            element.setText(processor.getAppName());
+            String commandName = ActionUtils.findCommandName(CMD_COPY_AS);
+            element.setText(commandName + " " + processor.getName());
             if (!CommonUtils.isEmpty(processor.getDescription())) {
                 element.setTooltip(processor.getDescription());
             }
@@ -244,7 +215,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         return processors.isEmpty() ? null : processors.get(0);
     }
 
-    public static class OpenWithParameterValues implements IParameterValues {
+    public static class CopyAsParameterValues implements IParameterValues {
 
         @Override
         public Map<String,String> getParameterValues() {
@@ -252,9 +223,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
 
             for (final DataTransferNodeDescriptor consumerNode : DataTransferRegistry.getInstance().getNodes(DataTransferNodeDescriptor.NodeType.CONSUMER)) {
                 for (DataTransferProcessorDescriptor processor : consumerNode.getProcessors()) {
-                    if (processor.getAppFileExtension() != null) {
-                        values.put(processor.getAppName(), processor.getFullId());
-                    }
+                    values.put(processor.getName(), processor.getFullId());
                 }
             }
 
@@ -263,7 +232,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
 
     }
 
-    public static class OpenWithMenuContributor extends CompoundContributionItem
+    public static class CopyAsMenuContributor extends CompoundContributionItem
     {
         @Override
         protected IContributionItem[] getContributionItems() {
@@ -273,7 +242,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                 return new IContributionItem[0];
             }
             ContributionManager menu = new MenuManager();
-            rsv.fillOpenWithMenu(menu);
+            rsv.fillCopyAsMenu(menu);
             return menu.getItems();
         }
     }
