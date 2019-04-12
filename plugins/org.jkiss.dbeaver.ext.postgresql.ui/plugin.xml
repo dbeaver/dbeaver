@@ -193,6 +193,15 @@
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerDisable"
+                    description="Disable trigger"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerDisable"
+                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
+                    label="Disable trigger"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+            </tool>
+            <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolRefreshMView"
                     description="%tools.refesh.mview.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolRefreshMView"
