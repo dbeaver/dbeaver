@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
 import org.jkiss.dbeaver.model.exec.plan.DBCSavedQueryPlanner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -58,7 +59,11 @@ import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.util.UUID;
 
 /**
  * ResultSetViewer
@@ -333,6 +338,25 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                                 plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
                             } else {
                                 plan = planner.planQueryExecution(session, query);
+                                
+                                //FIXME
+                                
+                                	if (planner instanceof DBCQueryPlannerSerializable) {
+                                		 try {
+                                			 
+                                			Writer w = new FileWriter("c:\\dbeaver\\prj\\ser_plans\\"+UUID.randomUUID().toString()+".dbplan");
+                                			 
+             								((DBCQueryPlannerSerializable) planner).serialize(w,plan);
+             								
+             								w.close();
+
+                                		 } catch (IOException e) {
+         									// TODO Auto-generated catch block
+         									e.printStackTrace();
+         								}
+                                	}
+									
+                                 
                             }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);

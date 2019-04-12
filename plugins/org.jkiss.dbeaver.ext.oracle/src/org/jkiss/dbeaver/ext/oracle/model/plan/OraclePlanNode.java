@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -342,8 +341,72 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     public Number getNodeRowCount() {
         return cardinality;
     }
+    
+    public String getStatementId() {
+		return statementId;
+	}
+    
+	public long getPlanId() {
+		return plan_id;
+	}
+	
+	public Timestamp getTimestamp() {
+		return timestamp;
+	}
 
-    public void updateCosts() {
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public String getObjectNode() {
+		return objectNode;
+	}
+
+	public String getObjectOwner() {
+		return objectOwner;
+	}
+
+	public String getObjectName() {
+		return objectName;
+	}
+
+	public String getObjectAlias() {
+		return objectAlias;
+	}
+
+	public long getObjectInstance() {
+		return objectInstance;
+	}
+
+	public long getSearchColumns() {
+		return searchColumns;
+	}
+
+	public int getParentId() {
+		return parentId;
+	}
+
+	public int getDepth() {
+		return depth;
+	}
+
+	public int getPosition() {
+		return position;
+	}
+
+	public String getOtherTag() {
+		return otherTag;
+	}
+
+	public String getOther() {
+		return other;
+	}
+
+	public String getOtherXml() {
+		return otherXml;
+	}
+
+	public void updateCosts() {
         if (nested != null) {
             for (OraclePlanNode child : nested) {
                 child.updateCosts();
