@@ -55,6 +55,8 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     public static final String[] ORACLE_BLOCK_HEADERS = new String[]{
         "DECLARE",
+        "FUNCTION",
+        "PROCEDURE",
         //"IS",
     };
 

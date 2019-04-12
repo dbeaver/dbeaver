@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Execution statistics presentation.
@@ -101,10 +102,19 @@ public class StatisticsPresentation extends AbstractPresentation {
             for (int i = 0; i < visibleAttributes.size(); i++) {
                 DBDAttributeBinding attr = visibleAttributes.get(i);
                 Object value = row.getValues()[i];
-                TableItem item = new TableItem(table, SWT.LEFT);
-                item.setText(0, attr.getName());
-                item.setText(1, DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
-                item.setData(attr);
+                String valueString = DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI);
+                String[] lines = valueString.split("\n");
+                for (int k = 0; k < lines.length; k++) {
+                    String line = lines[k];
+                    if (CommonUtils.isEmptyTrimmed(line)) {
+                        continue;
+                    }
+                    line = line.replace("\t", "    ");
+                    TableItem item = new TableItem(table, SWT.LEFT);
+                    item.setText(0, k == 0 ? attr.getName() : "");
+                    item.setText(1, line);
+                    item.setData(attr);
+                }
             }
         }
 
