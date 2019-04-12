@@ -201,6 +201,15 @@
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
             </tool>
+              <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerEnable"
+                    description="Enable trigger"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerEnable"
+                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
+                    label="Enable trigger"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+            </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolRefreshMView"
                     description="%tools.refesh.mview.description"

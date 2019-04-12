@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools.maintenance;
 
-public class PostgreToolTriggerDisable extends PostgreToolTriggerToggle {
+public class PostgreToolTriggerEnable extends PostgreToolTriggerToggle {
 
-    public PostgreToolTriggerDisable() {
-	super(false);
+    public PostgreToolTriggerEnable() {
+	super(true);
     }
 
 }
