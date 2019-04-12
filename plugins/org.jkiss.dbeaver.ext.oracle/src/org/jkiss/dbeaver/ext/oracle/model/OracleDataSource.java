@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OracleQueryPlanner;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
@@ -32,8 +31,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -217,7 +214,7 @@ public class OracleDataSource extends JDBCDataSource
                         JDBCUtils.executeSQL(
                             session,
                             "ALTER SESSION SET NLS_LANGUAGE='" + sessionLanguage + "'");
-                    } catch (SQLException e) {
+                    } catch (Throwable e) {
                         log.warn("Can't set session language", e);
                     }
                 }
@@ -227,7 +224,7 @@ public class OracleDataSource extends JDBCDataSource
                         JDBCUtils.executeSQL(
                             session,
                             "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
-                    } catch (SQLException e) {
+                    } catch (Throwable e) {
                         log.warn("Can't set session territory", e);
                     }
                 }
@@ -237,8 +234,21 @@ public class OracleDataSource extends JDBCDataSource
                         JDBCUtils.executeSQL(
                             session,
                             "ALTER SESSION SET NLS_DATE_FORMAT='" + nlsDateFormat + "'");
-                    } catch (SQLException e) {
+                    } catch (Throwable e) {
                         log.warn("Can't set session NLS date format", e);
+                    }
+                }
+
+                if (JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName())) {
+                    if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER))) {
+                        // See #5633
+                        try {
+                            JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_push_pred_cost_based\" = FALSE");
+                            JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_squ_bottomup\" = FALSE");
+                            JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_cost_based_transformation\" = 'OFF'");
+                        } catch (Throwable e) {
+                            log.warn("Can't set session optimizer parameters", e);
+                        }
                     }
                 }
             }

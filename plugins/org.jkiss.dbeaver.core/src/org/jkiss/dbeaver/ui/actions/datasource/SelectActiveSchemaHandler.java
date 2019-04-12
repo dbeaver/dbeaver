@@ -139,10 +139,12 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
             if (defObject instanceof DBSObjectContainer) {
                 // Default object can be object container + object selector (e.g. in PG)
-                objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
-                if (objectSelector != null && objectSelector.supportsDefaultChange()) {
+                DBSObjectSelector objectSelector2 = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
+                if (objectSelector2 != null && objectSelector2.supportsDefaultChange()) {
                     //objectContainer = (DBSObjectContainer) defObject;
-                    return objectSelector.getDefaultObject();
+                    return objectSelector2.getDefaultObject();
+                } else {
+                    return defObject;
                 }
             }
         }

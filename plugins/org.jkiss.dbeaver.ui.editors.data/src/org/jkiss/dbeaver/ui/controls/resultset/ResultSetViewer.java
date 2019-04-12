@@ -30,10 +30,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -97,12 +94,14 @@ import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -161,6 +160,7 @@ public class ResultSetViewer extends Viewer
     private Composite statusBar;
     private StatusLabel statusLabel;
     private ActiveStatusMessage rowCountLabel;
+    private Text resultSetSize;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
 
@@ -1444,7 +1444,7 @@ public class ResultSetViewer extends Viewer
         {
             final int fontHeight = UIUtils.getFontHeight(statusBar);
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
-            statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
+            statusLabel.setLayoutData(new RowData(30 * fontHeight, SWT.DEFAULT));
 
             rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
@@ -1470,6 +1470,20 @@ public class ResultSetViewer extends Viewer
             };
             rowCountLabel.setLayoutData(new RowData(10 * fontHeight, SWT.DEFAULT));
             rowCountLabel.setMessage("Row Count");
+
+            resultSetSize = new Text(statusBar, SWT.BORDER);
+            resultSetSize.setLayoutData(new RowData(5 * fontHeight, SWT.DEFAULT));
+            resultSetSize.setBackground(UIStyles.getDefaultTextBackground());
+            resultSetSize.setToolTipText(DataEditorsMessages.resultset_segment_size);
+            resultSetSize.addModifyListener(e -> {
+                DBSDataContainer dataContainer = getDataContainer();
+                int fetchSize = CommonUtils.toInt(resultSetSize.getText());
+                if (fetchSize > 0 && dataContainer != null && dataContainer.getDataSource() != null) {
+                    DBPPreferenceStore store = dataContainer.getDataSource().getContainer().getPreferenceStore();
+                    store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, fetchSize);
+                    PrefUtils.savePreferenceStore(store);
+                }
+            });
         }
     }
 
@@ -1625,6 +1639,11 @@ public class ResultSetViewer extends Viewer
         }
         statusLabel.setStatus(status, messageType);
         rowCountLabel.updateActionState();
+
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer != null && dataContainer.getDataSource() != null) {
+            resultSetSize.setText(String.valueOf(dataContainer.getDataSource().getContainer().getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
+        }
     }
 
     public void updateStatusMessage()
