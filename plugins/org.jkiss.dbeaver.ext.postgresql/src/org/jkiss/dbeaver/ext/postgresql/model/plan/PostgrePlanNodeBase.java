@@ -58,7 +58,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> exte
     private String nodeType;
     private String entity;
     private String cost;
-    private Map<String, String> attributes = Collections.emptyMap();
+    protected Map<String, String> attributes = Collections.emptyMap();
 
     protected PostgrePlanNodeBase(PostgreDataSource dataSource, NODE parent) {
         this.parent = parent;
