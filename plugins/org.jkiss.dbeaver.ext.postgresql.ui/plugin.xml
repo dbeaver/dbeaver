@@ -199,7 +199,7 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="Disable trigger"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" if="object.enabledState != 'D'"/>
             </tool>
               <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerEnable"
@@ -208,7 +208,7 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="Enable trigger"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" if="object.enabledState == 'D'"/>
             </tool>
             <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolRefreshMView"
