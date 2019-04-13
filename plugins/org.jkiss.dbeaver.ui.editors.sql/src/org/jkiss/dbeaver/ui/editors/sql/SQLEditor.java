@@ -311,6 +311,18 @@ public class SQLEditor extends SQLEditorBase implements
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null) {
                 NavigatorUtils.refreshNavigatorResource(file, container);
+            } else {
+                // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
+                // FIXME: To update main toolbar and other controls we hade and show this editor
+                IWorkbenchPage page = getSite().getPage();
+                for (IEditorReference er : page.getEditorReferences()) {
+                    if (er.getEditor(false) == this) {
+                        page.hideEditor(er);
+                        page.showEditor(er);
+                        break;
+                    }
+                }
+                //page.activate(this);
             }
         }
 
