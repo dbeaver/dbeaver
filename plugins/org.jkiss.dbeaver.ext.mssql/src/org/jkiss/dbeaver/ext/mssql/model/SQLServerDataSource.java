@@ -94,6 +94,17 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     }
 
     @Override
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+        super.initializeContextState(monitor, context, setActiveObject);
+        if (setActiveObject) {
+            SQLServerDatabase defaultObject = getDefaultObject();
+            if (defaultObject!= null) {
+                setCurrentDatabase(monitor, context, defaultObject);
+            }
+        }
+    }
+
+    @Override
     public Object getDataSourceFeature(String featureId) {
         switch (featureId) {
             case DBConstants.FEATURE_LIMIT_AFFECTS_DML:
