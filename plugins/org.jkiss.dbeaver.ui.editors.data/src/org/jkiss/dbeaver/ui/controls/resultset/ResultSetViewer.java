@@ -1197,7 +1197,7 @@ public class ResultSetViewer extends Viewer
                 site,
                 processor.getId(),
                 ResultSetHandlerCopyAs.CMD_COPY_AS,
-                CommandContributionItem.STYLE_RADIO
+                CommandContributionItem.STYLE_PUSH
             );
             params.label = processor.getName();
             if (processor.getIcon() != null) {
