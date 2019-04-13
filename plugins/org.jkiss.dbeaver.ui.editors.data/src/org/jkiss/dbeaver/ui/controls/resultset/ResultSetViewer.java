@@ -1182,7 +1182,12 @@ public class ResultSetViewer extends Viewer
         List<DataTransferProcessorDescriptor> appProcessors = new ArrayList<>();
 
         for (final DataTransferNodeDescriptor consumerNode : DataTransferRegistry.getInstance().getAvailableConsumers(Collections.singleton(dataContainer))) {
-            appProcessors.addAll(consumerNode.getProcessors());
+            for (DataTransferProcessorDescriptor processor : consumerNode.getProcessors()) {
+                if (processor.isBinaryFormat()) {
+                    continue;
+                }
+                appProcessors.add(processor);
+            }
         }
 
         appProcessors.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));

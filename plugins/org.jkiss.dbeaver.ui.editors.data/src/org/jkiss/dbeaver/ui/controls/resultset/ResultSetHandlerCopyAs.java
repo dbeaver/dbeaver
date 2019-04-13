@@ -86,22 +86,10 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
 
     static DataTransferProcessorDescriptor getActiveProcessor(String processorId) {
         if (CommonUtils.isEmpty(processorId)) {
-            DataTransferProcessorDescriptor defaultAppProcessor = getDefaultProcessor();
-            if (defaultAppProcessor != null) {
-                return defaultAppProcessor;
-            }
+            return null;
         } else {
             return DataTransferRegistry.getInstance().getProcessor(processorId);
         }
-        return null;
-    }
-
-    static DataTransferProcessorDescriptor getDefaultProcessor() {
-        DataTransferProcessorDescriptor defaultAppProcessor = getDefaultAppProcessor();
-        if (defaultAppProcessor != null) {
-            return defaultAppProcessor;
-        }
-        return null;
     }
 
     private static void openResultsWith(IResultSetController resultSet, DataTransferProcessorDescriptor processor) {
@@ -202,19 +190,6 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
         }
     }
 
-    private static DataTransferProcessorDescriptor getDefaultAppProcessor() {
-        List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
-        for (final DataTransferNodeDescriptor consumerNode : DataTransferRegistry.getInstance().getNodes(DataTransferNodeDescriptor.NodeType.CONSUMER)) {
-            for (DataTransferProcessorDescriptor processor : consumerNode.getProcessors()) {
-                if (processor.getAppFileExtension() != null) {
-                    processors.add(processor);
-                }
-            }
-        }
-        processors.sort(Comparator.comparingInt(DataTransferProcessorDescriptor::getOrder));
-        return processors.isEmpty() ? null : processors.get(0);
-    }
-
     public static class CopyAsParameterValues implements IParameterValues {
 
         @Override
@@ -223,6 +198,9 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
 
             for (final DataTransferNodeDescriptor consumerNode : DataTransferRegistry.getInstance().getNodes(DataTransferNodeDescriptor.NodeType.CONSUMER)) {
                 for (DataTransferProcessorDescriptor processor : consumerNode.getProcessors()) {
+                    if (processor.isBinaryFormat()) {
+                        continue;
+                    }
                     values.put(processor.getName(), processor.getFullId());
                 }
             }
