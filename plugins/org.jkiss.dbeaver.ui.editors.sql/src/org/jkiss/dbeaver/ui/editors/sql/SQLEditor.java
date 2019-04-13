@@ -1386,6 +1386,9 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput)
     {
+        DBPDataSourceContainer oldDataSource = getDataSourceContainer();
+        DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(editorInput);
+
         // Check for file existence
         try {
             if (editorInput instanceof IFileEditorInput) {
@@ -1408,9 +1411,13 @@ public class SQLEditor extends SQLEditorBase implements
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
-        dataSourceContainer = null;
 
-        updateDataSourceContainer();
+        if (oldDataSource != newDataSource) {
+            this.dataSourceContainer = null;
+            updateDataSourceContainer();
+        } else {
+            reloadSyntaxRules();
+        }
 
         setPartName(getEditorName());
         if (isNonPersistentEditor()) {
@@ -2117,7 +2124,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             EditorUtils.setInputDataSource(input, getDataSourceContainer());
 
-            init(getEditorSite(), input);
+            setInput(input);
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError("File save", "Can't open SQL editor from external file", e);
         }
