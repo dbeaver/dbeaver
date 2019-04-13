@@ -29,26 +29,23 @@ import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.commands.ICommandImageService;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.IDEActionFactory;
-import org.eclipse.ui.internal.IWorkbenchGraphicConstants;
-import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.commands.CommandImageManager;
 import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
-import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
+import org.jkiss.dbeaver.core.application.actions.EmergentExitAction;
+import org.jkiss.dbeaver.core.application.actions.ResetUISettingsAction;
 import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -71,7 +68,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     public static final String M_ALT_HELP = "dbhelp";
 
-    protected IActionDelegate emergentExitAction;
     protected IActionDelegate aboutAction;
     protected CheckForUpdateAction checkUpdatesAction;
     protected IWorkbenchAction showHelpAction;
@@ -129,7 +125,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //aboutAction = ActionFactory.ABOUT.create(window);
         //register(aboutAction);
         aboutAction = new AboutBoxAction(window);
-        emergentExitAction = new EmergentExitAction(window);
         register(showHelpAction = ActionFactory.HELP_CONTENTS.create(window));
 //        register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
 //        register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
@@ -239,7 +234,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(openWorkspaceAction);
 
             fileMenu.add(new Separator());
-            fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
+            fileMenu.add(new ResetUISettingsAction(workbenchWindow));
+            fileMenu.add(new EmergentExitAction(workbenchWindow));
 
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
         }

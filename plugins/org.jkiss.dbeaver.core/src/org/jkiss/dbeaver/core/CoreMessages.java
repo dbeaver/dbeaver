@@ -27,7 +27,6 @@ public class CoreMessages extends NLS {
 	public static String actions_menu_database;
 	public static String actions_menu_edit;
 	public static String actions_menu_edit_ContentFormat;
-	public static String actions_menu_exit_emergency;
 	public static String actions_menu_file;
 	public static String actions_menu_help;
 	public static String actions_menu_navigate;
@@ -463,8 +462,6 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_page_log_task_progress_log;
 	public static String tools_wizard_page_log_task_started_at;
 	
-    public static String ui_actions_exit_emergency_question;
-
 	public static String dialog_connection_edit_driver_button;
 	public static String dialog_connection_driver;
 	public static String dialog_connection_advanced_settings;
