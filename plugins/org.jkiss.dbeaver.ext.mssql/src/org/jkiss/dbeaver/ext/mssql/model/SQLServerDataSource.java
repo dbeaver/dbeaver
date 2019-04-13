@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -296,6 +293,14 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
         databaseCache.clearCache();
         return super.refreshObject(monitor);
+    }
+
+    @Override
+    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new QueryTransformerTop();
+        }
+        return super.createQueryTransformer(type);
     }
 
     @Override
