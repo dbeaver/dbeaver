@@ -55,6 +55,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
 
@@ -90,6 +91,8 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     private PrintStream oldSystemErr;
 
     private Display display = null;
+
+    private boolean resetUIOnRestart;
 
     static {
         // Explicitly set UTF-8 as default file encoding
@@ -183,6 +186,10 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             log.debug("Run workbench");
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
 
+            if (resetUIOnRestart) {
+                resetUISettings(instanceLoc);
+            }
+
             // Copy-pasted from IDEApplication
             // Magic with exit codes to let Eclipse starter switcg workspace
 
@@ -213,6 +220,20 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 */
             display.dispose();
             display = null;
+        }
+    }
+
+    private void resetUISettings(Location instanceLoc) {
+        try {
+            File instanceDir = new File(instanceLoc.getURL().toURI());
+            if (instanceDir.exists()) {
+                File settingsFile = new File(instanceDir, ".metadata/.plugins/org.eclipse.e4.workbench/workbench.xmi");
+                if (settingsFile.exists()) {
+                    settingsFile.deleteOnExit();
+                }
+            }
+        } catch (Throwable e) {
+            log.error("Error resetting UI settings", e);
         }
     }
 
@@ -432,6 +453,10 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             versionDescriptor,
             showSkip);
         dialog.open();
+    }
+
+    public void setResetUIOnRestart(boolean resetUIOnRestart) {
+        this.resetUIOnRestart = resetUIOnRestart;
     }
 
     private static class BundleLoadListener implements BundleListener {

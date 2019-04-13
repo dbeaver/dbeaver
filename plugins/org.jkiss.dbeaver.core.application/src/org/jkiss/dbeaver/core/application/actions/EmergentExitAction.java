@@ -14,31 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.actions.common;
+package org.jkiss.dbeaver.core.application.actions;
 
-import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.actions.ActionDelegate;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.application.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-public class EmergentExitAction extends ActionDelegate
-{
+public class EmergentExitAction extends Action {
 
     private IWorkbenchWindow window;
 
     public EmergentExitAction(IWorkbenchWindow window) {
+        super(CoreApplicationMessages.actions_menu_exit_emergency);
         this.window = window;
     }
 
     @Override
-    public void run(IAction action)
-    {
+    public void run() {
         if (UIUtils.confirmAction(
             window == null ? null : window.getShell(),
-            CoreMessages.actions_menu_exit_emergency,
-            CoreMessages.ui_actions_exit_emergency_question))
-        {
+            CoreApplicationMessages.actions_menu_exit_emergency,
+            CoreApplicationMessages.actions_menu_exit_emergency_message)) {
             System.exit(1);
         }
     }
