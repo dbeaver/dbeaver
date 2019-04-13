@@ -49,7 +49,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     private boolean isCatalogAtStart;
     private int catalogUsage;
     protected int schemaUsage;
-    private String validCharacters;
+    protected String validCharacters;
     private boolean supportsUnquotedMixedCase;
     private boolean supportsQuotedMixedCase;
     @NotNull
@@ -81,7 +81,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         if (singleQuoteStr == null) {
             identifierQuoteString = new String[0][];
         } else {
-            identifierQuoteString = new String[][] { { singleQuoteStr, singleQuoteStr } };
+            identifierQuoteString = new String[][]{{singleQuoteStr, singleQuoteStr}};
         }
 
         try {
@@ -184,6 +184,11 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         }
         try {
             validCharacters = metaData.getExtraNameCharacters();
+            if (validCharacters == null) {
+                validCharacters = "";
+            } else {
+                validCharacters = validCharacters.trim();
+            }
         } catch (Throwable e) {
             log.debug("Error getting validCharacters:" + e.getMessage());
             validCharacters = ""; //$NON-NLS-1$
@@ -207,8 +212,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     @Nullable
     @Override
-    public String[][] getIdentifierQuoteStrings()
-    {
+    public String[][] getIdentifierQuoteStrings() {
         return identifierQuoteString;
     }
 
@@ -220,97 +224,82 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     @NotNull
     @Override
-    public String getSearchStringEscape()
-    {
+    public String getSearchStringEscape() {
         return searchStringEscape;
     }
 
     @Override
-    public int getCatalogUsage()
-    {
+    public int getCatalogUsage() {
         return catalogUsage;
     }
 
     @Override
-    public int getSchemaUsage()
-    {
+    public int getSchemaUsage() {
         return schemaUsage;
     }
 
     @NotNull
     @Override
-    public String getCatalogSeparator()
-    {
+    public String getCatalogSeparator() {
         return catalogSeparator;
     }
 
     @Override
-    public char getStructSeparator()
-    {
+    public char getStructSeparator() {
         return SQLConstants.STRUCT_SEPARATOR;
     }
 
     @Override
-    public boolean isCatalogAtStart()
-    {
+    public boolean isCatalogAtStart() {
         return isCatalogAtStart;
     }
 
     @NotNull
     @Override
-    public SQLStateType getSQLStateType()
-    {
+    public SQLStateType getSQLStateType() {
         return sqlStateType;
     }
 
     @NotNull
     @Override
-    public String getScriptDelimiter()
-    {
+    public String getScriptDelimiter() {
         return ";"; //$NON-NLS-1$
     }
 
     @Override
-    public boolean validIdentifierPart(char c)
-    {
-        // Do not use MetaData.getExtraNameCharacters because some drivers (SQL Server)
-        return Character.isLetter(c) || Character.isDigit(c) || c == '_';// || validCharacters.indexOf(c) != -1;
+    public boolean validIdentifierPart(char c, boolean quoted) {
+        // Some driver return extra characters which must be quoted. We can't know this here.
+        return Character.isLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1);
     }
 
     @Override
-    public boolean supportsUnquotedMixedCase()
-    {
+    public boolean supportsUnquotedMixedCase() {
         return supportsUnquotedMixedCase;
     }
 
     @Override
-    public boolean supportsQuotedMixedCase()
-    {
+    public boolean supportsQuotedMixedCase() {
         return supportsQuotedMixedCase;
     }
 
     @NotNull
     @Override
-    public DBPIdentifierCase storesUnquotedCase()
-    {
+    public DBPIdentifierCase storesUnquotedCase() {
         return unquotedIdentCase;
     }
 
     @NotNull
     @Override
-    public DBPIdentifierCase storesQuotedCase()
-    {
+    public DBPIdentifierCase storesQuotedCase() {
         return quotedIdentCase;
     }
 
     @Override
-    public boolean supportsSubqueries()
-    {
+    public boolean supportsSubqueries() {
         return supportsSubqueries;
     }
 
-    public void setSupportsSubqueries(boolean supportsSubqueries)
-    {
+    public void setSupportsSubqueries(boolean supportsSubqueries) {
         this.supportsSubqueries = supportsSubqueries;
     }
 
@@ -346,8 +335,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         addKeywords(types, DBPKeywordType.TYPE);
     }
 
-    private void loadDriverKeywords(JDBCDatabaseMetaData metaData)
-    {
+    private void loadDriverKeywords(JDBCDatabaseMetaData metaData) {
         try {
             // Keywords
             Collection<String> sqlKeywords = makeStringList(metaData.getSQLKeywords());
@@ -376,19 +364,17 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             }
             // Remove functions which clashes with keywords
             for (Iterator<String> fIter = allFunctions.iterator(); fIter.hasNext(); ) {
-                if (getKeywordType(fIter.next())== DBPKeywordType.KEYWORD) {
+                if (getKeywordType(fIter.next()) == DBPKeywordType.KEYWORD) {
                     fIter.remove();
                 }
             }
             addFunctions(allFunctions);
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             log.debug("Error reading SQL functions: " + e.getMessage());
         }
     }
 
-    private static List<String> makeStringList(String source)
-    {
+    private static List<String> makeStringList(String source) {
         List<String> result = new ArrayList<>();
         if (source != null && source.length() > 0) {
             StringTokenizer st = new StringTokenizer(source, ";,"); //$NON-NLS-1$
