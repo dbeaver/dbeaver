@@ -1591,17 +1591,6 @@
         </handler>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.networkHandler">
-        <handler
-                type="proxy"
-                id="socks_proxy"
-                label="%handler.socks_proxy.label"
-                description="%handler.socks_proxy.description"
-                secured="true"
-                order="10"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl" uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"/>
     </extension>

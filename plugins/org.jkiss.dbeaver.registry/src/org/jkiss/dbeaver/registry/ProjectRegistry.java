@@ -300,11 +300,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             log.warn("Project '" + project.getName() + "' is not open - can't get datasource registry");
             return null;
         }
-        DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
-        if (dataSourceRegistry == null) {
-            log.warn("Project '" + project.getName() + "' not found in registry");
-        }
-        return dataSourceRegistry;
+        return projectDatabases.get(project);
     }
 
     @Override
