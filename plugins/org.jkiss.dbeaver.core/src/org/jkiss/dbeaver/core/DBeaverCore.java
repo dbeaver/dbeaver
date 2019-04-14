@@ -231,7 +231,7 @@ public class DBeaverCore implements DBPPlatform {
         initializeProjects();
 
         // Navigator model
-        this.navigatorModel = new DBNModel(this);
+        this.navigatorModel = new DBNModel(this, true);
         this.navigatorModel.initialize();
 
         // Activate proxy service
