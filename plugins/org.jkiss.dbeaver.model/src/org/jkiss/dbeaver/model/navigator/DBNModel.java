@@ -90,6 +90,10 @@ public class DBNModel implements IResourceChangeListener {
         return platform;
     }
 
+    public boolean isGlobal() {
+        return global;
+    }
+
     public void initialize()
     {
         if (this.root != null) {
@@ -527,7 +531,7 @@ public class DBNModel implements IResourceChangeListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
-        if (platform.isShuttingDown()) {
+        if (!global || platform.isShuttingDown()) {
             return;
         }
         synchronized (eventCache) {
