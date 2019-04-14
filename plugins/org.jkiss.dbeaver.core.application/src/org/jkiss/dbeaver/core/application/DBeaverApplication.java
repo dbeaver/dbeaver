@@ -435,6 +435,11 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         return null;
     }
 
+    @Override
+    public String getDefaultProjectName() {
+        return "General";
+    }
+
     private int showMessageBox(String title, String message, int style) {
         // Can't lock specified path
         Shell shell = new Shell(getDisplay(), SWT.ON_TOP);
