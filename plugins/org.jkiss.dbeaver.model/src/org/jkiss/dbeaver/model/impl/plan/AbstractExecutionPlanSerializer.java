@@ -34,23 +34,23 @@ import com.google.gson.JsonPrimitive;
 
 public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlannerSerializable{
 
-	private static final String PROP_DESC = "desc";
-	private static final String PROP_COND = "cond";
-	private static final String PROP_TYPE = "type";
-	private static final String PROP_KIND = "kind";
-	private static final String PROP_NAME = "name";
+	public static final String PROP_DESC = "desc";
+	public static final String PROP_COND = "cond";
+	public static final String PROP_TYPE = "type";
+	public static final String PROP_KIND = "kind";
+	public static final String PROP_NAME = "name";
 	
-	private static final String PROP_DATE = "date";
-	private static final String PROP_SIGNATURE = "signature";
-	private static final String PROP_VERSION = "version";
+	public static final String PROP_DATE = "date";
+	public static final String PROP_SIGNATURE = "signature";
+	public static final String PROP_VERSION = "version";
 	
-	private static final String PROP_SQL = "sql";
+	public static final String PROP_SQL = "sql";
 	
-	private static final String PROP_CHILD = "child";
+	public static final String PROP_CHILD = "child";
 	
-	private static final String PROP_NODES = "root";
+	public static final String PROP_NODES = "root";
 	
-	public static final String PROP_ATTRIBUTES = "root";
+	public static final String PROP_ATTRIBUTES = "attributes";
 	
 	
 	private JsonElement serializeNode(DBCPlanNode node,DBCQueryPlannerSerialInfo info) {
