@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
 {
     private final PostgreDataSource dataSource;
     
-	private final static String FORMAT_VERSION = "1";
+	public final static String FORMAT_VERSION = "1";
 
     public PostgreQueryPlaner(PostgreDataSource dataSource) {
         this.dataSource = dataSource;
@@ -102,6 +103,13 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
 		
 		planData.write(e.toString());
 		
+	}
+
+	@Override
+	public DBCPlan deserialize(Reader planData) throws IOException {
+		PostgresPlanLoader plan = new PostgresPlanLoader();
+		plan.deserialize(dataSource, planData);
+		return plan;
 	}
 
 

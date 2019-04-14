@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.plan;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.sql.Timestamp;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
     
     private JsonObject createAttr(String key,Timestamp value) {
     	JsonObject attr = new JsonObject();
-    	attr.add(key,new JsonPrimitive(value.toInstant().getNano()));
+    	attr.add(key,new JsonPrimitive(value.toInstant().toEpochMilli()));
     	return attr; 
     }
     
@@ -157,6 +158,14 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
 		
 		planData.write(e.toString());
 		
+	}
+
+
+	@Override
+	public DBCPlan deserialize(Reader planData) throws IOException {
+		OraclePlanLoader plan = new OraclePlanLoader();
+		plan.deserialize(dataSource, planData);
+		return plan;
 	}
 
 }

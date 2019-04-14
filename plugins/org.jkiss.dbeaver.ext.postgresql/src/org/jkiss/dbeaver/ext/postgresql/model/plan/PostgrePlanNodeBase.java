@@ -55,7 +55,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> exte
     protected NODE parent;
     protected List<NODE> nested;
 
-    private String nodeType;
+    protected String nodeType;
     private String entity;
     private String cost;
     protected Map<String, String> attributes = Collections.emptyMap();
