@@ -111,9 +111,9 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
 
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
             // Create initial project (only for standalone version)
-            monitor.beginTask("Create general project", 1);
+            monitor.beginTask("Create default project", 1);
             try {
-                activeProject = createGeneralProject(monitor);
+                activeProject = createDefaultProject(monitor);
                 activeProject.open(monitor);
                 setActiveProject(activeProject);
             } catch (CoreException e) {
@@ -350,9 +350,9 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         }
     }
 
-    private IProject createGeneralProject(IProgressMonitor monitor) throws CoreException
+    private IProject createDefaultProject(IProgressMonitor monitor) throws CoreException
     {
-        final String baseProjectName = DBWorkbench.getPlatform().getApplication().isStandalone() ? "General" : "DBeaver";
+        final String baseProjectName = DBWorkbench.getPlatform().getApplication().getDefaultProjectName();
         String projectName = baseProjectName;
         for (int i = 1; ; i++) {
             final IProject project = workspace.getRoot().getProject(projectName);
