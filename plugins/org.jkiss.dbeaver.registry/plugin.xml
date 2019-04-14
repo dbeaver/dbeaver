@@ -14,4 +14,15 @@
     <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
     <extension-point id="org.jkiss.dbeaver.language" name="%extension-point.org.jkiss.dbeaver.language.name" schema="schema/org.jkiss.dbeaver.language.exsd"/>
 
+    <extension point="org.jkiss.dbeaver.language">
+        <language code="en" label="%language.en.label"/>
+        <language code="zh" label="%language.zh.label"/>
+        <language code="ru" label="%language.ru.label"/>
+        <language code="fr" label="%language.fr.label"/>
+        <language code="de" label="%language.de.label"/>
+        <language code="it" label="%language.it.label"/>
+        <language code="ja" label="%language.ja.label"/>
+        <language code="es" label="%language.es.label"/>
+    </extension>
+
 </plugin>
