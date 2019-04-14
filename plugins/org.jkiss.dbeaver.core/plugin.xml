@@ -1636,17 +1636,6 @@
         <repository id="maven-central-unsecure" name="%maven.respository.central.unsecure" url="http://central.maven.org/maven2/" order="99999"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.language">
-        <language code="en" label="%language.en.label"/>
-        <language code="zh" label="%language.zh.label"/>
-        <language code="ru" label="%language.ru.label"/>
-        <language code="fr" label="%language.fr.label"/>
-        <language code="de" label="%language.de.label"/>
-        <language code="it" label="%language.it.label"/>
-        <language code="ja" label="%language.ja.label"/>
-        <language code="es" label="%language.es.label"/>
-    </extension>
-
     <extension
         point="org.eclipse.search.searchPages">
         <page
