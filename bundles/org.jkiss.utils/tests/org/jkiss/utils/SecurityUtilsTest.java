@@ -22,6 +22,11 @@ import org.junit.runner.RunWith;
 //@RunWith(PowerMockRunner.class)
 public class SecurityUtilsTest {
 
+    @Test
+    public void dummyTest() throws Exception {
+
+    }
+
 /*
   @PrepareForTest(SecurityUtils.class)
   @Test
