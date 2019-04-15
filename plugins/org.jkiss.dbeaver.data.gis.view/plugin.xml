@@ -12,8 +12,19 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.data.gis.geometryViewer">
-        <geometryViewer label="Text" id="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer" supportsInline="true"/>
-        <geometryViewer label="Graphic" id="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer"/>
+        <geometryViewer
+                label="Text"
+                description="View GIS object in text form"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
+                id="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer"
+                class="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer"
+                supportsInline="true"/>
+        <geometryViewer
+                label="Map"
+                description="View GIS object on map"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/image.png"
+                id="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer"
+                class="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer"/>
     </extension>
 
 </plugin>
