@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeComplex;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -41,7 +40,7 @@ import java.util.Map;
 /**
  * Oracle execution plan node
  */
-public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBCPlanNodeComplex<OraclePlanNode> {
+public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
 
     public final static String CAT_DETAILS = "Details";
 
@@ -84,7 +83,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     private String otherXml;
 
     private OraclePlanNode parent;
-    protected List<OraclePlanNode> nested;
+    protected final List<OraclePlanNode> nested = new ArrayList<>();
 
     private String aGetString(Map<String,String> attributes,String name) {
         return attributes.containsKey(name) ? attributes.get(name).toString() : "";
@@ -224,10 +223,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     }
 
     private void addChild(OraclePlanNode node) {
-        if (this.nested == null) {
-            createNested();
-        }
-        this.nested.add(node);
+         this.nested.add(node);
     }
 
     @Override
@@ -513,10 +509,5 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
         }
     }
 
-    @Override
-    public void createNested() {
-        this.nested = new ArrayList<>();
-       
-    }
 
 }
