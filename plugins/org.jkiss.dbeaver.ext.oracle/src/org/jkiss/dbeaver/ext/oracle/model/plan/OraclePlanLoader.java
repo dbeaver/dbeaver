@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.plan;
 
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,24 +95,30 @@ public class OraclePlanLoader extends AbstractExecutionPlan{
         return attributes;
     }
     
-    public void deserialize(OracleDataSource dataSource, Reader planData) {
+    public void deserialize(OracleDataSource dataSource, Reader planData) throws InvocationTargetException{
         
-        JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
-        
-        query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
-        
-        ExecutionPlanDeserializer<OraclePlanNode> loader = new ExecutionPlanDeserializer<>();
-        
-        rootNodes = loader.loadRoot(dataSource, jo, new DBCQueryPlannerDeSerialInfo<OraclePlanNode>() {
+        try {
             
-            @Override
-            public OraclePlanNode createNode(DBPDataSource datasource, JsonObject node,
-                    OraclePlanNode parent) {
-                OraclePlanNode nodeOra = new OraclePlanNode(dataSource, allNodes, getNodeAttributes(node));
-                allNodes.put(nodeOra.getId(), nodeOra);
-                return nodeOra;
-            }
-        });
-    }
+            JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
+            
+            query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
+            
+            ExecutionPlanDeserializer<OraclePlanNode> loader = new ExecutionPlanDeserializer<>();
+            
+            rootNodes = loader.loadRoot(dataSource, jo, new DBCQueryPlannerDeSerialInfo<OraclePlanNode>() {
+                
+                @Override
+                public OraclePlanNode createNode(DBPDataSource datasource, JsonObject node,
+                        OraclePlanNode parent) {
+                    OraclePlanNode nodeOra = new OraclePlanNode(dataSource, allNodes, getNodeAttributes(node));
+                    allNodes.put(nodeOra.getId(), nodeOra);
+                    return nodeOra;
+                }
+            });
+            
+        } catch (Throwable e) {
+            new InvocationTargetException(e);
+        }
+     }
 
 }

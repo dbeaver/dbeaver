@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.model.impl.plan;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +14,15 @@ import com.google.gson.JsonObject;
 
 public class ExecutionPlanDeserializer<NODE extends DBCPlanNode> {
 
-    public List<NODE> loadRoot(DBPDataSource datasource, JsonObject plan, DBCQueryPlannerDeSerialInfo<NODE> info) {
+    public List<NODE> loadRoot(DBPDataSource datasource, JsonObject plan, DBCQueryPlannerDeSerialInfo<NODE> info) throws InvocationTargetException {
+        
+        final String signature = plan.get(AbstractExecutionPlanSerializer.PROP_SIGNATURE).getAsString();
+        final String currSignature = datasource.getInfo().getDriverName();
+        
+        if (!signature.equals(currSignature)) {
+            throw new InvocationTargetException(new Throwable(String.format("Incorrect plan signature found - %s, expected - %s", signature,currSignature)));
+        }
+        
         final List<NODE> nodes = new ArrayList<>(1);
         plan.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_NODES).forEach((e) -> {
             nodes.add(loadNode(datasource, e.getAsJsonObject(), null, info));

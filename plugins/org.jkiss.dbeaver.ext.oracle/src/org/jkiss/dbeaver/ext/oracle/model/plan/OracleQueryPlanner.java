@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model.plan;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.Map;
 
@@ -101,7 +102,7 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
 
     @Override
     public void serialize(Writer planData, DBCPlan plan) throws IOException {
-        JsonElement e = serializeJson(plan, new DBCQueryPlannerSerialInfo() {
+        JsonElement e = serializeJson(plan,dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
             public String version() {
@@ -162,7 +163,7 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
 
 
     @Override
-    public DBCPlan deserialize(Reader planData) throws IOException {
+    public DBCPlan deserialize(Reader planData) throws IOException,InvocationTargetException {
         OraclePlanLoader plan = new OraclePlanLoader();
         plan.deserialize(dataSource, planData);
         return plan;
