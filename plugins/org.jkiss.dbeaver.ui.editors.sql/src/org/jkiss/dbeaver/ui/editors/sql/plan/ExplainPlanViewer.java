@@ -132,9 +132,9 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                     changeActiveView(tabViewFolder.getSelection());
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(
-                        SQLEditorMessages.editors_sql_error_execution_plan_title,
-                        SQLEditorMessages.editors_sql_error_execution_plan_message,
-                        e);
+                            SQLEditorMessages.editors_sql_error_execution_plan_title,
+                            SQLEditorMessages.editors_sql_error_execution_plan_message,
+                            e);
                 }
             });
         }
@@ -243,8 +243,8 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             DBWorkbench.getPlatformUI().showError("No SQL Plan","This datasource doesn't support execution plans");
         } else {
             LoadingJob<DBCPlan> service = LoadingJob.createService(
-                new ExplainPlanService(planner, executionContext, lastQuery.getText(), lastQueryId),
-                planPresentationContainer.createVisualizer());
+                    new ExplainPlanService(planner, executionContext, lastQuery.getText(), lastQueryId),
+                    planPresentationContainer.createVisualizer());
             service.schedule();
         }
     }
@@ -331,7 +331,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
 
         @Override
         public DBCPlan evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException {
+                throws InvocationTargetException {
             try {
                 DBUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
