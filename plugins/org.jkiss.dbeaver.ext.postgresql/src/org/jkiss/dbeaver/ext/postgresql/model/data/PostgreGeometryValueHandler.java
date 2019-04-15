@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.WKTReader;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -79,23 +81,32 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    private Object makeGeometryFromPGGeometry(DBCSession session, Object pgGeometry) throws DBCException {
+    private Object makeGeometryFromPGGeometry(DBCSession session, Object value) throws DBCException {
         try {
-            return BeanUtils.invokeObjectMethod(pgGeometry, "getGeometry", null, null);
+            String pgString = value.toString();
+            return makeGeometryFromString(session, pgString);
         } catch (Throwable e) {
             throw new DBCException(e, session.getDataSource());
         }
     }
 
-    private Object makeGeometryFromString(DBCSession session, String object) throws DBCException {
-        if (CommonUtils.isEmpty(object)) {
+    private Object makeGeometryFromString(DBCSession session, String pgString) throws DBCException {
+        if (CommonUtils.isEmpty(pgString)) {
             return null;
         }
+        // Convert from PostGIS EWKT to Geometry type
         try {
-            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), PostgreConstants.PG_GEOMETRY_CLASS);
-            return BeanUtils.invokeStaticMethod(
-                jtsGeometry, "geomFromString", new Class[] { String.class }, new Object[] { object }
-            );
+            int divPos = pgString.indexOf(';');
+            if (divPos == -1) {
+                return pgString;
+            }
+            String sridString = pgString.substring(0, divPos);
+            String wktString = pgString.substring(divPos + 1);
+            Geometry geometry = new WKTReader().read(wktString);
+            if (sridString.startsWith("SRID=")) {
+                geometry.setSRID(CommonUtils.toInt(sridString.substring(5)));
+            }
+            return geometry;
         } catch (Throwable e) {
             throw new DBCException(e, session.getDataSource());
         }
