@@ -1,5 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,8 +25,8 @@ import java.io.Writer;
 import org.jkiss.code.NotNull;
 
 public interface DBCQueryPlannerSerializable {
-	
+
     void serialize(@NotNull Writer planData, @NotNull DBCPlan plan) throws IOException;
-    
+
     DBCPlan deserialize(@NotNull Reader planData) throws IOException;
 }

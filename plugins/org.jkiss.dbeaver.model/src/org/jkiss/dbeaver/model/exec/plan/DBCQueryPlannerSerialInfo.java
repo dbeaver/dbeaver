@@ -1,5 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +21,9 @@ package org.jkiss.dbeaver.model.exec.plan;
 import com.google.gson.JsonObject;
 
 public interface DBCQueryPlannerSerialInfo {
-	
-	public String version();
-	
-	public void addNodeProperties(DBCPlanNode node,JsonObject nodeJson);
+
+    public String version();
+
+    public void addNodeProperties(DBCPlanNode node,JsonObject nodeJson);
 
 }
