@@ -1679,7 +1679,7 @@ public class UIUtils {
             varsTip.append("\t").append(GeneralUtils.variablePattern(var));
         }
         varsTip.append("."); //$NON-NLS-1$
-        control.setToolTipText(toolTip + UIMessages.pref_page_connections_tool_tip_text_allowed_variables + varsTip);
+        control.setToolTipText(toolTip + ". " + UIMessages.pref_page_connections_tool_tip_text_allowed_variables + ":\n" + varsTip);
 
     }
 
