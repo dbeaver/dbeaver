@@ -80,12 +80,12 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
     }
 
 
-    protected JsonElement serializeJson(DBCPlan plan,DBCQueryPlannerSerialInfo info) {
+    protected JsonElement serializeJson(DBCPlan plan,String signature,DBCQueryPlannerSerialInfo info) {
 
         JsonObject root = new JsonObject();
 
         root.add(PROP_VERSION, new JsonPrimitive(info.version()));
-        root.add(PROP_SIGNATURE,  new JsonPrimitive(this.getClass().getName()));
+        root.add(PROP_SIGNATURE,  new JsonPrimitive(signature));
         root.add(PROP_DATE, new JsonPrimitive(LocalDateTime.now().toString()));
         root.add(PROP_SQL, new JsonPrimitive(plan.getQueryString()));
 
