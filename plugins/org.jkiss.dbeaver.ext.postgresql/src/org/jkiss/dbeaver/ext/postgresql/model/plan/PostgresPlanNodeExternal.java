@@ -31,30 +31,29 @@ import com.google.gson.JsonObject;
 
 public class PostgresPlanNodeExternal extends PostgrePlanNodeBase<PostgresPlanNodeExternal>{
 
-	private PostgresPlanNodeExternal(PostgreDataSource dataSource, PostgresPlanNodeExternal parent) {
-		super(dataSource, parent);
-	}
-    
-	
-	protected PostgresPlanNodeExternal(PostgreDataSource dataSource,JsonObject data,PostgresPlanNodeExternal parent) {		
-		super(dataSource, parent);
-		
-		Map<String, String> attributes = new HashMap<String, String>(); 
-		JsonArray attrs =  data.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
-		
-		attributes.put(PostgrePlanNodeBase.ATTR_NODE_TYPE, data.get(AbstractExecutionPlanSerializer.PROP_TYPE).getAsString());
-		
-		for(JsonElement attr : attrs) {
-			Object[] props =   attr.getAsJsonObject().entrySet().toArray();
-			if (props.length > 0) {
-				Entry<String, JsonElement> p = (Entry<String, JsonElement>) props[0];
-				attributes.put(p.getKey(), p.getValue().getAsString());
-			}
-			
-		}
-		
-		setAttributes(attributes);
-	}
-	
+    private PostgresPlanNodeExternal(PostgreDataSource dataSource, PostgresPlanNodeExternal parent) {
+        super(dataSource, parent);
+    }
+
+    protected PostgresPlanNodeExternal(PostgreDataSource dataSource,JsonObject data,PostgresPlanNodeExternal parent) {		
+        super(dataSource, parent);
+
+        Map<String, String> attributes = new HashMap<String, String>(); 
+        JsonArray attrs =  data.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+
+        attributes.put(PostgrePlanNodeBase.ATTR_NODE_TYPE, data.get(AbstractExecutionPlanSerializer.PROP_TYPE).getAsString());
+
+        for(JsonElement attr : attrs) {
+            Object[] props =   attr.getAsJsonObject().entrySet().toArray();
+            if (props.length > 0) {
+                Entry<String, JsonElement> p = (Entry<String, JsonElement>) props[0];
+                attributes.put(p.getKey(), p.getValue().getAsString());
+            }
+
+        }
+
+        setAttributes(attributes);
+    }
+
 
 }
