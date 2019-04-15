@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.gis.view;
 
+import com.vividsolutions.jts.geom.Geometry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
@@ -24,6 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.gis.GisAttribute;
+import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -69,7 +72,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 if (DBUtils.isNullValue(value)) {
                     control.setUrl("about:blank");
                 } else {
-                    File file = generateViewScript(value);
+                    File file = generateViewScript(new Object[] { value } );
                     control.setUrl(file.toURI().toURL().toString());
                 }
                 // "file://C:\\devel\\my\\dbeaver\\plugins\\org.jkiss.dbeaver.data.gis.view\\docs\\leaflet.html "
@@ -80,13 +83,46 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         lastValue = value;
     }
 
-    private File generateViewScript(Object value) throws IOException {
+    private File generateViewScript(Object[] values) throws IOException {
         if (scriptFile == null) {
             File tempDir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gis-viewer-files");
             checkIncludesExistence(tempDir);
 
             scriptFile = File.createTempFile("view", "gis.html", tempDir);
         }
+        int baseSRID = 0;
+        String[] geomValues = new String[values.length];
+        String[] geomSRIDs = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            Object value = values[i];
+            geomValues[i] = "'" + value + "'";
+            if (value instanceof Geometry) {
+                int srid = ((Geometry) value).getSRID();
+                if (srid == 0) {
+                    srid = GisConstants.DEFAULT_SRID;
+                } else {
+                    baseSRID = srid;
+                }
+                geomSRIDs[i] = String.valueOf(srid);
+            } else {
+                geomSRIDs[i] = "";
+            }
+        }
+        if (baseSRID == 0) {
+            if (valueController.getValueType() instanceof GisAttribute) {
+                try {
+                    baseSRID = ((GisAttribute) valueController.getValueType()).getAttributeGeometrySRID(new VoidProgressMonitor());
+                } catch (DBCException e) {
+                    log.error(e);
+                }
+            }
+        }
+        if (baseSRID == 0) {
+            baseSRID = GisConstants.DEFAULT_SRID;
+        }
+        int defaultSRID = baseSRID;
+        String geomValuesString = String.join(",", geomValues);
+        String geomSRIDsString = String.join(",", geomSRIDs);
 
         InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.VIEW_TEMPLATE_PATH);
         if (fis == null) {
@@ -95,8 +131,12 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         try (InputStreamReader isr = new InputStreamReader(fis)) {
             String viewTemplate = IOUtils.readToString(isr);
             viewTemplate = GeneralUtils.replaceVariables(viewTemplate, name -> {
-                if (name.equals("geomValue")) {
-                    return value.toString();
+                if (name.equals("geomValues")) {
+                    return geomValuesString;
+                } else if (name.equals("geomSRIDs")) {
+                    return geomSRIDsString;
+                } else if (name.equals("baseSRID")) {
+                    return String.valueOf(defaultSRID);
                 }
                 return null;
             });

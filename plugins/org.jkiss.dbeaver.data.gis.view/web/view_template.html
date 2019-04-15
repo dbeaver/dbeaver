@@ -47,10 +47,21 @@
         });
         vectorLayer.addTo(mymap);
 
-        var polyTest = wkx.Geometry.parse('${geomValue}');
-        var geoJSON = polyTest.toGeoJSON();
-        var SRID = geoJSON.selectedSRID;
-        vectorLayer.addData(geoJSON);
+        var baseSRID = ${baseSRID};
+        var sourceValues = [ ${geomValues} ];
+        var sourceSRIDs = [ ${geomSRIDs} ];
+
+        for (i = 0; i < sourceValues.length; i++) {
+            var geomValue = sourceValues[i];
+            var geomSRID = sourceSRIDs[i];
+
+            var polyTest = wkx.Geometry.parse(geomValue);
+            var geoJSON = polyTest.toGeoJSON();
+            if (geomSRID != '') {
+                geoJSON.selectedSRID = geomSRID;
+            }
+            vectorLayer.addData(geoJSON);
+        }
 
         var bounds = vectorLayer.getBounds();
         mymap.fitBounds(bounds);
