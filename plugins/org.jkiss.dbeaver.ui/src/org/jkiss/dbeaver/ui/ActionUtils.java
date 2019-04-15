@@ -46,6 +46,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Action utils
@@ -209,6 +210,12 @@ public class ActionUtils
     @Nullable
     public static String findCommandDescription(String commandId, IServiceLocator serviceLocator, boolean shortcutOnly)
     {
+        return findCommandDescription(commandId, serviceLocator, shortcutOnly, null, null);
+    }
+
+    @Nullable
+    public static String findCommandDescription(String commandId, IServiceLocator serviceLocator, boolean shortcutOnly, String paramName, String paramValue)
+    {
         String commandName = null;
         String shortcut = null;
         ICommandService commandService = serviceLocator.getService(ICommandService.class);
@@ -228,7 +235,14 @@ public class ActionUtils
             for (Binding b : bindingService.getBindings()) {
                 ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
                 if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
+                    if (paramName != null) {
+                        Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
+                        if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
+                            continue;
+                        }
+                    }
                     sequence = b.getTriggerSequence();
+                    break;
                 }
             }
             if (sequence == null) {
@@ -239,7 +253,7 @@ public class ActionUtils
             }
         }
         if (shortcutOnly) {
-            return shortcut == null ? "?" : shortcut;
+            return shortcut == null ? "" : shortcut;
         }
         if (shortcut == null) {
             return commandName;

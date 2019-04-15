@@ -703,17 +703,24 @@ public class ResultSetViewer extends Viewer
 
             if (!availablePanels.isEmpty()) {
                 VerticalButton panelsButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
-                panelsButton.setText(ResultSetMessages.controls_resultset_config_panels);
-                panelsButton.setImage(DBeaverIcons.getImage(UIIcon.PANEL_CUSTOMIZE));
-                panelsButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        showPanels(!isPanelsVisible(), true, true);
-                        panelsButton.setChecked(isPanelsVisible());
-                        updatePanelsButtons();
+                {
+                    panelsButton.setText(ResultSetMessages.controls_resultset_config_panels);
+                    panelsButton.setImage(DBeaverIcons.getImage(UIIcon.PANEL_CUSTOMIZE));
+                    panelsButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            showPanels(!isPanelsVisible(), true, true);
+                            panelsButton.setChecked(isPanelsVisible());
+                            updatePanelsButtons();
+                        }
+                    });
+                    String toolTip = ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_TOGGLE_PANELS, getSite(), false);
+                    if (!CommonUtils.isEmpty(toolTip)) {
+                        panelsButton.setToolTipText(toolTip);
                     }
-                });
-                panelsButton.setChecked(panelsVisible);
+                    panelsButton.setChecked(panelsVisible);
+                }
+
                 // Add all panels
                 for (final ResultSetPanelDescriptor panel : availablePanels) {
                     VerticalButton panelButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
@@ -724,6 +731,13 @@ public class ResultSetViewer extends Viewer
                     panelButton.setData(panel);
                     panelButton.setImage(DBeaverIcons.getImage(panel.getIcon()));
                     panelButton.setToolTipText(panel.getLabel());
+                    String toolTip = ActionUtils.findCommandDescription(
+                        ResultSetHandlerTogglePanel.CMD_TOGGLE_PANEL, getSite(), true,
+                        ResultSetHandlerTogglePanel.PARAM_PANEL_ID, panel.getId());
+                    if (!CommonUtils.isEmpty(toolTip)) {
+                        panelButton.setToolTipText(panel.getLabel() + " (" + toolTip + ")");
+                    }
+
                     panelButton.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -4252,6 +4266,10 @@ public class ResultSetViewer extends Viewer
 
         ToggleModeAction() {
             super(ResultSetMessages.dialog_text_check_box_record, Action.AS_CHECK_BOX);
+            String toolTip = ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_TOGGLE_MODE, getSite(), false);
+            if (!CommonUtils.isEmpty(toolTip)) {
+                setToolTipText(toolTip);
+            }
         }
 
         @Override
