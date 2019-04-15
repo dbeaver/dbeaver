@@ -34,6 +34,7 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
     private final ObjectType type;
     private final String id;
     private final String label;
+    private final String description;
     private final DBPImage icon;
     private boolean supportsInline;
 
@@ -42,6 +43,7 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
         this.type = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.supportsInline = CommonUtils.getBoolean(config.getAttribute("supportsInline"), false);
     }
@@ -52,6 +54,10 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
 
     public String getLabel() {
         return label;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public DBPImage getIcon() {
@@ -69,4 +75,5 @@ public class GeometryViewerDescriptor extends AbstractDescriptor {
     public boolean supportsInlineView() {
         return supportsInline;
     }
+
 }
