@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeComplex;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -32,14 +32,16 @@ import org.jkiss.utils.IntKeyMap;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Oracle execution plan node
  */
-public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
+public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBCPlanNodeComplex<OraclePlanNode> {
 
     public final static String CAT_DETAILS = "Details";
 
@@ -82,7 +84,97 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     private String otherXml;
 
     private OraclePlanNode parent;
-    private List<OraclePlanNode> nested;
+    protected List<OraclePlanNode> nested;
+
+    private String aGetString(Map<String,String> attributes,String name) {
+        return attributes.containsKey(name) ? attributes.get(name).toString() : "";
+    }
+
+    private long aGetLong(Map<String,String> attributes,String name) {
+        if (attributes.containsKey(name)) {
+            try {
+                return Long.parseLong(attributes.get(name));
+            } catch (Exception e) {
+                return 0L;
+            }  		
+        } else {
+            return 0L;
+        }
+    }
+
+    private Timestamp aGetTimestamp(Map<String,String> attributes,String name) {
+        if (attributes.containsKey(name)) {
+            try {
+                Long inst =  Long.parseLong(attributes.get(name));
+                return Timestamp.from(Instant.ofEpochMilli(inst));
+            } catch (Exception e) {
+                return new Timestamp(0);
+            }  		
+        } else {
+            return new Timestamp(0);
+        }
+    }
+
+    private int aGetInt(Map<String,String> attributes,String name) {
+        if (attributes.containsKey(name)) {
+            try {
+                return Integer.parseInt(attributes.get(name));
+            } catch (Exception e) {
+                return 0;
+            }  		
+        } else {
+            return 0;
+        }
+    }
+
+    public OraclePlanNode(OracleDataSource dataSource, IntKeyMap<OraclePlanNode> prevNodes, Map<String,String> attributes) {
+        this.dataSource = dataSource;
+
+        this.statementId = aGetString(attributes,"statement_id");
+        this.plan_id = aGetLong(attributes,"plan_id");
+        this.timestamp = aGetTimestamp(attributes, "timestamp");
+        this.remarks = aGetString(attributes,"remarks");
+        this.operation = aGetString(attributes,"operation");
+        this.options = aGetString(attributes,"options");
+        this.objectNode = aGetString(attributes,"object_node");
+        this.objectOwner = aGetString(attributes,"object_owner");
+        this.objectName = aGetString(attributes,"object_name");
+        this.objectAlias = aGetString(attributes,"object_alias");
+        this.objectInstance = aGetLong(attributes,"object_instance");
+        this.objectType = aGetString(attributes,"object_type");
+        this.optimizer = aGetString(attributes,"optimizer");
+        this.searchColumns = aGetLong(attributes,"search_columns");
+        this.id = aGetInt(attributes, "id");
+        this.depth = aGetInt(attributes,"depth");
+        this.position =  aGetInt(attributes,"position");
+        this.cost = aGetLong(attributes,"cost");
+        this.cardinality = aGetLong(attributes,"cardinality");
+        this.bytes = aGetLong(attributes,"bytes");
+        this.otherTag = aGetString(attributes,"other_tag");
+        this.partitionStart = aGetString(attributes,"partition_start");
+        this.partitionStop = aGetString(attributes,"partition_stop");
+        this.partitionId = aGetLong(attributes,"partition_id");
+        this.other = aGetString(attributes,"other");
+        this.distribution = aGetString(attributes,"distribution");
+        this.cpuCost = aGetLong(attributes,"cpu_cost");
+        this.ioCost = aGetLong(attributes,"io_cost");
+        this.tempSpace = aGetLong(attributes,"temp_space");
+        this.accessPredicates = aGetString(attributes,"access_predicates");
+        this.filterPredicates = aGetString(attributes,"filter_predicates");
+        this.projection = aGetString(attributes,"projection");
+        this.time = aGetLong(attributes,"time");
+        this.qblockName = aGetString(attributes,"qblock_name");
+        this.otherXml = aGetString(attributes,"other_xml");
+
+        Integer parent_id =  aGetInt(attributes,"parent_id");
+
+        if (parent_id != null) {
+            parent = prevNodes.get(parent_id);
+        }
+        if (parent != null) {
+            parent.addChild(this);
+        }
+    }
 
     public OraclePlanNode(OracleDataSource dataSource, IntKeyMap<OraclePlanNode> prevNodes, ResultSet dbResult) throws SQLException {
         this.dataSource = dataSource;
@@ -133,7 +225,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
 
     private void addChild(OraclePlanNode node) {
         if (this.nested == null) {
-            this.nested = new ArrayList<>();
+            createNested();
         }
         this.nested.add(node);
     }
@@ -188,11 +280,11 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     }
 
     //@Property(name = "Owner", order = 4, viewable = true, description = "Object owner (schema)")
-//    public Object getObjectOwner()
-//    {
-//        final OracleSchema schema = dataSource.schemaCache.getCachedObject(objectOwner);
-//        return schema == null ? objectOwner : schema;
-//    }
+    //    public Object getObjectOwner()
+    //    {
+    //        final OracleSchema schema = dataSource.schemaCache.getCachedObject(objectOwner);
+    //        return schema == null ? objectOwner : schema;
+    //    }
 
     @Property(order = 5, viewable = true, supportsPreview = true)
     public Object getObject(DBRProgressMonitor monitor) throws DBException {
@@ -225,12 +317,12 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
         String name = divPos == -1 ? objectName : objectName.substring(0, divPos);
 
         return OracleObjectType.resolveObject(
-            monitor,
-            dataSource,
-            objectNode,
-            objectTypeName,
-            objectOwner,
-            name.trim());
+                monitor,
+                dataSource,
+                objectNode,
+                objectTypeName,
+                objectOwner,
+                name.trim());
     }
 
     //@Property(name = "Alias", order = 6, viewable = true, description = "Object alias")
@@ -343,6 +435,70 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
         return cardinality;
     }
 
+    public String getStatementId() {
+        return statementId;
+    }
+
+    public long getPlanId() {
+        return plan_id;
+    }
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public String getObjectNode() {
+        return objectNode;
+    }
+
+    public String getObjectOwner() {
+        return objectOwner;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    public String getObjectAlias() {
+        return objectAlias;
+    }
+
+    public long getObjectInstance() {
+        return objectInstance;
+    }
+
+    public long getSearchColumns() {
+        return searchColumns;
+    }
+
+    public int getParentId() {
+        return parentId;
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public String getOtherTag() {
+        return otherTag;
+    }
+
+    public String getOther() {
+        return other;
+    }
+
+    public String getOtherXml() {
+        return otherXml;
+    }
+
     public void updateCosts() {
         if (nested != null) {
             for (OraclePlanNode child : nested) {
@@ -355,6 +511,12 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
                 this.cpuCost += child.cpuCost;
             }
         }
+    }
+
+    @Override
+    public void createNested() {
+        this.nested = new ArrayList<>();
+       
     }
 
 }

@@ -16,21 +16,37 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Map;
+
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PostgreQueryPlaner
  */
-public class PostgreQueryPlaner implements DBCQueryPlanner
+public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implements DBCQueryPlanner 
 {
     private final PostgreDataSource dataSource;
+
+    public final static String FORMAT_VERSION = "1";
 
     public PostgreQueryPlaner(PostgreDataSource dataSource) {
         this.dataSource = dataSource;
@@ -45,9 +61,9 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
     @Override
     public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
         PostgrePlanAnalyser plan = new PostgrePlanAnalyser(
-            getPlanStyle() == DBCPlanStyle.QUERY,
-            dataSource.getServerType().supportsExplainPlanVerbose(),
-            query);
+                getPlanStyle() == DBCPlanStyle.QUERY,
+                dataSource.getServerType().supportsExplainPlanVerbose(),
+                query);
         plan.explain(session);
         return plan;
     }
@@ -57,4 +73,44 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
     public DBCPlanStyle getPlanStyle() {
         return dataSource.getServerType().supportsExplainPlanXML() ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
     }
+
+    @Override
+    public void serialize(Writer planData, DBCPlan plan) throws IOException {
+        JsonElement e = serializeJson(plan, new DBCQueryPlannerSerialInfo() {
+
+            @Override
+            public String version() {
+                return FORMAT_VERSION;
+            }
+
+            @Override
+            public void addNodeProperties(DBCPlanNode node, JsonObject nodeJson) {
+
+                JsonArray attributes = new JsonArray();
+                if (node instanceof PostgrePlanNodeBase) {
+                    PostgrePlanNodeBase<?> pgNode = (PostgrePlanNodeBase<?>) node;
+                    for(Object attrVal : pgNode.attributes.entrySet()) {
+                        Map.Entry<String, String>  e = (Map.Entry<String, String>) attrVal;
+                        JsonObject attr = new JsonObject();
+                        attr.add((String) e.getKey(), new JsonPrimitive(CommonUtils.notEmpty((String) e.getValue())));
+                        attributes.add(attr);
+                    }
+                }
+                nodeJson.add(PROP_ATTRIBUTES, attributes);
+
+            }
+        });
+
+        planData.write(e.toString());
+
+    }
+
+    @Override
+    public DBCPlan deserialize(Reader planData) throws IOException {
+        PostgresPlanLoader plan = new PostgresPlanLoader();
+        plan.deserialize(dataSource, planData);
+        return plan;
+    }
+
+
 }
