@@ -740,7 +740,9 @@ public class CoreMessages extends NLS {
 
     public static String viewer_details_item_details;
     public static String viewer_details_item_session_details;
-    public static String viewer_sql_plan_item_execution_plan;
+    public static String viewer_selector_control_text_classic;
+	public static String viewer_selector_control_text_gallery;
+	public static String viewer_sql_plan_item_execution_plan;
     public static String viewer_view_item_sql;
 
     static {
