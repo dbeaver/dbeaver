@@ -75,6 +75,7 @@ public class SQLEditorPropertyTester extends PropertyTester
                     selection != null &&
                         document != null &&
                         !new SQLIdentifierDetector(
+                            editor.getSyntaxManager().getDialect(),
                             editor.getSyntaxManager().getStructSeparator(),
                             editor.getSyntaxManager().getQuoteStrings())
                             .detectIdentifier(document, new Region(selection.getOffset(), selection.getLength())).isEmpty();

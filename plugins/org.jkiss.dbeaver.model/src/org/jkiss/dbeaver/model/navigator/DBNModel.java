@@ -70,18 +70,28 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     private final DBPPlatform platform;
+    private final boolean global;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
     private final transient List<DBNEvent> eventCache = new ArrayList<>();
     private final Map<DBSObject, Object> nodeMap = new HashMap<>();
 
-    public DBNModel(DBPPlatform platform) {
+    /**
+     * Creates navigator model.
+     * @param global Global navigator. If set to false then it won't register resource listeners and won't raise navigator events.
+     */
+    public DBNModel(DBPPlatform platform, boolean global) {
         this.platform = platform;
+        this.global = global;
     }
 
     public DBPPlatform getPlatform() {
         return platform;
+    }
+
+    public boolean isGlobal() {
+        return global;
     }
 
     public void initialize()
@@ -91,19 +101,24 @@ public class DBNModel implements IResourceChangeListener {
         }
         this.root = new DBNRoot(this);
 
-        // Add all existing projects to root node
-        for (IProject project : platform.getLiveProjects()) {
-            root.addProject(project, false);
+        if (global) {
+            // Add all existing projects to root node
+            for (IProject project : platform.getLiveProjects()) {
+                root.addProject(project, false);
+            }
+
+            platform.getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
+
+            new EventProcessingJob().schedule();
         }
-
-        platform.getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
-
-        new EventProcessingJob().schedule();
     }
 
     public void dispose()
     {
-        platform.getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
+        if (global) {
+            platform.getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
+        }
+
         this.root.dispose(false);
         synchronized (nodeMap) {
             this.nodeMap.clear();
@@ -516,7 +531,7 @@ public class DBNModel implements IResourceChangeListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
-        if (platform.isShuttingDown()) {
+        if (!global || platform.isShuttingDown()) {
             return;
         }
         synchronized (eventCache) {

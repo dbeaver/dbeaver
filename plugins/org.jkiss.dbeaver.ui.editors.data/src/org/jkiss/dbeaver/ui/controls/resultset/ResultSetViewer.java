@@ -1139,8 +1139,7 @@ public class ResultSetViewer extends Viewer
         return items;
     }
 
-    MenuManager fillOpenWithMenu() {
-        MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
+    void fillOpenWithMenu(ContributionManager openWithMenu) {
 
         ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
         ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
@@ -1173,8 +1172,42 @@ public class ResultSetViewer extends Viewer
             params.parameters = parameters;
             openWithMenu.add(new CommandContributionItem(params));
         }
+    }
 
-        return openWithMenu;
+    void fillCopyAsMenu(ContributionManager copyAsMenu) {
+
+        ResultSetDataContainerOptions options = new ResultSetDataContainerOptions();
+        ResultSetDataContainer dataContainer = new ResultSetDataContainer(getDataContainer(), getModel(), options);
+
+        List<DataTransferProcessorDescriptor> appProcessors = new ArrayList<>();
+
+        for (final DataTransferNodeDescriptor consumerNode : DataTransferRegistry.getInstance().getAvailableConsumers(Collections.singleton(dataContainer))) {
+            for (DataTransferProcessorDescriptor processor : consumerNode.getProcessors()) {
+                if (processor.isBinaryFormat()) {
+                    continue;
+                }
+                appProcessors.add(processor);
+            }
+        }
+
+        appProcessors.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));
+
+        for (DataTransferProcessorDescriptor processor : appProcessors) {
+            CommandContributionItemParameter params = new CommandContributionItemParameter(
+                site,
+                processor.getId(),
+                ResultSetHandlerCopyAs.CMD_COPY_AS,
+                CommandContributionItem.STYLE_PUSH
+            );
+            params.label = processor.getName();
+            if (processor.getIcon() != null) {
+                params.icon = DBeaverIcons.getImageDescriptor(processor.getIcon());
+            }
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put(ResultSetHandlerCopyAs.PARAM_PROCESSOR_ID, processor.getFullId());
+            params.parameters = parameters;
+            copyAsMenu.add(new CommandContributionItem(params));
+        }
     }
 
     private void addDefaultPanelActions() {
@@ -2034,13 +2067,23 @@ public class ResultSetViewer extends Viewer
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
 
-                MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
-                if (row != null) {
-                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
+                {
+                    MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
+                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
+                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
+                    if (row != null) {
+                        extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
+                    }
+
+                    // Add copy commands for different formats
+                    extCopyMenu.add(new Separator());
+                    fillCopyAsMenu(extCopyMenu);
+                    extCopyMenu.add(new Separator());
+                    extCopyMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT,
+                        ActionUtils.findCommandName(ResultSetHandlerCopyAs.CMD_COPY_AS) + " ...", null));
+
+                    manager.add(extCopyMenu);
                 }
-                manager.add(extCopyMenu);
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
                 manager.add(ActionUtils.makeCommandContribution(site, IActionConstants.CMD_PASTE_SPECIAL));
                 manager.add(new Separator());
@@ -2259,7 +2302,9 @@ public class ResultSetViewer extends Viewer
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && model.hasData()) {
             manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
-            manager.add(fillOpenWithMenu());
+            MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));
+            fillOpenWithMenu(openWithMenu);
+            manager.add(openWithMenu);
         }
         manager.add(new GroupMarker("results_export"));
         manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));

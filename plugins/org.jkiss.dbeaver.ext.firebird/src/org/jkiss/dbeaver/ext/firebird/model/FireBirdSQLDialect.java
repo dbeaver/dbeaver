@@ -62,8 +62,8 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     }
 
     @Override
-    public boolean validIdentifierPart(char c) {
-        return super.validIdentifierPart(c) || c == '$';
+    public boolean validIdentifierPart(char c, boolean quoted) {
+        return super.validIdentifierPart(c, quoted) || c == '$';
     }
 
     @Override

@@ -41,4 +41,9 @@ class EclipseApplication implements DBPApplication {
     public String getInfoDetails() {
         return null;
     }
+
+    @Override
+    public String getDefaultProjectName() {
+        return "DBeaver";
+    }
 }
