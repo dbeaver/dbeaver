@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.gis;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -30,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -72,7 +70,13 @@ public class GeometryPanelEditor extends BaseValueEditor<Control> {
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
-        manager.add(new ViewerSwitchAction());
+        for (GeometryViewerDescriptor vd : GeometryViewerRegistry.getInstance().getViewers()) {
+            Action switchAction = new ViewerSetAction(vd);
+            manager.add(ActionUtils.makeActionContribution(switchAction, true));
+            manager.add(new Separator());
+        }
+        manager.add(new Separator());
+        //manager.add(new ViewerSwitchAction());
         if (curViewer != null) {
             curViewer.contributeActions(manager, controller);
         }
@@ -196,4 +200,32 @@ public class GeometryPanelEditor extends BaseValueEditor<Control> {
         }
     }
 
+    private class ViewerSetAction extends Action {
+        private GeometryViewerDescriptor viewerDescriptor;
+
+        ViewerSetAction(GeometryViewerDescriptor vd) {
+            super(vd.getLabel(), Action.AS_RADIO_BUTTON);
+            viewerDescriptor = vd;
+            setToolTipText(viewerDescriptor.getDescription());
+            if (viewerDescriptor.getIcon() != null) {
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(viewerDescriptor.getIcon()));
+            }
+
+        }
+
+        @Override
+        public boolean isChecked() {
+            String viewerId = valueController.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(PROP_VIEWER_ID);
+            if (CommonUtils.isEmpty(viewerId)) {
+                viewerId = DEFAULT_VIEWER_ID;
+            }
+            return viewerDescriptor.getId().equals(viewerId);
+        }
+
+        @Override
+        public void run() {
+            setViewer(viewerDescriptor);
+            valueController.refreshEditor();
+        }
+    }
 }
