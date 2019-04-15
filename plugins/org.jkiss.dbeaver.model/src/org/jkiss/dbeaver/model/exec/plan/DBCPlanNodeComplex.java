@@ -18,13 +18,10 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
+import java.util.Collection;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 
-import com.google.gson.JsonObject;
-
-public interface DBCQueryPlannerDeSerialInfo<NODE extends DBCPlanNode> {
-    
-    public NODE createNode(DBPDataSource datasource,JsonObject node, NODE parent);
-     
+public interface DBCPlanNodeComplex <NODE extends DBCPlanNode> {
+   Collection<NODE> getNested();
+   void createNested();
 }

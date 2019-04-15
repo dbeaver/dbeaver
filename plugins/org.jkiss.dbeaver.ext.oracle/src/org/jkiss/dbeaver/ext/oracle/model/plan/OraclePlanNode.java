@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeComplex;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -40,7 +41,7 @@ import java.util.Map;
 /**
  * Oracle execution plan node
  */
-public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
+public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBCPlanNodeComplex<OraclePlanNode> {
 
     public final static String CAT_DETAILS = "Details";
 
@@ -224,7 +225,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
 
     private void addChild(OraclePlanNode node) {
         if (this.nested == null) {
-            this.nested = new ArrayList<>();
+            createNested();
         }
         this.nested.add(node);
     }
@@ -510,6 +511,12 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
                 this.cpuCost += child.cpuCost;
             }
         }
+    }
+
+    @Override
+    public void createNested() {
+        this.nested = new ArrayList<>();
+       
     }
 
 }

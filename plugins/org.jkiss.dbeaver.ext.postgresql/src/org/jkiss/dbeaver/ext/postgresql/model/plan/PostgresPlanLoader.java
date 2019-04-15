@@ -87,17 +87,7 @@ public class PostgresPlanLoader extends AbstractExecutionPlan   {
                     PostgresPlanNodeExternal parent) {
                 return new PostgresPlanNodeExternal((PostgreDataSource) datasource, node, parent);
             }
-            
-            @Override
-            public boolean addNested(PostgresPlanNodeExternal parent, PostgresPlanNodeExternal node) {
-                if (parent.nested == null) {
-                    parent.nested = new ArrayList<>(2);
-                }
-                return parent.nested.add(node); 
-            }
-
-          
-        });
+         });
     }
 
 }
