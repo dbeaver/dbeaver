@@ -18,12 +18,13 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObjectWithLongId;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * SQLServerObject.
  * Represented in sys.objects
  */
-public interface SQLServerObject extends DBPNamedObject, DBPObjectWithLongId
+public interface SQLServerObject extends DBPNamedObject, DBSObject, DBPObjectWithLongId
 {
 
 }

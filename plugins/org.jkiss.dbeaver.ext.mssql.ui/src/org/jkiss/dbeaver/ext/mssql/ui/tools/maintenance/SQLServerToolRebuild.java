@@ -8,7 +8,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerObject;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
 import org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.TableToolDialog;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -32,8 +34,8 @@ public class SQLServerToolRebuild implements IExternalTool {
         }
 
         @Override
-        protected void generateObjectCommand(List<String> lines, SQLServerTable object) {
-            lines.add("ALTER INDEX ALL ON " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + " REBUILD ");
+        protected void generateObjectCommand(List<String> lines, SQLServerObject object) {
+            lines.add("ALTER INDEX ALL ON " + ((SQLServerTable) object).getFullyQualifiedName(DBPEvaluationContext.DDL) + " REBUILD ");
         }
 
         @Override

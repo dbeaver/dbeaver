@@ -21,25 +21,32 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
  * SQLServerTriggerBase
  */
-public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements DBSTrigger, DBSObjectWithScript, DBPQualifiedObject, DBPRefreshableObject, SQLServerObject
+public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements DBSTrigger, DBSObjectWithScript, DBPQualifiedObject, DBPRefreshableObject, SQLServerObject, DBPStatefulObject
 {
     private OWNER container;
     private String name;
     private String type;
     private String body;
+    private String enabledState;
     private long objectId;
     private boolean insteadOfTrigger;
     private boolean disabled;
@@ -56,6 +63,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.insteadOfTrigger = JDBCUtils.safeGetInt(dbResult, "is_instead_of_trigger") != 0;
         this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled") != 0;
+        this.enabledState = JDBCUtils.safeGetString(dbResult, "tgenabled");
         this.persisted = true;
     }
 
@@ -161,6 +169,24 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return body;
     }
 
+    @Override
+    public DBSObjectState getObjectState() {
+        if ("D".equals(enabledState)) {
+            return DBSObjectState.INVALID;
+        }
+        return DBSObjectState.NORMAL;
+    }
+
+    @Override
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
+            enabledState = JDBCUtils.queryString(session, "SELECT tgenabled FROM mssql_catalog.mssql_trigger WHERE object_id=?", getObjectId());
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
+
+    }
+    
     @Override
     public void setObjectDefinitionText(String sourceText) {
         this.body = sourceText;
