@@ -25,14 +25,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeComplex;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class PostgresPlanNodeExternal  extends PostgrePlanNodeBase<PostgresPlanNodeExternal> implements DBCPlanNodeComplex<PostgresPlanNodeExternal> {
+public class PostgresPlanNodeExternal  extends PostgrePlanNodeBase<PostgresPlanNodeExternal> {
 
     private PostgresPlanNodeExternal(PostgreDataSource dataSource, PostgresPlanNodeExternal parent) {
         super(dataSource, parent);
@@ -58,14 +57,6 @@ public class PostgresPlanNodeExternal  extends PostgrePlanNodeBase<PostgresPlanN
         setAttributes(attributes);
     }
 
-    @Override
-    public List<PostgresPlanNodeExternal> getNested() {
-        return nested;
-    }
 
-    @Override
-    public void createNested() {
-        nested = new ArrayList<>();
-        
-    }
+
 }
