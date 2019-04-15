@@ -111,16 +111,6 @@ public class OraclePlanLoader extends AbstractExecutionPlan{
                 allNodes.put(nodeOra.getId(), nodeOra);
                 return nodeOra;
             }
-            
-            @Override
-            public boolean addNested(OraclePlanNode parent, OraclePlanNode node) {
-                if (parent.nested == null) {
-                    parent.nested = new ArrayList<>(2);
-                }
-                return parent.nested.add(node); 
-            }
-
-          
         });
     }
 
