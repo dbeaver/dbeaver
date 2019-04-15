@@ -15,11 +15,8 @@ import org.junit.Test;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Matchers.isNull;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
+//@RunWith(PowerMockRunner.class)
 public class CommonUtilsTest {
 
   @Rule
@@ -220,6 +217,7 @@ public class CommonUtilsTest {
     Assert.assertFalse(CommonUtils.getBoolean(value, true));
   }
 
+/*
   @PrepareForTest({ CommonUtils.class, System.class })
   @Test
   public void testGetLineSeparator() {
@@ -230,6 +228,7 @@ public class CommonUtilsTest {
     PowerMockito.when(System.getProperty(or(isA(String.class), isNull(String.class)))).thenReturn(null);
     Assert.assertEquals("\n", CommonUtils.getLineSeparator());
   }
+*/
 
   @Test
   public void testGetRootCause() {

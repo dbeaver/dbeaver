@@ -112,12 +112,15 @@ public class DataTransferJob extends AbstractJob {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
             IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
-            producer.transferData(
-                monitor,
-                consumer,
-                processor,
-                nodeSettings);
-            consumer.finishTransfer(monitor, false);
+            try {
+                producer.transferData(
+                    monitor,
+                    consumer,
+                    processor,
+                    nodeSettings);
+            } finally {
+                consumer.finishTransfer(monitor, false);
+            }
             return true;
         } catch (Exception e) {
             new DataTransferErrorJob(e).schedule();

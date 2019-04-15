@@ -27,7 +27,6 @@ public class CoreMessages extends NLS {
 	public static String actions_menu_database;
 	public static String actions_menu_edit;
 	public static String actions_menu_edit_ContentFormat;
-	public static String actions_menu_exit_emergency;
 	public static String actions_menu_file;
 	public static String actions_menu_help;
 	public static String actions_menu_navigate;
@@ -463,8 +462,6 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_page_log_task_progress_log;
 	public static String tools_wizard_page_log_task_started_at;
 	
-    public static String ui_actions_exit_emergency_question;
-
 	public static String dialog_connection_edit_driver_button;
 	public static String dialog_connection_driver;
 	public static String dialog_connection_advanced_settings;
@@ -743,7 +740,9 @@ public class CoreMessages extends NLS {
 
     public static String viewer_details_item_details;
     public static String viewer_details_item_session_details;
-    public static String viewer_sql_plan_item_execution_plan;
+    public static String viewer_selector_control_text_classic;
+	public static String viewer_selector_control_text_gallery;
+	public static String viewer_sql_plan_item_execution_plan;
     public static String viewer_view_item_sql;
 
     static {

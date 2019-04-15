@@ -167,7 +167,7 @@ public final class DBUtils {
         // Check for bad characters
         if (!hasBadChars && !str.isEmpty()) {
             for (int i = 0; i < str.length(); i++) {
-                if (!sqlDialect.validIdentifierPart(str.charAt(i))) {
+                if (!sqlDialect.validIdentifierPart(str.charAt(i), false)) {
                     hasBadChars = true;
                     break;
                 }

@@ -60,10 +60,12 @@ public class DataSourceToolbarUtils
                             tbItem.setVisible(true);
                         }
                     }
-                    break;
+                    return;
                 }
             }
         }
+        // By some reason we can't locate the toolbar (#5712?). Let's just refresh elements then - its better than nothing
+        updateCommandsUI();
     }
 
     public static void updateCommandsUI() {

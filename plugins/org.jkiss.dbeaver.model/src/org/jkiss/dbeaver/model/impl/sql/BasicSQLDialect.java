@@ -298,7 +298,7 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean validIdentifierPart(char c) {
+    public boolean validIdentifierPart(char c, boolean quoted) {
         return Character.isLetter(c) || Character.isDigit(c) || c == '_';
     }
 

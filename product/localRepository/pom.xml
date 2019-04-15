@@ -57,7 +57,7 @@
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.1</id></artifact>
 								<!-- GraphQL -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:12.0.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:12.0.2</id></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 

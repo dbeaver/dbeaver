@@ -118,8 +118,22 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
     private void initRules(SQLDialect dialect)
     {
-        rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, dialect.getStringEscapeCharacter()));
-        rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, dialect.getStringEscapeCharacter()));
+        boolean hasSingleQuoteRule = false, hasDoubleQuoteRule = false;
+        String[][] quoteStrings = dialect.getIdentifierQuoteStrings();
+        for (String[] quoteString : quoteStrings) {
+            rules.add(new MultiLineRule(quoteString[0], quoteString[1], sqlQuotedToken, dialect.getStringEscapeCharacter()));
+            if (quoteString[0].equals(SQLConstants.STR_QUOTE_SINGLE) && quoteString[0].equals(quoteString[1])) {
+                hasSingleQuoteRule = true;
+            } else if (quoteString[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteString[0].equals(quoteString[1])) {
+                hasDoubleQuoteRule = true;
+            }
+        }
+        if (!hasSingleQuoteRule) {
+            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, dialect.getStringEscapeCharacter()));
+        }
+        if (!hasDoubleQuoteRule) {
+            rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, sqlQuotedToken, dialect.getStringEscapeCharacter()));
+        }
 
         // Add special case word rule.
         EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
