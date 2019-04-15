@@ -87,5 +87,6 @@ Require-Bundle: org.eclipse.equinox.security,
  org.apache.commons.jexl;visibility:=reexport,
  com.github.jsqlparser;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
+ com.google.gson,
  org.jkiss.bundle.bouncycastle;resolution:=optional
 Bundle-Localization: OSGI-INF/l10n/bundle
