@@ -53,7 +53,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> exte
 
     private PostgreDataSource dataSource;
     protected NODE parent;
-    protected List<NODE> nested;
+    protected final List<NODE> nested = new ArrayList<>();
 
     protected String nodeType;
     private String entity;

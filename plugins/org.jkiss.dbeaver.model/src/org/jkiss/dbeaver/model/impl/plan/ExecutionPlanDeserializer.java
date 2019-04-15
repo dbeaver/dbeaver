@@ -1,11 +1,11 @@
 package org.jkiss.dbeaver.model.impl.plan;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeComplex;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerDeSerialInfo;
 
 import com.google.gson.JsonArray;
@@ -27,18 +27,12 @@ public class ExecutionPlanDeserializer<NODE extends DBCPlanNode> {
         NODE node = info.createNode(dataSource, nodeObject, parent);
         JsonArray childs = nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_CHILD);
         
-        if (node instanceof DBCPlanNodeComplex<?>) {
-            DBCPlanNodeComplex<NODE> n = (DBCPlanNodeComplex<NODE>) node;
-            if (n.getNested() == null) {
-                n.createNested();
-            }
-            if (childs != null) {
-                childs.forEach((e) -> {
-                    n.getNested().add(loadNode(dataSource, e.getAsJsonObject(), node, info));
-                });
-
-            }
+        if (childs != null) {
+            childs.forEach((e) -> {
+                ((Collection<NODE>) node.getNested()).add(loadNode(dataSource, e.getAsJsonObject(), node, info));
+            });
         }
+        
         return node;
     }
 
