@@ -339,7 +339,36 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                             if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
                                 plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
                             } else {
-                                plan = planner.planQueryExecution(session, query);                                 
+                                //plan = planner.planQueryExecution(session, query);  
+                                
+                                
+                                
+                                //FIXME
+                                
+                                    if (planner instanceof DBCQueryPlannerSerializable) {
+                                         try {
+                                             
+                                            //Writer w = new FileWriter("c:\\dbeaver\\prj\\ser_plans\\"+UUID.randomUUID().toString()+".dbplan");
+                                             
+                                            //((DBCQueryPlannerSerializable) planner).serialize(w,plan);
+                                            
+                                            //w.close();
+                                            
+                                            
+                                            //POSTGRES 
+                                             Reader r = new FileReader("c:\\dbeaver\\prj\\ser_plans\\ef39ef98-d631-4a4a-8119-306078aa2eeb.dbplan ");
+                                            
+                                            // ORACLE   Reader r = new FileReader("c:\\dbeaver\\prj\\ser_plans\\0449dc9a-5481-4768-9742-60349cd87572.dbplan ");
+                                             
+                                            plan = ((DBCQueryPlannerSerializable) planner).deserialize(r);
+                                            
+                                            r.close();
+
+                                         } catch (IOException e) {
+                                            // TODO Auto-generated catch block
+                                            e.printStackTrace();
+                                        }
+                                    }
                             }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);

@@ -28,10 +28,13 @@ import java.util.Map.Entry;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerDeSerialInfo;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
 import org.jkiss.utils.IntKeyMap;
 
 import com.google.gson.JsonArray;
@@ -41,10 +44,10 @@ import com.google.gson.JsonParser;
 
 public class OraclePlanLoader extends AbstractExecutionPlan{
 
-    private static final Log log = Log.getLog(OraclePlanLoader.class);
+    //private static final Log log = Log.getLog(OraclePlanLoader.class);
 
     private String query;
-    private List<DBCPlanNode> rootNodes ; 
+    private List<OraclePlanNode> rootNodes ; 
 
     IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<>();
 
@@ -90,30 +93,35 @@ public class OraclePlanLoader extends AbstractExecutionPlan{
 
         return attributes;
     }
-
-    private OraclePlanNode loadNode(OracleDataSource dataSource,JsonObject nodeObject,OraclePlanNode parent) {
-        OraclePlanNode node = new OraclePlanNode(dataSource, allNodes, getNodeAttributes(nodeObject));
-        allNodes.put(node.getId(), node);
-        JsonArray childs = nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_CHILD);
-        if (childs != null) {
-            childs.forEach((e) -> {
-                if (node.nested == null) {
-                    node.nested = new ArrayList<>(2);
-                }
-                node.nested.add(loadNode(dataSource,e.getAsJsonObject(),node));
-            });				
-        }
-
-        return node;
-    }
-
+    
     public void deserialize(OracleDataSource dataSource, Reader planData) {
+        
         JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
-        rootNodes = new ArrayList<>(1);
+        
         query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
-        jo.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_NODES).forEach((e) -> {
-            rootNodes.add(loadNode(dataSource,e.getAsJsonObject(),null));
+        
+        ExecutionPlanDeserializer<OraclePlanNode> loader = new ExecutionPlanDeserializer<>();
+        
+        rootNodes = loader.loadRoot(dataSource, jo, new DBCQueryPlannerDeSerialInfo<OraclePlanNode>() {
+            
+            @Override
+            public OraclePlanNode createNode(DBPDataSource datasource, JsonObject node,
+                    OraclePlanNode parent) {
+                OraclePlanNode nodeOra = new OraclePlanNode(dataSource, allNodes, getNodeAttributes(node));
+                allNodes.put(nodeOra.getId(), nodeOra);
+                return nodeOra;
+            }
+            
+            @Override
+            public boolean addNested(OraclePlanNode parent, OraclePlanNode node) {
+                if (parent.nested == null) {
+                    parent.nested = new ArrayList<>(2);
+                }
+                return parent.nested.add(node); 
+            }
+
+          
         });
-        log.info(String.format("Loaded %d nodes of saved oracle plan", allNodes.size())); 
     }
+
 }

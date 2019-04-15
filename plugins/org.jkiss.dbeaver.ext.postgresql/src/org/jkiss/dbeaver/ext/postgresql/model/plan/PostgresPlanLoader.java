@@ -26,22 +26,24 @@ import java.util.Map;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerDeSerialInfo;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class PostgresPlanLoader extends AbstractExecutionPlan {
+public class PostgresPlanLoader extends AbstractExecutionPlan   {
 
-    private static final Log log = Log.getLog(PostgresPlanLoader.class);
+    //private static final Log log = Log.getLog(PostgresPlanLoader.class);
 
     private String query;
-    private int loadedNodes;
-    private List<DBCPlanNode> rootNodes ; 
+    private List<PostgresPlanNodeExternal> rootNodes ; 
 
     @Override
     public String getQueryString() {
@@ -68,30 +70,34 @@ public class PostgresPlanLoader extends AbstractExecutionPlan {
         }
         return super.getPlanFeature(feature);
     }
-
-    private PostgresPlanNodeExternal loadNode(PostgreDataSource dataSource,JsonObject nodeObject,PostgresPlanNodeExternal parent) {
-        PostgresPlanNodeExternal node = new PostgresPlanNodeExternal(dataSource, nodeObject, parent);
-        JsonArray childs = nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_CHILD);
-        if (childs != null) {
-            childs.forEach((e) -> {
-                if (node.nested == null) {
-                    node.nested = new ArrayList<>(2);
-                }
-                node.nested.add(loadNode(dataSource,e.getAsJsonObject(),node));
-            });				
-        }
-        loadedNodes++;
-        return node;
-    }
+ 
 
     public void deserialize(PostgreDataSource dataSource, Reader planData) {
+        
         JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
-        rootNodes = new ArrayList<>(1);
+        
         query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
-        jo.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_NODES).forEach((e) -> {
-            rootNodes.add(loadNode(dataSource,e.getAsJsonObject(),null));
+        
+        ExecutionPlanDeserializer<PostgresPlanNodeExternal> loader = new ExecutionPlanDeserializer<>();
+        
+        rootNodes = loader.loadRoot(dataSource, jo, new DBCQueryPlannerDeSerialInfo<PostgresPlanNodeExternal>() {
+            
+            @Override
+            public PostgresPlanNodeExternal createNode(DBPDataSource datasource, JsonObject node,
+                    PostgresPlanNodeExternal parent) {
+                return new PostgresPlanNodeExternal((PostgreDataSource) datasource, node, parent);
+            }
+            
+            @Override
+            public boolean addNested(PostgresPlanNodeExternal parent, PostgresPlanNodeExternal node) {
+                if (parent.nested == null) {
+                    parent.nested = new ArrayList<>(2);
+                }
+                return parent.nested.add(node); 
+            }
+
+          
         });
-        log.info(String.format("Loaded %d nodes of saved plan", loadedNodes)); 
     }
 
 }
