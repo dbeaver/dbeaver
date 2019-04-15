@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
 import org.jkiss.dbeaver.model.exec.plan.DBCSavedQueryPlanner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -59,13 +58,7 @@ import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.UUID;
 
 /**
  * ResultSetViewer
@@ -132,9 +125,9 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                     changeActiveView(tabViewFolder.getSelection());
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(
-                            SQLEditorMessages.editors_sql_error_execution_plan_title,
-                            SQLEditorMessages.editors_sql_error_execution_plan_message,
-                            e);
+                        SQLEditorMessages.editors_sql_error_execution_plan_title,
+                        SQLEditorMessages.editors_sql_error_execution_plan_message,
+                        e);
                 }
             });
         }
@@ -243,8 +236,8 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             DBWorkbench.getPlatformUI().showError("No SQL Plan","This datasource doesn't support execution plans");
         } else {
             LoadingJob<DBCPlan> service = LoadingJob.createService(
-                    new ExplainPlanService(planner, executionContext, lastQuery.getText(), lastQueryId),
-                    planPresentationContainer.createVisualizer());
+                new ExplainPlanService(planner, executionContext, lastQuery.getText(), lastQueryId),
+                planPresentationContainer.createVisualizer());
             service.schedule();
         }
     }
@@ -331,7 +324,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
 
         @Override
         public DBCPlan evaluate(DBRProgressMonitor monitor)
-                throws InvocationTargetException {
+            throws InvocationTargetException {
             try {
                 DBUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
@@ -339,36 +332,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                             if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
                                 plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
                             } else {
-                                //plan = planner.planQueryExecution(session, query);  
-                                
-                                
-                                
-                                //FIXME
-                                
-                                    if (planner instanceof DBCQueryPlannerSerializable) {
-                                         try {
-                                             
-                                            //Writer w = new FileWriter("c:\\dbeaver\\prj\\ser_plans\\"+UUID.randomUUID().toString()+".dbplan");
-                                             
-                                            //((DBCQueryPlannerSerializable) planner).serialize(w,plan);
-                                            
-                                            //w.close();
-                                            
-                                            
-                                            //POSTGRES 
-                                             Reader r = new FileReader("c:\\dbeaver\\prj\\ser_plans\\ef39ef98-d631-4a4a-8119-306078aa2eeb.dbplan ");
-                                            
-                                            // ORACLE   Reader r = new FileReader("c:\\dbeaver\\prj\\ser_plans\\0449dc9a-5481-4768-9742-60349cd87572.dbplan ");
-                                             
-                                            plan = ((DBCQueryPlannerSerializable) planner).deserialize(r);
-                                            
-                                            r.close();
-
-                                         } catch (IOException e) {
-                                            // TODO Auto-generated catch block
-                                            e.printStackTrace();
-                                        }
-                                    }
+                                plan = planner.planQueryExecution(session, query);
                             }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
