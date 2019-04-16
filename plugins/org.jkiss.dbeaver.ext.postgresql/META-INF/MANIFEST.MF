@@ -7,7 +7,7 @@ Bundle-Release-Date: 20190422
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
- com.vividsolutions.jts;visibility:=reexport,
+ org.jkiss.bundle.gis;visibility:=reexport,
  net.sf.opencsv;visibility:=reexport,
  com.google.gson
 Bundle-ActivationPolicy: lazy
