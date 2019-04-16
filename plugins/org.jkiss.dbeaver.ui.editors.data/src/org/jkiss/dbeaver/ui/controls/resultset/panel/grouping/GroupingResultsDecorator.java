@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -73,7 +74,7 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
         }
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
         if (dialect == null || !dialect.supportsSubqueries()) {
-            return ResultSetMessages.results_decorator_grouping_is_not_supported + dataSource.getContainer().getDriver().getFullName() + "'"; //$NON-NLS-2$
+            return NLS.bind(ResultSetMessages.results_decorator_grouping_is_not_supported, dataSource.getContainer().getDriver().getFullName());
         } else {
             if (container.getGroupAttributes().isEmpty()) {
                 return ResultSetMessages.results_decorator_drag_and_drop_results_column;
