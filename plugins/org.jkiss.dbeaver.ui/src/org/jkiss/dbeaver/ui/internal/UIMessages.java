@@ -64,6 +64,9 @@ public class UIMessages extends NLS {
 
     public static String ui_properties_name;
     public static String ui_properties_value;
+    
+    public static String save_execution_plan;
+    public static String load_execution_plan;
 
     static {
         // initialize resource bundle

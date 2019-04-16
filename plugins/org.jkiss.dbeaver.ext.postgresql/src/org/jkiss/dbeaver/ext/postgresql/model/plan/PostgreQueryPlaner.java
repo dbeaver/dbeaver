@@ -25,6 +25,7 @@ import com.google.gson.JsonPrimitive;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import org.jkiss.code.NotNull;
@@ -76,7 +77,7 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
 
     @Override
     public void serialize(Writer planData, DBCPlan plan) throws IOException {
-        JsonElement e = serializeJson(plan, new DBCQueryPlannerSerialInfo() {
+        JsonElement e = serializeJson(plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
             public String version() {
@@ -106,7 +107,7 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
     }
 
     @Override
-    public DBCPlan deserialize(Reader planData) throws IOException {
+    public DBCPlan deserialize(Reader planData) throws IOException, InvocationTargetException {
         PostgresPlanLoader plan = new PostgresPlanLoader();
         plan.deserialize(dataSource, planData);
         return plan;

@@ -21,12 +21,13 @@ package org.jkiss.dbeaver.model.exec.plan;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 
 import org.jkiss.code.NotNull;
 
 public interface DBCQueryPlannerSerializable {
 
-    void serialize(@NotNull Writer planData, @NotNull DBCPlan plan) throws IOException;
+    void serialize(@NotNull Writer planData, @NotNull DBCPlan plan) throws IOException, InvocationTargetException;
 
-    DBCPlan deserialize(@NotNull Reader planData) throws IOException;
+    DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException;
 }

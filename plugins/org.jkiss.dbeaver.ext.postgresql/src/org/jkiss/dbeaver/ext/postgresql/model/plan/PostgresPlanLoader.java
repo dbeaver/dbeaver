@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -72,22 +73,30 @@ public class PostgresPlanLoader extends AbstractExecutionPlan   {
     }
  
 
-    public void deserialize(PostgreDataSource dataSource, Reader planData) {
+    public void deserialize(PostgreDataSource dataSource, Reader planData) throws InvocationTargetException{
         
-        JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
-        
-        query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
-        
-        ExecutionPlanDeserializer<PostgresPlanNodeExternal> loader = new ExecutionPlanDeserializer<>();
-        
-        rootNodes = loader.loadRoot(dataSource, jo, new DBCQueryPlannerDeSerialInfo<PostgresPlanNodeExternal>() {
+        try {
             
-            @Override
-            public PostgresPlanNodeExternal createNode(DBPDataSource datasource, JsonObject node,
-                    PostgresPlanNodeExternal parent) {
-                return new PostgresPlanNodeExternal((PostgreDataSource) datasource, node, parent);
-            }
-         });
+            JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
+            
+            query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
+            
+            ExecutionPlanDeserializer<PostgresPlanNodeExternal> loader = new ExecutionPlanDeserializer<>();
+            
+            rootNodes = loader.loadRoot(dataSource, jo, new DBCQueryPlannerDeSerialInfo<PostgresPlanNodeExternal>() {
+                
+                @Override
+                public PostgresPlanNodeExternal createNode(DBPDataSource datasource, JsonObject node,
+                        PostgresPlanNodeExternal parent) {
+                    return new PostgresPlanNodeExternal((PostgreDataSource) datasource, node, parent);
+                }
+             });
+            
+        } catch (Throwable e) {
+            throw new InvocationTargetException(e);
+        }
+        
+ 
     }
 
 }
