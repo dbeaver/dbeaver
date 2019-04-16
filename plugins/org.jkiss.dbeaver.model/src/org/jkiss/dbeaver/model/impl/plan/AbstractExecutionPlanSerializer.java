@@ -19,20 +19,16 @@
 package org.jkiss.dbeaver.model.impl.plan;
 
 
+import java.io.IOException;
 import java.io.Writer;
 import java.time.LocalDateTime;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+import com.google.gson.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
 import org.jkiss.utils.CommonUtils;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlannerSerializable{
 
@@ -53,6 +49,8 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
     public static final String PROP_NODES = "root";
 
     public static final String PROP_ATTRIBUTES = "attributes";
+
+    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private JsonElement serializeNode(DBCPlanNode node,DBCQueryPlannerSerialInfo info) {
 
@@ -80,7 +78,7 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
     }
 
 
-    protected JsonElement serializeJson(DBCPlan plan,String signature,DBCQueryPlannerSerialInfo info) {
+    protected void serializeJson(Writer writer, DBCPlan plan, String signature, DBCQueryPlannerSerialInfo info) throws IOException {
 
         JsonObject root = new JsonObject();
 
@@ -99,7 +97,7 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
 
         root.add(PROP_NODES, nodes);
 
-        return root;
+        writer.write(gson.toJson(root));
     }
 
 

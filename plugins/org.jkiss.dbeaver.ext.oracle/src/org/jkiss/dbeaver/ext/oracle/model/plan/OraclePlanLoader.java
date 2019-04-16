@@ -82,14 +82,10 @@ public class OraclePlanLoader extends AbstractExecutionPlan{
         Map<String,String> attributes = new HashMap<>(44);
 
         JsonArray attrs =  nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
-
         for(JsonElement attr : attrs) {
-            Object[] props =   attr.getAsJsonObject().entrySet().toArray();
-            if (props.length > 0) {
-                Entry<String, JsonElement> p = (Entry<String, JsonElement>) props[0];
+            for (Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
                 attributes.put(p.getKey(), p.getValue().getAsString());
             }
-
         }
 
         return attributes;
@@ -105,19 +101,14 @@ public class OraclePlanLoader extends AbstractExecutionPlan{
             
             ExecutionPlanDeserializer<OraclePlanNode> loader = new ExecutionPlanDeserializer<>();
             
-            rootNodes = loader.loadRoot(dataSource, jo, new DBCQueryPlannerDeSerialInfo<OraclePlanNode>() {
-                
-                @Override
-                public OraclePlanNode createNode(DBPDataSource datasource, JsonObject node,
-                        OraclePlanNode parent) {
-                    OraclePlanNode nodeOra = new OraclePlanNode(dataSource, allNodes, getNodeAttributes(node));
-                    allNodes.put(nodeOra.getId(), nodeOra);
-                    return nodeOra;
-                }
+            rootNodes = loader.loadRoot(dataSource, jo, (datasource, node, parent) -> {
+                OraclePlanNode nodeOra = new OraclePlanNode(dataSource, allNodes, getNodeAttributes(node));
+                allNodes.put(nodeOra.getId(), nodeOra);
+                return nodeOra;
             });
             
         } catch (Throwable e) {
-            new InvocationTargetException(e);
+            throw new InvocationTargetException(e);
         }
      }
 

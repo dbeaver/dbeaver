@@ -16,31 +16,22 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.plan;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.*;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.utils.CommonUtils;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
-import java.util.Map;
-
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
-import org.jkiss.dbeaver.model.exec.plan.DBCSavedQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
-import org.jkiss.utils.CommonUtils;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 /**
  * Oracle execution plan node
@@ -102,7 +93,7 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
 
     @Override
     public void serialize(Writer planData, DBCPlan plan) throws IOException {
-        JsonElement e = serializeJson(plan,dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
+        serializeJson(planData, plan,dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
             public String version() {
@@ -156,9 +147,6 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
 
             }
         });
-
-        planData.write(e.toString());
-
     }
 
 

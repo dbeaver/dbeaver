@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 /**
  * SQLPlanViewProviderSimple
  */
-public class SQLPlanViewProviderSimple extends SQLPlanSaveProvider implements SQLPlanViewProvider {
+public class SQLPlanViewProviderSimple extends SQLPlanSaveProvider {
 
 
     @Override
@@ -45,8 +45,9 @@ public class SQLPlanViewProviderSimple extends SQLPlanSaveProvider implements SQ
 
     @Override
     public void contributeActions(Viewer viewer, IContributionManager contributionManager, SQLQuery lastQuery, DBCPlan lastPlan) {
+        super.contributeActions(viewer, contributionManager, lastQuery, lastPlan);
+
         SQLPlanTreeViewer treeViewer = (SQLPlanTreeViewer) viewer;
-        fillSaveLoadActions(viewer, contributionManager);
         treeViewer.contributeActions(contributionManager, lastQuery, lastPlan);
     }
 
