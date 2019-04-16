@@ -18,21 +18,14 @@ package org.jkiss.dbeaver.model.gis;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
 import org.cts.CRSFactory;
-import org.cts.IllegalCoordinateException;
 import org.cts.crs.CoordinateReferenceSystem;
 import org.cts.crs.GeodeticCRS;
 import org.cts.op.CoordinateOperation;
-import org.cts.op.CoordinateOperationException;
 import org.cts.op.CoordinateOperationFactory;
-import org.cts.registry.EPSGRegistry;
-import org.cts.registry.ESRIRegistry;
-import org.cts.registry.RegistryManager;
+import org.cts.registry.*;
 import org.jkiss.dbeaver.DBException;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -46,11 +39,15 @@ public class GisUtils {
         RegistryManager registryManager = crsFactory.getRegistryManager();
         registryManager.addRegistry(new EPSGRegistry());
         registryManager.addRegistry(new ESRIRegistry());
+        registryManager.addRegistry(new IGNFRegistry());
+        registryManager.addRegistry(new Nad83Registry());
+        registryManager.addRegistry(new WorldRegistry());
     }
 
     public static Object transformGisData(Geometry jtsValue, int srcSRID, int targetSRID) throws DBException {
         try {
             //srcSRID = 3857;
+            CoordinateReferenceSystem crsDefault = crsFactory.getCRS("EPSG:3857");
             CoordinateReferenceSystem crs1 = crsFactory.getCRS("EPSG:" + srcSRID);
             CoordinateReferenceSystem crs2 = crsFactory.getCRS("EPSG:" + targetSRID);
 
