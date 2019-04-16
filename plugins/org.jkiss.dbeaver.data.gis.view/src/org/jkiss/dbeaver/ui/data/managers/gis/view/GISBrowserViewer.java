@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.gis.GisConstants;
+import org.jkiss.dbeaver.model.gis.GisUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -75,7 +76,6 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                     File file = generateViewScript(new Object[] { value } );
                     control.setUrl(file.toURI().toURL().toString());
                 }
-                // "file://C:\\devel\\my\\dbeaver\\plugins\\org.jkiss.dbeaver.data.gis.view\\docs\\leaflet.html "
             } catch (IOException e) {
                 throw new DBException("Error generating viewer script", e);
             }
@@ -95,7 +95,6 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         String[] geomSRIDs = new String[values.length];
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            geomValues[i] = "'" + value + "'";
             if (value instanceof Geometry) {
                 int srid = ((Geometry) value).getSRID();
                 if (srid == 0) {
@@ -103,10 +102,18 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 } else {
                     baseSRID = srid;
                 }
+                if (srid != GisConstants.DEFAULT_SRID) {
+                    try {
+                        value = GisUtils.transformGisData((Geometry) value, srid, GisConstants.DEFAULT_SRID);
+                    } catch (DBException e) {
+                        log.debug("Error transforming CRS", e);
+                    }
+                }
                 geomSRIDs[i] = String.valueOf(srid);
             } else {
                 geomSRIDs[i] = "";
             }
+            geomValues[i] = "'" + value + "'";
         }
         if (baseSRID == 0) {
             if (valueController.getValueType() instanceof GisAttribute) {
@@ -183,7 +190,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
 
     @Override
     public Object extractEditorValue() throws DBCException {
-        return control == null? null : control.getUrl();
+        return lastValue;
     }
 
     @Override
