@@ -18,27 +18,21 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.plan.*;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
-import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * PostgreQueryPlaner
@@ -76,8 +70,8 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
     }
 
     @Override
-    public void serialize(Writer planData, DBCPlan plan) throws IOException {
-        JsonElement e = serializeJson(plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
+    public void serialize(Writer writer, DBCPlan plan) throws IOException {
+        serializeJson(writer, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
             public String version() {
@@ -90,10 +84,9 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
                 JsonArray attributes = new JsonArray();
                 if (node instanceof PostgrePlanNodeBase) {
                     PostgrePlanNodeBase<?> pgNode = (PostgrePlanNodeBase<?>) node;
-                    for(Object attrVal : pgNode.attributes.entrySet()) {
-                        Map.Entry<String, String>  e = (Map.Entry<String, String>) attrVal;
+                    for(Map.Entry<String, String>  e : pgNode.attributes.entrySet()) {
                         JsonObject attr = new JsonObject();
-                        attr.add((String) e.getKey(), new JsonPrimitive(CommonUtils.notEmpty((String) e.getValue())));
+                        attr.add(e.getKey(), new JsonPrimitive(CommonUtils.notEmpty(e.getValue())));
                         attributes.add(attr);
                     }
                 }
@@ -101,9 +94,6 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
 
             }
         });
-
-        planData.write(e.toString());
-
     }
 
     @Override
