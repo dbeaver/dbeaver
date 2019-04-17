@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.gis.view;
+package org.jkiss.dbeaver.ui.gis.panel;
 
 import com.vividsolutions.jts.geom.Geometry;
 import org.jkiss.dbeaver.DBException;
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
-import org.jkiss.dbeaver.ui.data.managers.gis.IGeometryViewer;
+import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 
 /**
  * GisAttribute.

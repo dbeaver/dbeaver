@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.gis.registry;
+package org.jkiss.dbeaver.ui.gis.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -38,21 +38,21 @@ public class GeometryViewerRegistry {
 
     private static GeometryViewerRegistry instance = null;
 
-    private final Map<String, org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerDescriptor> viewers = new HashMap<>();
+    private final Map<String, org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor> viewers = new HashMap<>();
 
     private GeometryViewerRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
-            org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerDescriptor type = new org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerDescriptor(ext);
+            org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor type = new org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor(ext);
             viewers.put(type.getId(), type);
         }
     }
 
-    public List<org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerDescriptor> getViewers() {
+    public List<org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor> getViewers() {
         return new ArrayList<>(viewers.values());
     }
 
-    public org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerDescriptor getViewer(String id) {
+    public org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor getViewer(String id) {
         return viewers.get(id);
     }
 

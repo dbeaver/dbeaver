@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.gis;
+package org.jkiss.dbeaver.ui.gis;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
+import org.jkiss.dbeaver.ui.gis.panel.GeometryPanelEditor;
 
 /**
  * Geometry value manager

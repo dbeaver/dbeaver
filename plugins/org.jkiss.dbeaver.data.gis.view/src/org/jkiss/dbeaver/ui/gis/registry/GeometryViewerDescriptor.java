@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.gis.registry;
+package org.jkiss.dbeaver.ui.gis.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.managers.gis.IGeometryViewer;
+import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 import org.jkiss.utils.CommonUtils;
 
 public class GeometryViewerDescriptor extends AbstractDescriptor {
