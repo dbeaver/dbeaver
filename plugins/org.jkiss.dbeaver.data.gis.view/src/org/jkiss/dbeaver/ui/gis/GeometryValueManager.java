@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
-import org.jkiss.dbeaver.ui.gis.panel.GeometryPanelEditor;
+import org.jkiss.dbeaver.ui.gis.panel.GISPanelEditor;
 
 /**
  * Geometry value manager
@@ -45,7 +45,7 @@ public class GeometryValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new GeometryPanelEditor(controller);
+                return new GISPanelEditor(controller);
             case EDITOR:
                 return new DefaultValueViewDialog(controller);
             default:
