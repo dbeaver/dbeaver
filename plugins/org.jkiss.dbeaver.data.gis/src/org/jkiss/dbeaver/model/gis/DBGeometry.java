@@ -21,6 +21,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+
 /**
  * Geometry value (LOB).
  */
@@ -28,6 +30,7 @@ public class DBGeometry implements DBDValue {
 
     private Object rawValue;
     private int srid;
+    private Map<String, Object> properties;
 
     public DBGeometry() {
         this.rawValue = null;
@@ -79,8 +82,15 @@ public class DBGeometry implements DBDValue {
         return srid;
     }
 
-    public void setSrid(int srid) {
+    public void setSRID(int srid) {
         this.srid = srid;
     }
 
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
+    }
 }
