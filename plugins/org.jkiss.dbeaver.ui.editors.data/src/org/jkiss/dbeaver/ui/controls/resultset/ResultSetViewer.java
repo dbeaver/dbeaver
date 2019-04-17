@@ -269,6 +269,15 @@ public class ResultSetViewer extends Viewer
                 this.panelFolder.setMinimizeVisible(true);
                 this.panelFolder.setMRUVisible(true);
                 this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+                this.panelFolder.addListener(SWT.MouseDoubleClick, event -> {
+                    if (event.button != 1) {
+                        return;
+                    }
+                    CTabItem selectedItem = panelFolder.getItem(new Point(event.getBounds().x, event.getBounds().y));
+                    if (selectedItem != null && selectedItem == panelFolder.getSelection()) {
+                        togglePanelsMaximize();
+                    }
+                });
 
                 this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
                 ToolBar panelToolbarControl = this.panelToolBar.createControl(panelFolder);
@@ -1132,6 +1141,14 @@ public class ResultSetViewer extends Viewer
         savePresentationSettings();
     }
 
+    void togglePanelsMaximize() {
+        if (this.viewerSash.getMaximizedControl() == null) {
+            this.viewerSash.setMaximizedControl(this.panelFolder);
+        } else {
+            this.viewerSash.setMaximizedControl(null);
+        }
+    }
+
     private List<IContributionItem> fillPanelsMenu() {
         List<IContributionItem> items = new ArrayList<>();
 
@@ -1148,7 +1165,10 @@ public class ResultSetViewer extends Viewer
             items.add(new CommandContributionItem(params));
         }
         items.add(new Separator());
-        items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
+        if (viewerSash.getMaximizedControl() == null) {
+            items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
+        }
+        items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_MAXIMIZE));
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
         return items;
     }
