@@ -63,7 +63,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.insteadOfTrigger = JDBCUtils.safeGetInt(dbResult, "is_instead_of_trigger") != 0;
         this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled") != 0;
-        this.enabledState = JDBCUtils.safeGetString(dbResult, "tgenabled");
+        this.enabledState = JDBCUtils.safeGetString(dbResult, "is_disabled");
         this.persisted = true;
     }
 
@@ -120,6 +120,10 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.disabled = disabled;
     }
 
+    public String getEnabledState() {
+        return enabledState;
+    }
+    
     public String getBody()
     {
         return body;
@@ -171,7 +175,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
 
     @Override
     public DBSObjectState getObjectState() {
-        if ("D".equals(enabledState)) {
+        if ("1".equals(enabledState)) {
             return DBSObjectState.INVALID;
         }
         return DBSObjectState.NORMAL;
@@ -180,7 +184,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
-            enabledState = JDBCUtils.queryString(session, "SELECT tgenabled FROM mssql_catalog.mssql_trigger WHERE object_id=?", getObjectId());
+            enabledState = JDBCUtils.queryString(session, "SELECT is_disabled FROM sys.triggers WHERE object_id=?", getObjectId());
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
