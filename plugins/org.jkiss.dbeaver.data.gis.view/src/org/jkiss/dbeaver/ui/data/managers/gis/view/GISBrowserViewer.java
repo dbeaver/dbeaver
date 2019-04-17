@@ -27,7 +27,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.gis.GisConstants;
-import org.jkiss.dbeaver.model.gis.GisUtils;
+import org.jkiss.dbeaver.model.gis.GisTransformRequest;
+import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -92,7 +93,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         }
         int baseSRID = 0;
         String[] geomValues = new String[values.length];
-        String[] geomSRIDs = new String[values.length];
+        boolean showMap = false;
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
             if (value instanceof Geometry) {
@@ -100,18 +101,23 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 if (srid == 0) {
                     srid = GisConstants.DEFAULT_SRID;
                 } else {
-                    baseSRID = srid;
-                }
-                if (srid != GisConstants.DEFAULT_SRID) {
-                    try {
-                        value = GisUtils.transformGisData((Geometry) value, srid, GisConstants.DEFAULT_SRID);
-                    } catch (DBException e) {
-                        log.debug("Error transforming CRS", e);
+                    if (baseSRID == 0) {
+                        baseSRID = srid;
                     }
                 }
-                geomSRIDs[i] = String.valueOf(srid);
-            } else {
-                geomSRIDs[i] = "";
+                if (srid == GisConstants.DEFAULT_SRID) {
+                    showMap = true;
+                } else {
+                    try {
+                        GisTransformRequest request = new GisTransformRequest((Geometry) value, srid, GisConstants.DEFAULT_SRID);
+                        GisTransformUtils.transformGisData(request);
+                        value = request.getTargetValue();
+                        showMap = request.isShowOnMap();
+                    } catch (DBException e) {
+                        log.debug("Error transforming CRS", e);
+                        showMap = false;
+                    }
+                }
             }
             geomValues[i] = "'" + value + "'";
         }
@@ -129,7 +135,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         }
         int defaultSRID = baseSRID;
         String geomValuesString = String.join(",", geomValues);
-        String geomSRIDsString = String.join(",", geomSRIDs);
+        boolean isShowMap = showMap;
 
         InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.VIEW_TEMPLATE_PATH);
         if (fis == null) {
@@ -140,10 +146,10 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
             viewTemplate = GeneralUtils.replaceVariables(viewTemplate, name -> {
                 if (name.equals("geomValues")) {
                     return geomValuesString;
-                } else if (name.equals("geomSRIDs")) {
-                    return geomSRIDsString;
-                } else if (name.equals("baseSRID")) {
+                } else if (name.equals("geomSRID")) {
                     return String.valueOf(defaultSRID);
+                } else if (name.equals("showMap")) {
+                    return String.valueOf(isShowMap);
                 }
                 return null;
             });
