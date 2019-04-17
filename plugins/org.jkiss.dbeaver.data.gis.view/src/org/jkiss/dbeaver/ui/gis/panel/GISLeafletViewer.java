@@ -23,6 +23,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -36,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.util.Map;
 
 public class GISLeafletViewer {
 
@@ -118,7 +121,20 @@ public class GISLeafletViewer {
                 continue;
             }
             geomValues[i] = "'" + targetValue + "'";
-            geomTipValues[i] = "";
+            if (CommonUtils.isEmpty(value.getProperties())) {
+                geomTipValues[i] = "null";
+            } else {
+                StringBuilder geomProps = new StringBuilder("{");
+                boolean first = true;
+                for (Map.Entry<String, Object> prop : value.getProperties().entrySet()) {
+                    if (!first) geomProps.append(",");
+                    first = false;
+                    geomProps.append('"').append(prop.getKey().replace("\"", "\\\"")).append("\":\"")
+                        .append(DBValueFormatting.getDefaultValueDisplayString(prop.getValue(), DBDDisplayFormat.UI).replace("\"", "\\\"")).append("\"");
+                }
+                geomProps.append("}");
+                geomTipValues[i] = geomProps.toString();
+            }
         }
         if (baseSRID == 0) {
             if (valueController != null && valueController.getValueType() instanceof GisAttribute) {
