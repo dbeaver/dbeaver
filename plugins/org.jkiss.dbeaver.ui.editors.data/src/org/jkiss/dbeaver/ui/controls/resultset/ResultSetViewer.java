@@ -30,7 +30,10 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -539,30 +542,7 @@ public class ResultSetViewer extends Viewer
                 changed = true;
             } else {
                 // Regular results
-                IResultSetContext context = new IResultSetContext() {
-                    @Override
-                    public boolean supportsAttributes() {
-                        DBDAttributeBinding[] attrs = model.getAttributes();
-                        return attrs.length > 0 &&
-                            (attrs[0].getDataKind() != DBPDataKind.DOCUMENT || !CommonUtils.isEmpty(attrs[0].getNestedBindings()));
-                    }
-
-                    @Override
-                    public boolean supportsDocument() {
-                        return model.getDocumentAttribute() != null;
-                    }
-
-                    @Override
-                    public String getDocumentContentType() {
-                        DBDAttributeBinding docAttr = model.getDocumentAttribute();
-                        return docAttr == null ? null : docAttr.getValueHandler().getValueContentType(docAttr);
-                    }
-
-                    @Override
-                    public DBCResultSet getResultSet() {
-                        return resultSet;
-                    }
-                };
+                IResultSetContext context = new ResultSetContextImpl(this, resultSet);
                 final List<ResultSetPresentationDescriptor> newPresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet, context);
                 changed = CommonUtils.isEmpty(this.availablePresentations) || !newPresentations.equals(this.availablePresentations);
                 this.availablePresentations = newPresentations;

@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 
 /**
  * Abstract result set

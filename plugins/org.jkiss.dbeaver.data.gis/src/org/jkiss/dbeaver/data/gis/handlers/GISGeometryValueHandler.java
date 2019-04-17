@@ -59,7 +59,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     public Class<?> getValueObjectType(DBSTypedObject attribute) {
-        return Geometry.class;
+        return DBGeometry.class;
     }
 
     @NotNull

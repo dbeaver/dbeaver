@@ -36,8 +36,8 @@
                 class="org.jkiss.dbeaver.ui.gis.presentation.GeometryPresentation"
                 type="transformer"
                 supportsRecordMode="true"
-                order="10">
-            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.resultSet.getFeature('attribute.instanceOf.org.jkiss.dbeaver.model.gis.DBGeometry') != null"/>
+                order="500">
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.hasAttributeOfType('org.jkiss.dbeaver.model.gis.DBGeometry')"/>
         </presentation>
     </extension>
 
