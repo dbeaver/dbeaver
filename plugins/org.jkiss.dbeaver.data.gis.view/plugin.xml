@@ -27,4 +27,18 @@
                 class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.resultset.presentation">
+        <presentation
+                id="results.geometry"
+                label="%presentation.geometry.name"
+                description="%presentation.geometry.description"
+                icon="icons/geometry.png"
+                class="org.jkiss.dbeaver.ui.gis.presentation.GeometryPresentation"
+                type="transformer"
+                supportsRecordMode="true"
+                order="10">
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.resultSet.getFeature('attribute.instanceOf.org.jkiss.dbeaver.model.gis.DBGeometry') != null"/>
+        </presentation>
+    </extension>
+
 </plugin>
