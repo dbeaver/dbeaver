@@ -66,7 +66,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     public Class<?> getValueObjectType(DBSTypedObject attribute) {
-        return Geometry.class;
+        return DBGeometry.class;
     }
 
     @Override

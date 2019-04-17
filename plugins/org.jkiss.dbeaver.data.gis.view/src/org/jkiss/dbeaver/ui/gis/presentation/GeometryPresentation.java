@@ -22,8 +22,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
-import org.jfree.chart.ChartTheme;
-import org.jfree.chart.StandardChartTheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -38,9 +36,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
 public class GeometryPresentation extends AbstractPresentation {
 
     private static final Log log = Log.getLog(GeometryPresentation.class);
-
-    private static ChartTheme CLASSIC_THEME = StandardChartTheme.createJFreeTheme();
-    private static ChartTheme DARK_THEME = StandardChartTheme.createDarknessTheme();
 
     private Browser browser;
 
