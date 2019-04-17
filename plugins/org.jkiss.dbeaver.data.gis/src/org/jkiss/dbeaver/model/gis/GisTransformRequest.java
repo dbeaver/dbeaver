@@ -23,9 +23,9 @@ import com.vividsolutions.jts.geom.Geometry;
 */
 public class GisTransformRequest {
 
-    private Geometry sourceValue;
+    private final Geometry sourceValue;
     private Geometry targetValue;
-    private int sourceSRID;
+    private final int sourceSRID;
     private int targetSRID;
 
     private boolean showOnMap;
@@ -40,24 +40,21 @@ public class GisTransformRequest {
         return sourceValue;
     }
 
-    public void setSourceValue(Geometry sourceValue) {
-        this.sourceValue = sourceValue;
-    }
-
     public Geometry getTargetValue() {
         return targetValue;
     }
 
     public void setTargetValue(Geometry targetValue) {
         this.targetValue = targetValue;
+        if (this.targetValue != null) {
+            this.targetSRID = this.targetValue.getSRID();
+        } else {
+            this.targetSRID = 0;
+        }
     }
 
     public int getSourceSRID() {
         return sourceSRID;
-    }
-
-    public void setSourceSRID(int sourceSRID) {
-        this.sourceSRID = sourceSRID;
     }
 
     public int getTargetSRID() {
