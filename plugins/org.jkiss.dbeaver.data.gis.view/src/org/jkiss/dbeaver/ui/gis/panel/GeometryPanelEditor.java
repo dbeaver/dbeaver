@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.gis;
+package org.jkiss.dbeaver.ui.gis.panel;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
@@ -32,9 +32,9 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
-import org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerDescriptor;
-import org.jkiss.dbeaver.ui.data.managers.gis.registry.GeometryViewerRegistry;
-import org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer;
+import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor;
+import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
+import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.gis.internal;
+package org.jkiss.dbeaver.ui.gis.internal;
 
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;

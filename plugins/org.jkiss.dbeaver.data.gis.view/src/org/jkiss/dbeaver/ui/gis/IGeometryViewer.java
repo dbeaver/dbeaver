@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.data.managers.gis;
+package org.jkiss.dbeaver.ui.gis;
 
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 

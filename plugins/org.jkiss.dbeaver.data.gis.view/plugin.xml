@@ -6,7 +6,7 @@
     <extension-point id="org.jkiss.dbeaver.data.gis.geometryViewer" name="Geometry viewer" schema="schema/org.jkiss.dbeaver.data.gis.geometryViewer.exsd"/>
 
     <extension point="org.jkiss.dbeaver.dataManager">
-        <manager class="org.jkiss.dbeaver.ui.data.managers.gis.GeometryValueManager" id="org.jkiss.dbeaver.ui.data.managers.gis.GeometryValueManager">
+        <manager class="org.jkiss.dbeaver.ui.gis.GeometryValueManager" id="org.jkiss.dbeaver.ui.gis.GeometryValueManager">
             <supports type="com.vividsolutions.jts.geom.Geometry" forceCheck="true"/>
         </manager>
     </extension>
@@ -16,15 +16,15 @@
                 label="Text"
                 description="View GIS object in text form"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
-                id="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer"
-                class="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer"
+                id="org.jkiss.dbeaver.ui.gis.panel.GeometryTextViewer"
+                class="org.jkiss.dbeaver.ui.gis.panel.GeometryTextViewer"
                 supportsInline="true"/>
         <geometryViewer
                 label="Map"
                 description="View GIS object on map"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/image.png"
-                id="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer"
-                class="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer"/>
+                id="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"
+                class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
     </extension>
 
 </plugin>
