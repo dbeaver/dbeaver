@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.gis.presentation;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
+import org.jkiss.dbeaver.ui.gis.panel.GISLeafletViewer;
 
 /**
  * Geometry presentation.
@@ -37,13 +37,14 @@ public class GeometryPresentation extends AbstractPresentation {
 
     private static final Log log = Log.getLog(GeometryPresentation.class);
 
-    private Browser browser;
+    private GISLeafletViewer leafletViewer;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
-        browser = new Browser(parent, SWT.NONE);
+        leafletViewer = new GISLeafletViewer(parent, null);
+        leafletViewer.getBrowser().setLayoutData(new GridData(GridData.FILL_BOTH));
 /*
         canvas = new ResultsChartComposite(this, parent, SWT.NONE);
         canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -85,7 +86,7 @@ public class GeometryPresentation extends AbstractPresentation {
 
     @Override
     public Composite getControl() {
-        return browser;
+        return leafletViewer.getBrowser();
     }
 
     @Override

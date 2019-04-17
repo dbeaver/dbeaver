@@ -7,7 +7,7 @@
 
     <extension point="org.jkiss.dbeaver.dataManager">
         <manager class="org.jkiss.dbeaver.ui.gis.GeometryValueManager" id="org.jkiss.dbeaver.ui.gis.GeometryValueManager">
-            <supports type="com.vividsolutions.jts.geom.Geometry" forceCheck="true"/>
+            <supports type="org.jkiss.dbeaver.model.gis.DBGeometry"/>
         </manager>
     </extension>
 

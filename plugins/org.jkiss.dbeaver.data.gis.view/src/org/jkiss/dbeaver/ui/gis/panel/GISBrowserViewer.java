@@ -16,35 +16,22 @@
  */
 package org.jkiss.dbeaver.ui.gis.panel;
 
-import com.vividsolutions.jts.geom.Geometry;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.gis.*;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
-import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
-
-import java.io.*;
 
 public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeometryViewer {
 
     private static final Log log = Log.getLog(GISBrowserViewer.class);
 
-    private Object lastValue;
-    private File scriptFile;
+    private GISLeafletViewer leafletViewer;
 
     public GISBrowserViewer(IValueController controller) {
         super(controller);
@@ -53,162 +40,23 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
     @Override
     protected Browser createControl(Composite editPlaceholder)
     {
-        Browser browser = new Browser(editPlaceholder, SWT.NONE);
-        browser.addDisposeListener(e -> {
-            cleanupFiles();
-        });
-        return browser;
+        leafletViewer = new GISLeafletViewer(editPlaceholder, valueController);
+        return leafletViewer.getBrowser();
     }
 
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        if (CommonUtils.equalObjects(lastValue, value)) {
-            return;
-        }
-        if (control != null) {
-            try {
-                if (DBUtils.isNullValue(value)) {
-                    control.setUrl("about:blank");
-                } else {
-                    File file = generateViewScript(new Object[] { value } );
-                    control.setUrl(file.toURI().toURL().toString());
-                }
-            } catch (IOException e) {
-                throw new DBException("Error generating viewer script", e);
-            }
-        }
-        lastValue = value;
-    }
-
-    private File generateViewScript(Object[] values) throws IOException {
-        if (scriptFile == null) {
-            File tempDir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gis-viewer-files");
-            checkIncludesExistence(tempDir);
-
-            scriptFile = File.createTempFile("view", "gis.html", tempDir);
-        }
-        int baseSRID = 0;
-        String[] geomValues = new String[values.length];
-        String[] geomTipValues = new String[values.length];
-        boolean showMap = false;
-        for (int i = 0; i < values.length; i++) {
-            Object value = values[i];
-            if (value instanceof DBGeometry) {
-                int srid = ((DBGeometry) value).getSRID();
-                if (srid == 0) {
-                    srid = GisConstants.DEFAULT_SRID;
-                } else {
-                    if (baseSRID == 0) {
-                        baseSRID = srid;
-                    }
-                }
-                if (srid == GisConstants.DEFAULT_SRID) {
-                    showMap = true;
-                } else {
-                    Geometry geometry = ((DBGeometry) value).getGeometry();
-                    if (geometry != null) {
-                        try {
-                            GisTransformRequest request = new GisTransformRequest(geometry, srid, GisConstants.DEFAULT_SRID);
-                            GisTransformUtils.transformGisData(request);
-                            value = request.getTargetValue();
-                            showMap = request.isShowOnMap();
-                        } catch (DBException e) {
-                            log.debug("Error transforming CRS", e);
-                            showMap = false;
-                        }
-                    } else {
-                        showMap = false;
-                    }
-                }
-            }
-            geomValues[i] = "'" + value + "'";
-            geomTipValues[i] = "";
-        }
-        if (baseSRID == 0) {
-            if (valueController.getValueType() instanceof GisAttribute) {
-                try {
-                    baseSRID = ((GisAttribute) valueController.getValueType()).getAttributeGeometrySRID(new VoidProgressMonitor());
-                } catch (DBCException e) {
-                    log.error(e);
-                }
-            }
-        }
-        if (baseSRID == 0) {
-            baseSRID = GisConstants.DEFAULT_SRID;
-        }
-        int defaultSRID = baseSRID;
-        String geomValuesString = String.join(",", geomValues);
-        String geomTipValuesString = String.join(",", geomTipValues);
-        boolean isShowMap = showMap;
-
-        InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.VIEW_TEMPLATE_PATH);
-        if (fis == null) {
-            throw new IOException("View template file not found (" + GISBrowserViewerConstants.VIEW_TEMPLATE_PATH + ")");
-        }
-        try (InputStreamReader isr = new InputStreamReader(fis)) {
-            String viewTemplate = IOUtils.readToString(isr);
-            viewTemplate = GeneralUtils.replaceVariables(viewTemplate, name -> {
-                if (name.equals("geomValues")) {
-                    return geomValuesString;
-                } else if (name.equals("geomTipValues")) {
-                    return String.valueOf(geomTipValuesString);
-                } else if (name.equals("geomSRID")) {
-                    return String.valueOf(defaultSRID);
-                } else if (name.equals("showMap")) {
-                    return String.valueOf(isShowMap);
-                }
-                return null;
-            });
-            try (FileOutputStream fos = new FileOutputStream(scriptFile)) {
-                fos.write(viewTemplate.getBytes(GeneralUtils.UTF8_CHARSET));
-            }
-        } finally {
-            ContentUtils.close(fis);
-        }
-
-        return scriptFile;
-    }
-
-    private void checkIncludesExistence(File scriptDir) throws IOException {
-        File incFolder = new File(scriptDir, "inc");
-        if (!incFolder.exists()) {
-            if (!incFolder.mkdirs()) {
-                throw new IOException("Can't create inc folder '" + incFolder.getAbsolutePath() + "'");
-            }
-            for (String fileName : GISBrowserViewerConstants.INC_FILES) {
-                InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.WEB_INC_PATH + fileName);
-                if (fis != null) {
-                    try (FileOutputStream fos = new FileOutputStream(new File(incFolder, fileName))) {
-                        try {
-                            IOUtils.copyStream(fis, fos);
-                        } catch (Exception e) {
-                            log.warn("Error copying inc file " + fileName, e);
-                        } finally {
-                            ContentUtils.close(fis);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void cleanupFiles() {
-        if (scriptFile != null) {
-            if (!scriptFile.delete()) {
-                log.debug("Can't delete temp script file '" + scriptFile.getAbsolutePath() + "'");
-            }
+        if (value instanceof DBGeometry) {
+            leafletViewer.setGeometryData(new DBGeometry[] {(DBGeometry) value});
+        } else {
+            leafletViewer.setGeometryData(new DBGeometry[0]);
         }
     }
 
     @Override
     public Object extractEditorValue() throws DBCException {
-        return lastValue;
-    }
-
-    @Override
-    public void createControl() {
-        super.createControl();
+        return leafletViewer.getCurrentValue();
     }
 
 }
