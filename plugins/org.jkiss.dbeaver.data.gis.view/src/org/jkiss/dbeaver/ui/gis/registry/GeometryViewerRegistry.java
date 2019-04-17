@@ -38,21 +38,21 @@ public class GeometryViewerRegistry {
 
     private static GeometryViewerRegistry instance = null;
 
-    private final Map<String, org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor> viewers = new HashMap<>();
+    private final Map<String, GeometryViewerDescriptor> viewers = new HashMap<>();
 
     private GeometryViewerRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
-            org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor type = new org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor(ext);
+            GeometryViewerDescriptor type = new GeometryViewerDescriptor(ext);
             viewers.put(type.getId(), type);
         }
     }
 
-    public List<org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor> getViewers() {
+    public List<GeometryViewerDescriptor> getViewers() {
         return new ArrayList<>(viewers.values());
     }
 
-    public org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor getViewer(String id) {
+    public GeometryViewerDescriptor getViewer(String id) {
         return viewers.get(id);
     }
 

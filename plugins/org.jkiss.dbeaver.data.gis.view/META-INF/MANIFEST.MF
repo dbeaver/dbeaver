@@ -21,4 +21,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.bundle.gis
 Bundle-ClassPath: .
-Export-Package: org.jkiss.dbeaver.ui.data.managers.gis
+Export-Package: org.jkiss.dbeaver.ui.gis

@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.gis.GisAttribute;
-import org.jkiss.dbeaver.model.gis.GisConstants;
-import org.jkiss.dbeaver.model.gis.GisTransformRequest;
-import org.jkiss.dbeaver.model.gis.GisTransformUtils;
+import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -97,8 +94,8 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         boolean showMap = false;
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            if (value instanceof Geometry) {
-                int srid = ((Geometry) value).getSRID();
+            if (value instanceof DBGeometry) {
+                int srid = ((DBGeometry) value).getSRID();
                 if (srid == 0) {
                     srid = GisConstants.DEFAULT_SRID;
                 } else {
@@ -109,13 +106,18 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 if (srid == GisConstants.DEFAULT_SRID) {
                     showMap = true;
                 } else {
-                    try {
-                        GisTransformRequest request = new GisTransformRequest((Geometry) value, srid, GisConstants.DEFAULT_SRID);
-                        GisTransformUtils.transformGisData(request);
-                        value = request.getTargetValue();
-                        showMap = request.isShowOnMap();
-                    } catch (DBException e) {
-                        log.debug("Error transforming CRS", e);
+                    Geometry geometry = ((DBGeometry) value).getGeometry();
+                    if (geometry != null) {
+                        try {
+                            GisTransformRequest request = new GisTransformRequest(geometry, srid, GisConstants.DEFAULT_SRID);
+                            GisTransformUtils.transformGisData(request);
+                            value = request.getTargetValue();
+                            showMap = request.isShowOnMap();
+                        } catch (DBException e) {
+                            log.debug("Error transforming CRS", e);
+                            showMap = false;
+                        }
+                    } else {
                         showMap = false;
                     }
                 }
