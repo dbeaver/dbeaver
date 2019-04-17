@@ -93,6 +93,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         }
         int baseSRID = 0;
         String[] geomValues = new String[values.length];
+        String[] geomTipValues = new String[values.length];
         boolean showMap = false;
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
@@ -120,6 +121,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 }
             }
             geomValues[i] = "'" + value + "'";
+            geomTipValues[i] = "";
         }
         if (baseSRID == 0) {
             if (valueController.getValueType() instanceof GisAttribute) {
@@ -135,6 +137,7 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
         }
         int defaultSRID = baseSRID;
         String geomValuesString = String.join(",", geomValues);
+        String geomTipValuesString = String.join(",", geomTipValues);
         boolean isShowMap = showMap;
 
         InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.VIEW_TEMPLATE_PATH);
@@ -146,6 +149,8 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
             viewTemplate = GeneralUtils.replaceVariables(viewTemplate, name -> {
                 if (name.equals("geomValues")) {
                     return geomValuesString;
+                } else if (name.equals("geomTipValues")) {
+                    return String.valueOf(geomTipValuesString);
                 } else if (name.equals("geomSRID")) {
                     return String.valueOf(defaultSRID);
                 } else if (name.equals("showMap")) {
@@ -203,4 +208,5 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
     public void createControl() {
         super.createControl();
     }
+
 }
