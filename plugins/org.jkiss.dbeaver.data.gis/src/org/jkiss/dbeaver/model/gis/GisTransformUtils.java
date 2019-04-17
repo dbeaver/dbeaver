@@ -66,11 +66,13 @@ public class GisTransformUtils {
 
             try {
                 Geometry targetValue = transformGisData(request.getSourceValue(), crs1, crs2);
+                targetValue.setSRID(request.getTargetSRID());
                 request.setTargetValue(targetValue);
                 request.setShowOnMap(true);
             } catch (IllegalArgumentException e) {
                 if (CommonUtils.equalObjects(crs1.getCoordinateSystem(), crs3857.getCoordinateSystem())) {
                     Geometry geometry = transformGisData(request.getSourceValue(), crs3857, crs2);
+                    geometry.setSRID(request.getTargetSRID());
                     request.setTargetValue(geometry);
                     request.setShowOnMap(false);
 //                    if (crs1 instanceof ProjectedCRS) {

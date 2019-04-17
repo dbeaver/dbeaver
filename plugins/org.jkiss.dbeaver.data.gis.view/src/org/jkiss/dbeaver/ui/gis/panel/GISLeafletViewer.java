@@ -92,13 +92,6 @@ public class GISLeafletViewer {
             DBGeometry value = values[i];
             Object targetValue = value.getRawValue();
             int srid = value.getSRID();
-            if (srid == 0) {
-                srid = GisConstants.DEFAULT_SRID;
-            } else {
-                if (baseSRID == 0) {
-                    baseSRID = srid;
-                }
-            }
             if (srid == GisConstants.DEFAULT_SRID) {
                 showMap = true;
             } else {
@@ -108,15 +101,22 @@ public class GISLeafletViewer {
                         GisTransformRequest request = new GisTransformRequest(geometry, srid, GisConstants.DEFAULT_SRID);
                         GisTransformUtils.transformGisData(request);
                         targetValue = request.getTargetValue();
+                        srid = request.getTargetSRID();
                         showMap = request.isShowOnMap();
                     } catch (DBException e) {
                         log.debug("Error transforming CRS", e);
                         showMap = false;
                     }
-                } else {
-                    showMap = false;
                 }
             }
+            if (srid == 0) {
+                srid = GisConstants.DEFAULT_SRID;
+                showMap = true; // Let's give it a try
+            }
+            if (baseSRID == 0) {
+                baseSRID = srid;
+            }
+
             if (targetValue == null) {
                 continue;
             }
