@@ -16,8 +16,8 @@
                 label="Text"
                 description="View GIS object in text form"
                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
-                id="org.jkiss.dbeaver.ui.gis.panel.GeometryTextViewer"
-                class="org.jkiss.dbeaver.ui.gis.panel.GeometryTextViewer"
+                id="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
+                class="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
                 supportsInline="true"/>
         <geometryViewer
                 label="Map"

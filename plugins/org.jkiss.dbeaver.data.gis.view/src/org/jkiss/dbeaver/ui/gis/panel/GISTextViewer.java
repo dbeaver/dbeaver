@@ -30,11 +30,11 @@ import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
  * GisAttribute.
  * Edits value as string. Also manager SRID.
 */
-public class GeometryTextViewer extends StringInlineEditor implements IGeometryViewer {
+public class GISTextViewer extends StringInlineEditor implements IGeometryViewer {
 
     private int valueSRID;
 
-    public GeometryTextViewer(IValueController controller) {
+    public GISTextViewer(IValueController controller) {
         super(controller);
     }
 

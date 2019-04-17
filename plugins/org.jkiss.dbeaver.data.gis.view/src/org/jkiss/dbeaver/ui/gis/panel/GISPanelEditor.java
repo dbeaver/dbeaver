@@ -40,18 +40,18 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 
 /**
- * GeometryPanelEditor
+ * GISPanelEditor
 */
-public class GeometryPanelEditor extends BaseValueEditor<Control> {
+public class GISPanelEditor extends BaseValueEditor<Control> {
 
-    private static final Log log = Log.getLog(GeometryPanelEditor.class);
+    private static final Log log = Log.getLog(GISPanelEditor.class);
     private static final String PROP_VIEWER_ID = "gis.geometry.viewer.id";
-    private static final String DEFAULT_VIEWER_ID = GeometryTextViewer.class.getName();
+    private static final String DEFAULT_VIEWER_ID = GISTextViewer.class.getName();
 
     private GeometryViewerDescriptor curViewerDescriptor;
     private IGeometryViewer curViewer;
 
-    public GeometryPanelEditor(IValueController controller) {
+    public GISPanelEditor(IValueController controller) {
         super(controller);
         setDefaultViewer();
     }
