@@ -17,9 +17,18 @@
 package org.jkiss.dbeaver.ui.gis.panel;
 
 import com.vividsolutions.jts.geom.Geometry;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuCreator;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -29,6 +38,10 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -47,19 +60,52 @@ public class GISLeafletViewer {
     private final IValueController valueController;
     private final Browser browser;
     private DBGeometry[] lastValue;
+    private int sourceSRID;
     private File scriptFile;
+    private final ToolBarManager toolBarManager;
+    private int defaultSRID;
 
     public GISLeafletViewer(Composite parent, IValueController valueController) {
-        browser = new Browser(parent, SWT.NONE);
+        this.valueController = valueController;
+
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
+
+        browser = new Browser(composite, SWT.NONE);
         browser.addDisposeListener(e -> {
             cleanupFiles();
         });
-        this.valueController = valueController;
+        browser.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        {
+            Composite bottomPanel = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
+            bottomPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            ToolBar bottomToolbar = new ToolBar(bottomPanel, SWT.HORIZONTAL | SWT.RIGHT);
+
+            toolBarManager = new ToolBarManager(bottomToolbar);
+        }
     }
 
-    public void setGeometryData(@Nullable DBGeometry[] values) throws DBException
-    {
-        if (CommonUtils.equalObjects(lastValue, values)) {
+    private void setSourceSRID(int srid) {
+        if (srid == sourceSRID) {
+            return;
+        }
+        int oldSRID = sourceSRID;
+        this.sourceSRID = srid;
+        try {
+            reloadGeometryData(lastValue, true);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Setting SRID", "Can't change source SRID to " + srid, e);
+            sourceSRID = oldSRID;
+        }
+    }
+
+    public void setGeometryData(@Nullable DBGeometry[] values) throws DBException {
+        reloadGeometryData(values, false);
+    }
+
+    public void reloadGeometryData(@Nullable DBGeometry[] values, boolean force) throws DBException {
+        if (!force && CommonUtils.equalObjects(lastValue, values)) {
             return;
         }
         if (browser != null) {
@@ -75,6 +121,35 @@ public class GISLeafletViewer {
             }
         }
         lastValue = values;
+        updateToolbar();
+    }
+
+    private void updateToolbar() {
+        toolBarManager.removeAll();
+        toolBarManager.add(new Action("Open in browser", DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
+            @Override
+            public void run() {
+                super.run();
+            }
+        });
+        toolBarManager.add(new Action("Save as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
+            @Override
+            public void run() {
+                super.run();
+            }
+        });
+
+        toolBarManager.add(new Action("Print", DBeaverIcons.getImageDescriptor(UIIcon.PRINT)) {
+            @Override
+            public void run() {
+                super.run();
+            }
+        });
+
+
+        Action crsSelectorAction = new ChangeCRSAction();
+        toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
+        toolBarManager.update(true);
     }
 
     private File generateViewScript(DBGeometry[] values) throws IOException {
@@ -91,7 +166,7 @@ public class GISLeafletViewer {
         for (int i = 0; i < values.length; i++) {
             DBGeometry value = values[i];
             Object targetValue = value.getRawValue();
-            int srid = value.getSRID();
+            int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
             if (srid == GisConstants.DEFAULT_SRID) {
                 showMap = true;
             } else {
@@ -148,7 +223,7 @@ public class GISLeafletViewer {
         if (baseSRID == 0) {
             baseSRID = GisConstants.DEFAULT_SRID;
         }
-        int defaultSRID = baseSRID;
+        this.defaultSRID = baseSRID;
         String geomValuesString = String.join(",", geomValues);
         String geomTipValuesString = String.join(",", geomTipValues);
         boolean isShowMap = showMap;
@@ -219,4 +294,72 @@ public class GISLeafletViewer {
     public DBGeometry[] getCurrentValue() {
         return lastValue;
     }
+
+    private class ChangeCRSAction extends Action implements IMenuCreator {
+
+        private MenuManager menuManager;
+
+        public ChangeCRSAction() {
+            super("EPSG:" + GISLeafletViewer.this.defaultSRID, Action.AS_DROP_DOWN_MENU);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CHART_LINE));
+        }
+
+        @Override
+        public void run() {
+            SelectCRSDialog selectCRSDialog = new SelectCRSDialog(
+                UIUtils.getActiveWorkbenchShell(),
+                defaultSRID == 0 ? GisConstants.DEFAULT_SRID : defaultSRID);
+            if (selectCRSDialog.open() == IDialogConstants.OK_ID) {
+                setSourceSRID(selectCRSDialog.getSelectedSRID());
+            }
+        }
+
+        @Override
+        public IMenuCreator getMenuCreator() {
+            return super.getMenuCreator();
+        }
+
+        @Override
+        public void dispose() {
+            if (menuManager != null) {
+                menuManager.dispose();
+                menuManager = null;
+            }
+        }
+
+        @Override
+        public Menu getMenu(Control parent) {
+            if (menuManager == null) {
+                menuManager = new MenuManager();
+                menuManager.add(new SetCRSAction(GisConstants.DEFAULT_SRID));
+                menuManager.add(new Action("Other ...") {
+                    @Override
+                    public void run() {
+                        ChangeCRSAction.this.run();
+                    }
+                });
+            }
+            return menuManager.createContextMenu(parent);
+        }
+
+        @Override
+        public Menu getMenu(Menu parent) {
+            return null;
+        }
+    }
+
+    private class SetCRSAction extends Action {
+        private final int srid;
+
+        public SetCRSAction(int srid) {
+            super("EPSG:" + srid);
+            this.srid = srid;
+        }
+
+        @Override
+        public void run() {
+            setSourceSRID(srid);
+        }
+    }
+
 }

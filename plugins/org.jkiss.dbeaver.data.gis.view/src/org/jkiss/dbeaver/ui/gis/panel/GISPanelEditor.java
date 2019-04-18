@@ -234,6 +234,9 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
 
         @Override
         public void run() {
+            if (curViewerDescriptor == viewerDescriptor) {
+                return;
+            }
             setViewer(viewerDescriptor);
             valueController.refreshEditor();
         }
