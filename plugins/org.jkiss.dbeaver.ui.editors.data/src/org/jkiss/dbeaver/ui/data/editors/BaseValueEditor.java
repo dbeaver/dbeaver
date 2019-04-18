@@ -69,6 +69,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         return control;
     }
 
+    @Override
+    public boolean isReadOnly() {
+        return valueController.isReadOnly();
+    }
+
     public void setControl(T control) {
         this.control = control;
         if (this.control != null && control != valueController.getEditPlaceholder()) {

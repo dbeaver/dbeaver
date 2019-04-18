@@ -341,26 +341,29 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
 
         contributionManager.add(new GroupMarker(IValueManager.GROUP_ACTIONS_ADDITIONAL));
 
-        contributionManager.add(
-            ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
+        if (valueEditor != null && !valueEditor.isReadOnly()) {
+            contributionManager.add(
+                ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
 
-        contributionManager.add(
-            new Action("Auto-apply value", Action.AS_CHECK_BOX) {
-                {
-                    setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
-                }
-                @Override
-                public boolean isChecked() {
-                    return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
-                }
+            contributionManager.add(
+                new Action("Auto-apply value", Action.AS_CHECK_BOX) {
+                    {
+                        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
+                    }
 
-                @Override
-                public void run() {
-                    boolean newValue = !isChecked();
-                    DBWorkbench.getPlatform().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
-                    presentation.getController().updatePanelActions();
-                }
-            });
+                    @Override
+                    public boolean isChecked() {
+                        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
+                    }
+
+                    @Override
+                    public void run() {
+                        boolean newValue = !isChecked();
+                        DBWorkbench.getPlatform().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
+                        presentation.getController().updatePanelActions();
+                    }
+                });
+        }
     }
 
     @Override

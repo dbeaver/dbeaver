@@ -55,6 +55,11 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
     }
 
     @Override
+    public boolean isReadOnly() {
+        return true;
+    }
+
+    @Override
     public Object extractEditorValue() throws DBCException {
         return leafletViewer.getCurrentValue();
     }

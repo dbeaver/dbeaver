@@ -530,6 +530,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Override
+    public boolean isReadOnly() {
+        return getValueController().isReadOnly();
+    }
+
+    @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
 
     }
