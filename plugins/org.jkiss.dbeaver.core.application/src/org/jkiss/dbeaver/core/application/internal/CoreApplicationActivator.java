@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.core.application.internal;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.osgi.framework.BundleContext;
@@ -37,7 +38,17 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         // Set notifications handler
-        DBeaverNotifications.setHandler(NotificationUtils::sendNotification);
+        DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
+            @Override
+            public void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
+                NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
+            }
+
+            @Override
+            public void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
+                NotificationUtils.sendNotification(id, title, text, messageType, feedback);
+            }
+        });
         plugin = this;
     }
 

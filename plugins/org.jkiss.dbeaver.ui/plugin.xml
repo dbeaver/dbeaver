@@ -14,6 +14,7 @@
 
     <extension point="org.eclipse.mylyn.commons.notifications.ui.notifications">
         <category id="org.jkiss.dbeaver.notifications.database.category" label="Database"/>
+        <category id="org.jkiss.dbeaver.notifications.general.category" label="General"/>
         <sink id="org.jkiss.dbeaver.notifications.sink.Popup" class="org.jkiss.dbeaver.ui.notifications.DatabaseNotificationSink" label="Notify Popup"/>
 
         <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.commit" label="Commit">
@@ -32,6 +33,12 @@
             <defaultHandler sinkId="org.jkiss.dbeaver.notifications.sink.Popup"/>
             <description>
                 This event is triggered when connection was automatically reconnected.
+            </description>
+        </event>
+        <event categoryId="org.jkiss.dbeaver.notifications.general.category" id="org.jkiss.dbeaver.notifications.event.generalInfo" label="General">
+            <defaultHandler sinkId="org.jkiss.dbeaver.notifications.sink.Popup"/>
+            <description>
+                General notifications.
             </description>
         </event>
     </extension>
