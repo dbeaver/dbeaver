@@ -748,7 +748,7 @@
                     class="com.amazon.redshift.jdbc41.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     defaultPort="5439"
-                    description="AWS Redshift JDBC driver"
+                    description="%driver.redshift.description"
                     webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                     categories="sql,analytic,cloud">
                     <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.12.1017/1.2.15.1025/RedshiftJDBC41-1.2.15.1025.jar"/>
@@ -760,7 +760,7 @@
                     class="com.amazon.redshift.jdbc42.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     defaultPort="5439"
-                    description="AWS Redshift JDBC driver"
+                    description="%driver.redshift.description"
                     webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
                     categories="sql,analytic,cloud">
                     <replace provider="generic" driver="aws_redshift"/>
@@ -968,7 +968,7 @@
                         class="org.apache.ignite.IgniteJdbcThinDriver"
                         sampleURL="jdbc:ignite:thin://{host}[:{port}][;schema={database}]"
                         defaultPort=""
-                        description="Apache Ignite JDBC driver"
+                        description="%driver.apache.ignite.description"
                         webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
                         categories="hadoop">
                     <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE"/>
