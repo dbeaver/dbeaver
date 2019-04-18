@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.panel.GISLeafletViewer;
 
 import java.util.ArrayList;
@@ -110,38 +111,14 @@ public class GeometryPresentation extends AbstractPresentation {
     public void setSelection(ISelection selection) {
     }
 
-    static class GeomAttrs {
-        DBDAttributeBinding geomAttr;
-        List<DBDAttributeBinding> descAttrs;
-
-        public GeomAttrs(DBDAttributeBinding geomAttr, List<DBDAttributeBinding> descAttrs) {
-            this.geomAttr = geomAttr;
-            this.descAttrs = descAttrs;
-        }
-    }
-
     @Override
     public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
-        List<GeomAttrs> result = new ArrayList<>();
+        List<GeometryDataUtils.GeomAttrs> result = GeometryDataUtils.extractGeometryAttributes(getController());
         ResultSetModel model = getController().getModel();
-        List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
-        List<DBDAttributeBinding> descAttrs = new ArrayList<>();
-        for (DBDAttributeBinding attr : attributes) {
-            if (attr.getValueHandler().getValueObjectType(attr.getAttribute()) == DBGeometry.class) {
-                GeomAttrs geomAttrs = new GeomAttrs(attr, descAttrs);
-                result.add(geomAttrs);
-                descAttrs = new ArrayList<>();
-            } else {
-                descAttrs.add(attr);
-            }
-        }
-        if (result.size() == 1) {
-            result.get(0).descAttrs.addAll(descAttrs);
-        }
 
         // Now extract all geom values from data
         List<DBGeometry> geometries = new ArrayList<>();
-        for (GeomAttrs geomAttrs : result) {
+        for (GeometryDataUtils.GeomAttrs geomAttrs : result) {
             for (ResultSetRow row : model.getAllRows()) {
                 Object value = model.getCellValue(geomAttrs.geomAttr, row);
                 if (value instanceof DBGeometry) {

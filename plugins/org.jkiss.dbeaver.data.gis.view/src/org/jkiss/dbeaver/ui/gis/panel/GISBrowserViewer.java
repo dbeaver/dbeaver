@@ -23,9 +23,17 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
+import org.jkiss.dbeaver.ui.data.IDataController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
+import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
+
+import java.util.List;
 
 public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeometryViewer {
 
@@ -47,9 +55,26 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
+        IDataController dataController = valueController.getDataController();
+        if (dataController instanceof IResultSetController) {
+            //IResultSetSelection selection = ((IResultSetController) dataController).getSelection();
+
+        }
+        DBSTypedObject valueType = valueController.getValueType();
         if (value instanceof DBGeometry) {
+            if (dataController instanceof IResultSetController && valueType instanceof DBSAttributeBase) {
+                IResultSetController resultSetController = (IResultSetController) dataController;
+                List<GeometryDataUtils.GeomAttrs> geomAttrs = GeometryDataUtils.extractGeometryAttributes(resultSetController);
+                for (GeometryDataUtils.GeomAttrs ga : geomAttrs) {
+                    if (ga.geomAttr.matches((DBSAttributeBase) valueType, false)) {
+                        GeometryDataUtils.setGeometryProperties(resultSetController, ga, (DBGeometry) value);
+                        break;
+                    }
+                }
+            }
             leafletViewer.setGeometryData(new DBGeometry[] {(DBGeometry) value});
         } else {
+            // No data
             leafletViewer.setGeometryData(new DBGeometry[0]);
         }
     }
