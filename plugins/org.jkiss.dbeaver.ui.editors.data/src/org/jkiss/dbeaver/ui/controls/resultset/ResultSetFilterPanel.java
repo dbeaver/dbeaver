@@ -450,6 +450,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
     }
 
+    public String getFilterText() {
+        return filtersText.getText();
+    }
+
     @NotNull
     public String getActiveQueryText() {
         DBCStatistics statistics = viewer.getModel().getStatistics();

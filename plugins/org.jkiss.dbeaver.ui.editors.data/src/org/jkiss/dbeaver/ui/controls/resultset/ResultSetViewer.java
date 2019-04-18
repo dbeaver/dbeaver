@@ -77,6 +77,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -392,6 +393,11 @@ public class ResultSetViewer extends Viewer
             return;
         }
         DataFilterRegistry.getInstance().saveDataFilter(getDataContainer(), model.getDataFilter());
+
+        DBeaverNotifications.showNotification(DBeaverNotifications.NT_GENERAL,
+            "Data filter was saved",
+            filtersPanel.getFilterText(),
+            DBPMessageType.INFORMATION, null);
     }
 
     void switchFilterFocus() {
