@@ -412,6 +412,11 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
+        public IDataController getDataController() {
+            return parentController.getDataController();
+        }
+
+        @Override
         public String getValueName()
         {
             return name;

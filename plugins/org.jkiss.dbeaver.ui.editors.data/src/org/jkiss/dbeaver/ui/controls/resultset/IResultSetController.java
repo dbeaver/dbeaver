@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.ui.data.IDataController;
 
 import java.util.List;
 
@@ -43,7 +44,7 @@ import java.util.List;
  * ResultSet controller.
  * This interface is not supposed to be implemented by clients.
  */
-public interface IResultSetController extends DBPContextProvider {
+public interface IResultSetController extends IDataController, DBPContextProvider {
 
     String MENU_ID_EDIT = "edit";
     String MENU_ID_VIEW = "view";
@@ -51,9 +52,6 @@ public interface IResultSetController extends DBPContextProvider {
     String MENU_ID_LAYOUT = "layout";
     String MENU_GROUP_EDIT = "edit";
     String MENU_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
-
-    @NotNull
-    IWorkbenchPartSite getSite();
 
     @NotNull
     IResultSetContainer getContainer();
@@ -64,17 +62,10 @@ public interface IResultSetController extends DBPContextProvider {
     @NotNull
     ResultSetModel getModel();
 
-    @Nullable
-    DBSDataContainer getDataContainer();
-
     @NotNull
     DBDDataReceiver getDataReceiver();
 
-    public Composite getControl();
-
-    boolean hasData();
-
-    boolean isHasMoreData();
+    Composite getControl();
 
     boolean isReadOnly();
 
