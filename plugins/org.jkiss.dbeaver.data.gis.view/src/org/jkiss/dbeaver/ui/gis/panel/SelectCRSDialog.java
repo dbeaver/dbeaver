@@ -205,7 +205,9 @@ public class SelectCRSDialog extends BaseDialog {
         public void update(ViewerCell cell) {
             Object element = cell.getElement();
             if (element instanceof String) {
-                cell.setText(element.toString());
+                if (cell.getColumnIndex() == 0) {
+                    cell.setText(element.toString());
+                }
             } else {
                 CRSInfo crsInfo = (CRSInfo) element;
                 switch (cell.getColumnIndex()) {
