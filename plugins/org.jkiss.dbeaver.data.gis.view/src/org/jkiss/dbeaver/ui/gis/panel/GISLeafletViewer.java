@@ -24,11 +24,13 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.ImageTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -129,20 +131,51 @@ public class GISLeafletViewer {
         toolBarManager.add(new Action("Open in browser", DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
             public void run() {
-                super.run();
+                UIUtils.launchProgram(scriptFile.getAbsolutePath());
+            }
+        });
+        toolBarManager.add(new Action("Copy as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
+            @Override
+            public void run() {
+                Image image = new Image(Display.getDefault(), browser.getBounds());
+                GC gc = new GC(image);
+                try {
+                    browser.print(gc);
+                } finally {
+                    gc.dispose();
+                }
+                ImageTransfer imageTransfer = ImageTransfer.getInstance();
+                Clipboard clipboard = new Clipboard(Display.getCurrent());
+                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
             }
         });
         toolBarManager.add(new Action("Save as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
             @Override
             public void run() {
-                super.run();
+/*
+                Image image = new Image(Display.getDefault(), browser.getBounds());
+                GC gc = new GC(image);
+                try {
+                    browser.print(gc);
+                } finally {
+                    gc.dispose();
+                }
+                ImageTransfer imageTransfer = ImageTransfer.getInstance();
+                Clipboard clipboard = new Clipboard(Display.getCurrent());
+                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
+*/
             }
         });
 
         toolBarManager.add(new Action("Print", DBeaverIcons.getImageDescriptor(UIIcon.PRINT)) {
             @Override
             public void run() {
-                super.run();
+                GC gc = new GC(browser.getDisplay());
+                try {
+                    browser.execute("javascript:window.print();");
+                } finally {
+                    gc.dispose();
+                }
             }
         });
 
