@@ -62,10 +62,11 @@ public class GISLeafletViewer {
     private final IValueController valueController;
     private final Browser browser;
     private DBGeometry[] lastValue;
-    private int sourceSRID;
+    private int sourceSRID; // Explicitly set SRID
+    private int actualSourceSRID; // SRID taken from geometry value
     private File scriptFile;
     private final ToolBarManager toolBarManager;
-    private int defaultSRID;
+    private int defaultSRID; // Target SRID used to render map
 
     public GISLeafletViewer(Composite parent, IValueController valueController) {
         this.valueController = valueController;
@@ -210,6 +211,7 @@ public class GISLeafletViewer {
                         GisTransformUtils.transformGisData(request);
                         targetValue = request.getTargetValue();
                         srid = request.getTargetSRID();
+                        actualSourceSRID = request.getSourceSRID();
                         showMap = request.isShowOnMap();
                     } catch (DBException e) {
                         log.debug("Error transforming CRS", e);
@@ -220,6 +222,9 @@ public class GISLeafletViewer {
             if (srid == 0) {
                 srid = GisConstants.DEFAULT_SRID;
                 showMap = true; // Let's give it a try
+            }
+            if (actualSourceSRID == 0) {
+                actualSourceSRID = GisConstants.DEFAULT_SRID;
             }
             if (baseSRID == 0) {
                 baseSRID = srid;
@@ -328,12 +333,17 @@ public class GISLeafletViewer {
         return lastValue;
     }
 
+    private int getCurrentSourceSRID() {
+        return actualSourceSRID != 0 ? actualSourceSRID :
+            defaultSRID != 0 ? defaultSRID : GisConstants.DEFAULT_SRID;
+    }
+
     private class ChangeCRSAction extends Action implements IMenuCreator {
 
         private MenuManager menuManager;
 
         public ChangeCRSAction() {
-            super("EPSG:" + GISLeafletViewer.this.defaultSRID, Action.AS_DROP_DOWN_MENU);
+            super("EPSG:" + getCurrentSourceSRID(), Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CHART_LINE));
         }
 
@@ -341,7 +351,7 @@ public class GISLeafletViewer {
         public void run() {
             SelectCRSDialog selectCRSDialog = new SelectCRSDialog(
                 UIUtils.getActiveWorkbenchShell(),
-                defaultSRID == 0 ? GisConstants.DEFAULT_SRID : defaultSRID);
+                getCurrentSourceSRID());
             if (selectCRSDialog.open() == IDialogConstants.OK_ID) {
                 setSourceSRID(selectCRSDialog.getSelectedSRID());
             }
