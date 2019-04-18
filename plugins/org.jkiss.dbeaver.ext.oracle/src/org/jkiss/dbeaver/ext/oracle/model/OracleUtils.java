@@ -34,7 +34,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -77,13 +83,12 @@ public class OracleUtils {
 //                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
                     JDBCUtils.executeProcedure(
                         session,
-                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
-                    JDBCUtils.executeProcedure(
-                        session,
-                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");  end;");
-                    JDBCUtils.executeProcedure(
-                        session,
-                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
+                        "begin\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + ");\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");\n" +
+                            "end;");
                 } catch (SQLException e) {
                     log.error("Can't apply DDL transform parameters", e);
                 }
@@ -99,7 +104,19 @@ public class OracleUtils {
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        ddl = dbResult.getString(1);
+                        Object ddlValue = dbResult.getObject(1);
+                        if (ddlValue instanceof Clob) {
+                            StringWriter buf = new StringWriter();
+                            try (Reader clobReader = ((Clob) ddlValue).getCharacterStream()) {
+                                IOUtils.copyText(clobReader, buf);
+                            } catch (IOException e) {
+                                e.printStackTrace(new PrintWriter(buf, true));
+                            }
+                            ddl = buf.toString();
+
+                        } else {
+                            ddl = CommonUtils.toString(ddlValue);
+                        }
                     } else {
                         log.warn("No DDL for " + objectType + " '" + objectFullName + "'");
                         return "-- EMPTY DDL";
@@ -128,7 +145,7 @@ public class OracleUtils {
         } catch (SQLException e) {
             if (object instanceof OracleTablePhysical) {
                 log.error("Error generating Oracle DDL. Generate default.", e);
-                return JDBCUtils.generateTableDDL(monitor, (OracleTableBase)object, options, true);
+                return JDBCUtils.generateTableDDL(monitor, object, options, true);
             } else {
                 throw new DBException(e, dataSource);
             }
