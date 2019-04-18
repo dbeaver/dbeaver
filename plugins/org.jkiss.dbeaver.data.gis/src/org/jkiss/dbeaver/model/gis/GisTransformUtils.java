@@ -47,6 +47,7 @@ public class GisTransformUtils {
     static {
         RegistryManager registryManager = crsFactory.getRegistryManager();
         registryManager.addRegistry(new EPSGRegistry());
+        //registryManager.addRegistry(new IGNFRegistry());
         try {
             crs3857 = crsFactory.getCRS("EPSG:3857");
         } catch (CRSException e) {
@@ -56,6 +57,10 @@ public class GisTransformUtils {
 //        registryManager.addRegistry(new IGNFRegistry());
 //        registryManager.addRegistry(new Nad83Registry());
 //        registryManager.addRegistry(new WorldRegistry());
+    }
+
+    public static CRSFactory getCRSFactory() {
+        return crsFactory;
     }
 
     public static void transformGisData(GisTransformRequest request) throws DBException {
