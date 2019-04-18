@@ -56,7 +56,7 @@ abstract class ActiveStatusMessage extends Composite {
     private ILoadService<String> loadService;
 
     public ActiveStatusMessage(@NotNull Composite parent, Image actionImage, String actionText, @Nullable final ResultSetViewer viewer) {
-        super(parent, SWT.BORDER);
+        super(parent, SWT.NONE);
 
         this.viewer = viewer;
         this.actionImage = actionImage;
