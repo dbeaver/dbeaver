@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerDescriptor;
@@ -46,7 +47,7 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
 
     private static final Log log = Log.getLog(GISPanelEditor.class);
     private static final String PROP_VIEWER_ID = "gis.geometry.viewer.id";
-    private static final String DEFAULT_VIEWER_ID = GISTextViewer.class.getName();
+    private static final String DEFAULT_VIEWER_ID = GISBrowserViewer.class.getName();
 
     private GeometryViewerDescriptor curViewerDescriptor;
     private IGeometryViewer curViewer;
@@ -64,18 +65,27 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
     }
 
     @Override
+    public boolean isReadOnly() {
+        return curViewer == null || curViewer.isReadOnly();
+    }
+
+    @Override
     public Object extractEditorValue() throws DBException {
         return curViewer == null ? null : curViewer.extractEditorValue();
     }
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
-        for (GeometryViewerDescriptor vd : GeometryViewerRegistry.getInstance().getViewers()) {
+        List<GeometryViewerDescriptor> viewers = GeometryViewerRegistry.getInstance().getViewers();
+        for (int i = 0; i < viewers.size(); i++) {
+            if (i > 0) {
+                manager.add(new Separator());
+            }
+            GeometryViewerDescriptor vd = viewers.get(i);
             Action switchAction = new ViewerSetAction(vd);
             manager.add(ActionUtils.makeActionContribution(switchAction, true));
-            manager.add(new Separator());
         }
-        manager.add(new Separator());
+        //manager.add(new ToolbarSeparatorContribution(false));
         //manager.add(new ViewerSwitchAction());
         if (curViewer != null) {
             curViewer.contributeActions(manager, controller);

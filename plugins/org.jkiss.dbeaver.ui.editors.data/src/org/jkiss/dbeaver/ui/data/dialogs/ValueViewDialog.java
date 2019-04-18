@@ -82,6 +82,11 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
 
     }
 
+    @Override
+    public boolean isReadOnly() {
+        return getValueController().isReadOnly();
+    }
+
     protected IDialogSettings getDialogSettings()
     {
         return dialogSettings;
