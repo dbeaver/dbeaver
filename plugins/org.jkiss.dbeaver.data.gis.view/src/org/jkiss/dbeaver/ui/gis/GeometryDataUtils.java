@@ -82,17 +82,15 @@ public class GeometryDataUtils {
         return result;
     }
 
-    public static void setGeometryProperties(IResultSetController controller, GeomAttrs geomAttrs, DBGeometry geometry) {
+    public static void setGeometryProperties(IResultSetController controller, GeomAttrs geomAttrs, DBGeometry geometry, ResultSetRow row) {
         // Now extract all geom values from data
         ResultSetModel model = controller.getModel();
-        ResultSetRow currentRow = controller.getCurrentRow();
-        if (currentRow != null) {
-            Object value = model.getCellValue(geomAttrs.geomAttr, currentRow);
+        if (row != null) {
             // Now get description
             if (!geomAttrs.descAttrs.isEmpty()) {
                 Map<String, Object> properties = new LinkedHashMap<>();
                 for (DBDAttributeBinding da : geomAttrs.descAttrs) {
-                    Object descValue = model.getCellValue(da, currentRow);
+                    Object descValue = model.getCellValue(da, row);
                     properties.put(da.getName(), descValue);
                 }
                 geometry.setProperties(properties);
