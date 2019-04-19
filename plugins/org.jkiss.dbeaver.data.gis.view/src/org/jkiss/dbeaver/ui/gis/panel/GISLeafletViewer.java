@@ -41,6 +41,8 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -66,11 +68,13 @@ public class GISLeafletViewer {
     private int defaultSRID; // Target SRID used to render map
 
     private boolean toolsVisible = true;
+    private final Composite composite;
 
     public GISLeafletViewer(Composite parent, IValueController valueController) {
         this.valueController = valueController;
 
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        composite = UIUtils.createPlaceholder(parent, 1);
+        CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         browser = new Browser(composite, SWT.NONE);
         browser.addDisposeListener(e -> {
@@ -81,8 +85,9 @@ public class GISLeafletViewer {
         {
             Composite bottomPanel = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
             bottomPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            CSSUtils.setCSSClass(bottomPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-            ToolBar bottomToolbar = new ToolBar(bottomPanel, SWT.HORIZONTAL | SWT.RIGHT);
+            ToolBar bottomToolbar = new ToolBar(bottomPanel, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
             toolBarManager = new ToolBarManager(bottomToolbar);
         }
@@ -265,6 +270,10 @@ public class GISLeafletViewer {
                 log.debug("Can't delete temp script file '" + scriptFile.getAbsolutePath() + "'");
             }
         }
+    }
+
+    public Composite getBrowserComposite() {
+        return composite;
     }
 
     public Browser getBrowser() {

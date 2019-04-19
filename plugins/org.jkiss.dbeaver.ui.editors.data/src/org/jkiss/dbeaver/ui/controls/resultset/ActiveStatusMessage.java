@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -68,7 +70,8 @@ abstract class ActiveStatusMessage extends Composite {
         this.setLayout(layout);
 
         // Toolbar
-        ToolBar tb = new ToolBar(this, SWT.HORIZONTAL);
+        ToolBar tb = new ToolBar(this, SWT.FLAT | SWT.HORIZONTAL);
+        CSSUtils.setCSSClass(tb, DBStyles.COLORED_BY_CONNECTION_TYPE);
         actionItem = new ToolItem(tb, SWT.NONE);
         actionItem.setImage(this.actionImage);
         if (actionText != null) {
