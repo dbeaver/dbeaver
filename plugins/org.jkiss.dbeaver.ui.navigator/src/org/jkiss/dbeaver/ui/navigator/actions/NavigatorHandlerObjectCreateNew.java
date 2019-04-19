@@ -68,14 +68,22 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (!updateUI) {
             return;
         }
-        element.setText(NLS.bind(UINavigatorMessages.actions_navigator_create_new, getObjectTypeName(element)));
-        DBPImage image = getObjectTypeIcon(element);
-        if (image == null) {
-            image = DBIcon.TYPE_OBJECT;
+        Object typeName = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
+        Object objectIcon = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
+        if (typeName != null) {
+            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_create_new, typeName));
+        } else {
+            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_create_new, getObjectTypeName(element)));
         }
-        element.setIcon(DBeaverIcons.getImageDescriptor(image));
-//        DBIconComposite iconComposite = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_ADD);
-//        element.setIcon(DBeaverIcons.getImageDescriptor(iconComposite));
+        if (objectIcon != null) {
+            element.setIcon(DBeaverIcons.getImageDescriptor(new DBIcon(objectIcon.toString())));
+        } else {
+            DBPImage image = getObjectTypeIcon(element);
+            if (image == null) {
+                image = DBIcon.TYPE_OBJECT;
+            }
+            element.setIcon(DBeaverIcons.getImageDescriptor(image));
+        }
     }
 
     public static String getObjectTypeName(UIElement element) {
@@ -142,33 +150,75 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 }
                 DBNNode node = (DBNNode) element;
 
+                if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
+                    if (!addedClasses.contains(DBPDataSourceContainer.class)) {
+                        addedClasses.add(DBPDataSourceContainer.class);
+
+                        CommandContributionItem item;
+                        if (node instanceof DBNLocalFolder) {
+                            item = makeCreateContributionItem(
+                                site, DBPDataSourceContainer.class.getName(), ((DBNLocalFolder) node).getChildrenType(), UIIcon.SQL_NEW_CONNECTION);
+                        } else {
+                            item = makeCreateContributionItem(
+                                site, DBPDataSourceContainer.class.getName(), node.getNodeType(), UIIcon.SQL_NEW_CONNECTION);
+                        }
+                        createActions.add(item);
+                    }
+                } else if (node instanceof DBNDatabaseNode) {
+                    addDatabaseNodeCreateItems(site, createActions, (DBNDatabaseNode) node);
+                }
+
                 if (node instanceof DBNLocalFolder || node instanceof DBNDataSource) {
                     if (!addedClasses.contains(DBNLocalFolder.class)) {
                         addedClasses.add(DBNLocalFolder.class);
                         createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
                     }
+                } else if (node instanceof DBNResource) {
+
                 }
 
-                if (node instanceof DBNDataSource) {
-                    if (!addedClasses.contains(DBPDataSourceContainer.class)) {
-                        addedClasses.add(DBPDataSourceContainer.class);
-
-                        CommandContributionItemParameter params = new CommandContributionItemParameter(
-                            site,
-                            NavigatorCommands.CMD_OBJECT_CREATE,
-                            NavigatorCommands.CMD_OBJECT_CREATE,
-                            CommandContributionItem.STYLE_PUSH
-                        );
-                        Map<String, String> parameters = new HashMap<>();
-                        parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE, DBPDataSourceContainer.class.getName());
-                        params.parameters = parameters;
-                        createActions.add(new CommandContributionItem(params));
-                    }
-                }
             }
 
             return createActions.toArray(new IContributionItem[0]);
         }
+    }
+
+    private static void addDatabaseNodeCreateItems(IWorkbenchPartSite site, List<IContributionItem> createActions, DBNDatabaseNode node) {
+        if (node instanceof DBNDatabaseFolder) {
+            final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder) node).getMeta().getChildren(node);
+            if (!CommonUtils.isEmpty(metaChildren)) {
+                Class<?> nodeClass = ((DBNContainer) node).getChildrenClass();
+                String nodeType = metaChildren.get(0).getChildrenType(node.getDataSource());
+                DBPImage nodeIcon = metaChildren.get(0).getIcon(node);
+                if (nodeClass != null && nodeType != null) {
+                    CommandContributionItem item = makeCreateContributionItem(
+                        site, nodeClass.getName(), nodeType, nodeIcon);
+                    createActions.add(item);
+                }
+            }
+        } else {
+            Class<?> nodeItemClass = node.getObject().getClass();
+            CommandContributionItem item = makeCreateContributionItem(
+                site, nodeItemClass.getName(), node.getNodeType(), node.getNodeIconDefault());
+            createActions.add(item);
+            // Now add all child folders
+        }
+    }
+
+    private static CommandContributionItem makeCreateContributionItem(IWorkbenchPartSite site, String objectType, String objectTypeName, DBPImage objectIcon) {
+        CommandContributionItemParameter params = new CommandContributionItemParameter(
+            site,
+            NavigatorCommands.CMD_OBJECT_CREATE,
+            NavigatorCommands.CMD_OBJECT_CREATE,
+            CommandContributionItem.STYLE_PUSH
+        );
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE, objectType);
+        parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE_NAME, objectTypeName);
+        parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE_ICON, objectIcon.getLocation());
+        params.parameters = parameters;
+
+        return new CommandContributionItem(params);
     }
 
 }

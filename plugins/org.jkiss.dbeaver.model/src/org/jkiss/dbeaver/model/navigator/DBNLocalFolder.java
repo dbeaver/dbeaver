@@ -77,7 +77,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public String getChildrenType()
     {
-        return "connections";
+        return "Connection";
     }
 
     @Override

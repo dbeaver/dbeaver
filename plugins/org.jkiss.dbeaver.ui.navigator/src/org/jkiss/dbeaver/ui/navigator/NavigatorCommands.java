@@ -35,5 +35,6 @@ public class NavigatorCommands {
     public static final String CMD_CREATE_LOCAL_FOLDER = "org.jkiss.dbeaver.core.new.folder";
 
     public static final String PARAM_OBJECT_TYPE = "org.jkiss.dbeaver.core.object.type";
-
+    public static final String PARAM_OBJECT_TYPE_NAME = "org.jkiss.dbeaver.core.object.typeName";
+    public static final String PARAM_OBJECT_TYPE_ICON = "org.jkiss.dbeaver.core.object.typeIcon";
 }
