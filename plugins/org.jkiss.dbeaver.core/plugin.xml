@@ -785,6 +785,9 @@
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <menu label="Create">
+                <dynamic id="org.jkiss.dbeaver.core.menu.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew$MenuCreateContributor"/>
+            </menu>
             <command commandId="org.jkiss.dbeaver.core.object.create">
                 <visibleWhen checkEnabled="true"/>
             </command>
