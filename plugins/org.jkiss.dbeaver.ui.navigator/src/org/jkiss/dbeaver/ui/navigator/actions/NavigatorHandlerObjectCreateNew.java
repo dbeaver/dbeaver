@@ -142,13 +142,16 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 }
                 DBNNode node = (DBNNode) element;
 
-                if (node instanceof DBNDataSource) {
+                if (node instanceof DBNLocalFolder || node instanceof DBNDataSource) {
                     if (!addedClasses.contains(DBNLocalFolder.class)) {
                         addedClasses.add(DBNLocalFolder.class);
                         createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
                     }
-                    if (!addedClasses.contains(DBNDataSource.class)) {
-                        addedClasses.add(DBNDataSource.class);
+                }
+
+                if (node instanceof DBNDataSource) {
+                    if (!addedClasses.contains(DBPDataSourceContainer.class)) {
+                        addedClasses.add(DBPDataSourceContainer.class);
 
                         CommandContributionItemParameter params = new CommandContributionItemParameter(
                             site,
