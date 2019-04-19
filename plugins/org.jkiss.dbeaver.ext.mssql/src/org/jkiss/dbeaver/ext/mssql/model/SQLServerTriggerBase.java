@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,7 +47,6 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     private String name;
     private String type;
     private String body;
-    private String enabledState;
     private long objectId;
     private boolean insteadOfTrigger;
     private boolean disabled;
@@ -63,7 +63,6 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.insteadOfTrigger = JDBCUtils.safeGetInt(dbResult, "is_instead_of_trigger") != 0;
         this.disabled = JDBCUtils.safeGetInt(dbResult, "is_disabled") != 0;
-        this.enabledState = JDBCUtils.safeGetString(dbResult, "is_disabled");
         this.persisted = true;
     }
 
@@ -119,10 +118,6 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
-
-    public String getEnabledState() {
-        return enabledState;
-    }
     
     public String getBody()
     {
@@ -175,7 +170,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
 
     @Override
     public DBSObjectState getObjectState() {
-        if ("1".equals(enabledState)) {
+        if (disabled) {
             return DBSObjectState.INVALID;
         }
         return DBSObjectState.NORMAL;
@@ -184,7 +179,7 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
-            enabledState = JDBCUtils.queryString(session, "SELECT is_disabled FROM sys.triggers WHERE object_id=?", getObjectId());
+            disabled  = CommonUtils.toBoolean(JDBCUtils.queryObject(session, "SELECT is_disabled FROM sys.triggers WHERE object_id=?", getObjectId()));
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
