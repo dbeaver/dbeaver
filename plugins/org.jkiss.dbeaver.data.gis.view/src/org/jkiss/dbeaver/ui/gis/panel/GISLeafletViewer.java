@@ -124,7 +124,6 @@ public class GISLeafletViewer {
         }
         lastValue = values;
         updateToolbar();
-        updateControlsVisibility();
     }
 
     private File generateViewScript(DBGeometry[] values) throws IOException {
@@ -222,6 +221,8 @@ public class GISLeafletViewer {
                     return String.valueOf(defaultSRID);
                 } else if (name.equals("showMap")) {
                     return String.valueOf(isShowMap);
+                } else if (name.equals("showTools")) {
+                    return String.valueOf(toolsVisible);
                 }
                 return null;
             });
@@ -359,15 +360,9 @@ public class GISLeafletViewer {
     }
 
     private void updateControlsVisibility() {
-        String elementsVisibility = toolsVisible ? "visible" : "hidden";
-
         GC gc = new GC(browser.getDisplay());
         try {
-            browser.execute("javascript:" +
-                "document.getElementsByClassName('leaflet-control-zoom')[0].style.visibility='" + elementsVisibility +"';" +
-                "document.getElementsByClassName('leaflet-control-layers')[0].style.visibility='" + elementsVisibility +"';" +
-                "document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility='" + elementsVisibility +"';"
-            );
+            browser.execute("javascript:showTools(" + toolsVisible +");");
         } finally {
             gc.dispose();
         }
