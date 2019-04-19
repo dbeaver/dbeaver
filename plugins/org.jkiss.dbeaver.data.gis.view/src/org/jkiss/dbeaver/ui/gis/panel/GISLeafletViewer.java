@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.gis.panel;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuCreator;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -67,6 +64,8 @@ public class GISLeafletViewer {
     private File scriptFile;
     private final ToolBarManager toolBarManager;
     private int defaultSRID; // Target SRID used to render map
+
+    private boolean toolsVisible = true;
 
     public GISLeafletViewer(Composite parent, IValueController valueController) {
         this.valueController = valueController;
@@ -125,65 +124,7 @@ public class GISLeafletViewer {
         }
         lastValue = values;
         updateToolbar();
-    }
-
-    private void updateToolbar() {
-        toolBarManager.removeAll();
-        toolBarManager.add(new Action("Open in browser", DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
-            @Override
-            public void run() {
-                UIUtils.launchProgram(scriptFile.getAbsolutePath());
-            }
-        });
-        toolBarManager.add(new Action("Copy as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
-            @Override
-            public void run() {
-                Image image = new Image(Display.getDefault(), browser.getBounds());
-                GC gc = new GC(image);
-                try {
-                    browser.print(gc);
-                } finally {
-                    gc.dispose();
-                }
-                ImageTransfer imageTransfer = ImageTransfer.getInstance();
-                Clipboard clipboard = new Clipboard(Display.getCurrent());
-                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
-            }
-        });
-        toolBarManager.add(new Action("Save as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
-            @Override
-            public void run() {
-/*
-                Image image = new Image(Display.getDefault(), browser.getBounds());
-                GC gc = new GC(image);
-                try {
-                    browser.print(gc);
-                } finally {
-                    gc.dispose();
-                }
-                ImageTransfer imageTransfer = ImageTransfer.getInstance();
-                Clipboard clipboard = new Clipboard(Display.getCurrent());
-                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
-*/
-            }
-        });
-
-        toolBarManager.add(new Action("Print", DBeaverIcons.getImageDescriptor(UIIcon.PRINT)) {
-            @Override
-            public void run() {
-                GC gc = new GC(browser.getDisplay());
-                try {
-                    browser.execute("javascript:window.print();");
-                } finally {
-                    gc.dispose();
-                }
-            }
-        });
-
-
-        Action crsSelectorAction = new ChangeCRSAction();
-        toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
-        toolBarManager.update(true);
+        updateControlsVisibility();
     }
 
     private File generateViewScript(DBGeometry[] values) throws IOException {
@@ -336,6 +277,100 @@ public class GISLeafletViewer {
     private int getCurrentSourceSRID() {
         return actualSourceSRID != 0 ? actualSourceSRID :
             defaultSRID != 0 ? defaultSRID : GisConstants.DEFAULT_SRID;
+    }
+
+    private void updateToolbar() {
+        toolBarManager.removeAll();
+        toolBarManager.add(new Action("Open in browser", DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
+            @Override
+            public void run() {
+                UIUtils.launchProgram(scriptFile.getAbsolutePath());
+            }
+        });
+        toolBarManager.add(new Action("Copy as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
+            @Override
+            public void run() {
+                Image image = new Image(Display.getDefault(), browser.getBounds());
+                GC gc = new GC(image);
+                try {
+                    browser.print(gc);
+                } finally {
+                    gc.dispose();
+                }
+                ImageTransfer imageTransfer = ImageTransfer.getInstance();
+                Clipboard clipboard = new Clipboard(Display.getCurrent());
+                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
+            }
+        });
+        toolBarManager.add(new Action("Save as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
+            @Override
+            public void run() {
+/*
+                Image image = new Image(Display.getDefault(), browser.getBounds());
+                GC gc = new GC(image);
+                try {
+                    browser.print(gc);
+                } finally {
+                    gc.dispose();
+                }
+                ImageTransfer imageTransfer = ImageTransfer.getInstance();
+                Clipboard clipboard = new Clipboard(Display.getCurrent());
+                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
+*/
+            }
+        });
+
+        toolBarManager.add(new Action("Print", DBeaverIcons.getImageDescriptor(UIIcon.PRINT)) {
+            @Override
+            public void run() {
+                GC gc = new GC(browser.getDisplay());
+                try {
+                    browser.execute("javascript:window.print();");
+                } finally {
+                    gc.dispose();
+                }
+            }
+        });
+
+        Action crsSelectorAction = new ChangeCRSAction();
+        toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
+
+        toolBarManager.add(new Separator());
+
+        toolBarManager.add(new Action("Show/Hide controls", Action.AS_CHECK_BOX) {
+            {
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PALETTE));
+            }
+
+            @Override
+            public boolean isChecked() {
+                return toolsVisible;
+            }
+
+            @Override
+            public void run() {
+                toolsVisible = !toolsVisible;
+                updateControlsVisibility();
+                updateToolbar();
+            }
+        });
+
+        toolBarManager.update(true);
+    }
+
+    private void updateControlsVisibility() {
+        String elementsVisibility = toolsVisible ? "visible" : "hidden";
+
+        GC gc = new GC(browser.getDisplay());
+        try {
+            browser.execute("javascript:" +
+                "document.getElementsByClassName('leaflet-control-zoom')[0].style.visibility='" + elementsVisibility +"';" +
+                "document.getElementsByClassName('leaflet-control-layers')[0].style.visibility='" + elementsVisibility +"';" +
+                "document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility='" + elementsVisibility +"';"
+            );
+        } finally {
+            gc.dispose();
+        }
     }
 
     private class ChangeCRSAction extends Action implements IMenuCreator {
