@@ -245,6 +245,7 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel = UIUtils.createPlaceholder(mainPanel, 1);
         this.viewerPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.viewerPanel.setData(CONTROL_ID, this);
+        CSSUtils.setCSSClass(this.viewerPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
 
@@ -1534,11 +1535,13 @@ public class ResultSetViewer extends Viewer
                 }
             };
             rowCountLabel.setLayoutData(new RowData(10 * fontHeight, SWT.DEFAULT));
+            CSSUtils.setCSSClass(rowCountLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             rowCountLabel.setMessage("Row Count");
 
             UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             statusLabel.setLayoutData(new RowData(30 * fontHeight, SWT.DEFAULT));
+            CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             statusBar.addListener(SWT.Resize, event -> {
                 Point fullSize = statusBar.computeSize(-1, -1);

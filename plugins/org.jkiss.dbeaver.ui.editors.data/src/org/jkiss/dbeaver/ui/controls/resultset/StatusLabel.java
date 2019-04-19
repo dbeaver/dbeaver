@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -62,7 +64,8 @@ class StatusLabel extends Composite {
         colorError = JFaceColors.getErrorText(Display.getDefault());
         colorWarning = colorDefault;
 */
-        final ToolBar tb = new ToolBar(this, SWT.HORIZONTAL);
+        final ToolBar tb = new ToolBar(this, SWT.FLAT | SWT.HORIZONTAL);
+        CSSUtils.setCSSClass(tb, DBStyles.COLORED_BY_CONNECTION_TYPE);
         final ToolItem detailsIcon = new ToolItem(tb, SWT.NONE);
         detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
         tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
