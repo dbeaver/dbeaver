@@ -177,6 +177,7 @@ public class UIIcon {
     public static final DBIcon GEN_DATABASE = new DBIcon("gen_database", "database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GEN_DATABASE_TYPE = new DBIcon("gen_database_type", "database_type.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon SQL_NEW_CONNECTION = new DBIcon("sql_new_connection", "database_connect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONNECT = new DBIcon("sql_connect", "sql/connect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_DISCONNECT = new DBIcon("sql_disconnect", "sql/disconnect.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT = new DBIcon("sql_script", "sql/sql_script.png"); //$NON-NLS-1$ //$NON-NLS-2$

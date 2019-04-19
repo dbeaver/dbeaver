@@ -187,6 +187,8 @@
         <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database">
             <commandParameter id="org.jkiss.dbeaver.core.object.type" name="Object type" optional="true"/>
+            <commandParameter id="org.jkiss.dbeaver.core.object.typeName" name="Object type name" optional="true"/>
+            <commandParameter id="org.jkiss.dbeaver.core.object.typeIcon" name="Object type icon" optional="true"/>
         </command>
         <command id="org.jkiss.dbeaver.core.object.delete" name="%command.org.jkiss.dbeaver.core.object.delete.name" description="%command.org.jkiss.dbeaver.core.object.delete.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.move.up" name="%command.org.jkiss.dbeaver.core.object.move.up.name" description="%command.org.jkiss.dbeaver.core.object.move.up.description" categoryId="org.jkiss.dbeaver.core.database"/>
