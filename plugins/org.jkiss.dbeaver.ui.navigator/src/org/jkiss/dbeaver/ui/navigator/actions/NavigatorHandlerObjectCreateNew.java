@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -33,10 +34,17 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -71,7 +79,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         Object typeName = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_NAME);
         Object objectIcon = parameters.get(NavigatorCommands.PARAM_OBJECT_TYPE_ICON);
         if (typeName != null) {
-            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_create_new, typeName));
+            element.setText(typeName.toString());
         } else {
             element.setText(NLS.bind(UINavigatorMessages.actions_navigator_create_new, getObjectTypeName(element)));
         }
@@ -150,21 +158,19 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 }
                 DBNNode node = (DBNNode) element;
 
-                if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
+                if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
+                    continue;
+                }
+
+                if (node instanceof DBNLocalFolder) {
                     if (!addedClasses.contains(DBPDataSourceContainer.class)) {
                         addedClasses.add(DBPDataSourceContainer.class);
-
-                        CommandContributionItem item;
-                        if (node instanceof DBNLocalFolder) {
-                            item = makeCreateContributionItem(
-                                site, DBPDataSourceContainer.class.getName(), ((DBNLocalFolder) node).getChildrenType(), UIIcon.SQL_NEW_CONNECTION);
-                        } else {
-                            item = makeCreateContributionItem(
-                                site, DBPDataSourceContainer.class.getName(), node.getNodeType(), UIIcon.SQL_NEW_CONNECTION);
-                        }
+                        CommandContributionItem item = makeCreateContributionItem(
+                            site, DBPDataSourceContainer.class.getName(), ((DBNLocalFolder) node).getChildrenType(), UIIcon.SQL_NEW_CONNECTION);
                         createActions.add(item);
                     }
-                } else if (node instanceof DBNDatabaseNode) {
+                }
+                if (node instanceof DBNDatabaseNode) {
                     addDatabaseNodeCreateItems(site, createActions, (DBNDatabaseNode) node);
                 }
 
@@ -179,6 +185,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
 
             }
 
+            if (!createActions.isEmpty() && createActions.get(createActions.size() - 1) instanceof Separator) {
+                createActions.remove(createActions.size() - 1);
+            }
             return createActions.toArray(new IContributionItem[0]);
         }
     }
@@ -198,11 +207,63 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             }
         } else {
             Class<?> nodeItemClass = node.getObject().getClass();
-            CommandContributionItem item = makeCreateContributionItem(
-                site, nodeItemClass.getName(), node.getNodeType(), node.getNodeIconDefault());
-            createActions.add(item);
+            DBPImage nodeIcon = node.getNodeIconDefault();
+            if (node instanceof DBNDataSource) {
+                nodeIcon = UIIcon.SQL_NEW_CONNECTION;
+            }
+            if (isCreateSupported(node, nodeItemClass)) {
+                createActions.add(
+                    makeCreateContributionItem(
+                        site, nodeItemClass.getName(), node.getNodeType(), nodeIcon));
+            }
+
             // Now add all child folders
+            createActions.add(new Separator());
+
+            List<DBXTreeNode> childNodeMetas = node.getMeta().getChildren(node);
+            if (!CommonUtils.isEmpty(childNodeMetas)) {
+                for (DBXTreeNode childMeta : childNodeMetas) {
+                    if (childMeta instanceof DBXTreeFolder) {
+                        List<DBXTreeNode> folderChildMeta = childMeta.getChildren(node);
+                        if (!CommonUtils.isEmpty(folderChildMeta) && folderChildMeta.size() == 1 && folderChildMeta.get(0) instanceof DBXTreeItem) {
+                            addChildNodeCreateItem(site, createActions, node, (DBXTreeItem) folderChildMeta.get(0));
+                        }
+                    } else if (childMeta instanceof DBXTreeItem) {
+                        addChildNodeCreateItem(site, createActions, node, (DBXTreeItem) childMeta);
+                    }
+                }
+            }
         }
+    }
+
+    private static boolean addChildNodeCreateItem(IWorkbenchPartSite site, List<IContributionItem> createActions, DBNDatabaseNode node, DBXTreeItem childMeta) {
+        if (childMeta.isVirtual()) {
+            return false;
+        }
+        Class<?> objectClass = node.getChildrenClass(childMeta);
+        if (objectClass != null) {
+
+            if (!isCreateSupported(node, objectClass)) {
+                return false;
+            }
+
+            String typeName = childMeta.getNodeType(node.getDataSource());
+            if (typeName != null) {
+                CommandContributionItem item = makeCreateContributionItem(
+                    site, objectClass.getName(), typeName, childMeta.getIcon(node));
+                createActions.add(item);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isCreateSupported(DBNDatabaseNode node, Class<?> objectClass) {
+        DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(objectClass, DBEObjectMaker.class);
+        if (objectMaker == null) {
+            return false;
+        }
+        return objectMaker.canCreateObject(node.getValueObject());
     }
 
     private static CommandContributionItem makeCreateContributionItem(IWorkbenchPartSite site, String objectType, String objectTypeName, DBPImage objectIcon) {
@@ -215,10 +276,21 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         Map<String, String> parameters = new HashMap<>();
         parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE, objectType);
         parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE_NAME, objectTypeName);
-        parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE_ICON, objectIcon.getLocation());
+        if (objectIcon != null) {
+            parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE_ICON, objectIcon.getLocation());
+        }
         params.parameters = parameters;
 
         return new CommandContributionItem(params);
+    }
+
+    private static boolean isReadOnly(DBSObject object)
+    {
+        if (object == null) {
+            return true;
+        }
+        DBPDataSource dataSource = object.getDataSource();
+        return dataSource == null || dataSource.getContainer().isConnectionReadOnly();
     }
 
 }

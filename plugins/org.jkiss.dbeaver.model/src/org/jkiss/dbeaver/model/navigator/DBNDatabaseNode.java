@@ -769,7 +769,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
     }
 
-    protected Class<?> getChildrenClass(DBXTreeItem childMeta) {
+    public Class<?> getChildrenClass(DBXTreeItem childMeta) {
         Object valueObject = getValueObject();
         if (valueObject == null) {
             return null;
