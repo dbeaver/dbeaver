@@ -169,7 +169,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
             super.afterExecute(session, error);
             if (error == null) {
                 try {
-                    database.initializeMetaContext(session.getProgressMonitor());
+                    database.checkInstanceConnection(session.getProgressMonitor());
                 } catch (DBException e) {
                     log.error("Can't connect to the new database");
                 }
