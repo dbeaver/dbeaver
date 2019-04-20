@@ -51,7 +51,6 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
         if (node == null || !(node.getParentNode() instanceof DBNContainer)) {
             return null;
         }
-        DBNContainer containerNode = (DBNContainer) node.getParentNode();
         DBSObject object = ((DBNDatabaseNode) node).getObject();
         if (!(object instanceof DBPOrderedObject)) {
             return null;
@@ -81,7 +80,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
 
             CommandTarget commandTarget = getCommandTarget(
                 HandlerUtil.getActiveWorkbenchWindow(event),
-                containerNode,
+                node.getParentNode(),
                 object.getClass(),
                 false);
             String actionId = event.getCommand().getId();

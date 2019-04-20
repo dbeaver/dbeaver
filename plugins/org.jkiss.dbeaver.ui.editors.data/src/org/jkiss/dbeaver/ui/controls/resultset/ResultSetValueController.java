@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
+import org.jkiss.dbeaver.ui.data.IDataController;
 import org.jkiss.dbeaver.ui.data.IRowController;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
@@ -45,7 +46,7 @@ import java.util.List;
 */
 public class ResultSetValueController implements IAttributeController, IRowController {
 
-    protected final ResultSetViewer controller;
+    protected final IResultSetController controller;
     protected final Composite inlinePlaceholder;
     protected EditType editType;
     protected ResultSetRow curRow;
@@ -79,6 +80,11 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     @Override
     public DBCExecutionContext getExecutionContext() {
         return controller.getExecutionContext();
+    }
+
+    @Override
+    public IDataController getDataController() {
+        return controller;
     }
 
     @Override
@@ -139,7 +145,9 @@ public class ResultSetValueController implements IAttributeController, IRowContr
                     controller.updatePanelsContent(false);
                 }
             });
-            controller.fireResultSetChange();
+            if (controller instanceof ResultSetViewer) {
+                ((ResultSetViewer)controller).fireResultSetChange();
+            }
         }
     }
 

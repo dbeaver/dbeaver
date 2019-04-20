@@ -148,7 +148,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (!(node.getParentNode() instanceof DBNContainer)) {
                 throw new DBException("Node '" + node + "' doesn't have a container");
             }
-            final DBNContainer container = (DBNContainer) node.getParentNode();
 
             // Try to delete object using object manager
             DBSObject object = node.getObject();
@@ -163,7 +162,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
             CommandTarget commandTarget = getCommandTarget(
                 workbenchWindow,
-                container,
+                node.getParentNode(),
                 object.getClass(),
                 false);
 

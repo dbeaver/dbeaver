@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPObjectWithLongId;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+package org.jkiss.dbeaver.model.app;
+
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * SQLServerObject.
- * Represented in sys.objects
+ * Resource creator
  */
-public interface SQLServerObject extends DBPNamedObject, DBSObject, DBPObjectWithLongId
-{
+public interface DBPResourceCreator extends DBPResourceHandler {
+
+    int FEATURE_CREATE_FILE     = 32;
+
+    IResource createResource(@NotNull IFolder folder) throws CoreException, DBException;
 
 }

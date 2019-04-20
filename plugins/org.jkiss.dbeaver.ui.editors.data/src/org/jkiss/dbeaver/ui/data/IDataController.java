@@ -14,17 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mssql.model;
+package org.jkiss.dbeaver.ui.data;
 
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPObjectWithLongId;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
- * SQLServerObject.
- * Represented in sys.objects
+ * Data controller
  */
-public interface SQLServerObject extends DBPNamedObject, DBSObject, DBPObjectWithLongId
-{
+public interface IDataController {
+
+    @NotNull
+    IWorkbenchPartSite getSite();
+
+    @Nullable
+    DBSDataContainer getDataContainer();
+
+    boolean hasData();
+
+    boolean isHasMoreData();
 
 }

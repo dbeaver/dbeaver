@@ -414,6 +414,15 @@ public class CommonUtils {
         return new String(hexChars);
     }
 
+    public static byte[] parseHexString(String hex) {
+        int strLength = hex.length();
+        byte[] data = new byte[strLength / 2];
+        for (int i = 0; i < strLength; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i+1), 16));
+        }
+        return data;
+    }
+
     public static String toBinaryString(long longValue, int bitCount) {
         String strValue = Long.toString(longValue, 2);
         if (strValue.length() < bitCount) {

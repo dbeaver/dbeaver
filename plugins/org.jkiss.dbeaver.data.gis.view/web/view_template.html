@@ -22,7 +22,7 @@
         var geomSRID = ${geomSRID};
 
         var wkx = require('wkx');
-        var mymap = L.map('gisMap'); //.setView([51.505, -0.09], 13);
+        var geoMap = L.map('gisMap'); //.setView([51.505, -0.09], 13);
 
         if (${showMap}) {
             L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
@@ -31,7 +31,7 @@
                     '<a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_new">CC-BY-SA</a>, ' +
                     'Imagery <a href="https://www.mapbox.com/" target="_new">Mapbox</a>',
                 id: 'mapbox.streets'
-            }).addTo(mymap);
+            }).addTo(geoMap);
         }
 
         let baseLayersObj = {
@@ -50,7 +50,7 @@
                   ' &copy; <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a>',
               }),
         };
-        L.control.layers(baseLayersObj).addTo(mymap);
+        L.control.layers(baseLayersObj).addTo(geoMap);
 
 
         const geojsonMarkerOptions = {
@@ -86,7 +86,7 @@
             },
             onEachFeature: onEachFeature
         });
-        vectorLayer.addTo(mymap);
+        vectorLayer.addTo(geoMap);
 
         for (i = 0; i < sourceValues.length; i++) {
             var geomValue = sourceValues[i];
@@ -98,7 +98,16 @@
         }
 
         var bounds = vectorLayer.getBounds();
-        mymap.fitBounds(bounds);
+        geoMap.fitBounds(bounds);
+
+        function showTools(toolsVisible) {
+            var elementsVisibility = toolsVisible ? 'visible' : 'hidden';
+            document.getElementsByClassName('leaflet-control-zoom')[0].style.visibility=elementsVisibility;
+            document.getElementsByClassName('leaflet-control-layers')[0].style.visibility=elementsVisibility;
+            document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility=elementsVisibility;
+        }
+
+        showTools(${showTools});
     </script>
 </body>
 

@@ -104,6 +104,11 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             }
 
             @Override
+            public IDataController getDataController() {
+                return valueController.getDataController();
+            }
+
+            @Override
             public String getValueName()
             {
                 return valueController.getValueName();

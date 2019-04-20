@@ -245,6 +245,7 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel = UIUtils.createPlaceholder(mainPanel, 1);
         this.viewerPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.viewerPanel.setData(CONTROL_ID, this);
+        CSSUtils.setCSSClass(this.viewerPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
 
@@ -1496,8 +1497,20 @@ public class ResultSetViewer extends Viewer
         }
         {
             final int fontHeight = UIUtils.getFontHeight(statusBar);
-            statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
-            statusLabel.setLayoutData(new RowData(30 * fontHeight, SWT.DEFAULT));
+
+            resultSetSize = new Text(statusBar, SWT.BORDER);
+            resultSetSize.setLayoutData(new RowData(5 * fontHeight, SWT.DEFAULT));
+            resultSetSize.setBackground(UIStyles.getDefaultTextBackground());
+            resultSetSize.setToolTipText(DataEditorsMessages.resultset_segment_size);
+            resultSetSize.addModifyListener(e -> {
+                DBSDataContainer dataContainer = getDataContainer();
+                int fetchSize = CommonUtils.toInt(resultSetSize.getText());
+                if (fetchSize > 0 && dataContainer != null && dataContainer.getDataSource() != null) {
+                    DBPPreferenceStore store = dataContainer.getDataSource().getContainer().getPreferenceStore();
+                    store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, fetchSize);
+                    PrefUtils.savePreferenceStore(store);
+                }
+            });
 
             rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
@@ -1522,20 +1535,19 @@ public class ResultSetViewer extends Viewer
                 }
             };
             rowCountLabel.setLayoutData(new RowData(10 * fontHeight, SWT.DEFAULT));
+            CSSUtils.setCSSClass(rowCountLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             rowCountLabel.setMessage("Row Count");
 
-            resultSetSize = new Text(statusBar, SWT.BORDER);
-            resultSetSize.setLayoutData(new RowData(5 * fontHeight, SWT.DEFAULT));
-            resultSetSize.setBackground(UIStyles.getDefaultTextBackground());
-            resultSetSize.setToolTipText(DataEditorsMessages.resultset_segment_size);
-            resultSetSize.addModifyListener(e -> {
-                DBSDataContainer dataContainer = getDataContainer();
-                int fetchSize = CommonUtils.toInt(resultSetSize.getText());
-                if (fetchSize > 0 && dataContainer != null && dataContainer.getDataSource() != null) {
-                    DBPPreferenceStore store = dataContainer.getDataSource().getContainer().getPreferenceStore();
-                    store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, fetchSize);
-                    PrefUtils.savePreferenceStore(store);
-                }
+            UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
+            statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
+            statusLabel.setLayoutData(new RowData(30 * fontHeight, SWT.DEFAULT));
+            CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
+            statusBar.addListener(SWT.Resize, event -> {
+                Point fullSize = statusBar.computeSize(-1, -1);
+//                int exSize = fullSize.x - ((RowData)statusLabel.getLayoutData()).width;
+//                ((RowData)statusLabel.getLayoutData()).width = this.mainPanel.getSize().x - exSize;
+                //rowCountLabel.setLayoutData(new RowData(rowCountLabel.getMessage().length() * fontHeight + 20, SWT.DEFAULT));
             });
         }
     }

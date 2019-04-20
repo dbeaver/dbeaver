@@ -44,6 +44,7 @@ public class GeometryValueManager extends BaseValueManager {
     {
         switch (controller.getEditType()) {
             case INLINE:
+                return null;
             case PANEL:
                 return new GISPanelEditor(controller);
             case EDITOR:

@@ -53,7 +53,17 @@
         <!-- Dashboard handlers -->
 
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.open" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardOpen">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
+            <enabledWhen>
+                <and>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                    <reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
+                </and>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardConfiguration"/>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.reset" class="org.jkiss.dbeaver.ui.dashboard.view.HandlerDashboardReset"/>
@@ -77,14 +87,7 @@
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
 

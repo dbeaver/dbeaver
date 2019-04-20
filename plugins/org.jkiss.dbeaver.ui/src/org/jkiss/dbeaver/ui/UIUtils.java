@@ -65,6 +65,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -155,6 +156,11 @@ public class UIUtils {
             if(!isLong)
                 e.doit = false;
         };
+    }
+
+    public static void createToolBarSeparator(Composite toolBar, int style) {
+        Label label = new Label(toolBar, SWT.NONE);
+        label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
     }
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
@@ -1659,7 +1665,7 @@ public class UIUtils {
 
     public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation, boolean insertAfter) {
         try {
-            KeyStroke keyStroke = autoActivation ? null : KeyStroke.getInstance("Ctrl+Space");
+            KeyStroke keyStroke = autoActivation ? null : KeyStroke.getInstance("Ctrl+Space"); //$NON-NLS-1$
             final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
                 control,
                 contentAdapter,
@@ -1682,8 +1688,8 @@ public class UIUtils {
             if (varsTip.length() > 0) varsTip.append(",\n");
             varsTip.append("\t").append(GeneralUtils.variablePattern(var));
         }
-        varsTip.append(".");
-        control.setToolTipText(toolTip + ". Allowed variables:\n" + varsTip);
+        varsTip.append("."); //$NON-NLS-1$
+        control.setToolTipText(toolTip + ". " + UIMessages.pref_page_connections_tool_tip_text_allowed_variables + ":\n" + varsTip);
 
     }
 
