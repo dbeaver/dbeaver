@@ -90,14 +90,13 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
     {
         try {
             if (node.getParentNode() instanceof DBNContainer) {
-                final DBNContainer container = (DBNContainer) node.getParentNode();
                 DBSObject object = node.getObject();
                 if (object != null) {
                     DBEObjectRenamer objectRenamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectRenamer.class);
                     if (objectRenamer != null) {
                         CommandTarget commandTarget = getCommandTarget(
                             workbenchWindow,
-                            container,
+                            node.getParentNode(),
                             object.getClass(),
                             false);
 

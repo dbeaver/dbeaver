@@ -61,11 +61,16 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         String objectType = event.getParameter(NavigatorCommands.PARAM_OBJECT_TYPE);
+        boolean isFolder = CommonUtils.toBoolean(event.getParameter(NavigatorCommands.PARAM_OBJECT_TYPE_FOLDER));
 
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
         if (node != null) {
-            createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), node, null);
+            Class<?> newObjectType = null;
+            if (objectType != null && node instanceof DBNDatabaseNode) {
+                newObjectType = ((DBNDatabaseNode) node).getMeta().getSource().getObjectClass(objectType);
+            }
+            createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), node, newObjectType, null, isFolder);
         }
         return null;
     }
@@ -145,43 +150,27 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 return EMPTY_MENU;
             }
             ISelection selection = selectionProvider.getSelection();
-            if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+            DBNNode node = NavigatorUtils.getSelectedNode(selection);
+            if (node == null ||
+                (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())))
+            {
                 return EMPTY_MENU;
             }
 
             List<IContributionItem> createActions = new ArrayList<>();
 
-            Set<Class<?>> addedClasses = new HashSet<>();
-            for (Object element : ((IStructuredSelection) selection).toArray()) {
-                if (!(element instanceof DBNNode)) {
-                    continue;
-                }
-                DBNNode node = (DBNNode) element;
+            if (node instanceof DBNLocalFolder) {
+                CommandContributionItem item = makeCreateContributionItem(
+                    site, DBPDataSourceContainer.class.getName(), ((DBNLocalFolder) node).getChildrenType(), UIIcon.SQL_NEW_CONNECTION, false);
+                createActions.add(item);
+            }
+            if (node instanceof DBNDatabaseNode) {
+                addDatabaseNodeCreateItems(site, createActions, (DBNDatabaseNode) node);
+            }
 
-                if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
-                    continue;
-                }
-
-                if (node instanceof DBNLocalFolder) {
-                    if (!addedClasses.contains(DBPDataSourceContainer.class)) {
-                        addedClasses.add(DBPDataSourceContainer.class);
-                        CommandContributionItem item = makeCreateContributionItem(
-                            site, DBPDataSourceContainer.class.getName(), ((DBNLocalFolder) node).getChildrenType(), UIIcon.SQL_NEW_CONNECTION);
-                        createActions.add(item);
-                    }
-                }
-                if (node instanceof DBNDatabaseNode) {
-                    addDatabaseNodeCreateItems(site, createActions, (DBNDatabaseNode) node);
-                }
-
-                if (node instanceof DBNLocalFolder || node instanceof DBNDataSource) {
-                    if (!addedClasses.contains(DBNLocalFolder.class)) {
-                        addedClasses.add(DBNLocalFolder.class);
-                        createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
-                    }
-                } else if (node instanceof DBNResource) {
-
-                }
+            if (node instanceof DBNLocalFolder || node instanceof DBNDataSource) {
+                createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
+            } else if (node instanceof DBNResource) {
 
             }
 
@@ -201,7 +190,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 DBPImage nodeIcon = metaChildren.get(0).getIcon(node);
                 if (nodeClass != null && nodeType != null) {
                     CommandContributionItem item = makeCreateContributionItem(
-                        site, nodeClass.getName(), nodeType, nodeIcon);
+                        site, nodeClass.getName(), nodeType, nodeIcon, false);
                     createActions.add(item);
                 }
             }
@@ -214,7 +203,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (isCreateSupported(node, nodeItemClass)) {
                 createActions.add(
                     makeCreateContributionItem(
-                        site, nodeItemClass.getName(), node.getNodeType(), nodeIcon));
+                        site, nodeItemClass.getName(), node.getNodeType(), nodeIcon, false));
             }
 
             // Now add all child folders
@@ -250,7 +239,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             String typeName = childMeta.getNodeType(node.getDataSource());
             if (typeName != null) {
                 CommandContributionItem item = makeCreateContributionItem(
-                    site, objectClass.getName(), typeName, childMeta.getIcon(node));
+                    site, objectClass.getName(), typeName, childMeta.getIcon(node), true);
                 createActions.add(item);
                 return true;
             }
@@ -260,13 +249,12 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
 
     private static boolean isCreateSupported(DBNDatabaseNode node, Class<?> objectClass) {
         DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(objectClass, DBEObjectMaker.class);
-        if (objectMaker == null) {
-            return false;
-        }
-        return objectMaker.canCreateObject(node.getValueObject());
+        return objectMaker != null && objectMaker.canCreateObject(node.getValueObject());
     }
 
-    private static CommandContributionItem makeCreateContributionItem(IWorkbenchPartSite site, String objectType, String objectTypeName, DBPImage objectIcon) {
+    private static CommandContributionItem makeCreateContributionItem(
+        IWorkbenchPartSite site, String objectType, String objectTypeName, DBPImage objectIcon, boolean isFolder)
+    {
         CommandContributionItemParameter params = new CommandContributionItemParameter(
             site,
             NavigatorCommands.CMD_OBJECT_CREATE,
@@ -278,6 +266,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE_NAME, objectTypeName);
         if (objectIcon != null) {
             parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE_ICON, objectIcon.getLocation());
+        }
+        if (isFolder) {
+            parameters.put(NavigatorCommands.PARAM_OBJECT_TYPE_FOLDER, String.valueOf(true));
         }
         params.parameters = parameters;
 
