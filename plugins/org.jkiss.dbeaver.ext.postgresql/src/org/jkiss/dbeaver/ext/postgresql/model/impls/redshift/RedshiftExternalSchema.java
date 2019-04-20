@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -29,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -83,14 +87,14 @@ public class RedshiftExternalSchema extends PostgreSchema {
         return null;
     }
 
-    @Override
-    public Collection<RedshiftExternalTable> getTables(DBRProgressMonitor monitor) throws DBException {
+    @Association
+    public Collection<RedshiftExternalTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
         return externalTableCache.getAllObjects(monitor, this);
     }
 
     @Override
     public Collection<RedshiftExternalTable> getChildren(DBRProgressMonitor monitor) throws DBException {
-        return getTables(monitor);
+        return getExternalTables(monitor);
     }
 
     @Override
