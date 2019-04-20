@@ -98,7 +98,7 @@ public class PrefPageConnections extends TargetPrefPage
                 clientApplicationNameText,
                 new TextContentAdapter(),
                 new SimpleContentProposalProvider(DataSourceDescriptor.CONNECT_PATTERNS));
-            UIUtils.setContentProposalToolTip(clientApplicationNameText, "Client application name variables", DataSourceDescriptor.CONNECT_PATTERNS); //$NON-NLS-1$
+            UIUtils.setContentProposalToolTip(clientApplicationNameText, CoreMessages.pref_page_connections_application_name_text, DataSourceDescriptor.CONNECT_PATTERNS); 
         }
 
         {
