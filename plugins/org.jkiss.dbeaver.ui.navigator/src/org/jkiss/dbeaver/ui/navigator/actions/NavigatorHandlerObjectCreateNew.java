@@ -18,11 +18,12 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPage;
@@ -38,6 +39,8 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
@@ -172,7 +175,17 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (node instanceof DBNLocalFolder || node instanceof DBNDataSource) {
                 createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
             } else if (node instanceof DBNResource) {
-
+                final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
+                IResource resource = ((DBNResource) node).getResource();
+                DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
+                if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0) {
+                    createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
+                }
+                if (resource instanceof IFolder) {
+                    createActions.add(new Separator());
+                    createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
+                    createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
+                }
             }
 
             if (!createActions.isEmpty() && !(createActions.get(createActions.size() - 1) instanceof Separator)) {

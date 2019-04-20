@@ -753,19 +753,6 @@
             <command commandId="org.jkiss.dbeaver.core.project.active">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.resource.create.folder">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.resource.link.file">
-               <parameter
-                     name="org.jkiss.dbeaver.core.resource.link.file.contenttype"
-                     value="org.jkiss.dbeaver.sql">
-               </parameter>
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.resource.link.folder">
-                <visibleWhen checkEnabled="true"/>
-            </command>
 
             <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
                 <visibleWhen>
