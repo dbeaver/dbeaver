@@ -44,6 +44,8 @@ public interface DBPProjectManager
 
     @Nullable
     DBPDataSourceRegistry getDataSourceRegistry(IProject project);
+    @Nullable
+    DBPDataSourceRegistry getDefaultDataSourceRegistry();
 
     DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
 }
