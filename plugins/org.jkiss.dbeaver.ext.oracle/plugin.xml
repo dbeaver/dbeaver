@@ -73,8 +73,10 @@
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions">
                                     <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
-                                        <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true" visibleIf="object.hasSubPartitions()">
-                                        </items>
+                                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="%tree.subpartitions.node.name" icon="#partitions" description="tree.subpartitions.node.name">
+                                            <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true">
+                                            </items>
+                                        </folder>
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivTable" label="%tree.table_privileges.node.name" icon="#permissions" description="Table Privileges" navigable="false">
