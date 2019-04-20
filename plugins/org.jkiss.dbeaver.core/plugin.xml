@@ -754,25 +754,24 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <adapt type="org.eclipse.core.resources.IFolder">
-                                <test property="org.jkiss.dbeaver.core.resource.type" value="script folder"/>
-                            </adapt>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
-
             <separator name="create" visible="false"/>
 
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu label="Create">
+            <menu id="dbeaver-menu-create" label="Create">
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
+                    <visibleWhen>
+                        <with variable="selection">
+                            <count value="1"/>
+                            <iterate operator="and">
+                                <adapt type="org.eclipse.core.resources.IFolder">
+                                    <test property="org.jkiss.dbeaver.core.resource.type" value="script folder"/>
+                                </adapt>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                </command>
                 <dynamic id="org.jkiss.dbeaver.core.menu.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew$MenuCreateContributor"/>
             </menu>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">
