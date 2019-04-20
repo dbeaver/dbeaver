@@ -324,6 +324,11 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     }
 
     @Override
+    public DBPDataSourceRegistry getDefaultDataSourceRegistry() {
+        return activeProject == null ? null : getDataSourceRegistry(activeProject);
+    }
+
+    @Override
     public DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors()
     {
         DBPResourceHandlerDescriptor[] result = new DBPResourceHandlerDescriptor[handlerDescriptors.size()];
