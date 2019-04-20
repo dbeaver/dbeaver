@@ -58,6 +58,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig);
 
+    DBPDataSourceContainer createDataSource(DBPDataSourceContainer source);
+
     void addDataSourceListener(DBPEventListener listener);
 
     boolean removeDataSourceListener(DBPEventListener listener);

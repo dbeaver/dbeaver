@@ -600,6 +600,7 @@ public class DataSourceDescriptor
         return this;
     }
 
+    @Override
     public void setDescription(@Nullable String description)
     {
         this.description = description;
