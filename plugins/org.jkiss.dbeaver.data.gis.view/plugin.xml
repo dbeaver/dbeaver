@@ -22,7 +22,7 @@
         <geometryViewer
                 label="Map"
                 description="View GIS object on map"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/image.png"
+                icon="icons/map.png"
                 id="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
     </extension>
@@ -32,7 +32,7 @@
                 id="results.geometry"
                 label="%presentation.geometry.name"
                 description="%presentation.geometry.description"
-                icon="icons/geometry.png"
+                icon="icons/map.png"
                 class="org.jkiss.dbeaver.ui.gis.presentation.GeometryPresentation"
                 type="transformer"
                 supportsRecordMode="true"
