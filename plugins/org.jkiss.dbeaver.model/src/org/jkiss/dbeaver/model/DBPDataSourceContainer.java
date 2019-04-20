@@ -96,6 +96,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     void setSavePassword(boolean savePassword);
 
+    void setDescription(String description);
+
     boolean isDefaultAutoCommit();
 
     void setDefaultAutoCommit(boolean autoCommit, @Nullable  DBCExecutionContext updateContext, boolean updateConnection, @Nullable  Runnable onFinish)
