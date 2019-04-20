@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -77,7 +78,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public String getChildrenType()
     {
-        return "Connection";
+        return ModelMessages.model_navigator_Connection;
     }
 
     @Override

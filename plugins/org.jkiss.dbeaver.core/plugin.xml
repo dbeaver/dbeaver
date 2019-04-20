@@ -75,12 +75,6 @@
             properties="hasTools"
             type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
-            namespace="org.jkiss.dbeaver.core.resource"
-            properties="canOpen,canDelete,canCreateFolder,canCreateLink,canSetActive,type"
-            type="org.eclipse.core.resources.IResource"/>
-        <propertyTester
             class="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             namespace="org.jkiss.dbeaver.runtime.process"
@@ -760,18 +754,6 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <menu id="dbeaver-menu-create" label="Create">
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
-                    <visibleWhen>
-                        <with variable="selection">
-                            <count value="1"/>
-                            <iterate operator="and">
-                                <adapt type="org.eclipse.core.resources.IFolder">
-                                    <test property="org.jkiss.dbeaver.core.resource.type" value="script folder"/>
-                                </adapt>
-                            </iterate>
-                        </with>
-                    </visibleWhen>
-                </command>
                 <dynamic id="org.jkiss.dbeaver.core.menu.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew$MenuCreateContributor"/>
             </menu>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">

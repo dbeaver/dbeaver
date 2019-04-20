@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPage;
@@ -35,19 +34,21 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -58,9 +59,14 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
+
+    private static final Log log = Log.getLog(NavigatorHandlerObjectCreateNew.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -71,8 +77,16 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
         if (node != null) {
             Class<?> newObjectType = null;
-            if (objectType != null && node instanceof DBNDatabaseNode) {
-                newObjectType = ((DBNDatabaseNode) node).getMeta().getSource().getObjectClass(objectType);
+            if (objectType != null) {
+                if (node instanceof DBNDatabaseNode) {
+                    newObjectType = ((DBNDatabaseNode) node).getMeta().getSource().getObjectClass(objectType);
+                } else {
+                    try {
+                        newObjectType = Class.forName(objectType);
+                    } catch (ClassNotFoundException e) {
+                        log.error("Error detecting new object type " + objectType, e);
+                    }
+                }
             }
             createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), node, newObjectType, null, isFolder);
         }
@@ -149,35 +163,28 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 return EMPTY_MENU;
             }
             IWorkbenchPartSite site = activePart.getSite();
-            final ISelectionProvider selectionProvider = site.getSelectionProvider();
-            if (selectionProvider == null) {
-                return EMPTY_MENU;
-            }
-            ISelection selection = selectionProvider.getSelection();
-            DBNNode node = NavigatorUtils.getSelectedNode(selection);
-            if (node == null ||
-                (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())))
-            {
-                return EMPTY_MENU;
-            }
+            DBNNode node = NavigatorUtils.getSelectedNode(site.getSelectionProvider());
 
             List<IContributionItem> createActions = new ArrayList<>();
 
-            if (node instanceof DBNLocalFolder) {
+            if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases) {
                 CommandContributionItem item = makeCreateContributionItem(
-                    site, DBPDataSourceContainer.class.getName(), ((DBNLocalFolder) node).getChildrenType(), UIIcon.SQL_NEW_CONNECTION, false);
+                    site, DBPDataSourceContainer.class.getName(), ModelMessages.model_navigator_Connection, UIIcon.SQL_NEW_CONNECTION, false);
                 createActions.add(item);
             }
             if (node instanceof DBNDatabaseNode) {
                 addDatabaseNodeCreateItems(site, createActions, (DBNDatabaseNode) node);
             }
 
-            if (node instanceof DBNLocalFolder || node instanceof DBNDataSource) {
+            if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource) {
                 createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
             } else if (node instanceof DBNResource) {
                 final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
                 IResource resource = ((DBNResource) node).getResource();
                 DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
+                if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
+                    createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
+                }
                 if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0) {
                     createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
                 }
@@ -219,6 +226,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 createActions.add(
                     makeCreateContributionItem(
                         site, nodeItemClass.getName(), node.getNodeType(), nodeIcon, false));
+            }
+
+            if (isReadOnly(node.getObject())) {
+                // Do not add child folders
+                return;
             }
 
             // Now add all child folders

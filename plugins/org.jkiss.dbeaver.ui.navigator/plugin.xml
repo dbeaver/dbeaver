@@ -93,17 +93,23 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-                class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
-                id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
-                namespace="org.jkiss.dbeaver.ui.editors.entity"
-                properties="dirty,canUndo,canRedo"
-                type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+            class="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
+            id="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
+            namespace="org.jkiss.dbeaver.core.resource"
+            properties="canOpen,canDelete,canCreateFile,canCreateFolder,canCreateLink,canSetActive,type"
+            type="org.eclipse.core.resources.IResource"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
-                id="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
-                namespace="org.jkiss.dbeaver.ui.editors.folder"
-                properties="canNavigate"
-                type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
+            class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.editors.entity"
+            properties="dirty,canUndo,canRedo"
+            type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
+            id="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.editors.folder"
+            properties="canNavigate"
+            type="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
@@ -206,6 +212,7 @@
         <command id="org.jkiss.dbeaver.core.project.refresh" name="%command.org.jkiss.dbeaver.core.project.refresh.name" description="%command.org.jkiss.dbeaver.core.project.refresh.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.project.active" name="%command.org.jkiss.dbeaver.core.project.active.name" description="%command.org.jkiss.dbeaver.core.project.active.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.project.select" name="%command.org.jkiss.dbeaver.core.project.select.name" description="%command.org.jkiss.dbeaver.core.project.select.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.resource.create.file" name="%command.org.jkiss.dbeaver.core.resource.create.file.name" description="%command.org.jkiss.dbeaver.core.resource.create.file.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.resource.create.folder" name="%command.org.jkiss.dbeaver.core.resource.create.folder.name" description="%command.org.jkiss.dbeaver.core.resource.create.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.resource.link.file" name="%command.org.jkiss.dbeaver.core.resource.link.file.name" categoryId="org.jkiss.dbeaver.core.navigator" description="%command.org.jkiss.dbeaver.core.resource.link.file.description">
             <commandParameter
@@ -566,6 +573,18 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resource.create.file" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCreateFile">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.eclipse.core.resources.IResource">
+                            <test property="org.jkiss.dbeaver.core.resource.canCreateFile"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.resource.create.folder" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCreateFolder">
             <enabledWhen>
                 <with variable="selection">
@@ -668,7 +687,10 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                        <or>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNContainer"/>
+                        </or>
                     </iterate>
                 </with>
             </enabledWhen>
