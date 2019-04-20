@@ -179,18 +179,6 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
     }
 
-    @Association
-    public Collection<OracleTablePartition> getSubPartitions(DBRProgressMonitor monitor, OracleTablePartition partition)
-        throws DBException
-    {
-        if (partitionCache == null) {
-            return null;
-        } else {
-            this.partitionCache.getAllObjects(monitor, this);
-            return this.partitionCache.getChildren(monitor, this, partition);
-        }
-    }
-
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
