@@ -31,6 +31,8 @@ public class DBException extends Exception
 {
     private static final long serialVersionUID = 1L;
 
+    public static final int ERROR_CODE_NONE = -1;
+
     private final DBPDataSource dataSource;
     private final boolean hasMessage;
 
@@ -87,7 +89,7 @@ public class DBException extends Exception
         } else if (cause instanceof DBException) {
             return ((DBException) cause).getErrorCode();
         } else {
-            return -1;
+            return ERROR_CODE_NONE;
         }
     }
 
