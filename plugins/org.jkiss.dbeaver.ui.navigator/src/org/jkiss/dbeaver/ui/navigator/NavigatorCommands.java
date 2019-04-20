@@ -33,9 +33,13 @@ public class NavigatorCommands {
     public static final String CMD_OBJECT_MOVE_DOWN = "org.jkiss.dbeaver.core.object.move.down"; //$NON-NLS-1$
     public static final String CMD_OBJECT_SET_ACTIVE = "org.jkiss.dbeaver.core.navigator.set.active";
     public static final String CMD_CREATE_LOCAL_FOLDER = "org.jkiss.dbeaver.core.new.folder";
+    public static final String CMD_CREATE_RESOURCE_FOLDER = "org.jkiss.dbeaver.core.resource.create.folder";
+    public static final String CMD_CREATE_FILE_LINK = "org.jkiss.dbeaver.core.resource.link.file";
+    public static final String CMD_CREATE_FOLDER_LINK = "org.jkiss.dbeaver.core.resource.link.folder";
 
     public static final String PARAM_OBJECT_TYPE = "org.jkiss.dbeaver.core.object.type";
     public static final String PARAM_OBJECT_TYPE_NAME = "org.jkiss.dbeaver.core.object.typeName";
     public static final String PARAM_OBJECT_TYPE_ICON = "org.jkiss.dbeaver.core.object.typeIcon";
     public static final String PARAM_OBJECT_TYPE_FOLDER = "org.jkiss.dbeaver.core.object.folder";
+
 }
