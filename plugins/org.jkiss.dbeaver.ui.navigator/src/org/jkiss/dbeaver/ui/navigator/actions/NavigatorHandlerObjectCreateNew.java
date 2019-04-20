@@ -211,9 +211,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 String nodeType = metaChildren.get(0).getChildrenType(node.getDataSource());
                 DBPImage nodeIcon = metaChildren.get(0).getIcon(node);
                 if (nodeClass != null && nodeType != null) {
-                    CommandContributionItem item = makeCreateContributionItem(
-                        site, nodeClass.getName(), nodeType, nodeIcon, false);
-                    createActions.add(item);
+                    if (isCreateSupported(node, nodeClass)) {
+                        CommandContributionItem item = makeCreateContributionItem(
+                            site, nodeClass.getName(), nodeType, nodeIcon, false);
+                        createActions.add(item);
+                    }
                 }
             }
         } else {
