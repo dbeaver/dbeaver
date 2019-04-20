@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -174,9 +175,10 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
 
             }
 
-            if (!createActions.isEmpty() && createActions.get(createActions.size() - 1) instanceof Separator) {
-                createActions.remove(createActions.size() - 1);
+            if (!createActions.isEmpty() && !(createActions.get(createActions.size() - 1) instanceof Separator)) {
+                createActions.add(new Separator());
             }
+            createActions.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_NEW, "Other ...", null));
             return createActions.toArray(new IContributionItem[0]);
         }
     }
