@@ -215,7 +215,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     }
 
     @Association
-    public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor)
+    public Collection<? extends PostgreTableBase> getTables(DBRProgressMonitor monitor)
         throws DBException {
         return tableCache.getTypedObjects(monitor, this, PostgreTable.class)
             .stream()
@@ -595,8 +595,8 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                     return null;
                 }
                 Object keyRefNumbers = JDBCUtils.safeGetArray(resultSet, "confkey");
-                Collection<PostgreTableColumn> attributes = table.getAttributes(monitor);
-                Collection<PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
+                Collection<? extends PostgreTableColumn> attributes = table.getAttributes(monitor);
+                Collection<? extends PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
                 assert attributes != null && refAttributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 int refColCount = Array.getLength(keyRefNumbers);
@@ -624,7 +624,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 return fkCols;
 
             } else {
-                Collection<PostgreTableColumn> attributes = table.getAttributes(monitor);
+                Collection<? extends PostgreTableColumn> attributes = table.getAttributes(monitor);
                 assert attributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 PostgreTableConstraintColumn[] cols = new PostgreTableConstraintColumn[colCount];
@@ -724,7 +724,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             long[] indColClasses = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "indclass"));
             int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"));
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
-            Collection<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
+            Collection<? extends PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
             PostgreIndexColumn[] result = new PostgreIndexColumn[keyNumbers.length];
             for (int i = 0; i < keyNumbers.length; i++) {
