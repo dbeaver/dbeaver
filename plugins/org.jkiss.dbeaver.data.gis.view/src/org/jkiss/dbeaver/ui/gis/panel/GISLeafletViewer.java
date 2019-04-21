@@ -146,6 +146,9 @@ public class GISLeafletViewer {
             DBGeometry value = values[i];
             Object targetValue = value.getRawValue();
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
+            if (srid == 0) {
+                srid = GisConstants.DEFAULT_SRID;
+            }
             if (srid == GisConstants.DEFAULT_SRID) {
                 showMap = true;
             } else {
@@ -163,10 +166,6 @@ public class GISLeafletViewer {
                         showMap = false;
                     }
                 }
-            }
-            if (srid == 0) {
-                srid = GisConstants.DEFAULT_SRID;
-                showMap = true; // Let's give it a try
             }
             if (actualSourceSRID == 0) {
                 actualSourceSRID = GisConstants.DEFAULT_SRID;
