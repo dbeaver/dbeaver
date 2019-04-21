@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -46,7 +42,7 @@ import java.util.Map;
 /**
  * PostgreTable base
  */
-public class RedshiftExternalTable extends PostgreTableBase implements DBPRefreshableObject
+public class RedshiftExternalTable extends PostgreTable implements DBPRefreshableObject
 {
     private static final Log log = Log.getLog(RedshiftExternalTable.class);
     private String location;
@@ -210,7 +206,7 @@ public class RedshiftExternalTable extends PostgreTableBase implements DBPRefres
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

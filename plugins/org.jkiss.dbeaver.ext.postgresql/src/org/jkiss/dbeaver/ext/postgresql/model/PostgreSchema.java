@@ -215,7 +215,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     }
 
     @Association
-    public Collection<? extends PostgreTableBase> getTables(DBRProgressMonitor monitor)
+    public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor)
         throws DBException {
         return tableCache.getTypedObjects(monitor, this, PostgreTable.class)
             .stream()

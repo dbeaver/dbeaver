@@ -90,7 +90,7 @@ public class RedshiftExternalSchema extends PostgreSchema {
     }
 
     @Override
-    public Collection<? extends PostgreTableBase> getTables(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor) throws DBException {
         return getExternalTables(monitor);
     }
 
