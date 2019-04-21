@@ -32,7 +32,10 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
 import java.util.List;
 import java.util.Map;
@@ -58,9 +61,24 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     }
 
     @Override
-    protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableReal parent, Object copyFrom) throws DBException {
-        return null;
-    }
+    protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableReal parent, Object copyFrom) throws DBException 
+    {
+	return new UITask<PostgreTrigger>() {
+            @Override
+            protected PostgreTrigger runTask() {
+    	    EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
+                if (!editPage.edit()) {
+                    return null;
+                } 
+                PostgreTrigger newTrigger = new PostgreTrigger(parent.getContainer(), parent, editPage.getEntityName());
+                    newTrigger.setObjectDefinitionText(
+                    "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(newTrigger) + "\n" +
+                    "BEFORE UPDATE" + " " +  "\n" +
+                    "ON " + DBUtils.getQuotedIdentifier(parent) + " FOR EACH ROW\n");
+                return newTrigger;
+            }
+    }.execute();
+}
 
     @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTrigger, PropertyHandler> command, Map<String, Object> options) throws DBException {
