@@ -34,7 +34,15 @@ import java.sql.SQLException;
  */
 public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
 
-    public static final GISGeometryValueHandler INSTANCE = new GISGeometryValueHandler();
+    private boolean invertCoordinates;
+
+    public GISGeometryValueHandler() {
+        this(false);
+    }
+
+    public GISGeometryValueHandler(boolean invertCoordinates) {
+        this.invertCoordinates = invertCoordinates;
+    }
 
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
@@ -70,9 +78,17 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Geometry) {
             return new DBGeometry((Geometry)object);
         } else if (object instanceof byte[]) {
-            return new DBGeometry(GeometryConverter.getInstance().from((byte[]) object));
+            Geometry geometry = GeometryConverter.getInstance().from((byte[]) object);
+            if (invertCoordinates) {
+                geometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+            }
+            return new DBGeometry(geometry);
         } else if (object instanceof String) {
-            return new DBGeometry(GeometryConverter.getInstance().from((String)object));
+            Geometry geometry = GeometryConverter.getInstance().from((String) object);
+            if (invertCoordinates) {
+                geometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+            }
+            return new DBGeometry(geometry);
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
         }

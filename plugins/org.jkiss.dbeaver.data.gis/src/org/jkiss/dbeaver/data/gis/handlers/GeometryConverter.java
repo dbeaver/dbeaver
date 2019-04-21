@@ -1,9 +1,6 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
-import com.vividsolutions.jts.geom.CoordinateSequenceFactory;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory;
 import com.vividsolutions.jts.io.*;
 
@@ -19,6 +16,7 @@ import java.io.IOException;
  * of byte[] because of codegen.
  */
 public class GeometryConverter {
+    public static final InvertCoordinateFilter INVERT_COORDINATE_FILTER = new InvertCoordinateFilter();
     /**
      * Little endian or Big endian
      */
@@ -60,7 +58,9 @@ public class GeometryConverter {
 
             // Read Geometry
             WKBReader wkbReader = new WKBReader(geometryFactory);
-            return wkbReader.read(new InputStreamInStream(inputStream));
+            Geometry geometry = wkbReader.read(new InputStreamInStream(inputStream));
+
+            return geometry;
         } catch (IOException | ParseException e) {
             throw new IllegalArgumentException(e);
         }
@@ -92,6 +92,14 @@ public class GeometryConverter {
             return outputStream.toByteArray();
         } catch (IOException ioe) {
             throw new IllegalArgumentException(ioe);
+        }
+    }
+
+    private static class InvertCoordinateFilter implements CoordinateFilter {
+        public void filter(Coordinate coord) {
+            double oldX = coord.x;
+            coord.x = coord.y;
+            coord.y = oldX;
         }
     }
 
