@@ -70,8 +70,8 @@ public class DataSourceToolbarUtils
 
     public static void updateCommandsUI() {
         ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
-        commandService.refreshElements("org.jkiss.dbeaver.core.select.connection", null);
-        commandService.refreshElements("org.jkiss.dbeaver.core.select.schema", null);
+        commandService.refreshElements("org.jkiss.dbeaver.ui.tools.select.connection", null);
+        commandService.refreshElements("org.jkiss.dbeaver.ui.tools.select.schema", null);
         commandService.refreshElements("org.jkiss.dbeaver.ui.editors.sql.sync.connection", null);
     }
 }
