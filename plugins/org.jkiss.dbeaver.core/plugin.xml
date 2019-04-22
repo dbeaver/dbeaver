@@ -726,7 +726,7 @@
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu id="dbeaver-menu-create" label="Create">
+            <menu id="dbeaver-menu-create" label="%menu.create.label">
                 <dynamic id="org.jkiss.dbeaver.core.menu.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew$MenuCreateContributor"/>
             </menu>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">
@@ -808,6 +808,22 @@
             <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection">
                 <visibleWhen checkEnabled="true"/>
             </command>
+
+            <separator name="compare" visible="false"/>
+
+<!--
+            <menu label="%menu.database.sql.generate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/compare.png">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+                <dynamic id="org.jkiss.dbeaver.core.menu.compare" class="org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor"/>
+            </menu>
+-->
 
             <separator name="export_import" visible="false"/>
 
