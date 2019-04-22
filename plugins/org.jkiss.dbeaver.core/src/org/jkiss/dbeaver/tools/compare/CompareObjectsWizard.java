@@ -28,7 +28,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.DialogSettingsDelegate;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -49,10 +51,12 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
     public CompareObjectsWizard(List<DBNDatabaseNode> nodes)
     {
         this.settings = new CompareObjectsSettings(nodes);
+        this.settings.setOutputFolder(DialogUtils.getCurDialogFolder());
+
         IDialogSettings section = UIUtils.getDialogSettings(RS_COMPARE_WIZARD_DIALOG_SETTINGS);
         setDialogSettings(section);
 
-        settings.loadFrom(section);
+        settings.loadFrom(new DialogSettingsDelegate(section));
     }
 
     @Override
@@ -90,7 +94,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
     public boolean performFinish()
     {
         // Save settings
-        getSettings().saveTo(getDialogSettings());
+        getSettings().saveTo(new DialogSettingsDelegate(getDialogSettings()));
         showError(null);
 
         // Compare

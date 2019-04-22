@@ -16,9 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.compare;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.model.preferences.DBPSettingsSection;
 
 import java.util.List;
 
@@ -48,7 +47,7 @@ public class CompareObjectsSettings {
     private boolean compareScripts = false;
     private boolean showOnlyDifferences = false;
     private OutputType outputType = OutputType.BROWSER;
-    private String outputFolder = DialogUtils.getCurDialogFolder();
+    private String outputFolder;
 
     public CompareObjectsSettings(List<DBNDatabaseNode> nodes) {
         this.nodes = nodes;
@@ -114,7 +113,7 @@ public class CompareObjectsSettings {
         this.outputFolder = outputFolder;
     }
 
-    void loadFrom(IDialogSettings dialogSettings) {
+    void loadFrom(DBPSettingsSection dialogSettings) {
         if (dialogSettings.get("skipSystem") != null) {
             skipSystemObjects = dialogSettings.getBoolean("skipSystem");
         }
@@ -138,7 +137,7 @@ public class CompareObjectsSettings {
         }
     }
 
-    void saveTo(IDialogSettings dialogSettings) {
+    void saveTo(DBPSettingsSection dialogSettings) {
         dialogSettings.put("skipSystem", skipSystemObjects);
         dialogSettings.put("compareLazy", compareLazyProperties);
         dialogSettings.put("compareStructure", compareOnlyStructure);
