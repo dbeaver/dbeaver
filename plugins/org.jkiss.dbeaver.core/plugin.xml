@@ -128,9 +128,6 @@
         <command id="org.jkiss.dbeaver.core.txn.log" name="%command.org.jkiss.dbeaver.core.txn.log.name" description="%command.org.jkiss.dbeaver.core.txn.log.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.pending" name="%command.org.jkiss.dbeaver.core.txn.pending.name" description="%command.org.jkiss.dbeaver.core.txn.pending.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
-        <command id="org.jkiss.dbeaver.core.select.connection" name="%command.org.jkiss.dbeaver.core.select.connection.name" description="%command.org.jkiss.dbeaver.core.select.connection.description" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.select.schema" name="%command.org.jkiss.dbeaver.core.select.schema.name" description="%command.org.jkiss.dbeaver.core.select.schema.description" categoryId="org.jkiss.dbeaver.core.database"/>
-
         <command id="org.jkiss.dbeaver.core.procedure.execute" name="%command.org.jkiss.dbeaver.core.procedure.execute.name" description="%command.org.jkiss.dbeaver.core.procedure.execute.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.core.compare.objects" name="%command.org.jkiss.dbeaver.core.compare.objects.name" description="%command.org.jkiss.dbeaver.core.compare.objects.description" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -163,8 +160,8 @@
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.txn.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_log.png"/>
 
-        <image commandId="org.jkiss.dbeaver.core.select.connection" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png"/>
-        <image commandId="org.jkiss.dbeaver.core.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.tools.select.connection" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.tools.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/erase.png"/>
@@ -351,23 +348,6 @@
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.select.connection" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveDataSourceHandler">
-            <enabledWhen>
-                <with variable="activeEditor">
-                    <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.select.schema" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveSchemaHandler">
-            <enabledWhen>
-                <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.supportsTransactions" value="true"/>
-                    </adapt>
-                </with>
-            </enabledWhen>
-        </handler>
-
         <!-- Set default behaviour for standard widgets -->
         <handler commandId="org.eclipse.ui.edit.copy" class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:copy">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
@@ -477,18 +457,23 @@
                 </or>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.tools.select.connection" class="org.jkiss.dbeaver.ui.perspective.SelectConnectionHandler">
-            <activeWhen>
+        <handler commandId="org.jkiss.dbeaver.ui.tools.select.connection" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveDataSourceHandler">
+            <enabledWhen>
                 <with variable="activeEditor">
                     <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
                 </with>
-            </activeWhen>
+            </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.tools.select.schema" class="org.jkiss.dbeaver.ui.perspective.SelectSchemaHandler">
-            <activeWhen>
-                <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
-            </activeWhen>
+        <handler commandId="org.jkiss.dbeaver.ui.tools.select.schema" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveSchemaHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.supportsTransactions" value="true"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
         </handler>
+
         <handler commandId="org.jkiss.dbeaver.core.generate.uuid" class="org.jkiss.dbeaver.ui.actions.common.GenerateUUIDHandler">
             <with variable="activePart">
                 <or>
@@ -606,18 +591,6 @@
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
             </toolbar>
-            <!--toolbar id="dbeaver-datasource-selector" label="%toolbar.dbeaver-datasource-selector.label">
-                <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
-                </control>
-                <command
-                      commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"
-                      id="org.jkiss.dbeaver.core.menu.sql.sync"
-                      style="pulldown">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
-                </command>
-                <separator name="additions" visible="false"/>
-            </toolbar-->
 
             <toolbar id="dbeaver-edit" label="%toolbar.dbeaver-edit.label">
                 <command commandId="org.eclipse.ui.file.save">
@@ -664,14 +637,14 @@
 
             <toolbar id="dbeaver-connection-selector" label="%toolbar.dbeaver-datasource-selector.label">
                 <command
-                    commandId="org.jkiss.dbeaver.core.select.connection"
+                    commandId="org.jkiss.dbeaver.ui.tools.select.connection"
                     id="org.jkiss.dbeaver.core.menu.select.connection"
                     style="pulldown"
                     mode="FORCE_TEXT">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
                 <command
-                    commandId="org.jkiss.dbeaver.core.select.schema"
+                    commandId="org.jkiss.dbeaver.ui.tools.select.schema"
                     id="org.jkiss.dbeaver.core.menu.select.schema"
                     style="pulldown"
                     mode="FORCE_TEXT">

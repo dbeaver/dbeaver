@@ -59,7 +59,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
         return null;
     }
 
-    private static void openDataSourceSelector(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSource) {
+    public static void openDataSourceSelector(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSource) {
         IProject activeProject = dataSource != null ? dataSource.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
 
         IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();

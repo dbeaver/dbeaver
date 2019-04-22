@@ -78,7 +78,9 @@ import java.util.*;
 
 /**
  * DataSource Toolbar
+ * Deprecated everything was moved to org.jkiss.dbeaver.ui.actions.datasource.*
  */
+@Deprecated
 public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, DBPPreferenceListener, INavigatorListener {
     private static final Log log = Log.getLog(DataSourceManagementToolbar.class);
 
