@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
-
 import java.util.List;
 import java.util.Map;
 
@@ -63,22 +62,15 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     @Override
     protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableReal parent, Object copyFrom) throws DBException 
     {
-	return new UITask<PostgreTrigger>() {
-            @Override
-            protected PostgreTrigger runTask() {
-    	    EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
-                if (!editPage.edit()) {
-                    return null;
-                } 
-                PostgreTrigger newTrigger = new PostgreTrigger(parent.getContainer(), parent, editPage.getEntityName());
-                    newTrigger.setObjectDefinitionText(
-                    "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(newTrigger) + "\n" +
-                    "BEFORE UPDATE" + " " +  "\n" +
-                    "ON " + DBUtils.getQuotedIdentifier(parent) + " FOR EACH ROW\n");
-                return newTrigger;
-            }
-    }.execute();
-}
+        return new PostgreTrigger(monitor, parent);
+        PostgreTrigger newTrigger = new PostgreTrigger(parent.getContainer(), parent, editPage.getEntityName());
+        newTrigger.setObjectDefinitionText(
+            "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(newTrigger) + "\n" +
+            "BEFORE UPDATE" + " " + "\n" +
+            "ON " + DBUtils.getQuotedIdentifier(parent) + " FOR EACH ROW\n");
+        return newTrigger;
+    }
+
 
     @Override
     protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTrigger, PropertyHandler> command, Map<String, Object> options) throws DBException {
@@ -106,4 +98,3 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     }
 
 }
-

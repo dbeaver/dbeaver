@@ -142,6 +142,10 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
 
         this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
+    
+    public PostgreTrigger(DBRProgressMonitor monitor, PostgreTableReal parent) {
+        super();
+    }
 
     @NotNull
     @Override
