@@ -224,7 +224,10 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             if (node instanceof DBNDataSource) {
                 nodeIcon = UIIcon.SQL_NEW_CONNECTION;
             }
-            if (isCreateSupported(node, nodeItemClass)) {
+            if (isCreateSupported(
+                node.getParentNode() instanceof DBNDatabaseNode ? (DBNDatabaseNode) node.getParentNode() : null,
+                nodeItemClass))
+            {
                 createActions.add(
                     makeCreateContributionItem(
                         site, nodeItemClass.getName(), node.getNodeType(), nodeIcon, false));
@@ -276,9 +279,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         return false;
     }
 
-    private static boolean isCreateSupported(DBNDatabaseNode node, Class<?> objectClass) {
+    private static boolean isCreateSupported(DBNDatabaseNode parentNode, Class<?> objectClass) {
         DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(objectClass, DBEObjectMaker.class);
-        return objectMaker != null && objectMaker.canCreateObject(node.getValueObject());
+        return objectMaker != null && objectMaker.canCreateObject(parentNode == null ? null : parentNode.getValueObject());
     }
 
     private static CommandContributionItem makeCreateContributionItem(
