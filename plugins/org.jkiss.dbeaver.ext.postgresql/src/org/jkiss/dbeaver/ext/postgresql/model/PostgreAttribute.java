@@ -187,7 +187,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     public DBPDataKind getDataKind() {
-        return dataType.getDataKind();
+        return dataType == null ? super.getDataKind() : dataType.getDataKind();
     }
 
     @Override
@@ -200,7 +200,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public String getTypeName()
     {
-        return dataType.getTypeName();
+        return dataType == null ? super.getTypeName() : dataType.getTypeName();
     }
 
     @Override
@@ -292,6 +292,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     public String getFullTypeName() {
+        if (dataType == null) {
+            return super.getFullTypeName();
+        }
         String fqtn = dataType.getTypeName();
         if (dataType.getDataKind() != DBPDataKind.CONTENT) {
             return DBUtils.getFullTypeName(this);
