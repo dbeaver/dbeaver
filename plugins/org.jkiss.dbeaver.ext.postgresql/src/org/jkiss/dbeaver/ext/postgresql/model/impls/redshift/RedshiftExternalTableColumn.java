@@ -49,4 +49,5 @@ public class RedshiftExternalTableColumn extends PostgreTableColumn
     public PostgreDataSource getDataSource() {
         return getTable().getDataSource();
     }
+
 }
