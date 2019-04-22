@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.compare;
+package org.jkiss.dbeaver.tools.compare.simple.ui;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -28,6 +28,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.tools.compare.simple.CompareObjectsExecutor;
+import org.jkiss.dbeaver.tools.compare.simple.CompareObjectsSettings;
+import org.jkiss.dbeaver.tools.compare.simple.CompareReport;
+import org.jkiss.dbeaver.tools.compare.simple.CompareReportRenderer;
 import org.jkiss.dbeaver.ui.DialogSettingsDelegate;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
