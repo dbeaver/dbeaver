@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -59,8 +61,26 @@ public class GisTransformUtils {
 //        registryManager.addRegistry(new WorldRegistry());
     }
 
+    private static List<Integer> crsCodes;
+
     public static CRSFactory getCRSFactory() {
         return crsFactory;
+    }
+
+    public static synchronized List<Integer> getSortedEPSGCodes() {
+        if (crsCodes == null) {
+            crsCodes = new ArrayList<>();
+
+            try {
+                for (String code : crsFactory.getSupportedCodes(GisConstants.GIS_REG_EPSG)) {
+                    crsCodes.add(CommonUtils.toInt(code));
+                }
+                crsCodes.sort(Integer::compareTo);
+            } catch (RegistryException e) {
+                log.debug(e);
+            }
+        }
+        return crsCodes;
     }
 
     public static void transformGisData(GisTransformRequest request) throws DBException {

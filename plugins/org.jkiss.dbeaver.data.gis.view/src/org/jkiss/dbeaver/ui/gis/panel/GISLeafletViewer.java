@@ -52,11 +52,16 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class GISLeafletViewer {
 
     private static final Log log = Log.getLog(GISLeafletViewer.class);
+
+    private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
+    private static final int MAX_RECENT_SRID_SIZE = 10;
 
     private final IValueController valueController;
     private final Browser browser;
@@ -66,6 +71,7 @@ public class GISLeafletViewer {
     private File scriptFile;
     private final ToolBarManager toolBarManager;
     private int defaultSRID; // Target SRID used to render map
+    private List<Integer> recentSRIDs = new ArrayList<>();
 
     private boolean toolsVisible = true;
     private final Composite composite;
@@ -91,6 +97,20 @@ public class GISLeafletViewer {
 
             toolBarManager = new ToolBarManager(bottomToolbar);
         }
+
+        {
+            String recentSRIDString = GISViewerActivator.getDefault().getPreferences().getString(PREF_RECENT_SRID_LIST);
+            if (!CommonUtils.isEmpty(recentSRIDString)) {
+                for (String sridStr : recentSRIDString.split(",")) {
+                    int recentSRID = CommonUtils.toInt(sridStr);
+                    if (recentSRID == 0 || recentSRID == GisConstants.DEFAULT_SRID || recentSRID == GisConstants.DEFAULT_OSM_SRID) {
+                        continue;
+                    }
+                    recentSRIDs.add(recentSRID);
+                }
+            }
+            //recentSRIDs.sort(Integer::compareTo);
+        }
     }
 
     private void setSourceSRID(int srid) {
@@ -104,6 +124,21 @@ public class GISLeafletViewer {
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Setting SRID", "Can't change source SRID to " + srid, e);
             sourceSRID = oldSRID;
+        }
+        {
+            // Save SRID to the list of recently used SRIDs
+            if (srid != GisConstants.DEFAULT_SRID && srid != GisConstants.DEFAULT_OSM_SRID) {
+                recentSRIDs.add(srid);
+            }
+            if (recentSRIDs.size() > MAX_RECENT_SRID_SIZE) {
+                recentSRIDs.remove(0);
+            }
+            StringBuilder sridListStr = new StringBuilder();
+            for (Integer sridInt : recentSRIDs) {
+                if (sridListStr.length() > 0) sridListStr.append(",");
+                sridListStr.append(sridInt);
+            }
+            GISViewerActivator.getDefault().getPreferences().setValue(PREF_RECENT_SRID_LIST, sridListStr.toString());
         }
     }
 
@@ -151,6 +186,7 @@ public class GISLeafletViewer {
             }
             if (srid == GisConstants.DEFAULT_SRID) {
                 showMap = true;
+                actualSourceSRID = srid;
             } else {
                 Geometry geometry = value.getGeometry();
                 if (geometry != null) {
@@ -387,11 +423,11 @@ public class GISLeafletViewer {
 
         @Override
         public void run() {
-            ManagerCRSDialog managerCRSDialog = new ManagerCRSDialog(
+            SelectSRIDDialog manageCRSDialog = new SelectSRIDDialog(
                 UIUtils.getActiveWorkbenchShell(),
                 getCurrentSourceSRID());
-            if (managerCRSDialog.open() == IDialogConstants.OK_ID) {
-                setSourceSRID(managerCRSDialog.getSelectedSRID());
+            if (manageCRSDialog.open() == IDialogConstants.OK_ID) {
+                setSourceSRID(manageCRSDialog.getSelectedSRID());
             }
         }
 
@@ -412,13 +448,23 @@ public class GISLeafletViewer {
         public Menu getMenu(Control parent) {
             if (menuManager == null) {
                 menuManager = new MenuManager();
-                menuManager.add(new SetCRSAction(GisConstants.DEFAULT_SRID));
-                menuManager.add(new SetCRSAction(GisConstants.DEFAULT_OSM_SRID));
-                menuManager.add(new Action("Other ...") {
-                    @Override
-                    public void run() {
-                        ChangeCRSAction.this.run();
+                menuManager.setRemoveAllWhenShown(true);
+                menuManager.addMenuListener(manager -> {
+                    menuManager.add(new SetCRSAction(GisConstants.DEFAULT_SRID));
+                    menuManager.add(new SetCRSAction(GisConstants.DEFAULT_OSM_SRID));
+                    menuManager.add(new Separator());
+                    if (!recentSRIDs.isEmpty()) {
+                        for (Integer recentSRID : recentSRIDs) {
+                            menuManager.add(new SetCRSAction(recentSRID));
+                        }
+                        menuManager.add(new Separator());
                     }
+                    menuManager.add(new Action("Other ...") {
+                        @Override
+                        public void run() {
+                            ChangeCRSAction.this.run();
+                        }
+                    });
                 });
             }
             return menuManager.createContextMenu(parent);
@@ -434,7 +480,7 @@ public class GISLeafletViewer {
         private final int srid;
 
         public SetCRSAction(int srid) {
-            super("EPSG:" + srid);
+            super("EPSG:" + srid, AS_CHECK_BOX);
             this.srid = srid;
         }
 
