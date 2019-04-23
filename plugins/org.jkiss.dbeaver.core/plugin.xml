@@ -799,15 +799,6 @@
             <separator name="export_import" visible="false"/>
             <separator name="generate" visible="false"/>
 
-            <menu label="%menu.database.sql.generate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.png">
-                <visibleWhen>
-                    <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.util.canGenerate"/>
-                    </with>
-                </visibleWhen>
-                <dynamic id="org.jkiss.dbeaver.core.menu.sql.generate" class="org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor"/>
-            </menu>
-
             <menu label="%menu.database.tools" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/tools.png">
                 <visibleWhen>
                     <with variable="activePart">

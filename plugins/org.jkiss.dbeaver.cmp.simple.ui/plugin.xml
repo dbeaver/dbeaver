@@ -28,7 +28,7 @@
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=compare">
             <!--
-                <menu label="%menu.database.sql.generate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/compare.png">
+                <menu label="%menu.compare" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/compare.png">
                     <visibleWhen>
                         <with variable="selection">
                             <count value="+"/>
