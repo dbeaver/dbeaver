@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.utils.CommonUtils;
@@ -46,11 +44,11 @@ import java.util.List;
 /**
  * Database select dialog
  */
-public class SelectCRSDialog extends BaseDialog {
+public class ManagerCRSDialog extends BaseDialog {
 
-    private static final Log log = Log.getLog(SelectCRSDialog.class);
+    private static final Log log = Log.getLog(ManagerCRSDialog.class);
 
-    private static final String DIALOG_ID = "DBeaver.SelectCRSDialog";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.ManagerCRSDialog";//$NON-NLS-1$
 
     private int selectedSRID;
     private static CRSLoader crsLoader;
@@ -62,7 +60,7 @@ public class SelectCRSDialog extends BaseDialog {
         String projectionName;
     }
 
-    public SelectCRSDialog(Shell shell, int defCRS) {
+    public ManagerCRSDialog(Shell shell, int defCRS) {
         super(shell, "Select Coordinate Reference System (CRS)", null);
         selectedSRID = defCRS;
     }
