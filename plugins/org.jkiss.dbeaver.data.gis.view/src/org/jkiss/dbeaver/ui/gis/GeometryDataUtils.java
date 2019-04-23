@@ -17,19 +17,13 @@
 
 package org.jkiss.dbeaver.ui.gis;
 
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.gis.panel.GISLeafletViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -91,7 +85,9 @@ public class GeometryDataUtils {
                 Map<String, Object> properties = new LinkedHashMap<>();
                 for (DBDAttributeBinding da : geomAttrs.descAttrs) {
                     Object descValue = model.getCellValue(da, row);
-                    properties.put(da.getName(), descValue);
+                    if (!DBUtils.isNullValue(descValue)) {
+                        properties.put(da.getName(), descValue);
+                    }
                 }
                 geometry.setProperties(properties);
             }

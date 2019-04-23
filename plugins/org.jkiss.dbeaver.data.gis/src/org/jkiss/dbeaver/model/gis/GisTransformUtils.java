@@ -130,7 +130,7 @@ public class GisTransformUtils {
 
     private static void setCoordinateValues(Coordinate coord, double[] targetCoord) {
         if (targetCoord != null) {
-            coord.x = targetCoord[0] - 123;
+            coord.x = targetCoord[0];
             coord.y = targetCoord[1];
             if (targetCoord.length > 2) {
                 coord.z = targetCoord[2];
