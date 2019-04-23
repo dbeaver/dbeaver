@@ -102,11 +102,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     /**
      * Create copy
      */
-    public DataSourceRegistry(DataSourceRegistry source, IProject project) {
+    public DataSourceRegistry(DataSourceRegistry source, IProject project, boolean copyDataSources) {
         this.platform = source.platform;
         this.project = project;
-        for (DataSourceDescriptor ds : source.dataSources) {
-            dataSources.add(new DataSourceDescriptor(ds, this));
+        if (copyDataSources) {
+            for (DataSourceDescriptor ds : source.dataSources) {
+                dataSources.add(new DataSourceDescriptor(ds, this));
+            }
         }
     }
 
@@ -292,8 +294,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     @Override
-    public DBPDataSourceRegistry createCopy(IProject project) {
-        return new DataSourceRegistry(this, project);
+    public DBPDataSourceRegistry createCopy(IProject project, boolean copyDataSources) {
+        return new DataSourceRegistry(this, project, copyDataSources);
     }
 
     private DataSourceFolder findRootFolder(String name) {
