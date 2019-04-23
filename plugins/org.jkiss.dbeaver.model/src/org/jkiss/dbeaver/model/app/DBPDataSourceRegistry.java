@@ -80,7 +80,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
 
-    DBPDataSourceRegistry createCopy(IProject project);
+    DBPDataSourceRegistry createCopy(IProject project, boolean copyDataSources);
 
     @Nullable
     DBSObjectFilter getSavedFilter(String name);
