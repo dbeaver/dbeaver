@@ -24,5 +24,28 @@
         </handler>
     </extension>
 
+    <extension point="org.eclipse.ui.menus">
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=compare">
+            <!--
+                <menu label="%menu.database.sql.generate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/compare.png">
+                    <visibleWhen>
+                        <with variable="selection">
+                            <count value="+"/>
+                            <iterate operator="and">
+                                <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode"/>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                    <dynamic id="org.jkiss.dbeaver.core.menu.compare" class="org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor"/>
+                </menu>
+            -->
+            <command commandId="org.jkiss.dbeaver.core.compare.objects">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+
+    </extension>
+
 
 </plugin>

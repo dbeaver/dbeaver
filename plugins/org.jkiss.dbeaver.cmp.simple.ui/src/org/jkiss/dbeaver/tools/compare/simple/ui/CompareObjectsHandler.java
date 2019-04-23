@@ -46,7 +46,7 @@ public class CompareObjectsHandler extends AbstractHandler {
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
         if (ss.size() < 2) {
-            log.error("At least 2 objects must be selected to perform compare");
+            DBWorkbench.getPlatformUI().showError("Just one object selected", "At least two objects must be selected to perform structure compare");
             return null;
         }
         List<DBNDatabaseNode> nodes = new ArrayList<>();
