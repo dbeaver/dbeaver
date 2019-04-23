@@ -387,17 +387,17 @@ public class GISLeafletViewer {
 
         @Override
         public void run() {
-            SelectCRSDialog selectCRSDialog = new SelectCRSDialog(
+            ManagerCRSDialog managerCRSDialog = new ManagerCRSDialog(
                 UIUtils.getActiveWorkbenchShell(),
                 getCurrentSourceSRID());
-            if (selectCRSDialog.open() == IDialogConstants.OK_ID) {
-                setSourceSRID(selectCRSDialog.getSelectedSRID());
+            if (managerCRSDialog.open() == IDialogConstants.OK_ID) {
+                setSourceSRID(managerCRSDialog.getSelectedSRID());
             }
         }
 
         @Override
         public IMenuCreator getMenuCreator() {
-            return super.getMenuCreator();
+            return this;
         }
 
         @Override
@@ -413,6 +413,7 @@ public class GISLeafletViewer {
             if (menuManager == null) {
                 menuManager = new MenuManager();
                 menuManager.add(new SetCRSAction(GisConstants.DEFAULT_SRID));
+                menuManager.add(new SetCRSAction(GisConstants.DEFAULT_OSM_SRID));
                 menuManager.add(new Action("Other ...") {
                     @Override
                     public void run() {
@@ -435,6 +436,11 @@ public class GISLeafletViewer {
         public SetCRSAction(int srid) {
             super("EPSG:" + srid);
             this.srid = srid;
+        }
+
+        @Override
+        public boolean isChecked() {
+            return srid == getCurrentSourceSRID();
         }
 
         @Override
