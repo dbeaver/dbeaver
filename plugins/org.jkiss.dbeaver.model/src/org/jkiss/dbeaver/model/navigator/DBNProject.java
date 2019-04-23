@@ -47,15 +47,18 @@ public class DBNProject extends DBNResource
     public DBNProject(DBNNode parentNode, IProject project, DBPResourceHandler handler)
     {
         super(parentNode, project, handler);
-        getModel().getPlatform().getProjectManager().addProject(project);
+        if (getModel().isGlobal()) {
+            getModel().getPlatform().getProjectManager().addProject(project);
+        }
     }
 
     @Override
     protected void dispose(boolean reflect)
     {
-        IProject project = getProject();
         super.dispose(reflect);
-        getModel().getPlatform().getProjectManager().removeProject(project);
+        if (getModel().isGlobal()) {
+            getModel().getPlatform().getProjectManager().removeProject(getProject());
+        }
     }
 
     public IProject getProject()
