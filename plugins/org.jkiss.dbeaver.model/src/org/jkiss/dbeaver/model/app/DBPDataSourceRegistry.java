@@ -80,6 +80,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
 
+    DBPDataSourceRegistry createCopy(IProject project);
+
     @Nullable
     DBSObjectFilter getSavedFilter(String name);
 
@@ -99,4 +101,5 @@ public interface DBPDataSourceRegistry extends DBPObject {
     @NotNull
     ISecurePreferences getSecurePreferences();
 
+    void dispose();
 }
