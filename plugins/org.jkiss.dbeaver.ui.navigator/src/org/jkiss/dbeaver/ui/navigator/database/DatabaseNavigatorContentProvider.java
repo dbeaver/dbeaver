@@ -64,10 +64,14 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     public Object[] getElements(Object parent)
     {
         if (parent instanceof DatabaseNavigatorContent) {
+            DBNNode rootNode = ((DatabaseNavigatorContent) parent).getRootNode();
+            if (rootNode == null) {
+                return EMPTY_CHILDREN;
+            }
             if (showRoot) {
-                return new Object[] { ((DatabaseNavigatorContent) parent).getRootNode() };
+                return new Object[] {rootNode};
             } else {
-                return getChildren(((DatabaseNavigatorContent) parent).getRootNode());
+                return getChildren(rootNode);
             }
         } else {
             return getChildren(parent);
