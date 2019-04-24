@@ -25,3 +25,4 @@ Export-Package: org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.model.plan,
  org.jkiss.dbeaver.ext.postgresql.model.session
 Bundle-Localization: OSGI-INF/l10n/bundle
+
