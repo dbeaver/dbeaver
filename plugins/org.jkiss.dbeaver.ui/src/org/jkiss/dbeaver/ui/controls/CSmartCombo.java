@@ -70,7 +70,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         super(parent, style = checkStyle(style));
         this.labelProvider = labelProvider;
         if (parent.getLayout() instanceof GridLayout) {
-            this.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            this.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
         GridLayout gridLayout = new GridLayout(3, false);
@@ -263,6 +263,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed)
     {
+        if (wHint != SWT.DEFAULT) {
+            return super.computeSize(wHint, hHint, changed);
+        }
         checkWidget();
 
         int borderWidth = getBorderWidth ();

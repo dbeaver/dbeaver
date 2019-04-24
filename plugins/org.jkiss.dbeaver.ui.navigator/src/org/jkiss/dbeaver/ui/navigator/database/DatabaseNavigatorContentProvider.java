@@ -82,7 +82,6 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         } else if (child instanceof TreeNodeSpecial) {
             return ((TreeNodeSpecial)child).getParent();
         } else {
-            log.warn("Unknown node type: " + child);
             return null;
         }
     }
@@ -91,11 +90,10 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     public Object[] getChildren(final Object parent)
     {
         if (parent instanceof TreeNodeSpecial) {
-            return null;
+            return EMPTY_CHILDREN;
         }
         if (!(parent instanceof DBNNode)) {
-            log.error("Bad parent type: " + parent);
-            return null;
+            return EMPTY_CHILDREN;
         }
         final DBNNode parentNode = (DBNNode)parent;//view.getNavigatorModel().findNode(parent);
 /*
