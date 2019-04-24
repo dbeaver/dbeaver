@@ -20,7 +20,6 @@ import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
 /**
  * Label providers
@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class DatabaseLabelProviders {
 
 
-    public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
+    public static final String EMPTY_SELECTION_TEXT = UINavigatorMessages.toolbar_datasource_selector_empty;
 
     public static class ConnectionLabelProvider extends LabelProvider implements IColorProvider {
         @Override
