@@ -48,18 +48,18 @@ import java.util.Map;
 /**
  * PostgreTrigger
  */
-public class PostgreTrigger
-        implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject {
+public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject
+{
     private static final Log log = Log.getLog(PostgreTrigger.class);
 
     /* Bits within tgtype */
-    public static final int TRIGGER_TYPE_ROW = (1 << 0);
-    public static final int TRIGGER_TYPE_BEFORE = (1 << 1);
-    public static final int TRIGGER_TYPE_INSERT = (1 << 2);
-    public static final int TRIGGER_TYPE_DELETE = (1 << 3);
-    public static final int TRIGGER_TYPE_UPDATE = (1 << 4);
-    public static final int TRIGGER_TYPE_TRUNCATE = (1 << 5);
-    public static final int TRIGGER_TYPE_INSTEAD = (1 << 6);
+    public static final int TRIGGER_TYPE_ROW        = (1 << 0);
+    public static final int TRIGGER_TYPE_BEFORE     = (1 << 1);
+    public static final int TRIGGER_TYPE_INSERT     = (1 << 2);
+    public static final int TRIGGER_TYPE_DELETE     = (1 << 3);
+    public static final int TRIGGER_TYPE_UPDATE     = (1 << 4);
+    public static final int TRIGGER_TYPE_TRUNCATE   = (1 << 5);
+    public static final int TRIGGER_TYPE_INSTEAD    = (1 << 6);
 
     private PostgreTableReal table;
     private long objectId;
@@ -77,7 +77,10 @@ public class PostgreTrigger
     private PostgreTableColumn[] columnRefs;
     protected String description;
 
-    public PostgreTrigger(DBRProgressMonitor monitor, PostgreTableReal table, ResultSet dbResult) throws DBException {
+    public PostgreTrigger(
+        DBRProgressMonitor monitor,
+        PostgreTableReal table,
+        ResultSet dbResult) throws DBException {
         this.persisted = true;
         this.name = JDBCUtils.safeGetString(dbResult, "tgname");
         this.table = table;
@@ -127,8 +130,7 @@ public class PostgreTrigger
                 columnRefs = new PostgreTableColumn[attrCount];
                 for (int i = 0; i < attrCount; i++) {
                     int colNumber = attrNumbers[i];
-                    final PostgreTableColumn attr = PostgreUtils.getAttributeByNum(getTable().getAttributes(monitor),
-                            colNumber);
+                    final PostgreTableColumn attr = PostgreUtils.getAttributeByNum(getTable().getAttributes(monitor), colNumber);
                     if (attr == null) {
                         log.warn("Bad trigger attribute ref index: " + colNumber);
                         continue;
@@ -145,6 +147,10 @@ public class PostgreTrigger
         super();
     }
 
+    public PostgreTrigger(DBRProgressMonitor monitor, PostgreTableReal parent, String editPage) {
+        super();
+    }
+
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
@@ -153,7 +159,8 @@ public class PostgreTrigger
     }
 
     @Property(viewable = true, order = 2)
-    public DBSActionTiming getActionTiming() {
+    public DBSActionTiming getActionTiming()
+    {
         return actionTiming;
     }
 
@@ -183,7 +190,8 @@ public class PostgreTrigger
     }
 
     @Override
-    public PostgreTableBase getTable() {
+    public PostgreTableBase getTable()
+    {
         return table;
     }
 
@@ -194,7 +202,8 @@ public class PostgreTrigger
     }
 
     @Property(viewable = true, order = 11)
-    public String getWhenExpression() {
+    public String getWhenExpression()
+    {
         return whenExpression;
     }
 
@@ -218,13 +227,15 @@ public class PostgreTrigger
     }
 
     @Override
-    public PostgreTableReal getParentObject() {
+    public PostgreTableReal getParentObject()
+    {
         return table;
     }
 
     @NotNull
     @Override
-    public PostgreDataSource getDataSource() {
+    public PostgreDataSource getDataSource()
+    {
         return table.getDataSource();
     }
 
@@ -236,15 +247,15 @@ public class PostgreTrigger
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    {
         if (body == null) {
             StringBuilder ddl = new StringBuilder();
             ddl.append("-- DROP TRIGGER ").append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
-                    .append(DBUtils.getQuotedIdentifier(getTable())).append(";\n\n");
+                .append(DBUtils.getQuotedIdentifier(getTable())).append(";\n\n");
 
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
-                String triggerSource = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)",
-                        objectId);
+                String triggerSource = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
                 if (triggerSource != null) {
                     triggerSource = SQLUtils.formatSQL(getDataSource(), triggerSource);
                     ddl.append(triggerSource).append(";");
@@ -253,11 +264,11 @@ public class PostgreTrigger
                 throw new DBException(e, getDataSource());
             }
 
-            if (!CommonUtils.isEmpty(getDescription())
-                    && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS)) {
+            if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS)) {
                 ddl.append("\n").append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
-                        .append(" ON ").append(DBUtils.getQuotedIdentifier(getTable())).append(" IS ")
-                        .append(SQLUtils.quoteString(this, getDescription())).append(";");
+                    .append(" ON ").append(DBUtils.getQuotedIdentifier(getTable()))
+                    .append(" IS ")
+                    .append(SQLUtils.quoteString(this, getDescription())).append(";");
             }
             this.body = ddl.toString();
         }
@@ -265,12 +276,15 @@ public class PostgreTrigger
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException {
+    public void setObjectDefinitionText(String sourceText) throws DBException
+    {
         body = sourceText;
     }
 
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getParentObject(),
+            this);
         return DBUtils.getFullQualifiedName(getDataSource(), getParentObject(), this);
     }
 
@@ -285,8 +299,7 @@ public class PostgreTrigger
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
-            enabledState = JDBCUtils.queryString(session, "SELECT tgenabled FROM pg_catalog.pg_trigger WHERE oid=?",
-                    getObjectId());
+            enabledState = JDBCUtils.queryString(session, "SELECT tgenabled FROM pg_catalog.pg_trigger WHERE oid=?", getObjectId());
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
@@ -298,9 +311,8 @@ public class PostgreTrigger
         public Object transform(Object object, Object value) throws IllegalArgumentException {
             if (value instanceof PostgreTableColumn[]) {
                 StringBuilder sb = new StringBuilder();
-                for (PostgreTableColumn col : (PostgreTableColumn[]) value) {
-                    if (sb.length() > 0)
-                        sb.append(", ");
+                for (PostgreTableColumn col : (PostgreTableColumn[])value) {
+                    if (sb.length() > 0) sb.append(", ");
                     sb.append(col.getName());
                 }
                 return sb.toString();
