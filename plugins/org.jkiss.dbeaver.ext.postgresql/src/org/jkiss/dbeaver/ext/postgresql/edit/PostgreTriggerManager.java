@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 import java.util.List;
 import java.util.Map;
 
@@ -63,12 +61,6 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableReal parent, Object copyFrom) throws DBException 
     {
         return new PostgreTrigger(monitor, parent);
-        PostgreTrigger newTrigger = new PostgreTrigger(parent.getContainer(), parent, editPage.getEntityName());
-        newTrigger.setObjectDefinitionText(
-            "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(newTrigger) + "\n" +
-            "BEFORE UPDATE" + " " + "\n" +
-            "ON " + DBUtils.getQuotedIdentifier(parent) + " FOR EACH ROW\n");
-        return newTrigger;
     }
 
 
@@ -86,7 +78,6 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, PostgreTrigger trigger, boolean create) {
 
     }
-
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)

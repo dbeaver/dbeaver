@@ -147,6 +147,10 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         super();
     }
 
+    public PostgreTrigger(DBRProgressMonitor monitor, PostgreTableReal parent, String editPage) {
+        super();
+    }
+
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
@@ -186,8 +190,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     }
 
     @Override
-    public PostgreTableBase getTable()
-    {
+    public PostgreTableBase getTable() {
         return table;
     }
 
@@ -315,5 +318,10 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
             }
             return value;
         }
+    }
+
+    public void setEntityName(String entityName) {
+        this.name = entityName;
+
     }
 }
