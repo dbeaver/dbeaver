@@ -432,7 +432,6 @@ public class CoreMessages extends NLS {
 	public static String toolbar_datasource_selector_action_read_databases;
 	public static String toolbar_datasource_selector_combo_database_tooltip;
 	public static String toolbar_datasource_selector_combo_datasource_tooltip;
-	public static String toolbar_datasource_selector_empty;
 	public static String toolbar_datasource_selector_error_change_database_message;
 	public static String toolbar_datasource_selector_error_change_database_title;
 	public static String toolbar_datasource_selector_error_database_not_found;
