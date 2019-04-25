@@ -463,10 +463,15 @@ public class UIUtils {
         return fontData[0].getHeight();
     }
 
-    public static int getTextHeight(Control control) {
+    public static int getTextHeight(@NotNull Control control) {
+        return getTextSize(control, "X").y;
+    }
+
+    @NotNull
+    public static Point getTextSize(@NotNull Control control, @NotNull String text) {
         GC gc = new GC(control);
         try {
-            return gc.textExtent("X").y;
+            return gc.textExtent(text);
         } finally {
             gc.dispose();
         }
