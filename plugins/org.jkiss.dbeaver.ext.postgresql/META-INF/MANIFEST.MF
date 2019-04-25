@@ -2,13 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
-Bundle-Version: 2.1.80.qualifier
-Bundle-Release-Date: 20190422
+Bundle-Version: 2.1.81.qualifier
+Bundle-Release-Date: 20190506
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis;visibility:=reexport,
- com.vividsolutions.jts;visibility:=reexport,
- net.sf.opencsv;visibility:=reexport
+ org.jkiss.bundle.gis;visibility:=reexport,
+ net.sf.opencsv;visibility:=reexport,
+ com.google.gson
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor

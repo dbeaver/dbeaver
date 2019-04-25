@@ -58,6 +58,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     DBPDataSourceContainer createDataSource(DBPDriver driver, DBPConnectionConfiguration connConfig);
 
+    DBPDataSourceContainer createDataSource(DBPDataSourceContainer source);
+
     void addDataSourceListener(DBPEventListener listener);
 
     boolean removeDataSourceListener(DBPEventListener listener);
@@ -78,6 +80,8 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
 
+    DBPDataSourceRegistry createCopy(IProject project, boolean copyDataSources);
+
     @Nullable
     DBSObjectFilter getSavedFilter(String name);
 
@@ -97,4 +101,5 @@ public interface DBPDataSourceRegistry extends DBPObject {
     @NotNull
     ISecurePreferences getSecurePreferences();
 
+    void dispose();
 }

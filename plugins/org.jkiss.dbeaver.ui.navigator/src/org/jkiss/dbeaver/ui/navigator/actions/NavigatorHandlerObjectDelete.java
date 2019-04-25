@@ -30,6 +30,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -42,6 +43,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -51,6 +53,8 @@ import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -144,7 +148,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (!(node.getParentNode() instanceof DBNContainer)) {
                 throw new DBException("Node '" + node + "' doesn't have a container");
             }
-            final DBNContainer container = (DBNContainer) node.getParentNode();
 
             // Try to delete object using object manager
             DBSObject object = node.getObject();
@@ -159,7 +162,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
             CommandTarget commandTarget = getCommandTarget(
                 workbenchWindow,
-                container,
+                node.getParentNode(),
                 object.getClass(),
                 false);
 
@@ -302,6 +305,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
 
     private class DeleteConfirmDialog extends MessageDialog {
+        private final DBNNode node;
         private final boolean supportsCascade;
         private final boolean viewScript;
         private boolean cascadeCheck;
@@ -313,8 +317,23 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 DBeaverIcons.getImage(UIIcon.REJECT),
                 NLS.bind(node instanceof DBNLocalFolder ? UINavigatorMessages.confirm_local_folder_delete_message : UINavigatorMessages.confirm_entity_delete_message, node.getNodeType(), node.getNodeName()),
                 MessageDialog.CONFIRM, null, 0);
+            this.node = node;
             this.supportsCascade = supportsCascade;
             this.viewScript = viewScript;
+        }
+
+        @Override
+        protected Control createContents(Composite parent) {
+            Control contents = super.createContents(parent);
+            if (false && node instanceof DBNDatabaseNode) {
+                CSSUtils.setCSSClass(contents, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                DBPDataSourceContainer ds = ((DBNDatabaseNode) node).getDataSourceContainer();
+                Color connectionTypeColor = UIUtils.getConnectionTypeColor(ds.getConnectionConfiguration().getConnectionType());
+                if (connectionTypeColor != null) {
+                    UIUtils.setBackgroundForAll(getShell(), connectionTypeColor);
+                }
+            }
+            return contents;
         }
 
         @Override

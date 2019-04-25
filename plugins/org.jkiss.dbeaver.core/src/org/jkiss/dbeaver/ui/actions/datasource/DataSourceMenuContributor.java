@@ -32,7 +32,7 @@ public abstract class DataSourceMenuContributor extends CompoundContributionItem
     {
         List<IContributionItem> menuItems = new ArrayList<>();
         fillContributionItems(menuItems);
-        return menuItems.isEmpty() ? makeEmptyList() : menuItems.toArray(new IContributionItem[menuItems.size()]);
+        return menuItems.isEmpty() ? makeEmptyList() : menuItems.toArray(new IContributionItem[0]);
     }
 
     protected abstract void fillContributionItems(

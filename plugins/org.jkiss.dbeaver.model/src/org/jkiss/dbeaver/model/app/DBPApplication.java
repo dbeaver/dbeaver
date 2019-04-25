@@ -35,4 +35,5 @@ public interface DBPApplication
      */
     String getInfoDetails();
 
+    String getDefaultProjectName();
 }

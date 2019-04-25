@@ -43,7 +43,7 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
         } else if (typedObject.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return JDBCContentValueHandler.INSTANCE;
         } else if (typedObject.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_GEOMETRY)) {
-            return GISGeometryValueHandler.INSTANCE;
+            return new GISGeometryValueHandler(true);
         } else {
             return null;
         }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
@@ -48,6 +50,9 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
+        if (value instanceof DBGeometry) {
+            value = ((DBGeometry) value).getRawValue();
+        }
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else if (value instanceof Geometry) {
@@ -61,15 +66,15 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     public Class<?> getValueObjectType(DBSTypedObject attribute) {
-        return Geometry.class;
+        return DBGeometry.class;
     }
 
     @Override
     public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
         if (object == null) {
-            return null;
+            return new DBGeometry();
         } else if (object instanceof Geometry) {
-            return object;
+            return new DBGeometry((Geometry) object);
         } else if (object instanceof String) {
             return makeGeometryFromString(session, (String) object);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
@@ -79,23 +84,32 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    private Object makeGeometryFromPGGeometry(DBCSession session, Object pgGeometry) throws DBCException {
+    private DBGeometry makeGeometryFromPGGeometry(DBCSession session, Object value) throws DBCException {
         try {
-            return BeanUtils.invokeObjectMethod(pgGeometry, "getGeometry", null, null);
+            String pgString = value.toString();
+            return makeGeometryFromString(session, pgString);
         } catch (Throwable e) {
             throw new DBCException(e, session.getDataSource());
         }
     }
 
-    private Object makeGeometryFromString(DBCSession session, String object) throws DBCException {
-        if (CommonUtils.isEmpty(object)) {
-            return null;
+    private DBGeometry makeGeometryFromString(DBCSession session, String pgString) throws DBCException {
+        if (CommonUtils.isEmpty(pgString)) {
+            return new DBGeometry();
         }
+        // Convert from PostGIS EWKT to Geometry type
         try {
-            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), PostgreConstants.PG_GEOMETRY_CLASS);
-            return BeanUtils.invokeStaticMethod(
-                jtsGeometry, "geomFromString", new Class[] { String.class }, new Object[] { object }
-            );
+            int divPos = pgString.indexOf(';');
+            if (divPos == -1) {
+                return new DBGeometry(pgString);
+            }
+            String sridString = pgString.substring(0, divPos);
+            String wktString = pgString.substring(divPos + 1);
+            Geometry geometry = new WKTReader().read(wktString);
+            if (sridString.startsWith("SRID=")) {
+                geometry.setSRID(CommonUtils.toInt(sridString.substring(5)));
+            }
+            return new DBGeometry(geometry);
         } catch (Throwable e) {
             throw new DBCException(e, session.getDataSource());
         }

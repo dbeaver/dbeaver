@@ -85,7 +85,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleProcedureBase procedure) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_ARGUMENTS " +
+                "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(procedure.getDataSource()) + "ALL_ARGUMENTS " +
                 "WHERE " +
                 (procedure.getObjectId() <= 0  ? "OWNER=? AND OBJECT_NAME=? AND PACKAGE_NAME=? " : "OBJECT_ID=? ") +
                 (procedure.getOverloadNumber() != null ? "AND OVERLOAD=? " : "AND OVERLOAD IS NULL ") +

@@ -130,20 +130,24 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    public static void openNewEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, ISelection selection) throws CoreException {
+    public static IFile openNewEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, ISelection selection) throws CoreException {
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
         checkProjectIsOpen(project);
         IFolder folder = getCurrentScriptFolder(selection);
         IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, dataSourceContainer);
 
         openResource(scriptFile, workbenchWindow);
+
+        return scriptFile;
     }
 
     public  static IFolder getCurrentScriptFolder(ISelection selection) {
         IFolder folder = null;
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
+            if (element instanceof IFolder) {
+                folder = (IFolder)element;
+            } else if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
                 folder = (IFolder) ((DBNResource)element).getResource();
             }
         }

@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -84,12 +81,12 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     protected static CommandTarget getCommandTarget(
         IWorkbenchWindow workbenchWindow,
-        DBNContainer container,
+        DBNNode container,
         Class<?> childType,
         boolean openEditor)
         throws DBException
     {
-        final Object parentObject = container.getValueObject();
+        final Object parentObject = container instanceof DBNDatabaseNode ? ((DBNDatabaseNode) container).getValueObject() : null;
 
         DBSObject objectToSeek = null;
         if (parentObject instanceof DBSObject) {
@@ -132,10 +129,10 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         return new CommandTarget();
     }
 
-    private static void switchEditorFolder(DBNContainer container, IEditorPart editor)
+    private static void switchEditorFolder(DBNNode container, IEditorPart editor)
     {
-        if (editor instanceof ITabbedFolderContainer && container instanceof DBNDatabaseFolder) {
-            ((ITabbedFolderContainer) editor).switchFolder(container.getChildrenType());
+        if (container instanceof DBNContainer && editor instanceof ITabbedFolderContainer && container instanceof DBNDatabaseFolder) {
+            ((ITabbedFolderContainer) editor).switchFolder(((DBNDatabaseFolder) container).getChildrenType());
         }
     }
 

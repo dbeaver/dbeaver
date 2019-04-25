@@ -57,13 +57,17 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
         super(dbObjects, task);
-        this.nativeClientHomeRequired = false;
         this.mockDataSettings = mockDataSettings;
 
         setDialogSettings(
             UIUtils.getSettingsSection(
                 MDActivator.getDefault().getDialogSettings(),
                 WIZARD_DIALOG_SETTINGS));
+    }
+
+    @Override
+    protected boolean isNativeClientHomeRequired() {
+        return false;
     }
 
     @Override

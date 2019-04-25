@@ -83,7 +83,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
-        this.defaultSelection = new TreeSelection(new TreePath(new Object[]{rootNode}));
+        this.defaultSelection = new TreeSelection(new TreePath(rootNode == null ? new Object[0] : new Object[] { rootNode } ));
         this.model = DBWorkbench.getPlatform().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(e -> {
@@ -106,7 +106,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         //treeViewer.getTree().addListener(SWT.MeasureItem, event -> measureItem(event));
         treeViewer.getTree().addListener(SWT.PaintItem, new TreeBackgroundColorPainter(labelProvider));
 
-        setInput(rootNode);
+        if (rootNode != null) {
+            setInput(rootNode);
+        }
 
         ColumnViewerToolTipSupport.enableFor(treeViewer);
 
@@ -132,7 +134,16 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         // Create tree
         int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | style;
         if (checkEnabled) {
-            return new CheckboxTreeViewer(parent, treeStyle);
+            CheckboxTreeViewer checkboxTreeViewer = new CheckboxTreeViewer(parent, treeStyle);
+            if (navigatorFilter != null) {
+                checkboxTreeViewer.setFilters(new ViewerFilter() {
+                    @Override
+                    public boolean select(Viewer viewer, Object parentElement, Object element) {
+                        return navigatorFilter.select(element);
+                    }
+                });
+            }
+            return checkboxTreeViewer;
         } else {
             if (navigatorFilter != null) {
                 CustomFilteredTree filteredTree = new CustomFilteredTree(this, treeStyle);
@@ -308,8 +319,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private Object getViewerObject(DBNNode node)
     {
-        if (((DatabaseNavigatorContent) treeViewer.getInput()).getRootNode() == node) {
-            return treeViewer.getInput();
+        Object input = treeViewer.getInput();
+        if (input instanceof DatabaseNavigatorContent && ((DatabaseNavigatorContent) input).getRootNode() == node) {
+            return input;
         } else {
             return node;
         }

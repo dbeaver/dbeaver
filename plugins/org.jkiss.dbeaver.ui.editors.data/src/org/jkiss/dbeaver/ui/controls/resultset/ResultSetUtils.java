@@ -209,7 +209,7 @@ public class ResultSetUtils
                     if (attrEntity != null) {
                         DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
                         if (rowIdentifier == null) {
-                            DBSEntityReferrer entityIdentifier = getBestIdentifier(monitor, attrEntity, bindings, readMetaData);
+                            DBSEntityConstraint entityIdentifier = getBestIdentifier(monitor, attrEntity, bindings, readMetaData);
                             if (entityIdentifier != null) {
                                 rowIdentifier = new DBDRowIdentifier(
                                     attrEntity,
@@ -250,10 +250,10 @@ public class ResultSetUtils
         }
     }
 
-    private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBindingMeta[] bindings, boolean readMetaData)
+    private static DBSEntityConstraint getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBindingMeta[] bindings, boolean readMetaData)
         throws DBException
     {
-        List<DBSEntityReferrer> identifiers = new ArrayList<>(2);
+        List<DBSEntityConstraint> identifiers = new ArrayList<>(2);
 
         if (readMetaData) {
             if (table instanceof DBSTable && ((DBSTable) table).isView()) {
@@ -292,7 +292,7 @@ public class ResultSetUtils
                     if (constraints != null) {
                         for (DBSEntityConstraint constraint : constraints) {
                             if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
-                                identifiers.add((DBSEntityReferrer) constraint);
+                                identifiers.add(constraint);
                             }
                         }
                     }
@@ -320,17 +320,21 @@ public class ResultSetUtils
 
         if (!CommonUtils.isEmpty(identifiers)) {
             // Find PK or unique key
-            DBSEntityReferrer uniqueId = null;
-            for (DBSEntityReferrer referrer : identifiers) {
-                if (isGoodReferrer(monitor, bindings, referrer)) {
-                    if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                        return referrer;
-                    } else if (uniqueId == null &&
-                        (referrer.getConstraintType().isUnique() ||
-                        (referrer instanceof DBSTableIndex && ((DBSTableIndex) referrer).isUnique())))
-                    {
-                        uniqueId = referrer;
+            DBSEntityConstraint uniqueId = null;
+            for (DBSEntityConstraint constraint : identifiers) {
+                if (constraint instanceof DBSEntityReferrer) {
+                    DBSEntityReferrer referrer = (DBSEntityReferrer) constraint;
+                    if (isGoodReferrer(monitor, bindings, referrer)) {
+                        if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                            return referrer;
+                        } else if (uniqueId == null &&
+                            (referrer.getConstraintType().isUnique() ||
+                                (referrer instanceof DBSTableIndex && ((DBSTableIndex) referrer).isUnique()))) {
+                            uniqueId = referrer;
+                        }
                     }
+                } else {
+                    uniqueId = constraint;
                 }
             }
             return uniqueId;

@@ -24,7 +24,9 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
@@ -45,7 +48,7 @@ import java.util.Map;
 /**
  * PostgreTrigger
  */
-public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject
+public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject, DBPStatefulObject
 {
     private static final Log log = Log.getLog(PostgreTrigger.class);
 
@@ -275,6 +278,24 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         return DBUtils.getFullQualifiedName(getDataSource(),
             getParentObject(),
             this);
+    }
+
+    @Override
+    public DBSObjectState getObjectState() {
+        if ("D".equals(enabledState)) {
+            return DBSObjectState.INVALID;
+        }
+        return DBSObjectState.NORMAL;
+    }
+
+    @Override
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh triggers state")) {
+            enabledState = JDBCUtils.queryString(session, "SELECT tgenabled FROM pg_catalog.pg_trigger WHERE oid=?", getObjectId());
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
+
     }
 
     public static class ColumnNameTransformer implements IPropertyValueTransformer {

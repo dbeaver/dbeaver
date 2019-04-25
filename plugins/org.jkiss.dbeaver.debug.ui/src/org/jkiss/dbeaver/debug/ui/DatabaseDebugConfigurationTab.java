@@ -87,11 +87,6 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
         UIUtils.createControlLabel(group, DebugUIMessages.DatabaseTab_datasource_label_text);
         connectionCombo = new SelectDataSourceCombo(group) {
             @Override
-            protected IProject getActiveProject() {
-                return null;
-            }
-
-            @Override
             protected void onDataSourceChange(DBPDataSourceContainer dataSource) {
                 String driverName = dataSource == null ? "" : dataSource.getDriver().getFullName();
                 driverText.setText(driverName);

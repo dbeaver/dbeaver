@@ -167,7 +167,7 @@ public final class DBUtils {
         // Check for bad characters
         if (!hasBadChars && !str.isEmpty()) {
             for (int i = 0; i < str.length(); i++) {
-                if (!sqlDialect.validIdentifierPart(str.charAt(i))) {
+                if (!sqlDialect.validIdentifierPart(str.charAt(i), false)) {
                     hasBadChars = true;
                     break;
                 }
@@ -852,18 +852,23 @@ public final class DBUtils {
     }
 
     public static boolean isIdentifierConstraint(DBRProgressMonitor monitor, DBSEntityConstraint constraint) throws DBException {
-        if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
-            List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
-            if (attrs == null || attrs.isEmpty()) {
-                return false;
-            }
-            for (DBSEntityAttributeRef col : attrs) {
-                if (col.getAttribute() == null || !col.getAttribute().isRequired()) {
-                    // Do not use constraints with NULL columns (because they are not actually unique: #424)
+        if (constraint.getConstraintType().isUnique()) {
+            if (constraint instanceof DBSEntityReferrer) {
+                List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+                if (attrs == null || attrs.isEmpty()) {
                     return false;
                 }
+                for (DBSEntityAttributeRef col : attrs) {
+                    if (col.getAttribute() == null || !col.getAttribute().isRequired()) {
+                        // Do not use constraints with NULL columns (because they are not actually unique: #424)
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                // Non-referrer constraint. It must identify rows somehow else. We don't care actually.
+                return true;
             }
-            return true;
         }
         return false;
     }

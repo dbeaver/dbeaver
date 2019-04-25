@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>6.0.3</dbeaver-version>
+        <dbeaver-version>6.0.4</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.1.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -301,6 +301,7 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+<!--
         <dependency>
           <groupId>org.powermock</groupId>
           <artifactId>powermock-api-mockito</artifactId>
@@ -313,6 +314,7 @@
           <version>1.6.6</version>
           <scope>test</scope>
         </dependency>
+-->
     </dependencies>
 
 </project>

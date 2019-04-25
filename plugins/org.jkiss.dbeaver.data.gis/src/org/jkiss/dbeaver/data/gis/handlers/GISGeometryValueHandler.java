@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
 import com.vividsolutions.jts.geom.Geometry;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -32,7 +34,15 @@ import java.sql.SQLException;
  */
 public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
 
-    public static final GISGeometryValueHandler INSTANCE = new GISGeometryValueHandler();
+    private boolean invertCoordinates;
+
+    public GISGeometryValueHandler() {
+        this(false);
+    }
+
+    public GISGeometryValueHandler(boolean invertCoordinates) {
+        this.invertCoordinates = invertCoordinates;
+    }
 
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
@@ -43,6 +53,9 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
+        if (value instanceof DBGeometry) {
+            value = ((DBGeometry) value).getRawValue();
+        }
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else if (value instanceof byte[]) {
@@ -54,19 +67,28 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     public Class<?> getValueObjectType(DBSTypedObject attribute) {
-        return Geometry.class;
+        return DBGeometry.class;
     }
 
+    @NotNull
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public DBGeometry getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
         if (object == null) {
-            return null;
+            return new DBGeometry();
         } else if (object instanceof Geometry) {
-            return object;
+            return new DBGeometry((Geometry)object);
         } else if (object instanceof byte[]) {
-            return GeometryConverter.getInstance().from((byte[]) object);
+            Geometry geometry = GeometryConverter.getInstance().from((byte[]) object);
+            if (invertCoordinates) {
+                geometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+            }
+            return new DBGeometry(geometry);
         } else if (object instanceof String) {
-            return GeometryConverter.getInstance().from((String)object);
+            Geometry geometry = GeometryConverter.getInstance().from((String) object);
+            if (invertCoordinates) {
+                geometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+            }
+            return new DBGeometry(geometry);
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
         }

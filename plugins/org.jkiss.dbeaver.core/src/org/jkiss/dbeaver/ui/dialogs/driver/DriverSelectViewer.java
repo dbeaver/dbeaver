@@ -230,7 +230,7 @@ public class DriverSelectViewer extends Viewer {
         if (forceClassic || getCurrentSelectorViewType() == SelectorViewType.tree) {
             if (!forceClassic) {
                 switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-                switchItem.setText("Gallery");
+                switchItem.setText(CoreMessages.viewer_selector_control_text_gallery);
                 switchItem.setSelection(true);
             }
 
@@ -243,7 +243,7 @@ public class DriverSelectViewer extends Viewer {
             });
         } else {
             switchItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
-            switchItem.setText("Classic");
+            switchItem.setText(CoreMessages.viewer_selector_control_text_classic);
             switchItem.setSelection(false);
 
             selectorViewer = new DriverTabbedViewer(selectorComposite, SWT.NONE);

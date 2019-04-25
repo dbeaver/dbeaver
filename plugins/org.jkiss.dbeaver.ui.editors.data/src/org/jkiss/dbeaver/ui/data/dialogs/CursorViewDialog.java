@@ -127,6 +127,11 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     }
 
     @Override
+    public boolean isReadOnly() {
+        return true;
+    }
+
+    @Override
     public boolean isDirty() {
         return resultSetViewer.isDirty();
     }

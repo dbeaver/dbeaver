@@ -60,6 +60,8 @@ public interface IValueEditor
     void primeEditorValue(@Nullable Object value)
         throws DBException;
 
+    boolean isReadOnly();
+
     /**
      * Checks whether editor content was modified (after #primeEditorValue invocation).
      */

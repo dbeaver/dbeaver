@@ -133,7 +133,7 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
-                        description="Microsoft JDBC Driver for SQL Server (MSSQL)"
+                        description="%driver.sqlserver.description"
                         promoted="1"
                         categories="sql">
 
@@ -162,7 +162,7 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
-                        description="Microsoft JDBC Driver for SQL Server (MSSQL)"
+                        description="%driver.sqlserver.description"
                         categories="sql">
 
                     <replace provider="mssql" driver="mssql_jdbc_azure"/>
@@ -186,7 +186,7 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="http://jtds.sourceforge.net/"
-                        description="jTDS SQL Server (MSSQL) driver"
+                        description="%driver.jTDS.description"
                         categories="sql">
                 </driver>
 
@@ -277,7 +277,7 @@
                         useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
-                        description="Legacy Microsoft JDBC Driver for SQL Server (MSSQL). Use it for SQL server older than 2005 or if standard drivers don't work."
+                        description="%driver.sqlserver.old.description"
                         categories="sql">
 
                     <parameter name="query-get-active-db" value="select db_name()"/>

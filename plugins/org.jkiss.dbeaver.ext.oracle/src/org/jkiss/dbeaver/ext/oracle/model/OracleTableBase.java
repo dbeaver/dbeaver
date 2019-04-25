@@ -341,7 +341,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TRIGGER_NAME,TABLE_OWNER,TABLE_NAME,COLUMN_NAME,COLUMN_LIST,COLUMN_USAGE\n" +
-                    "FROM SYS.ALL_TRIGGER_COLS WHERE TABLE_OWNER=? AND TABLE_NAME=?" +
+                    "FROM " + OracleUtils.getSysSchemaPrefix(owner.getDataSource()) + "ALL_TRIGGER_COLS WHERE TABLE_OWNER=? AND TABLE_NAME=?" +
                     (forObject == null ? "" : " AND TRIGGER_NAME=?") +
                     "\nORDER BY TRIGGER_NAME");
             dbStat.setString(1, owner.getContainer().getName());

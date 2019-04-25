@@ -40,7 +40,9 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     {
         super();
         this.model = model;
-        model.getPlatform().getProjectManager().addProjectListener(this);
+        if (model.isGlobal()) {
+            model.getPlatform().getProjectManager().addProjectListener(this);
+        }
     }
 
     @Override
@@ -50,7 +52,9 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
             project.dispose(reflect);
         }
         projects = new DBNProject[0];
-        model.getPlatform().getProjectManager().removeProjectListener(this);
+        if (model.isGlobal()) {
+            model.getPlatform().getProjectManager().removeProjectListener(this);
+        }
     }
 
     @Override
@@ -144,26 +148,20 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         return null;
     }
 
-    DBNProject addProject(IProject project, boolean reflect)
+    public DBNProject addProject(IProject project, boolean reflect)
     {
         DBNProject projectNode = new DBNProject(
             this,
             project,
             model.getPlatform().getProjectManager().getResourceHandler(project));
         projects = ArrayUtils.add(DBNProject.class, projects, projectNode);
-        Arrays.sort(projects, new Comparator<DBNProject>() {
-            @Override
-            public int compare(DBNProject o1, DBNProject o2)
-            {
-                return o1.getNodeName().compareTo(o2.getNodeName());
-            }
-        });
+        Arrays.sort(projects, Comparator.comparing(DBNResource::getNodeName));
         model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
 
         return projectNode;
     }
 
-    void removeProject(IProject project)
+    public void removeProject(IProject project)
     {
         for (int i = 0; i < projects.length; i++) {
             DBNProject projectNode = projects[i];

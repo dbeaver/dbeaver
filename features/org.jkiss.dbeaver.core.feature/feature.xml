@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.core.feature"
         label="%featureName"
-        version="6.0.3.qualifier"
+        version="6.0.4.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.core">
 
@@ -66,9 +66,13 @@
     <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
+    <!-- Compare -->
+    <plugin id="org.jkiss.dbeaver.cmp.simple" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.cmp.simple.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
     <!-- Gis -->
+    <plugin id="org.jkiss.bundle.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.data.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="com.vividsolutions.jts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.data.gis.view" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- Charts -->

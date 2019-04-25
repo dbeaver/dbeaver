@@ -20,39 +20,29 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreTable base
  */
-public class RedshiftExternalTable extends JDBCTable<PostgreDataSource, RedshiftExternalSchema> implements DBPRefreshableObject
+public class RedshiftExternalTable extends PostgreTable implements DBPRefreshableObject
 {
     private static final Log log = Log.getLog(RedshiftExternalTable.class);
     private String location;
@@ -65,14 +55,16 @@ public class RedshiftExternalTable extends JDBCTable<PostgreDataSource, Redshift
 
     protected RedshiftExternalTable(RedshiftExternalSchema catalog)
     {
-        super(catalog, false);
+        super(catalog);
     }
 
     protected RedshiftExternalTable(
         RedshiftExternalSchema catalog,
         ResultSet dbResult)
     {
-        super(catalog, JDBCUtils.safeGetString(dbResult, "tablename"), true);
+        super(catalog);
+        setName(JDBCUtils.safeGetString(dbResult, "tablename"));
+        setPersisted(true);
 
         this.location = JDBCUtils.safeGetString(dbResult, "location");
         this.inputFormat = JDBCUtils.safeGetString(dbResult, "input_format");
@@ -99,10 +91,31 @@ public class RedshiftExternalTable extends JDBCTable<PostgreDataSource, Redshift
     }
 
     @Override
-    public JDBCStructCache<RedshiftExternalSchema, ? extends RedshiftExternalTable, ? extends RedshiftExternalTableColumn> getCache()
-    {
-        return getContainer().externalTableCache;
+    public RedshiftExternalSchema getContainer() {
+        return (RedshiftExternalSchema)super.getContainer();
     }
+
+    ////////////////////////////////////////////
+    // Remove standard PG table properties
+
+    @Override
+    public long getObjectId() {
+        return 0;
+    }
+
+    @Override
+    @Nullable
+    public String[] getRelOptions() {
+        return null;
+    }
+
+    @Override
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+        ////////////////////////////////////////////
+    // Redshift table properties
 
     @Property(viewable = true, order = 10)
     public String getLocation() {
@@ -157,7 +170,7 @@ public class RedshiftExternalTable extends JDBCTable<PostgreDataSource, Redshift
 
     @NotNull
     public RedshiftExternalSchema getSchema() {
-        return super.getContainer();
+        return (RedshiftExternalSchema) super.getContainer();
     }
 
     /**
@@ -165,7 +178,7 @@ public class RedshiftExternalTable extends JDBCTable<PostgreDataSource, Redshift
      * @param monitor progress monitor
      */
     @Override
-    public List<RedshiftExternalTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public Collection<RedshiftExternalTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().externalTableCache.getChildren(monitor, getContainer(), this);
@@ -193,7 +206,7 @@ public class RedshiftExternalTable extends JDBCTable<PostgreDataSource, Redshift
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -230,4 +243,13 @@ public class RedshiftExternalTable extends JDBCTable<PostgreDataSource, Redshift
         return getContainer().externalTableCache.refreshObject(monitor, getContainer(), this);
     }
 
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return null;
+    }
 }

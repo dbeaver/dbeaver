@@ -39,6 +39,7 @@ public class OracleTableTrigger extends OracleTrigger<OracleTableBase>
     public OracleTableTrigger(OracleTableBase table, String name)
     {
         super(table, name);
+        ownerSchema = table.getSchema();
     }
 
     public OracleTableTrigger(

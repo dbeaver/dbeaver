@@ -185,8 +185,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public void close() {
-        closeExporter();
-
         metaColumns = null;
         row = null;
     }

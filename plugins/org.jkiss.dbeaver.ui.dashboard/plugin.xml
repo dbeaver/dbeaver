@@ -21,7 +21,7 @@
         <activityPatternBinding activityId="org.jkiss.dbeaver.dashboard.view" isEqualityPattern="true" pattern="org.jkiss.dbeaver.ui.dashboard/org.jkiss.dbeaver.ui.dashboardView"/>
     </extension>
 
-    <extension point="org.eclipse.ui.newWizards">
+    <!--extension point="org.eclipse.ui.newWizards">
         <wizard
                 category="org.jkiss.dbeaver.core.new.general"
                 class="org.jkiss.dbeaver.ui.dashboard.view.DashboardCreateWizard"
@@ -32,7 +32,7 @@
                 %wizard.org.jkiss.dbeaver.dashboard.new.dashboard.description
             </description>
         </wizard>
-    </extension>
+    </extension-->
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.ui.dashboard.open" name="%command.org.jkiss.dbeaver.ui.dashboard.open.name" description="%command.org.jkiss.dbeaver.ui.dashboard.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -77,14 +77,13 @@
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
+                <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
 

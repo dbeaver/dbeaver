@@ -22,12 +22,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 
 /**
  * SQLPlanViewProviderSimple
  */
-public class SQLPlanViewProviderSimple implements SQLPlanViewProvider {
+public class SQLPlanViewProviderSimple extends SQLPlanSaveProvider {
 
 
     @Override
@@ -37,15 +38,23 @@ public class SQLPlanViewProviderSimple implements SQLPlanViewProvider {
     }
 
     @Override
-    public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
-        SQLPlanTreeViewer treeViewer = (SQLPlanTreeViewer) viewer;
-        treeViewer.showPlan(query, plan);
+    public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {        
+        fillPlan(query,plan);
+        showPlan(viewer,query, plan);
     }
 
     @Override
     public void contributeActions(Viewer viewer, IContributionManager contributionManager, SQLQuery lastQuery, DBCPlan lastPlan) {
+        super.contributeActions(viewer, contributionManager, lastQuery, lastPlan);
+
         SQLPlanTreeViewer treeViewer = (SQLPlanTreeViewer) viewer;
         treeViewer.contributeActions(contributionManager, lastQuery, lastPlan);
+    }
+
+    @Override
+    protected void showPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
+        SQLPlanTreeViewer treeViewer = (SQLPlanTreeViewer) viewer;
+        treeViewer.showPlan(query, plan);      
     }
 
 }

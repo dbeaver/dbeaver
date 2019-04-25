@@ -314,7 +314,11 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             int nlIndent = syntaxManager.getDialect().getKeywordNextLineIndent(lastTokenString);
             beginIndentaion = indenter.getReferenceIndentation(command.offset);
             if (nlIndent > 0) {
-                indent = beginIndentaion + indenter.createIndent(nlIndent);
+                if (beginIndentaion.isEmpty()) {
+                    indent = indenter.createIndent(nlIndent).toString();
+                } else {
+                    indent = beginIndentaion;
+                }
             } else if (nlIndent < 0) {
                 indent = indenter.unindent(beginIndentaion, nlIndent);
             } else {
@@ -322,16 +326,17 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             }
         } else {
             indent = indenter.getReferenceIndentation(command.offset);
-
-            lastTokenString = lastTokenString.trim();
-            if (lastTokenString.length() > 0) {
-                char lastTokenChar = lastTokenString.charAt(lastTokenString.length() - 1);
-                if (lastTokenChar == ',' || lastTokenChar == ':' || lastTokenChar == '-') {
-                    // Keep current indent
-                } else {
-                    // Last token seems to be some identifier (table or column or function name)
-                    // Next line shoudl contain some keyword then - let's unindent
-                    indent = indenter.unindent(beginIndentaion, 1);
+            if (lastTokenString != null) {
+                lastTokenString = lastTokenString.trim();
+                if (lastTokenString.length() > 0) {
+                    char lastTokenChar = lastTokenString.charAt(lastTokenString.length() - 1);
+                    if (lastTokenChar == ',' || lastTokenChar == ':' || lastTokenChar == '-') {
+                        // Keep current indent
+                    } else {
+                        // Last token seems to be some identifier (table or column or function name)
+                        // Next line shoudl contain some keyword then - let's unindent
+                        indent = indenter.unindent(indent, 1);
+                    }
                 }
             }
         }

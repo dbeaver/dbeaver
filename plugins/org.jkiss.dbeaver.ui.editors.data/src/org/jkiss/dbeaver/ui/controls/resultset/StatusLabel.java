@@ -17,14 +17,15 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -32,6 +33,8 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -42,13 +45,12 @@ import org.jkiss.utils.CommonUtils;
 class StatusLabel extends Composite {
 
     private final IResultSetController viewer;
-    private final Label statusIcon;
     private final Text statusText;
     //private final Color colorDefault, colorError, colorWarning;
     private DBPMessageType messageType;
 
     public StatusLabel(@NotNull Composite parent, int style, @Nullable final IResultSetController viewer) {
-        super(parent, SWT.BORDER);
+        super(parent, SWT.NONE);
         this.viewer = viewer;
 
         final GridLayout layout = new GridLayout(3, false);
@@ -62,30 +64,8 @@ class StatusLabel extends Composite {
         colorError = JFaceColors.getErrorText(Display.getDefault());
         colorWarning = colorDefault;
 */
-
-        final Image statusImage = JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
-        statusIcon = new Label(this, SWT.NONE);
-        statusIcon.setImage(statusImage);
-        statusIcon.setToolTipText("Status information");
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        statusIcon.setLayoutData(gd);
-
-        statusText = new Text(this, SWT.SINGLE | SWT.READ_ONLY);
-        if (RuntimeUtils.isPlatformWindows()) {
-            statusText.setBackground(null);
-        } else {
-            statusText.setBackground(parent.getBackground());
-        }
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumHeight = statusImage.getBounds().height;
-        statusText.setLayoutData(gd);
-
-        if (viewer != null) {
-            TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.statusText);
-            UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.statusText);
-        }
-
-        final ToolBar tb = new ToolBar(this, SWT.HORIZONTAL);
+        final ToolBar tb = new ToolBar(this, SWT.FLAT | SWT.HORIZONTAL);
+        CSSUtils.setCSSClass(tb, DBStyles.COLORED_BY_CONNECTION_TYPE);
         final ToolItem detailsIcon = new ToolItem(tb, SWT.NONE);
         detailsIcon.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
         tb.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -96,11 +76,25 @@ class StatusLabel extends Composite {
                 showDetails();
             }
         });
+
+        statusText = new Text(this, SWT.SINGLE | SWT.READ_ONLY);
+        if (RuntimeUtils.isPlatformWindows()) {
+            statusText.setBackground(null);
+        } else {
+            statusText.setBackground(parent.getBackground());
+        }
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        statusText.setLayoutData(gd);
         statusText.addTraverseListener(e -> {
             if (e.detail == SWT.TRAVERSE_RETURN) {
                 showDetails();
             }
         });
+
+        if (viewer != null) {
+            TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.statusText);
+            UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.statusText);
+        }
     }
 
     protected void showDetails() {
@@ -146,7 +140,6 @@ class StatusLabel extends Composite {
         if (message == null) {
             message = "???"; //$NON-NLS-1$
         }
-        statusIcon.setImage(JFaceResources.getImage(statusIconId));
         statusText.setText(CommonUtils.getSingleLineString(message));
         if (messageType != DBPMessageType.INFORMATION) {
             statusText.setToolTipText(message);

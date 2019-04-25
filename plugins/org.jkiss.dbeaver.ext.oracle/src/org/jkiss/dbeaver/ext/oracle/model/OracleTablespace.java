@@ -299,9 +299,9 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     private void loadSizes(DBRProgressMonitor monitor) throws DBException {
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace '" + getName() + "' statistics")) {
             availableSize = CommonUtils.toLong(JDBCUtils.queryObject(session,
-                "SELECT SUM(F.BYTES) AVAILABLE_SPACE FROM SYS.DBA_DATA_FILES F WHERE F.TABLESPACE_NAME=?", getName()));
+                "SELECT SUM(F.BYTES) AVAILABLE_SPACE FROM "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "DBA_DATA_FILES F WHERE F.TABLESPACE_NAME=?", getName()));
             usedSize = CommonUtils.toLong(JDBCUtils.queryObject(session,
-                "SELECT SUM(S.BYTES) USED_SPACE FROM SYS.DBA_SEGMENTS S WHERE S.TABLESPACE_NAME=?", getName()));
+                "SELECT SUM(S.BYTES) USED_SPACE FROM "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "DBA_SEGMENTS S WHERE S.TABLESPACE_NAME=?", getName()));
         } catch (SQLException e) {
             throw new DBException("Can't read tablespace statistics", e, getDataSource());
         }
@@ -313,7 +313,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTablespace owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.DBA_" +
+                "SELECT * FROM " + OracleUtils.getSysSchemaPrefix(owner.getDataSource()) + "DBA_" +
                     (owner.getContents() == Contents.TEMPORARY ? "TEMP" : "DATA") +
                     "_FILES WHERE TABLESPACE_NAME=? ORDER BY FILE_NAME");
             dbStat.setString(1, owner.getName());

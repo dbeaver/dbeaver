@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * SelectDatabaseDialog
  */
-class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
+public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
 {
     private static final Log log = Log.getLog(SelectDatabaseDialog.class);
 
@@ -53,7 +53,7 @@ class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
     private String currentInstanceName;
     private Collection<? extends DBSObject> instanceObjects;
 
-    SelectDatabaseDialog(
+    public SelectDatabaseDialog(
         Shell parentShell,
         DBPDataSourceContainer dataSourceContainer,
         String currentInstanceName,

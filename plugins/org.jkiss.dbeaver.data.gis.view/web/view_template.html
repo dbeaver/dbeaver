@@ -8,22 +8,50 @@
     <link rel="stylesheet" href="inc/leaflet.css" />
     <script src="inc/leaflet.js"></script>
     <script src="inc/wkx.min.js"></script>
+
+    <style>
+    </style>
 </head>
 
 <body style="height: 100%; margin: 0;">
 
-    <div id="mapid" style="width: 100%; height: 100%;"></div>
+    <div id="gisMap" style="width: 100%; height: 100%;"></div>
     <script>
-        var wkx = require('wkx');
-        var mymap = L.map('mapid'); //.setView([51.505, -0.09], 13);
+        var sourceValues = [ ${geomValues} ];
+        var sourceTips = [ ${geomTipValues} ];
+        var geomSRID = ${geomSRID};
 
-        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-            maxZoom: 18,
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors ' +
-                '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-                'Imagery <a href="https://www.mapbox.com/">Mapbox</a>',
-            id: 'mapbox.streets'
-        }).addTo(mymap);
+        var wkx = require('wkx');
+        var geoMap = L.map('gisMap'); //.setView([51.505, -0.09], 13);
+
+        if (${showMap}) {
+            L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+                maxZoom: 18,
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/" target="_new">OpenStreetMap</a> contributors ' +
+                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_new">CC-BY-SA</a>, ' +
+                    'Imagery <a href="https://www.mapbox.com/" target="_new">Mapbox</a>',
+                id: 'mapbox.streets'
+            }).addTo(geoMap);
+        }
+
+        let baseLayersObj = {
+            'Street': L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+                maxZoom: 18,
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/" target="_new">OpenStreetMap</a> contributors ' +
+                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_new">CC-BY-SA</a>, ' +
+                    'Imagery <a href="https://www.mapbox.com/" target="_new">Mapbox</a>',
+                id: 'mapbox.streets'
+            }),
+            'Topography': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+              {
+                maxZoom: 17,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>,' +
+                  ' &copy; <a href="http://viewfinderpanoramas.org" target="_blank">SRTM</a>,' +
+                  ' &copy; <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a>',
+              }),
+        };
+        L.control.layers(baseLayersObj).addTo(geoMap);
+
 
         const geojsonMarkerOptions = {
             radius: 4,
@@ -39,32 +67,47 @@
             maxHeight: 300,
         };
 
+        var lastClickCoordinates = "";
+        function onEachFeature(feature, layer) {
+            var tip = feature.tip;
+            if (tip != null) {
+                var tipText = "";
+                for (var propName in tip) {
+                    tipText += propName + ": " + tip[propName] + "<br/>";
+                }
+                layer.bindPopup(tipText);
+            }
+        }
+
         var vectorLayer = L.geoJSON([], {
             style: geojsonStyle,
             pointToLayer: function(feature, latlng) {
                 return L.circleMarker(latlng, geojsonMarkerOptions);
             },
+            onEachFeature: onEachFeature
         });
-        vectorLayer.addTo(mymap);
+        vectorLayer.addTo(geoMap);
 
-        var polyTest = wkx.Geometry.parse('${geomValue}');
-        var geoJSON = polyTest.toGeoJSON();
-        var SRID = geoJSON.selectedSRID;
-        vectorLayer.addData(geoJSON);
+        for (i = 0; i < sourceValues.length; i++) {
+            var geomValue = sourceValues[i];
 
-        var bounds = vectorLayer.getBounds();
-        mymap.fitBounds(bounds);
-
-        var popup = L.popup();
-
-        function onMapClick(e) {
-            popup
-                .setLatLng(e.latlng)
-                .setContent("You clicked the map at " + e.latlng.toString())
-                .openOn(mymap);
+            var polyTest = wkx.Geometry.parse(geomValue);
+            var geoJSON = polyTest.toGeoJSON();
+            geoJSON.tip = sourceTips[i];
+            vectorLayer.addData(geoJSON);
         }
 
-        mymap.on('click', onMapClick);
+        var bounds = vectorLayer.getBounds();
+        geoMap.fitBounds(bounds);
+
+        function showTools(toolsVisible) {
+            var elementsVisibility = toolsVisible ? 'visible' : 'hidden';
+            document.getElementsByClassName('leaflet-control-zoom')[0].style.visibility=elementsVisibility;
+            document.getElementsByClassName('leaflet-control-layers')[0].style.visibility=elementsVisibility;
+            document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility=elementsVisibility;
+        }
+
+        showTools(${showTools});
     </script>
 </body>
 
