@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKTReader;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -76,24 +78,36 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Geometry) {
             return new DBGeometry((Geometry) object);
         } else if (object instanceof String) {
-            return makeGeometryFromString(session, (String) object);
+            return makeGeometryFromWKT(session, (String) object);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
+        } else if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+            return makeGeometryFromWKB(session, CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
         } else {
-            return makeGeometryFromString(session, object.toString());
+            return makeGeometryFromWKT(session, object.toString());
+        }
+    }
+
+    private DBGeometry makeGeometryFromWKB(DBCSession session, String hexString) throws DBCException {
+        byte[] binaryData = WKBReader.hexToBytes(hexString);
+        try {
+            Geometry geometry = new WKBReader().read(binaryData);
+            return new DBGeometry(geometry);
+        } catch (Exception e) {
+            throw new DBCException("Error parsing WKB value", e);
         }
     }
 
     private DBGeometry makeGeometryFromPGGeometry(DBCSession session, Object value) throws DBCException {
         try {
             String pgString = value.toString();
-            return makeGeometryFromString(session, pgString);
+            return makeGeometryFromWKT(session, pgString);
         } catch (Throwable e) {
             throw new DBCException(e, session.getDataSource());
         }
     }
 
-    private DBGeometry makeGeometryFromString(DBCSession session, String pgString) throws DBCException {
+    private DBGeometry makeGeometryFromWKT(DBCSession session, String pgString) throws DBCException {
         if (CommonUtils.isEmpty(pgString)) {
             return new DBGeometry();
         }

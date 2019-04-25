@@ -682,4 +682,8 @@ public class PostgreUtils {
         }
     }
 
+    public static boolean isGISDataType(String typeName) {
+        return PostgreConstants.TYPE_GEOMETRY.equals(typeName) ||
+            PostgreConstants.TYPE_GEOGRAPHY.equals(typeName);
+    }
 }
