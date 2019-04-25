@@ -167,7 +167,7 @@ public class OracleSchedulerProgram extends OracleSchemaObject {
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchedulerProgram program) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_SCHEDULER_PROGRAM_ARGS " +
+                "SELECT * FROM ALL_SCHEDULER_PROGRAM_ARGS " +
                         "WHERE OWNER=? AND PROGRAM_NAME=? " +
                         "ORDER BY ARGUMENT_POSITION");
             dbStat.setString(1, program.getSchema().getName());

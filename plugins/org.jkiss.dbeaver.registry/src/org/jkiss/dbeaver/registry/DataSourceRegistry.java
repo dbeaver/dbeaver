@@ -99,6 +99,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
     }
 
+    /**
+     * Create copy
+     */
+    public DataSourceRegistry(DataSourceRegistry source, IProject project, boolean copyDataSources) {
+        this.platform = source.platform;
+        this.project = project;
+        if (copyDataSources) {
+            for (DataSourceDescriptor ds : source.dataSources) {
+                dataSources.add(new DataSourceDescriptor(ds, this));
+            }
+        }
+    }
+
+    @Override
     public void dispose()
     {
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
@@ -226,6 +240,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     @Override
+    public DBPDataSourceContainer createDataSource(DBPDataSourceContainer source) {
+        DataSourceDescriptor newDS = new DataSourceDescriptor((DataSourceDescriptor) source);
+        newDS.setId(DataSourceDescriptor.generateNewId(source.getDriver()));
+        return newDS;
+    }
+
+    @Override
     public List<? extends DBPDataSourceFolder> getAllFolders() {
         return dataSourceFolders;
     }
@@ -270,6 +291,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         }
         dataSourceFolders.remove(folderImpl);
+    }
+
+    @Override
+    public DBPDataSourceRegistry createCopy(IProject project, boolean copyDataSources) {
+        return new DataSourceRegistry(this, project, copyDataSources);
     }
 
     private DataSourceFolder findRootFolder(String name) {

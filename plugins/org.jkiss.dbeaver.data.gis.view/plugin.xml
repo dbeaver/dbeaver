@@ -6,14 +6,39 @@
     <extension-point id="org.jkiss.dbeaver.data.gis.geometryViewer" name="Geometry viewer" schema="schema/org.jkiss.dbeaver.data.gis.geometryViewer.exsd"/>
 
     <extension point="org.jkiss.dbeaver.dataManager">
-        <manager class="org.jkiss.dbeaver.ui.data.managers.gis.GeometryValueManager" id="org.jkiss.dbeaver.ui.data.managers.gis.GeometryValueManager">
-            <supports type="com.vividsolutions.jts.geom.Geometry" forceCheck="true"/>
+        <manager class="org.jkiss.dbeaver.ui.gis.GeometryValueManager" id="org.jkiss.dbeaver.ui.gis.GeometryValueManager">
+            <supports type="org.jkiss.dbeaver.model.gis.DBGeometry"/>
         </manager>
     </extension>
 
     <extension point="org.jkiss.dbeaver.data.gis.geometryViewer">
-        <geometryViewer label="Text" id="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.view.GeometryTextViewer" supportsInline="true"/>
-        <geometryViewer label="Graphic" id="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer" class="org.jkiss.dbeaver.ui.data.managers.gis.view.GISBrowserViewer"/>
+        <geometryViewer
+                label="Text"
+                description="View GIS object in text form"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
+                id="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
+                class="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
+                supportsInline="true"/>
+        <geometryViewer
+                label="Map"
+                description="View GIS object on map"
+                icon="icons/map.png"
+                id="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"
+                class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resultset.presentation">
+        <presentation
+                id="results.geometry"
+                label="%presentation.geometry.name"
+                description="%presentation.geometry.description"
+                icon="icons/map.png"
+                class="org.jkiss.dbeaver.ui.gis.presentation.GeometryPresentation"
+                type="transformer"
+                supportsRecordMode="true"
+                order="500">
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.hasAttributeOfType('org.jkiss.dbeaver.model.gis.DBGeometry')"/>
+        </presentation>
     </extension>
 
 </plugin>

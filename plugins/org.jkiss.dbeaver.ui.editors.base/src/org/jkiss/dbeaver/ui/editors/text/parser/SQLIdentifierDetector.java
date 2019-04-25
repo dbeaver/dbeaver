@@ -22,19 +22,24 @@ import org.eclipse.jface.text.IRegion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 /**
  * Determines whether a given character is valid as part of an SQL identifier.
  */
-public class SQLIdentifierDetector extends SQLWordDetector
-{
+public class SQLIdentifierDetector extends SQLWordDetector {
+    protected SQLDialect dialect;
     private char structSeparator;
     @NotNull
     private final String[][] quoteStrings;
 
-    public SQLIdentifierDetector(char structSeparator, @Nullable String[][] quoteStrings)
-    {
+    public SQLIdentifierDetector(SQLDialect dialect) {
+        this(dialect, dialect.getStructSeparator(), dialect.getIdentifierQuoteStrings());
+    }
+
+    public SQLIdentifierDetector(SQLDialect dialect, char structSeparator, @Nullable String[][] quoteStrings) {
+        this.dialect = dialect;
         this.structSeparator = structSeparator;
         this.quoteStrings = quoteStrings != null ? quoteStrings : new String[0][];
     }
@@ -48,27 +53,29 @@ public class SQLIdentifierDetector extends SQLWordDetector
         return false;
     }
 
-    public boolean containsSeparator(String identifier)
-    {
+    public boolean containsSeparator(String identifier) {
         return identifier.indexOf(structSeparator) != -1;
     }
 
-    public String[] splitIdentifier(String identifier)
-    {
+    public String[] splitIdentifier(String identifier) {
         return SQLUtils.splitFullIdentifier(identifier, structSeparator, quoteStrings);
     }
 
     @Override
+    public boolean isWordStart(char c) {
+        return super.isWordStart(c) || dialect.validIdentifierStart(c);
+    }
+
+    @Override
     public boolean isWordPart(char c) {
-        return super.isWordPart(c) || isQuote(c) || structSeparator == c;
+        return super.isWordPart(c) || isQuote(c) || structSeparator == c || dialect.validIdentifierPart(c, true);
     }
 
     public boolean isPlainWordPart(char c) {
-        return super.isWordPart(c);
+        return super.isWordPart(c) || dialect.validIdentifierPart(c, false);
     }
 
-    public boolean isQuoted(String token)
-    {
+    public boolean isQuoted(String token) {
         for (int i = 0; i < quoteStrings.length; i++) {
             if (token.startsWith(quoteStrings[i][0])) {
                 return true;
@@ -77,8 +84,7 @@ public class SQLIdentifierDetector extends SQLWordDetector
         return false;
     }
 
-    public String removeQuotes(String name)
-    {
+    public String removeQuotes(String name) {
         for (int i = 0; i < quoteStrings.length; i++) {
             name = DBUtils.getUnQuotedIdentifier(name, quoteStrings[i][0], quoteStrings[i][1]);
         }
@@ -86,8 +92,7 @@ public class SQLIdentifierDetector extends SQLWordDetector
     }
 
 
-    public WordRegion detectIdentifier(IDocument document, IRegion region)
-    {
+    public WordRegion detectIdentifier(IDocument document, IRegion region) {
         final WordRegion id = new WordRegion(region.getOffset());
         int docLength = document.getLength();
 
@@ -131,22 +136,19 @@ public class SQLIdentifierDetector extends SQLWordDetector
         public String identifier = "";
         public String word = "";
 
-        WordRegion(int offset)
-        {
+        WordRegion(int offset) {
             identStart = offset;
             identEnd = offset;
         }
 
-        void extract(IDocument document) throws BadLocationException
-        {
+        void extract(IDocument document) throws BadLocationException {
             if (wordStart < 0) wordStart = identStart;
             if (wordEnd < 0) wordEnd = identEnd;
             identifier = document.get(identStart, identEnd - identStart);
             word = document.get(wordStart, wordEnd - wordStart);
         }
 
-        public boolean isEmpty()
-        {
+        public boolean isEmpty() {
             return word.isEmpty();
         }
     }

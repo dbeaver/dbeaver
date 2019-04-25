@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 public class JDBCPreparedStatementCachedImpl extends JDBCPreparedStatementImpl {
 
 	public JDBCPreparedStatementCachedImpl(JDBCPreparedStatementImpl statment){
-		super(statment.connection, statment.original, statment.query, statment.disableLogging);
+		super(statment.getSession(), statment.original, statment.query, statment.disableLogging);
 	}
 
 	@Override

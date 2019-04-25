@@ -64,10 +64,14 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     public Object[] getElements(Object parent)
     {
         if (parent instanceof DatabaseNavigatorContent) {
+            DBNNode rootNode = ((DatabaseNavigatorContent) parent).getRootNode();
+            if (rootNode == null) {
+                return EMPTY_CHILDREN;
+            }
             if (showRoot) {
-                return new Object[] { ((DatabaseNavigatorContent) parent).getRootNode() };
+                return new Object[] {rootNode};
             } else {
-                return getChildren(((DatabaseNavigatorContent) parent).getRootNode());
+                return getChildren(rootNode);
             }
         } else {
             return getChildren(parent);
@@ -82,7 +86,6 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         } else if (child instanceof TreeNodeSpecial) {
             return ((TreeNodeSpecial)child).getParent();
         } else {
-            log.warn("Unknown node type: " + child);
             return null;
         }
     }
@@ -91,11 +94,10 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     public Object[] getChildren(final Object parent)
     {
         if (parent instanceof TreeNodeSpecial) {
-            return null;
+            return EMPTY_CHILDREN;
         }
         if (!(parent instanceof DBNNode)) {
-            log.error("Bad parent type: " + parent);
-            return null;
+            return EMPTY_CHILDREN;
         }
         final DBNNode parentNode = (DBNNode)parent;//view.getNavigatorModel().findNode(parent);
 /*

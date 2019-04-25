@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -68,7 +68,6 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private String toolUserName;
     private String toolUserPassword;
     private String extraCommandArgs;
-    protected boolean nativeClientHomeRequired = true;
 
     protected String task;
     protected final DatabaseWizardPageLog logPage;
@@ -171,6 +170,10 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         }
     }
 
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
+    }
+
     public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
         return null;
     }
@@ -182,11 +185,16 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     {
         super.createPageControls(pageContainer);
 
+        updateErrorMessage();
+    }
+
+    public void updateErrorMessage() {
         WizardPage currentPage = (WizardPage) getStartingPage();
 
-        if (nativeClientHomeRequired) {
-            String clientHomeId = connectionInfo.getClientHomeId();
+        if (isNativeClientHomeRequired()) {
+            String clientHomeId = dataSourceContainer.getConnectionConfiguration().getClientHomeId();
             if (clientHomeId == null) {
+                clientHome = null;
                 currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
                 getContainer().updateMessage();
                 return;
@@ -197,13 +205,15 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             }
             if (clientHome == null) {
                 currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
-                getContainer().updateMessage();
+            } else {
+                currentPage.setErrorMessage(null);
             }
+            getContainer().updateMessage();
         }
     }
 
     private boolean validateClientFiles() {
-        if (!nativeClientHomeRequired || clientHome == null) {
+        if (!isNativeClientHomeRequired() || clientHome == null) {
             return true;
         }
         try {
@@ -361,6 +371,10 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             return false;
         }
 
+        return true;
+    }
+
+    protected boolean isNativeClientHomeRequired() {
         return true;
     }
 

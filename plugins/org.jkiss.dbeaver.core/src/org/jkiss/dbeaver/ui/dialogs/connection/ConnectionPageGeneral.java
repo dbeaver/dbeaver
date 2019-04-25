@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
@@ -452,7 +453,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     private void loadConnectionFolders()
     {
         connectionFolderCombo.removeAll();
-        connectionFolderCombo.add(CoreMessages.toolbar_datasource_selector_empty);
+        connectionFolderCombo.add(UINavigatorMessages.toolbar_datasource_selector_empty);
         connectionFolders.clear();
         connectionFolders.add(null);
         for (DBPDataSourceFolder folder : DBUtils.makeOrderedObjectList(getWizard().getDataSourceRegistry().getRootFolders())) {

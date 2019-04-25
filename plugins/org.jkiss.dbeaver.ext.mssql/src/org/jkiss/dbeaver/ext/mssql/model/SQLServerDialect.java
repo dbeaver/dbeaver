@@ -65,6 +65,13 @@ public class SQLServerDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public boolean validIdentifierPart(char c, boolean quoted) {
+        // SQL Server: All extra characters can be used in unquoted form
+        return Character.isLetter(c) || Character.isDigit(c) || c == '_' || validCharacters.indexOf(c) != -1;
+
+    }
+
+    @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
     }

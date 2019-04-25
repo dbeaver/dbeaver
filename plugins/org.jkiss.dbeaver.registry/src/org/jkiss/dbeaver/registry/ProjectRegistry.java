@@ -111,9 +111,9 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
 
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects)) {
             // Create initial project (only for standalone version)
-            monitor.beginTask("Create general project", 1);
+            monitor.beginTask("Create default project", 1);
             try {
-                activeProject = createGeneralProject(monitor);
+                activeProject = createDefaultProject(monitor);
                 activeProject.open(monitor);
                 setActiveProject(activeProject);
             } catch (CoreException e) {
@@ -126,14 +126,16 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
 
     public void dispose()
     {
-        if (!this.projectDatabases.isEmpty()) {
-            log.warn("Some projects are still open: " + this.projectDatabases.keySet());
+        synchronized (projectDatabases) {
+            if (!this.projectDatabases.isEmpty()) {
+                log.warn("Some projects are still open: " + this.projectDatabases.keySet());
+            }
+            // Dispose all DS registries
+            for (DataSourceRegistry dataSourceRegistry : this.projectDatabases.values()) {
+                dataSourceRegistry.dispose();
+            }
+            this.projectDatabases.clear();
         }
-        // Dispose all DS registries
-        for (DataSourceRegistry dataSourceRegistry : this.projectDatabases.values()) {
-            dataSourceRegistry.dispose();
-        }
-        this.projectDatabases.clear();
 
         // Dispose resource handlers
         for (ResourceHandlerDescriptor handlerDescriptor : this.handlerDescriptors) {
@@ -300,11 +302,30 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
             log.warn("Project '" + project.getName() + "' is not open - can't get datasource registry");
             return null;
         }
-        DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
-        if (dataSourceRegistry == null) {
-            log.warn("Project '" + project.getName() + "' not found in registry");
+        DataSourceRegistry registry;
+        DataSourceRegistry registry2 = null;
+        synchronized (projectDatabases) {
+            registry = projectDatabases.get(project);
         }
-        return dataSourceRegistry;
+        if (registry == null) {
+            registry = new DataSourceRegistry(DBWorkbench.getPlatform(), project);
+            synchronized (projectDatabases) {
+                registry2 = projectDatabases.get(project);
+                if (registry2 == null) {
+                    projectDatabases.put(project, registry);
+                }
+            }
+        }
+        if (registry2 != null) {
+            registry.dispose();
+            return registry2;
+        }
+        return registry;
+    }
+
+    @Override
+    public DBPDataSourceRegistry getDefaultDataSourceRegistry() {
+        return activeProject == null ? null : getDataSourceRegistry(activeProject);
     }
 
     @Override
@@ -322,11 +343,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         if (activeProject == null) {
             return null;
         }
-        final DataSourceRegistry dataSourceRegistry = projectDatabases.get(activeProject);
-        if (dataSourceRegistry == null) {
-            throw new IllegalStateException("No registry for active project found");
-        }
-        return dataSourceRegistry;
+        return getDataSourceRegistry(activeProject);
     }
 
     @Override
@@ -350,9 +367,9 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         }
     }
 
-    private IProject createGeneralProject(IProgressMonitor monitor) throws CoreException
+    private IProject createDefaultProject(IProgressMonitor monitor) throws CoreException
     {
-        final String baseProjectName = DBWorkbench.getPlatform().getApplication().isStandalone() ? "General" : "DBeaver";
+        final String baseProjectName = DBWorkbench.getPlatform().getApplication().getDefaultProjectName();
         String projectName = baseProjectName;
         for (int i = 1; ; i++) {
             final IProject project = workspace.getRoot().getProject(projectName);
@@ -380,11 +397,13 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     @Override
     public void addProject(IProject project)
     {
-        if (projectDatabases.containsKey(project)) {
-            log.warn("Project [" + project + "] already added");
-            return;
+        synchronized (projectDatabases) {
+            if (projectDatabases.containsKey(project)) {
+                log.warn("Project [" + project + "] already added");
+                return;
+            }
+            projectDatabases.put(project, new DataSourceRegistry(DBWorkbench.getPlatform(), project));
         }
-        projectDatabases.put(project, new DataSourceRegistry(DBWorkbench.getPlatform(), project));
     }
 
     @Override
@@ -392,12 +411,14 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
     {
         // Remove project from registry
         if (project != null) {
-            DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
-            if (dataSourceRegistry == null) {
-                log.warn("Project '" + project.getName() + "' not found in the registry");
-            } else {
-                dataSourceRegistry.dispose();
-                projectDatabases.remove(project);
+            synchronized (projectDatabases) {
+                DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
+                if (dataSourceRegistry == null) {
+                    log.warn("Project '" + project.getName() + "' not found in the registry");
+                } else {
+                    dataSourceRegistry.dispose();
+                    projectDatabases.remove(project);
+                }
             }
         }
     }

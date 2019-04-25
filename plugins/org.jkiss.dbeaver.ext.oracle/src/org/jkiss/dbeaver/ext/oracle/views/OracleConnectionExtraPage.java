@@ -45,7 +45,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button hideEmptySchemasCheckbox;
     private Button showDBAAlwaysCheckbox;
     private Button useDBAViewsCheckbox;
+    private Button useSysSchemaCheckbox;
     private Button useRuleHint;
+    private Button useOptimizerHint;
 
     public OracleConnectionExtraPage()
     {
@@ -101,14 +103,17 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_show, OracleMessages.edit_create_checkbox_content_group_show_discription, false, 1);
             useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use,  OracleMessages.edit_create_checkbox_content_group_use_discription, false, 1);
+            useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
         }
 
         {
             final Group contentGroup = UIUtils.createControlGroup(cfgGroup, OracleMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             useRuleHint = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_group_use_rule, true);
-            useRuleHint.setToolTipText(
-            		OracleMessages.edit_create_checkbox_adds_rule_tool_tip_text);
+            useRuleHint.setToolTipText(OracleMessages.edit_create_checkbox_adds_rule_tool_tip_text);
+
+            useOptimizerHint = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
+            useOptimizerHint.setToolTipText(OracleMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
         }
 
         setControl(cfgGroup);
@@ -154,7 +159,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
         useDBAViewsCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS), false));
+        useSysSchemaCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA), false));
+        useSysSchemaCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA), false));
         useRuleHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
+        useOptimizerHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER), false));
     }
 
     @Override
@@ -192,10 +200,17 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                 OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS,
                 String.valueOf(useDBAViewsCheckbox.getSelection()));
+            providerProperties.put(
+                OracleConstants.PROP_METADATA_USE_SYS_SCHEMA,
+                String.valueOf(useSysSchemaCheckbox.getSelection()));
 
             providerProperties.put(
                 OracleConstants.PROP_USE_RULE_HINT,
                 String.valueOf(useRuleHint.getSelection()));
+            providerProperties.put(
+                OracleConstants.PROP_USE_META_OPTIMIZER,
+                String.valueOf(useOptimizerHint.getSelection()));
+
         }
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }

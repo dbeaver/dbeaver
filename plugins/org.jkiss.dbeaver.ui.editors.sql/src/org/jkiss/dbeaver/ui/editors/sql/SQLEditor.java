@@ -311,6 +311,18 @@ public class SQLEditor extends SQLEditorBase implements
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null) {
                 NavigatorUtils.refreshNavigatorResource(file, container);
+            } else {
+                // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
+                // FIXME: To update main toolbar and other controls we hade and show this editor
+                IWorkbenchPage page = getSite().getPage();
+                for (IEditorReference er : page.getEditorReferences()) {
+                    if (er.getEditor(false) == this) {
+                        page.hideEditor(er);
+                        page.showEditor(er);
+                        break;
+                    }
+                }
+                //page.activate(this);
             }
         }
 
@@ -1386,6 +1398,9 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput)
     {
+        DBPDataSourceContainer oldDataSource = getDataSourceContainer();
+        DBPDataSourceContainer newDataSource = EditorUtils.getInputDataSource(editorInput);
+
         // Check for file existence
         try {
             if (editorInput instanceof IFileEditorInput) {
@@ -1408,9 +1423,13 @@ public class SQLEditor extends SQLEditorBase implements
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
-        dataSourceContainer = null;
 
-        updateDataSourceContainer();
+        if (oldDataSource != newDataSource) {
+            this.dataSourceContainer = null;
+            updateDataSourceContainer();
+        } else {
+            reloadSyntaxRules();
+        }
 
         setPartName(getEditorName());
         if (isNonPersistentEditor()) {
@@ -2117,7 +2136,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             EditorUtils.setInputDataSource(input, getDataSourceContainer());
 
-            init(getEditorSite(), input);
+            setInput(input);
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError("File save", "Can't open SQL editor from external file", e);
         }

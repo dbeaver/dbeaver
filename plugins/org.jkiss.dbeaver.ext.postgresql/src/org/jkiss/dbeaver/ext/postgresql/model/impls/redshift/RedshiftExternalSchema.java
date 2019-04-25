@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -83,14 +84,19 @@ public class RedshiftExternalSchema extends PostgreSchema {
         return null;
     }
 
-    @Override
-    public Collection<RedshiftExternalTable> getTables(DBRProgressMonitor monitor) throws DBException {
+    @Association
+    public Collection<RedshiftExternalTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
         return externalTableCache.getAllObjects(monitor, this);
     }
 
     @Override
+    public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        return getExternalTables(monitor);
+    }
+
+    @Override
     public Collection<RedshiftExternalTable> getChildren(DBRProgressMonitor monitor) throws DBException {
-        return getTables(monitor);
+        return getExternalTables(monitor);
     }
 
     @Override

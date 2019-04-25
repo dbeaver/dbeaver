@@ -57,7 +57,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
 
     public SQLWordPartDetector(IDocument document, SQLSyntaxManager syntaxManager, int documentOffset, int prevWordsParse)
     {
-        super(syntaxManager.getStructSeparator(), syntaxManager.getQuoteStrings());
+        super(syntaxManager.getDialect(), syntaxManager.getStructSeparator(), syntaxManager.getQuoteStrings());
         cursorOffset = documentOffset;
         startOffset = documentOffset - 1;
         endOffset = documentOffset;
@@ -129,7 +129,6 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 }
 
                 String prevWord = document.get(prevOffset, prevStartOffset - prevOffset);
-                SQLDialect dialect = syntaxManager.getDialect();
                 if (dialect.isEntityQueryWord(prevWord) || dialect.isAttributeQueryWord(prevWord) || SQLUtils.isExecKeyword(dialect, prevWord)) {
                     if (CommonUtils.isEmpty(prevKeyWord)) {
                         this.prevKeyWord = prevWord.toUpperCase(Locale.ENGLISH);

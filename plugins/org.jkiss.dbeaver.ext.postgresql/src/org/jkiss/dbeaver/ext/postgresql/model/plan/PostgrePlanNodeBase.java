@@ -53,12 +53,12 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> exte
 
     private PostgreDataSource dataSource;
     protected NODE parent;
-    protected List<NODE> nested;
+    protected final List<NODE> nested = new ArrayList<>();
 
-    private String nodeType;
+    protected String nodeType;
     private String entity;
     private String cost;
-    private Map<String, String> attributes = Collections.emptyMap();
+    protected Map<String, String> attributes = Collections.emptyMap();
 
     protected PostgrePlanNodeBase(PostgreDataSource dataSource, NODE parent) {
         this.parent = parent;
@@ -107,12 +107,12 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> exte
         return cost;
     }
 
-/*
+    /*
     @Property(order = 20, viewable = true)
     public String getPlanRows() {
         return attributes.get("Plan-Rows");
     }
-*/
+     */
 
     @Property(order = 21, viewable = true)
     public String getActualRows() {
@@ -164,8 +164,8 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> exte
     @Override
     public Number getNodePercent() {
         return null;
-//        String costPercent = attributes.get(ATTR_TOTAL_COST);
-//        return costPercent == null ? null : CommonUtils.toDouble(costPercent);
+        //        String costPercent = attributes.get(ATTR_TOTAL_COST);
+        //        return costPercent == null ? null : CommonUtils.toDouble(costPercent);
     }
 
     @Override
@@ -211,15 +211,15 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> exte
         int index = 0;
         for (Map.Entry<String, String> attr : attributes.entrySet()) {
             props[index++] = new PropertyDescriptor(
-                "Details",
-                attr.getKey(),
-                attr.getKey(),
-                null,
-                String.class,
-                false,
-                null,
-                null,
-                false);
+                    "Details",
+                    attr.getKey(),
+                    attr.getKey(),
+                    null,
+                    String.class,
+                    false,
+                    null,
+                    null,
+                    false);
         }
         return props;
     }

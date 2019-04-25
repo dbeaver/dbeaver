@@ -148,17 +148,17 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     {
         //super.editorContextMenuAboutToShow(menu);
 
-        menu.add(new Separator(ITextEditorActionConstants.GROUP_UNDO));
-        menu.add(new GroupMarker(ITextEditorActionConstants.GROUP_SAVE));
+        menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
+        menu.add(new GroupMarker(GROUP_SQL_EXTRAS));
+        menu.add(new Separator());
         menu.add(new Separator(ITextEditorActionConstants.GROUP_COPY));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_PRINT));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_EDIT));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_FIND));
         menu.add(new Separator(IWorkbenchActionConstants.GROUP_ADD));
+        menu.add(new Separator(ITextEditorActionConstants.GROUP_UNDO));
+        menu.add(new GroupMarker(ITextEditorActionConstants.GROUP_SAVE));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_REST));
-        menu.add(new Separator());
-        menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
-        menu.add(new GroupMarker(GROUP_SQL_EXTRAS));
         menu.add(new Separator());
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         menu.add(new Separator());

@@ -74,6 +74,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
             }
         });
+        final Text databaseText = UIUtils.createLabelText(group, "Database", database.getName(), SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
 
         final Combo userCombo = UIUtils.createLabelCombo(group, PostgreMessages.dialog_create_schema_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
 

@@ -32,5 +32,6 @@ public interface IResultSetContext
 
     DBCResultSet getResultSet();
 
+    boolean hasAttributeOfType(String typeName);
 
 }

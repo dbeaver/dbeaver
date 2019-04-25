@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -51,15 +52,15 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreObje
     private Button separateTransactionCheck;
     private boolean runInSeparateTransaction = false;
 
-    public TableToolDialog(IWorkbenchPartSite partSite, String title, Collection<? extends PostgreTableBase> tables) {
+    public TableToolDialog(IWorkbenchPartSite partSite, String title, Collection<? extends PostgreObject> tables) {
         super(partSite, title, toObjects(tables), true);
     }
 
     public TableToolDialog(IWorkbenchPartSite partSite, String title, PostgreDatabase database) {
         super(partSite, title, Collections.<PostgreObject>singletonList(database), true);
     }
-
-    private static Collection<PostgreObject> toObjects(Collection<? extends PostgreTableBase> tables) {
+    
+    private static Collection<PostgreObject> toObjects(Collection<? extends PostgreObject> tables) {
         List<PostgreObject> objectList = new ArrayList<>();
         objectList.addAll(tables);
         return objectList;

@@ -78,6 +78,7 @@ import java.util.List;
 public class ResultSetHandlerMain extends AbstractHandler {
 
     public static final String CMD_TOGGLE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
+    public static final String CMD_TOGGLE_MAXIMIZE = "org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize";
     public static final String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.core.resultset.grid.toggleLayout";
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
     public static final String CMD_FOCUS_FILTER = "org.jkiss.dbeaver.core.resultset.focus.filter";
@@ -165,6 +166,9 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             case CMD_TOGGLE_PANELS:
                 rsv.showPanels(!rsv.isPanelsVisible(), true, true);
+                break;
+            case CMD_TOGGLE_MAXIMIZE:
+                rsv.togglePanelsMaximize();
                 break;
             case CMD_TOGGLE_LAYOUT:
                 rsv.toggleVerticalLayout();

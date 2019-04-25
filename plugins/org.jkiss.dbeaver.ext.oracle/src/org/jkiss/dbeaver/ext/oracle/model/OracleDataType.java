@@ -502,7 +502,9 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load collection types")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT ELEM_TYPE_OWNER,ELEM_TYPE_NAME,ELEM_TYPE_MOD FROM SYS.ALL_COLL_TYPES WHERE OWNER=? AND TYPE_NAME=?")) {
+                "SELECT ELEM_TYPE_OWNER,ELEM_TYPE_NAME,ELEM_TYPE_MOD FROM " +
+                    OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_COLL_TYPES WHERE OWNER=? AND TYPE_NAME=?"))
+            {
                 dbStat.setString(1, schema.getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResults = dbStat.executeQuery()) {
@@ -607,7 +609,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataType owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
+                "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_TYPE_ATTRS " +
                 "WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
             dbStat.setString(1, OracleDataType.this.parent.getName());
             dbStat.setString(2, getName());
@@ -626,8 +628,8 @@ public class OracleDataType extends OracleObject<DBSObject>
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT m.*,r.RESULT_TYPE_OWNER,RESULT_TYPE_NAME,RESULT_TYPE_MOD\n" +
-                "FROM SYS.ALL_TYPE_METHODS m\n" +
-                "LEFT OUTER JOIN SYS.ALL_METHOD_RESULTS r ON r.OWNER=m.OWNER AND r.TYPE_NAME=m.TYPE_NAME AND r.METHOD_NAME=m.METHOD_NAME AND r.METHOD_NO=m.METHOD_NO\n" +
+                "FROM "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_TYPE_METHODS m\n" +
+                "LEFT OUTER JOIN "+ OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_METHOD_RESULTS r ON r.OWNER=m.OWNER AND r.TYPE_NAME=m.TYPE_NAME AND r.METHOD_NAME=m.METHOD_NAME AND r.METHOD_NO=m.METHOD_NO\n" +
                 "WHERE m.OWNER=? AND m.TYPE_NAME=?\n" +
                 "ORDER BY m.METHOD_NO");
             dbStat.setString(1, OracleDataType.this.parent.getName());

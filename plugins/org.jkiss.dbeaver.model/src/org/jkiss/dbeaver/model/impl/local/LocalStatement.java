@@ -17,35 +17,25 @@
 
 package org.jkiss.dbeaver.model.impl.local;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.AbstractStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * LocalResultSet
  */
-public class LocalStatement implements DBCStatement
+public class LocalStatement extends AbstractStatement
 {
-    private final DBCSession session;
     private String text;
     private DBCExecutionSource source;
 
     public LocalStatement(DBCSession session, String text) {
-        this.session = session;
+        super(session);
         this.text = text;
-    }
-
-    @Override
-    public DBCSession getSession() {
-        return session;
     }
 
     @Override
@@ -80,7 +70,7 @@ public class LocalStatement implements DBCStatement
 
     @Override
     public DBCResultSet openResultSet() throws DBCException {
-        return new LocalResultSet<>(session, this);
+        return new LocalResultSet<>(connection, this);
     }
 
     @Override

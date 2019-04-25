@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.text.Format;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -276,7 +274,7 @@ public class GreenplumExternalTable extends PostgreTable {
 
     private List<PostgreTableColumn> filterOutNonMetadataColumns(DBRProgressMonitor monitor) throws DBException {
         List<PostgreTableColumn> tableColumns;
-        Stream<PostgreTableColumn> tableColumnsStream = Optional.ofNullable(this.getAttributes(monitor))
+        Stream<? extends PostgreTableColumn> tableColumnsStream = Optional.ofNullable(this.getAttributes(monitor))
                 .orElse(Collections.emptyList())
                 .stream();
 

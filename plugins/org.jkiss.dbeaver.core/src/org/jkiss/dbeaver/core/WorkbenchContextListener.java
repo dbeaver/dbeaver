@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -98,6 +99,12 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     }
 
     private void listenWindowEvents(IWorkbenchWindow window) {
+        {
+            // Register ds toolbar handler
+            DataSourceToolbarHandler toolbarHandler = new DataSourceToolbarHandler(window);
+            window.getShell().addDisposeListener(e -> toolbarHandler.dispose());
+        }
+
         IPerspectiveListener perspectiveListener = new IPerspectiveListener() {
             private IContextActivation perspectiveActivation;
 

@@ -48,6 +48,9 @@ public interface IValueController
     @NotNull
     DBCExecutionContext getExecutionContext();
 
+    @NotNull
+    IDataController getDataController();
+
     /**
      * Value name (name of attribute or other metadata object)
      * @return value name

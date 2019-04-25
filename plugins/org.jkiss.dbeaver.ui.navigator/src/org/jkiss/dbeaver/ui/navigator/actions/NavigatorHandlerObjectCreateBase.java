@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -36,6 +37,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -50,38 +53,71 @@ import java.lang.reflect.InvocationTargetException;
 
 public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase {
 
-    protected boolean createNewObject(final IWorkbenchWindow workbenchWindow, DBNNode element, DBNDatabaseNode copyFrom)
+    protected boolean createNewObject(final IWorkbenchWindow workbenchWindow, DBNNode element, DBNDatabaseNode copyFrom) {
+        return createNewObject(workbenchWindow, element, null, copyFrom, false);
+    }
+
+    protected boolean createNewObject(final IWorkbenchWindow workbenchWindow, DBNNode element, @Nullable Class<?> newObjectType, DBNDatabaseNode copyFrom, boolean isFolder)
     {
         try {
-            DBNContainer container = null;
-            if (element instanceof DBNContainer && !(element instanceof DBNDataSource)) {
-                container = (DBNContainer) element;
+            DBNNode container = null;
+            if (isFolder || (element instanceof DBNContainer && !(element instanceof DBNDataSource))) {
+                container = element;
             } else {
                 DBNNode parentNode = element.getParentNode();
                 if (parentNode instanceof DBNContainer) {
-                    container = (DBNContainer) parentNode;
+                    container = parentNode;
                 }
             }
             if (container == null) {
                 throw new DBException("Can't detect container for '" + element.getNodeName() + "'");
             }
-            Class<?> childType = container.getChildrenClass();
-            if (childType == null) {
-                throw new DBException("Can't determine child element type for container '" + container + "'");
+            if (newObjectType == null) {
+                Class<?> childType = container instanceof DBNContainer ? ((DBNContainer) container).getChildrenClass() : null;
+                if (childType == null) {
+                    throw new DBException("Can't determine child element type for container '" + container + "'");
+                }
+                newObjectType = childType;
             }
-            if (childType == IProject.class) {
+            if (newObjectType == IProject.class) {
                 return NavigatorHandlerProjectCreate.createNewProject(workbenchWindow);
             }
 
             DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
+            final Object parentObject = container instanceof DBNDatabaseNode ? ((DBNDatabaseNode) container).getValueObject() : null;
+
             // Do not check for type - manager must do it. Potentially we can copy anything into anything.
 //            if (sourceObject != null && !childType.isAssignableFrom(sourceObject.getClass())) {
 //                throw new DBException("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
 //            }
 
-            DBEObjectManager<?> objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(childType);
+            // Check that child nodes are read an cached
+            if (container.hasChildren(false) || parentObject instanceof DBSInstanceLazy) {
+                try {
+                    DBNNode finalContainer = container;
+                    UIUtils.runInProgressService(monitor -> {
+                        try {
+                            if (finalContainer.hasChildren(false)) {
+                                finalContainer.getChildren(monitor);
+                            }
+                            if (parentObject instanceof DBSInstanceLazy) {
+                                ((DBSInstanceLazy) parentObject).checkInstanceConnection(monitor);
+                            }
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    DBWorkbench.getPlatformUI().showError("New object", "Error creating new object", e);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+
+
+            DBEObjectManager<?> objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(newObjectType);
             if (objectManager == null) {
-                throw new DBException("Object manager not found for type '" + childType.getName() + "'");
+                throw new DBException("Object manager not found for type '" + newObjectType.getName() + "'");
             }
             DBEObjectMaker objectMaker = (DBEObjectMaker) objectManager;
 
@@ -92,16 +128,11 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             CommandTarget commandTarget = getCommandTarget(
                 workbenchWindow,
                 container,
-                childType,
+                newObjectType,
                 openEditor);
 
             // Parent is model object - not node
-            final Object parentObject = container.getValueObject();
-            if (parentObject instanceof DBPObject) {
-                createDatabaseObject(commandTarget, objectMaker, (DBPObject) parentObject, sourceObject);
-            } else {
-                throw new DBException("Parent object type is not supported: " + parentObject);
-            }
+            createDatabaseObject(commandTarget, objectMaker, parentObject instanceof DBPObject ? (DBPObject) parentObject : null, sourceObject);
         }
         catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Create object", null, e);

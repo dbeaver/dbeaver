@@ -21,7 +21,6 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -44,9 +43,6 @@ public class PostgrePlanNodeXML extends PostgrePlanNodeBase<PostgrePlanNodeXML> 
         Element nestedPlansElement = XMLUtils.getChildElement(element, "Plans");
         if (nestedPlansElement != null) {
             for (Element planElement : XMLUtils.getChildElementList(nestedPlansElement, "Plan")) {
-                if (nested == null) {
-                    nested = new ArrayList<>();
-                }
                 nested.add(new PostgrePlanNodeXML(dataSource, null, planElement));
             }
         }

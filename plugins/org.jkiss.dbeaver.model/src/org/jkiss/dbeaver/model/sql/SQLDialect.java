@@ -211,9 +211,10 @@ public interface SQLDialect {
     /**
      * Checks that specified character is a valid identifier part. Non-valid characters should be quoted in queries.
      * @param c character
+     * @param quoted
      * @return true or false
      */
-    boolean validIdentifierPart(char c);
+    boolean validIdentifierPart(char c, boolean quoted);
 
     boolean supportsUnquotedMixedCase();
 

@@ -22,7 +22,9 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -191,8 +193,8 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
-                    producerSettings.setSelectedRowsOnly(true);
-                    producerSettings.setSelectedColumnsOnly(true);
+                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
+                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
 
                     producer.transferData(monitor, consumer, null, producerSettings);
 
@@ -270,7 +272,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             if (rsv == null) {
                 return new IContributionItem[0];
             }
-            return rsv.fillOpenWithMenu().getItems();
+            ContributionManager menu = new MenuManager();
+            rsv.fillOpenWithMenu(menu);
+            return menu.getItems();
         }
     }
 

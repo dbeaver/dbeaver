@@ -190,9 +190,13 @@ public class DataSourceDescriptor
     }
 
     // Copy constructor
-    public DataSourceDescriptor(@NotNull DataSourceDescriptor source)
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source) {
+        this(source, source.registry);
+    }
+
+    public DataSourceDescriptor(@NotNull DataSourceDescriptor source, DBPDataSourceRegistry registry)
     {
-        this.registry = source.registry;
+        this.registry = registry;
         this.origin = source.origin;
         this.id = source.id;
         this.name = source.name;
@@ -600,6 +604,7 @@ public class DataSourceDescriptor
         return this;
     }
 
+    @Override
     public void setDescription(@Nullable String description)
     {
         this.description = description;

@@ -217,7 +217,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_FILE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_TIMEOUT, 2000);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET, false);
-        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES, true);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES, false);
 
         PrefUtils.setDefaultPreferenceValue(store, READ_EXPENSIVE_PROPERTIES, false);
 

@@ -211,6 +211,7 @@
         <command id="org.jkiss.dbeaver.core.resultset.navigateLink" name="%command.org.jkiss.dbeaver.core.resultset.navigateLink.name" description="%command.org.jkiss.dbeaver.core.resultset.navigateLink.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.cell.save" name="%command.org.jkiss.dbeaver.core.resultset.cell.save.name" description="%command.org.jkiss.dbeaver.core.resultset.cell.save.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.togglePreview" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.togglePanel" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.description" categoryId="org.jkiss.dbeaver.core.rs">
             <commandParameter
                     id="panelId"
@@ -225,6 +226,14 @@
                     name="%command.org.jkiss.dbeaver.core.resultset.openWith.param.processorId.name"
                     optional="false"
                     values="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith$OpenWithParameterValues">
+            </commandParameter>
+        </command>
+        <command id="org.jkiss.dbeaver.core.resultset.copyAs" name="%command.org.jkiss.dbeaver.core.resultset.copyAs.name" description="%command.org.jkiss.dbeaver.core.resultset.copyAs.description" categoryId="org.jkiss.dbeaver.core.rs">
+            <commandParameter
+                    id="processorId"
+                    name="%command.org.jkiss.dbeaver.core.resultset.copyAs.param.processorId.name"
+                    optional="false"
+                    values="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerCopyAs$CopyAsParameterValues">
             </commandParameter>
         </command>
         <command id="org.jkiss.dbeaver.core.resultset.grid.toggleLayout" name="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.toggleLayout.description" categoryId="org.jkiss.dbeaver.core.rs"/>
@@ -282,10 +291,18 @@
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain">
             <!--<activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>-->
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain"/>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanel" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerTogglePanel">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.resultset.hasData"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.copyAs" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerCopyAs">
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.resultset.hasData"/>
@@ -644,6 +661,9 @@
         <!-- RSV open-with drop-down menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.openWith">
             <dynamic id="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerOpenWith$OpenWithMenuContributor"/>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.resultset.copyAs">
+            <dynamic id="org.jkiss.dbeaver.core.resultset.openWith" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerCopyAs$CopyAsMenuContributor"/>
         </menuContribution>
 
     </extension>

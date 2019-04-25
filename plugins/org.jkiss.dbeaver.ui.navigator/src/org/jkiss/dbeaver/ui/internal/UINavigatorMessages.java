@@ -168,6 +168,7 @@ public class UINavigatorMessages extends NLS {
 	public static String pref_page_target_button_use_datasource_settings;
     public static String pref_page_target_link_show_datasource_settings;
     public static String pref_page_target_link_show_global_settings;
+    public static String toolbar_datasource_selector_empty;
 
     static {
         // initialize resource bundle
