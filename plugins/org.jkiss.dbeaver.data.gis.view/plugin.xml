@@ -5,6 +5,10 @@
 
     <extension-point id="org.jkiss.dbeaver.data.gis.geometryViewer" name="Geometry viewer" schema="schema/org.jkiss.dbeaver.data.gis.geometryViewer.exsd"/>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ui.gis.internal.GISViewerPreferencesInitializer"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataManager">
         <manager class="org.jkiss.dbeaver.ui.gis.GeometryValueManager" id="org.jkiss.dbeaver.ui.gis.GeometryValueManager">
             <supports type="org.jkiss.dbeaver.model.gis.DBGeometry"/>
