@@ -92,10 +92,9 @@ public class SelectSRIDDialog extends BaseDialog {
         crsNameText = UIUtils.createLabelText(crsGroup, "Name", "", SWT.BORDER | SWT.READ_ONLY);
         crsNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        UIUtils.createEmptyLabel(crsGroup, 1, 1);
         detailsButton = UIUtils.createPushButton(crsGroup, "Details ...", null);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 2;
-        detailsButton.setLayoutData(gd);
+        detailsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         detailsButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
