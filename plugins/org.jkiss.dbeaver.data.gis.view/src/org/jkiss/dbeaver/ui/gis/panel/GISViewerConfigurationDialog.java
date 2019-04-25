@@ -53,9 +53,9 @@ public class GISViewerConfigurationDialog extends BaseDialog {
 
         Group crsGroup = UIUtils.createControlGroup(dialogArea, "Settings", 2, SWT.NONE, 0);
         crsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        defaultSridText = UIUtils.createLabelText(crsGroup, "Default SRID", preferences.getString(GeometryViewerConstants.PREF_DEFAULT_SRID), SWT.BORDER | SWT.READ_ONLY);
+        defaultSridText = UIUtils.createLabelText(crsGroup, "Default SRID", preferences.getString(GeometryViewerConstants.PREF_DEFAULT_SRID), SWT.BORDER);
         defaultSridText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
-        maxObjectsText = UIUtils.createLabelText(crsGroup, "Maximum objects per viewer", preferences.getString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER), SWT.BORDER | SWT.READ_ONLY);
+        maxObjectsText = UIUtils.createLabelText(crsGroup, "Maximum objects per viewer", preferences.getString(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER), SWT.BORDER);
         maxObjectsText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
 
         return dialogArea;

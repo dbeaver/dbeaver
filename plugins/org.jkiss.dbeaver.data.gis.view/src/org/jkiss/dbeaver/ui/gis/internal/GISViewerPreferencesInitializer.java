@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.gis.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
@@ -32,6 +33,7 @@ public class GISViewerPreferencesInitializer extends AbstractPreferenceInitializ
 
       // View settings
       PrefUtils.setDefaultPreferenceValue(store, GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER, GeometryViewerConstants.DEFAULT_MAX_OBJECTS_RENDER);
+      PrefUtils.setDefaultPreferenceValue(store, GeometryViewerConstants.PREF_DEFAULT_SRID, GisConstants.DEFAULT_SRID);
   }
 
 }
