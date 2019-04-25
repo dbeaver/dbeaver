@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -149,6 +150,16 @@ public class GISLeafletViewer {
     public void reloadGeometryData(@Nullable DBGeometry[] values, boolean force) throws DBException {
         if (!force && CommonUtils.equalObjects(lastValue, values)) {
             return;
+        }
+        int maxObjects = GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_MAX_OBJECTS_RENDER);
+        if (maxObjects <= 0) {
+            maxObjects = GeometryViewerConstants.DEFAULT_MAX_OBJECTS_RENDER;
+        }
+        if (values != null && values.length > maxObjects) {
+            // Truncate value list
+            DBGeometry[] truncValues = new DBGeometry[maxObjects];
+            System.arraycopy(values, 0, truncValues, 0, maxObjects);
+            values = truncValues;
         }
         if (browser != null) {
             try {
