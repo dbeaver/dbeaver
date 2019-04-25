@@ -88,9 +88,22 @@ public class SQLServerUtils {
         return CommonUtils.toBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS));
     }
 
+    public static boolean supportsCrossDatabaseQueries(JDBCDataSource dataSource) {
+        boolean isSqlServer = isDriverSqlServer(dataSource.getContainer().getDriver());
+        if (isSqlServer && !dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR,0)) {
+            return false;
+        }
+        boolean isDriverAzure = isSqlServer && isDriverAzure(dataSource.getContainer().getDriver());
+        if (isDriverAzure && !dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2012_VERSION_MAJOR, 0)) {
+            return false;
+        }
+        return true;
+    }
+
     public static String getSystemSchemaFQN(JDBCDataSource dataSource, String catalog, String systemSchema) {
-        return catalog != null && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
-            DBUtils.getQuotedIdentifier(dataSource, catalog) + "." + systemSchema : systemSchema;
+        return catalog != null && supportsCrossDatabaseQueries(dataSource) ?
+                DBUtils.getQuotedIdentifier(dataSource, catalog) + "." + systemSchema :
+                systemSchema;
     }
 
     public static String getSystemTableName(SQLServerDatabase database, String tableName) {
