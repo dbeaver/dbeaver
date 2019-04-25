@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -104,10 +105,12 @@ public class GISLeafletViewer {
             if (!CommonUtils.isEmpty(recentSRIDString)) {
                 for (String sridStr : recentSRIDString.split(",")) {
                     int recentSRID = CommonUtils.toInt(sridStr);
-                    if (recentSRID == 0 || recentSRID == GisConstants.DEFAULT_SRID || recentSRID == GisConstants.DEFAULT_OSM_SRID) {
+                    if (recentSRID == 0 || recentSRID == GeometryDataUtils.getDefaultSRID() || recentSRID == GisConstants.DEFAULT_OSM_SRID) {
                         continue;
                     }
-                    recentSRIDs.add(recentSRID);
+                    if (!recentSRIDs.contains(recentSRID)) {
+                        recentSRIDs.add(recentSRID);
+                    }
                 }
             }
             //recentSRIDs.sort(Integer::compareTo);
@@ -116,7 +119,7 @@ public class GISLeafletViewer {
 
     private void setSourceSRID(int srid) {
         if (srid == sourceSRID) {
-            return;
+            //return;
         }
         int oldSRID = sourceSRID;
         this.sourceSRID = srid;
@@ -128,7 +131,7 @@ public class GISLeafletViewer {
         }
         {
             // Save SRID to the list of recently used SRIDs
-            if (srid != GisConstants.DEFAULT_SRID && srid != GisConstants.DEFAULT_OSM_SRID) {
+            if (srid != GeometryDataUtils.getDefaultSRID() && srid != GisConstants.DEFAULT_OSM_SRID && !recentSRIDs.contains(srid)) {
                 recentSRIDs.add(srid);
             }
             if (recentSRIDs.size() > MAX_RECENT_SRID_SIZE) {
@@ -193,9 +196,9 @@ public class GISLeafletViewer {
             Object targetValue = value.getRawValue();
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
             if (srid == 0) {
-                srid = GisConstants.DEFAULT_SRID;
+                srid = GeometryDataUtils.getDefaultSRID();
             }
-            if (srid == GisConstants.DEFAULT_SRID) {
+            if (srid == GeometryDataUtils.getDefaultSRID()) {
                 showMap = true;
                 actualSourceSRID = srid;
             } else {
@@ -210,12 +213,13 @@ public class GISLeafletViewer {
                         showMap = request.isShowOnMap();
                     } catch (DBException e) {
                         log.debug("Error transforming CRS", e);
+                        actualSourceSRID = srid;
                         showMap = false;
                     }
                 }
             }
             if (actualSourceSRID == 0) {
-                actualSourceSRID = GisConstants.DEFAULT_SRID;
+                actualSourceSRID = GeometryDataUtils.getDefaultSRID();
             }
             if (baseSRID == 0) {
                 baseSRID = srid;
@@ -250,7 +254,7 @@ public class GISLeafletViewer {
             }
         }
         if (baseSRID == 0) {
-            baseSRID = GisConstants.DEFAULT_SRID;
+            baseSRID = GeometryDataUtils.getDefaultSRID();
         }
         this.defaultSRID = baseSRID;
         String geomValuesString = String.join(",", geomValues);
@@ -332,7 +336,7 @@ public class GISLeafletViewer {
 
     private int getCurrentSourceSRID() {
         return actualSourceSRID != 0 ? actualSourceSRID :
-            defaultSRID != 0 ? defaultSRID : GisConstants.DEFAULT_SRID;
+            defaultSRID != 0 ? defaultSRID : GeometryDataUtils.getDefaultSRID();
     }
 
     private void updateToolbar() {
@@ -461,7 +465,7 @@ public class GISLeafletViewer {
                 menuManager = new MenuManager();
                 menuManager.setRemoveAllWhenShown(true);
                 menuManager.addMenuListener(manager -> {
-                    menuManager.add(new SetCRSAction(GisConstants.DEFAULT_SRID));
+                    menuManager.add(new SetCRSAction(GeometryDataUtils.getDefaultSRID()));
                     menuManager.add(new SetCRSAction(GisConstants.DEFAULT_OSM_SRID));
                     menuManager.add(new Separator());
                     if (!recentSRIDs.isEmpty()) {

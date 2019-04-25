@@ -21,9 +21,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -92,6 +94,14 @@ public class GeometryDataUtils {
                 geometry.setProperties(properties);
             }
         }
+    }
+
+    public static int getDefaultSRID() {
+        int srid = GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_DEFAULT_SRID);
+        if (srid == 0) {
+            return GisConstants.DEFAULT_SRID;
+        }
+        return srid;
     }
 
 }
