@@ -61,6 +61,7 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                     case PostgreConstants.TYPE_MONEY:
                         return PostgreMoneyValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_GEOMETRY:
+                    case PostgreConstants.TYPE_GEOGRAPHY:
                         return PostgreGeometryValueHandler.INSTANCE;
                     case PostgreConstants.TYPE_INTERVAL:
                         return PostgreIntervalValueHandler.INSTANCE;
