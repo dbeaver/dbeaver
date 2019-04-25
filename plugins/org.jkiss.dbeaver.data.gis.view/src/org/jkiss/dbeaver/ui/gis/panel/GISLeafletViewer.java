@@ -476,6 +476,12 @@ public class GISLeafletViewer {
                             ChangeCRSAction.this.run();
                         }
                     });
+                    menuManager.add(new Action("Configuration ...") {
+                        @Override
+                        public void run() {
+                            new GISViewerConfigurationDialog(composite.getShell()).open();
+                        }
+                    });
                 });
             }
             return menuManager.createContextMenu(parent);
