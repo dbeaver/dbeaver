@@ -76,6 +76,9 @@
         <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
         </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
+        </configurator>
         <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
         </configurator>
