@@ -154,6 +154,10 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Property(viewable = true, order = 2)
     public DBSActionTiming getActionTiming() {
         return actionTiming;
@@ -208,6 +212,16 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
             return null;
         }
         return getDatabase().getProcedure(monitor, functionSchemaId, functionId);
+    }
+
+    public void setFunction(PostgreProcedure function) {
+        if (function == null){
+            this.functionId = 0;
+            this.functionSchemaId = 0;
+        } else{
+            this.functionId = function.getObjectId();
+            this.functionSchemaId = function.getSchema().getObjectId();
+        }
     }
 
     @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
@@ -277,10 +291,10 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     }
 
     @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getParentObject(),
-            this);
-        return DBUtils.getFullQualifiedName(getDataSource(), getParentObject(), this);
+                getParentObject(),
+                this);
     }
 
     @Override
@@ -316,7 +330,4 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         }
     }
 
-    public void setFunction(PostgreProcedure selectedFunction) {
-        
-    }
 }
