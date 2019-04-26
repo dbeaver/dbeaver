@@ -144,11 +144,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     }
 
     public PostgreTrigger(DBRProgressMonitor monitor, PostgreTableReal parent) {
-        super();
-    }
-
-    public PostgreTrigger(DBRProgressMonitor monitor, PostgreTableReal parent, String editPage) {
-        super();
+        this.table = parent;
     }
 
     @NotNull
@@ -159,8 +155,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     }
 
     @Property(viewable = true, order = 2)
-    public DBSActionTiming getActionTiming()
-    {
+    public DBSActionTiming getActionTiming() {
         return actionTiming;
     }
 
@@ -321,8 +316,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         }
     }
 
-    public void setEntityName(String entityName) {
-        this.name = entityName;
-
+    public void setFunction(PostgreProcedure selectedFunction) {
+        
     }
 }

@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -53,12 +55,14 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
  * Postgre sequence configurator
  */
 public class PostgreTriggerConfigurator implements DBEObjectConfigurator<PostgreTableReal, PostgreTrigger> {
-   
-    PostgreProcedure procedure;
+    
+    protected static final Log log = Log.getLog(PostgreTriggerConfigurator.class);
 
     @Override
     public PostgreTrigger configureObject(DBRProgressMonitor monitor, PostgreTableReal parent, PostgreTrigger trigger) {
         return new UITask<PostgreTrigger>() {
+            private PostgreProcedure selectedFunction;
+
             @Override
             protected PostgreTrigger runTask() {
                 TriggerEditPage editPage = new TriggerEditPage(parent.getDataSource());
@@ -66,25 +70,32 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                     return null;
                 }
                 try {
+                    trigger.setFunction(selectedFunction);
                     trigger.setObjectDefinitionText("CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n"
                             + "BEFORE UPDATE" + " " + "\n" + "ON " + DBUtils.getQuotedIdentifier(parent)
-                            + " FOR EACH ROW EXECUTE PROCEDURE" + procedure.getFullQualifiedSignature() + "\n");
+                            + " FOR EACH ROW EXECUTE PROCEDURE" + trigger.getFunction(monitor).getFullQualifiedSignature() + "\n");
                 } catch (DBException e) {
-                    e.printStackTrace();
+                    log.error(e);
                 }
                 return trigger;
             }
         }.execute();
     }
 
-    private class TriggerEditPage extends EntityEditPage {
+    public class TriggerEditPage extends EntityEditPage {
 
         CSmartSelector functionCombo;
         PostgreProcedure selectedFunction;
         Text processIdText;
+        
+        public TriggerEditPage editPage;
 
         public TriggerEditPage(DBPDataSource dataSource) {
             super(dataSource, DBSEntityType.TRIGGER);
+        }
+        
+        public TriggerEditPage getEditPage() {
+            return editPage;
         }
 
         @Override
@@ -135,14 +146,13 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                             selectedFunction = (PostgreProcedure) ((DBNDatabaseNode) node).getObject();
                             functionCombo.addItem(selectedFunction);
                             functionCombo.select(selectedFunction);
-                            // updateParametersTable();
-                            // container.updateDialogState();
                         }
-                        // parametersTable.setEnabled(selectedFunction != null);
+                        
                     }
                 }
 
             }
+            
         }
     }
 
