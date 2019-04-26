@@ -158,6 +158,11 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         this.name = name;
     }
 
+    public String getBody()
+    {
+        return body;
+    }
+
     @Property(viewable = true, order = 2)
     public DBSActionTiming getActionTiming() {
         return actionTiming;
