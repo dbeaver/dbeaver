@@ -61,7 +61,6 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
     @Override
     public PostgreTrigger configureObject(DBRProgressMonitor monitor, PostgreTableReal parent, PostgreTrigger trigger) {
         return new UITask<PostgreTrigger>() {
-            private PostgreProcedure selectedFunction;
 
             @Override
             protected PostgreTrigger runTask() {
@@ -70,7 +69,8 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                     return null;
                 }
                 try {
-                    trigger.setFunction(selectedFunction);
+                    trigger.setName(editPage.getEntityName());
+                    trigger.setFunction(editPage.selectedFunction);
                     trigger.setObjectDefinitionText("CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n"
                             + "BEFORE UPDATE" + " " + "\n" + "ON " + DBUtils.getQuotedIdentifier(parent)
                             + " FOR EACH ROW EXECUTE PROCEDURE" + trigger.getFunction(monitor).getFullQualifiedSignature() + "\n");
@@ -137,7 +137,7 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                         DBNNode curNode = selectedFunction == null ? null
                                 : navigatorModel.getNodeByObject(selectedFunction);
                         DBNNode node = DBWorkbench.getPlatformUI().selectObject(parent.getShell(),
-                                "Select function to debug", dsNode, curNode,
+                                "Select function for ", dsNode, curNode,
                                 new Class[] { DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class },
                                 new Class[] { PostgreProcedure.class }, null);
                         if (node instanceof DBNDatabaseNode

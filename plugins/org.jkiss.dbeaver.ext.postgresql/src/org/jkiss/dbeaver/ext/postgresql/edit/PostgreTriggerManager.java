@@ -44,12 +44,12 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
 
     @Override
     public boolean canCreateObject(PostgreTableReal parent) {
-        return false;
+        return true;
     }
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_SAVE_IMMEDIATELY;
+        return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
