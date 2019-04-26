@@ -193,15 +193,23 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
         if (isNativeClientHomeRequired()) {
             String clientHomeId = dataSourceContainer.getConnectionConfiguration().getClientHomeId();
+            List<DBPNativeClientLocation> nativeClientLocations = dataSourceContainer.getDriver().getNativeClientLocations();
             if (clientHomeId == null) {
-                clientHome = null;
-                currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
-                getContainer().updateMessage();
-                return;
-            }
-            clientHome = DBUtils.findObject(dataSourceContainer.getDriver().getNativeClientLocations(), clientHomeId);
-            if (clientHome == null) {
-                clientHome = findNativeClientHome(clientHomeId);
+                if (nativeClientLocations != null && !nativeClientLocations.isEmpty()) {
+                    clientHome = nativeClientLocations.get(0);
+                } else {
+                    clientHome = null;
+                }
+                if (clientHome == null){
+                    currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
+                    getContainer().updateMessage();
+                    return;
+                }
+            } else {
+                clientHome = DBUtils.findObject(nativeClientLocations, clientHomeId);
+                if (clientHome == null) {
+                    clientHome = findNativeClientHome(clientHomeId);
+                }
             }
             if (clientHome == null) {
                 currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
