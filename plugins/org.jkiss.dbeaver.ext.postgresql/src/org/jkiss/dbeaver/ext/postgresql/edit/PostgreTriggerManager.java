@@ -74,7 +74,7 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
 
     @Override
     protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, PostgreTrigger trigger, boolean create) {
-
+        actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getBody(), true));
     }
 
 
