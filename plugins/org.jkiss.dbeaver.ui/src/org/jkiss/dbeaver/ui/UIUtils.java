@@ -1775,6 +1775,12 @@ public class UIUtils {
         return emptyLabel;
     }
 
+    public static void disposeChildControls(Composite composite) {
+        for (Control child : composite.getChildren()) {
+            child.dispose();
+        }
+    }
+
     //////////////////////////////////////////
     // From E4 sources
 

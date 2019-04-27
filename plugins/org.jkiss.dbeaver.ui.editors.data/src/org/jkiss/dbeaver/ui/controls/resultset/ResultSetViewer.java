@@ -644,9 +644,7 @@ public class ResultSetViewer extends Viewer
         boolean focusInPresentation = UIUtils.isParent(presentationPanel, viewerPanel.getDisplay().getFocusControl());
 
         // Dispose previous presentation and panels
-        for (Control child : presentationPanel.getChildren()) {
-            child.dispose();
-        }
+        UIUtils.disposeChildControls(presentationPanel);
         if (panelFolder != null) {
             CTabItem curItem = panelFolder.getSelection();
             for (CTabItem panelItem : panelFolder.getItems()) {
@@ -693,9 +691,7 @@ public class ResultSetViewer extends Viewer
             viewerSash.setWeights(panelWeights);
 
             // Update panels toolbar
-            for (Control child : panelSwitchFolder.getChildren()) {
-                child.dispose();
-            }
+            UIUtils.disposeChildControls(panelSwitchFolder);
 
             if (!availablePanels.isEmpty()) {
                 VerticalButton panelsButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
