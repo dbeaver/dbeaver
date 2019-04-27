@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -266,7 +267,9 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
         if (valueEditor != null) {
             try {
                 Object newValue = previewController.getValue();
-                if (newValue instanceof DBDValue) {
+                if (newValue instanceof DBDValueError) {
+                    // Error value. Do not populate it in value viewer
+                } else if (newValue instanceof DBDValue) {
                     // Do not check for difference
                     valueEditor.primeEditorValue(newValue);
                 } else {

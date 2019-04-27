@@ -252,6 +252,18 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         } else if (array instanceof long[]) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.BIGINT);
+        } else if (array instanceof float[]) {
+            dataKind = DBPDataKind.NUMERIC;
+            elementType = dataTypeProvider.getLocalDataType(Types.FLOAT);
+            if (elementType == null) {
+                elementType = dataTypeProvider.getLocalDataType(Types.DOUBLE);
+            }
+        } else if (array instanceof double[]) {
+            dataKind = DBPDataKind.NUMERIC;
+            elementType = dataTypeProvider.getLocalDataType(Types.DOUBLE);
+            if (elementType == null) {
+                elementType = dataTypeProvider.getLocalDataType(Types.FLOAT);
+            }
         } else if (array instanceof boolean[]) {
             dataKind = DBPDataKind.BOOLEAN;
             elementType = dataTypeProvider.getLocalDataType(Types.BOOLEAN);

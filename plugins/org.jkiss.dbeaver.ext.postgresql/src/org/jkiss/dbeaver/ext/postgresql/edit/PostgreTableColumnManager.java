@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -97,11 +98,12 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 }
                 break;
         }
-        if (PostgreConstants.TYPE_GEOMETRY.equals(column.getTypeName())) {
+        if (PostgreUtils.isGISDataType(column.getTypeName())) {
             try {
                 String geometryType = column.getAttributeGeometryType(monitor);
                 int geometrySRID = column.getAttributeGeometrySRID(monitor);
-                if (!PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType)) {
+                if (!PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
+                    // If data type is exactly GEOMETRY or GEOGRAPHY then it doesn't have qualifiers
                     sql.append("(").append(geometryType);
                     if (geometrySRID > 0) {
                         sql.append(", ").append(geometrySRID);

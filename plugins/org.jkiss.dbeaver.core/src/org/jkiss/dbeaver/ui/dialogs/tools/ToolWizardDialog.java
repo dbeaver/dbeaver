@@ -112,7 +112,7 @@ public class ToolWizardDialog extends ActiveWizardDialog
             Composite dialogArea = super.createDialogArea(parent);
 
             homesSelector = new ClientHomesSelector(dialogArea, SWT.NONE, "Native client");
-            homesSelector.populateHomes(dataSource.getDriver(), dataSource.getConnectionConfiguration().getClientHomeId(), false);
+            homesSelector.populateHomes(dataSource.getDriver(), dataSource.getConnectionConfiguration().getClientHomeId(), true);
             homesSelector.getPanel().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             return dialogArea;

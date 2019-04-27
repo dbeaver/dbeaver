@@ -64,4 +64,8 @@ public class EntityEditPage extends BaseObjectEditPage {
     {
         return DBObjectNameCaseTransformer.transformName(dataSource, name);
     }
+
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
 }

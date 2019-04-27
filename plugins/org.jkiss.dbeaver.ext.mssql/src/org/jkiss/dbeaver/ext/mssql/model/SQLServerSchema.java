@@ -163,6 +163,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
+        if (!SQLServerUtils.supportsCrossDatabaseQueries(getDataSource())) {
+            return DBUtils.getQuotedIdentifier(this);
+        }
         return DBUtils.getFullQualifiedName(getDataSource(), getDatabase(), this);
     }
 
