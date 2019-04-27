@@ -26,7 +26,6 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.internal.part.StatusPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -76,7 +75,7 @@ public class ErrorPresentation extends AbstractPresentation {
         sqlPanel.setLayout(new FillLayout());
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         try {
-            Object panel = serviceSQL.createSQLPanel(controller.getSite(), sqlPanel, controller, "SQL", sqlText);
+            Object panel = serviceSQL.createSQLPanel(controller.getSite(), sqlPanel, controller, "SQL", true, sqlText);
             if (panel instanceof TextViewer) {
                 textWidget = ((TextViewer) panel).getTextWidget();
             }

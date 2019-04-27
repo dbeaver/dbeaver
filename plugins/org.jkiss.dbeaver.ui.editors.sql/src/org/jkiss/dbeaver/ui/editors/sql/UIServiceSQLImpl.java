@@ -69,7 +69,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public Object createSQLPanel(Object site, Object parent, DBPContextProvider contextProvider, String panelName, String sqlText) throws DBException {
+    public Object createSQLPanel(Object site, Object parent, DBPContextProvider contextProvider, String panelName, boolean showVerticalBar, String sqlText) throws DBException {
         IWorkbenchPartSite partSite = (IWorkbenchPartSite) site;
         Composite editorPH = (Composite)parent;
         final SQLEditorBase editor = new SQLEditorBase() {
@@ -90,7 +90,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
                 return false;
             }
         };
-        editor.setHasVerticalRuler(false);
+        editor.setHasVerticalRuler(showVerticalBar);
         try {
             editor.init(new SubEditorSite(partSite), new StringEditorInput(panelName, sqlText, true, GeneralUtils.getDefaultFileEncoding()));
         } catch (PartInitException e) {
