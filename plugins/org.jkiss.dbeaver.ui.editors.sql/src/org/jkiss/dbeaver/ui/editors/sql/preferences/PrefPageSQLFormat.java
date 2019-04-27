@@ -275,9 +275,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
         if (curConfigurator != null) {
             curConfigurator.saveSettings(getTargetPreferenceStore());
         }
-        for (Control child : formatterConfigPlaceholder.getChildren()) {
-            child.dispose();
-        }
+        UIUtils.disposeChildControls(formatterConfigPlaceholder);
+
         SQLFormatterDescriptor selFormatter = formatters.get(formatterSelector.getSelectionIndex());
 
         try {

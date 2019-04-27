@@ -121,9 +121,8 @@ class DataTransferPageSettings extends ActiveWizardPage<DataTransferWizard> {
     public void activatePage()
     {
         Composite composite = (Composite) getControl();
-        for (Control child : composite.getChildren()) {
-            child.dispose();
-        }
+        UIUtils.disposeChildControls(composite);
+
         createSettingsPages(composite);
 
         composite.layout(true, true);
