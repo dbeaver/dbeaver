@@ -29,13 +29,16 @@ import org.jkiss.dbeaver.model.DBIcon;
  */
 public class RelationalObjectType extends AbstractObjectType {
 
-    public static final DBSObjectType TYPE_TABLE = new RelationalObjectType("Table", "Table or View", DBIcon.TREE_TABLE, DBSTable.class);
+    public static final DBSObjectType TYPE_TABLE = new RelationalObjectType("Table", "Table", DBIcon.TREE_TABLE, DBSTable.class);
+    public static final DBSObjectType TYPE_VIEW = new RelationalObjectType("View", "View", DBIcon.TREE_VIEW, DBSTable.class);
     public static final DBSObjectType TYPE_TABLE_COLUMN = new RelationalObjectType("Table column", "Table column", DBIcon.TREE_COLUMN, DBSTableColumn.class);
     public static final DBSObjectType TYPE_INDEX = new RelationalObjectType("Index", "Index", DBIcon.TREE_INDEX, DBSTableIndex.class);
     public static final DBSObjectType TYPE_CONSTRAINT = new RelationalObjectType("Constraint", "Table constraint", DBIcon.TREE_CONSTRAINT, DBSTableConstraint.class);
     public static final DBSObjectType TYPE_PROCEDURE = new RelationalObjectType("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE, DBSProcedure.class);
     public static final DBSObjectType TYPE_TRIGGER = new RelationalObjectType("Trigger", "Trigger", DBIcon.TREE_TRIGGER, DBSTrigger.class);
     public static final DBSObjectType TYPE_DATA_TYPE = new RelationalObjectType("Data type", "Data type", DBIcon.TREE_DATA_TYPE, DBSDataType.class);
+
+    public static final DBSObjectType TYPE_UNKNOWN = new RelationalObjectType("Unknown", "Unknown object type", DBIcon.TYPE_OBJECT, DBSObject.class);
 
     private RelationalObjectType(String typeName, String description, DBPImage image, Class<? extends DBSObject> objectClass) {
         super(typeName, description, image, objectClass);
