@@ -216,7 +216,8 @@ public class PostgreDialect extends JDBCSQLDialect {
             "XMLSCHEMA",
             "XMLTEXT",
             "XMLVALIDATE",
-            "SQLERRM"
+            "SQLERRM",
+            "WHILE"
     };
 
     public static String[] POSTGRE_ONE_CHAR_KEYWORDS = new String[]{
