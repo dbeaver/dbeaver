@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -44,7 +45,7 @@ import org.jkiss.utils.CommonUtils;
  * 
  * @author Denis Forveille
  */
-public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObject {
+public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObject, DBSView {
 
     protected final DB2ViewBaseDepCache viewBaseDepCache = new DB2ViewBaseDepCache();
 
