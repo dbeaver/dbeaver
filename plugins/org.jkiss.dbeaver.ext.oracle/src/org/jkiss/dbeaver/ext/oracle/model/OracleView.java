@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -43,7 +44,7 @@ import java.util.Map;
 /**
  * OracleView
  */
-public class OracleView extends OracleTableBase implements OracleSourceObject
+public class OracleView extends OracleTableBase implements OracleSourceObject, DBSView
 {
     private static final Log log = Log.getLog(OracleView.class);
 

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,7 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
+public class ExasolView extends ExasolTableBase implements ExasolSourceObject, DBSView {
 
 
     private String owner;
