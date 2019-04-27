@@ -33,6 +33,7 @@ import java.util.Map;
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
     private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
+    private static final boolean KEYWORD_INDENT_ENABLED = false;
 
     private String partitioning;
     private SQLSyntaxManager syntaxManager;
@@ -310,36 +311,40 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             beginIndentaion = indenter.getReferenceIndentation(command.offset);
         } else if (nextToken == SQLIndentSymbols.Tokenend || nextToken == SQLIndentSymbols.TokenEND) {
             indent = indenter.getReferenceIndentation(command.offset + 1);
-        } else if (previousToken == SQLIndentSymbols.TokenKeyword) {
-            int nlIndent = syntaxManager.getDialect().getKeywordNextLineIndent(lastTokenString);
-            beginIndentaion = indenter.getReferenceIndentation(command.offset);
-            if (nlIndent > 0) {
-                if (beginIndentaion.isEmpty()) {
-                    indent = indenter.createIndent(nlIndent).toString();
+        } else if (KEYWORD_INDENT_ENABLED) {
+            if (previousToken == SQLIndentSymbols.TokenKeyword) {
+                int nlIndent = syntaxManager.getDialect().getKeywordNextLineIndent(lastTokenString);
+                beginIndentaion = indenter.getReferenceIndentation(command.offset);
+                if (nlIndent > 0) {
+                    //if (beginIndentaion.isEmpty()) {
+                    indent = beginIndentaion + indenter.createIndent(nlIndent).toString();
+//                } else {
+//                    indent = beginIndentaion;
+//                }
+                } else if (nlIndent < 0) {
+                    indent = indenter.unindent(beginIndentaion, nlIndent);
                 } else {
                     indent = beginIndentaion;
                 }
-            } else if (nlIndent < 0) {
-                indent = indenter.unindent(beginIndentaion, nlIndent);
             } else {
-                indent = beginIndentaion;
-            }
-        } else {
-            indent = indenter.getReferenceIndentation(command.offset);
-            if (lastTokenString != null) {
-                lastTokenString = lastTokenString.trim();
-                if (lastTokenString.length() > 0) {
-                    char lastTokenChar = lastTokenString.charAt(lastTokenString.length() - 1);
-                    if (lastTokenChar == ',' || lastTokenChar == ':' || lastTokenChar == '-') {
-                        // Keep current indent
-                    } else {
-                        // Last token seems to be some identifier (table or column or function name)
-                        // Next line shoudl contain some keyword then - let's unindent
-                        //indent = indenter.unindent(indent, 1);
-                        // Do not unindent (#5753)
+                indent = indenter.getReferenceIndentation(command.offset);
+                if (lastTokenString != null) {
+                    lastTokenString = lastTokenString.trim();
+                    if (lastTokenString.length() > 0) {
+                        char lastTokenChar = lastTokenString.charAt(lastTokenString.length() - 1);
+                        if (lastTokenChar == ',' || lastTokenChar == ':' || lastTokenChar == '-') {
+                            // Keep current indent
+                        } else {
+                            // Last token seems to be some identifier (table or column or function name)
+                            // Next line shoudl contain some keyword then - let's unindent
+                            indent = indenter.unindent(indent, 1);
+                            // Do not unindent (#5753)
+                        }
                     }
                 }
             }
+        } else {
+            indent = indenter.getReferenceIndentation(command.offset);
         }
 
         if (indent == null) {
