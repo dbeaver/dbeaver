@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.DirectObjectReference;
@@ -221,18 +222,22 @@ public class SQLContextInformer
                 cacheMap = new HashMap<>();
                 LINKS_CACHE.put(container, cacheMap);
 
+                DBPDataSourceRegistry registry = container.getRegistry();
+
                 // Register disconnect listener
-                container.getRegistry().addDataSourceListener(new DBPEventListener() {
+                DBPEventListener dbpEventListener = new DBPEventListener() {
                     @Override
                     public void handleDataSourceEvent(DBPEvent event) {
                         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && Boolean.FALSE.equals(event.getEnabled())) {
                             synchronized (LINKS_CACHE) {
                                 LINKS_CACHE.remove(container);
-                                container.getRegistry().removeDataSourceListener(this);
+                                registry.removeDataSourceListener(this);
                             }
                         }
                     }
-                });
+                };
+                registry.addDataSourceListener(dbpEventListener);
+                editor.getEditorControl().addDisposeListener(e -> registry.removeDataSourceListener(dbpEventListener));
             }
             return cacheMap;
         }
