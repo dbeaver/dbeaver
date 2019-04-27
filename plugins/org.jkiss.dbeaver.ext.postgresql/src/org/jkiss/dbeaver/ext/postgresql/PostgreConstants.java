@@ -81,6 +81,7 @@ public class PostgreConstants {
     public static final String TYPE_REFCURSOR = "refcursor";
     public static final String TYPE_MONEY = "money";
     public static final String TYPE_GEOMETRY = "geometry";
+    public static final String TYPE_GEOGRAPHY = "geography";
     public static final String TYPE_INTERVAL = "interval";
 
     public static final String HANDLER_SSL = "postgre_ssl";

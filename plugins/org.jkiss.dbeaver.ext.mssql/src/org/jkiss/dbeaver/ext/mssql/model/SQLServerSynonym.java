@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -92,6 +93,9 @@ public class SQLServerSynonym implements DBSAlias, DBSObject, DBPQualifiedObject
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
+        if (!SQLServerUtils.supportsCrossDatabaseQueries(getDataSource())) {
+            return DBUtils.getFullQualifiedName(getDataSource(), schema, this);
+        }
         return DBUtils.getFullQualifiedName(getDataSource(),
             schema.getDatabase(),
             schema,

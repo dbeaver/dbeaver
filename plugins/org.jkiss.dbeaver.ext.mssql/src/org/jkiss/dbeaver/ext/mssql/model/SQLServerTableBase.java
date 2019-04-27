@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
@@ -197,6 +199,12 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context)
     {
+        if (!SQLServerUtils.supportsCrossDatabaseQueries(getDataSource())) {
+            // Older Azure doesn't support database name in queries
+            return DBUtils.getFullQualifiedName(getDataSource(),
+                getSchema(),
+                this);
+        }
         if (isView() && context == DBPEvaluationContext.DDL) {
             return DBUtils.getFullQualifiedName(getDataSource(),
                 getSchema(),

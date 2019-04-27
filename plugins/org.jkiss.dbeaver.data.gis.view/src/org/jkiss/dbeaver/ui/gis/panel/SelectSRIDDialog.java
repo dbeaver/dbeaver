@@ -20,6 +20,9 @@ import org.cts.crs.CoordinateReferenceSystem;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
@@ -47,7 +50,7 @@ public class SelectSRIDDialog extends BaseDialog {
     private Combo sridCombo;
     private List<Integer> allSupportedCodes;
     private Text crsNameText;
-    private Text wktText;
+    private Button detailsButton;
 
     public SelectSRIDDialog(Shell shell, int defCRS) {
         super(shell, "Select Coordinate Reference System (CRS) Identifier", null);
@@ -89,11 +92,16 @@ public class SelectSRIDDialog extends BaseDialog {
         crsNameText = UIUtils.createLabelText(crsGroup, "Name", "", SWT.BORDER | SWT.READ_ONLY);
         crsNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        wktText = UIUtils.createLabelText(crsGroup, "WKT", "", SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = UIUtils.getFontHeight(crsNameText) * 15;
-        gd.widthHint = UIUtils.getFontHeight(crsNameText) * 40;
-        wktText.setLayoutData(gd);
+        UIUtils.createEmptyLabel(crsGroup, 1, 1);
+        detailsButton = UIUtils.createPushButton(crsGroup, "Details ...", null);
+        detailsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        detailsButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ShowSRIDDialog showSRIDDialog = new ShowSRIDDialog(getShell(), getSelectedSRID());
+                showSRIDDialog.open();
+            }
+        });
 
         setSelectedSRID(selectedSRID);
 
@@ -106,14 +114,14 @@ public class SelectSRIDDialog extends BaseDialog {
             try {
                 CoordinateReferenceSystem crs = GisTransformUtils.getCRSFactory().getCRS(GisConstants.GIS_REG_EPSG + ":" + selectedSRID);
                 crsNameText.setText(CommonUtils.notEmpty(crs.getName()) +  " (" + crs.getCoordinateSystem() + ")");
-                wktText.setText(CommonUtils.notEmpty(crs.toWKT()));
+                detailsButton.setEnabled(true);
             } catch (Throwable e) {
                 DBWorkbench.getPlatformUI().showError("Bad CRS", "Error reading CRS info", e);
             }
         } else {
             selectedSRID = 0;
             crsNameText.setText("N/A");
-            wktText.setText("N/A");
+            detailsButton.setEnabled(false);
         }
     }
 
@@ -142,7 +150,11 @@ public class SelectSRIDDialog extends BaseDialog {
     protected void buttonPressed(int buttonId) {
         if (buttonId == MANAGE_BUTTON_ID) {
             ManageCRSDialog dialog = new ManageCRSDialog(getShell(), selectedSRID);
-            dialog.open();
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                if (dialog.getSelectedSRID() != 0) {
+                    setSelectedSRID(dialog.getSelectedSRID());
+                }
+            }
         } else {
             super.buttonPressed(buttonId);
         }

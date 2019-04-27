@@ -51,9 +51,10 @@ public class DBNProject extends DBNResource {
 
     @Override
     protected void dispose(boolean reflect) {
+        IProject project = getProject();
         super.dispose(reflect);
         if (getModel().isGlobal()) {
-            getModel().getPlatform().getProjectManager().removeProject(getProject());
+            getModel().getPlatform().getProjectManager().removeProject(project);
         }
     }
 

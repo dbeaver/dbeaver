@@ -335,7 +335,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                     } else {
                         // Last token seems to be some identifier (table or column or function name)
                         // Next line shoudl contain some keyword then - let's unindent
-                        indent = indenter.unindent(indent, 1);
+                        //indent = indenter.unindent(indent, 1);
+                        // Do not unindent (#5753)
                     }
                 }
             }
