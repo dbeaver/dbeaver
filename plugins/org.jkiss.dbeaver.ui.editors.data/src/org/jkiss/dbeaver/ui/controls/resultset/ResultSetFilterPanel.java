@@ -591,7 +591,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         try {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
-                Object sqlPanel = serviceSQL.createSQLPanel(viewer.getSite(), editorPH, viewer, DEFAULT_QUERY_TEXT, getActiveQueryText());
+                Object sqlPanel = serviceSQL.createSQLPanel(viewer.getSite(), editorPH, viewer, DEFAULT_QUERY_TEXT, false, getActiveQueryText());
                 if (sqlPanel instanceof TextViewer) {
                     StyledText textWidget = ((TextViewer) sqlPanel).getTextWidget();
                     //textWidget.setAlwaysShowScrollBars(false);
