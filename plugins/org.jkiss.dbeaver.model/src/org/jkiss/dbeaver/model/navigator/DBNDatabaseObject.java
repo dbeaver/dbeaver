@@ -107,7 +107,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     @Property(viewable = true, order = 1)
     public String getName()
     {
-        return meta.getNodeType(getDataSource());
+        return meta.getNodeType(getDataSource(), null);
     }
 
     @Nullable

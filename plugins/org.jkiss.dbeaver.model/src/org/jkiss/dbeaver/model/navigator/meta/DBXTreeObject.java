@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.navigator.meta;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
@@ -28,9 +31,9 @@ public class DBXTreeObject extends DBXTreeNode
     private String description;
     private String editorId;
 
-    public DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, String id, String visibleIf, String label, String description, String editorId)
+    public DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String visibleIf, String label, String description, String editorId)
     {
-        super(source, parent, id, true, false, false, false, visibleIf, null);
+        super(source, parent, config, true, false, false, false, visibleIf, null);
         this.label = label;
         this.description = description;
         this.editorId = editorId;
@@ -49,13 +52,13 @@ public class DBXTreeObject extends DBXTreeNode
     }
 
     @Override
-    public String getNodeType(DBPDataSource dataSource)
+    public String getNodeType(@NotNull DBPDataSource dataSource, @Nullable String locale)
     {
         return label;
     }
 
     @Override
-    public String getChildrenType(DBPDataSource dataSource)
+    public String getChildrenType(DBPDataSource dataSource, String locale)
     {
         return label;
     }

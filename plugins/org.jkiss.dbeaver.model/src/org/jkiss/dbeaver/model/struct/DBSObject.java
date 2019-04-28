@@ -21,21 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 
 /**
  * Meta object
  */
-public interface DBSObject extends DBPNamedObject, DBPPersistedObject
+public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBPPersistedObject
 {
-
-    /**
-     * Object description
-     *
-     * @return object description or null
-     */
-    @Nullable
-    String getDescription();
 
     /**
      * Parent object

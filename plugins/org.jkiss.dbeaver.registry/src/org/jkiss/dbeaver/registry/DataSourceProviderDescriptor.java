@@ -316,9 +316,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         DBXTreeItem treeRoot = new DBXTreeItem(
             this,
             null,
-            config.getAttribute(RegistryConstants.ATTR_ID),
-            ModelMessages.model_navigator_Connection,
-            ModelMessages.model_navigator_Connection,
+            config,
             config.getAttribute(RegistryConstants.ATTR_PATH),
             null,
             false,
@@ -395,17 +393,14 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             String nodeType = config.getName();
             switch (nodeType) {
                 case RegistryConstants.TAG_FOLDER: {
-                    DBXTreeFolder folder = new DBXTreeFolder(
+                    child = new DBXTreeFolder(
                         this,
                         parent,
-                        config.getAttribute(RegistryConstants.ATTR_ID),
+                        config,
                         config.getAttribute(RegistryConstants.ATTR_TYPE),
-                        config.getAttribute(RegistryConstants.ATTR_LABEL),
                         CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
                         CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
                         config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
-                    folder.setDescription(config.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
-                    child = folder;
                     break;
                 }
                 case RegistryConstants.TAG_ITEMS: {
@@ -413,9 +408,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                     child = new DBXTreeItem(
                         this,
                         parent,
-                        config.getAttribute(RegistryConstants.ATTR_ID),
-                        config.getAttribute(RegistryConstants.ATTR_LABEL),
-                        config.getAttribute(RegistryConstants.ATTR_ITEM_LABEL),
+                        config,
                         config.getAttribute(RegistryConstants.ATTR_PATH),
                         config.getAttribute(RegistryConstants.ATTR_PROPERTY),
                         CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL)),
@@ -440,7 +433,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                     child = new DBXTreeObject(
                         this,
                         parent,
-                        config.getAttribute(RegistryConstants.ATTR_ID),
+                        config,
                         config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
                         config.getAttribute(RegistryConstants.ATTR_LABEL),
                         config.getAttribute(RegistryConstants.ATTR_DESCRIPTION),

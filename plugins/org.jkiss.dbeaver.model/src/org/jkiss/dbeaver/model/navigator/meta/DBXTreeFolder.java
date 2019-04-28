@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.model.navigator.meta;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -33,31 +35,28 @@ import java.util.List;
 /**
  * DBXTreeFolder
  */
-public class DBXTreeFolder extends DBXTreeNode
-{
+public class DBXTreeFolder extends DBXTreeNode {
     private String type;
     private String label;
     private String description;
 
     private List<String> contributedCategories = null;
 
-    public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, String id, String type, String label, boolean navigable, boolean virtual, String visibleIf)
-    {
-        super(source, parent, id, navigable, false, virtual, false, visibleIf, null);
+    public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String type, boolean navigable, boolean virtual, String visibleIf) {
+        super(source, parent, config, navigable, false, virtual, false, visibleIf, null);
         this.type = type;
-        this.label = label;
+        this.label = config.getAttribute("label");
+        this.description = config.getAttribute("description");
     }
 
-    DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, DBXTreeFolder folder)
-    {
+    DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, DBXTreeFolder folder) {
         super(source, parent, folder);
         this.type = folder.type;
         this.label = folder.label;
         this.description = folder.description;
     }
 
-    public String getType()
-    {
+    public String getType() {
         return type;
     }
 
@@ -66,15 +65,17 @@ public class DBXTreeFolder extends DBXTreeNode
     }
 
     @Override
-    public String getNodeType(DBPDataSource dataSource)
-    {
-        return label;
+    public String getNodeType(@NotNull DBPDataSource dataSource, @Nullable String locale) {
+        if (locale == null) {
+            return label;
+        } else {
+            return getConfig().getAttribute("label", locale);
+        }
     }
 
     @Override
-    public String getChildrenType(DBPDataSource dataSource)
-    {
-        return label;
+    public String getChildrenType(DBPDataSource dataSource, String locale) {
+        return getNodeType(dataSource, locale);
     }
 
     @Override
@@ -100,7 +101,7 @@ public class DBXTreeFolder extends DBXTreeNode
                     DBXTreeObject editorNode = new DBXTreeObject(
                         getSource(),
                         this,
-                        editor.getEditorId(),
+                        null,
                         null,
                         editor.getLabel(),
                         editor.getDescription(),
@@ -119,13 +120,11 @@ public class DBXTreeFolder extends DBXTreeNode
         return "Folder " + label;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
