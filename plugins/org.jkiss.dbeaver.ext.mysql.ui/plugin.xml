@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+              class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
+              description="MySQL connector"
+              icon="icons/mysql_icon.png"
+              id="mysql"
+              label="MySQL">
+            <tree
+                  icon="icons/mysql_icon.png"
+                  label="MySQL data source"
+                  path="mysql">
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="%tree.databases.node.tip">
+                    <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                        <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                    <items label="%tree.reference_key.node.name" path="referenceKey" property="references" icon="#reference" virtual="true">
+                                        <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.triggers.node.tip">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
+                                    <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
+                                        <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLView" label="%tree.views.node.name" icon="#folder_view" description="%tree.views.node.tip">
+                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.indexes.node.tip" virtual="true">
+                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index" virtual="true">
+                                <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.tip">
+                            <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="Parameters" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPackage" label="%tree.packages.node.name" icon="#packages" description="%tree.packages.node.description" visibleIf="object.dataSource.mariaDB">
+                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.triggers.node.tip" virtual="true">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" virtual="true">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent" label="%tree.events.node.name" icon="#events" description="%tree.events.node.tip">
+                            <items label="%tree.event.node.name" path="event" property="events" icon="#event">
+                            </items>
+                        </folder>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLUser" label="%tree.users.node.name" icon="#folder_user" description="%tree.users.node.tip">
+                    <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
+                </folder>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="%tree.administer.node.tip">
+                    <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
+                </folder>
+
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLInformation" label="%tree.system_info.node.name" icon="#folder_info" description="%tree.system_info.node.tip">
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.session_status.node.name" icon="#info" description="Session status">
+                        <items label="%tree.variable.node.name" path="sessionStatus" property="sessionStatus" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.global_status.node.name" icon="#info" description="Global status">
+                        <items label="%tree.variable.node.name" path="globalStatus" property="globalStatus" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.session_variables.node.name" icon="#info" description="Session variables">
+                        <items label="%tree.variable.node.name" path="sessionVariables" property="sessionVariables" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.global_variables.node.name" icon="#info" description="Global variables">
+                        <items label="%tree.variable.node.name" path="globalVariables" property="globalVariables" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEngine" label="%tree.engines.node.name" icon="#info" description="Database engines">
+                        <items label="%tree.engine.node.name" path="engines" property="engines" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCharset" label="%tree.charsets.node.name" icon="#info" description="Database charsets">
+                        <items label="%tree.charset.node.name" path="charsets" property="charsets" icon="#info">
+                            <items label="%tree.collation.node.name" path="collations" property="collations" icon="#info" navigable="false"/>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="%tree.user_privileges.node.name" icon="#info" description="User privileges">
+                        <items label="%tree.privilege.node.name" path="privileges" property="privileges" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                </folder>
+
+            </tree>
+            <drivers managable="true">
+                <driver
+                        id="mysql3"
+                        label="MySQL 3.x"
+                        icon="icons/mysql_icon.png"
+                        iconBig="icons/mysql_icon_big.png"
+                        class="com.mysql.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        defaultPort="3306"
+                        webURL="http://www.mysql.com/products/connector/"
+                        description="Driver for MySQL 3.x and earlier"
+                        categories="sql">
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
+                    <replace provider="generic" driver="mysql3"/>
+                </driver>
+                <driver
+                        id="mysql5"
+                        label="MySQL"
+                        icon="icons/mysql_icon.png"
+                        iconBig="icons/mysql_icon_big.png"
+                        class="com.mysql.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        useURL="false"
+                        defaultPort="3306"
+                        webURL="http://www.mysql.com/products/connector/"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
+                        description="Driver for MySQL 4.x+"
+                        categories="sql">
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+                <driver
+                        id="mysql8"
+                        label="MySQL 8+"
+                        icon="icons/mysql_icon.png"
+                        iconBig="icons/mysql_icon_big.png"
+                        class="com.mysql.cj.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        useURL="false"
+                        defaultPort="3306"
+                        webURL="http://www.mysql.com/products/connector/"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                        description="Driver for MySQL 8 and later"
+                        promoted="1"
+                        categories="sql">
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.11]" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+                <driver
+                    id="mysql_ndb"
+                    label="NDB Cluster"
+                    icon="icons/mysql_icon.png"
+                    iconBig="icons/mysql_icon_big.png"
+                    class="com.mysql.jdbc.Driver"
+                    sampleURL="jdbc:mysql:loadbalance://{host}[:{port}]/[{database}]"
+                    useURL="false"
+                    defaultPort="3306"
+                    webURL="https://dev.mysql.com/doc/ndbapi/en/mccj-using-connectorj.html"
+                    propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
+                    description="Driver for MySQL NDB cluster"
+                    categories="sql">
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+
+                <driver
+                    id="mariaDB"
+                    label="MariaDB"
+                    icon="icons/mariadb_icon.png"
+                    iconBig="icons/mariadb_icon_big.png"
+                    class="org.mariadb.jdbc.Driver"
+                    sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
+                    defaultPort="3306"
+                    webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
+                    propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
+                    description="MariaDB JDBC driver"
+                    promoted="1"
+                    categories="sql">
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[1.5.5]" bundle="!drivers.mariadb"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+            </drivers>
+
+            <nativeClients>
+                <client id="mysql_client" label="MySQL Binaries">
+                    <dist os="win32" targetPath="clients/mysql/win" remotePath="repo:/drivers/mysql/client/win" resourcePath="clients/mysql/win">
+                        <file type="exec" name="mysql.exe"/>
+                        <file type="exec" name="mysqldump.exe"/>
+                    </dist>
+                </client>
+            </nativeClients>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.mysql.dataSourceWizardView"
+                dataSource="mysql"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage"
+                icon="icons/mysql_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.mysql.dataSourceEditorView"
+                dataSource="mysql"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage">
+        </view>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLDatabaseManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%manager.catalog.name"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTriggerManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLEventManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor id="mysql.source.view" class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSourceViewEditor"
+            label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLPackage"/>
+        </editor>
+        <editor id="mysql.package.body.view" class="org.jkiss.dbeaver.ext.mysql.editors.MySQLPackageBodyEditor"
+                label="%editor.package.body.name" description="%editor.package.body.description" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLPackage"/>
+        </editor>
+        <editor id="mysql.source.ddl" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+            label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+        </editor>
+        <editor
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorGeneral"
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorGeneral"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
+            main="true"
+            label="%editor.general.name"
+            description="General user settings"
+            icon="#user">
+        </editor>
+        <editor
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorPrivileges"
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorPrivileges"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
+            main="false"
+            label="%editor.schema_privileges.name"
+            description="Schema user privileges"
+            position="additions_start"
+            icon="#user">
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.ext.mysql.data.MySQLValueHandlerProvider"
+            description="MySQL data types provider"
+            id="org.jkiss.dbeaver.ext.mysql.data.MySQLValueHandlerProvider"
+            label="MySQL data types provider">
+
+            <datasource id="mysql"/>
+
+            <type name="ENUM"/>
+            <type name="SET"/>
+            <type standard="DATE"/>
+            <type standard="TIME"/>
+            <type standard="TIMESTAMP"/>
+            <type standard="BIT"/>
+            <type name="JSON"/>
+            <type name="GEOMETRY"/>
+
+        </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ext.mysql.data.MySQLEnumValueManager" id="org.jkiss.dbeaver.ext.mysql.data.MySQLEnumValueManager">
+            <supports dataSource="mysql" typeName="ENUM"/>
+            <supports dataSource="mysql" typeName="SET"/>
+        </manager>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+            name="%editor.session_manager.name"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <toolGroup
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Table Maintenance"
+                    icon="#tools"/>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
+                    description="Export database"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
+                    label="Dump database"
+                    icon="#export"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource"/>
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
+                    description="Import database"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
+                    label="Restore database"
+                    icon="#import"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
+                    description="Execute script with native client"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
+                    label="Execute script"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
+                    description="Analyse table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Analyse"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
+                    description="Check table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Check"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
+                    description="Optimize table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Optimize"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
+                    description="Repair table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Repair"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
+                    description="Truncate table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Truncate"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+        </tools>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+                type="config"
+                id="mysql_ssl"
+                label="SSL"
+                description="Secure socket layer"
+                secured="false"
+                order="100"
+                handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
+        </handler>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mysql.views.MySQLSSLConfigurator"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="mysql.source" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandInclude" label="Include" description="Include another MySQL script file"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dashboard">
+
+        <mapQuery id="mysql.query.status" updatePeriod="1000">SHOW GLOBAL STATUS</mapQuery>
+
+        <dashboard id="mysql.traffic" mapQuery="mysql.query.status" label="Traffic" defaultView="timeseries" group="Status"
+            calc="delta" value="bytes" mapKeys="Bytes_sent,Bytes_received"  mapLabels="Sent,Received" measure="Kb/s"
+            showByDefault="true" description="Server outbound traffic">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.innodb.data" mapQuery="mysql.query.status" label="InnoDB data" defaultView="timeseries" group="Status"
+                   calc="delta" value="bytes" mapKeys="Innodb_data_read,Innodb_data_written" mapLabels="Read,Write" measure="Kb/s"
+                   showByDefault="true" description="InnoDB data stats">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.innodb.memory" mapQuery="mysql.query.status" label="InnoDB memory" defaultView="timeseries" group="Status"
+                   calc="value" value="bytes" mapKeys="Innodb_mem_total,Innodb_mem_dictionary,Innodb_mem_adaptive_hash" mapLabels="Total,Dict,Hash"
+                   showByDefault="false" description="InnoDB memory stats">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.com.queries" mapQuery="mysql.query.status" label="Queries" defaultView="timeseries" group="Status"
+                   calc="delta" value="integer" mapKeys="Com_select,Com_insert,Com_update,Com_delete" mapLabels="Select,Insert,Update,Delete"
+                   showByDefault="true" description="Queries stats">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.key_efficiency" mapQuery="mysql.query.status" label="Key Efficiency" defaultView="timeseries" group="Status" updatePeriod="1000"
+            calc="value" value="percent" mapFormula="100 - ((map.key_reads * 100 / map.key_read_requests) / 3)" mapLabels="Key Efficiency" measure="%"
+            showByDefault="false" description="Key read efficiency">
+            <datasource id="mysql"/>
+        </dashboard>
+
+        <dashboard id="mysql.sessions" label="Server sessions" defaultView="timeseries" group="Standard" updatePeriod="2000" calc="value" value="integer" fetch="rows" showByDefault="true" description="Shows session grouped by command">
+            <datasource id="mysql"/>
+            <query>SELECT Command,count(*) from information_schema.PROCESSLIST GROUP BY Command</query>
+        </dashboard>
+
+    </extension>
+
+</plugin>

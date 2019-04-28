@@ -1,32 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jkiss.dbeaver.ext.mysql.feature"
-      label="%featureName"
-      version="2.1.93.qualifier"
-      provider-name="%providerName"
-      plugin="org.jkiss.dbeaver.ext.mysql">
+    id="org.jkiss.dbeaver.ext.mysql.feature"
+    label="%featureName"
+    version="2.1.93.qualifier"
+    provider-name="%providerName"
+    plugin="org.jkiss.dbeaver.ext.mysql">
 
-   <description>
-      %description
-   </description>
+    <description>
+        %description
+    </description>
 
-   <copyright>
-      %copyright
-   </copyright>
+    <copyright>
+        %copyright
+    </copyright>
 
-   <license url="%licenseURL">
-      %license
-   </license>
+    <license url="%licenseURL">
+        %license
+    </license>
 
-   <requires>
-      <import feature="org.jkiss.dbeaver.core.feature" version="1.0.0"/>
-   </requires>
+    <requires>
+        <import feature="org.jkiss.dbeaver.core.feature" version="1.0.0"/>
+    </requires>
 
-   <plugin
-         id="org.jkiss.dbeaver.ext.mysql"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.mysql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.mysql.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>
