@@ -151,8 +151,10 @@ public class SelectSRIDDialog extends BaseDialog {
         if (buttonId == MANAGE_BUTTON_ID) {
             ManageCRSDialog dialog = new ManageCRSDialog(getShell(), selectedSRID);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                if (dialog.getSelectedSRID() != 0) {
-                    setSelectedSRID(dialog.getSelectedSRID());
+                int newSRID = dialog.getSelectedSRID();
+                if (newSRID != 0) {
+                    sridCombo.setText(String.valueOf(newSRID));
+                    setSelectedSRID(newSRID);
                 }
             }
         } else {

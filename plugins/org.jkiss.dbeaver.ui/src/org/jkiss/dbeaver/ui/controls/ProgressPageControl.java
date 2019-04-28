@@ -264,9 +264,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         searchControlsComposite.getParent().setRedraw(false);
         try {
             // Delete all controls created in searchControlsComposite
-            for (Control child : searchControlsComposite.getChildren()) {
-                child.dispose();
-            }
+            UIUtils.disposeChildControls(searchControlsComposite);
 
             // Nullify all controls
             progressBar = null;
@@ -286,9 +284,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 defaultToolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
 
                 // Recreate custom controls
-                for (Control child : customControlsComposite.getChildren()) {
-                    child.dispose();
-                }
+                UIUtils.disposeChildControls(customControlsComposite);
 
                 customToolbarManager.removeAll();
                 fillCustomActions(customToolbarManager);

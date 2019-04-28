@@ -88,9 +88,7 @@ public class VerticalFolder extends Canvas {
     }
 
     public void removeAll() {
-        for (Control child : getChildren()) {
-            child.dispose();
-        }
+        UIUtils.disposeChildControls(this);
     }
 
     public void addVerticalGap() {
