@@ -55,11 +55,11 @@ public class EditorContributionDescriptor extends AbstractContextDescriptor impl
         this.icon = iconToImage(config.getAttribute("icon"));
 
         for (IConfigurationElement supportsCfg : config.getChildren("supports")) {
-            String supportsDS = supportsCfg.getAttribute("datasource");
+            String supportsDS = supportsCfg.getAttribute(RegistryConstants.ATTR_DATA_SOURCE);
             if (!CommonUtils.isEmpty(supportsDS)) {
                 supportedDataSources.addAll(Arrays.asList(supportsDS.split(",")));
             }
-            String supportsDrivers = supportsCfg.getAttribute("driver");
+            String supportsDrivers = supportsCfg.getAttribute(RegistryConstants.ATTR_DRIVER);
             if (!CommonUtils.isEmpty(supportsDrivers)) {
                 supportedDrivers.addAll(Arrays.asList(supportsDrivers.split(",")));
             }
