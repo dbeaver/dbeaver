@@ -498,7 +498,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void makeDatabaseEditorTabs(final IDatabaseEditor part, final List<TabbedFolderInfo> tabList)
     {
-        final DBNDatabaseNode node = part.getEditorInput().getNavigatorNode();
+        final DBNDatabaseNode node = part.getEditorInput() instanceof IDatabaseEditorInput ? ((IDatabaseEditorInput) part.getEditorInput()).getNavigatorNode() : null;
         if (node == null) {
             return;
         }

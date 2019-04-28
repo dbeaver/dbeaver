@@ -27,9 +27,6 @@ import org.jkiss.dbeaver.ui.IRefreshablePart;
 public interface IDatabaseEditor extends IEditorPart, DBPDataSourceTask, DBPContextProvider, IRefreshablePart
 {
 
-    @Override
-    IDatabaseEditorInput getEditorInput();
-
     /**
      * Recreates editor UI.
      * Used by lazy editor initializer
