@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -46,7 +47,7 @@ import java.util.Map;
 /**
  * PostgreViewBase
  */
-public abstract class PostgreViewBase extends PostgreTableReal
+public abstract class PostgreViewBase extends PostgreTableReal implements DBSView
 {
     private String source;
 

@@ -216,6 +216,8 @@ public class GISLeafletViewer {
                         actualSourceSRID = srid;
                         showMap = false;
                     }
+                } else {
+                    actualSourceSRID = srid;
                 }
             }
             if (actualSourceSRID == 0) {

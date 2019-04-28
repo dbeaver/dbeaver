@@ -46,13 +46,16 @@ public class SQLConstants {
 
     public static final String KEYWORD_SELECT = "SELECT";
     public static final String KEYWORD_ON = "ON";
+    public static final String KEYWORD_AND = "AND";
+    public static final String KEYWORD_OR = "OR";
+
     public static final String[] COLUMN_KEYWORDS = {
         KEYWORD_SELECT,
         "WHERE",
         "SET",
         KEYWORD_ON,
-        "AND",
-        "OR",
+        KEYWORD_AND,
+        KEYWORD_OR,
         "BY",
         "HAVING"
     };

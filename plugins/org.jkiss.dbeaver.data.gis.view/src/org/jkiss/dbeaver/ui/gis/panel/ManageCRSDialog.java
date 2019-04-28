@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -163,7 +164,16 @@ public class ManageCRSDialog extends BaseDialog {
         treeViewer.setLabelProvider(new CRSLabelProvider());
         treeViewer.setInput(crsLoader);
         treeViewer.expandAll();
-        UIUtils.packColumns(treeViewer.getTree(), true, null);
+        treeViewer.addSelectionChangedListener(event -> {
+            ISelection selection = event.getSelection();
+            if (selection instanceof IStructuredSelection) {
+                Object selElement = ((IStructuredSelection) selection).getFirstElement();
+                if (selElement instanceof CRSInfo) {
+                    //List<CRSInfo> crsInfo = crsLoader.crsMap.get(selElement);
+                    selectedSRID = ((CRSInfo) selElement).code;
+                }
+            }
+        });
 
 /*
         for (String regName : crsLoader.crsMap.keySet()) {
