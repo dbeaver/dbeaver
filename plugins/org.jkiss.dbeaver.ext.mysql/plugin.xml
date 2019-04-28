@@ -110,7 +110,7 @@
                     <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="%tree.administer.node.tip">
-                    <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
+                    <treeContribution category="connectionEditor"/>
                 </folder>
 
                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLInformation" label="%tree.system_info.node.name" icon="#folder_info" description="%tree.system_info.node.tip">

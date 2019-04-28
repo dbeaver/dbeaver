@@ -90,6 +90,12 @@
         <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+            <supports dataSource="mysql"/>
+        </editorContribution>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
             id="org.jkiss.dbeaver.ext.mysql.dataSourceWizardView"
