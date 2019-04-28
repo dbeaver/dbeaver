@@ -131,6 +131,12 @@
         </editor>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.sql.SQLDialect" class="org.jkiss.dbeaver.ext.mysql.editors.MySQLDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
+        </factory>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
             <toolGroup
