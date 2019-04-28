@@ -57,7 +57,7 @@ public abstract class AbstractTrigger implements DBSTrigger, DBPQualifiedObject,
         return name;
     }
 
-    protected void setName(String tableName)
+    public void setName(String tableName)
     {
         this.name = tableName;
     }

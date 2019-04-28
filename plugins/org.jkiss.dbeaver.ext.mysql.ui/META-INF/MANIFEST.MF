@@ -15,6 +15,10 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.mysql,
  org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.ui.editors.sql,
+ org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.data.gis,
  com.google.gson
 Bundle-ActivationPolicy: lazy

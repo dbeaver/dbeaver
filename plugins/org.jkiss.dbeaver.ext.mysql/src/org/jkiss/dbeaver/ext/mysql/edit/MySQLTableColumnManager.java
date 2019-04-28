@@ -37,8 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -113,26 +111,16 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     @Override
     protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final MySQLTableBase parent, Object copyFrom)
     {
-        return new UITask<MySQLTableColumn>() {
-            @Override
-            protected MySQLTableColumn runTask() {
-                DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
-
-                final MySQLTableColumn column = new MySQLTableColumn(parent);
-                column.setName(getNewColumnName(monitor, context, parent));
-                final String typeName = columnType == null ? "integer" : columnType.getName().toLowerCase();
-                column.setTypeName(typeName); //$NON-NLS-1$
-                column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-                column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
-                column.setOrdinalPosition(parent.getCachedAttributes().size() + 1);
-                column.setFullTypeName(DBUtils.getFullTypeName(column));
-                AttributeEditPage page = new AttributeEditPage(null, column);
-                if (!page.edit()) {
-                    return null;
-                }
-                return column;
-            }
-        }.execute();
+        MySQLTableColumn column = new MySQLTableColumn(parent);
+        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
+        column.setName(getNewColumnName(monitor, context, parent));
+        final String typeName = columnType == null ? "integer" : columnType.getName().toLowerCase();
+        column.setTypeName(typeName); //$NON-NLS-1$
+        column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
+        column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
+        column.setOrdinalPosition(parent.getCachedAttributes().size() + 1);
+        column.setFullTypeName(DBUtils.getFullTypeName(column));
+        return column;
     }
 
     @Override

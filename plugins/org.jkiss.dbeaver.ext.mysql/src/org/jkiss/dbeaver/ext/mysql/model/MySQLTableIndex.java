@@ -104,6 +104,10 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
         return !nonUnique;
     }
 
+    public void setUnique(boolean unique) {
+        this.nonUnique = !unique;
+    }
+
     @Nullable
     @Override
     @Property(viewable = true, multiline = true, order = 100)

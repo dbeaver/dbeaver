@@ -70,8 +70,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
     private MySQLCollation databaseCollation;
 
     public MySQLEvent(MySQLCatalog catalog, ResultSet dbResult)
-        throws SQLException
-    {
+        throws SQLException {
         this.catalog = catalog;
         this.persisted = true;
 
@@ -86,8 +85,7 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
     }
 
     private void loadInfo(ResultSet dbResult)
-        throws SQLException
-    {
+        throws SQLException {
         this.name = JDBCUtils.safeGetString(dbResult, "EVENT_NAME");
         this.definer = JDBCUtils.safeGetString(dbResult, "DEFINER");
         this.timeZone = JDBCUtils.safeGetString(dbResult, "TIME_ZONE");
@@ -115,16 +113,18 @@ public class MySQLEvent implements MySQLSourceObject, DBPSaveableObject {
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Nullable
     @Override
     @Property(viewable = true, multiline = true, category = CAT_DETAILS, order = 100)
-    public String getDescription()
-    {
+    public String getDescription() {
         return eventComment;
     }
 
