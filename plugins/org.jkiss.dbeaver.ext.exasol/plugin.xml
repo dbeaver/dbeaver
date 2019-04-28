@@ -467,7 +467,7 @@
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn">
         </manager>
     </extension>
-    
+
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
@@ -520,7 +520,7 @@
             class="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor"
             id="org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor">
         </editor>
-        
+
     </extension>
     <extension point="org.jkiss.dbeaver.tools">
       <tools>
@@ -562,6 +562,12 @@
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
         <command id="exasol.define" class="org.jkiss.dbeaver.runtime.sql.commands.SQLCommandSet" label="Define" description="Defines variable"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.sql.SQLDialect" class="org.jkiss.dbeaver.ext.exasol.editors.ExasolDialectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
+        </factory>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard">
