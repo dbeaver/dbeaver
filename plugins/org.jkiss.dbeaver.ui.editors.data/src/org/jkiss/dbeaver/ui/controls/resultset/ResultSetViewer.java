@@ -2286,7 +2286,9 @@ public class ResultSetViewer extends Viewer
                 ResultSetMessages.controls_resultset_viewer_action_layout,
                 null,
                 MENU_ID_LAYOUT); //$NON-NLS-1$
-            layoutMenu.add(new ToggleModeAction());
+            if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
+                layoutMenu.add(new ToggleModeAction());
+            }
             layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
             layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
             layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_SWITCH_PRESENTATION));
@@ -3745,7 +3747,9 @@ public class ResultSetViewer extends Viewer
             menuManager.add(new VirtualKeyEditAction(false));
             menuManager.add(new DictionaryEditAction());
             menuManager.add(new Separator());
-            menuManager.add(new ToggleModeAction());
+            if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
+                menuManager.add(new ToggleModeAction());
+            }
             activePresentation.fillMenu(menuManager);
             if (!CommonUtils.isEmpty(availablePresentations) && availablePresentations.size() > 1) {
                 menuManager.add(new Separator());
