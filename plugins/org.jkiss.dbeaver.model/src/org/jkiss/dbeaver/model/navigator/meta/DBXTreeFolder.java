@@ -17,7 +17,18 @@
 package org.jkiss.dbeaver.model.navigator.meta;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
+import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DBXTreeFolder
@@ -27,6 +38,8 @@ public class DBXTreeFolder extends DBXTreeNode
     private String type;
     private String label;
     private String description;
+
+    private List<String> contributedCategories = null;
 
     public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, String id, String type, String label, boolean navigable, boolean virtual, String visibleIf)
     {
@@ -65,6 +78,43 @@ public class DBXTreeFolder extends DBXTreeNode
     }
 
     @Override
+    public boolean hasChildren(DBNNode context, boolean navigable) {
+        boolean hasChildren = super.hasChildren(context, navigable);
+        if (!hasChildren) {
+            hasChildren = !CommonUtils.isEmpty(contributedCategories);
+        }
+        return hasChildren;
+    }
+
+    @Override
+    public List<DBXTreeNode> getChildren(DBNNode context) {
+        List<DBXTreeNode> children = super.getChildren(context);
+        if (!CommonUtils.isEmpty(contributedCategories) && context instanceof DBNDatabaseNode) {
+            // Add contributed editors
+            List<DBXTreeNode> childrenWithContributions = new ArrayList<>(children);
+            DBPDataSourceProviderRegistry dspRegistry = DBWorkbench.getPlatform().getDataSourceProviderRegistry();
+            DBPDataSourceContainer dataSource = ((DBNDatabaseNode) context).getDataSourceContainer();
+            for (String category : contributedCategories) {
+                DBPEditorContribution[] editors = dspRegistry.getContributedEditors(category, dataSource);
+                for (DBPEditorContribution editor : editors) {
+                    DBXTreeObject editorNode = new DBXTreeObject(
+                        getSource(),
+                        this,
+                        editor.getEditorId(),
+                        null,
+                        editor.getLabel(),
+                        editor.getDescription(),
+                        editor.getEditorId());
+                    editorNode.setDefaultIcon(editor.getIcon());
+                    childrenWithContributions.add(editorNode);
+                }
+            }
+            return childrenWithContributions;
+        }
+        return children;
+    }
+
+    @Override
     public String toString() {
         return "Folder " + label;
     }
@@ -77,5 +127,16 @@ public class DBXTreeFolder extends DBXTreeNode
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public List<String> getContributedCategories() {
+        return CommonUtils.safeList(contributedCategories);
+    }
+
+    public void addContribution(String category) {
+        if (contributedCategories == null) {
+            contributedCategories = new ArrayList<>();
+        }
+        contributedCategories.add(category);
     }
 }

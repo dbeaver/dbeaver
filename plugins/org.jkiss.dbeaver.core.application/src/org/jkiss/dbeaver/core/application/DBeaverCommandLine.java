@@ -79,6 +79,7 @@ public class DBeaverCommandLine
         .addOption("data", true, "Data directory")
         .addOption("nosplash", false, "No splash screen")
         .addOption("showlocation", false, "Show location")
+        .addOption("registryMultiLanguage", false, "Multi-language mode")
         ;
 
     public interface ParameterHandler {

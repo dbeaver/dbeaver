@@ -22,6 +22,31 @@
         </view>
     </extension>
 
+    <extension point="org.eclipse.ui.editors">
+        <editor
+            name="%editor.session_manager.name"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
+            class="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreSessionEditor"
+            id="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
+        <editor
+            name="%editor.lock_manager.name"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png"
+            class="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreLockEditor"
+            id="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreLockEditor">
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+            <supports dataSource="postgresql"/>
+        </editorContribution>
+        <editorContribution editorId="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png">
+            <supports dataSource="postgresql"/>
+        </editorContribution>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.databaseEditor">
 
         <editor id="postgresql.role.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
@@ -88,23 +113,6 @@
         <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
         </configurator>
-    </extension>
-
-    <extension point="org.eclipse.ui.editors">
-        <editor
-                name="%editor.session_manager.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
-                class="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreSessionEditor"
-                id="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreSessionEditor"
-                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
-        </editor>
-        <editor
-                name="%editor.lock_manager.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
-                class="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreLockEditor"
-                id="org.jkiss.dbeaver.ext.postgresql.edit.lock.PostgreLockEditor">
-        </editor>
-        
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">

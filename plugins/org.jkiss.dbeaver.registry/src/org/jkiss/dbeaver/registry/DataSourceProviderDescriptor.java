@@ -35,10 +35,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DataSourceProviderDescriptor
@@ -210,6 +207,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return instance;
     }
 
+    @Override
     public DBXTreeNode getTreeDescriptor()
     {
         return treeDescriptor;
@@ -395,47 +393,64 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             }
         } else {
             String nodeType = config.getName();
-            if (nodeType.equals(RegistryConstants.TAG_FOLDER)) {
-                DBXTreeFolder folder = new DBXTreeFolder(
-                    this,
-                    parent,
-                    config.getAttribute(RegistryConstants.ATTR_ID),
-                    config.getAttribute(RegistryConstants.ATTR_TYPE),
-                    config.getAttribute(RegistryConstants.ATTR_LABEL),
-                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
-                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
-                    config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
-                folder.setDescription(config.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
-                child = folder;
-            } else if (nodeType.equals(RegistryConstants.TAG_ITEMS)) {
-                String recursive = config.getAttribute(RegistryConstants.ATTR_RECURSIVE);
-                child = new DBXTreeItem(
-                    this,
-                    parent,
-                    config.getAttribute(RegistryConstants.ATTR_ID),
-                    config.getAttribute(RegistryConstants.ATTR_LABEL),
-                    config.getAttribute(RegistryConstants.ATTR_ITEM_LABEL),
-                    config.getAttribute(RegistryConstants.ATTR_PATH),
-                    config.getAttribute(RegistryConstants.ATTR_PROPERTY),
-                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL)),
-                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
-                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INLINE)),
-                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
-                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_STANDALONE)),
-                    config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
-                    recursive);
-            } else if (nodeType.equals(RegistryConstants.TAG_OBJECT)) {
-                child = new DBXTreeObject(
-                    this,
-                    parent,
-                    config.getAttribute(RegistryConstants.ATTR_ID),
-                    config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
-                    config.getAttribute(RegistryConstants.ATTR_LABEL),
-                    config.getAttribute(RegistryConstants.ATTR_DESCRIPTION),
-                    config.getAttribute(RegistryConstants.ATTR_EDITOR));
-            } else {
-                // Unknown node type
-                //log.warn("Unknown node type: " + nodeType);
+            switch (nodeType) {
+                case RegistryConstants.TAG_FOLDER: {
+                    DBXTreeFolder folder = new DBXTreeFolder(
+                        this,
+                        parent,
+                        config.getAttribute(RegistryConstants.ATTR_ID),
+                        config.getAttribute(RegistryConstants.ATTR_TYPE),
+                        config.getAttribute(RegistryConstants.ATTR_LABEL),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
+                        config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
+                    folder.setDescription(config.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
+                    child = folder;
+                    break;
+                }
+                case RegistryConstants.TAG_ITEMS: {
+                    String recursive = config.getAttribute(RegistryConstants.ATTR_RECURSIVE);
+                    child = new DBXTreeItem(
+                        this,
+                        parent,
+                        config.getAttribute(RegistryConstants.ATTR_ID),
+                        config.getAttribute(RegistryConstants.ATTR_LABEL),
+                        config.getAttribute(RegistryConstants.ATTR_ITEM_LABEL),
+                        config.getAttribute(RegistryConstants.ATTR_PATH),
+                        config.getAttribute(RegistryConstants.ATTR_PROPERTY),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL)),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INLINE)),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
+                        CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_STANDALONE)),
+                        config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
+                        recursive);
+                    break;
+                }
+                case RegistryConstants.TAG_TREE_CONTRIBUTION: {
+                    String contrCategory = config.getAttribute(RegistryConstants.ATTR_CATEGORY);
+                    if (parent instanceof DBXTreeFolder) {
+                        ((DBXTreeFolder)parent).addContribution(contrCategory);
+                    } else {
+                        log.warn(RegistryConstants.TAG_TREE_CONTRIBUTION + " allowed only inside folders");
+                    }
+                    break;
+                }
+                case RegistryConstants.TAG_OBJECT: {
+                    child = new DBXTreeObject(
+                        this,
+                        parent,
+                        config.getAttribute(RegistryConstants.ATTR_ID),
+                        config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
+                        config.getAttribute(RegistryConstants.ATTR_LABEL),
+                        config.getAttribute(RegistryConstants.ATTR_DESCRIPTION),
+                        config.getAttribute(RegistryConstants.ATTR_EDITOR));
+                    break;
+                }
+                default:
+                    // Unknown node type
+                    //log.warn("Unknown node type: " + nodeType);
+                    break;
             }
 
             if (child != null) {
@@ -517,7 +532,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     public String getFullIdentifier() {
         return getPluginId() + '/' + id;
     }
-
 
     public DriverDescriptor getDriverByName(String category, String name) {
         if (category != null && category.isEmpty()) {
