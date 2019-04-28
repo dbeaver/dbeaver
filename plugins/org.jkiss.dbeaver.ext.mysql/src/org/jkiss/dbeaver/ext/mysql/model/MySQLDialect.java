@@ -28,10 +28,6 @@ import org.jkiss.utils.ArrayUtils;
 import java.util.Arrays;
 import java.util.Collections;
 
-//import org.jkiss.dbeaver.ui.UIUtils;
-//import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
-//import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
-
 /**
 * MySQL dialect
 */
@@ -154,17 +150,4 @@ class MySQLDialect extends JDBCSQLDialect {
         return true;
     }
 
-/*
-    @Override
-    public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
-        if (position == RulePosition.CONTROL) {
-            final SQLControlToken sourceToken = new SQLControlToken(
-                    new TextAttribute(UIUtils.getGlobalColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD),
-                    "mysql.source");
-
-            SQLFullLineRule sourceRule2 = new SQLFullLineRule("SOURCE", sourceToken); //$NON-NLS-1$
-            rules.add(sourceRule2);
-        }
-    }
-*/
 }
