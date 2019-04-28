@@ -41,6 +41,8 @@
                 type="transformer"
                 supportsRecordMode="false"
                 supportsPanels="false"
+                supportsNavigation="false"
+                supportsEdit="false"
                 order="500">
             <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.hasAttributeOfType('org.jkiss.dbeaver.model.gis.DBGeometry')"/>
         </presentation>

@@ -376,11 +376,18 @@ public class ResultSetViewer extends Viewer
         return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_STATUS_BAR) != 0;
     }
 
-    boolean supportsDataFilter()
-    {
+    boolean supportsDataFilter() {
         DBSDataContainer dataContainer = getDataContainer();
         return dataContainer != null &&
             (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
+    }
+
+    boolean supportsNavigation() {
+        return activePresentationDescriptor != null && activePresentationDescriptor.supportsNavigation();
+    }
+
+    boolean supportsEdit() {
+        return activePresentationDescriptor != null && activePresentationDescriptor.supportsEdit();
     }
 
     public void resetDataFilter(boolean refresh)
@@ -388,8 +395,7 @@ public class ResultSetViewer extends Viewer
         setDataFilter(model.createDataFilter(), refresh);
     }
 
-    void saveDataFilter()
-    {
+    void saveDataFilter() {
         DBCExecutionContext context = getExecutionContext();
         if (context == null) {
             log.error("Can't save data filter with null context");
@@ -1948,8 +1954,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public boolean hasData()
-    {
+    public boolean hasData() {
         return model.hasData();
     }
 
