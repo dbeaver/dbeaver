@@ -85,6 +85,10 @@
         </configurator>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <!-- User manager is declared in UI module because it has custom UI -->
+        <manager class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager" objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
+    </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
