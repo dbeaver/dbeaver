@@ -360,4 +360,5 @@ public abstract class DBXTreeNode
             children.add(afterIndex + 1, child);
         }
     }
+
 }

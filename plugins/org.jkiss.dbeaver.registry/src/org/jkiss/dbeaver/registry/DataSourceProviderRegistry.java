@@ -19,14 +19,14 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-//import org.eclipse.ui.PlatformUI;
-//import org.eclipse.ui.activities.IActivityManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
+import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -40,6 +40,9 @@ import org.xml.sax.Attributes;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
+
+//import org.eclipse.ui.PlatformUI;
+//import org.eclipse.ui.activities.IActivityManager;
 
 public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 {
@@ -60,6 +63,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
     private final Map<String, ExternalResourceDescriptor> resourceContributions = new HashMap<>();
+
+    private final List<EditorContributionDescriptor> editorContributors = new ArrayList<>();
+    private final Map<String, List<EditorContributionDescriptor>> contributionCategoryMap = new HashMap<>();
 
     private DataSourceProviderRegistry()
     {
@@ -98,6 +104,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         } else {
                             log.warn("Datasource '" + dsId + "' not found for patch");
                         }
+                        break;
+                    }
+                    case RegistryConstants.TAG_EDITOR_CONTRIBUTION: {
+                        // Load tree contributions
+                        EditorContributionDescriptor descriptor = new EditorContributionDescriptor(ext);
+                        editorContributors.add(descriptor);
+                        List<EditorContributionDescriptor> list = contributionCategoryMap.computeIfAbsent(
+                            descriptor.getCategory(), k -> new ArrayList<>());
+                        list.add(descriptor);
                         break;
                     }
                 }
@@ -239,6 +254,27 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
         return null;
     }
+
+    //////////////////////////////////////////////
+    // Editor contributions
+
+    @Override
+    public DBPEditorContribution[] getContributedEditors(String category, DBPDataSourceContainer dataSource) {
+        List<EditorContributionDescriptor> ec = contributionCategoryMap.get(category);
+        if (ec == null) {
+            return new DBPEditorContribution[0];
+        }
+        List<EditorContributionDescriptor> ecCopy = new ArrayList<>();
+        for (EditorContributionDescriptor editor : ec) {
+            if (editor.supportsDataSource(dataSource)) {
+                ecCopy.add(editor);
+            }
+        }
+        return ecCopy.toArray(new DBPEditorContribution[0]);
+    }
+
+    //////////////////////////////////////////////
+    // Persistence
 
     private void loadDrivers(File driversConfig)
     {

@@ -14,31 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-
-import java.util.List;
 
 /**
- * Data source provider descriptor
+ * DBPEditorContribution
  */
-public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
+public interface DBPEditorContribution
+{
+    String getEditorId();
 
-    String getId();
+    String getCategory();
+
+    String getLabel();
 
     String getDescription();
 
     DBPImage getIcon();
-
-    boolean isDriversManagable();
-
-    List<? extends DBPDriver> getEnabledDrivers();
-
-    String getPluginId();
-
-    DBXTreeNode getTreeDescriptor();
-
 }

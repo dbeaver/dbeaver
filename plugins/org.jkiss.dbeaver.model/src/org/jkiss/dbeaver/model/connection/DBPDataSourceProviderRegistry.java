@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+
 import java.util.List;
 
 /**
@@ -32,4 +34,7 @@ public interface DBPDataSourceProviderRegistry {
     void saveConnectionTypes();
 
     DBPDriver findDriver(String driverIdOrName);
+
+    DBPEditorContribution[] getContributedEditors(String category, DBPDataSourceContainer dataSource);
+
 }
