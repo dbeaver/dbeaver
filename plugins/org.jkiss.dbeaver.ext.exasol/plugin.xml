@@ -565,7 +565,7 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.model.sql.SQLDialect" class="org.jkiss.dbeaver.ext.exasol.editors.ExasolDialectAdapterFactory">
+        <factory adaptableType="org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect" class="org.jkiss.dbeaver.ext.exasol.editors.ExasolDialectAdapterFactory">
             <adapter type="org.jkiss.dbeaver.runtime.sql.SQLRuleProvider"/>
         </factory>
     </extension>
