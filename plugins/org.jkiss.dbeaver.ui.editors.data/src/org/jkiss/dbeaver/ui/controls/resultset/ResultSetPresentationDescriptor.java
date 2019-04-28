@@ -51,6 +51,8 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final List<MimeType> contentTypes = new ArrayList<>();
     private boolean supportsRecordMode;
     private boolean supportsPanels;
+    private boolean supportsNavigation;
+    private boolean supportsEdit;
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);
@@ -64,6 +66,8 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         this.presentationType = IResultSetPresentation.PresentationType.valueOf(config.getAttribute("type").toUpperCase(Locale.ENGLISH));
         this.supportsRecordMode = CommonUtils.toBoolean(config.getAttribute("supportsRecordMode"));
         this.supportsPanels = CommonUtils.getBoolean(config.getAttribute("supportsPanels"), true);
+        this.supportsNavigation = CommonUtils.getBoolean(config.getAttribute("supportsNavigation"), true);
+        this.supportsEdit = CommonUtils.getBoolean(config.getAttribute("supportsEdit"), true);
 
         for (IConfigurationElement typeCfg : config.getChildren(CONTENT_TYPE)) {
             String type = typeCfg.getAttribute("type");
@@ -129,11 +133,6 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         return false;
     }
 
-    @Override
-    public String toString() {
-        return id;
-    }
-
     public boolean supportsRecordMode() {
         return supportsRecordMode;
     }
@@ -141,4 +140,18 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     public boolean supportsPanels() {
         return supportsPanels;
     }
+
+    public boolean supportsNavigation() {
+        return supportsNavigation;
+    }
+
+    public boolean supportsEdit() {
+        return supportsEdit;
+    }
+
+    @Override
+    public String toString() {
+        return id;
+    }
+
 }

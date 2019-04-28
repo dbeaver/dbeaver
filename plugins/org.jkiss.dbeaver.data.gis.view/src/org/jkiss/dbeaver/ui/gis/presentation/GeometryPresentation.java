@@ -114,6 +114,8 @@ public class GeometryPresentation extends AbstractPresentation {
 
     @Override
     public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
+        controller.updateEditControls();
+
         List<GeometryDataUtils.GeomAttrs> result = GeometryDataUtils.extractGeometryAttributes(getController());
         ResultSetModel model = getController().getModel();
 

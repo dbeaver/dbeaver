@@ -78,11 +78,14 @@ public class ResultSetPropertyTester extends PropertyTester
                 return !actionsDisabled && rsv.getModel().hasData();
             case PROP_CAN_PASTE:
             case PROP_CAN_CUT: {
+                if (actionsDisabled || !rsv.supportsEdit()) {
+                    return false;
+                }
                 DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-                return !actionsDisabled && attr != null && !rsv.isAttributeReadOnly(attr);
+                return attr != null && !rsv.isAttributeReadOnly(attr);
             }
             case PROP_CAN_MOVE: {
-                if (actionsDisabled) return false;
+                if (actionsDisabled || !rsv.supportsNavigation()) return false;
                 ResultSetRow currentRow = rsv.getCurrentRow();
                 if ("back".equals(expectedValue)) {
                     return currentRow != null && currentRow.getVisualNumber() > 0;
@@ -92,7 +95,7 @@ public class ResultSetPropertyTester extends PropertyTester
                 break;
             }
             case PROP_EDITABLE: {
-                if (actionsDisabled || !rsv.hasData()) {
+                if (actionsDisabled || !rsv.hasData() || !rsv.supportsEdit()) {
                     return false;
                 }
                 if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
