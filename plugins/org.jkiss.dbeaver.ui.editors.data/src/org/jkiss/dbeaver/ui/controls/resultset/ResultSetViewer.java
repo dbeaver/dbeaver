@@ -224,7 +224,7 @@ public class ResultSetViewer extends Viewer
         this.defaultBackground = UIStyles.getDefaultTextBackground();
         this.defaultForeground = UIStyles.getDefaultTextForeground();
 
-        boolean supportsPanels = supportsPanels();
+        boolean supportsPanels = (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0;
 
         this.mainPanel = UIUtils.createPlaceholder(parent, supportsPanels ? 3 : 2);
 
@@ -266,7 +266,7 @@ public class ResultSetViewer extends Viewer
             this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
             this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            if (supportsPanels()) {
+            if (supportsPanels) {
                 this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
                 CSSUtils.setCSSClass(panelFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 this.panelFolder.marginWidth = 0;
@@ -367,7 +367,9 @@ public class ResultSetViewer extends Viewer
     // Filters
 
     private boolean supportsPanels() {
-        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0;
+        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0 &&
+            activePresentationDescriptor != null &&
+            activePresentationDescriptor.supportsPanels();
     }
 
     private boolean supportsStatusBar() {
@@ -671,6 +673,11 @@ public class ResultSetViewer extends Viewer
         }
         activePresentation.createPresentation(this, presentationPanel);
 
+        // Clear panels toolbar
+        if (panelSwitchFolder != null) {
+            UIUtils.disposeChildControls(panelSwitchFolder);
+        }
+
         // Activate panels
         if (supportsPanels()) {
             boolean panelsVisible = false;
@@ -689,9 +696,6 @@ public class ResultSetViewer extends Viewer
             showPanels(panelsVisible, false, false);
             viewerSash.setOrientation(verticalLayout ? SWT.VERTICAL : SWT.HORIZONTAL);
             viewerSash.setWeights(panelWeights);
-
-            // Update panels toolbar
-            UIUtils.disposeChildControls(panelSwitchFolder);
 
             if (!availablePanels.isEmpty()) {
                 VerticalButton panelsButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
@@ -746,6 +750,10 @@ public class ResultSetViewer extends Viewer
                     });
                     panelButton.setChecked(panelsVisible && isPanelVisible(panel.getId()));
                 }
+            }
+        } else {
+            if (viewerSash != null) {
+                viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
             }
         }
 
@@ -883,7 +891,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void savePresentationSettings() {
-        if (supportsPanels()) {
+        if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
             IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
             for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
                 if (pEntry.getKey() == null) {
@@ -1588,6 +1596,7 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
+        savePresentationSettings();
         clearData();
 
         for (ToolBarManager tb : toolbarList) {
