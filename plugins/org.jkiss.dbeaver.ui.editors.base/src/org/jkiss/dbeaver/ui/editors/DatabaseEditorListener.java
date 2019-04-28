@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -34,14 +36,17 @@ public class DatabaseEditorListener implements INavigatorListener
     DatabaseEditorListener(IDatabaseEditor databaseEditor) {
         this.databaseEditor = databaseEditor;
         // Acquire datasource
-        IDatabaseEditorInput editorInput = databaseEditor.getEditorInput();
-        if (editorInput.getDatabaseObject() instanceof DBPDataSourceContainer) {
-            dataSourceContainer = (DBPDataSourceContainer) editorInput.getDatabaseObject();
-        } else if (editorInput.getNavigatorNode() != null) {
-            dataSourceContainer = editorInput.getNavigatorNode().getDataSourceContainer();
-        }
-        if (dataSourceContainer != null) {
-            dataSourceContainer.acquire(databaseEditor);
+        IEditorInput editorInput = databaseEditor.getEditorInput();
+        if (editorInput instanceof IDatabaseEditorInput) {
+            IDatabaseEditorInput databaseEditorInput = (IDatabaseEditorInput)editorInput;
+            if (databaseEditorInput.getDatabaseObject() instanceof DBPDataSourceContainer) {
+                dataSourceContainer = (DBPDataSourceContainer) databaseEditorInput.getDatabaseObject();
+            } else if (databaseEditorInput.getNavigatorNode() != null) {
+                dataSourceContainer = databaseEditorInput.getNavigatorNode().getDataSourceContainer();
+            }
+            if (dataSourceContainer != null) {
+                dataSourceContainer.acquire(databaseEditor);
+            }
         }
         // Register node listener
         DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
@@ -59,9 +64,11 @@ public class DatabaseEditorListener implements INavigatorListener
         DBWorkbench.getPlatform().getNavigatorModel().removeListener(this);
     }
 
+    @Nullable
     public DBNNode getTreeNode()
     {
-        return databaseEditor.getEditorInput().getNavigatorNode();
+        IEditorInput input = databaseEditor.getEditorInput();
+        return input instanceof IDatabaseEditorInput ? ((IDatabaseEditorInput) input).getNavigatorNode() : null;
     }
 
     @Override

@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.DBPImage;
  */
 public interface DBPEditorContribution
 {
+    String MB_CONNECTION_EDITOR = "connectionEditor";
+
     String getEditorId();
 
     String getCategory();

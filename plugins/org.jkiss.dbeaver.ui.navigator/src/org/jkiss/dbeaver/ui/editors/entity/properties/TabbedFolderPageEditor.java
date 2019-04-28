@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.INestedEditorSite;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorManager;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
-import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
 
 /**
@@ -88,7 +85,11 @@ public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabas
         }
 
         try {
-            editor.init(nestedEditorSite, editorDescriptor.getNestedEditorInput(mainEditor.getEditorInput()));
+            IEditorInput editorInput = mainEditor.getEditorInput();
+            if (editorInput instanceof IDatabaseEditorInput) {
+                editorInput = editorDescriptor.getNestedEditorInput((IDatabaseEditorInput)editorInput);
+            }
+            editor.init(nestedEditorSite, editorInput);
         } catch (PartInitException e) {
             DBWorkbench.getPlatformUI().showError("Create SQL viewer", null, e);
         }

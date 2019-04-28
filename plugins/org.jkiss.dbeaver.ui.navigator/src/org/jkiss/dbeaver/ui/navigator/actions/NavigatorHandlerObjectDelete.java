@@ -34,6 +34,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -55,7 +56,6 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -219,8 +219,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             final IEditorPart editor = editorRef.getEditor(false);
 
             if (editor instanceof IDatabaseEditor) {
-                final IDatabaseEditorInput editorInput = ((IDatabaseEditor)editor).getEditorInput();
-                if (editorInput.getDatabaseObject() == node.getObject()) {
+                final IEditorInput editorInput = editor.getEditorInput();
+                if (editorInput instanceof IDatabaseEditorInput && ((IDatabaseEditorInput) editorInput).getDatabaseObject() == node.getObject()) {
 
                     ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, false, null, false);
                     if (confirmResult == ConfirmResult.NO) {

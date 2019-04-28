@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.actions;
 
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 /**
  * Oracle object adapter
@@ -42,7 +44,8 @@ public class OracleObjectAdapter implements IAdapterFactory {
             if (adaptableObject instanceof DBNDatabaseNode) {
                 dbObject = ((DBNDatabaseNode) adaptableObject).getObject();
             } else if (adaptableObject instanceof IDatabaseEditor) {
-                dbObject = ((IDatabaseEditor) adaptableObject).getEditorInput().getDatabaseObject();
+                IEditorInput editorInput = ((IDatabaseEditor) adaptableObject).getEditorInput();
+                dbObject = editorInput instanceof IDatabaseEditorInput ? ((IDatabaseEditorInput) editorInput).getDatabaseObject() : null;
             } else if (adaptableObject instanceof DatabaseEditorInput) {
                 dbObject = ((DatabaseEditorInput) adaptableObject).getDatabaseObject();
             } else if (adaptableObject instanceof DBNDatabaseItem) {

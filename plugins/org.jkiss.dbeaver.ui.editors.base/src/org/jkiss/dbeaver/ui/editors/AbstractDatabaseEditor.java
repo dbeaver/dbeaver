@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 /**
  * AbstractDatabaseEditor
  */
-public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends EditorPart implements IDatabaseEditor, DBPContextProvider
+public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IEditorInput> extends EditorPart implements IDatabaseEditor, DBPContextProvider
 {
     private DatabaseEditorListener listener;
     private Image editorImage;

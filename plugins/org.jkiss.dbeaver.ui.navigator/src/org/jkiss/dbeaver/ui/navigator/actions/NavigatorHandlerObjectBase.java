@@ -66,7 +66,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         public CommandTarget(IDatabaseEditor editor)
         {
             this.editor = editor;
-            this.context = editor.getEditorInput().getCommandContext();
+            this.context = ((IDatabaseEditorInput)editor.getEditorInput()).getCommandContext();
         }
 
         public DBECommandContext getContext()
@@ -99,7 +99,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             for (final IEditorReference editorRef : workbenchWindow.getActivePage().getEditorReferences()) {
                 final IEditorPart editor = editorRef.getEditor(false);
                 if (editor instanceof IDatabaseEditor) {
-                    final IDatabaseEditorInput editorInput = ((IDatabaseEditor) editor).getEditorInput();
+                    final IDatabaseEditorInput editorInput = (IDatabaseEditorInput) editor.getEditorInput();
                     if (editorInput.getDatabaseObject() == objectToSeek) {
                         workbenchWindow.getActivePage().activate(editor);
                         switchEditorFolder(container, editor);

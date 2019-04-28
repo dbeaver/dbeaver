@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.services.IServiceLocator;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -299,10 +301,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     protected PropertySourceAbstract createListPropertySource()
     {
         if (workbenchSite instanceof IWorkbenchPartSite && ((IWorkbenchPartSite) workbenchSite).getPart() instanceof IDatabaseEditor) {
-            return new NodeListPropertySource(((IDatabaseEditor) ((IWorkbenchPartSite) workbenchSite).getPart()).getEditorInput().getCommandContext());
-        } else {
-            return super.createListPropertySource();
+            IEditorInput editorInput = ((IDatabaseEditor) ((IWorkbenchPartSite) workbenchSite).getPart()).getEditorInput();
+            if (editorInput instanceof IDatabaseEditorInput) {
+                return new NodeListPropertySource(((IDatabaseEditorInput) editorInput).getCommandContext());
+            }
         }
+        return super.createListPropertySource();
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -70,15 +72,19 @@ public class ObjectEditorPageControl extends ProgressPageControl {
 
     public boolean isObjectEditable()
     {
-        DBCExecutionContext context = getEditorPart().getEditorInput().getExecutionContext();
-        if (context == null) {
-            return false;
+        IEditorInput editorInput = getEditorPart().getEditorInput();
+        if (editorInput instanceof IDatabaseEditorInput) {
+            DBCExecutionContext context = ((IDatabaseEditorInput) editorInput).getExecutionContext();
+            if (context == null) {
+                return false;
+            }
+            if (context.getDataSource().getInfo().isReadOnlyMetaData()) {
+                return false;
+            }
+            DBSObject databaseObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+            return databaseObject != null && DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
         }
-        if (context.getDataSource().getInfo().isReadOnlyMetaData()) {
-            return false;
-        }
-        DBSObject databaseObject = getEditorPart().getEditorInput().getDatabaseObject();
-        return databaseObject != null && DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
+        return false;
     }
 
     private IEditorPart getMainEditorPart()

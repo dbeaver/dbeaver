@@ -18,12 +18,14 @@
 package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.connection.DBPEditorContribution;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -37,8 +39,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.common.ExecuteToolHandler;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -78,23 +78,13 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         if (selectedObject != null) {
 
             // Contribute standard tools like session manager
-            List<DBXTreeObject> navigatorObjectEditors = new ArrayList<>();
-            DBNDatabaseNode dsNode = NavigatorUtils.getNodeByObject(selectedObject.getDataSource());
-            if (dsNode != null) {
-                Set<DBXTreeNode> processedNodes = new HashSet<>();
-                findObjectNodes(dsNode.getMeta(), navigatorObjectEditors, processedNodes);
-            }
-            if (!navigatorObjectEditors.isEmpty()) {
+            DBPDataSource dataSource = selectedObject.getDataSource();
+            DBPDataSourceContainer dataSourceContainer = dataSource.getContainer();
+            DBPEditorContribution[] contributedEditors = DBWorkbench.getPlatform().getDataSourceProviderRegistry().getContributedEditors(DBPEditorContribution.MB_CONNECTION_EDITOR, dataSourceContainer);
+            if (contributedEditors.length > 0) {
                 menuItems.add(new Separator());
-                for (DBXTreeObject editorMeta : navigatorObjectEditors) {
-
-                    //DBNDatabaseNode objectNode = dsNode;
-                    DBNDatabaseNode objectNode = NavigatorUtils.getNodeByObject(selectedObject);
-                    if (objectNode == null) {
-                        objectNode = dsNode;
-                    }
-
-                    menuItems.add(new ActionContributionItem(new OpenToolsEditorAction(activePage, objectNode, editorMeta)));
+                for (DBPEditorContribution ec : contributedEditors) {
+                    menuItems.add(new ActionContributionItem(new OpenToolsEditorAction(activePage, dataSource, ec)));
                 }
             }
         }
@@ -181,31 +171,83 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
 
     private class OpenToolsEditorAction extends Action {
         private final IWorkbenchPage workbenchPage;
-        private final DBNDatabaseNode databaseNode;
-        private final DBXTreeObject editorMeta;
-        public OpenToolsEditorAction(IWorkbenchPage workbenchPage, DBNDatabaseNode databaseNode, DBXTreeObject editorMeta) {
-            super(editorMeta.getLabel(), editorMeta.getIcon(null) == null ? null : DBeaverIcons.getImageDescriptor(editorMeta.getIcon(null)));
+        private final DBPDataSource dataSource;
+        private final DBPEditorContribution editor;
+        public OpenToolsEditorAction(IWorkbenchPage workbenchPage, DBPDataSource dataSource, DBPEditorContribution editor) {
+            super(editor.getLabel(), DBeaverIcons.getImageDescriptor(editor.getIcon()));
             this.workbenchPage = workbenchPage;
-            this.databaseNode = databaseNode;
-            this.editorMeta = editorMeta;
+            this.dataSource = dataSource;
+            this.editor = editor;
         }
 
         @Override
         public void run() {
-            ObjectEditorInput editorInput;
-            if (databaseNode instanceof DBNDatabaseObject) {
-                editorInput = new ObjectEditorInput((DBNDatabaseObject) databaseNode);
-            } else {
-                editorInput = new ObjectEditorInput(databaseNode, editorMeta);
-            }
-
             try {
                 workbenchPage.openEditor(
-                    editorInput,
-                    editorMeta.getEditorId());
+                    new DataSourceEditorInput(dataSource, editor),
+                    editor.getEditorId());
             } catch (PartInitException e) {
-                DBWorkbench.getPlatformUI().showError("Editor open", "Error opening tool editor '" + editorMeta.getEditorId() + "'", e.getStatus());
+                DBWorkbench.getPlatformUI().showError("Editor open", "Error opening tool editor '" + editor.getEditorId() + "'", e.getStatus());
             }
         }
     }
+
+    public class DataSourceEditorInput implements IEditorInput, IDataSourceContainerProvider, DBPContextProvider {
+
+        private final DBPDataSource dataSource;
+        private final DBPEditorContribution editor;
+
+        public DataSourceEditorInput(DBPDataSource dataSource, DBPEditorContribution editor) {
+            this.dataSource = dataSource;
+            this.editor = editor;
+        }
+
+        @Override
+        public boolean exists() {
+            return false;
+        }
+
+        @Override
+        public ImageDescriptor getImageDescriptor() {
+            return DBeaverIcons.getImageDescriptor(editor.getIcon());
+        }
+
+        @Override
+        public String getName() {
+            return editor.getLabel();
+        }
+
+        @Override
+        public IPersistableElement getPersistable() {
+            return null;
+        }
+
+        @Override
+        public String getToolTipText() {
+            return editor.getDescription();
+        }
+
+        @Override
+        public <T> T getAdapter(Class<T> adapter) {
+            return null;
+        }
+
+        @Override
+        public DBPDataSourceContainer getDataSourceContainer() {
+            return dataSource.getContainer();
+        }
+
+        @Override
+        public DBCExecutionContext getExecutionContext() {
+            return DBUtils.getDefaultContext(dataSource, false);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj == this ||
+                (obj instanceof DataSourceEditorInput && ((DataSourceEditorInput) obj).editor == editor);
+        }
+
+    }
+
 }
