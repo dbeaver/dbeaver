@@ -51,7 +51,6 @@
                 <command commandId="org.jkiss.dbeaver.core.compare.simple">
                     <visibleWhen checkEnabled="true"/>
                 </command>
-                <dynamic />
             </menu>
         </menuContribution>
 

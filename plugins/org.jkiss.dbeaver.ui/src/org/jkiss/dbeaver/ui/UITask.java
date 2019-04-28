@@ -30,4 +30,17 @@ public abstract class UITask<RESULT> extends RunnableWithResult<RESULT> {
     public RESULT execute() {
         return UIUtils.syncExec(this);
     }
+
+    public interface TaskExecutor <T> {
+        T run();
+    }
+
+    public static <T> T run(TaskExecutor <T> runnable) {
+        return new UITask<T>() {
+            @Override
+            protected T runTask() {
+                return runnable.run();
+            }
+        }.execute();
+    }
 }

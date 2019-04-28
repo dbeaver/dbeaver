@@ -16,31 +16,26 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.swt.SWT;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+
+//import org.jkiss.dbeaver.ui.UIUtils;
+//import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLFullLineRule;
+//import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 
 /**
 * MySQL dialect
 */
-class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
+class MySQLDialect extends JDBCSQLDialect {
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
@@ -159,6 +154,7 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
         return true;
     }
 
+/*
     @Override
     public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
         if (position == RulePosition.CONTROL) {
@@ -170,4 +166,5 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
             rules.add(sourceRule2);
         }
     }
+*/
 }

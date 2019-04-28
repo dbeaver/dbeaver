@@ -102,7 +102,7 @@
                     class="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolRebuild"
                     description="Rebuild table indexes"
                     id="org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.SQLServerToolRebuild"
-                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    group="org.jkiss.dbeaver.ext.mssql.tools.maintenance"
                     label="Rebuild indexes"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>

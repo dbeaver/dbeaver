@@ -29,8 +29,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -69,19 +67,7 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     @Override
     protected MySQLProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLCatalog parent, Object copyFrom)
     {
-        return new UITask<MySQLProcedure>() {
-            @Override
-            protected MySQLProcedure runTask() {
-                CreateProcedurePage editPage = new CreateProcedurePage(parent);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                MySQLProcedure newProcedure = new MySQLProcedure(parent);
-                newProcedure.setProcedureType(editPage.getProcedureType());
-                newProcedure.setName(editPage.getProcedureName());
-                return newProcedure;
-            }
-        }.execute();
+        return new MySQLProcedure(parent);
     }
 
     @Override

@@ -1,8 +1,5 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -15,9 +12,9 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
-import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
+
+import java.util.List;
+import java.util.Map;
 
 public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog> {
 
@@ -33,19 +30,8 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
     @Nullable
     @Override
     protected MySQLEvent createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom) {
-        return new UITask<MySQLEvent>() {
-            @Override
-            protected MySQLEvent runTask() {
-                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.EVENT);
-                if (!editPage.edit()) {
-                    return null;
-                    }
-                MySQLEvent newEvent = new MySQLEvent(parent, editPage.getEntityName());
-                newEvent.setObjectDefinitionText("SELECT 1");
-                return newEvent;
-                }
-            }.execute();
-            }
+        return new MySQLEvent(parent, "NewEvent");
+    }
 
     @Override
     protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, SQLObjectEditor<MySQLEvent, MySQLCatalog>.ObjectCreateCommand command, Map<String, Object> options) {
