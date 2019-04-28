@@ -50,6 +50,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final IResultSetPresentation.PresentationType presentationType;
     private final List<MimeType> contentTypes = new ArrayList<>();
     private boolean supportsRecordMode;
+    private boolean supportsPanels;
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);
@@ -62,6 +63,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         this.order = CommonUtils.toInt(config.getAttribute("order"));
         this.presentationType = IResultSetPresentation.PresentationType.valueOf(config.getAttribute("type").toUpperCase(Locale.ENGLISH));
         this.supportsRecordMode = CommonUtils.toBoolean(config.getAttribute("supportsRecordMode"));
+        this.supportsPanels = CommonUtils.getBoolean(config.getAttribute("supportsPanels"), true);
 
         for (IConfigurationElement typeCfg : config.getChildren(CONTENT_TYPE)) {
             String type = typeCfg.getAttribute("type");
@@ -134,5 +136,9 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
 
     public boolean supportsRecordMode() {
         return supportsRecordMode;
+    }
+
+    public boolean supportsPanels() {
+        return supportsPanels;
     }
 }
