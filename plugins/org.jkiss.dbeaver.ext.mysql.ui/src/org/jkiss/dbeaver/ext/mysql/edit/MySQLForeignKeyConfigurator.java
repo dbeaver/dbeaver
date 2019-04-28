@@ -33,36 +33,33 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
 
     @Override
     public MySQLTableForeignKey configureObject(DBRProgressMonitor monitor, MySQLTableBase table, MySQLTableForeignKey foreignKey) {
-        return new UITask<MySQLTableForeignKey>() {
-            @Override
-            protected MySQLTableForeignKey runTask() {
-                EditForeignKeyPage editPage = new EditForeignKeyPage(
-                    MySQLMessages.edit_foreign_key_manager_title,
-                    table,
-                    new DBSForeignKeyModifyRule[] {
-                        DBSForeignKeyModifyRule.NO_ACTION,
-                        DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                        DBSForeignKeyModifyRule.SET_NULL,
-                        DBSForeignKeyModifyRule.SET_DEFAULT });
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                foreignKey.setReferencedKey((MySQLTableConstraint) editPage.getUniqueConstraint());
-                foreignKey.setDeleteRule(editPage.getOnDeleteRule());
-                foreignKey.setUpdateRule(editPage.getOnUpdateRule());
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
-                    foreignKey.addColumn(
-                        new MySQLTableForeignKeyColumn(
-                            foreignKey,
-                            (MySQLTableColumn) tableColumn.getOwnColumn(),
-                            colIndex++,
-                            (MySQLTableColumn) tableColumn.getRefColumn()));
-                }
-                return foreignKey;
+        return UITask.run(() -> {
+            EditForeignKeyPage editPage = new EditForeignKeyPage(
+                MySQLMessages.edit_foreign_key_manager_title,
+                table,
+                new DBSForeignKeyModifyRule[] {
+                    DBSForeignKeyModifyRule.NO_ACTION,
+                    DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                    DBSForeignKeyModifyRule.SET_NULL,
+                    DBSForeignKeyModifyRule.SET_DEFAULT });
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+
+            foreignKey.setReferencedKey((MySQLTableConstraint) editPage.getUniqueConstraint());
+            foreignKey.setDeleteRule(editPage.getOnDeleteRule());
+            foreignKey.setUpdateRule(editPage.getOnUpdateRule());
+            int colIndex = 1;
+            for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
+                foreignKey.addColumn(
+                    new MySQLTableForeignKeyColumn(
+                        foreignKey,
+                        (MySQLTableColumn) tableColumn.getOwnColumn(),
+                        colIndex++,
+                        (MySQLTableColumn) tableColumn.getRefColumn()));
+            }
+            return foreignKey;
+        });
     }
 
 }

@@ -37,31 +37,28 @@ public class MySQLConstraintConfigurator implements DBEObjectConfigurator<MySQLT
 
     @Override
     public MySQLTableConstraint configureObject(DBRProgressMonitor monitor, MySQLTableBase parent, MySQLTableConstraint constraint) {
-        return new UITask<MySQLTableConstraint>() {
-            @Override
-            protected MySQLTableConstraint runTask() {
-                EditConstraintPage editPage = new EditConstraintPage(
-                    MySQLMessages.edit_constraint_manager_title,
-                    parent,
-                    new DBSEntityConstraintType[] {
-                        DBSEntityConstraintType.PRIMARY_KEY,
-                        DBSEntityConstraintType.UNIQUE_KEY });
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                constraint.setName(editPage.getConstraintName());
-                constraint.setConstraintType(editPage.getConstraintType());
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    constraint.addColumn(
-                        new MySQLTableConstraintColumn(
-                            constraint,
-                            (MySQLTableColumn) tableColumn,
-                            colIndex++));
-                }
-                return constraint;
+        return UITask.run(() -> {
+            EditConstraintPage editPage = new EditConstraintPage(
+                MySQLMessages.edit_constraint_manager_title,
+                parent,
+                new DBSEntityConstraintType[] {
+                    DBSEntityConstraintType.PRIMARY_KEY,
+                    DBSEntityConstraintType.UNIQUE_KEY });
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+
+            constraint.setName(editPage.getConstraintName());
+            constraint.setConstraintType(editPage.getConstraintType());
+            int colIndex = 1;
+            for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
+                constraint.addColumn(
+                    new MySQLTableConstraintColumn(
+                        constraint,
+                        (MySQLTableColumn) tableColumn,
+                        colIndex++));
+            }
+            return constraint;
+        });
     }
 }

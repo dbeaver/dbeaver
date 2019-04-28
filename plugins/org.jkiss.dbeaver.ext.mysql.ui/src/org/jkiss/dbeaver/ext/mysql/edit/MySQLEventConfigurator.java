@@ -17,9 +17,8 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEvent;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -29,22 +28,19 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 /**
  * MySQLEventConfigurator
  */
-public class MySQLEventConfigurator implements DBEObjectConfigurator<MySQLTableBase, MySQLEvent> {
+public class MySQLEventConfigurator implements DBEObjectConfigurator<MySQLCatalog, MySQLEvent> {
 
     @Override
-    public MySQLEvent configureObject(DBRProgressMonitor monitor, MySQLTableBase parent, MySQLEvent event) {
-        return new UITask<MySQLEvent>() {
-            @Override
-            protected MySQLEvent runTask() {
-                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.EVENT);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                event.setName(editPage.getEntityName());
-                event.setObjectDefinitionText("SELECT 1");
-                return event;
+    public MySQLEvent configureObject(DBRProgressMonitor monitor, MySQLCatalog parent, MySQLEvent event) {
+        return UITask.run(() -> {
+            EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.EVENT);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+            event.setName(editPage.getEntityName());
+            event.setObjectDefinitionText("SELECT 1");
+            return event;
+        });
     }
 
 }

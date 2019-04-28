@@ -30,16 +30,13 @@ import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 public class MySQLTableColumnConfigurator implements DBEObjectConfigurator<MySQLTableBase, MySQLTableColumn> {
     @Override
     public MySQLTableColumn configureObject(DBRProgressMonitor monitor, MySQLTableBase table, MySQLTableColumn column) {
-        return new UITask<MySQLTableColumn>() {
-            @Override
-            protected MySQLTableColumn runTask() {
-                AttributeEditPage page = new AttributeEditPage(null, column);
-                if (!page.edit()) {
-                    return null;
-                }
-                return column;
+        return UITask.run(() -> {
+            AttributeEditPage page = new AttributeEditPage(null, column);
+            if (!page.edit()) {
+                return null;
             }
-        }.execute();
+            return column;
+        });
     }
 
 }
