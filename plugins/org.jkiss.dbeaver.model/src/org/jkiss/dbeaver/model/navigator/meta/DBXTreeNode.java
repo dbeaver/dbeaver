@@ -19,13 +19,16 @@ package org.jkiss.dbeaver.model.navigator.meta;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -41,6 +44,7 @@ public abstract class DBXTreeNode
 
     private final AbstractDescriptor source;
     private final DBXTreeNode parent;
+    private final IConfigurationElement config;
     private final String id;
     private List<DBXTreeNode> children;
     private DBPImage defaultIcon;
@@ -54,14 +58,15 @@ public abstract class DBXTreeNode
     private DBXTreeNode recursiveLink;
     private List<DBXTreeNodeHandler> handlers = null;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursive)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursive)
     {
         this.source = source;
         this.parent = parent;
         if (parent != null) {
             parent.addChild(this);
         }
-        this.id = id;
+        this.config = config;
+        this.id = config == null ? null : config.getAttribute("id");
         this.navigable = navigable;
         this.inline = inline;
         this.virtual = virtual;
@@ -90,6 +95,7 @@ public abstract class DBXTreeNode
         if (parent != null) {
             parent.addChild(this);
         }
+        this.config = node.config;
         this.id = node.id;
         this.navigable = node.navigable;
         this.inline = node.inline;
@@ -124,14 +130,24 @@ public abstract class DBXTreeNode
         }
     }
 
+    protected IConfigurationElement getConfig() {
+        return config;
+    }
+
     public AbstractDescriptor getSource()
     {
         return source;
     }
 
-    public abstract String getNodeType(DBPDataSource dataSource);
+    /**
+     * Human readable node type
+     */
+    public abstract String getNodeType(@NotNull DBPDataSource dataSource, @Nullable String locale);
 
-    public abstract String getChildrenType(DBPDataSource dataSource);
+    /**
+     * Human readable child nodes type
+     */
+    public abstract String getChildrenType(@NotNull DBPDataSource dataSource, @Nullable String locale);
 
     public boolean isNavigable()
     {

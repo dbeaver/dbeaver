@@ -85,7 +85,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         if (CommonUtils.isEmpty(metaChildren)) {
             return "?";
         } else {
-            return metaChildren.get(0).getChildrenType(getDataSource());
+            return metaChildren.get(0).getChildrenType(getDataSource(), null);
         }
     }
 
@@ -94,7 +94,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     @Property(viewable = true)
     public String getName()
     {
-        return meta.getChildrenType(getDataSource());
+        return meta.getChildrenType(getDataSource(), null);
     }
 
     @Nullable
@@ -144,6 +144,6 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
 
     @Override
     public String toString() {
-        return meta.getChildrenType(getDataSource());
+        return meta.getChildrenType(getDataSource(), null);
     }
 }

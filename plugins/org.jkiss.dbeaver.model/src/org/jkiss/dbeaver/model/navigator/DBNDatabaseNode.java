@@ -80,7 +80,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     @Override
     public String getNodeType()
     {
-        return getObject() == null ? "" : getMeta().getNodeType(getObject().getDataSource()); //$NON-NLS-1$
+        return getObject() == null ? "" : getMeta().getNodeType(getObject().getDataSource(), null); //$NON-NLS-1$
     }
 
     @Override
@@ -415,7 +415,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             if (monitor.isCanceled()) {
                 break;
             }
-            monitor.subTask(ModelMessages.model_navigator_load_ + " " + child.getChildrenType(object.getDataSource()));
+            monitor.subTask(ModelMessages.model_navigator_load_ + " " + child.getChildrenType(object.getDataSource(), null));
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
                 boolean isLoaded = loadTreeItems(monitor, item, oldList, toList, source, reflect);
