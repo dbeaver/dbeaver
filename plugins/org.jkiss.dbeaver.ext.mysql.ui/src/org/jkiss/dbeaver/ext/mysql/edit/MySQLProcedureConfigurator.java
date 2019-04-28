@@ -31,18 +31,15 @@ public class MySQLProcedureConfigurator implements DBEObjectConfigurator<MySQLCa
 
     @Override
     public MySQLProcedure configureObject(DBRProgressMonitor monitor, MySQLCatalog parent, MySQLProcedure newProcedure) {
-        return new UITask<MySQLProcedure>() {
-            @Override
-            protected MySQLProcedure runTask() {
-                CreateProcedurePage editPage = new CreateProcedurePage(parent);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                newProcedure.setProcedureType(editPage.getProcedureType());
-                newProcedure.setName(editPage.getProcedureName());
-                return newProcedure;
+        return UITask.run(() -> {
+            CreateProcedurePage editPage = new CreateProcedurePage(parent);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+            newProcedure.setProcedureType(editPage.getProcedureType());
+            newProcedure.setName(editPage.getProcedureName());
+            return newProcedure;
+        });
     }
 
 }

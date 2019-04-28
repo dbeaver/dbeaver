@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,26 +31,21 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
  */
 public class MySQLTriggerConfigurator implements DBEObjectConfigurator<MySQLTableBase, MySQLTrigger> {
     
-    protected static final Log log = Log.getLog(MySQLTriggerConfigurator.class);
-
     @Override
     public MySQLTrigger configureObject(DBRProgressMonitor monitor, MySQLTableBase parent, MySQLTrigger trigger) {
-        return new UITask<MySQLTrigger>() {
-            @Override
-            protected MySQLTrigger runTask() {
-                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
-                if (!editPage.edit()) {
-                    return null;
-                }
-                trigger.setName(editPage.getEntityName());
-                //trigger.setManipulationType(editPage.getM);
-                trigger.setObjectDefinitionText(
-                    "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n" +
-                        trigger.getActionTiming() + " " + trigger.getManipulationType() + "\n" +
-                        "ON " + DBUtils.getQuotedIdentifier(parent) + " FOR EACH ROW\n");
-                return trigger;
+        return UITask.run(() -> {
+            EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+            trigger.setName(editPage.getEntityName());
+            //trigger.setManipulationType(editPage.getM);
+            trigger.setObjectDefinitionText(
+                "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n" +
+                    trigger.getActionTiming() + " " + trigger.getManipulationType() + "\n" +
+                    "ON " + DBUtils.getQuotedIdentifier(parent) + " FOR EACH ROW\n");
+            return trigger;
+        });
     }
 
 }

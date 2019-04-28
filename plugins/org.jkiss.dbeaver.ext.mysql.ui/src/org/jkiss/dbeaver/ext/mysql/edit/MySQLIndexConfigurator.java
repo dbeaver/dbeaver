@@ -45,41 +45,38 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableB
 
     @Override
     public MySQLTableIndex configureObject(DBRProgressMonitor monitor, MySQLTableBase parent, MySQLTableIndex index) {
-        return new UITask<MySQLTableIndex>() {
-            @Override
-            protected MySQLTableIndex runTask() {
-                MyEditIndexPage editPage = new MyEditIndexPage(parent);
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                StringBuilder idxName = new StringBuilder(64);
-                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
-                int colIndex = 1;
-                for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                    if (colIndex == 1) {
-                        idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
-                    }
-                    Integer length = (Integer) editPage.getAttributeProperty(tableColumn, MyEditIndexPage.PROP_LENGTH);
-                    index.addColumn(
-                        new MySQLTableIndexColumn(
-                            index,
-                            (MySQLTableColumn) tableColumn,
-                            colIndex++,
-                            !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC)),
-                            false,
-                            length == null ? null : String.valueOf(length)));
-                }
-                idxName.append("_IDX"); //$NON-NLS-1$
-                index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
-
-                index.setName(idxName.toString());
-                index.setIndexType(editPage.getIndexType());
-                index.setUnique(editPage.isUnique());
-
-                return index;
+        return UITask.run(() -> {
+            MyEditIndexPage editPage = new MyEditIndexPage(parent);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+
+            StringBuilder idxName = new StringBuilder(64);
+            idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
+            int colIndex = 1;
+            for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
+                if (colIndex == 1) {
+                    idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
+                }
+                Integer length = (Integer) editPage.getAttributeProperty(tableColumn, MyEditIndexPage.PROP_LENGTH);
+                index.addColumn(
+                    new MySQLTableIndexColumn(
+                        index,
+                        (MySQLTableColumn) tableColumn,
+                        colIndex++,
+                        !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC)),
+                        false,
+                        length == null ? null : String.valueOf(length)));
+            }
+            idxName.append("_IDX"); //$NON-NLS-1$
+            index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
+
+            index.setName(idxName.toString());
+            index.setIndexType(editPage.getIndexType());
+            index.setUnique(editPage.isUnique());
+
+            return index;
+        });
     }
 
     private static class MyEditIndexPage extends EditIndexPage {
