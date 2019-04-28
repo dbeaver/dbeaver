@@ -126,12 +126,7 @@ public class SQLRuleManager extends RuleBasedScanner {
     public void refreshRules(@Nullable DBPDataSource dataSource, @Nullable IEditorInput editorInput)
     {
         SQLDialect dialect = syntaxManager.getDialect();
-        SQLRuleProvider ruleProvider = null;
-        if (dialect instanceof SQLRuleProvider) {
-            ruleProvider = (SQLRuleProvider) dialect;
-        } else {
-            ruleProvider = GeneralUtils.adapt(dialect, SQLRuleProvider.class);
-        }
+        SQLRuleProvider ruleProvider = GeneralUtils.adapt(dialect, SQLRuleProvider.class);
 
         boolean minimalRules = SQLEditorBase.isBigScript(editorInput);
 
