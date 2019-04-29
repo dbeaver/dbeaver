@@ -560,18 +560,18 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
+    public static DBDAttributeBindingMeta getAttributeBinding(DBSDataContainer dataContainer, @NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
     {
-        return new DBDAttributeBindingMeta(session, attributeMeta);
+        return new DBDAttributeBindingMeta(dataContainer, session, attributeMeta);
     }
 
-    public static List<DBDAttributeBinding> makeResultAttributeBindings(DBCResultSet resultSet) throws DBCException {
+    public static List<DBDAttributeBinding> makeResultAttributeBindings(DBSDataContainer dataContainer, DBCResultSet resultSet) throws DBCException {
         List<DBDAttributeBinding> metaColumns = new ArrayList<>();
         List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
         DBCSession session = resultSet.getSession();
         if (attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT) {
             DBCAttributeMetaData attributeMeta = attributes.get(0);
-            DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(session, attributeMeta);
+            DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(dataContainer, session, attributeMeta);
             try {
                 docBinding.lateBinding(session, Collections.emptyList());
             } catch (DBException e) {
@@ -599,7 +599,7 @@ public final class DBUtils {
         }
         if (metaColumns.isEmpty()) {
             for (DBCAttributeMetaData attribute : attributes) {
-                DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(session, attribute);
+                DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(dataContainer, session, attribute);
                 metaColumns.add(columnBinding);
             }
         }

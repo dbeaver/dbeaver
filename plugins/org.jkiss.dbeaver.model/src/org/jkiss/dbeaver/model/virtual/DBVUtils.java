@@ -31,15 +31,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Virtual model utils
  */
 public abstract class DBVUtils {
+
+    // Transform settings for unmapped attributes (custom queries, pseudo attributes, etc)
+    private static final Map<String, DBVTransformSettings> orphanTransformSettings = new HashMap<>();
 
     @Nullable
     public static DBVTransformSettings getTransformSettings(@NotNull DBDAttributeBinding binding, boolean create) {
@@ -51,6 +51,19 @@ public abstract class DBVUtils {
                 if (vAttr != null) {
                     return getTransformSettings(vAttr, create);
                 }
+            }
+        } else {
+            // Not an entity. Most likely a custom query. Use local cache for such attributes.
+            // There shouldn't be too many such settings as they are defined by user manually
+            // so we shouldn't eay too much memory for that
+            String attrKey = DBUtils.getObjectFullId(binding.getDataContainer()) + ":" + binding.getName();
+            synchronized (orphanTransformSettings) {
+                DBVTransformSettings settings = orphanTransformSettings.get(attrKey);
+                if (settings == null && create) {
+                    settings = new DBVTransformSettings();
+                    orphanTransformSettings.put(attrKey, settings);
+                }
+                return settings;
             }
         }
         return null;
@@ -102,18 +115,9 @@ public abstract class DBVUtils {
             return null;
         }
         boolean filtered = false;
-        DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
-        if (entityAttribute != null) {
-            DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), false);
-            if (vEntity != null) {
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
-                if (vAttr != null) {
-                    final DBVTransformSettings transformSettings = getTransformSettings(vAttr, false);
-                    if (transformSettings != null) {
-                        filtered = transformSettings.filterTransformers(tdList);
-                    }
-                }
-            }
+        final DBVTransformSettings transformSettings = getTransformSettings(binding, false);
+        if (transformSettings != null) {
+            filtered = transformSettings.filterTransformers(tdList);
         }
 
         if (!filtered) {
