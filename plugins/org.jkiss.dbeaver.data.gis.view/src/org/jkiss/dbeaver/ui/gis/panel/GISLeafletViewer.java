@@ -375,7 +375,7 @@ public class GISLeafletViewer {
                 String[] filterNames = new String[SUPPORTED_FORMATS.length];
                 for (int i = 0; i < SUPPORTED_FORMATS.length; i++) {
                     extensions[i] = "*." + SUPPORTED_FORMATS[i];
-                    filterNames[i] = SUPPORTED_FORMATS[i].toUpperCase();
+                    filterNames[i] = SUPPORTED_FORMATS[i].toUpperCase() + " (*." + SUPPORTED_FORMATS[i] + ")";
                 }
                 saveDialog.setFilterExtensions(extensions);
                 saveDialog.setFilterNames(filterNames);
@@ -386,9 +386,7 @@ public class GISLeafletViewer {
                 int imageType = SWT.IMAGE_BMP;
                 {
                     String filePathLower = filePath.toLowerCase();
-                    if (filePathLower.endsWith(".jpg")) {
-                        imageType = SWT.IMAGE_JPEG;
-                    } else if (filePathLower.endsWith(".png")) {
+                    if (filePathLower.endsWith(".png")) {
                         imageType = SWT.IMAGE_PNG;
                     } else if (filePathLower.endsWith(".gif")) {
                         imageType = SWT.IMAGE_GIF;
