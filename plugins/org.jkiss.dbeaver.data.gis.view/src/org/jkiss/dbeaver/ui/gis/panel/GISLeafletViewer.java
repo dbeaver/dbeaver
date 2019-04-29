@@ -26,6 +26,8 @@ import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
@@ -37,13 +39,11 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
@@ -64,6 +64,8 @@ public class GISLeafletViewer {
 
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
     private static final int MAX_RECENT_SRID_SIZE = 10;
+
+    private static final String[] SUPPORTED_FORMATS = new String[] { "png", "gif", "bmp" };
 
     private final IValueController valueController;
     private final Browser browser;
@@ -367,7 +369,32 @@ public class GISLeafletViewer {
         toolBarManager.add(new Action("Save as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
             @Override
             public void run() {
-/*
+                final Shell shell = browser.getShell();
+                FileDialog saveDialog = new FileDialog(shell, SWT.SAVE);
+                String[] extensions = new String[SUPPORTED_FORMATS.length];
+                String[] filterNames = new String[SUPPORTED_FORMATS.length];
+                for (int i = 0; i < SUPPORTED_FORMATS.length; i++) {
+                    extensions[i] = "*." + SUPPORTED_FORMATS[i];
+                    filterNames[i] = SUPPORTED_FORMATS[i].toUpperCase();
+                }
+                saveDialog.setFilterExtensions(extensions);
+                saveDialog.setFilterNames(filterNames);
+                String filePath = DialogUtils.openFileDialog(saveDialog);
+                if (filePath == null) {
+                    return;
+                }
+                int imageType = SWT.IMAGE_BMP;
+                {
+                    String filePathLower = filePath.toLowerCase();
+                    if (filePathLower.endsWith(".jpg")) {
+                        imageType = SWT.IMAGE_JPEG;
+                    } else if (filePathLower.endsWith(".png")) {
+                        imageType = SWT.IMAGE_PNG;
+                    } else if (filePathLower.endsWith(".gif")) {
+                        imageType = SWT.IMAGE_GIF;
+                    }
+                }
+
                 Image image = new Image(Display.getDefault(), browser.getBounds());
                 GC gc = new GC(image);
                 try {
@@ -375,10 +402,16 @@ public class GISLeafletViewer {
                 } finally {
                     gc.dispose();
                 }
-                ImageTransfer imageTransfer = ImageTransfer.getInstance();
-                Clipboard clipboard = new Clipboard(Display.getCurrent());
-                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
-*/
+                ImageLoader imageLoader = new ImageLoader();
+                imageLoader.data = new ImageData[1];
+                imageLoader.data[0] = image.getImageData();
+                File outFile = new File(filePath);
+                try (OutputStream fos = new FileOutputStream(outFile)) {
+                    imageLoader.save(fos, imageType);
+                } catch (IOException e) {
+                    DBWorkbench.getPlatformUI().showError("Image save error", "Error saving as picture", e);
+                }
+                UIUtils.launchProgram(outFile.getAbsolutePath());
             }
         });
 
