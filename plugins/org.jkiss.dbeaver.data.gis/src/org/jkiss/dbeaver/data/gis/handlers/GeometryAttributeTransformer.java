@@ -45,6 +45,7 @@ public class GeometryAttributeTransformer implements DBDAttributeTransformer {
     private static final Log log = Log.getLog(GeometryAttributeTransformer.class);
 
     private static final String PROP_SRID = "srid";
+    private static final String PROP_INVERT_COORDINATES = "invertCoordinates";
 
     public static final String GIS_TYPE_NAME = "GIS.Transformed";
 
@@ -57,7 +58,8 @@ public class GeometryAttributeTransformer implements DBDAttributeTransformer {
         if (srid == 0) {
             srid = GisConstants.DEFAULT_SRID;
         }
-        attribute.setTransformHandler(new GISValueHandler(attribute.getValueHandler(), srid));
+        boolean invertCoordinates = CommonUtils.toBoolean(options.get(PROP_INVERT_COORDINATES ));
+        attribute.setTransformHandler(new GISValueHandler(attribute.getValueHandler(), srid, invertCoordinates));
     }
 
     private class GISValueHandler extends ProxyValueHandler {
@@ -65,9 +67,11 @@ public class GeometryAttributeTransformer implements DBDAttributeTransformer {
 
         private final int srid;
 
-        public GISValueHandler(DBDValueHandler target, int srid) {
+        public GISValueHandler(DBDValueHandler target, int srid, boolean invertCoordinates) {
             super(target);
             this.realHandler = new GISGeometryValueHandler();
+            this.realHandler.setDefaultSRID(srid);
+            this.realHandler.setInvertCoordinates(invertCoordinates);
             this.srid = srid;
         }
 
