@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.gis;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import org.cts.CRSFactory;
 import org.cts.IllegalCoordinateException;
 import org.cts.crs.CRSException;
@@ -38,6 +36,8 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.ArrayList;
 import java.util.List;

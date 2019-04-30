@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKTReader;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,6 +29,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKTReader;
 
 import java.sql.SQLException;
 import java.sql.Types;

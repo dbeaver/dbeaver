@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.gis.panel;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -52,6 +51,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
 import java.util.ArrayList;
