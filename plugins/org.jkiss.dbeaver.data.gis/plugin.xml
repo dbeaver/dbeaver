@@ -2,4 +2,22 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <!-- Spatial transformer -->
+        <transformer
+            class="org.jkiss.dbeaver.data.gis.handlers.GeometryAttributeTransformer"
+            id="WKTAttributeTransformer"
+            name="Geometry"
+            description="Shows string or binary value as Geometry (spatial data type)"
+            applyByDefault="false"
+            custom="true">
+            <type kind="STRING"/>
+            <type kind="BINARY"/>
+            <propertyGroup label="Properties">
+                <property id="srid" label="SRID" type="string" description="CRS identifier" defaultValue="4326" required="false" validValues=""/>
+            </propertyGroup>
+        </transformer>
+
+    </extension>
+
 </plugin>

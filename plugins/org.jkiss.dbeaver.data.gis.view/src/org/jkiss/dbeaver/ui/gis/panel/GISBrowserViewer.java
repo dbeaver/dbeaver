@@ -21,9 +21,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.gis.GisTransformUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
@@ -76,8 +80,13 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
                 DBDAttributeBinding attr = selection.getElementAttribute(cell);
                 ResultSetRow row = selection.getElementRow(cell);
                 Object cellValue = resultSetController.getModel().getCellValue(attr, row);
-                if (cellValue instanceof DBGeometry) {
-                    DBGeometry geometry = (DBGeometry) cellValue;
+                DBGeometry geometry = GisTransformUtils.getGeometryValueFromObject(
+                    valueController.getDataController().getDataContainer(),
+                    valueController.getValueHandler(),
+                    valueController.getValueType(),
+                    cellValue);
+
+                if (geometry != null) {
                     geometries.add(geometry);
 
                     // Set properties
