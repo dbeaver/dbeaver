@@ -309,7 +309,9 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
     @Override
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerTop();
+            //if (!SQLServerUtils.isDriverAzure(getContainer().getDriver())) {
+                return new QueryTransformerTop();
+            //}
         }
         return super.createQueryTransformer(type);
     }
