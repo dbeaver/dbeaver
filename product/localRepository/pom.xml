@@ -55,9 +55,9 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:LATEST</id></artifact>
 
 								<!-- Batik -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.1</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id></artifact>
 								<!-- GraphQL -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:12.0.3</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 
