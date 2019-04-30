@@ -384,14 +384,13 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 action.run();
                 break;
             case CMD_NAVIGATE_LINK: {
-                final ResultSetRow row = rsv.getCurrentRow();
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-                if (row != null && attr != null) {
+                if (attr != null) {
                     new AbstractJob("Navigate association") {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
                             try {
-                                rsv.navigateAssociation(monitor, null, attr, row, false);
+                                rsv.navigateAssociation(monitor, null, attr, rsv.getSelection().getSelectedRows(), false);
                             } catch (DBException e) {
                                 return GeneralUtils.makeExceptionStatus(e);
                             }
