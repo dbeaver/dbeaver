@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.model.gis;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.utils.CommonUtils;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.Map;
 

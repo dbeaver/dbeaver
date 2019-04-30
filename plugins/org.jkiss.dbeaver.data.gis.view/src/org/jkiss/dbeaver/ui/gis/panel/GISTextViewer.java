@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.gis.panel;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
@@ -25,6 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * GisAttribute.

@@ -16,7 +16,8 @@
  */
 package org.jkiss.dbeaver.model.gis;
 
-import com.vividsolutions.jts.geom.Geometry;
+
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * GisTransformRequest
