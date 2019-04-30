@@ -34,6 +34,7 @@ import java.sql.SQLException;
  */
 public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
 
+    private int defaultSRID;
     private boolean invertCoordinates;
 
     public GISGeometryValueHandler() {
@@ -41,6 +42,22 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     public GISGeometryValueHandler(boolean invertCoordinates) {
+        this.invertCoordinates = invertCoordinates;
+    }
+
+    public int getDefaultSRID() {
+        return defaultSRID;
+    }
+
+    public void setDefaultSRID(int defaultSRID) {
+        this.defaultSRID = defaultSRID;
+    }
+
+    public boolean isInvertCoordinates() {
+        return invertCoordinates;
+    }
+
+    public void setInvertCoordinates(boolean invertCoordinates) {
         this.invertCoordinates = invertCoordinates;
     }
 
@@ -73,25 +90,30 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     @NotNull
     @Override
     public DBGeometry getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+        DBGeometry geometry;
         if (object == null) {
-            return new DBGeometry();
+            geometry = new DBGeometry();
         } else if (object instanceof Geometry) {
-            return new DBGeometry((Geometry)object);
+            geometry = new DBGeometry((Geometry)object);
         } else if (object instanceof byte[]) {
-            Geometry geometry = GeometryConverter.getInstance().from((byte[]) object);
+            Geometry jtsGeometry = GeometryConverter.getInstance().from((byte[]) object);
             if (invertCoordinates) {
-                geometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
             }
-            return new DBGeometry(geometry);
+            geometry = new DBGeometry(jtsGeometry);
         } else if (object instanceof String) {
-            Geometry geometry = GeometryConverter.getInstance().from((String) object);
+            Geometry jtsGeometry = GeometryConverter.getInstance().from((String) object);
             if (invertCoordinates) {
-                geometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
             }
-            return new DBGeometry(geometry);
+            geometry = new DBGeometry(jtsGeometry);
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
         }
+        if (geometry.getSRID() == 0) {
+            geometry.setSRID(defaultSRID);
+        }
+        return geometry;
     }
 
     protected byte[] fetchBytes(JDBCResultSet resultSet, int index) throws SQLException {
