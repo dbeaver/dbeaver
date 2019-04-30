@@ -495,7 +495,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
+    public void setObjectDefinitionText(String sourceText)
     {
         body = sourceText;
     }
