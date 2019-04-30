@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
+import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
 
@@ -50,9 +52,9 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             return getValueFromObject(session, type, object,false);
         } catch (SQLException e) {
             if (e.getCause() instanceof IllegalArgumentException) {
-                // Try to parse as WKB
+                // Try to parse as WKG
                 String wkbValue = resultSet.getString(index);
-                return makeGeometryFromWKB(session, wkbValue);
+                return WKGUtils.parseWKB(wkbValue);
             } else {
                 throw e;
             }
