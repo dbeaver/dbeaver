@@ -45,6 +45,11 @@ public class DBGeometry implements DBDValue {
         this.srid = rawValue == null ? 0 : rawValue.getSRID();
     }
 
+    public DBGeometry(Object rawValue, int srid) {
+        this.rawValue = rawValue;
+        this.srid = srid;
+    }
+
     public Geometry getGeometry() {
         return rawValue instanceof Geometry ? (Geometry) rawValue : null;
     }
