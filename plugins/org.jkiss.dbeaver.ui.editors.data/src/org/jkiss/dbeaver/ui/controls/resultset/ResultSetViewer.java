@@ -2052,11 +2052,7 @@ public class ResultSetViewer extends Viewer
     }
 
     void showReferencesMenu(boolean openInNewWindow) {
-        ResultSetRow currentRow = getCurrentRow();
-        if (currentRow == null || currentRow.getRowNumber() < 0) {
-            return;
-        }
-        MenuManager menuManager = createRefTablesMenu(currentRow, openInNewWindow);
+        MenuManager menuManager = createRefTablesMenu(openInNewWindow);
         if (menuManager != null) {
             showContextMenuAtCursor(menuManager);
             viewerPanel.addDisposeListener(e -> menuManager.dispose());
@@ -2252,7 +2248,7 @@ public class ResultSetViewer extends Viewer
                 }
                 if (model.isSingleSource()) {
                     // Add menu for referencing tables
-                    MenuManager refTablesMenu = createRefTablesMenu(row, false);
+                    MenuManager refTablesMenu = createRefTablesMenu(false);
                     if (refTablesMenu != null) {
                         navigateMenu.add(refTablesMenu);
                         hasNavTables = true;
@@ -2364,7 +2360,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Nullable
-    private MenuManager createRefTablesMenu(ResultSetRow row, boolean openInNewWindow) {
+    private MenuManager createRefTablesMenu(boolean openInNewWindow) {
         DBSEntity singleSource = model.getSingleSource();
         if (singleSource == null) {
             return null;
@@ -2374,7 +2370,8 @@ public class ResultSetViewer extends Viewer
         MenuManager refTablesMenu = new MenuManager(menuName, null, "ref-tables");
         refTablesMenu.setActionDefinitionId(ResultSetHandlerMain.CMD_REFERENCES_MENU);
         refTablesMenu.add(ResultSetReferenceMenu.NOREFS_ACTION);
-        refTablesMenu.addMenuListener(manager -> ResultSetReferenceMenu.fillRefTablesActions(this, row, singleSource, manager, openInNewWindow));
+        refTablesMenu.addMenuListener(manager ->
+            ResultSetReferenceMenu.fillRefTablesActions(this, getSelection().getSelectedRows(), singleSource, manager, openInNewWindow));
 
         return refTablesMenu;
     }
@@ -2561,7 +2558,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityAssociation association, @Nullable DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
+    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityAssociation association, @Nullable DBDAttributeBinding attr, @NotNull List<ResultSetRow> rows, boolean newWindow)
         throws DBException
     {
         if (!confirmProceed()) {
@@ -2629,9 +2626,7 @@ public class ResultSetViewer extends Viewer
             constraint.setVisible(true);
             constraints.add(constraint);
 
-            Object keyValue = model.getCellValue(ownBinding, row);
-            constraint.setOperator(DBCLogicalOperator.EQUALS);
-            constraint.setValue(keyValue);
+            createFilterConstraint(rows, ownBinding, constraint);
         }
         // Save cur data filter in state
         curState.filter = new DBDDataFilter(model.getDataFilter());
@@ -2639,7 +2634,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull ResultSetRow row, boolean newWindow)
+    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
         throws DBException
     {
         if (!confirmProceed()) {
@@ -2691,12 +2686,26 @@ public class ResultSetViewer extends Viewer
                 constraint.setVisible(true);
                 constraints.add(constraint);
 
-                Object keyValue = model.getCellValue(attrBinding, row);
-                constraint.setOperator(DBCLogicalOperator.EQUALS);
-                constraint.setValue(keyValue);
+                createFilterConstraint(rows, attrBinding, constraint);
+
             }
         }
         navigateEntity(monitor, newWindow, targetEntity, constraints);
+    }
+
+    private void createFilterConstraint(@NotNull List<ResultSetRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
+        if (rows.size() == 1) {
+            Object keyValue = model.getCellValue(attrBinding, rows.get(0));
+            constraint.setOperator(DBCLogicalOperator.EQUALS);
+            constraint.setValue(keyValue);
+        } else {
+            Object[] keyValues = new Object[rows.size()];
+            for (int k = 0; k < rows.size(); k++) {
+                keyValues[k] = model.getCellValue(attrBinding, rows.get(k));
+            }
+            constraint.setOperator(DBCLogicalOperator.IN);
+            constraint.setValue(keyValues);
+        }
     }
 
     private void navigateEntity(@NotNull DBRProgressMonitor monitor, boolean newWindow, DBSEntity targetEntity, List<DBDAttributeConstraint> constraints) {

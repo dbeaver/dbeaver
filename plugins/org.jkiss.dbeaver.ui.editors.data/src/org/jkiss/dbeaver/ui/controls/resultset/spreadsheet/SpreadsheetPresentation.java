@@ -1009,7 +1009,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
                         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
-                        controller.navigateAssociation(monitor, null, attr, row, ctrlPressed);
+                        controller.navigateAssociation(monitor, null, attr, Collections.singletonList(row), ctrlPressed);
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
