@@ -26,8 +26,10 @@ import org.cts.op.CoordinateOperation;
 import org.cts.op.CoordinateOperationException;
 import org.cts.op.CoordinateOperationFactory;
 import org.cts.registry.*;
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -198,6 +200,13 @@ public class GisTransformUtils {
             log.debug("Error trandforming geometry value", e);
         }
 
+        return null;
+    }
+
+    public static SpatialDataProvider getSpatialDataProvider(DBPDataSource dataSource) {
+        if (dataSource instanceof IAdaptable) {
+            return ((IAdaptable) dataSource).getAdapter(SpatialDataProvider.class);
+        }
         return null;
     }
 }

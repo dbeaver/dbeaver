@@ -57,7 +57,10 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
     @Override
     protected Browser createControl(Composite editPlaceholder)
     {
-        leafletViewer = new GISLeafletViewer(editPlaceholder, valueController);
+        leafletViewer = new GISLeafletViewer(
+            editPlaceholder,
+            valueController,
+            GisTransformUtils.getSpatialDataProvider(valueController.getExecutionContext().getDataSource()));
         return leafletViewer.getBrowser();
     }
 

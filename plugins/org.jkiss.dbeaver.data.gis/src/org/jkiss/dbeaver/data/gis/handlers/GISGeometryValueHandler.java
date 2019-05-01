@@ -45,16 +45,16 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         this.invertCoordinates = invertCoordinates;
     }
 
+    public boolean isFlipCoordinates() {
+        return invertCoordinates;
+    }
+
     public int getDefaultSRID() {
         return defaultSRID;
     }
 
     public void setDefaultSRID(int defaultSRID) {
         this.defaultSRID = defaultSRID;
-    }
-
-    public boolean isInvertCoordinates() {
-        return invertCoordinates;
     }
 
     public void setInvertCoordinates(boolean invertCoordinates) {
@@ -97,9 +97,9 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             geometry = new DBGeometry((Geometry)object);
         } else if (object instanceof byte[]) {
             Geometry jtsGeometry = GeometryConverter.getInstance().from((byte[]) object);
-            if (invertCoordinates) {
-                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
-            }
+//            if (invertCoordinates) {
+//                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+//            }
             geometry = new DBGeometry(jtsGeometry);
         } else if (object instanceof String) {
             Geometry jtsGeometry = GeometryConverter.getInstance().from((String) object);
