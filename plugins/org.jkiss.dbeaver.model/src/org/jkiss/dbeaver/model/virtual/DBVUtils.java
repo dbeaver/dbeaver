@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
@@ -38,35 +39,42 @@ import java.util.*;
  */
 public abstract class DBVUtils {
 
-    // Transform settings for unmapped attributes (custom queries, pseudo attributes, etc)
-    private static final Map<String, DBVTransformSettings> orphanTransformSettings = new HashMap<>();
+    // Entities for unmapped attributes (custom queries, pseudo attributes, etc)
+    private static final Map<String, DBVEntity> orphanVirtualEntities = new HashMap<>();
 
     @Nullable
     public static DBVTransformSettings getTransformSettings(@NotNull DBDAttributeBinding binding, boolean create) {
-        DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
-        if (entityAttribute != null) {
-            DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), create);
-            if (vEntity != null) {
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, create);
-                if (vAttr != null) {
-                    return getTransformSettings(vAttr, create);
-                }
+        DBVEntity vEntity = getVirtualEntity(binding, create);
+        if (vEntity != null) {
+            DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, create);
+            if (vAttr != null) {
+                return getTransformSettings(vAttr, create);
             }
+        }
+        return null;
+    }
+
+    public static DBVEntity getVirtualEntity(@NotNull DBDAttributeBinding binding, boolean create) {
+        DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
+        DBVEntity vEntity;
+        if (entityAttribute != null) {
+            vEntity = findVirtualEntity(entityAttribute.getParentObject(), create);
         } else {
             // Not an entity. Most likely a custom query. Use local cache for such attributes.
             // There shouldn't be too many such settings as they are defined by user manually
             // so we shouldn't eay too much memory for that
-            String attrKey = DBUtils.getObjectFullId(binding.getDataContainer()) + ":" + binding.getName();
-            synchronized (orphanTransformSettings) {
-                DBVTransformSettings settings = orphanTransformSettings.get(attrKey);
-                if (settings == null && create) {
-                    settings = new DBVTransformSettings();
-                    orphanTransformSettings.put(attrKey, settings);
+            String attrKey = DBUtils.getObjectFullId(binding.getDataContainer());
+            synchronized (orphanVirtualEntities) {
+                vEntity = orphanVirtualEntities.get(attrKey);
+                if (vEntity == null && create) {
+                    vEntity = new DBVEntity(
+                        binding.getDataContainer().getDataSource().getContainer().getVirtualModel(),
+                        binding.getDataContainer().getName(), "");
+                    orphanVirtualEntities.put(attrKey, vEntity);
                 }
-                return settings;
             }
         }
-        return null;
+        return vEntity;
     }
 
     @Nullable
