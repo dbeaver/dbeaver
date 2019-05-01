@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -84,10 +84,14 @@ public class ToolDescriptor extends AbstractContextDescriptor {
         return super.adaptType(object);
     }
 
-    public IExternalTool createTool()
+    public IUserInterfaceTool createTool()
         throws DBException
     {
-        return toolType.createInstance(IExternalTool.class);
+        return toolType.createInstance(IUserInterfaceTool.class);
     }
 
+    @Override
+    public String toString() {
+        return id + " (" + label + ")";
+    }
 }

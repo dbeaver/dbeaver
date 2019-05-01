@@ -22,7 +22,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 
 import java.util.Collection;
 
@@ -31,7 +31,7 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2ToolShowError implements IExternalTool {
+public class DB2ToolShowError implements IUserInterfaceTool {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {

@@ -26,14 +26,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerObject;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger;
-import org.jkiss.dbeaver.ext.mssql.ui.tools.maintenance.TableToolDialog;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.utils.CommonUtils;
 
-public class SQLServerToolRebuild implements IExternalTool {
+public class SQLServerToolRebuild implements IUserInterfaceTool {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects)
             throws DBException {

@@ -523,7 +523,7 @@
                 <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
-                <separator name="sql-tools" visible="true"/>
+                <separator name="connection-tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
@@ -648,38 +648,7 @@
 
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
-            <command commandId="org.jkiss.dbeaver.core.connect">
-               <visibleWhen>
-                   <with variable="selection">
-                       <count value="1"/>
-                       <iterate operator="and">
-                           <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                       </iterate>
-                   </with>
-               </visibleWhen>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.invalidate">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.disconnect">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
-
-            <separator name="navigator_commands" visible="true"/>
+            <separator name="sql-tools" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
                 <visibleWhen>
@@ -706,7 +675,7 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <separator name="create" visible="false"/>
+            <separator name="create" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
@@ -755,6 +724,40 @@
             <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
                 <visibleWhen checkEnabled="true"/>
             </command>
+
+            <separator name="connection-tools" visible="true"/>
+
+            <command commandId="org.jkiss.dbeaver.core.connect">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.invalidate">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.disconnect">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+
         </menuContribution>
 
         <!-- Additions end - Copy/Paste/etc -->

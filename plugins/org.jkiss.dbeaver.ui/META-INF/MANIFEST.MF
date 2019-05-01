@@ -22,7 +22,8 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.internal,
  org.jkiss.dbeaver.ui.notifications,
  org.jkiss.dbeaver.ui.preferences,
- org.jkiss.dbeaver.ui.properties
+ org.jkiss.dbeaver.ui.properties,
+ org.jkiss.dbeaver.ui.tools
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.resources,

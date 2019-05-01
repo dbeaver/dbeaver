@@ -25,11 +25,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
@@ -38,7 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class PostgreToolTriggerToggle implements IExternalTool {
+public abstract class PostgreToolTriggerToggle implements IUserInterfaceTool {
 
     private boolean isEnable;
 

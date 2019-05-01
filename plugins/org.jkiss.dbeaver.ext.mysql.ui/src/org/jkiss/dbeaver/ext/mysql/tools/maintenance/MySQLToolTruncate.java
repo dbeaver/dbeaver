@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Table truncate
  */
-public class MySQLToolTruncate implements IExternalTool
+public class MySQLToolTruncate implements IUserInterfaceTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException

@@ -43,7 +43,8 @@ public class DashboardMapQueryDescriptor extends AbstractContextDescriptor imple
         super(config);
 
         this.id = config.getAttribute("id");
-        this.queryText = config.getValue();
+        // FIXME: use getValueAsIs because getValue fails in multi-language environment
+        this.queryText = config.getValueAsIs();
         this.updatePeriod = CommonUtils.toInt(config.getAttribute("updatePeriod"), DashboardConstants.DEF_DASHBOARD_UPDATE_PERIOD);
     }
 
