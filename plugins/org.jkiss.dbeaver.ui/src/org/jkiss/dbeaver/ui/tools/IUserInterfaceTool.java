@@ -14,28 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.tools;
+
+package org.jkiss.dbeaver.ui.tools;
 
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
-import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 
 import java.util.Collection;
 
 /**
- * Database export
+ * Database external user interface utility.
+ * Usually utilizes external native software to perform specific database tasks.
  */
-public class PostgreToolBackup implements IUserInterfaceTool
-{
-    @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
-    {
-        ToolWizardDialog dialog = new ToolWizardDialog(
-            window,
-            new PostgreBackupWizard(objects));
-        dialog.open();
-    }
+public interface IUserInterfaceTool {
+
+    void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects)
+        throws DBException;
+
 }
