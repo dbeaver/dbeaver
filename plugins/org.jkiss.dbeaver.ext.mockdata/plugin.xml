@@ -30,6 +30,7 @@
                     description="Mock Data"
                     id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
                     label="%command.mockdata.name"
+                    icon="icons/mock_data.png"
                     singleton="false">
 
                 <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator" forceCheck="true"/>
