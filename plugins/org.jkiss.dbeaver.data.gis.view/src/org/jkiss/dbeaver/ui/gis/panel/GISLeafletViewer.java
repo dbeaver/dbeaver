@@ -78,6 +78,7 @@ public class GISLeafletViewer {
     private List<Integer> recentSRIDs = new ArrayList<>();
 
     private boolean toolsVisible = true;
+    private boolean flipCoordinates = false;
     private final Composite composite;
 
     public GISLeafletViewer(Composite parent, IValueController valueController) {
@@ -195,6 +196,13 @@ public class GISLeafletViewer {
         boolean showMap = false;
         for (int i = 0; i < values.length; i++) {
             DBGeometry value = values[i];
+            if (flipCoordinates) {
+                try {
+                    value = value.flipCoordinates();
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
             Object targetValue = value.getRawValue();
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
             if (srid == 0) {
@@ -425,8 +433,33 @@ public class GISLeafletViewer {
             }
         });
 
+        toolBarManager.add(new Separator());
+
         Action crsSelectorAction = new ChangeCRSAction();
         toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
+
+        toolBarManager.add(new Action("Flip coordinates", Action.AS_CHECK_BOX) {
+            {
+                setToolTipText("Flip latitude/longitude coordinates in source data");
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.LINK_TO_EDITOR));
+            }
+
+            @Override
+            public boolean isChecked() {
+                return flipCoordinates;
+            }
+
+            @Override
+            public void run() {
+                flipCoordinates = !flipCoordinates;
+                try {
+                    reloadGeometryData(lastValue, true);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Render error", "Error rendering geometry", e);
+                }
+                updateToolbar();
+            }
+        });
 
         toolBarManager.add(new Separator());
 
