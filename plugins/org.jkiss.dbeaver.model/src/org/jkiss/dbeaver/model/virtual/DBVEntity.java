@@ -124,7 +124,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @Override
     public DBPDataSource getDataSource()
     {
-        return container.getDataSource();
+        return container == null ? null : container.getDataSource();
     }
 
     public void setDescription(String description)
@@ -464,4 +464,10 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return name;
     }
 
+    public void persistConfiguration() {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            dataSource.getContainer().persistConfiguration();
+        }
+    }
 }

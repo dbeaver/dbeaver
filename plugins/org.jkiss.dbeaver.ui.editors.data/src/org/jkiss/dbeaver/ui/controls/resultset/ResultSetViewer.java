@@ -2208,7 +2208,7 @@ public class ResultSetViewer extends Viewer
                 }
                 viewMenu.add(new TransformComplexTypesToggleAction());
                 viewMenu.add(new ColorizeDataTypesToggleAction());
-                if (getModel().isSingleSource()) {
+                {
                     if (valueController != null) {
                         viewMenu.add(new SetRowColorAction(attr, valueController.getValue()));
                         if (getModel().hasColorMapping(attr)) {
@@ -4132,19 +4132,13 @@ public class ResultSetViewer extends Viewer
         DBVEntity getVirtualEntity(DBDAttributeBinding binding)
             throws IllegalStateException
         {
-            final DBSEntity entity = getModel().getSingleSource();
-            if (entity == null) {
-                throw new IllegalStateException("No virtual entity for multi-source query");
-            }
-            final DBVEntity vEntity = DBVUtils.findVirtualEntity(entity, true);
-            assert vEntity != null;
-            return vEntity;
+            return DBVUtils.getVirtualEntity(binding, true);
         }
 
         void updateColors(DBVEntity entity) {
             model.updateColorMapping();
             redrawData(false, false);
-            entity.getDataSource().getContainer().persistConfiguration();
+            entity.persistConfiguration();
         }
     }
 

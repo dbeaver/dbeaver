@@ -580,20 +580,36 @@ public class ResultSetModel {
 
     void updateColorMapping() {
         colorMapping.clear();
+
         DBSEntity entity = getSingleSource();
-        if (entity == null) {
-            return;
-        }
-        DBVEntity virtualEntity = DBVUtils.findVirtualEntity(entity, false);
-        if (virtualEntity != null) {
-            List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-            if (!CommonUtils.isEmpty(coList)) {
-                for (DBVColorOverride co : coList) {
-                    DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
-                    if (binding != null) {
-                        List<AttributeColorSettings> cmList =
-                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
-                        cmList.add(new AttributeColorSettings(co));
+        if (entity != null) {
+            DBVEntity virtualEntity = DBVUtils.findVirtualEntity(entity, false);
+            if (virtualEntity != null) {
+                List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
+                if (!CommonUtils.isEmpty(coList)) {
+                    for (DBVColorOverride co : coList) {
+                        DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
+                        if (binding != null) {
+                            List<AttributeColorSettings> cmList =
+                                colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
+                            cmList.add(new AttributeColorSettings(co));
+                        }
+                    }
+                }
+            }
+        } else {
+            for (DBDAttributeBinding attr : attributes) {
+                DBVEntity virtualEntity = DBVUtils.getVirtualEntity(attr, false);
+                if (virtualEntity != null) {
+                    List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
+                    if (!CommonUtils.isEmpty(coList)) {
+                        for (DBVColorOverride co : coList) {
+                            if (CommonUtils.equalObjects(attr.getName(), co.getAttributeName())) {
+                                List<AttributeColorSettings> cmList =
+                                    colorMapping.computeIfAbsent(attr, k -> new ArrayList<>());
+                                cmList.add(new AttributeColorSettings(co));
+                            }
+                        }
                     }
                 }
             }
