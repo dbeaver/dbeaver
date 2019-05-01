@@ -226,6 +226,9 @@ public class UIIcon {
     public static final DBIcon CHART_LINE = new DBIcon("chart_line", "chart/chart_line.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CHART_PIE = new DBIcon("chart_pie", "chart/chart_pie.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon NOTIFICATION_CLOSE = new DBIcon("misc/notifications/notification-close.gif"); //$NON-NLS-1$
+    public static final DBIcon NOTIFICATION_CLOSE_HOVER = new DBIcon("misc/notifications/notification-close-active.gif"); //$NON-NLS-1$
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }
