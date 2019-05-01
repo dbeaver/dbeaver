@@ -75,19 +75,19 @@ public class DBeaverStackRenderer extends StackRenderer {
     
         if (inputFile != null) {
             {
+                String deleteText = ActionUtils.findCommandName(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
+                String shortcut = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite(), true);//$NON-NLS-1$
+                if (shortcut != null) {
+                    deleteText += "\t" + shortcut;
+                }
+
 		        MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
-		        menuItemDelete.setText(CoreMessages.editor_file_delete_this_script);
+		        menuItemDelete.setText(deleteText);
 		        menuItemDelete.addSelectionListener(new SelectionAdapter() {
 			        @Override
 			        public void widgetSelected(SelectionEvent e) {
-			           if (UIUtils.confirmAction(CoreMessages.editor_file_delete_confirm_delete_title, NLS.bind(CoreMessages.editor_file_delete_confirm_delete_text, inputFile.getName()))) {			      //$NON-NLS-3$
-			        	   try {
-			        		   inputFile.delete(true, true, new NullProgressMonitor());
-			        	   } catch (CoreException e1) {
-			        		   DBWorkbench.getPlatformUI().showError(CoreMessages.editor_file_delete_error_title, NLS.bind(CoreMessages.editor_file_delete_error_text, inputFile.getName(), e1));
-						   }
-			           }
-			        } 
+			            ActionUtils.runCommand(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite());
+			        }
 			    });
             }
             
