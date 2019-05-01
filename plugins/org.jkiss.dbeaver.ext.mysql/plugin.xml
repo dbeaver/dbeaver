@@ -142,22 +142,6 @@
             </tree>
             <drivers managable="true">
                 <driver
-                        id="mysql3"
-                        label="MySQL 3.x"
-                        icon="icons/mysql_icon.png"
-                        iconBig="icons/mysql_icon_big.png"
-                        class="com.mysql.jdbc.Driver"
-                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                        defaultPort="3306"
-                        webURL="http://www.mysql.com/products/connector/"
-                        description="Driver for MySQL 3.x and earlier"
-                        categories="sql">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE" bundle="!drivers.mysql"/>
-                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
-                    <replace provider="generic" driver="mysql3"/>
-                </driver>
-                <driver
                         id="mysql5"
                         label="MySQL"
                         icon="icons/mysql_icon.png"
@@ -170,6 +154,9 @@
                         propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 4.x+"
                         categories="sql">
+                    <replace provider="generic" driver="mysql3"/>
+                    <replace provider="mysql" driver="mysql3"/>
+
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
