@@ -45,7 +45,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
     public static final String SQLD_CONFIG_FILE = "connections.xml";
 
     public static final String SQLD_SYSCONFIG_FOLDER = "system";
-    public static final String SQLD_CONNECTIONS_FOLDER = "o.jdeveloper.db.connection.";
+    public static final String SQLD_CONNECTIONS_FOLDER = "o.jdeveloper.db.connection";
 
     private final ImportDriverInfo oraDriver;
 
