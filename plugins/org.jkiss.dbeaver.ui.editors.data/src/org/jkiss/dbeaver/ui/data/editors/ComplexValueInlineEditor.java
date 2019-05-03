@@ -43,7 +43,7 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        editor.setModel(controller.getExecutionContext(), (DBDComplexValue) value);
+        editor.setModel(controller.getExecutionContext(), value);
     }
 
     @Override
