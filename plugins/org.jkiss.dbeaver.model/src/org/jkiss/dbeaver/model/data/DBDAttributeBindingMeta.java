@@ -213,7 +213,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     public boolean setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute, boolean updateHandler) {
         this.entityAttribute = entityAttribute;
         if (updateHandler && entityAttribute != null && !haveEqualsTypes(metaAttribute, entityAttribute)) {
-            valueHandler = DBUtils.findValueHandler(getDataSource(), entityAttribute);
+            DBDValueHandler newValueHandler = DBUtils.findValueHandler(getDataSource(), entityAttribute);
+            if (newValueHandler != getDataSource().getContainer().getDefaultValueHandler()) {
+                // Change value handler only if it ws real
+                valueHandler = newValueHandler;
+            }
             return true;
         }
         return false;
