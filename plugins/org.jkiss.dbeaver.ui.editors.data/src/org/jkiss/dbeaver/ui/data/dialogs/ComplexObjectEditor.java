@@ -64,6 +64,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -80,6 +81,10 @@ public class ComplexObjectEditor extends TreeViewer {
         Object value;
     }
 
+    private interface ComplexElementWrapper {
+        Object getValue();
+    }
+
     private static class CompositeField extends ComplexElement {
         final DBSAttributeBase attribute;
         DBDValueHandler valueHandler;
@@ -89,16 +94,6 @@ public class ComplexObjectEditor extends TreeViewer {
             this.attribute = attribute;
             this.value = value;
             this.valueHandler = DBUtils.findValueHandler(dataSource, attribute);
-        }
-    }
-
-    private static class MapEntry extends ComplexElement {
-        String name;
-        Object value;
-
-        public MapEntry(String name, Object value) {
-            this.name = name;
-            this.value = value;
         }
     }
 
@@ -116,6 +111,36 @@ public class ComplexObjectEditor extends TreeViewer {
             this.array = array;
             this.index = index;
             this.value = value;
+        }
+    }
+
+    private static class MapEntry extends ComplexElement implements ComplexElementWrapper {
+        String name;
+        Object value;
+
+        public MapEntry(String name, Object value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
+        }
+    }
+
+    private static class CollItem extends ComplexElement implements ComplexElementWrapper {
+        int index;
+        Object value;
+
+        public CollItem(int index, Object value) {
+            this.index = index;
+            this.value = value;
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
         }
     }
 
@@ -370,6 +395,8 @@ public class ComplexObjectEditor extends TreeViewer {
             return getValueText(item.array.valueHandler, item.array.componentType, item.value, format);
         } else if (obj instanceof MapEntry) {
             return columnIndex == 0 ? ((MapEntry) obj).name : CommonUtils.toString(((MapEntry) obj).value);
+        } else if (obj instanceof CollItem) {
+            return columnIndex == 0 ? String.valueOf(((CollItem) obj).index) : CommonUtils.toString(((CollItem) obj).value);
         }
         return String.valueOf(columnIndex);
     }
@@ -479,6 +506,9 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public IValueManager getValueManager() {
             DBSTypedObject valueType = getValueType();
+            if (valueType == null) {
+                return null;
+            }
             return ValueManagerRegistry.findValueManager(
                 getExecutionContext().getDataSource(),
                 valueType,
@@ -568,6 +598,11 @@ public class ComplexObjectEditor extends TreeViewer {
                 return children;
             }
 
+            // Unwrap complex items
+            if (parent instanceof ComplexElementWrapper) {
+                parent = ((ComplexElementWrapper) parent).getValue();
+            }
+
             if (parent instanceof DBDComposite) {
                 DBDComposite structure = (DBDComposite)parent;
                 try {
@@ -623,6 +658,13 @@ public class ComplexObjectEditor extends TreeViewer {
                     Map.Entry<?, ?> entry = entries.next();
                     children[i] = new MapEntry(CommonUtils.toString(entry.getKey()), entry.getValue());
                 }
+            } else if (parent instanceof Collection) {
+                Collection coll = (Collection)parent;
+                children = new CollItem[coll.size()];
+                Iterator iterator = coll.iterator();
+                for (int i = 0; i < children.length; i++) {
+                    children[i] = new CollItem(i, iterator.next());
+                }
             }
             if (children != null) {
                 childrenMap.put(parent, children);
@@ -637,13 +679,18 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public boolean hasChildren(Object parent)
         {
+            if (parent instanceof ComplexElementWrapper) {
+                parent = ((ComplexElementWrapper) parent).getValue();
+            }
+
             return
                 parent instanceof DBDComposite ||
                 parent instanceof DBDCollection ||
                 parent instanceof DBDReference ||
                 (parent instanceof CompositeField && hasChildren(((CompositeField) parent).value)) ||
                 (parent instanceof ArrayItem && hasChildren(((ArrayItem) parent).value)) ||
-                (parent instanceof Map && !(((Map) parent).isEmpty()));
+                (parent instanceof Map && !(((Map) parent).isEmpty())) ||
+                (parent instanceof Collection && !(((Collection) parent).isEmpty()));
         }
     }
 
