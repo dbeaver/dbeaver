@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -367,15 +368,18 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         }
 
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_FULL)) {
-            // Show DDL for all schema objects
+            // Show DDL for all schema objects (do not include CREATE EXTENSION)
+/*
             Collection<PostgreExtension> extensions = getExtensions(monitor);
             for (PostgreExtension ext : extensions) {
                 addDDLLine(sql, ext.getObjectDefinitionText(monitor, options));
             }
+*/
             for (PostgreDataType dataType : getDataTypes(monitor)) {
                 addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
             }
             for (PostgreTableBase tableOrView : getTableCache().getAllObjects(monitor, this)) {
+/*
                 PostgreExtension tableExt = null;
                 for (PostgreExtension ext : extensions) {
                     if (ext.isExtensionTable(tableOrView)) {
@@ -387,7 +391,9 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                     // Do not add extension tables
                     continue;
                 }
-                addDDLLine(sql, tableOrView.getObjectDefinitionText(monitor, options));
+*/
+                addDDLLine(sql,
+                    JDBCUtils.generateTableDDL(monitor, tableOrView, options, false));
             }
             for (PostgreProcedure procedure : getProcedures(monitor)) {
                 addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
