@@ -331,7 +331,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     //@Property
     @Association
-    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         List<PostgreDataType> types = new ArrayList<>();
         for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
             if (dt.getParentObject() == this) {
@@ -365,7 +365,45 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             sql.append("\nCOMMENT ON SCHEMA ").append(DBUtils.getQuotedIdentifier(this))
                 .append(" IS ").append(SQLUtils.quoteString(this, getDescription()));
         }
+
+        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_FULL)) {
+            // Show DDL for all schema objects
+            Collection<PostgreExtension> extensions = getExtensions(monitor);
+            for (PostgreExtension ext : extensions) {
+                addDDLLine(sql, ext.getObjectDefinitionText(monitor, options));
+            }
+            for (PostgreDataType dataType : getDataTypes(monitor)) {
+                addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
+            }
+            for (PostgreTableBase tableOrView : getTableCache().getAllObjects(monitor, this)) {
+                PostgreExtension tableExt = null;
+                for (PostgreExtension ext : extensions) {
+                    if (ext.isExtensionTable(tableOrView)) {
+                        tableExt = ext;
+                        break;
+                    }
+                }
+                if (tableExt != null) {
+                    // Do not add extension tables
+                    continue;
+                }
+                addDDLLine(sql, tableOrView.getObjectDefinitionText(monitor, options));
+            }
+            for (PostgreProcedure procedure : getProcedures(monitor)) {
+                addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
+            }
+//            for (PostgreAggregate procedure : getAggregateFunctions(monitor)) {
+//                addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
+//            }
+        }
+
         return sql.toString();
+    }
+
+    private void addDDLLine(StringBuilder sql, String ddl) {
+        if (!CommonUtils.isEmpty(ddl)) {
+            sql.append("\n").append(ddl);
+        }
     }
 
     @Override
