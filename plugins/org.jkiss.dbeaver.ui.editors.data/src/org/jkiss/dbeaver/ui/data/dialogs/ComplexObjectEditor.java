@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.data.dialogs;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
@@ -41,7 +44,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
+import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -62,6 +65,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -85,6 +89,16 @@ public class ComplexObjectEditor extends TreeViewer {
             this.attribute = attribute;
             this.value = value;
             this.valueHandler = DBUtils.findValueHandler(dataSource, attribute);
+        }
+    }
+
+    private static class MapEntry extends ComplexElement {
+        String name;
+        Object value;
+
+        public MapEntry(String name, Object value) {
+            this.name = name;
+            this.value = value;
         }
     }
 
@@ -266,12 +280,7 @@ public class ComplexObjectEditor extends TreeViewer {
         control.addDisposeListener(e -> menuMgr.dispose());
     }
 
-    @Override
-    public DBDComplexValue getInput() {
-        return (DBDComplexValue)super.getInput();
-    }
-
-    public void setModel(DBCExecutionContext executionContext, final DBDComplexValue value)
+    public void setModel(DBCExecutionContext executionContext, final Object value)
     {
         getTree().setRedraw(false);
         try {
@@ -321,11 +330,11 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     public Object extractValue() {
-        DBDComplexValue complexValue = getInput();
+        Object complexValue = getInput();
         final ComplexElement[] items = childrenMap.get(complexValue);
         if (complexValue instanceof DBDValueCloneable) {
             try {
-                complexValue = (DBDComplexValue) ((DBDValueCloneable) complexValue).cloneValue(new VoidProgressMonitor());
+                complexValue = ((DBDValueCloneable) complexValue).cloneValue(new VoidProgressMonitor());
             } catch (DBCException e) {
                 log.error("Error cloning complex value", e);
             }
@@ -359,6 +368,8 @@ public class ComplexObjectEditor extends TreeViewer {
                 return String.valueOf(item.index);
             }
             return getValueText(item.array.valueHandler, item.array.componentType, item.value, format);
+        } else if (obj instanceof MapEntry) {
+            return columnIndex == 0 ? ((MapEntry) obj).name : CommonUtils.toString(((MapEntry) obj).value);
         }
         return String.valueOf(columnIndex);
     }
@@ -398,6 +409,11 @@ public class ComplexObjectEditor extends TreeViewer {
                 type = arrayItem.array.componentType;
                 name = type.getTypeName() + "["  + arrayItem.index + "]";
                 value = arrayItem.value;
+            } else if (this.item instanceof MapEntry) {
+                valueHandler = DefaultValueHandler.INSTANCE;
+                type = null;
+                name = ((MapEntry) this.item).name;
+                value = ((MapEntry) this.item).value;
             } else {
                 throw new DBCException("Unsupported complex object element: " + this.item);
             }
@@ -598,6 +614,15 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (isComplexType(value)) {
                     children = getChildren(value);
                 }
+            } else if (parent instanceof Map) {
+                Map<?, ?> map = (Map<?, ?>) parent;
+                children = new MapEntry[map.size()];
+                Iterator<? extends Map.Entry<?, ?>> entries = map.entrySet().iterator();
+
+                for (int i = 0; i < children.length; i++) {
+                    Map.Entry<?, ?> entry = entries.next();
+                    children[i] = new MapEntry(CommonUtils.toString(entry.getKey()), entry.getValue());
+                }
             }
             if (children != null) {
                 childrenMap.put(parent, children);
@@ -617,7 +642,8 @@ public class ComplexObjectEditor extends TreeViewer {
                 parent instanceof DBDCollection ||
                 parent instanceof DBDReference ||
                 (parent instanceof CompositeField && hasChildren(((CompositeField) parent).value)) ||
-                (parent instanceof ArrayItem && hasChildren(((ArrayItem) parent).value));
+                (parent instanceof ArrayItem && hasChildren(((ArrayItem) parent).value)) ||
+                (parent instanceof Map && !(((Map) parent).isEmpty()));
         }
     }
 
