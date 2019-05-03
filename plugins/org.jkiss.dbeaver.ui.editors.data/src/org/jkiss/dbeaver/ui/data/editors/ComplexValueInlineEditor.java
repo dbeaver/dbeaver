@@ -51,7 +51,7 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         editor = new ComplexObjectEditor(controller, this, inline ? SWT.NONE : SWT.BORDER);
-        editor.setModel(controller.getExecutionContext(), (DBDComplexValue) controller.getValue());
+        editor.setModel(controller.getExecutionContext(), controller.getValue());
         return editor.getTree();
     }
 
