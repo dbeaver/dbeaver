@@ -418,19 +418,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase object, @Nullable String objectName) throws SQLException {
             String tableOper = "=";
-/*
-            // NOTE: we can't use filters here. Because filters are different for tables and views while we have just one cache :(
-            if (object == null && objectName == null) {
-                final DBSObjectFilter tableFilters = session.getDataSource().getContainer().getObjectFilter(OracleTableBase.class, owner, false);
-                if (tableFilters != null && tableFilters.hasSingleMask()) {
-                    objectName = tableFilters.getSingleMask();
-                    tableOper = " LIKE ";
-                }
-            }
-*/
+
+            boolean hasAllAllTables = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), null, "ALL_ALL_TABLES");
+            String tablesSource = hasAllAllTables ? "ALL_TABLES" : "TABLES";
+
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "\tSELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,'VALID' as STATUS,t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
-                    "\tFROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "ALL_TABLES") + " t\n" +
+                    "\tFROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), tablesSource) + " t\n" +
                     "\tWHERE t.OWNER=? AND NESTED='NO'" + (object == null && objectName == null ? "": " AND t.TABLE_NAME"+ tableOper + "?") + "\n" +
                 "UNION ALL\n" +
                     "\tSELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,'NO',NULL,NULL,o.TEMPORARY,o.SECONDARY,'NO',0 \n" +
