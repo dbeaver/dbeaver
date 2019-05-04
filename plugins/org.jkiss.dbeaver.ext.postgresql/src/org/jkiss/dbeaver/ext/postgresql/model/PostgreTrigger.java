@@ -266,7 +266,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         if (body == null) {
             StringBuilder ddl = new StringBuilder();
             ddl.append("-- DROP TRIGGER ").append(DBUtils.getQuotedIdentifier(this)).append(" ON ")
-                .append(DBUtils.getQuotedIdentifier(getTable())).append(";\n\n");
+                .append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
 
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
                 String triggerSource = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
