@@ -131,8 +131,12 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     @Override
     public void performFinish()
     {
-        dictionary.setDescriptionColumnNames(criteriaText.getText());
+        saveDictionarySettings();
         entity.getDataSource().getContainer().persistConfiguration();
+    }
+
+    public void saveDictionarySettings() {
+        dictionary.setDescriptionColumnNames(criteriaText.getText());
     }
 
 }

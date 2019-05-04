@@ -293,7 +293,7 @@ class EditVirtualEntityDialog extends BaseDialog {
             }
         }
         if (editDictionaryPage != null) {
-            editDictionaryPage.performFinish();
+            editDictionaryPage.saveDictionarySettings();
         }
         viewer.persistConfig();
         super.okPressed();

@@ -1532,8 +1532,11 @@ public class ResultSetViewer extends Viewer
                 int fetchSize = CommonUtils.toInt(resultSetSize.getText());
                 if (fetchSize > 0 && dataContainer != null && dataContainer.getDataSource() != null) {
                     DBPPreferenceStore store = dataContainer.getDataSource().getContainer().getPreferenceStore();
-                    store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, fetchSize);
-                    PrefUtils.savePreferenceStore(store);
+                    int oldFetchSize = store.getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS);
+                    if (oldFetchSize > 0 && oldFetchSize != fetchSize) {
+                        store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, fetchSize);
+                        PrefUtils.savePreferenceStore(store);
+                    }
                 }
             });
 
