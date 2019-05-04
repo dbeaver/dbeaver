@@ -1624,6 +1624,14 @@ public class UIUtils {
         return sharedTextColors.getColor(rgbString);
     }
 
+    @Nullable
+    public static Color getSharedColor(@Nullable RGB rgb) {
+        if (rgb == null) {
+            return null;
+        }
+        return sharedTextColors.getColor(rgb);
+    }
+
     public static Color getConnectionColor(DBPConnectionConfiguration connectionInfo) {
         String rgbString = connectionInfo.getConnectionColor();
         if (CommonUtils.isEmpty(rgbString)) {

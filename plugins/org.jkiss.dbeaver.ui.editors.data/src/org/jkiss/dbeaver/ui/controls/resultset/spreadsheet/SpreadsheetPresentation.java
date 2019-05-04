@@ -1526,7 +1526,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 state |= STATE_LINK;
             } else {
                 String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-                if (strValue != null && strValue.contains(":")) {
+                if (strValue != null && strValue.contains("://")) {
                     try {
                         new URL(strValue);
                         state |= STATE_HYPER_LINK;
@@ -1654,7 +1654,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         {
             if (selected) {
                 Color normalColor = getCellBackground(colElement, rowElement, false);
-                if (normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal) {
                     return backgroundSelected;
                 }
                 RGB mixRGB = UIUtils.blend(
@@ -1692,12 +1692,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
             Object value = controller.getModel().getCellValue(attribute, row);
-            if (value instanceof DBDValueError) {
+            if (value != null && value.getClass() == DBDValueError.class) {
                 return backgroundError;
             }
-            if (attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
-                return backgroundReadOnly;
-            }
+//            if (attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
+//                return backgroundReadOnly;
+//            }
             if (!recordMode && showOddRows) {
                 // Determine odd/even row
                 if (rowBatchSize < 1) {

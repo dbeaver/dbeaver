@@ -415,7 +415,7 @@ class ColorSettingsDialog extends HelpEnabledDialog {
 
     @Override
     protected void okPressed() {
-        resultSetViewer.getModel().updateColorMapping();
+        resultSetViewer.getModel().updateColorMapping(true);
         super.okPressed();
     }
 

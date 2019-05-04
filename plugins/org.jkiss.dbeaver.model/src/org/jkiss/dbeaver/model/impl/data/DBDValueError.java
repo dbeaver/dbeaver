@@ -25,7 +25,7 @@ import java.io.StringWriter;
 /**
  * DBDValueError
  */
-public class DBDValueError implements DBDValue {
+public final class DBDValueError implements DBDValue {
 
     private final Throwable error;
 
