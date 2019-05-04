@@ -29,7 +29,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 /**
- * Dictionary descriptor
+ * Virtual entity descriptor
  */
 public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObject {
 
@@ -52,7 +52,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     private String name;
     private String description;
     private String descriptionColumnNames;
+
     List<DBVEntityConstraint> entityConstraints;
+    List<DBVEntityForeignKey> entityForeignKeys;
     List<DBVEntityAttribute> entityAttributes;
     Map<String, String> properties;
     List<DBVColorOverride> colorOverrides;
@@ -73,6 +75,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             this.entityConstraints = new ArrayList<>(copy.entityConstraints.size());
             for (DBVEntityConstraint c : copy.entityConstraints) {
                 this.entityConstraints.add(new DBVEntityConstraint(this, c));
+            }
+        }
+        if (!CommonUtils.isEmpty(copy.entityForeignKeys)) {
+            this.entityForeignKeys = new ArrayList<>(copy.entityForeignKeys.size());
+            for (DBVEntityForeignKey c : copy.entityForeignKeys) {
+                this.entityForeignKeys.add(new DBVEntityForeignKey(this, c));
             }
         }
         if (!CommonUtils.isEmpty(copy.entityAttributes)) {
@@ -175,24 +183,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
         }
         return Collections.emptyList();
-/*
-        // Merge with virtual attributes
-        for (DBVEntityAttribute va : entityAttributes) {
-            boolean found = false;
-            for (int i = 0; i < attributes.size(); i++) {
-                DBSEntityAttribute attr = attributes.get(i);
-                if (va.getName().equals(attr.getName())) {
-                    attributes.set(i, va);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                attributes.add(va);
-            }
-        }
-        return attributes;
-*/
     }
 
     @Nullable
@@ -284,9 +274,17 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
+    public Collection<DBVEntityForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        return null;
+        return entityForeignKeys;
+    }
+
+    void addForeignKey(DBVEntityForeignKey foreignKey)
+    {
+        if (entityForeignKeys == null) {
+            entityForeignKeys = new ArrayList<>();
+        }
+        entityForeignKeys.add(foreignKey);
     }
 
     @Nullable
