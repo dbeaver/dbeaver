@@ -29,12 +29,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
-import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -42,7 +43,9 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 class EditVirtualEntityDialog extends BaseDialog {
 
@@ -60,9 +63,10 @@ class EditVirtualEntityDialog extends BaseDialog {
     private DBVEntity vEntity;
     private EditDictionaryPage editDictionaryPage;
     private EditConstraintPage editUniqueKeyPage;
+    private DBVEntityConstraint uniqueConstraint;
 
     public EditVirtualEntityDialog(ResultSetViewer viewer, @Nullable DBSEntity entity, @NotNull DBVEntity vEntity) {
-        super(viewer.getControl().getShell(), "Edit logical structure", null);
+        super(viewer.getControl().getShell(), "Edit logical structure / presentation", null);
         this.viewer = viewer;
         this.entity = entity;
         this.vEntity = vEntity;
@@ -107,11 +111,11 @@ class EditVirtualEntityDialog extends BaseDialog {
         TabItem ukItem = new TabItem(tabFolder, SWT.NONE);
         ukItem.setText("Virtual Unique Key");
 
-        DBVEntityConstraint constraint = (DBVEntityConstraint) virtualEntityIdentifier.getUniqueKey();
+        uniqueConstraint = (DBVEntityConstraint) virtualEntityIdentifier.getUniqueKey();
 
         editUniqueKeyPage = new EditConstraintPage(
             "Define unique identifier",
-            constraint);
+            uniqueConstraint);
         editUniqueKeyPage.createControl(tabFolder);
         ukItem.setControl(editUniqueKeyPage.getControl());
     }
@@ -133,8 +137,15 @@ class EditVirtualEntityDialog extends BaseDialog {
 
         Composite buttonsPanel = UIUtils.createComposite(panel, 2);
         buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        createButton(buttonsPanel, ID_CREATE_FOREIGN_KEY, "Add", false);
-        createButton(buttonsPanel, ID_REMOVE_FOREIGN_KEY, "Remove", false).setEnabled(false);
+        Button btnAdd = createButton(buttonsPanel, ID_CREATE_FOREIGN_KEY, "Add", false);
+        btnAdd.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                UIUtils.showMessageBox(getShell(), "Not implemented", "Not Implemented Yet", SWT.ICON_ERROR);
+            }
+        });
+        Button btnRemove = createButton(buttonsPanel, ID_REMOVE_FOREIGN_KEY, "Remove", false);
+        btnRemove.setEnabled(false);
 
         fkTable.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -170,25 +181,32 @@ class EditVirtualEntityDialog extends BaseDialog {
             attrItem.setText(0, attr.getName());
             attrItem.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr, true)));
 
-            String transformSettings = "N/A";
+            String transformSettings = "";
             DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, false);
             if (vAttr != null) {
                 if (!CommonUtils.isEmpty(vAttr.getTransformSettings().getIncludedTransformers())) {
                     transformSettings = String.join(",", vAttr.getTransformSettings().getIncludedTransformers());
+                } else if (!CommonUtils.isEmpty(vAttr.getTransformSettings().getCustomTransformer())) {
+                    DBDAttributeTransformerDescriptor td =
+                        DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(vAttr.getTransformSettings().getCustomTransformer());
+                    if (td != null) {
+                        transformSettings = td.getName();
+                    }
                 }
             }
             attrItem.setText(1, transformSettings);
 
-            String colorSettings = "N/A";
+            String colorSettings = "";
             {
                 java.util.List<DBVColorOverride> coList = vEntity.getColorOverrides(attr.getName());
                 if (!coList.isEmpty()) {
-                    StringBuilder coString = new StringBuilder();
+                    java.util.List<String> coStrings = new ArrayList<>();
                     for (DBVColorOverride co : coList) {
-                        if (coString.length() > 0) coString.append(",");
-                        coString.append(co.getOperator().getStringValue()).append(Arrays.toString(co.getAttributeValues()));
+                        for (Object value : co.getAttributeValues()) {
+                            coStrings.add(CommonUtils.toString(value));
+                        }
                     }
-                    colorSettings = coString.toString();
+                    colorSettings = String.join(",", coStrings);
                 }
             }
             attrItem.setText(2, colorSettings);
@@ -198,8 +216,27 @@ class EditVirtualEntityDialog extends BaseDialog {
         //buttonsPanel.setLayout(new GridLayout(2, false));
         buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        createButton(buttonsPanel, ID_CONFIGURE_TRANSFORMS, "Transforms ...", false).setEnabled(false);
-        createButton(buttonsPanel, ID_CONFIGURE_COLORS, "Colors ...", false).setEnabled(false);
+        Button btnTransforms = createButton(buttonsPanel, ID_CONFIGURE_TRANSFORMS, "Transforms ...", false);
+        btnTransforms.setEnabled(false);
+        btnTransforms.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DBDAttributeBinding attr = (DBDAttributeBinding) colTable.getItem(colTable.getSelectionIndex()).getData();
+                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, true);
+                assert vAttr != null;
+                DBVTransformSettings transformSettings = vAttr.getTransformSettings();
+                if (transformSettings == null) {
+                    transformSettings = new DBVTransformSettings();
+                }
+                TransformerSettingsDialog dialog = new TransformerSettingsDialog(viewer, attr, transformSettings, true);
+                if (dialog.open() == IDialogConstants.OK_ID) {
+                    vAttr.setTransformSettings(transformSettings);
+                }
+            }
+        });
+
+        Button btnColors = createButton(buttonsPanel, ID_CONFIGURE_COLORS, "Colors ...", false);
+        btnColors.setEnabled(false);
 
         colTable.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -222,15 +259,21 @@ class EditVirtualEntityDialog extends BaseDialog {
     protected void okPressed()
     {
         if (editUniqueKeyPage != null) {
-            try {
-                editUniqueKeyPage.performFinish();
-            } catch (DBException e) {
-                log.error(e);
+            Collection<DBSEntityAttribute> uniqueAttrs = editUniqueKeyPage.getSelectedAttributes();
+            uniqueConstraint.setAttributes(uniqueAttrs);
+            DBDRowIdentifier virtualEntityIdentifier = viewer.getVirtualEntityIdentifier();
+            if (virtualEntityIdentifier != null) {
+                try {
+                    virtualEntityIdentifier.reloadAttributes(new VoidProgressMonitor(), viewer.getModel().getAttributes());
+                } catch (DBException e) {
+                    log.error(e);
+                }
             }
         }
         if (editDictionaryPage != null) {
             editDictionaryPage.performFinish();
         }
+        viewer.persistConfig();
         super.okPressed();
     }
 

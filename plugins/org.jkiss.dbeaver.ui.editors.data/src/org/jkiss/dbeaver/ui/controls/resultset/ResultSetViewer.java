@@ -138,6 +138,8 @@ public class ResultSetViewer extends Viewer
 
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
 
+    static final String EMPTY_TRANSFORMER_NAME = "Default";
+
     static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
@@ -507,7 +509,7 @@ public class ResultSetViewer extends Viewer
         return UIStyles.getDefaultTextForeground();
     }
 
-    private void persistConfig() {
+    void persistConfig() {
         DBCExecutionContext context = getExecutionContext();
         if (context != null) {
             context.getDataSource().getContainer().persistConfiguration();
@@ -2433,7 +2435,7 @@ public class ResultSetViewer extends Viewer
         if (customTransformers != null && !customTransformers.isEmpty()) {
             manager.add(new TransformerAction(
                 attr,
-                "Default",
+                EMPTY_TRANSFORMER_NAME,
                 IAction.AS_RADIO_BUTTON,
                 transformSettings == null || CommonUtils.isEmpty(transformSettings.getCustomTransformer()))
             {
@@ -2460,7 +2462,7 @@ public class ResultSetViewer extends Viewer
                                 final String oldCustomTransformer = settings.getCustomTransformer();
                                 settings.setCustomTransformer(descriptor.getId());
                                 TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
-                                    ResultSetViewer.this, attr, settings);
+                                    ResultSetViewer.this, attr, settings, false);
                                 if (settingsDialog.open() == IDialogConstants.OK_ID) {
                                     // If there are no options - save settings without opening dialog
                                     saveTransformerSettings();
@@ -2481,7 +2483,7 @@ public class ResultSetViewer extends Viewer
                 @Override
                 public void run() {
                     TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
-                        ResultSetViewer.this, attr, transformSettings);
+                        ResultSetViewer.this, attr, transformSettings, false);
                     if (settingsDialog.open() == IDialogConstants.OK_ID) {
                         saveTransformerSettings();
                     }
