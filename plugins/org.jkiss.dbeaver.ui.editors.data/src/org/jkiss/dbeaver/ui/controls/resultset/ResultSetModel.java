@@ -634,9 +634,10 @@ public class ResultSetModel {
                                     final DBDAttributeBinding binding = entry.getKey();
                                     final Object cellValue = getCellValue(binding, row);
                                     double value = ResultSetUtils.makeNumericValue(cellValue);
-
-                                    RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                    row.background = UIUtils.getSharedColor(rowRGB);
+                                    if (value >= minValue && value <= maxValue) {
+                                        RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
+                                        row.background = UIUtils.getSharedColor(rowRGB);
+                                    }
                                 }
                             }
 

@@ -2233,12 +2233,13 @@ public class ResultSetViewer extends Viewer
                             viewMenu.add(new ResetRowColorAction(attr, valueController.getValue()));
                         }
                     }
-                    //viewMenu.add(new CustomizeColorsAction(attr, row));
+                    viewMenu.add(new CustomizeColorsAction(attr, row));
                     if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
                         viewMenu.add(new ResetAllColorAction());
                     }
                     viewMenu.add(new Separator());
                 }
+                viewMenu.add(new VirtualEntityEditAction());
                 viewMenu.add(new Action(ResultSetMessages.controls_resultset_viewer_action_data_formats) {
                     @Override
                     public void run() {
@@ -4259,13 +4260,12 @@ public class ResultSetViewer extends Viewer
                 return;
             }
             final DBVEntity vEntity = getVirtualEntity(curAttribute);
-            //vEntity.removeColorOverride(attribute);
             updateColors(vEntity);
         }
 
         @Override
         public boolean isEnabled() {
-            return false;
+            return true;
         }
     }
 

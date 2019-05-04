@@ -314,6 +314,8 @@ class ColorSettingsDialog extends HelpEnabledDialog {
         }
         bgColorSelector2.setEnabled(isRange);
         fgColorSelector2.setEnabled(isRange);
+
+        singleColumnCheck.setEnabled(false);
     }
 
     private IValueEditor createValueEditor(Composite panel, int index) {
@@ -325,6 +327,9 @@ class ColorSettingsDialog extends HelpEnabledDialog {
             ColorValueController valueController = new ColorValueController(settingsGroup) {
                 @Override
                 public Object getValue() {
+                    if (curOverride == null ){
+                        return null;
+                    }
                     Object[] attributeValues = curOverride.getAttributeValues();
                     if (attributeValues == null || index > attributeValues.length - 1) {
                         return null;
