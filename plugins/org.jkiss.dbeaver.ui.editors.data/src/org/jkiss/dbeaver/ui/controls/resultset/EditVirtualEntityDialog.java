@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 class EditVirtualEntityDialog extends BaseDialog {
@@ -181,39 +180,10 @@ class EditVirtualEntityDialog extends BaseDialog {
             attrItem.setText(0, attr.getName());
             attrItem.setImage(0, DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr, true)));
 
-            String transformSettings = "";
-            DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, false);
-            if (vAttr != null) {
-                if (!CommonUtils.isEmpty(vAttr.getTransformSettings().getIncludedTransformers())) {
-                    transformSettings = String.join(",", vAttr.getTransformSettings().getIncludedTransformers());
-                } else if (!CommonUtils.isEmpty(vAttr.getTransformSettings().getCustomTransformer())) {
-                    DBDAttributeTransformerDescriptor td =
-                        DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(vAttr.getTransformSettings().getCustomTransformer());
-                    if (td != null) {
-                        transformSettings = td.getName();
-                    }
-                }
-            }
-            attrItem.setText(1, transformSettings);
-
-            String colorSettings = "";
-            {
-                java.util.List<DBVColorOverride> coList = vEntity.getColorOverrides(attr.getName());
-                if (!coList.isEmpty()) {
-                    java.util.List<String> coStrings = new ArrayList<>();
-                    for (DBVColorOverride co : coList) {
-                        for (Object value : co.getAttributeValues()) {
-                            coStrings.add(CommonUtils.toString(value));
-                        }
-                    }
-                    colorSettings = String.join(",", coStrings);
-                }
-            }
-            attrItem.setText(2, colorSettings);
+            updateColumnItem(attrItem);
         }
 
         Composite buttonsPanel = UIUtils.createComposite(panel, 2);
-        //buttonsPanel.setLayout(new GridLayout(2, false));
         buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         Button btnTransforms = createButton(buttonsPanel, ID_CONFIGURE_TRANSFORMS, "Transforms ...", false);
@@ -221,7 +191,8 @@ class EditVirtualEntityDialog extends BaseDialog {
         btnTransforms.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DBDAttributeBinding attr = (DBDAttributeBinding) colTable.getItem(colTable.getSelectionIndex()).getData();
+                TableItem item = colTable.getItem(colTable.getSelectionIndex());
+                DBDAttributeBinding attr = (DBDAttributeBinding) item.getData();
                 DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, true);
                 assert vAttr != null;
                 DBVTransformSettings transformSettings = vAttr.getTransformSettings();
@@ -232,11 +203,26 @@ class EditVirtualEntityDialog extends BaseDialog {
                 if (dialog.open() == IDialogConstants.OK_ID) {
                     vAttr.setTransformSettings(transformSettings);
                 }
+                updateColumnItem(item);
             }
         });
 
         Button btnColors = createButton(buttonsPanel, ID_CONFIGURE_COLORS, "Colors ...", false);
         btnColors.setEnabled(false);
+        btnColors.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TableItem item = colTable.getItem(colTable.getSelectionIndex());
+                DBDAttributeBinding attr = (DBDAttributeBinding) item.getData();
+                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, true);
+                ColorSettingsDialog dialog = new ColorSettingsDialog(viewer, attr, null);
+                if (dialog.open() == IDialogConstants.OK_ID) {
+                    //vEntity.setColorOverride();
+                }
+
+                updateColumnItem(item);
+            }
+        });
 
         colTable.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -246,6 +232,42 @@ class EditVirtualEntityDialog extends BaseDialog {
                 getButton(ID_CONFIGURE_COLORS).setEnabled(hasSelection);
             }
         });
+    }
+
+    private void updateColumnItem(TableItem attrItem) {
+        DBDAttributeBinding attr = (DBDAttributeBinding) attrItem.getData();
+        String transformStr = "";
+        DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attr, false);
+        if (vAttr != null) {
+            DBVTransformSettings transformSettings = vAttr.getTransformSettings();
+            if (transformSettings != null) {
+                if (!CommonUtils.isEmpty(transformSettings.getIncludedTransformers())) {
+                    transformStr = String.join(",", transformSettings.getIncludedTransformers());
+                } else if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
+                    DBDAttributeTransformerDescriptor td =
+                        DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(transformSettings.getCustomTransformer());
+                    if (td != null) {
+                        transformStr = td.getName();
+                    }
+                }
+            }
+        }
+        attrItem.setText(1, transformStr);
+
+        String colorSettings = "";
+        {
+            java.util.List<DBVColorOverride> coList = vEntity.getColorOverrides(attr.getName());
+            if (!coList.isEmpty()) {
+                java.util.List<String> coStrings = new ArrayList<>();
+                for (DBVColorOverride co : coList) {
+                    for (Object value : co.getAttributeValues()) {
+                        coStrings.add(CommonUtils.toString(value));
+                    }
+                }
+                colorSettings = String.join(",", coStrings);
+            }
+        }
+        attrItem.setText(2, colorSettings);
     }
 
     @Override

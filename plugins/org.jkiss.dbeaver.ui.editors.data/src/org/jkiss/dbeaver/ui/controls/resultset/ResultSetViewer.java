@@ -3750,6 +3750,8 @@ public class ResultSetViewer extends Viewer
         @Override
         public void runWithEvent(Event event)
         {
+            new VirtualEntityEditAction().run();
+/*
             Menu menu = getMenu(activePresentation.getControl());
             if (menu != null && event.widget instanceof ToolItem) {
                 Rectangle bounds = ((ToolItem) event.widget).getBounds();
@@ -3757,6 +3759,7 @@ public class ResultSetViewer extends Viewer
                 menu.setLocation(point.x, point.y);
                 menu.setVisible(true);
             }
+*/
         }
 
         @Override
