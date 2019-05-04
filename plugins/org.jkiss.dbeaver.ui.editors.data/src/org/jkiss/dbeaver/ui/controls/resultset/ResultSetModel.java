@@ -883,23 +883,7 @@ public class ResultSetModel {
                 }
                 Object cell1 = getCellValue(binding, row1);
                 Object cell2 = getCellValue(binding, row2);
-                if (cell1 == cell2) {
-                    result = 0;
-                } else if (DBUtils.isNullValue(cell1)) {
-                    result = 1;
-                } else if (DBUtils.isNullValue(cell2)) {
-                    result = -1;
-                } else if (cell1 instanceof Number && cell2 instanceof Number) {
-                    // Actual data type for the same column may differ (e.g. partially read from server, partially added on client side)
-                    double numDiff = ((Number) cell1).doubleValue() - ((Number) cell2).doubleValue();
-                    result = numDiff < 0 ? -1 : (numDiff > 0 ? 1 : 0);
-                } else if (cell1 instanceof Comparable) {
-                    result = ((Comparable) cell1).compareTo(cell2);
-                } else {
-                    String str1 = String.valueOf(cell1);
-                    String str2 = String.valueOf(cell2);
-                    result = str1.compareTo(str2);
-                }
+                result = DBUtils.compareDataValues(cell1, cell2);
                 if (co.isOrderDescending()) {
                     result = -result;
                 }
