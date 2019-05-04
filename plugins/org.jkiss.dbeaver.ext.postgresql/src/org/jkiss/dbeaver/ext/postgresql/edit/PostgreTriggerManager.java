@@ -69,7 +69,7 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment trigger",
-                "COMMENT ON TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + DBUtils.getQuotedIdentifier(command.getObject().getTable()) +
+                "COMMENT ON TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()) + " ON " + command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
         }
     }

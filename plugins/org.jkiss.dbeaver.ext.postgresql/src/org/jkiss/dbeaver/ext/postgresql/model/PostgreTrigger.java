@@ -280,7 +280,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
 
             if (!CommonUtils.isEmpty(getDescription()) && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS)) {
                 ddl.append("\n").append("\nCOMMENT ON TRIGGER ").append(DBUtils.getQuotedIdentifier(this))
-                    .append(" ON ").append(DBUtils.getQuotedIdentifier(getTable()))
+                    .append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
                     .append(" IS ")
                     .append(SQLUtils.quoteString(this, getDescription())).append(";");
             }
