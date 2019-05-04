@@ -2228,7 +2228,7 @@ public class ResultSetViewer extends Viewer
                             viewMenu.add(new ResetRowColorAction(attr, valueController.getValue()));
                         }
                     }
-                    viewMenu.add(new CustomizeColorsAction(attr, row));
+                    //viewMenu.add(new CustomizeColorsAction(attr, row));
                     if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
                         viewMenu.add(new ResetAllColorAction());
                     }
@@ -3508,7 +3508,7 @@ public class ResultSetViewer extends Viewer
     @Nullable
     DBDRowIdentifier getVirtualEntityIdentifier()
     {
-        if (!model.isSingleSource() || model.getVisibleAttributeCount() == 0) {
+        if (model.getVisibleAttributeCount() == 0) {
             return null;
         }
         DBDRowIdentifier rowIdentifier = model.getVisibleAttribute(0).getRowIdentifier();
@@ -3768,11 +3768,20 @@ public class ResultSetViewer extends Viewer
         {
             MenuManager menuManager = new MenuManager();
             menuManager.add(new ShowFiltersAction(false));
-            menuManager.add(new CustomizeColorsAction());
+            //menuManager.add(new CustomizeColorsAction());
             menuManager.add(new Separator());
-            menuManager.add(new VirtualKeyEditAction(true));
-            menuManager.add(new VirtualKeyEditAction(false));
+            VirtualUniqueKeyEditAction vkAction = new VirtualUniqueKeyEditAction(true);
+            if (vkAction.isEnabled()) {
+                menuManager.add(vkAction);
+            }
+            VirtualUniqueKeyEditAction vkRemoveAction = new VirtualUniqueKeyEditAction(false);
+            if (vkRemoveAction.isEnabled()) {
+                menuManager.add(vkRemoveAction);
+            }
             menuManager.add(new DictionaryEditAction());
+            if (getDataContainer() != null) {
+                menuManager.add(new VirtualEntityEditAction());
+            }
             menuManager.add(new Separator());
             if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
                 menuManager.add(new ToggleModeAction());
@@ -4252,10 +4261,10 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class VirtualKeyEditAction extends Action {
+    private class VirtualUniqueKeyEditAction extends Action {
         private boolean define;
 
-        VirtualKeyEditAction(boolean define)
+        VirtualUniqueKeyEditAction(boolean define)
         {
             super(define ? "Define virtual unique key" : "Clear virtual unique key");
             this.define = define;
@@ -4282,6 +4291,27 @@ public class ResultSetViewer extends Viewer
                     throw new InvocationTargetException(e);
                 }
             });
+        }
+    }
+
+    private class VirtualEntityEditAction extends Action {
+        VirtualEntityEditAction() {
+            super("Logical structure / view settings");
+        }
+
+        @Override
+        public void run()
+        {
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer == null) {
+                return;
+            }
+            DBSEntity entity = model.isSingleSource() ? model.getSingleSource() : null;
+            DBVEntity vEntity = entity != null ?
+                DBVUtils.getVirtualEntity(entity, true) :
+                DBVUtils.getVirtualEntity(dataContainer, true);
+            EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(ResultSetViewer.this, entity, vEntity);
+            dialog.open();
         }
     }
 
