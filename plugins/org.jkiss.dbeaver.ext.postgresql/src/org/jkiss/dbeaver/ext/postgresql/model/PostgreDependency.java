@@ -68,7 +68,7 @@ public class PostgreDependency implements PostgreObject, DBPImageProvider {
 
     @Override
     public boolean isPersisted() {
-        return false;
+        return true;
     }
 
     @Override
