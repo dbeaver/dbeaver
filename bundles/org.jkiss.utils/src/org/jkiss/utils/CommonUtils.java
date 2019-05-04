@@ -702,4 +702,9 @@ public class CommonUtils {
         }
         return toString(o1).compareTo(toString(o2));
     }
+
+    public static int compareNumbers(Number value1, Number value2) {
+        double numDiff = value1.doubleValue() - value2.doubleValue();
+        return numDiff < 0 ? -1 : (numDiff > 0 ? 1 : 0);
+    }
 }

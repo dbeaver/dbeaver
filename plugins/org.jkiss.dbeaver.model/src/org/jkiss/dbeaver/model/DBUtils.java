@@ -1820,4 +1820,28 @@ public final class DBUtils {
             return null;
         }
     }
+
+    /**
+     * Compares two values read from database.
+     * Main difference with regular compare is that all numbers are compared as doubles (i.e. data type oesn't matter).
+     * Also checks DBValue for nullability
+     */
+    public static int compareDataValues(Object cell1, Object cell2) {
+        if (cell1 == cell2) {
+            return 0;
+        } else if (isNullValue(cell1)) {
+            return 1;
+        } else if (isNullValue(cell2)) {
+            return -1;
+        } else if (cell1 instanceof Number && cell2 instanceof Number) {
+            // Actual data type for the same column may differ (e.g. partially read from server, partially added on client side)
+            return CommonUtils.compareNumbers((Number) cell1, (Number) cell2);
+        } else if (cell1 instanceof Comparable) {
+            return ((Comparable) cell1).compareTo(cell2);
+        } else {
+            String str1 = String.valueOf(cell1);
+            String str2 = String.valueOf(cell2);
+            return str1.compareTo(str2);
+        }
+    }
 }

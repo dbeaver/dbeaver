@@ -428,6 +428,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         colorOverrides.removeIf(c -> c.getAttributeName().equals(attrName));
     }
 
+    public void removeColorOverride(DBVColorOverride co) {
+        if (colorOverrides == null) {
+            return;
+        }
+        colorOverrides.remove(co);
+    }
+
     public void removeAllColorOverride() {
         if (colorOverrides == null) {
             return;

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -146,7 +147,32 @@ class ColorSettingsDialog extends HelpEnabledDialog {
             //ToolBar toolbar = new ToolBar(colorsGroup, SWT.FLAT | SWT.HORIZONTAL);
             Composite buttonsPanel = UIUtils.createComposite(colorsGroup, 2);
             Button btnAdd = createButton(buttonsPanel, 1000, "Add", false);
+            btnAdd.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    curOverride = new DBVColorOverride(attribute.getName(), DBCLogicalOperator.EQUALS, null, null, null);
+                    vEntity.addColorOverride(curOverride);
+                    TableItem tableItem = new TableItem(colorsTable, SWT.NONE);
+                    tableItem.setData(curOverride);
+                    colorsTable.setSelection(tableItem);
+                    updateTreeItem(tableItem);
+                    updateSettingsValues();
+                    updateControlsState();
+                }
+            });
             Button btnDelete = createButton(buttonsPanel, 1001, "Delete", false);
+            btnDelete.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (curOverride != null) {
+                        colorsTable.getItem(colorsTable.getSelectionIndex()).dispose();
+                        vEntity.removeColorOverride(curOverride);
+                        curOverride = null;
+                        updateSettingsValues();
+                        updateControlsState();
+                    }
+                }
+            });
 
             colorsTable.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -241,7 +267,7 @@ class ColorSettingsDialog extends HelpEnabledDialog {
                 singleColumnCheck.setSelection(curOverride.isSingleColumn());
                 Object[] values = curOverride.getAttributeValues();
                 if (valueEditor1 != null) {
-                    valueEditor1.primeEditorValue(values.length == 0 ? null : values[0]);
+                    valueEditor1.primeEditorValue(ArrayUtils.isEmpty(values) ? null : values[0]);
                 }
                 if (!CommonUtils.isEmpty(curOverride.getColorBackground())) {
                     bgColorSelector1.setColorValue(StringConverter.asRGB(curOverride.getColorBackground()));
@@ -389,7 +415,7 @@ class ColorSettingsDialog extends HelpEnabledDialog {
 
     @Override
     protected void okPressed() {
-
+        resultSetViewer.getModel().updateColorMapping();
         super.okPressed();
     }
 
