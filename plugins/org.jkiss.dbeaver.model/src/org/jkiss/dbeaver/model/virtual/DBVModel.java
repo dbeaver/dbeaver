@@ -62,8 +62,13 @@ public class DBVModel extends DBVContainer {
     private static final String TAG_COLORS = "colors";
     private static final String TAG_COLOR = "color";
     private static final String ATTR_OPERATOR = "operator";
+    private static final String ATTR_RANGE = "range";
+    private static final String ATTR_SINGLE_COLUMN = "singleColumn";
     private static final String ATTR_FOREGROUND = "foreground";
     private static final String ATTR_BACKGROUND = "background";
+    private static final String ATTR_FOREGROUND2 = "foreground2";
+    private static final String ATTR_BACKGROUND2 = "background2";
+
     private static final String TAG_VALUE = "value";
     private static final String TAG_TRANSFORM = "transform";
     private static final String TAG_INCLUDE = "include";
@@ -234,11 +239,23 @@ public class DBVModel extends DBVContainer {
                 xml.startElement(TAG_COLOR);
                 xml.addAttribute(ATTR_NAME, color.getAttributeName());
                 xml.addAttribute(ATTR_OPERATOR, color.getOperator().name());
+                if (color.isRange()) {
+                    xml.addAttribute(ATTR_RANGE, true);
+                }
+                if (color.isSingleColumn()) {
+                    xml.addAttribute(ATTR_SINGLE_COLUMN, true);
+                }
                 if (color.getColorForeground() != null) {
                     xml.addAttribute(ATTR_FOREGROUND, color.getColorForeground());
                 }
+                if (color.getColorForeground2() != null) {
+                    xml.addAttribute(ATTR_FOREGROUND2, color.getColorForeground2());
+                }
                 if (color.getColorBackground() != null) {
                     xml.addAttribute(ATTR_BACKGROUND, color.getColorBackground());
+                }
+                if (color.getColorBackground2() != null) {
+                    xml.addAttribute(ATTR_BACKGROUND2, color.getColorBackground2());
                 }
                 if (!ArrayUtils.isEmpty(color.getAttributeValues())) {
                     for (Object value : color.getAttributeValues()) {
@@ -360,6 +377,10 @@ public class DBVModel extends DBVContainer {
                                 atts.getValue(ATTR_FOREGROUND),
                                 atts.getValue(ATTR_BACKGROUND)
                             );
+                            curColor.setRange(CommonUtils.getBoolean(atts.getValue(ATTR_RANGE), false));
+                            curColor.setSingleColumn(CommonUtils.getBoolean(atts.getValue(ATTR_SINGLE_COLUMN), false));
+                            curColor.setColorForeground2(atts.getValue(ATTR_FOREGROUND2));
+                            curColor.setColorBackground2(atts.getValue(ATTR_BACKGROUND2));
                             curEntity.addColorOverride(curColor);
                         } catch (Throwable e) {
                             log.warn("Error reading color settings", e);
