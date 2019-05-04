@@ -93,6 +93,8 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         DBGeometry geometry;
         if (object == null) {
             geometry = new DBGeometry();
+        } else if (object instanceof DBGeometry) {
+            geometry = (DBGeometry) object;
         } else if (object instanceof Geometry) {
             geometry = new DBGeometry((Geometry)object);
         } else if (object instanceof byte[]) {
