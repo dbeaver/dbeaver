@@ -1664,8 +1664,6 @@ public class SQLEditor extends SQLEditorBase implements
             elements.add(extractActiveQuery());
         }
 
-        elements.removeIf(element -> !(element instanceof SQLQuery));
-
         if (!elements.isEmpty()) {
             processQueries(elements, false, true, true, null);
         } else {
@@ -1681,6 +1679,7 @@ public class SQLEditor extends SQLEditorBase implements
             // Nothing to process
             return;
         }
+
         final DBPDataSourceContainer container = getDataSourceContainer();
         if (checkSession) {
             try {
@@ -2404,8 +2403,16 @@ public class SQLEditor extends SQLEditorBase implements
                     List<IDataTransferProducer> producers = new ArrayList<>();
                     for (int i = 0; i < queries.size(); i++) {
                         SQLScriptElement element = queries.get(i);
-                        SQLQuery query = (SQLQuery) element;
-                        producers.add(new DatabaseTransferProducer(new SQLQueryDataContainer(job, resultsConsumer, query, i), null));
+                        if (element instanceof SQLControlCommand) {
+                            try {
+                                job.executeControlCommand((SQLControlCommand) element);
+                            } catch (DBException e) {
+                                DBWorkbench.getPlatformUI().showError("Command error", "Error processing control command", e);
+                            }
+                        } else {
+                            SQLQuery query = (SQLQuery) element;
+                            producers.add(new DatabaseTransferProducer(new SQLQueryDataContainer(job, resultsConsumer, query, i), null));
+                        }
                     }
 
                     ActiveWizardDialog dialog = new ActiveWizardDialog(

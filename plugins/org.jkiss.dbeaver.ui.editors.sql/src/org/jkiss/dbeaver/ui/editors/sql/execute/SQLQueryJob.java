@@ -541,7 +541,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeControlCommand(SQLControlCommand command) throws DBException {
+    public boolean executeControlCommand(SQLControlCommand command) throws DBException {
         if (command.isEmptyCommand()) {
             return true;
         }
