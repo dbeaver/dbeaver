@@ -172,6 +172,9 @@ public class DBVModel extends DBVContainer {
         }
         // Attributes
         for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.entityAttributes)) {
+            if (!attr.hasValuableData()) {
+                continue;
+            }
             try (final XMLBuilder.Element e3 = xml.startElement(TAG_ATTRIBUTE)) {
                 xml.addAttribute(ATTR_NAME, attr.getName());
                 final DBVTransformSettings transformSettings = attr.getTransformSettings();

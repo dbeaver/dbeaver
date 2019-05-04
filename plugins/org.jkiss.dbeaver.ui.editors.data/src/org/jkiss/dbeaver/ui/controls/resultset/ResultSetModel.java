@@ -624,13 +624,13 @@ public class ResultSetModel {
         }
         if (!colorMapping.isEmpty()) {
             for (Map.Entry<DBDAttributeBinding, List<AttributeColorSettings>> entry : colorMapping.entrySet()) {
-                for (AttributeColorSettings acs : entry.getValue()) {
-                    if (acs.rangeCheck) {
-                        if (acs.attributeValues != null && acs.attributeValues.length > 1) {
-                            double minValue = ResultSetUtils.makeNumericValue(acs.attributeValues[0]);
-                            double maxValue = ResultSetUtils.makeNumericValue(acs.attributeValues[1]);
-                            if (acs.colorBackground != null && acs.colorBackground2 != null) {
-                                for (ResultSetRow row : rows) {
+                for (ResultSetRow row : rows) {
+                    for (AttributeColorSettings acs : entry.getValue()) {
+                        if (acs.rangeCheck) {
+                            if (acs.attributeValues != null && acs.attributeValues.length > 1) {
+                                double minValue = ResultSetUtils.makeNumericValue(acs.attributeValues[0]);
+                                double maxValue = ResultSetUtils.makeNumericValue(acs.attributeValues[1]);
+                                if (acs.colorBackground != null && acs.colorBackground2 != null) {
                                     final DBDAttributeBinding binding = entry.getKey();
                                     final Object cellValue = getCellValue(binding, row);
                                     double value = ResultSetUtils.makeNumericValue(cellValue);
@@ -639,10 +639,8 @@ public class ResultSetModel {
                                     row.background = UIUtils.getSharedColor(rowRGB);
                                 }
                             }
-                        }
 
-                    } else {
-                        for (ResultSetRow row : rows) {
+                        } else {
                             final DBDAttributeBinding binding = entry.getKey();
                             final Object cellValue = getCellValue(binding, row);
                             if (acs.evaluate(cellValue)) {
