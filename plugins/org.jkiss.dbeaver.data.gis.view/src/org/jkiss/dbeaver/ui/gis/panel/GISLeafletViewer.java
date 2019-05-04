@@ -33,6 +33,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -195,11 +196,14 @@ public class GISLeafletViewer {
             scriptFile = File.createTempFile("view", "gis.html", tempDir);
         }
         int baseSRID = 0;
-        String[] geomValues = new String[values.length];
-        String[] geomTipValues = new String[values.length];
+        List<String> geomValues = new ArrayList<>();
+        List<String> geomTipValues = new ArrayList<>();
         boolean showMap = false;
         for (int i = 0; i < values.length; i++) {
             DBGeometry value = values[i];
+            if (DBUtils.isNullValue(value)) {
+                continue;
+            }
             if (flipCoordinates) {
                 try {
                     value = value.flipCoordinates();
@@ -244,9 +248,9 @@ public class GISLeafletViewer {
             if (targetValue == null) {
                 continue;
             }
-            geomValues[i] = "'" + targetValue + "'";
+            geomValues.add("'" + targetValue + "'");
             if (CommonUtils.isEmpty(value.getProperties())) {
-                geomTipValues[i] = "null";
+                geomTipValues.add("null");
             } else {
                 StringBuilder geomProps = new StringBuilder("{");
                 boolean first = true;
@@ -257,7 +261,7 @@ public class GISLeafletViewer {
                         .append(DBValueFormatting.getDefaultValueDisplayString(prop.getValue(), DBDDisplayFormat.UI).replace("\"", "\\\"")).append("\"");
                 }
                 geomProps.append("}");
-                geomTipValues[i] = geomProps.toString();
+                geomTipValues.add(geomProps.toString());
             }
         }
         if (baseSRID == 0) {

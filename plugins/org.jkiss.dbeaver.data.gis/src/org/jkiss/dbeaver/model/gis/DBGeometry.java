@@ -100,7 +100,7 @@ public class DBGeometry implements DBDValue {
         if (jtsGeometry == null) {
             try {
                 jtsGeometry = new WKTReader().read(getString());
-            } catch (ParseException e) {
+            } catch (Exception e) {
                 throw new DBException("Error parsing geometry WKT", e);
             }
         } else {
