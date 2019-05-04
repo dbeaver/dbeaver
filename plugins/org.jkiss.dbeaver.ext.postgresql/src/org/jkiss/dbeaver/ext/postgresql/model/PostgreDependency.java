@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -37,12 +34,13 @@ import java.util.List;
 /**
 * Dependency
 */
-public class PostgreDependency implements PostgreObject, DBPImageProvider {
+public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DBPImageProvider {
 
     private static final Log log = Log.getLog(PostgreDependency.class);
 
     private final PostgreDatabase database;
     private final long objectId;
+    private String depType;
     private String name;
     private String description;
     private String objectType;
@@ -50,9 +48,10 @@ public class PostgreDependency implements PostgreObject, DBPImageProvider {
     private String schemaName;
     private PostgreObject targetObject;
 
-    public PostgreDependency(PostgreDatabase database, long objectId, String name, String description, String objectType, String tableName, String schemaName) {
+    public PostgreDependency(PostgreDatabase database, long objectId, String depType, String name, String description, String objectType, String tableName, String schemaName) {
         this.database = database;
         this.objectId = objectId;
+        this.depType = depType;
         this.name = name;
         this.description = description;
         this.objectType = objectType;
@@ -85,6 +84,11 @@ public class PostgreDependency implements PostgreObject, DBPImageProvider {
     @Property(viewable = true, order = 1)
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getOverloadedName() {
+        return name + " (" + depType + ")";
     }
 
     @Property(viewable = true, order = 2)
@@ -224,6 +228,7 @@ public class PostgreDependency implements PostgreObject, DBPImageProvider {
                         PostgreDependency dependency = new PostgreDependency(
                             object.getDatabase(),
                             JDBCUtils.safeGetLong(dbResult, queryObjId),
+                            JDBCUtils.safeGetString(dbResult, "deptype"),
                             objName,
                             objDesc,
                             JDBCUtils.safeGetString(dbResult, "type"),
