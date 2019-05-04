@@ -183,6 +183,16 @@ public class UIUtils {
         return column;
     }
 
+    public static void executeOnResize(Control control, Runnable runnable) {
+        control.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                runnable.run();
+                control.removeControlListener(this);
+            }
+        });
+    }
+
     public static void packColumns(Table table)
     {
         packColumns(table, false);

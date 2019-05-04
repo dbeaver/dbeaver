@@ -574,7 +574,7 @@ public class ResultSetModel {
     }
 
     boolean hasColorMapping(DBSEntity entity) {
-        DBVEntity virtualEntity = DBVUtils.findVirtualEntity(entity, false);
+        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(entity, false);
         return virtualEntity != null && !CommonUtils.isEmpty(virtualEntity.getColorOverrides());
     }
 
@@ -583,7 +583,7 @@ public class ResultSetModel {
 
         DBSEntity entity = getSingleSource();
         if (entity != null) {
-            DBVEntity virtualEntity = DBVUtils.findVirtualEntity(entity, false);
+            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(entity, false);
             if (virtualEntity != null) {
                 List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
                 if (!CommonUtils.isEmpty(coList)) {

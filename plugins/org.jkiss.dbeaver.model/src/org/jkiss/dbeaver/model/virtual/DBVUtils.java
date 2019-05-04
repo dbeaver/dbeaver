@@ -58,23 +58,36 @@ public abstract class DBVUtils {
         DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
         DBVEntity vEntity;
         if (entityAttribute != null) {
-            vEntity = findVirtualEntity(entityAttribute.getParentObject(), create);
+            vEntity = getVirtualEntity(entityAttribute.getParentObject(), create);
         } else {
-            // Not an entity. Most likely a custom query. Use local cache for such attributes.
-            // There shouldn't be too many such settings as they are defined by user manually
-            // so we shouldn't eay too much memory for that
-            String attrKey = DBUtils.getObjectFullId(binding.getDataContainer());
-            synchronized (orphanVirtualEntities) {
-                vEntity = orphanVirtualEntities.get(attrKey);
-                if (vEntity == null && create) {
-                    vEntity = new DBVEntity(
-                        binding.getDataContainer().getDataSource().getContainer().getVirtualModel(),
-                        binding.getDataContainer().getName(), "");
-                    orphanVirtualEntities.put(attrKey, vEntity);
-                }
-            }
+            vEntity = getVirtualEntity(binding.getDataContainer(), create);
+
         }
         return vEntity;
+    }
+
+    @Nullable
+    public static DBVEntity getVirtualEntity(@NotNull DBSEntity source, boolean create)
+    {
+        return source.getDataSource().getContainer().getVirtualModel().findEntity(source, create);
+    }
+
+    public static DBVEntity getVirtualEntity(@NotNull DBSDataContainer dataContainer, boolean create) {
+        // Not an entity. Most likely a custom query. Use local cache for such attributes.
+        // There shouldn't be too many such settings as they are defined by user manually
+        // so we shouldn't eay too much memory for that
+        String attrKey = DBUtils.getObjectFullId(dataContainer);
+        synchronized (orphanVirtualEntities) {
+            DBVEntity vEntity = orphanVirtualEntities.get(attrKey);
+            if (vEntity == null && create) {
+                vEntity = new DBVEntity(
+                    dataContainer.getDataSource().getContainer().getVirtualModel(),
+                    dataContainer.getName(),
+                    "");
+                orphanVirtualEntities.put(attrKey, vEntity);
+            }
+            return vEntity;
+        }
     }
 
     @Nullable
@@ -104,12 +117,6 @@ public abstract class DBVUtils {
             return options;
         }
         return Collections.emptyMap();
-    }
-
-    @Nullable
-    public static DBVEntity findVirtualEntity(@NotNull DBSEntity source, boolean create)
-    {
-        return source.getDataSource().getContainer().getVirtualModel().findEntity(source, create);
     }
 
     @Nullable
@@ -149,7 +156,7 @@ public abstract class DBVUtils {
     }
 
     public static String getDictionaryDescriptionColumns(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
-        DBVEntity dictionary = DBVUtils.findVirtualEntity(attribute.getParentObject(), false);
+        DBVEntity dictionary = DBVUtils.getVirtualEntity(attribute.getParentObject(), false);
         String descColumns = null;
         if (dictionary != null) {
             descColumns = dictionary.getDescriptionColumnNames();

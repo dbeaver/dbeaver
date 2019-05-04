@@ -121,7 +121,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
     }
 
     @Override
-    protected void performFinish() throws DBException {
+    public void performFinish() throws DBException {
         // Save any active editors
         propertyViewer.saveEditorValues();
     }

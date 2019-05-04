@@ -306,7 +306,7 @@ public class ResultSetUtils
         if (CommonUtils.isEmpty(identifiers)) {
             // No physical identifiers or row ids
             // Make new or use existing virtual identifier
-            DBVEntity virtualEntity = DBVUtils.findVirtualEntity(table, true);
+            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(table, true);
             identifiers.add(virtualEntity.getBestIdentifier());
         }
 

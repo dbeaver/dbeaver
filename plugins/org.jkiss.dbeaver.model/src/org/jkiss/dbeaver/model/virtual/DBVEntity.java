@@ -375,6 +375,18 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return colorOverrides;
     }
 
+    public List<DBVColorOverride> getColorOverrides(String attrName) {
+        List<DBVColorOverride> result = new ArrayList<>();
+        if (colorOverrides != null) {
+            for (DBVColorOverride co : colorOverrides) {
+                if (CommonUtils.equalObjects(attrName, co.getAttributeName())) {
+                    result.add(co);
+                }
+            }
+        }
+        return result;
+    }
+
     public void setColorOverrides(List<DBVColorOverride> colorOverrides) {
         this.colorOverrides = colorOverrides;
     }
@@ -468,4 +480,5 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             dataSource.getContainer().persistConfiguration();
         }
     }
+
 }
