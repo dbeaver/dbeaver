@@ -31,16 +31,16 @@ import java.util.Properties;
  */
 public enum SQLServerAuthentication {
 
-    SQL_SERVER_PASSWORD(SQLServerMessages.authentication_sql_server_title, SQLServerMessages.authentication_sql_server_description, true, true, (connectionInfo, properties) -> {
+    SQL_SERVER_PASSWORD(SQLServerMessages.authentication_sql_server_title, SQLServerMessages.authentication_sql_server_description, true, true, true, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(false));
         //properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_SQL_SERVER_PASSWORD);
 
         setStandardCredentials(connectionInfo, properties);
     }),
-    WINDOWS_INTEGRATED(SQLServerMessages.authentication_windows_title, SQLServerMessages.authentication_windows_description, true, false, (connectionInfo, properties) -> {
+    WINDOWS_INTEGRATED(SQLServerMessages.authentication_windows_title, SQLServerMessages.authentication_windows_description, true, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(true));
     }),
-    AD_PASSWORD(SQLServerMessages.authentication_ad_password_title, SQLServerMessages.authentication_ad_password_description, false, true, (connectionInfo, properties) -> {
+    AD_PASSWORD(SQLServerMessages.authentication_ad_password_title, SQLServerMessages.authentication_ad_password_description, false, true, true, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(false));
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_PASSWORD);
 
@@ -51,7 +51,7 @@ public enum SQLServerAuthentication {
             properties.put("Password", connectionInfo.getUserPassword());
         }
     }),
-    AD_MSI(SQLServerMessages.authentication_ad_msi_title, SQLServerMessages.authentication_ad_msi_description, false, true, (connectionInfo, properties) -> {
+    AD_MSI(SQLServerMessages.authentication_ad_msi_title, SQLServerMessages.authentication_ad_msi_description, false, true, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_MSI);
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
             properties.put("msiClientId", connectionInfo.getUserName());
@@ -59,10 +59,10 @@ public enum SQLServerAuthentication {
             properties.remove(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD);
         }
     }),
-    AD_INTEGRATED(SQLServerMessages.authentication_ad_integrated_title, SQLServerMessages.authentication_ad_integrated_description, false, false, (connectionInfo, properties) -> {
+    AD_INTEGRATED(SQLServerMessages.authentication_ad_integrated_title, SQLServerMessages.authentication_ad_integrated_description, false, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_INTEGRATED);
     }),
-    KERBEROS_INTEGRATED(SQLServerMessages.authentication_kerberos_title, SQLServerMessages.authentication_kerberos_description, false, false, (connectionInfo, properties) -> {
+    KERBEROS_INTEGRATED(SQLServerMessages.authentication_kerberos_title, SQLServerMessages.authentication_kerberos_description, false, false, false, (connectionInfo, properties) -> {
         properties.put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY, String.valueOf(true));
         properties.put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION_SCHEME, SQLServerConstants.AUTH_SCHEME_KERBEROS);
 
@@ -71,7 +71,7 @@ public enum SQLServerAuthentication {
             SQLServerGSS.initCredentials(connectionInfo, properties);
         }
     }),
-    OTHER(SQLServerMessages.authentication_other_title, SQLServerMessages.authentication_other_description, true, true, (connectionInfo, properties) -> {
+    OTHER(SQLServerMessages.authentication_other_title, SQLServerMessages.authentication_other_description, true, true, true, (connectionInfo, properties) -> {
         // Set standard JDBC creds
         setStandardCredentials(connectionInfo, properties);
         // Nothing special
@@ -91,12 +91,14 @@ public enum SQLServerAuthentication {
     private final String description;
     private final boolean supportsJTDS;
     private final boolean allowsPassword;
+    private final boolean allowsUserName;
     private final AuthInitializer initializer;
 
-    SQLServerAuthentication(String title, String description, boolean supportsJTDS, boolean allowsPassword, AuthInitializer initializer) {
+    SQLServerAuthentication(String title, String description, boolean supportsJTDS, boolean allowsUserName, boolean allowsPassword, AuthInitializer initializer) {
         this.title = title;
         this.description = description;
         this.supportsJTDS = supportsJTDS;
+        this.allowsUserName = allowsUserName;
         this.allowsPassword = allowsPassword;
         this.initializer = initializer;
     }
@@ -111,6 +113,10 @@ public enum SQLServerAuthentication {
 
     public boolean isSupportsJTDS() {
         return supportsJTDS;
+    }
+
+    public boolean isAllowsUserName() {
+        return allowsUserName;
     }
 
     public boolean isAllowsPassword() {

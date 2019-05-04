@@ -278,9 +278,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private void updateSecurityControls() {
         SQLServerAuthentication authSchema = authSchemas[authCombo.getSelectionIndex()];
 
+        boolean supportsUserName = authSchema.isAllowsUserName();
         boolean supportsPassword = authSchema.isAllowsPassword();
-        userNameLabel.setEnabled(supportsPassword);
-        userNameText.setEnabled(supportsPassword);
+        userNameLabel.setEnabled(supportsUserName);
+        userNameText.setEnabled(supportsUserName);
         passwordLabel.setEnabled(supportsPassword);
         passwordText.setEnabled(supportsPassword);
         savePasswordCheck.setEnabled(supportsPassword);
