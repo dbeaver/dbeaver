@@ -27,10 +27,12 @@ import java.util.Arrays;
  */
 public class DBVColorOverride {
     private String attributeName;
+    private boolean isRange;
+    private boolean singleColumn;
     private DBCLogicalOperator operator;
     private Object[] attributeValues;
-    private String colorForeground;
-    private String colorBackground;
+    private String colorForeground, colorForeground2;
+    private String colorBackground, colorBackground2;
 
     public DBVColorOverride(String attributeName, DBCLogicalOperator operator, Object[] attributeValues, String colorForeground, String colorBackground) {
         this.attributeName = attributeName;
@@ -48,6 +50,22 @@ public class DBVColorOverride {
         this.attributeName = attributeName;
     }
 
+    public boolean isRange() {
+        return isRange;
+    }
+
+    public void setRange(boolean range) {
+        isRange = range;
+    }
+
+    public boolean isSingleColumn() {
+        return singleColumn;
+    }
+
+    public void setSingleColumn(boolean singleColumn) {
+        this.singleColumn = singleColumn;
+    }
+
     public DBCLogicalOperator getOperator() {
         return operator;
     }
@@ -58,6 +76,10 @@ public class DBVColorOverride {
 
     public Object[] getAttributeValues() {
         return attributeValues;
+    }
+
+    public void setAttributeValues(Object[] attributeValues) {
+        this.attributeValues = attributeValues;
     }
 
     public void addAttributeValue(Object value) {
@@ -79,12 +101,28 @@ public class DBVColorOverride {
         this.colorForeground = colorForeground;
     }
 
+    public String getColorForeground2() {
+        return colorForeground2;
+    }
+
+    public void setColorForeground2(String colorForeground2) {
+        this.colorForeground2 = colorForeground2;
+    }
+
     public String getColorBackground() {
         return colorBackground;
     }
 
     public void setColorBackground(String colorBackground) {
         this.colorBackground = colorBackground;
+    }
+
+    public String getColorBackground2() {
+        return colorBackground2;
+    }
+
+    public void setColorBackground2(String colorBackground2) {
+        this.colorBackground2 = colorBackground2;
     }
 
     public boolean matches(@NotNull String attrName, @NotNull DBCLogicalOperator operator, @Nullable Object[] values) {
