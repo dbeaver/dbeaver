@@ -146,6 +146,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
+    private int rowBatchSize;
     private IValueEditor activeInlineEditor;
 
     public SpreadsheetPresentation() {
@@ -696,6 +697,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         colorizeDataTypes = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         rightJustifyNumbers = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         rightJustifyDateTime = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
+        rowBatchSize = preferenceStore.getInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
 
         spreadsheet.setRedraw(false);
         try {
@@ -1675,15 +1677,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
-            if (row.getState() == ResultSetRow.STATE_ADDED) {
-                return backgroundAdded;
-            }
-            if (row.getState() == ResultSetRow.STATE_REMOVED) {
-                return backgroundDeleted;
+            switch (row.getState()) {
+                case ResultSetRow.STATE_ADDED:
+                    return backgroundAdded;
+                case ResultSetRow.STATE_REMOVED:
+                    return backgroundDeleted;
             }
             if (row.changes != null && row.changes.containsKey(attribute)) {
                 return backgroundModified;
             }
+
             if (row.background != null) {
                 return row.background;
             }
@@ -1697,7 +1700,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             if (!recordMode && showOddRows) {
                 // Determine odd/even row
-                int rowBatchSize = getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
                 if (rowBatchSize < 1) {
                     rowBatchSize = 1;
                 }
