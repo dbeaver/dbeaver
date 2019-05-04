@@ -169,14 +169,6 @@ public class ResultSetUtils
                             binding.setEntityAttribute(tableColumn, false);
                             continue;
                         }
-/*
-                        final SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getName());
-                        if (selectItem != null && !selectItem.isPlainColumn()) {
-                            // It is not a column.
-                            // It maybe an expression, function or anything else
-                            continue;
-                        }
-*/
                     }
 
                     if (tableColumn != null && binding.setEntityAttribute(tableColumn, true) && rows != null) {

@@ -48,11 +48,14 @@ public class DBVModel extends DBVContainer {
     private static final String TAG_CONTAINER = "container"; //$NON-NLS-1$
     private static final String TAG_ENTITY = "entity"; //$NON-NLS-1$
     private static final String TAG_CONSTRAINT = "constraint"; //$NON-NLS-1$
+    private static final String TAG_ASSOCIATION = "association"; //$NON-NLS-1$
     private static final String TAG_ATTRIBUTE = "attribute"; //$NON-NLS-1$
     private static final String ATTR_ID = "id"; //$NON-NLS-1$
     private static final String ATTR_NAME = "name"; //$NON-NLS-1$
     private static final String ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
     private static final String ATTR_CUSTOM = "custom"; //$NON-NLS-1$
+    private static final String ATTR_ENTITY = "entity"; //$NON-NLS-1$
+    private static final String ATTR_CONSTRAINT = "constraint"; //$NON-NLS-1$
     private static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
     private static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     private static final String ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -210,6 +213,19 @@ public class DBVModel extends DBVContainer {
                 }
                 xml.endElement();
             }
+        }
+        // Foreign keys
+        for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.entityForeignKeys)) {
+            xml.startElement(TAG_ASSOCIATION);
+            DBSEntity refEntity = fk.getAssociatedEntity();
+            xml.addAttribute(ATTR_ENTITY, DBUtils.getObjectFullId(refEntity));
+            xml.addAttribute(ATTR_CONSTRAINT, fk.getReferencedConstraint().getName());
+            for (DBVEntityForeignKeyColumn cc : CommonUtils.safeCollection(fk.getAttributeReferences(null))) {
+                xml.startElement(TAG_ATTRIBUTE);
+                xml.addAttribute(ATTR_NAME, cc.getAttributeName());
+                xml.endElement();
+            }
+            xml.endElement();
         }
         // Colors
         if (!CommonUtils.isEmpty(entity.colorOverrides)) {

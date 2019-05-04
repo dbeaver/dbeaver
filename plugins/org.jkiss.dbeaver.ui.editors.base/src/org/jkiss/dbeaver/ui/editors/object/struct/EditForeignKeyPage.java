@@ -36,8 +36,6 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -352,39 +350,35 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             curConstraint = null;
             if (refTableNode != null) {
                 final DBSTable refTable = (DBSTable) refTableNode.getObject();
-                UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            // Cache own table columns
-                            ownTable.getAttributes(monitor);
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        // Cache own table columns
+                        ownTable.getAttributes(monitor);
 
-                            // Cache ref table columns
-                            refTable.getAttributes(monitor);
+                        // Cache ref table columns
+                        refTable.getAttributes(monitor);
 
-                            // Get constraints
-                            final Collection<? extends DBSTableConstraint> constraints = refTable.getConstraints(monitor);
-                            if (!CommonUtils.isEmpty(constraints)) {
-                                for (DBSTableConstraint constraint : constraints) {
-                                    if (constraint.getConstraintType().isUnique()) {
-                                        curConstraints.add(constraint);
-                                    }
+                        // Get constraints
+                        final Collection<? extends DBSTableConstraint> constraints = refTable.getConstraints(monitor);
+                        if (!CommonUtils.isEmpty(constraints)) {
+                            for (DBSTableConstraint constraint : constraints) {
+                                if (constraint.getConstraintType().isUnique()) {
+                                    curConstraints.add(constraint);
                                 }
                             }
-
-                            // Get indexes
-                            final Collection<? extends DBSTableIndex> indexes = refTable.getIndexes(monitor);
-                            if (!CommonUtils.isEmpty(indexes)) {
-                                for (DBSTableIndex constraint : indexes) {
-                                    if (constraint.getConstraintType().isUnique()) {
-                                        curConstraints.add(constraint);
-                                    }
-                                }
-                            }
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
                         }
+
+                        // Get indexes
+                        final Collection<? extends DBSTableIndex> indexes = refTable.getIndexes(monitor);
+                        if (!CommonUtils.isEmpty(indexes)) {
+                            for (DBSTableIndex constraint : indexes) {
+                                if (constraint.getConstraintType().isUnique()) {
+                                    curConstraints.add(constraint);
+                                }
+                            }
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
                 });
             }
