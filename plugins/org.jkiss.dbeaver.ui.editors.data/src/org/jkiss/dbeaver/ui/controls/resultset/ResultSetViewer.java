@@ -4163,7 +4163,7 @@ public class ResultSetViewer extends Viewer
         }
 
         void updateColors(DBVEntity entity) {
-            model.updateColorMapping();
+            model.updateColorMapping(true);
             redrawData(false, false);
             entity.persistConfiguration();
         }

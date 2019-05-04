@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -73,31 +74,28 @@ public class ResultSetModel {
 
     public static class AttributeColorSettings {
         private DBCLogicalOperator operator;
+        private boolean rangeCheck;
+        private boolean singleColumn;
         private Object[] attributeValues;
-        private Color colorForeground;
-        private Color colorBackground;
+        private Color colorForeground, colorForeground2;
+        private Color colorBackground, colorBackground2;
 
         public AttributeColorSettings(DBVColorOverride co) {
             this.operator = co.getOperator();
-            this.colorForeground = UIUtils.getSharedColor(co.getColorForeground());
-            this.colorBackground = UIUtils.getSharedColor(co.getColorBackground());
+            this.rangeCheck = co.isRange();
+            this.singleColumn = co.isSingleColumn();
+            this.colorForeground = getColor(co.getColorForeground());
+            this.colorForeground2 = getColor(co.getColorForeground2());
+            this.colorBackground = getColor(co.getColorBackground());
+            this.colorBackground2 = getColor(co.getColorBackground2());
             this.attributeValues = co.getAttributeValues();
         }
 
-        public DBCLogicalOperator getOperator() {
-            return operator;
-        }
-
-        public Object[] getAttributeValues() {
-            return attributeValues;
-        }
-
-        public Color getColorForeground() {
-            return colorForeground;
-        }
-
-        public Color getColorBackground() {
-            return colorBackground;
+        private static Color getColor(String color) {
+            if (CommonUtils.isEmpty(color)) {
+                return null;
+            }
+            return UIUtils.getSharedColor(color);
         }
 
         public boolean evaluate(Object cellValue) {
@@ -505,7 +503,7 @@ public class ResultSetModel {
                     documentAttribute = realAttr;
                 }
             }
-            updateColorMapping();
+            updateColorMapping(false);
         }
     }
 
@@ -563,7 +561,7 @@ public class ResultSetModel {
                 }
             }
             singleSourceEntity = sourceTable;
-            updateColorMapping();
+            updateColorMapping(false);
         }
 
         hasData = true;
@@ -578,7 +576,7 @@ public class ResultSetModel {
         return virtualEntity != null && !CommonUtils.isEmpty(virtualEntity.getColorOverrides());
     }
 
-    void updateColorMapping() {
+    void updateColorMapping(boolean reset) {
         colorMapping.clear();
 
         DBSEntity entity = getSingleSource();
@@ -614,26 +612,43 @@ public class ResultSetModel {
                 }
             }
         }
-        updateRowColors(curRows);
+        updateRowColors(reset, curRows);
     }
 
-    private void updateRowColors(List<ResultSetRow> rows) {
-        if (colorMapping.isEmpty()) {
+    private void updateRowColors(boolean reset, List<ResultSetRow> rows) {
+        if (colorMapping.isEmpty() || reset) {
             for (ResultSetRow row : rows) {
                 row.foreground = null;
                 row.background = null;
             }
-        } else {
+        }
+        if (!colorMapping.isEmpty()) {
             for (Map.Entry<DBDAttributeBinding, List<AttributeColorSettings>> entry : colorMapping.entrySet()) {
-                for (ResultSetRow row : rows) {
-                    final DBDAttributeBinding binding = entry.getKey();
-                    final Object cellValue = getCellValue(binding, row);
-                    //final String cellStringValue = binding.getValueHandler().getValueDisplayString(binding, cellValue, DBDDisplayFormat.NATIVE);
-                    for (AttributeColorSettings acs : entry.getValue()) {
-                        if (acs.evaluate(cellValue)) {
-                            row.foreground = acs.colorForeground;
-                            row.background = acs.colorBackground;
-                            break;
+                for (AttributeColorSettings acs : entry.getValue()) {
+                    if (acs.rangeCheck) {
+                        if (acs.attributeValues != null && acs.attributeValues.length > 1) {
+                            double minValue = ResultSetUtils.makeNumericValue(acs.attributeValues[0]);
+                            double maxValue = ResultSetUtils.makeNumericValue(acs.attributeValues[1]);
+                            if (acs.colorBackground != null && acs.colorBackground2 != null) {
+                                for (ResultSetRow row : rows) {
+                                    final DBDAttributeBinding binding = entry.getKey();
+                                    final Object cellValue = getCellValue(binding, row);
+                                    double value = ResultSetUtils.makeNumericValue(cellValue);
+
+                                    RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
+                                    row.background = UIUtils.getSharedColor(rowRGB);
+                                }
+                            }
+                        }
+
+                    } else {
+                        for (ResultSetRow row : rows) {
+                            final DBDAttributeBinding binding = entry.getKey();
+                            final Object cellValue = getCellValue(binding, row);
+                            if (acs.evaluate(cellValue)) {
+                                row.foreground = acs.colorForeground;
+                                row.background = acs.colorBackground;
+                            }
                         }
                     }
                 }
@@ -650,7 +665,7 @@ public class ResultSetModel {
                 new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
         curRows.addAll(newRows);
-        updateRowColors(newRows);
+        updateRowColors(false, newRows);
     }
 
     void clearData() {
