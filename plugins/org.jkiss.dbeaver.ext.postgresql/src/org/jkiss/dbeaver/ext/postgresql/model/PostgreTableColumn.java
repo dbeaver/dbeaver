@@ -19,23 +19,31 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * PostgreTableColumn
  */
-public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, GisAttribute
+public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, GisAttribute, PostgreScriptObject
 {
     private static final Log log = Log.getLog(PostgreTableColumn.class);
+
+    private String columnDDL;
 
     private static class GeometryInfo {
         private String type;
@@ -124,6 +132,31 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
         }
 
         geometryInfo = gi;
+    }
+
+    @Override
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    {
+        if (columnDDL == null && isPersisted()) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read column definition")) {
+                columnDDL =
+                        "COLUMN " + DBUtils.getQuotedIdentifier(this) + " " +
+                                JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_constraintdef(?)", getObjectId());
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        }
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_EMBEDDED_SOURCE)) {
+            return columnDDL;
+        } else {
+            return "ALTER TABLE " + getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + columnDDL;
+        }
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+        throw new DBException("Column DDL is read-only");
     }
 
 }
