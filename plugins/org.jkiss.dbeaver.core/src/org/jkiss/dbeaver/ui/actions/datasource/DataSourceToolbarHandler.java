@@ -57,7 +57,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
         DBWorkbench.getPlatform().getNavigatorModel().addListener(this);
 
         final ISelectionListener selectionListener = (part, selection) -> {
-            if (part == activePart && selection instanceof IStructuredSelection) {
+            if (part == activePart && part instanceof IEditorPart && selection instanceof IStructuredSelection) {
                 final Object element = ((IStructuredSelection) selection).getFirstElement();
                 if (element != null) {
                     if (RuntimeUtils.getObjectAdapter(element, DBSObject.class) != null) {
