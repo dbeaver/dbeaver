@@ -88,6 +88,8 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             dataSource.copyFrom(dsTpl);
             if (folder != null) {
                 dataSource.setFolder(folder);
+            } else {
+                dataSource.setFolder(dsTpl.getFolder());
             }
             // Generate new name
             String origName = dsTpl.getName();
