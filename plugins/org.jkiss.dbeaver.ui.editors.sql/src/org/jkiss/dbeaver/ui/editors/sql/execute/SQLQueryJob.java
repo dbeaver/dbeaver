@@ -402,7 +402,7 @@ public class SQLQueryJob extends DataSourceJob
 
             SQLQuery execStatement = sqlQuery;
             long execStartTime = startTime;
-            DBUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
+            DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
                 try {
                     executeStatement(session, execStatement, execStartTime, curResult);
                 } catch (Throwable e) {

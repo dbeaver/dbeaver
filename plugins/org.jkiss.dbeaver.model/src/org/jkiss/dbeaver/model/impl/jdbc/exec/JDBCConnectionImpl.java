@@ -21,12 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -116,7 +112,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     return prepareCall(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
                         return prepareCall(sqlQuery);
                     } else {
                         throw e;
@@ -169,7 +165,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     return prepareStatement(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
                         return prepareStatement(sqlQuery);
                     } else {
                         throw e;
@@ -188,7 +184,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     dbStat =  prepareStatement(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
                         dbStat = prepareStatement(sqlQuery);
                     } else {
                         throw e;

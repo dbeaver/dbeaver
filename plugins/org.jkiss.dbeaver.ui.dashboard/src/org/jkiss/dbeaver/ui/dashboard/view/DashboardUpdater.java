@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -90,7 +89,7 @@ public class DashboardUpdater {
                 continue;
             }
             try {
-                DBUtils.tryExecuteRecover(dashboards, dataSource, param -> {
+                DBExecUtils.tryExecuteRecover(dashboards, dataSource, param -> {
                     try {
                         for (MapQueryInfo mqi : mqEntry.getValue()) {
                             readMapQueryData(monitor, mqi);
@@ -110,7 +109,7 @@ public class DashboardUpdater {
                 continue;
             }
             try {
-                DBUtils.tryExecuteRecover(dashboards, dataSource, param -> {
+                DBExecUtils.tryExecuteRecover(dashboards, dataSource, param -> {
                     try {
                         updateDashboard(monitor, dashboard);
                     } catch (Throwable e) {

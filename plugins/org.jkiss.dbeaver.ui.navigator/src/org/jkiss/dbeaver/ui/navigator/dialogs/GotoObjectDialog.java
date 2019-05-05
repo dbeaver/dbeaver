@@ -40,12 +40,12 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -204,7 +204,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             }
 
             ObjectFinder objectFinder = new ObjectFinder(structureAssistant, monitor, typesToSearch, nameMask);
-            DBUtils.tryExecuteRecover(monitor, context.getDataSource(), objectFinder);
+            DBExecUtils.tryExecuteRecover(monitor, context.getDataSource(), objectFinder);
 
             DBPDataSourceContainer dsContainer = context.getDataSource().getContainer();
             for (DBSObjectReference ref : objectFinder.getResult()) {

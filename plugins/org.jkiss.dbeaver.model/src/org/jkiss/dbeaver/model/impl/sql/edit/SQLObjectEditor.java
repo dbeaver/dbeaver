@@ -292,7 +292,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
-    protected class ObjectCreateCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler> {
+    public class ObjectCreateCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler> {
 
         protected ObjectCreateCommand(OBJECT_TYPE object, String title)
         {

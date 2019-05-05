@@ -23,12 +23,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -97,7 +93,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
             purpose,
             NLS.bind(ResultSetMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
-            DBUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
+            DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
                 try {
                     statistics = dataContainer.readData(
                         ResultSetJobDataRead.this,
