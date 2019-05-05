@@ -105,12 +105,14 @@ class IndentFormatter {
                             }
                         }
                     }
+                case "DROP": //$NON-NLS-1$
+                case "ALTER": //$NON-NLS-1$
+                    break;
                 case "DELETE": //$NON-NLS-1$
                 case "SELECT": //$NON-NLS-1$
                 case "UPDATE": //$NON-NLS-1$
                 case "INSERT": //$NON-NLS-1$
                 case "INTO": //$NON-NLS-1$
-                case "DROP": //$NON-NLS-1$
                 case "TRUNCATE": //$NON-NLS-1$
                 case "TABLE": //$NON-NLS-1$
                     if (!isCompact) {
@@ -162,6 +164,9 @@ class IndentFormatter {
                     result += insertReturnAndIndent(argList, index, indent);
                     break;
                 case "OR":
+                    if ("CREATE".equalsIgnoreCase(getPrevKeyword(argList, index))) {
+                        break;
+                    }
                 case "WHEN":
                 case "ELSE":  //$NON-NLS-1$
                     result += insertReturnAndIndent(argList, index, indent);
