@@ -26,6 +26,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
@@ -92,6 +93,8 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.SortedMap;
+
+import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 
 /**
  * UI Utils
@@ -936,6 +939,33 @@ public class UIUtils {
         if (image != null) {
             button.setImage(image);
         }
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
+        return button;
+    }
+
+    @NotNull
+    public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable SelectionListener selectionListener)
+    {
+        Button button = new Button(parent, SWT.PUSH);
+        button.setText(label);
+        button.setFont(JFaceResources.getDialogFont());
+
+        // Dialog settings
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GC gc = new GC(button);
+        int widthHint;
+        try {
+            gc.setFont(JFaceResources.getDialogFont());
+            widthHint = org.eclipse.jface.dialogs.Dialog.convertHorizontalDLUsToPixels(gc.getFontMetrics(), IDialogConstants.BUTTON_WIDTH);
+        } finally {
+            gc.dispose();
+        }
+        Point minSize = button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        gd.widthHint = Math.max(widthHint, minSize.x);
+        button.setLayoutData(gd);
+
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
         }
