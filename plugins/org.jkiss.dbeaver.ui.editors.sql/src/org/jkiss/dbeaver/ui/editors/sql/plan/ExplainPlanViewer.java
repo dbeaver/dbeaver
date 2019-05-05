@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCSavedQueryPlanner;
@@ -326,7 +327,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         public DBCPlan evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException {
             try {
-                DBUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+                DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
                         try {
                             if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {

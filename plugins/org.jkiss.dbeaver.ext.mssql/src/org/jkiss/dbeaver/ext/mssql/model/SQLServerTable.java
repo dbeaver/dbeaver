@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -171,7 +172,7 @@ public class SQLServerTable extends SQLServerTableBase
             ddl = null;
         }
         if (ddl == null) {
-            ddl = JDBCUtils.generateTableDDL(monitor, this, options, false);
+            ddl = DBStructUtils.generateTableDDL(monitor, this, options, false);
         }
         return ddl;
     }

@@ -67,6 +67,7 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreRule"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
