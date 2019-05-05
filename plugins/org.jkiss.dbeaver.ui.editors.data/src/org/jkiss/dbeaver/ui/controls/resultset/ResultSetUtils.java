@@ -409,6 +409,12 @@ public class ResultSetUtils
             return ((Number) value).doubleValue();
         } else if (value instanceof Date) {
             return ((Date) value).getTime();
+        } else if (value instanceof String) {
+            try {
+                return Double.parseDouble((String) value);
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
         } else {
             return 0;
         }

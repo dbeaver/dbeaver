@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -347,6 +348,10 @@ class ColorSettingsDialog extends BaseDialog {
                 errorLabel.setText("N/A");
             } else {
                 editor.createControl();
+//                if (attribute.getValueHandler() instanceof DBDValueDefaultGenerator) {
+//                    Object defaultValue = ((DBDValueDefaultGenerator) attribute.getValueHandler()).generateDefaultValue(attribute);
+//                    editor.primeEditorValue(defaultValue);
+//                }
                 editor.getControl().addListener(SWT.Modify, event -> {
                     if (curOverride != null) {
                         try {
