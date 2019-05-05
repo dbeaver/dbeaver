@@ -26,14 +26,16 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * PostgreTableColumn
  */
-public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, GisAttribute
+public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute
 {
     private static final Log log = Log.getLog(PostgreTableColumn.class);
 
@@ -124,6 +126,16 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
         }
 
         geometryInfo = gi;
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return DBStructUtils.generateObjectDDL(monitor, this, options, false);
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+
     }
 
 }
