@@ -40,12 +40,12 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
-import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -53,7 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class ColorSettingsDialog extends HelpEnabledDialog {
+class ColorSettingsDialog extends BaseDialog {
 
     private static final Log log = Log.getLog(ColorSettingsDialog.class);
     private static final String DIALOG_ID = "DBeaver.ColorSettingsDialog";//$NON-NLS-1$
@@ -86,7 +86,7 @@ class ColorSettingsDialog extends HelpEnabledDialog {
         @NotNull ResultSetViewer resultSetViewer,
         @NotNull final DBDAttributeBinding attr,
         @Nullable final ResultSetRow row) {
-        super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_ROW_COLORS);
+        super(resultSetViewer.getControl().getShell(), "Customize colors for [" + attr.getName() + "]", UIIcon.PALETTE);
         this.resultSetViewer = resultSetViewer;
         this.attribute = attr;
         this.row = row;
@@ -100,9 +100,7 @@ class ColorSettingsDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
-        getShell().setText("Customize colors for [" + attribute.getName() + "]");
-
+    protected Composite createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
         Composite mainGroup = new Composite(composite, SWT.NONE);
         mainGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_BOTH));
