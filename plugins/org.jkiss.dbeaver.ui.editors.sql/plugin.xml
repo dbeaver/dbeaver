@@ -720,4 +720,101 @@
 
     </extension>
 
+    <extension point="org.eclipse.ui.themes">
+
+        <!-- Colors for SQL editor -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.label" id="org.jkiss.dbeaver.ui.presentation.sql">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.description</description>
+        </themeElementCategory>
+
+        <fontDefinition
+            id="org.jkiss.dbeaver.sql.editor.font.output"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            label="%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.label"
+            value="Courier New-regular-10">
+            <description>%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.description</description>
+            <fontValue os="linux" value="Monospace-regular-10"/>
+            <fontValue os="macosx" value="Courier-regular-11"/>
+        </fontDefinition>
+
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.keyword.foreground"
+            value="COLOR_DARK_RED">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.datatype.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.datatype.foreground"
+            value="COLOR_DARK_BLUE">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.datatype.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.string.foreground"
+            value="COLOR_DARK_GREEN">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.number.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.number.foreground"
+            value="COLOR_BLUE">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.number.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.comment.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.comment.foreground"
+            value="COLOR_DARK_GRAY">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.comment.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.delimiter.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground"
+            value="COLOR_RED">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.delimiter.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.command.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.command.foreground"
+            value="COLOR_DARK_MAGENTA">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.command.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.parameter.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.parameter.foreground"
+            value="COLOR_DARK_BLUE">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.parameter.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.text.foreground"
+            value="COLOR_BLACK">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.text.background"
+            value="COLOR_WHITE">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.disabled.background"
+            value="COLOR_WIDGET_BACKGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.description</description>
+        </colorDefinition>
+
+    </extension>
+
 </plugin>
