@@ -249,7 +249,9 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     @Property(viewable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
-        if (getDataSource().getServerType().supportsDatabaseDescription())
+        if (!getDataSource().getServerType().supportsDatabaseDescription()) {
+            return null;
+        }
         if (description != null) {
             return description;
         }
