@@ -531,15 +531,15 @@ public class DBeaverCore implements DBPPlatform {
                             tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
                             if (!tempFolder.mkdirs()) {
                                 tempFolder = new File(TEMP_PROJECT_NAME);
-                                if (!tempFolder.mkdirs()) {
-                                    log.error("Can't create temp directory!");
-                                }
                             }
                         }
 
                     }
                 }
             }
+        }
+        if (!tempFolder.mkdirs()) {
+            log.error("Can't create temp directory!");
         }
         return tempFolder;
     }
