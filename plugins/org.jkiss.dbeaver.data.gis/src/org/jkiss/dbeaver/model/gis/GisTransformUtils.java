@@ -134,15 +134,12 @@ public class GisTransformUtils {
         if (crs1 instanceof GeodeticCRS && crs2 instanceof GeodeticCRS) {
             Set<CoordinateOperation> coordOps = CoordinateOperationFactory.createCoordinateOperations((GeodeticCRS) crs1, (GeodeticCRS) crs2);
             if (!coordOps.isEmpty()) {
-                // Test each transformation method (generally, only one method is available)
-                for (CoordinateOperation op : coordOps) {
-                    // Transform coord using the op CoordinateOperation from crs1 to crs2
-                    jtsValue = transformGeometry(jtsValue, op);
-                }
+            	CoordinateOperation op = CoordinateOperationFactory.getMostPrecise(coordOps);
+                // Transform coord using the op CoordinateOperation from crs1 to crs2
+                jtsValue = transformGeometry(jtsValue, op);
                 return jtsValue;
             }
         }
-
         return jtsValue;
     }
 
