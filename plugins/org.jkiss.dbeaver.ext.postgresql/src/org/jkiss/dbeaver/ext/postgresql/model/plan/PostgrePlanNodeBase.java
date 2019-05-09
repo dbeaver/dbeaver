@@ -177,6 +177,9 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase> exte
     @Override
     public Number getNodeRowCount() {
         String rows = attributes.get(ATTR_ACTUAL_ROWS);
+        if (rows == null) {
+            rows = attributes.get(ATTR_PLAN_ROWS);
+        }
         return rows == null ? null : CommonUtils.toLong(rows);
     }
 
