@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
@@ -368,38 +365,53 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_FULL)) {
             // Show DDL for all schema objects (do not include CREATE EXTENSION)
+            monitor.beginTask("Cache schema", 1);
+            cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+            monitor.done();
 /*
             Collection<PostgreExtension> extensions = getExtensions(monitor);
             for (PostgreExtension ext : extensions) {
                 addDDLLine(sql, ext.getObjectDefinitionText(monitor, options));
             }
 */
-            for (PostgreDataType dataType : getDataTypes(monitor)) {
+            Collection<PostgreDataType> dataTypes = getDataTypes(monitor);
+            monitor.beginTask("Load data types", dataTypes.size());
+            for (PostgreDataType dataType : dataTypes) {
                 addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                monitor.worked(1);
             }
-            for (PostgreTableBase tableOrView : getTableCache().getAllObjects(monitor, this)) {
-/*
-                PostgreExtension tableExt = null;
-                for (PostgreExtension ext : extensions) {
-                    if (ext.isExtensionTable(tableOrView)) {
-                        tableExt = ext;
+            monitor.done();
+
+            if (!monitor.isCanceled()) {
+                Collection<PostgreTableBase> tablesOrViews = getTableCache().getAllObjects(monitor, this);
+                monitor.beginTask("Load tabless and views", tablesOrViews.size());
+                for (PostgreTableBase tableOrView : tablesOrViews) {
+                    monitor.subTask(tableOrView.getName());
+                    addDDLLine(sql,
+                        DBStructUtils.generateTableDDL(monitor, tableOrView, options, false));
+                    monitor.worked(1);
+                    if (monitor.isCanceled()) {
                         break;
                     }
                 }
-                if (tableExt != null) {
-                    // Do not add extension tables
-                    continue;
+                monitor.done();
+            }
+            if (!monitor.isCanceled()) {
+                Collection<PostgreProcedure> procedures = getProcedures(monitor);
+                monitor.beginTask("Load tabless and views", procedures.size());
+                for (PostgreProcedure procedure : procedures) {
+                    monitor.subTask(procedure.getName());
+                    addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
+                    monitor.worked(1);
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                 }
-*/
-                addDDLLine(sql,
-                    DBStructUtils.generateTableDDL(monitor, tableOrView, options, false));
+                monitor.done();
             }
-            for (PostgreProcedure procedure : getProcedures(monitor)) {
-                addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
-            }
-//            for (PostgreAggregate procedure : getAggregateFunctions(monitor)) {
-//                addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
-//            }
         }
 
         return sql.toString();
