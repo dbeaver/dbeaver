@@ -27,6 +27,9 @@ public abstract class FunctionNumeric implements IAggregateFunction {
         }
         if (!(value instanceof Number)) {
             String strValue = value.toString();
+            if (strValue == null) {
+                return null;
+            }
             try {
                 value = Double.parseDouble(strValue);
             } catch (NumberFormatException e) {
