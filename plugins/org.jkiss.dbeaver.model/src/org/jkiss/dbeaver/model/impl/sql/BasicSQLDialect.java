@@ -249,7 +249,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Override
     public String[] getParametersPrefixes() {
-        return new String[]{String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)};
+        return new String[0];//{String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)};
     }
 
     @Override
