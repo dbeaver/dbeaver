@@ -538,8 +538,8 @@ public class DBeaverCore implements DBPPlatform {
                 }
             }
         }
-        if (!tempFolder.mkdirs()) {
-            log.error("Can't create temp directory!");
+        if (!tempFolder.exists() && !tempFolder.mkdirs()) {
+            log.error("Can't create temp directory " + tempFolder.getAbsolutePath());
         }
         return tempFolder;
     }
