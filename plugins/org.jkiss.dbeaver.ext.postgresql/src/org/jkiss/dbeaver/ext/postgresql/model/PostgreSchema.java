@@ -390,8 +390,12 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 monitor.beginTask("Load tabless and views", tablesOrViews.size());
                 for (PostgreTableBase tableOrView : tablesOrViews) {
                     monitor.subTask(tableOrView.getName());
-                    addDDLLine(sql,
-                        DBStructUtils.generateTableDDL(monitor, tableOrView, options, false));
+                    if (tableOrView instanceof PostgreSequence) {
+                        addDDLLine(sql, tableOrView.getObjectDefinitionText(monitor, options));
+                    } else {
+                        addDDLLine(sql,
+                            DBStructUtils.generateTableDDL(monitor, tableOrView, options, false));
+                    }
                     monitor.worked(1);
                     if (monitor.isCanceled()) {
                         break;
