@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -28,10 +27,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
 
@@ -141,13 +138,11 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     private String getStringFromGeometry(JDBCSession session, Geometry geometry) throws DBCException {
-        try {
-            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), PostgreConstants.PG_GEOMETRY_CLASS);
-            Object jtsg = jtsGeometry.getConstructor(Geometry.class).newInstance(geometry);
-            return (String)BeanUtils.invokeObjectMethod(
-                jtsg, "getValue", null, null);
-        } catch (Throwable e) {
-            throw new DBCException(e, session.getDataSource());
+        String strGeom = geometry.toString();
+        if (geometry.getSRID() > 0) {
+            return "SRID=" + geometry.getSRID() + ";" + strGeom;
+        } else {
+            return strGeom;
         }
     }
 
