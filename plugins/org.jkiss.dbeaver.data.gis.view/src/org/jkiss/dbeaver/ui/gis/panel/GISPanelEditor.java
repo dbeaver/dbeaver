@@ -93,12 +93,6 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
         }
     }
 
-    public void createControl() {
-        if (curViewer != null) {
-            curViewer.createControl();
-        }
-    }
-
     @Override
     protected Control createControl(Composite editPlaceholder) {
         if (curViewer == null) {
