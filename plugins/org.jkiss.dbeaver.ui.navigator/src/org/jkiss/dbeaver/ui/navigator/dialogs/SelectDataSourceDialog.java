@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -57,7 +58,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
     private boolean showConnected;
     private boolean showAllProjects;
-    private DBNNode projectNode;
+    private DBNProjectDatabases projectNode;
     private DBNNode rootNode;
 
     public SelectDataSourceDialog(@NotNull Shell parentShell, @Nullable IProject project, DBPDataSourceContainer selection)
@@ -111,7 +112,26 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter) {
             @Override
             protected void onTreeRefresh() {
-                expandFolders(this, getTreeRootNode());
+                DBNNode treeRootNode = getTreeRootNode();
+                if (dataSource != null && projectNode != null) {
+                    DBPDataSourceFolder dsFolder;
+                    for (dsFolder = dataSource.getFolder(); dsFolder != null; dsFolder = dsFolder.getParent()) {
+                        if (dsFolder.getParent() == null) {
+                            break;
+                        }
+                    }
+                    if (dsFolder != null) {
+                        // Expand only current DS folder
+                        DBNLocalFolder folderNode = projectNode.getFolderNode(dsFolder);
+                        if (folderNode != null) {
+                            expandFolders(this, folderNode);
+                        }
+                    } else {
+                        // Do not expand anything
+                    }
+                    return;
+                }
+                expandFolders(this, treeRootNode);
             }
         };
         gd = new GridData(GridData.FILL_BOTH);
