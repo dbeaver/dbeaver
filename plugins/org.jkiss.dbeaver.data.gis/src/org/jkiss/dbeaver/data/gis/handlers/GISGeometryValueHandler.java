@@ -105,9 +105,6 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             geometry = new DBGeometry(jtsGeometry);
         } else if (object instanceof String) {
             Geometry jtsGeometry = GeometryConverter.getInstance().from((String) object);
-            if (invertCoordinates) {
-                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
-            }
             geometry = new DBGeometry(jtsGeometry);
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
