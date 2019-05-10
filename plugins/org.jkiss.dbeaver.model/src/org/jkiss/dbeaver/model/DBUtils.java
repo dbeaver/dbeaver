@@ -120,14 +120,14 @@ public final class DBUtils {
     public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
         if (dataSource instanceof SQLDataSource) {
-            return getQuotedIdentifier((SQLDataSource)dataSource, str, true);
+            return getQuotedIdentifier((SQLDataSource)dataSource, str, true, false);
         } else {
             return str;
         }
     }
 
     @NotNull
-    public static String getQuotedIdentifier(@NotNull SQLDataSource dataSource, @NotNull String str, boolean caseSensitiveNames)
+    public static String getQuotedIdentifier(@NotNull SQLDataSource dataSource, @NotNull String str, boolean caseSensitiveNames, boolean quoteAlways)
     {
         if (isQuotedIdentifier(dataSource, str)) {
             // Already quoted
@@ -141,9 +141,9 @@ public final class DBUtils {
 
         // Check for keyword conflict
         final DBPKeywordType keywordType = sqlDialect.getKeywordType(str);
-        boolean hasBadChars =
-            (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE) &&
-            sqlDialect.isQuoteReservedWords();
+        boolean hasBadChars = quoteAlways ||
+            ((keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE) &&
+            sqlDialect.isQuoteReservedWords());
 
         if (!hasBadChars && !str.isEmpty()) {
             hasBadChars = !sqlDialect.validIdentifierStart(str.charAt(0));
