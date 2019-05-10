@@ -190,7 +190,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     public PostgreTableBase getTable(DBRProgressMonitor monitor, long tableId)
         throws DBException {
-        for (PostgreClass table : tableCache.getAllObjects(monitor, this)) {
+        for (PostgreClass table : getTableCache().getAllObjects(monitor, this)) {
             if (table.getObjectId() == tableId) {
                 return (PostgreTableBase) table;
             }
@@ -214,7 +214,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     @Association
     public Collection<? extends PostgreTable> getTables(DBRProgressMonitor monitor)
         throws DBException {
-        return tableCache.getTypedObjects(monitor, this, PostgreTable.class)
+        return getTableCache().getTypedObjects(monitor, this, PostgreTable.class)
             .stream()
             .filter(table -> !table.isPartition())
             .collect(Collectors.toCollection(ArrayList::new));
@@ -223,25 +223,25 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     @Association
     public Collection<PostgreView> getViews(DBRProgressMonitor monitor)
         throws DBException {
-        return tableCache.getTypedObjects(monitor, this, PostgreView.class);
+        return getTableCache().getTypedObjects(monitor, this, PostgreView.class);
     }
 
     @Association
     public Collection<PostgreMaterializedView> getMaterializedViews(DBRProgressMonitor monitor)
         throws DBException {
-        return tableCache.getTypedObjects(monitor, this, PostgreMaterializedView.class);
+        return getTableCache().getTypedObjects(monitor, this, PostgreMaterializedView.class);
     }
 
     @Association
     public Collection<PostgreSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException {
-        return tableCache.getTypedObjects(monitor, this, PostgreSequence.class);
+        return getTableCache().getTypedObjects(monitor, this, PostgreSequence.class);
     }
 
     @Association
     public PostgreSequence getSequence(DBRProgressMonitor monitor, String name)
         throws DBException {
-        return tableCache.getObject(monitor, this, name, PostgreSequence.class);
+        return getTableCache().getObject(monitor, this, name, PostgreSequence.class);
     }
 
     @Association
@@ -268,13 +268,13 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     @Override
     public Collection<? extends JDBCTable> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
-        return tableCache.getTypedObjects(monitor, this, PostgreTableReal.class);
+        return getTableCache().getTypedObjects(monitor, this, PostgreTableReal.class);
     }
 
     @Override
     public JDBCTable getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException {
-        return tableCache.getObject(monitor, this, childName);
+        return getTableCache().getObject(monitor, this, childName);
     }
 
     @Override
@@ -287,10 +287,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException {
         monitor.subTask("Cache tables");
-        tableCache.getAllObjects(monitor, this);
+        getTableCache().getAllObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
-            tableCache.loadChildren(monitor, this, null);
+            getTableCache().loadChildren(monitor, this, null);
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache constraints");
@@ -564,7 +564,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
      */
     public class ConstraintCache extends JDBCCompositeCache<PostgreSchema, PostgreTableBase, PostgreTableConstraintBase, PostgreTableConstraintColumn> {
         protected ConstraintCache() {
-            super(tableCache, PostgreTableBase.class, "tabrelname", "conname");
+            super(getTableCache(), PostgreTableBase.class, "tabrelname", "conname");
         }
 
         @NotNull
@@ -717,7 +717,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
      */
     class IndexCache extends JDBCCompositeCache<PostgreSchema, PostgreTableBase, PostgreIndex, PostgreIndexColumn> {
         protected IndexCache() {
-            super(tableCache, PostgreTableBase.class, "tabrelname", "relname");
+            super(getTableCache(), PostgreTableBase.class, "tabrelname", "relname");
         }
 
         @NotNull
