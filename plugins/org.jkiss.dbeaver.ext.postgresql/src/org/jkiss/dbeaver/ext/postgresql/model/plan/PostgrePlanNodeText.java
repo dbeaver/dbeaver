@@ -19,12 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,26 +31,19 @@ import java.util.Set;
  */
 public class PostgrePlanNodeText extends PostgrePlanNodeBase<PostgrePlanNodeText> {
 
-   private static final String SEPARATOR = " ";
+    private static final String SEPARATOR = " ";
    
-   private static final String OPTIONS_SEPARATOR = ":";
+    private static final String OPTIONS_SEPARATOR = ":";
 
-   private static final List<String> OPERATIONS = new ArrayList<>(Arrays.asList( "Result", "ProjectSet", "Insert", "Update", "Delete", "Append",
-      "Merge Append", "Recursive Union", "BitmapAnd", "BitmapOr", "Nested Loop", "Merge", "Hash", "Hash Join", "Seq Scan",
-      "Sample Scan", "Gather", "Gather Merge", "Index Scan", "Index Only Scan", "Bitmap Index Scan",
-      "Bitmap Heap Scan", "Tid Scan", "Subquery Scan", "Function Scan", "Table Function Scan", "Values Scan",
-      "CTE Scan", "Named Tuplestore Scan", "WorkTable Scan", "Foreign Scan", "Foreign Insert", "Foreign Update",
-      "Foreign Delete", "???", "Custom Scan", "Materialize", "Sort", "Group", "Aggregate", "GroupAggregate",
-      "HashAggregate", "MixedAggregate", "Aggregate ???", "Partial", "Finalize", "Simple", "WindowAgg", "Unique",
-      "SetOp", "HashSetOp", "SetOp ???", "LockRows", "Limit", "Hash"));
+    private static final Set<String> OPERATION_TABLES = new HashSet<String>(Arrays.asList("Insert", "Update", "Delete", "Seq",  "Foreign"));
+   
+    private static final Set<String> OPERATION_INDEXES = new HashSet<String>(Arrays.asList("Index"));
+   
+    private static final Set<String> OPERATION_FUNCTION = new HashSet<String>(Arrays.asList("Subquery", "Function"));
+   
+    public static final String ATTR_ADD_NAME = "Info";
     
-    private static final Set<String> OPERATION_TABLES = new HashSet<String>(Arrays.asList("Insert", "Update", "Delete", "Seq Scan",  "Foreign Scan", "Foreign Insert", "Foreign Update"));
-   
-    private static final Set<String> OPERATION_INDEXES = new HashSet<String>(Arrays.asList("Index Scan", "Index Only Scan"));
-   
-    private static final Set<String> OPERATION_FUNCTION = new HashSet<String>(Arrays.asList("Subquery Scan", "Function Scan"));
-   
-    private int infoSeq = 1;
+    private int infoSeq = 0;
     
     private int indent;
     
@@ -90,8 +80,14 @@ public class PostgrePlanNodeText extends PostgrePlanNodeBase<PostgrePlanNodeText
     }
 
     private String getTokenAfter(String tokens[], int start, String marker) {
-
-        for (int index = getTokenIndex(tokens, start, marker); index < tokens.length; index++) {
+        
+        int tokenIndex = getTokenIndex(tokens, start, marker);
+        
+        if (tokenIndex < 0) {
+            return null;
+        }
+        
+        for (int index = tokenIndex; index < tokens.length; index++) {
             if (tokens[index].length() == 0 || tokens[index] == SEPARATOR) {
                 continue;
             }
@@ -141,6 +137,36 @@ public class PostgrePlanNodeText extends PostgrePlanNodeBase<PostgrePlanNodeText
         }
         
         return result;
+    }
+    
+    private String getAdditional(String tokens[]) {
+        
+        StringBuilder sb = new StringBuilder();
+        boolean isObjectName = false;
+        
+        for(int index = 1; index < tokens.length;index++) {
+            if (tokens[index].equals(SEPARATOR)) {
+                continue;
+            }
+            if (tokens[index].startsWith("(")) {
+                break;
+            }
+            if (isObjectName) {
+                isObjectName = false;
+                continue;
+            }
+            if (tokens[index].equalsIgnoreCase("on")) {
+                isObjectName = true;
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append(SEPARATOR);
+            }
+                sb.append(tokens[index]);
+            
+        }
+        
+        return sb.toString().trim();
     }
     
     private void addAttr(Map<String, String> attributes,String attrName1,String attrName2, String attrVal) {
@@ -203,32 +229,58 @@ public class PostgrePlanNodeText extends PostgrePlanNodeBase<PostgrePlanNodeText
         
         String str = removePrefix(line);
         
-        String operation = OPERATIONS.stream().filter(op -> str.startsWith(op)).max(Comparator.comparing(String::length)).orElse("N/A");
+        String tokens[] = str.split(SEPARATOR);
         
-        String tokens[] = str.substring(operation.length()).split(SEPARATOR);
- 
-        if (OPERATION_TABLES.contains(operation)) {
-               
-           attributes.put(PostgrePlanNodeBase.ATTR_RELATION_NAME, getTokenAfter(tokens, 1, "on"));
-           
-        } else if (OPERATION_INDEXES.contains(operation)) {
+        if (tokens.length > 0) {
             
-            attributes.put(PostgrePlanNodeBase.ATTR_INDEX_NAME, getTokenAfter(tokens, 1, "on"));
+            String operation = tokens[0];
             
-        } else if (OPERATION_FUNCTION.contains(operation)) {
+            parseObjName(attributes, tokens, operation);
             
-            attributes.put(PostgrePlanNodeBase.ATTR_FUNCTION_NAME, getTokenAfter(tokens, 1, "on"));
+            attributes.put(PostgrePlanNodeBase.ATTR_NODE_TYPE, operation);
             
+            String addInfo = getAdditional(tokens);
+            
+            if (addInfo.length() > 0) {
+                
+                attributes.put(ATTR_ADD_NAME, addInfo);
+                
+            }
+
+            parseAttr(attributes, tokens); 
         }
-
-        attributes.put(PostgrePlanNodeBase.ATTR_NODE_TYPE, operation);
-
-        parseAttr(attributes, tokens);
         
         setAttributes(attributes);
         
         if (parent != null) {
             parent.nested.add(this);
+        }
+    }
+
+    private void parseObjName(Map<String, String> attributes, String[] tokens, String operation) {
+        
+        String objName = getTokenAfter(tokens, 1, "on");
+        
+        if (objName != null) {
+ 
+            if (OPERATION_TABLES.contains(operation)) {
+                   
+               attributes.put(PostgrePlanNodeBase.ATTR_RELATION_NAME, objName);
+               
+            } else if (OPERATION_INDEXES.contains(operation)) {
+                
+                attributes.put(PostgrePlanNodeBase.ATTR_INDEX_NAME, objName);
+                
+            } else if (OPERATION_FUNCTION.contains(operation)) {
+                
+                attributes.put(PostgrePlanNodeBase.ATTR_FUNCTION_NAME, objName);
+                
+           } else {
+               
+               attributes.put(PostgrePlanNodeBase.ATTR_OBJECT_NAME, objName);
+               
+           }
+            
         }
     }
 

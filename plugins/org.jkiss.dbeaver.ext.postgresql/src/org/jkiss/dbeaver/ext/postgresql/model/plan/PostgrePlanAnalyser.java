@@ -179,7 +179,8 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
                     curNode.addProp(line);
                     continue;
                 } else {
-                    log.debug("Wrong text opening line (must start with nested node prefix): " + line);
+                    curNode.addProp(line);
+                    continue;
                 }
                 curIndent = lineIndent;
             } else if (lineIndent < curIndent) {
@@ -197,7 +198,6 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
                         }
                     }
                     if (!line.substring(lineIndent).startsWith(NODE_PREFIX)) {
-                        //log.debug("Wrong text closing line (must start with nested node prefix): " + line);
                         curNode.addProp(line);
                     } else {
                         lineIndent += NODE_PREFIX.length();
