@@ -91,6 +91,10 @@ public class AttributeItemFigure extends Figure
 
         attrNameLabel.setFont(columnFont);
         attrNameLabel.setForegroundColor(columnColor);
+        if (rightPanel != null) {
+            rightPanel.setFont(columnFont);
+            rightPanel.setForegroundColor(columnColor);
+        }
 	}
 
     protected Color getColumnForegroundColor() {
