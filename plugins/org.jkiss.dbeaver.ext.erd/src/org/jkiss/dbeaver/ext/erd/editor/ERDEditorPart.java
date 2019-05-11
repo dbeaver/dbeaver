@@ -81,8 +81,10 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -1133,6 +1135,31 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         {
             getGraphicalViewer().reveal((EditPart)object);
         }
+    }
+
+    protected abstract class DiagramLoaderVisualizer extends ProgressLoaderVisualizer<EntityDiagram> {
+        protected DiagramLoaderVisualizer(ILoadService<EntityDiagram> loadingService, Composite control) {
+            super(loadingService, control);
+        }
+
+        @Override
+        public void visualizeLoading() {
+            super.visualizeLoading();
+        }
+
+        @Override
+        public void completeLoading(EntityDiagram result) {
+            super.completeLoading(result);
+            super.visualizeLoading();
+            if (!result.getEntities().isEmpty()) {
+                setErrorMessage(null);
+            }
+            getGraphicalViewer().setContents(result);
+            getDiagramPart().rearrangeDiagram();
+            finishLoading();
+        }
+
+        protected abstract void finishLoading();
     }
 
 
