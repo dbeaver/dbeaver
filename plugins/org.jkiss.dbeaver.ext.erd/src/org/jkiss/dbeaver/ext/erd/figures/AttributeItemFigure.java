@@ -84,14 +84,18 @@ public class AttributeItemFigure extends Figure
 
         DiagramPart diagramPart = part.getDiagramPart();
         Font columnFont = diagramPart.getNormalFont();
-        Color columnColor = diagramPart.getContentPane().getForegroundColor();
+        Color columnColor = getColumnForegroundColor();
         if (part.getAttribute().isInPrimaryKey()) {
             columnFont = diagramPart.getBoldFont();
         }
 
-        setFont(columnFont);
-        setForegroundColor(columnColor);
+        attrNameLabel.setFont(columnFont);
+        attrNameLabel.setForegroundColor(columnColor);
 	}
+
+    protected Color getColumnForegroundColor() {
+        return part.getDiagramPart().getContentPane().getForegroundColor();
+    }
 
     public ERDEntityAttribute getAttribute() {
         return part.getAttribute();
