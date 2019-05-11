@@ -220,7 +220,7 @@ public class EditorUtils {
         }
     }
 
-    private static void setFileDataSource(File localFile, @Nullable DBPDataSourceContainer dataSourceContainer) {
+    public static void setFileDataSource(File localFile, @Nullable DBPDataSourceContainer dataSourceContainer) {
         final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
         efManager.setFileProperty(
             localFile,
