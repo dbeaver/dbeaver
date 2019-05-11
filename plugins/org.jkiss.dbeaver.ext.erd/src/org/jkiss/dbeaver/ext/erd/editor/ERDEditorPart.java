@@ -567,7 +567,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @return the preferences for the Palette Flyout
      */
     @Override
-    protected FlyoutPreferences getPalettePreferences()
+    protected ERDPalettePreferences getPalettePreferences()
     {
         return new ERDPalettePreferences();
     }
