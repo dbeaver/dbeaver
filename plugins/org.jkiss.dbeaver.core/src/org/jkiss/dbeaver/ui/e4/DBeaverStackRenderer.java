@@ -72,8 +72,8 @@ public class DBeaverStackRenderer extends StackRenderer {
                 }
             });
         }
-    
-        if (inputFile != null) {
+
+        {
             {
                 String deleteText = ActionUtils.findCommandName(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
                 String shortcut = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite(), true);//$NON-NLS-1$
@@ -81,28 +81,30 @@ public class DBeaverStackRenderer extends StackRenderer {
                     deleteText += "\t" + shortcut;
                 }
 
-		        MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
-		        menuItemDelete.setText(deleteText);
-		        menuItemDelete.addSelectionListener(new SelectionAdapter() {
-			        @Override
-			        public void widgetSelected(SelectionEvent e) {
-			            ActionUtils.runCommand(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite());
-			        }
-			    });
+                MenuItem menuItemDelete = new MenuItem(menu, SWT.NONE);
+                menuItemDelete.setText(deleteText);
+                menuItemDelete.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ActionUtils.runCommand(SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT, workbenchPart.getSite());
+                    }
+                });
             }
-            
-            MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
-            String renameText = CoreMessages.editor_file_rename;
-            if (workbenchPart instanceof SQLEditor) {
-                renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
-            }
-            menuItemOthers.setText(renameText);
-            menuItemOthers.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    RenameHandler.renameFile(workbenchPart, inputFile, "file"); //$NON-NLS-1$
+
+            if (inputFile != null) {
+                MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
+                String renameText = CoreMessages.editor_file_rename;
+                if (workbenchPart instanceof SQLEditor) {
+                    renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
                 }
-            });
+                menuItemOthers.setText(renameText);
+                menuItemOthers.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        RenameHandler.renameFile(workbenchPart, inputFile, "file"); //$NON-NLS-1$
+                    }
+                });
+            }
         }
 
     }

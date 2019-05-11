@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.io.File;
+
 public class DeleteCurrentFileHandler extends AbstractDataSourceHandler {
 
     @Override
@@ -47,15 +49,23 @@ public class DeleteCurrentFileHandler extends AbstractDataSourceHandler {
 
         IFile file = EditorUtils.getFileFromInput(editor.getEditorInput());
         if (file == null) {
-            DBWorkbench.getPlatformUI().showError("Rename", "Can't rename - no source file");
-            return null;
-        }
-
-        if (UIUtils.confirmAction(SQLEditorMessages.editor_file_delete_confirm_delete_title, NLS.bind(SQLEditorMessages.editor_file_delete_confirm_delete_text, file.getName()))) {
-            try {
-                file.delete(true, true, new NullProgressMonitor());
-            } catch (CoreException e1) {
-                DBWorkbench.getPlatformUI().showError(SQLEditorMessages.editor_file_delete_error_title, NLS.bind(SQLEditorMessages.editor_file_delete_error_text, file.getName(), e1));
+            File localFile = EditorUtils.getLocalFileFromInput(editor.getEditorInput());
+            if (localFile != null) {
+                if (UIUtils.confirmAction(SQLEditorMessages.editor_file_delete_confirm_delete_title, NLS.bind(SQLEditorMessages.editor_file_delete_confirm_delete_text, localFile.getName()))) {
+                    if (!localFile.delete()) {
+                        DBWorkbench.getPlatformUI().showError(SQLEditorMessages.editor_file_delete_error_title, NLS.bind(SQLEditorMessages.editor_file_delete_error_text, localFile.getName()));
+                    }
+                }
+            } else {
+                DBWorkbench.getPlatformUI().showError("Rename", "Can't rename - no source file");
+            }
+        } else {
+            if (UIUtils.confirmAction(SQLEditorMessages.editor_file_delete_confirm_delete_title, NLS.bind(SQLEditorMessages.editor_file_delete_confirm_delete_text, file.getName()))) {
+                try {
+                    file.delete(true, true, new NullProgressMonitor());
+                } catch (CoreException e1) {
+                    DBWorkbench.getPlatformUI().showError(SQLEditorMessages.editor_file_delete_error_title, NLS.bind(SQLEditorMessages.editor_file_delete_error_text, file.getName(), e1));
+                }
             }
         }
         return null;
