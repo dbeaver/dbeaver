@@ -521,17 +521,20 @@ public class UIUtils {
         return group;
     }
 
-    public static Label createControlLabel(Composite parent, String label)
-    {
+    public static Label createControlLabel(Composite parent, String label) {
+        return createControlLabel(parent, label, 1);
+    }
+
+    public static Label createControlLabel(Composite parent, String label, int hSpan) {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
-        // TODO: Should we make it right-aligned? Looks good but not in Eclipse-style
-        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER /*| GridData.HORIZONTAL_ALIGN_END*/));
+        GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER /*| GridData.HORIZONTAL_ALIGN_END*/);
+        gd.horizontalSpan = hSpan;
+        textLabel.setLayoutData(gd);
         return textLabel;
     }
 
-    public static Label createLabel(Composite parent, String label)
-    {
+    public static Label createLabel(Composite parent, String label) {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label);
 
