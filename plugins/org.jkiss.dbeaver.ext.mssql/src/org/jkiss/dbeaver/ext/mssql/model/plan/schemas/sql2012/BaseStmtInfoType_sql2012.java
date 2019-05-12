@@ -1,0 +1,540 @@
+
+package org.jkiss.dbeaver.ext.mssql.model.plan.schemas.sql2012;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
+
+
+/**
+ * the type that contains the basic statement information
+ * 
+ * <p>Java class for BaseStmtInfoType complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType name="BaseStmtInfoType">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="StatementSetOptions" type="{http://schemas.microsoft.com/sqlserver/2004/07/showplan}SetOptionsType" minOccurs="0"/>
+ *       &lt;/sequence>
+ *       &lt;attribute name="StatementCompId" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *       &lt;attribute name="StatementEstRows" type="{http://www.w3.org/2001/XMLSchema}double" />
+ *       &lt;attribute name="StatementId" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *       &lt;attribute name="StatementOptmLevel" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="StatementOptmEarlyAbortReason">
+ *         &lt;simpleType>
+ *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *             &lt;enumeration value="TimeOut"/>
+ *             &lt;enumeration value="MemoryLimitExceeded"/>
+ *             &lt;enumeration value="GoodEnoughPlanFound"/>
+ *           &lt;/restriction>
+ *         &lt;/simpleType>
+ *       &lt;/attribute>
+ *       &lt;attribute name="StatementSubTreeCost" type="{http://www.w3.org/2001/XMLSchema}double" />
+ *       &lt;attribute name="StatementText" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="StatementType" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="TemplatePlanGuideDB" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="TemplatePlanGuideName" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="PlanGuideDB" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="PlanGuideName" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="ParameterizedText" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="ParameterizedPlanHandle" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="QueryHash" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="QueryPlanHash" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="RetrievedFromCache" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "BaseStmtInfoType", namespace = "http://schemas.microsoft.com/sqlserver/2004/07/showplan", propOrder = {
+    "statementSetOptions"
+})
+@XmlSeeAlso({
+    StmtSimpleType_sql2012 .class,
+    StmtCondType_sql2012 .class,
+    StmtCursorType_sql2012 .class,
+    StmtReceiveType_sql2012 .class,
+    StmtUseDbType_sql2012 .class
+})
+public class BaseStmtInfoType_sql2012 {
+
+    @XmlElement(name = "StatementSetOptions", namespace = "http://schemas.microsoft.com/sqlserver/2004/07/showplan")
+    protected SetOptionsType_sql2012 statementSetOptions;
+    @XmlAttribute(name = "StatementCompId")
+    protected Integer statementCompId;
+    @XmlAttribute(name = "StatementEstRows")
+    protected Double statementEstRows;
+    @XmlAttribute(name = "StatementId")
+    protected Integer statementId;
+    @XmlAttribute(name = "StatementOptmLevel")
+    protected String statementOptmLevel;
+    @XmlAttribute(name = "StatementOptmEarlyAbortReason")
+    protected String statementOptmEarlyAbortReason;
+    @XmlAttribute(name = "StatementSubTreeCost")
+    protected Double statementSubTreeCost;
+    @XmlAttribute(name = "StatementText")
+    protected String statementText;
+    @XmlAttribute(name = "StatementType")
+    protected String statementType;
+    @XmlAttribute(name = "TemplatePlanGuideDB")
+    protected String templatePlanGuideDB;
+    @XmlAttribute(name = "TemplatePlanGuideName")
+    protected String templatePlanGuideName;
+    @XmlAttribute(name = "PlanGuideDB")
+    protected String planGuideDB;
+    @XmlAttribute(name = "PlanGuideName")
+    protected String planGuideName;
+    @XmlAttribute(name = "ParameterizedText")
+    protected String parameterizedText;
+    @XmlAttribute(name = "ParameterizedPlanHandle")
+    protected String parameterizedPlanHandle;
+    @XmlAttribute(name = "QueryHash")
+    protected String queryHash;
+    @XmlAttribute(name = "QueryPlanHash")
+    protected String queryPlanHash;
+    @XmlAttribute(name = "RetrievedFromCache")
+    protected String retrievedFromCache;
+
+    /**
+     * Gets the value of the statementSetOptions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link SetOptionsType_sql2012 }
+     *     
+     */
+    public SetOptionsType_sql2012 getStatementSetOptions() {
+        return statementSetOptions;
+    }
+
+    /**
+     * Sets the value of the statementSetOptions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link SetOptionsType_sql2012 }
+     *     
+     */
+    public void setStatementSetOptions(SetOptionsType_sql2012 value) {
+        this.statementSetOptions = value;
+    }
+
+    /**
+     * Gets the value of the statementCompId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Integer }
+     *     
+     */
+    public Integer getStatementCompId() {
+        return statementCompId;
+    }
+
+    /**
+     * Sets the value of the statementCompId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Integer }
+     *     
+     */
+    public void setStatementCompId(Integer value) {
+        this.statementCompId = value;
+    }
+
+    /**
+     * Gets the value of the statementEstRows property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Double }
+     *     
+     */
+    public Double getStatementEstRows() {
+        return statementEstRows;
+    }
+
+    /**
+     * Sets the value of the statementEstRows property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Double }
+     *     
+     */
+    public void setStatementEstRows(Double value) {
+        this.statementEstRows = value;
+    }
+
+    /**
+     * Gets the value of the statementId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Integer }
+     *     
+     */
+    public Integer getStatementId() {
+        return statementId;
+    }
+
+    /**
+     * Sets the value of the statementId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Integer }
+     *     
+     */
+    public void setStatementId(Integer value) {
+        this.statementId = value;
+    }
+
+    /**
+     * Gets the value of the statementOptmLevel property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStatementOptmLevel() {
+        return statementOptmLevel;
+    }
+
+    /**
+     * Sets the value of the statementOptmLevel property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStatementOptmLevel(String value) {
+        this.statementOptmLevel = value;
+    }
+
+    /**
+     * Gets the value of the statementOptmEarlyAbortReason property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStatementOptmEarlyAbortReason() {
+        return statementOptmEarlyAbortReason;
+    }
+
+    /**
+     * Sets the value of the statementOptmEarlyAbortReason property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStatementOptmEarlyAbortReason(String value) {
+        this.statementOptmEarlyAbortReason = value;
+    }
+
+    /**
+     * Gets the value of the statementSubTreeCost property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Double }
+     *     
+     */
+    public Double getStatementSubTreeCost() {
+        return statementSubTreeCost;
+    }
+
+    /**
+     * Sets the value of the statementSubTreeCost property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Double }
+     *     
+     */
+    public void setStatementSubTreeCost(Double value) {
+        this.statementSubTreeCost = value;
+    }
+
+    /**
+     * Gets the value of the statementText property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStatementText() {
+        return statementText;
+    }
+
+    /**
+     * Sets the value of the statementText property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStatementText(String value) {
+        this.statementText = value;
+    }
+
+    /**
+     * Gets the value of the statementType property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStatementType() {
+        return statementType;
+    }
+
+    /**
+     * Sets the value of the statementType property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStatementType(String value) {
+        this.statementType = value;
+    }
+
+    /**
+     * Gets the value of the templatePlanGuideDB property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTemplatePlanGuideDB() {
+        return templatePlanGuideDB;
+    }
+
+    /**
+     * Sets the value of the templatePlanGuideDB property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTemplatePlanGuideDB(String value) {
+        this.templatePlanGuideDB = value;
+    }
+
+    /**
+     * Gets the value of the templatePlanGuideName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTemplatePlanGuideName() {
+        return templatePlanGuideName;
+    }
+
+    /**
+     * Sets the value of the templatePlanGuideName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTemplatePlanGuideName(String value) {
+        this.templatePlanGuideName = value;
+    }
+
+    /**
+     * Gets the value of the planGuideDB property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPlanGuideDB() {
+        return planGuideDB;
+    }
+
+    /**
+     * Sets the value of the planGuideDB property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPlanGuideDB(String value) {
+        this.planGuideDB = value;
+    }
+
+    /**
+     * Gets the value of the planGuideName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPlanGuideName() {
+        return planGuideName;
+    }
+
+    /**
+     * Sets the value of the planGuideName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPlanGuideName(String value) {
+        this.planGuideName = value;
+    }
+
+    /**
+     * Gets the value of the parameterizedText property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getParameterizedText() {
+        return parameterizedText;
+    }
+
+    /**
+     * Sets the value of the parameterizedText property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setParameterizedText(String value) {
+        this.parameterizedText = value;
+    }
+
+    /**
+     * Gets the value of the parameterizedPlanHandle property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getParameterizedPlanHandle() {
+        return parameterizedPlanHandle;
+    }
+
+    /**
+     * Sets the value of the parameterizedPlanHandle property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setParameterizedPlanHandle(String value) {
+        this.parameterizedPlanHandle = value;
+    }
+
+    /**
+     * Gets the value of the queryHash property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getQueryHash() {
+        return queryHash;
+    }
+
+    /**
+     * Sets the value of the queryHash property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setQueryHash(String value) {
+        this.queryHash = value;
+    }
+
+    /**
+     * Gets the value of the queryPlanHash property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getQueryPlanHash() {
+        return queryPlanHash;
+    }
+
+    /**
+     * Sets the value of the queryPlanHash property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setQueryPlanHash(String value) {
+        this.queryPlanHash = value;
+    }
+
+    /**
+     * Gets the value of the retrievedFromCache property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRetrievedFromCache() {
+        return retrievedFromCache;
+    }
+
+    /**
+     * Sets the value of the retrievedFromCache property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRetrievedFromCache(String value) {
+        this.retrievedFromCache = value;
+    }
+
+}
