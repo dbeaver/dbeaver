@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -117,6 +118,15 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             geometry.setSRID(defaultSRID);
         }
         return geometry;
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
+            return "'" + value.toString() + "'";
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 
     protected byte[] fetchBytes(JDBCResultSet resultSet, int index) throws SQLException {
