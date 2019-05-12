@@ -672,7 +672,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     @Nullable
     @Override
     public PostgreSchema getDefaultObject() {
-        return schemaCache.getCachedObject(activeSchemaName);
+        return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
     }
 
     @Override
