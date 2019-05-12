@@ -25,6 +25,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -42,6 +43,12 @@ public class DBGeometry implements DBDValue {
 
     public DBGeometry(String rawValue) {
         this.rawValue = rawValue;
+    }
+
+    public DBGeometry(DBGeometry source) {
+        this.rawValue = source.rawValue;
+        this.srid = source.srid;
+        this.properties = source.properties == null ? null : new LinkedHashMap<>(source.properties);
     }
 
     public DBGeometry(Geometry rawValue) {
@@ -118,4 +125,7 @@ public class DBGeometry implements DBDValue {
         this.properties = properties;
     }
 
+    public DBGeometry copy() {
+        return new DBGeometry(this);
+    }
 }
