@@ -149,12 +149,12 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
 
     private void parsePlanText(DBCSession session, List<String> lines) {
         PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
-
-        PostgrePlanNodeText rootNode = null, curNode = null;
+        List<PostgrePlanNodeText> nodes = new ArrayList<>(lines.size());
+        PostgrePlanNodeText rootNode = null, curNode = null, curParentNode = null;
         int curIndent = 0;
         for (String line : lines) {
             int lineIndent = 0;
-            for (int i = 0; i < line.length(); i++) {
+            for (int i = lineIndent; i < line.length(); i++) {
                 if (line.charAt(i) != ' ') {
                     break;
                 }
@@ -162,31 +162,47 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
             }
             if (curIndent == 0 && lineIndent == 0) {
                 // Root node
-                curNode = rootNode = new PostgrePlanNodeText(dataSource, null, line, lineIndent);
+                curParentNode = curNode = rootNode = new PostgrePlanNodeText(dataSource, null, line, lineIndent);
+                nodes.add(rootNode);
             } else if (lineIndent >= curIndent) {
                 // Child node
                 if (line.substring(lineIndent).startsWith(NODE_PREFIX)) {
                     //log.debug("New child " + line);
-
+                    if (lineIndent > curNode.getIndent()) {
+                        curParentNode = curNode;  
+                    }
                     lineIndent += NODE_PREFIX.length();
-                } else if (lineIndent == curIndent || lineIndent == curIndent + 2) {
+                    curNode = new PostgrePlanNodeText(dataSource, curParentNode, line, lineIndent);
+                    nodes.add(0,curNode);
+                } else if (lineIndent == curIndent || lineIndent == curIndent) {
                     // Property
-                    //log.debug("New prop " + line);
-
+                    curNode.addProp(line);
+                    continue;
                 } else {
-                    log.debug("Wrong text opening line (must start with nested node prefix): " + line);
+                    curNode.addProp(line);
+                    continue;
                 }
                 curIndent = lineIndent;
             } else if (lineIndent < curIndent) {
-                // Go to parent node
-                if (lineIndent == 0) {
+                 if (lineIndent == 0) {
                     // Trailing plan statuses
                 } else {
-                    //log.debug("Go upper " + line);
+                     if (lineIndent + NODE_PREFIX.length() < curNode.getIndent()) {
+                        //need find upper parent
+                        curParentNode =  rootNode;
+                        for(int i = 0;i<nodes.size();i++) {
+                            if(nodes.get(i).getIndent() == lineIndent - 2) {
+                                curParentNode = nodes.get(i);
+                                break;
+                            }
+                        }
+                    }
                     if (!line.substring(lineIndent).startsWith(NODE_PREFIX)) {
-                        log.debug("Wrong text closing line (must start with nested node prefix): " + line);
+                        curNode.addProp(line);
                     } else {
                         lineIndent += NODE_PREFIX.length();
+                        curNode = new PostgrePlanNodeText(dataSource, curParentNode, line, lineIndent);
+                        nodes.add(0,curNode);
                     }
                 }
                 curIndent = lineIndent;
