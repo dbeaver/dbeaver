@@ -76,6 +76,7 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
         return object;
     }
 
+    @NotNull
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof Number) {
