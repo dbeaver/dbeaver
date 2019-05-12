@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.ext.oracle.tools.sqldeveloper;
 
+import com.google.gson.*;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
@@ -26,6 +29,7 @@ import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -33,9 +37,10 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -43,6 +48,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
 
     public static final String SQLD_HOME_FOLDER = "SQL Developer";
     public static final String SQLD_CONFIG_FILE = "connections.xml";
+    public static final String SQLD_CONFIG_JSON_FILE = "connections.json";
 
     public static final String SQLD_SYSCONFIG_FOLDER = "system";
     public static final String SQLD_CONNECTIONS_FOLDER = "o.jdeveloper.db.connection";
@@ -95,13 +101,115 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                 continue;
             }
             final File connectionFolder = connectionFolders[0];
+            final File connectionsJsonFile = new File(connectionFolder, SQLD_CONFIG_JSON_FILE);
             final File connectionsFile = new File(connectionFolder, SQLD_CONFIG_FILE);
-            if (!connectionsFile.exists()) {
-                continue;
+            if (connectionsFile.exists()) {
+                parseConnections(connectionsFile, importData);
+            } else if (connectionsJsonFile.exists()) {
+                parseJsonConnections(connectionsJsonFile, importData);
             }
-            parseConnections(connectionsFile, importData);
+
         }
     }
+
+    public class Connection{
+        @SerializedName("name")
+        @Expose
+        private String name;
+        @SerializedName("type")
+        @Expose
+        private String type;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+    }
+
+    public class JsonConnection{
+        @SerializedName("connections")
+        @Expose
+        private List<Connection> connections = new ArrayList<Connection>();
+
+        public List<Connection> getConnections() {
+            return connections;
+        }
+
+        public void setConnections(List<Connection> connections) {
+            this.connections = connections;
+        }
+    }
+
+    private void parseJsonConnections(File connectionsFile, ImportData importData) throws DBException {
+        Gson gson = new Gson();
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(connectionsFile));
+            JsonConnection result = gson.fromJson(br, JsonConnection.class);
+            if (result != null) {
+                for (Connection conn : result.getConnections()) {
+                    conn.getName();
+                    conn.getType();
+                }
+            }
+
+/**
+                JsonObject rootObject = element.getAsJsonObject();
+                JsonArray ja = rootObject.getAsJsonArray("connection");
+                rootObject = ja.getAsJsonObject();
+
+                JsonObject name = rootObject.getAsJsonObject("name");
+
+
+                JsonElement typeElem = rootObject.get("type");
+                String type = typeElem == null ? null : typeElem.getAsString();
+                JsonObject childObject = rootObject.getAsJsonObject("info");
+                String role = childObject.get("role").getAsString();
+                String serviceName = childObject.get("serviceName").getAsString();
+                String sid = childObject.get("sid").getAsString();
+                String host = childObject.get("hostname").getAsString();
+                String user = childObject.get("user").getAsString();
+                String url = childObject.get("customUrl").getAsString();
+                String conName = childObject.get("ConnName").getAsString();
+                String port = childObject.get("port").getAsString();
+                String osAuth = childObject.get("OS_AUTHENTICATION").getAsString();
+
+                if (CommonUtils.isEmpty(host) && CommonUtils.isEmpty(url)) {
+                    //continue;
+                }
+                String dbName = CommonUtils.isEmpty(sid) ? serviceName : sid;
+                ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conName, url, host, port, dbName, user, null);
+                if (!CommonUtils.isEmpty(sid)) {
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
+                } else if (!CommonUtils.isEmpty(serviceName)) {
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
+                }
+                if (CommonUtils.toBoolean(osAuth)) {
+                    connectionInfo.setUser(OracleConstants.OS_AUTH_PROP);
+                }
+                if (!CommonUtils.isEmpty(role)) {
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, role);
+                }
+                if (!CommonUtils.isEmpty(type)) {
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, type);
+                }
+                importData.addConnection(connectionInfo);
+ */
+            } catch(FileNotFoundException ex){
+                throw new DBException("Configuration parse error: " + ex.getMessage());
+            }
+        }
 
     private void parseConnections(File connectionsFile, ImportData importData) throws DBException {
         try {
