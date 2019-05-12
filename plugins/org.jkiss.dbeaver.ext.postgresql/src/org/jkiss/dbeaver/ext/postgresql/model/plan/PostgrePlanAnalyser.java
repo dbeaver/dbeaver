@@ -179,7 +179,11 @@ public class PostgrePlanAnalyser extends AbstractExecutionPlan {
                     curNode.addProp(line);
                     continue;
                 } else {
-                    curNode.addProp(line);
+                    if (curNode != null) {
+                        curNode.addProp(line);
+                    } else {
+                        log.debug("Unexpected node line: " + line);
+                    }
                     continue;
                 }
                 curIndent = lineIndent;
