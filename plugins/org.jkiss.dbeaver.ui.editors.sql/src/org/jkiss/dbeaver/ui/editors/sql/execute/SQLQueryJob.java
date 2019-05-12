@@ -116,10 +116,10 @@ public class SQLQueryJob extends DataSourceJob
         @NotNull IWorkbenchPartSite partSite,
         @NotNull String name,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSDataContainer dataContainer,
+        @Nullable DBSDataContainer dataContainer,
         @NotNull List<SQLScriptElement> queries,
         @NotNull SQLScriptContext scriptContext,
-        @NotNull SQLResultsConsumer resultsConsumer,
+        @Nullable SQLResultsConsumer resultsConsumer,
         @Nullable SQLQueryListener listener)
     {
         super(name, executionContext);
