@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
@@ -60,29 +62,48 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
+        int valueSRID = 0;
         if (value instanceof DBGeometry) {
+            valueSRID = ((DBGeometry) value).getSRID();
             value = ((DBGeometry) value).getRawValue();
+        }
+        if (valueSRID == 0 && paramType instanceof GisAttribute) {
+            valueSRID = ((GisAttribute) paramType).getAttributeGeometrySRID(session.getProgressMonitor());
         }
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else if (value instanceof Geometry) {
+            if (((Geometry) value).getSRID() == 0) {
+                ((Geometry) value).setSRID(valueSRID);
+            }
             statement.setObject(paramIndex, getStringFromGeometry(session, (Geometry)value), Types.OTHER);
         } else if (value.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             statement.setObject(paramIndex, value, Types.OTHER);
         } else {
-            statement.setObject(paramIndex, value.toString(), Types.OTHER);
+            String strValue = value.toString();
+            if (valueSRID != 0 && !strValue.startsWith("SRID=")) {
+                strValue = "SRID=" + valueSRID + ";" + strValue;
+            }
+            statement.setObject(paramIndex, strValue, Types.OTHER);
         }
     }
 
+    @NotNull
     @Override
-    public Class<?> getValueObjectType(DBSTypedObject attribute) {
+    public Class<?> getValueObjectType(@NotNull DBSTypedObject attribute) {
         return DBGeometry.class;
     }
 
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException {
         if (object == null) {
             return new DBGeometry();
+        } else if (object instanceof DBGeometry) {
+            if (copy) {
+                return ((DBGeometry) object).copy();
+            } else {
+                return object;
+            }
         } else if (object instanceof Geometry) {
             return new DBGeometry((Geometry) object);
         } else if (object instanceof String) {
