@@ -22,8 +22,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.MenuAdapter;
-import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -41,7 +39,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -290,7 +287,9 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 } else {
                     strValue = result.toString();
                 }
-                treeItem.setText(1, strValue);
+                if (strValue != null) {
+                    treeItem.setText(1, strValue);
+                }
             }
         }
     }

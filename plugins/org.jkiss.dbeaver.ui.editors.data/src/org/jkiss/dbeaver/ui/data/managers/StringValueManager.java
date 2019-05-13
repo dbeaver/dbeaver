@@ -52,7 +52,7 @@ public class StringValueManager extends ContentValueManager {
             case INLINE:
                 // Open inline/panel editor
                 Object value = controller.getValue();
-                if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.BOOLEAN) {
+                if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.OBJECT) {
                     return new StringInlineEditor(controller);
                 } else if (value instanceof DBDContentCached &&
                     ContentUtils.isTextValue(((DBDContentCached) value).getCachedValue()))
