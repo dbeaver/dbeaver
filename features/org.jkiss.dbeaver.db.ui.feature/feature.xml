@@ -27,8 +27,11 @@
     <plugin id="org.jkiss.dbeaver.ext.postgresql.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.generic.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
+    <plugin id="org.jkiss.dbeaver.ext.athena" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.bigquery" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.es.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.snowflake.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.sqlite" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <plugin id="org.jkiss.dbeaver.ext.wmi" os="win32" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
