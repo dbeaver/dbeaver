@@ -64,8 +64,7 @@ public class SQLServerPlanAnalyzer extends AbstractExecutionPlan {
 
     @Override
     public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
-        // TODO Auto-generated method stub
-        return null;
+        return nodes;
     }
     
     public void explain(DBCSession session)      throws DBCException
@@ -85,7 +84,7 @@ public class SQLServerPlanAnalyzer extends AbstractExecutionPlan {
                         
                         try (JDBCResultSet planResult = dbStat.getResultSet()) {
                             if (planResult.next()) {
-                               nodes =  SQLServerPlanParser.getInstance().parse(planResult.getString(1));
+                               nodes =  SQLServerPlanParser.getInstance().parse(planResult.getString(1),query);
                             } else {
                                 throw new DBCException("Query plan not available"); 
                             }
