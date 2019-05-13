@@ -12,28 +12,16 @@
         <description>DBeaver extensions</description>
     </category-def>
 
-    <feature id="org.jkiss.dbeaver.core.feature">
+    <feature id="org.jkiss.dbeaver.ui.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
     <feature id="org.jkiss.dbeaver.runtime.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.generic.feature">
+    <feature id="org.jkiss.dbeaver.db.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.mysql.feature">
-        <category name="org.jkiss.dbeaver"/>
-    </feature>
-    <feature id="org.jkiss.dbeaver.ext.oracle.feature">
-        <category name="org.jkiss.dbeaver"/>
-    </feature>
-    <feature id="org.jkiss.dbeaver.ext.db2.feature">
-        <category name="org.jkiss.dbeaver"/>
-    </feature>
-    <feature id="org.jkiss.dbeaver.ext.exasol.feature">
-        <category name="org.jkiss.dbeaver"/>
-    </feature>
-    <feature id="org.jkiss.dbeaver.ext.wmi.feature">
+    <feature id="org.jkiss.dbeaver.db.ui.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
     <feature id="org.jkiss.dbeaver.debug.feature">

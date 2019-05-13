@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+        id="org.jkiss.dbeaver.ide.feature"
+        label="%featureName"
+        version="6.0.5.qualifier"
+        provider-name="%providerName"
+        plugin="org.jkiss.dbeaver.core.eclipse">
+
+    <description>
+        %description
+    </description>
+
+    <copyright>
+        %copyright
+    </copyright>
+
+    <license url="%licenseURL">
+        %license
+    </license>
+
+    <includes id="org.jkiss.dbeaver.runtime.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ui.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
+
+    <plugin id="org.jkiss.dbeaver.core.eclipse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+</feature>
