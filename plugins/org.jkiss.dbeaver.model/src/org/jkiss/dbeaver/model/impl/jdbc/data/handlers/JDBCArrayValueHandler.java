@@ -70,7 +70,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public Object createNewValueObject(DBCSession session, DBSTypedObject type) throws DBCException {
+    public Object createNewValueObject(@NotNull DBCSession session, @NotNull DBSTypedObject type) throws DBCException {
         DBSDataType dataType;
         if (type instanceof DBSDataType) {
             dataType = (DBSDataType) type;

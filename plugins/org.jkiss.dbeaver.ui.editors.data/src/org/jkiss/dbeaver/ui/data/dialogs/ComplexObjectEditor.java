@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.SimpleTypedObject;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -58,6 +59,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.*;
+import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.ArrayUtils;
@@ -438,9 +440,14 @@ public class ComplexObjectEditor extends TreeViewer {
                 value = arrayItem.value;
             } else if (this.item instanceof MapEntry) {
                 valueHandler = DefaultValueHandler.INSTANCE;
-                type = null;
+                type = SimpleTypedObject.DEFAULT_TYPE;
                 name = ((MapEntry) this.item).name;
                 value = ((MapEntry) this.item).value;
+            } else if (this.item instanceof CollItem) {
+                valueHandler = DefaultValueHandler.INSTANCE;
+                type = SimpleTypedObject.DEFAULT_TYPE;
+                name = String.valueOf(((CollItem) this.item).index);
+                value = ((CollItem) this.item).value;
             } else {
                 throw new DBCException("Unsupported complex object element: " + this.item);
             }
@@ -507,7 +514,7 @@ public class ComplexObjectEditor extends TreeViewer {
         public IValueManager getValueManager() {
             DBSTypedObject valueType = getValueType();
             if (valueType == null) {
-                return null;
+                return DefaultValueManager.INSTANCE;
             }
             return ValueManagerRegistry.findValueManager(
                 getExecutionContext().getDataSource(),

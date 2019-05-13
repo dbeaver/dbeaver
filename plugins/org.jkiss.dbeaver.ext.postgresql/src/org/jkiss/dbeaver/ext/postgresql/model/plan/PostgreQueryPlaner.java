@@ -56,9 +56,9 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
     @Override
     public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
         PostgrePlanAnalyser plan = new PostgrePlanAnalyser(
-                getPlanStyle() == DBCPlanStyle.QUERY,
-                dataSource.getServerType().supportsExplainPlanVerbose(),
-                query);
+            !dataSource.getServerType().supportsExplainPlanXML(),
+            dataSource.getServerType().supportsExplainPlanVerbose(),
+            query);
         plan.explain(session);
         return plan;
     }
@@ -66,11 +66,11 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
     @NotNull
     @Override
     public DBCPlanStyle getPlanStyle() {
-        return dataSource.getServerType().supportsExplainPlanXML() ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
+        return dataSource.getServerType().supportsExplainPlan() ? DBCPlanStyle.PLAN : DBCPlanStyle.QUERY;
     }
 
     @Override
-    public void serialize(Writer writer, DBCPlan plan) throws IOException {
+    public void serialize(@NotNull Writer writer, @NotNull DBCPlan plan) throws IOException {
         serializeJson(writer, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
 
             @Override
@@ -97,7 +97,7 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
     }
 
     @Override
-    public DBCPlan deserialize(Reader planData) throws IOException, InvocationTargetException {
+    public DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException {
         PostgresPlanLoader plan = new PostgresPlanLoader();
         plan.deserialize(dataSource, planData);
         return plan;

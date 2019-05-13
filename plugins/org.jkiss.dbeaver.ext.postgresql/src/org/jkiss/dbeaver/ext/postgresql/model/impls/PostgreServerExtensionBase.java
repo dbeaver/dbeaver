@@ -308,6 +308,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsExplainPlan() {
+        return true;
+    }
+
+    @Override
     public boolean supportsExplainPlanXML() {
         return dataSource.isServerVersionAtLeast(9, 0);
     }
