@@ -4,7 +4,7 @@
         label="%featureName"
         version="6.0.5.qualifier"
         provider-name="%providerName"
-        plugin="org.jkiss.dbeaver.core.eclipse">
+        plugin="org.jkiss.dbeaver.model">
 
     <description>
         %description
