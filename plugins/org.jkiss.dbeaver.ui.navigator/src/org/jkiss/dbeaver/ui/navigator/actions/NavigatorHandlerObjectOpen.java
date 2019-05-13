@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -285,12 +286,16 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
     private static boolean setInputAttributes(DatabaseEditorInput<?> editorInput, String defaultPageId, String defaultFolderId, Map<String, Object> attributes) {
         boolean changed = false;
-        if (defaultPageId != null && !CommonUtils.equalObjects(defaultPageId, editorInput.getDefaultPageId())) {
-            editorInput.setDefaultPageId(defaultPageId);
-            changed = true;
-        }
         if (defaultFolderId != null && !CommonUtils.equalObjects(defaultFolderId, editorInput.getDefaultFolderId())) {
             editorInput.setDefaultFolderId(defaultFolderId);
+            changed = true;
+            if (defaultPageId == null) {
+                defaultPageId = EntityEditorDescriptor.DEFAULT_OBJECT_EDITOR_ID;
+
+            }
+        }
+        if (defaultPageId != null && !CommonUtils.equalObjects(defaultPageId, editorInput.getDefaultPageId())) {
+            editorInput.setDefaultPageId(defaultPageId);
             changed = true;
         }
 
