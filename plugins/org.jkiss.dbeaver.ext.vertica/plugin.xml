@@ -181,25 +181,6 @@
         </datasource>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.vertica.dataSourceWizardView"
-                dataSource="vertica"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                label="%dialog.connection.header"
-                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                icon="icons/vertica_icon.png">
-        </view>
-        <view
-                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                icon="icons/vertica_icon.png"
-                id="org.jkiss.dbeaver.ext.vertica.dataSourceEditorView"
-                dataSource="vertica"
-                label="%dialog.connection.header"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaTableColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.vertica.edit.VerticaProjectionColumnManager" objectType="org.jkiss.dbeaver.ext.vertica.model.VerticaProjectionColumn"/>
