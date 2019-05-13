@@ -241,13 +241,19 @@ public class SQLServerPlanParser {
         
         for (RelOpType_sql2017 child : childs) {
             
-            SQLServerPlanNode node = new SQLServerPlanNode("", child.getLogicalOp().value(),
-                    child, nodeParent);
+            if (child != null) {
+                
+                SQLServerPlanNode node = new SQLServerPlanNode("", child.getLogicalOp().value(),
+                        child, nodeParent);
+                
+                setObjectName(child,node);
             
-            setObjectName(child,node);
-        
-            nodeParent.addNested(node);
-            addChilds(node);
+                nodeParent.addNested(node);
+                addChilds(node);
+                
+            }
+            
+
         }
 
     }
