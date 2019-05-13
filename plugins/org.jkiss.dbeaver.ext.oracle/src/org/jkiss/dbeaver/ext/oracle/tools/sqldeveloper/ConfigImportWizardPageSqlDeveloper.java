@@ -38,10 +38,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
@@ -112,42 +109,130 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         }
     }
 
-    public class Connection{
+    public class ConnectionInfo{
         @SerializedName("name")
         @Expose
         private String name;
         @SerializedName("type")
         @Expose
         private String type;
+        @SerializedName("info")
+        @Expose
+        private String info;
 
         public String getName() {
             return name;
         }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
         public String getType() {
             return type;
         }
-
+        public String getInfo() {
+            return info;
+        }
+        public void setName(String name) {
+            this.name = name;
+        }
         public void setType(String type) {
             this.type = type;
         }
+        public void setInfo(String info) {
+            this.info = info;
+        }
     }
 
-    public class JsonConnection{
+    public class ConnectionList{
         @SerializedName("connections")
         @Expose
-        private List<Connection> connections = new ArrayList<Connection>();
+        private List<ConnectionInfo> connections = new ArrayList<ConnectionInfo>();
 
-        public List<Connection> getConnections() {
+        public List<ConnectionInfo> getConnections() {
             return connections;
         }
+    }
 
-        public void setConnections(List<Connection> connections) {
-            this.connections = connections;
+    public class InfoList{
+        @SerializedName("info")
+        @Expose
+        private List<Info> info = new LinkedList<Info>();
+
+        public List<Info> getInfo() {
+            return info;
+        }
+    }
+
+    public class Info{
+        @SerializedName("role")
+        @Expose
+        private String role;
+        @SerializedName("hostname")
+        @Expose
+        private String hostname;
+        @SerializedName("port")
+        @Expose
+        private String port;
+        @SerializedName("sid")
+        @Expose
+        private String sid;
+        @SerializedName("serviceName")
+        @Expose
+        private String serviceName;
+        @SerializedName("user")
+        @Expose
+        private String user;
+        @SerializedName("customUrl")
+        @Expose
+        private String customUrl;
+        @SerializedName("OS_AUTHENTICATION")
+        @Expose
+        private String OS_AUTHENTICATION;
+
+        public String getRole() {
+            return role;
+        }
+        public String getHost() {
+            return hostname;
+        }
+        public String getPort() {
+            return port;
+        }
+        public String getSID() {
+            return sid;
+        }
+        public String getServiceName() {
+            return serviceName;
+        }
+        public String getUser() {
+            return user;
+        }
+        public String getUrl() {
+            return customUrl;
+        }
+        public String getOsAuth() {
+            return OS_AUTHENTICATION;
+        }
+        public void setRole(String role) {
+            this.role = role;
+        }
+        public void setHost(String hostname) {
+            this.hostname = hostname;
+        }
+        public void setPort(String port) {
+            this.port = port;
+        }
+        public void setSID(String sid) {
+            this.sid = sid;
+        }
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+        public void setUrl(String customUrl) {
+            this.customUrl = customUrl;
+        }
+        public void setOsAuth(String OS_AUTHENTICATION) {
+            this.OS_AUTHENTICATION = OS_AUTHENTICATION;
+        }
+        public void setUser(String user) {
+            this.user = user;
         }
     }
 
@@ -156,56 +241,45 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(connectionsFile));
-            JsonConnection result = gson.fromJson(br, JsonConnection.class);
-            if (result != null) {
-                for (Connection conn : result.getConnections()) {
-                    conn.getName();
-                    conn.getType();
-                }
-            }
-
-/**
-                JsonObject rootObject = element.getAsJsonObject();
-                JsonArray ja = rootObject.getAsJsonArray("connection");
-                rootObject = ja.getAsJsonObject();
-
-                JsonObject name = rootObject.getAsJsonObject("name");
+            ConnectionList connResult = gson.fromJson(br, ConnectionList.class);
+            if (connResult != null) {
+                for (ConnectionInfo conn : connResult.getConnections()) {
+                    if (CommonUtils.isEmpty(conn.getName())) {
+                        continue;
+                    }
 
 
-                JsonElement typeElem = rootObject.get("type");
-                String type = typeElem == null ? null : typeElem.getAsString();
-                JsonObject childObject = rootObject.getAsJsonObject("info");
-                String role = childObject.get("role").getAsString();
-                String serviceName = childObject.get("serviceName").getAsString();
-                String sid = childObject.get("sid").getAsString();
-                String host = childObject.get("hostname").getAsString();
-                String user = childObject.get("user").getAsString();
-                String url = childObject.get("customUrl").getAsString();
-                String conName = childObject.get("ConnName").getAsString();
-                String port = childObject.get("port").getAsString();
-                String osAuth = childObject.get("OS_AUTHENTICATION").getAsString();
+            InfoList infoResult = gson.fromJson(br, InfoList.class);
+            if (infoResult != null) {
+                for (Info info : infoResult.getInfo()) {
+                    if (CommonUtils.isEmpty(info.getHost()) && CommonUtils.isEmpty(info.getUrl())) {
+                        continue;
+                    }
 
-                if (CommonUtils.isEmpty(host) && CommonUtils.isEmpty(url)) {
-                    //continue;
-                }
-                String dbName = CommonUtils.isEmpty(sid) ? serviceName : sid;
-                ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conName, url, host, port, dbName, user, null);
-                if (!CommonUtils.isEmpty(sid)) {
+
+                String dbName = CommonUtils.isEmpty(info.getSID()) ? info.getServiceName() : info.getSID();
+
+                ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conn.getName(), info.getUrl(), info.getHost(), info.getPort(), dbName, info.getHost(), null);
+                if (!CommonUtils.isEmpty(info.getSID())) {
                     connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
-                } else if (!CommonUtils.isEmpty(serviceName)) {
+                } else if (!CommonUtils.isEmpty(info.getServiceName())) {
                     connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
                 }
-                if (CommonUtils.toBoolean(osAuth)) {
+                if (CommonUtils.toBoolean(info.getOsAuth())) {
                     connectionInfo.setUser(OracleConstants.OS_AUTH_PROP);
                 }
-                if (!CommonUtils.isEmpty(role)) {
-                    connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, role);
+                if (!CommonUtils.isEmpty(info.getRole())) {
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, info.getRole());
                 }
-                if (!CommonUtils.isEmpty(type)) {
-                    connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, type);
+                if (!CommonUtils.isEmpty(conn.getType())) {
+                    connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, conn.getType());
                 }
+
                 importData.addConnection(connectionInfo);
- */
+                }
+            }
+                }
+            }
             } catch(FileNotFoundException ex){
                 throw new DBException("Configuration parse error: " + ex.getMessage());
             }
