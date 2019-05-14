@@ -701,9 +701,10 @@ public class ResultSetViewer extends Viewer
                 }
                 activateDefaultPanels(settings);
             }
-            showPanels(panelsVisible, false, false);
             viewerSash.setOrientation(verticalLayout ? SWT.VERTICAL : SWT.HORIZONTAL);
             viewerSash.setWeights(panelWeights);
+
+            showPanels(panelsVisible, false, false);
 
             if (!availablePanels.isEmpty()) {
                 VerticalButton panelsButton = new VerticalButton(panelSwitchFolder, SWT.RIGHT | SWT.CHECK);
