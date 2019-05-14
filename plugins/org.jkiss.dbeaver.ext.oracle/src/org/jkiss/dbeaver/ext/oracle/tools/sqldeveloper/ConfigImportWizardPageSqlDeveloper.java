@@ -169,71 +169,72 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         @SerializedName("customUrl")
         private String customUrl;
         @SerializedName("OS_AUTHENTICATION")
-        private String OS_AUTHENTICATION;
+        private String OsAuth;
 
         public String getRole() {
             return role;
-        }
-
-        public String getHost() {
-            return hostname;
-        }
-
-        public String getPort() {
-            return port;
-        }
-
-        public String getSID() {
-            return sid;
-        }
-
-        public String getServiceName() {
-            return serviceName;
-        }
-
-        public String getUser() {
-            return user;
-        }
-
-        public String getUrl() {
-            return customUrl;
-        }
-
-        public String getOsAuth() {
-            return OS_AUTHENTICATION;
         }
 
         public void setRole(String role) {
             this.role = role;
         }
 
+        public String getHost() {
+            return hostname;
+        }
+
         public void setHost(String hostname) {
             this.hostname = hostname;
+        }
+
+        public String getPort() {
+            return port;
         }
 
         public void setPort(String port) {
             this.port = port;
         }
 
+        public String getSID() {
+            return sid;
+        }
+
         public void setSID(String sid) {
             this.sid = sid;
+        }
+
+        public String getServiceName() {
+            return serviceName;
         }
 
         public void setServiceName(String serviceName) {
             this.serviceName = serviceName;
         }
 
-        public void setUrl(String customUrl) {
-            this.customUrl = customUrl;
-        }
-
-        public void setOsAuth(String OS_AUTHENTICATION) {
-            this.OS_AUTHENTICATION = OS_AUTHENTICATION;
+        public String getUser() {
+            return user;
         }
 
         public void setUser(String user) {
             this.user = user;
         }
+
+        public String getUrl() {
+            return customUrl;
+        }
+
+        public void setUrl(String customUrl) {
+            this.customUrl = customUrl;
+        }
+
+        public String getOsAuth() {
+            return OsAuth;
+        }
+
+        public void setOsAuth(String OS_AUTHENTICATION) {
+            this.OsAuth = OS_AUTHENTICATION;
+        }
+
     }
 
     private void parseJsonConnections(File connectionsFile, ImportData importData) throws JsonSyntaxException {
@@ -274,7 +275,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                 }
             }
         } catch (Exception e) {
-            log.error("Configuration parse error: " + e.getMessage());
+            log.error("Configuration parse error", e);
         }
     }
 
