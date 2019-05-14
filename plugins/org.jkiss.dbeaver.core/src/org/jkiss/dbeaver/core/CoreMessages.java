@@ -124,7 +124,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_button_events;
 	public static String dialog_connection_wizard_final_checkbox_filter_catalogs;
 	public static String dialog_connection_wizard_final_checkbox_filter_schemas;
-	public static String dialog_connection_wizard_final_checkbox_save_password_locally;
     public static String dialog_connection_wizard_final_checkbox_auto_commit;
 	public static String dialog_connection_wizard_final_checkbox_show_system_objects;
 	public static String dialog_connection_wizard_final_checkbox_show_util_objects;
@@ -455,11 +454,6 @@ public class CoreMessages extends NLS {
 	public static String tools_wizard_page_log_task_progress_log;
 	public static String tools_wizard_page_log_task_started_at;
 	
-	public static String dialog_connection_edit_driver_button;
-	public static String dialog_connection_driver;
-	public static String dialog_connection_advanced_settings;
-	public static String dialog_connection_env_variables_hint;
-
 	public static String editor_file_open_in_explorer;
 	public static String editor_file_copy_path;
 	public static String editor_file_rename;
@@ -617,9 +611,6 @@ public class CoreMessages extends NLS {
 
 	// Connection edit
 	public static String dialog_connection_edit_title;
-	public static String dialog_connection_edit_connection_settings_variables_hint_label;
-	public static String dialog_connection_edit_wizard_conn_conf_general_link;
-	public static String dialog_connection_edit_wizard_conn_conf_network_link;
 
 	public static String dialog_connection_edit_wizard_general;
 	public static String dialog_connection_edit_wizard_general_bootstrap_query_title;

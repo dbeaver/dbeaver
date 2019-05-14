@@ -18,7 +18,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.e4.ui.css.swt.theme,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ui.dialogs
+ org.jkiss.dbeaver.registry.configurator,
+ org.jkiss.dbeaver.ui.dialogs.connection
