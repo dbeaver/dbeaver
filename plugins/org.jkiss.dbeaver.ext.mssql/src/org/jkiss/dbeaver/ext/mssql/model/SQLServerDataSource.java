@@ -24,14 +24,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.ext.mssql.model.plan.SQLServerQueryPlanner;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -324,8 +322,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSObjectSele
             return adapter.cast(new SQLServerStructureAssistant(this));
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new SQLServerSessionManager(this));
-        } else if (adapter == DBCQueryPlanner.class) {
-            return adapter.cast(new SQLServerQueryPlanner(this));
         }
         return super.getAdapter(adapter);
     }
