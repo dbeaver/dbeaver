@@ -21,6 +21,7 @@ import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
@@ -50,10 +51,11 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
     public static final String SQLD_SYSCONFIG_FOLDER = "system";
     public static final String SQLD_CONNECTIONS_FOLDER = "o.jdeveloper.db.connection";
 
+    private static final Log log = Log.getLog(ConfigImportWizardPageSqlDeveloper.class);
+
     private final ImportDriverInfo oraDriver;
 
-    protected ConfigImportWizardPageSqlDeveloper()
-    {
+    protected ConfigImportWizardPageSqlDeveloper() {
         super("SQLDeveloper");
         setTitle("SQL Developer");
         setDescription("Import Oracle SQL Developer connections");
@@ -109,181 +111,172 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
         }
     }
 
-    public class ConnectionInfo{
+    public static class ConnectionDescription {
         @SerializedName("name")
-        @Expose
         private String name;
         @SerializedName("type")
-        @Expose
         private String type;
         @SerializedName("info")
-        @Expose
-        private String info;
+        private ConnectionInfo info;
 
         public String getName() {
             return name;
         }
-        public String getType() {
-            return type;
-        }
-        public String getInfo() {
-            return info;
-        }
+
         public void setName(String name) {
             this.name = name;
         }
+
+        public String getType() {
+            return type;
+        }
+
         public void setType(String type) {
             this.type = type;
         }
-        public void setInfo(String info) {
+
+        public ConnectionInfo getInfo() {
+            return info;
+        }
+
+        public void setInfo(ConnectionInfo info) {
             this.info = info;
         }
     }
 
-    public class ConnectionList{
+    public static class ConnectionList {
         @SerializedName("connections")
-        @Expose
-        private List<ConnectionInfo> connections = new ArrayList<ConnectionInfo>();
+        private List<ConnectionDescription> connections = new ArrayList();
 
-        public List<ConnectionInfo> getConnections() {
+        public List<ConnectionDescription> getConnections() {
             return connections;
         }
     }
 
-    public class InfoList{
-        @SerializedName("info")
-        @Expose
-        private List<Info> info = new LinkedList<Info>();
-
-        public List<Info> getInfo() {
-            return info;
-        }
-    }
-
-    public class Info{
+    public class ConnectionInfo {
         @SerializedName("role")
-        @Expose
         private String role;
         @SerializedName("hostname")
-        @Expose
         private String hostname;
         @SerializedName("port")
-        @Expose
         private String port;
         @SerializedName("sid")
-        @Expose
         private String sid;
         @SerializedName("serviceName")
-        @Expose
         private String serviceName;
         @SerializedName("user")
-        @Expose
         private String user;
         @SerializedName("customUrl")
-        @Expose
         private String customUrl;
         @SerializedName("OS_AUTHENTICATION")
-        @Expose
         private String OS_AUTHENTICATION;
 
         public String getRole() {
             return role;
         }
+
         public String getHost() {
             return hostname;
         }
+
         public String getPort() {
             return port;
         }
+
         public String getSID() {
             return sid;
         }
+
         public String getServiceName() {
             return serviceName;
         }
+
         public String getUser() {
             return user;
         }
+
         public String getUrl() {
             return customUrl;
         }
+
         public String getOsAuth() {
             return OS_AUTHENTICATION;
         }
+
         public void setRole(String role) {
             this.role = role;
         }
+
         public void setHost(String hostname) {
             this.hostname = hostname;
         }
+
         public void setPort(String port) {
             this.port = port;
         }
+
         public void setSID(String sid) {
             this.sid = sid;
         }
+
         public void setServiceName(String serviceName) {
             this.serviceName = serviceName;
         }
+
         public void setUrl(String customUrl) {
             this.customUrl = customUrl;
         }
+
         public void setOsAuth(String OS_AUTHENTICATION) {
             this.OS_AUTHENTICATION = OS_AUTHENTICATION;
         }
+
         public void setUser(String user) {
             this.user = user;
         }
     }
 
-    private void parseJsonConnections(File connectionsFile, ImportData importData) throws DBException {
-        Gson gson = new Gson();
-        BufferedReader br = null;
+    private void parseJsonConnections(File connectionsFile, ImportData importData) throws JsonSyntaxException {
         try {
-            br = new BufferedReader(new FileReader(connectionsFile));
-            ConnectionList connResult = gson.fromJson(br, ConnectionList.class);
-            if (connResult != null) {
-                for (ConnectionInfo conn : connResult.getConnections()) {
+            Gson gson = new GsonBuilder().create();
+            try (Reader br = new BufferedReader(new FileReader(connectionsFile))) {
+                ConnectionList connResult = gson.fromJson(br, ConnectionList.class);
+                for (ConnectionDescription conn : connResult.getConnections()) {
                     if (CommonUtils.isEmpty(conn.getName())) {
                         continue;
                     }
 
+                    ConnectionInfo info = conn.getInfo();
 
-            InfoList infoResult = gson.fromJson(br, InfoList.class);
-            if (infoResult != null) {
-                for (Info info : infoResult.getInfo()) {
                     if (CommonUtils.isEmpty(info.getHost()) && CommonUtils.isEmpty(info.getUrl())) {
                         continue;
                     }
 
+                    String dbName = CommonUtils.isEmpty(info.getSID()) ? info.getServiceName() : info.getSID();
 
-                String dbName = CommonUtils.isEmpty(info.getSID()) ? info.getServiceName() : info.getSID();
+                    ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conn.getName(), info.getUrl(), info.getHost(), info.getPort(), dbName, info.getHost(), null);
+                    if (!CommonUtils.isEmpty(info.getSID())) {
+                        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
+                    } else if (!CommonUtils.isEmpty(info.getServiceName())) {
+                        connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
+                    }
+                    if (CommonUtils.toBoolean(info.getOsAuth())) {
+                        connectionInfo.setUser(OracleConstants.OS_AUTH_PROP);
+                    }
+                    if (!CommonUtils.isEmpty(info.getRole())) {
+                        connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, info.getRole());
+                    }
+                    if (!CommonUtils.isEmpty(conn.getType())) {
+                        connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, conn.getType());
+                    }
 
-                ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conn.getName(), info.getUrl(), info.getHost(), info.getPort(), dbName, info.getHost(), null);
-                if (!CommonUtils.isEmpty(info.getSID())) {
-                    connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
-                } else if (!CommonUtils.isEmpty(info.getServiceName())) {
-                    connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
-                }
-                if (CommonUtils.toBoolean(info.getOsAuth())) {
-                    connectionInfo.setUser(OracleConstants.OS_AUTH_PROP);
-                }
-                if (!CommonUtils.isEmpty(info.getRole())) {
-                    connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, info.getRole());
-                }
-                if (!CommonUtils.isEmpty(conn.getType())) {
-                    connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, conn.getType());
-                }
-
-                importData.addConnection(connectionInfo);
+                    importData.addConnection(connectionInfo);
                 }
             }
-                }
-            }
-            } catch(FileNotFoundException ex){
-                throw new DBException("Configuration parse error: " + ex.getMessage());
-            }
+        } catch (Exception e) {
+            log.error("Configuration parse error: " + e.getMessage());
         }
+    }
 
     private void parseConnections(File connectionsFile, ImportData importData) throws DBException {
         try {
