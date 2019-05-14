@@ -464,7 +464,7 @@ public final class DBUtils {
         if (adapterType.isAssignableFrom(object.getClass())) {
             return adapterType.cast(object);
         } else if (object instanceof IAdaptable) {
-            return adapterType.cast(((IAdaptable)object).getAdapter(adapterType));
+            return ((IAdaptable)object).getAdapter(adapterType);
         } else {
             return null;
         }
