@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -228,7 +229,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         DBCExecutionContext executionContext = contextProvider.getExecutionContext();
         if (executionContext != null) {
             DBPDataSource dataSource = executionContext.getDataSource();
-            planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
+            planner = GeneralUtils.adapt(dataSource, DBCQueryPlanner.class);
         } else {
             planner = null;
         }

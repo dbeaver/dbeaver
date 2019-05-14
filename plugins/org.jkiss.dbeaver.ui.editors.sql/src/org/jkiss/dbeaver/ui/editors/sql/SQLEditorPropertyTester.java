@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.text.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * SQLEditorPropertyTester
@@ -62,7 +63,7 @@ public class SQLEditorPropertyTester extends PropertyTester
                 // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
                 return true;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
             case PROP_CAN_EXPLAIN:
-                return hasConnection && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
+                return hasConnection && GeneralUtils.adapt(editor.getDataSource(), DBCQueryPlanner.class) != null;
             case PROP_CAN_NAVIGATE: {
                 // Check whether some word is under cursor
                 ISelectionProvider selectionProvider = editor.getSelectionProvider();

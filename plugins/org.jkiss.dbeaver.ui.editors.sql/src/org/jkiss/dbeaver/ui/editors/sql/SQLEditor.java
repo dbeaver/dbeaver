@@ -1528,7 +1528,7 @@ public class SQLEditor extends SQLEditorBase implements
     private void explainQueryPlan(SQLQuery sqlQuery)
     {
         // 1. Determine whether planner supports plan extraction
-        DBCQueryPlanner planner = DBUtils.getAdapter(DBCQueryPlanner.class, getDataSource());
+        DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
         if (planner == null) {
             DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan explain isn't supported by current datasource");
             return;
