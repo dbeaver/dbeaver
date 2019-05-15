@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
@@ -35,8 +36,11 @@ import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.tools.registry.ToolsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * ObjectPropertyTester
@@ -47,7 +51,8 @@ public class ObjectPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.object";
     public static final String PROP_CAN_OPEN = "canOpen";
-    public static final String PROP_CAN_CREATE = "canCreate";
+    public static final String PROP_CAN_CREATE_SINGLE = "canCreateSingle";
+    public static final String PROP_CAN_CREATE_MULTI = "canCreateMulti";
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_CAN_RENAME = "canRename";
@@ -79,52 +84,21 @@ public class ObjectPropertyTester extends PropertyTester
         switch (property) {
             case PROP_CAN_OPEN:
                 return node.isPersisted();
-            case PROP_CAN_CREATE:
+            case PROP_CAN_CREATE_SINGLE: {
+                return canCreateObject(node, true);
+            }
+            case PROP_CAN_CREATE_MULTI: {
+                return canCreateObject(node, false);
+            }
             case PROP_CAN_PASTE: {
-
                 if (node instanceof DBNResource) {
                     return property.equals(PROP_CAN_PASTE);
                 }
-                if (node instanceof DBNDataSource) {
-                    // We always can create datasource
-                    return true;
-                }
-
-                Class objectType;
-                if (!(node instanceof DBNContainer)) {
-                    if (node.getParentNode() instanceof DBNContainer) {
-                        node = node.getParentNode();
-                    }
-                }
-                DBNContainer container;
-                if (node instanceof DBNContainer) {
-                    // Try to detect child type
-                    objectType = ((DBNContainer) node).getChildrenClass();
-                    container = (DBNContainer) node;
-                } else {
-                    return false;
-                }
-
-                if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
-                    return false;
-                }
-                if (objectType == null) {
-                    return false;
-                }
-                DBEObjectMaker objectMaker = getObjectManager(objectType, DBEObjectMaker.class);
-                if (objectMaker == null) {
-                    return false;
-                }
-                if (!objectMaker.canCreateObject(container.getValueObject())) {
-                    return false;
-                }
+                return canCreateObject(node, null);
                 // Do not check PASTE command state. It requires clipboard contents check
                 // which means UI interaction which can break menu popup [RedHat]
                 // and also is a slow operation. So let paste be always enabled.
 /*
-            if (property.equals(PROP_CAN_CREATE)) {
-                return true;
-            }
             // Check objects in clipboard
             Collection<DBNNode> cbNodes = TreeNodeTransfer.getFromClipboard();
             if (cbNodes == null) {
@@ -141,7 +115,6 @@ public class ObjectPropertyTester extends PropertyTester
                 }
             }
 */
-                return true;
             }
             case PROP_CAN_DELETE: {
                 if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
@@ -232,6 +205,54 @@ public class ObjectPropertyTester extends PropertyTester
             }
         }
         return false;
+    }
+
+    private boolean canCreateObject(DBNNode node, Boolean onlySingle) {
+        if (onlySingle == null) {
+            // Just try to find first create handler
+            if (node instanceof DBNDataSource) {
+                // We always can create datasource
+                return true;
+            }
+
+            Class objectType;
+            if (!(node instanceof DBNContainer)) {
+                if (node.getParentNode() instanceof DBNContainer) {
+                    node = node.getParentNode();
+                }
+            }
+            DBNContainer container;
+            if (node instanceof DBNContainer) {
+                // Try to detect child type
+                objectType = ((DBNContainer) node).getChildrenClass();
+                container = (DBNContainer) node;
+            } else {
+                return false;
+            }
+
+            if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
+                return false;
+            }
+            if (objectType == null) {
+                return false;
+            }
+            DBEObjectMaker objectMaker = getObjectManager(objectType, DBEObjectMaker.class);
+            if (objectMaker == null) {
+                return false;
+            }
+            if (!objectMaker.canCreateObject(container.getValueObject())) {
+                return false;
+            }
+            return true;
+        }
+        // Check whether only single object type can be created or multiple ones
+        List<IContributionItem> createItems = NavigatorHandlerObjectCreateNew.fillCreateMenuItems(null, node);
+
+        if (onlySingle) {
+            return createItems.size() == 1;
+        } else {
+            return createItems.size() > 1;
+        }
     }
 
     private boolean isReadOnly(DBSObject object)
