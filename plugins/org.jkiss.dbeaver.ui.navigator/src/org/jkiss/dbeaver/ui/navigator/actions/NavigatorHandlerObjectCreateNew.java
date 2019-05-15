@@ -24,7 +24,6 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPage;
@@ -36,6 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -169,23 +169,23 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         }
 
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource) {
-            createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
+            createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
         } else if (node instanceof DBNResource) {
             final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
             IResource resource = ((DBNResource) node).getResource();
             DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
             if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
-                createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
+                createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
             }
             if (handler != null && (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0) {
-                createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
+                createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FOLDER));
             }
             if (resource instanceof IFolder) {
                 if (site != null) {
                     createActions.add(new Separator());
                 }
-                createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
-                createActions.add(ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
+                createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FILE_LINK));
+                createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_FOLDER_LINK));
             }
         }
 
@@ -279,6 +279,15 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     private static boolean isCreateSupported(DBNDatabaseNode parentNode, Class<?> objectClass) {
         DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(objectClass, DBEObjectMaker.class);
         return objectMaker != null && objectMaker.canCreateObject(parentNode == null ? null : parentNode.getValueObject());
+    }
+
+    private static IContributionItem makeCommandContributionItem(@Nullable IWorkbenchPartSite site, String commandId)
+    {
+        if (site == null) {
+            return new ActionContributionItem(new EmptyAction(commandId));
+        } else {
+            return ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE);
+        }
     }
 
     private static IContributionItem makeCreateContributionItem(
