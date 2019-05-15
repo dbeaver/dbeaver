@@ -130,7 +130,7 @@ public class GenericMetaModel {
                 // incorrect results.
                 try {
                     dbResult = session.getMetaData().getSchemas(
-                        "",
+                        null,
                         schemaFilters != null && schemaFilters.hasSingleMask() ?
                             schemaFilters.getSingleMask() :
                             dataSource.getAllObjectsPattern());
