@@ -33,6 +33,7 @@
         <module>org.jkiss.dbeaver.ui.navigator</module>
         <module>org.jkiss.dbeaver.ui.charts</module>
         <module>org.jkiss.dbeaver.ui.dashboard</module>
+        <module>org.jkiss.dbeaver.ui.search</module>
 
         <module>org.jkiss.dbeaver.cmp.simple</module>
         <module>org.jkiss.dbeaver.cmp.simple.ui</module>
