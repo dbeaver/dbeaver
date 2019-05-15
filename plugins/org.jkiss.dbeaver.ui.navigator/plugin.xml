@@ -699,6 +699,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
+            <menu id="dbeaver-menu-create" label="%menu.create.label">
+                <dynamic id="org.jkiss.dbeaver.core.menu.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew$MenuCreateContributor"/>
+            </menu>
+        </menuContribution>
 
     </extension>
 
