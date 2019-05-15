@@ -97,6 +97,25 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
+            namespace="org.jkiss.dbeaver.core.global"
+            properties="standalone,hasActiveProject,hasMultipleProjects"
+            type="java.lang.Object"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+            namespace="org.jkiss.dbeaver.core.object"
+            properties="canOpen,canCreate,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
+            type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
+            namespace="org.jkiss.dbeaver.core.tools"
+            properties="hasTools"
+            type="org.eclipse.ui.IWorkbenchPart"/>
+
+        <propertyTester
             class="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
             id="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.resource"

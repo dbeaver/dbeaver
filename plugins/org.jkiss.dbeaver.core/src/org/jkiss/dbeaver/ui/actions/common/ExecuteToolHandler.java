@@ -22,7 +22,7 @@ import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.tools.ToolDescriptor;
+import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.UIUtils;
