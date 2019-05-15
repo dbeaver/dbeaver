@@ -153,6 +153,8 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     public static class MenuCreateContributor extends CompoundContributionItem {
 
         private static final IContributionItem[] EMPTY_MENU = new IContributionItem[0];
+        private DBNNode lastNode;
+        private IContributionItem[] lastCreateActions;
 
         @Override
         protected IContributionItem[] getContributionItems() {
@@ -164,6 +166,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             }
             IWorkbenchPartSite site = activePart.getSite();
             DBNNode node = NavigatorUtils.getSelectedNode(site.getSelectionProvider());
+            if (node == lastNode) {
+                // We cache last contribution items because Eclipse call this function tens of times per single menu show (WHY??).
+                return lastCreateActions;
+            }
+            lastNode = node;
 
             List<IContributionItem> createActions = new ArrayList<>();
 
@@ -199,7 +206,8 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 createActions.add(new Separator());
             }
             createActions.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_NEW, "Other ...", null));
-            return createActions.toArray(new IContributionItem[0]);
+            lastCreateActions = createActions.toArray(new IContributionItem[0]);
+            return lastCreateActions;
         }
     }
 
