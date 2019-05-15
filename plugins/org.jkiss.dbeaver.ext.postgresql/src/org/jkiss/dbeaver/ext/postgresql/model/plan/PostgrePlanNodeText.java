@@ -30,6 +30,8 @@ import java.util.Set;
  * Postgre execution plan node
  */
 public class PostgrePlanNodeText extends PostgrePlanNodeBase<PostgrePlanNodeText> {
+    
+    private static final int OPERATION_LEN_MIN = 2;
 
     private static final String SEPARATOR = " ";
    
@@ -237,14 +239,22 @@ public class PostgrePlanNodeText extends PostgrePlanNodeBase<PostgrePlanNodeText
             
             parseObjName(attributes, tokens, operation);
             
-            attributes.put(PostgrePlanNodeBase.ATTR_NODE_TYPE, operation);
-            
             String addInfo = getAdditional(tokens);
             
-            if (addInfo.length() > 0) {
+            if (operation.length() >= OPERATION_LEN_MIN && addInfo.length() > 0) {
                 
-                attributes.put(ATTR_ADD_NAME, addInfo);
+                attributes.put(PostgrePlanNodeBase.ATTR_NODE_TYPE, addInfo); 
                 
+            } else {
+            
+                attributes.put(PostgrePlanNodeBase.ATTR_NODE_TYPE, operation);
+                
+                if (addInfo.length() > 0) {
+                    
+                    attributes.put(ATTR_ADD_NAME, addInfo);
+                    
+                }
+            
             }
 
             parseAttr(attributes, tokens); 
