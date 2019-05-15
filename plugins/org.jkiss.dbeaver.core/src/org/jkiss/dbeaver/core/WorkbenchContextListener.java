@@ -50,7 +50,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     private static final String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
     private static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
 
-    private IContextActivation activationNavigator;
+//    private IContextActivation activationNavigator;
     private IContextActivation activationSQL;
     private IContextActivation activationResults;
     private CommandExecutionListener commandExecutionListener;
@@ -198,11 +198,11 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
             if (part instanceof INavigatorModelView) {
                 // We check for instanceof (do not use adapter) because otherwise it become active
                 // for all entity editor and clashes with SQL editor and other complex stuff.
-                if (activationNavigator != null) {
-                    //log.debug("Double activation of navigator context");
-                    contextService.deactivateContext(activationNavigator);
-                }
-                activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+//                if (activationNavigator != null) {
+//                    //log.debug("Double activation of navigator context");
+//                    contextService.deactivateContext(activationNavigator);
+//                }
+//                activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
             }
             if (part instanceof SQLEditorBase || part.getAdapter(SQLEditorBase.class) != null) {
                 if (activationSQL != null) {
@@ -241,10 +241,10 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         }
         try {
             contextService.deferUpdates(true);
-            if (activationNavigator != null && part instanceof INavigatorModelView) {
-                contextService.deactivateContext(activationNavigator);
-                activationNavigator = null;
-            }
+//            if (activationNavigator != null && part instanceof INavigatorModelView) {
+//                contextService.deactivateContext(activationNavigator);
+//                activationNavigator = null;
+//            }
             if (activationSQL != null) {
                 contextService.deactivateContext(activationSQL);
                 activationSQL = null;
