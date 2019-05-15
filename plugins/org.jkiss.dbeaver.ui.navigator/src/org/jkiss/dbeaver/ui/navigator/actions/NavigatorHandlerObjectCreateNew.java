@@ -286,7 +286,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (site == null) {
             return new ActionContributionItem(new EmptyAction(commandId));
         } else {
-            return ActionUtils.makeCommandContribution(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE);
+            return ActionUtils.makeCommandContribution(site, commandId);
         }
     }
 
