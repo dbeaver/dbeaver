@@ -29,14 +29,12 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -48,6 +46,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
+import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -61,7 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GISLeafletViewer {
+public class GISLeafletViewer implements IGeometryValueEditor {
 
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
@@ -125,7 +124,14 @@ public class GISLeafletViewer {
         }
     }
 
-    private void setSourceSRID(int srid) {
+    @Override
+    public int getValueSRID() {
+        return actualSourceSRID != 0 ? actualSourceSRID :
+            defaultSRID != 0 ? defaultSRID : GeometryDataUtils.getDefaultSRID();
+    }
+
+    @Override
+    public void setValueSRID(int srid) {
         if (srid == sourceSRID) {
             //return;
         }
@@ -354,11 +360,6 @@ public class GISLeafletViewer {
         return lastValue;
     }
 
-    private int getCurrentSourceSRID() {
-        return actualSourceSRID != 0 ? actualSourceSRID :
-            defaultSRID != 0 ? defaultSRID : GeometryDataUtils.getDefaultSRID();
-    }
-
     private void updateToolbar() {
         toolBarManager.removeAll();
         toolBarManager.add(new Action("Open in browser", DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
@@ -506,7 +507,7 @@ public class GISLeafletViewer {
         private MenuManager menuManager;
 
         public ChangeCRSAction() {
-            super("EPSG:" + getCurrentSourceSRID(), Action.AS_DROP_DOWN_MENU);
+            super("EPSG:" + getValueSRID(), Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CHART_LINE));
         }
 
@@ -514,9 +515,9 @@ public class GISLeafletViewer {
         public void run() {
             SelectSRIDDialog manageCRSDialog = new SelectSRIDDialog(
                 UIUtils.getActiveWorkbenchShell(),
-                getCurrentSourceSRID());
+                getValueSRID());
             if (manageCRSDialog.open() == IDialogConstants.OK_ID) {
-                setSourceSRID(manageCRSDialog.getSelectedSRID());
+                setValueSRID(manageCRSDialog.getSelectedSRID());
             }
         }
 
@@ -581,12 +582,12 @@ public class GISLeafletViewer {
 
         @Override
         public boolean isChecked() {
-            return srid == getCurrentSourceSRID();
+            return srid == getValueSRID();
         }
 
         @Override
         public void run() {
-            setSourceSRID(srid);
+            setValueSRID(srid);
         }
     }
 
