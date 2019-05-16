@@ -361,7 +361,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
                     DBDValueHandler valueHandler = handlers[i];
                     if (valueHandler instanceof DBDValueBinder) {
-                        query.append(((DBDValueBinder) valueHandler) .makeQueryBind(attribute));
+                        query.append(((DBDValueBinder) valueHandler) .makeQueryBind(attribute, attributeValues[i]));
                     } else {
                         query.append("?"); //$NON-NLS-1$
                     }
@@ -439,7 +439,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     query.append(getAttributeName(attribute)).append("="); //$NON-NLS-1$
                     DBDValueHandler valueHandler = handlers[i];
                     if (valueHandler instanceof DBDValueBinder) {
-                        query.append(((DBDValueBinder) valueHandler) .makeQueryBind(attribute));
+                        query.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
                     } else {
                         query.append("?"); //$NON-NLS-1$
                     }
