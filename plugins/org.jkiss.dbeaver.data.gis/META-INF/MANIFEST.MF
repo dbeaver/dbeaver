@@ -8,7 +8,7 @@ Bundle-Release-Date: 20190520
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.jkiss.dbeaver.model,
  org.eclipse.core.runtime,
- org.jkiss.bundle.gis
+ org.jkiss.bundle.gis;visibility:=reexport
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.data.gis.handlers,
  org.jkiss.dbeaver.model.gis
