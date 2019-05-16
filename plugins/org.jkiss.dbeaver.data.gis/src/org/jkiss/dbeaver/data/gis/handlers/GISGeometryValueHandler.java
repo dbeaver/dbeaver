@@ -83,7 +83,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    protected void bindGeometryParameter(JDBCSession session, JDBCPreparedStatement statement, int paramIndex, Geometry value) throws SQLException, DBCException {
+    protected void bindGeometryParameter(@NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, int paramIndex, @NotNull Geometry value) throws SQLException, DBCException {
         bindBytes(statement, paramIndex, convertGeometryToBinaryFormat(session, value));
     }
 
@@ -141,11 +141,11 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value, format);
     }
 
-    protected byte[] fetchBytes(JDBCResultSet resultSet, int index) throws SQLException {
+    protected byte[] fetchBytes(@NotNull JDBCResultSet resultSet, int index) throws SQLException {
         return resultSet.getBytes(index);
     }
 
-    protected void bindBytes(JDBCPreparedStatement dbStat, int index, byte[] bytes) throws SQLException {
+    protected void bindBytes(@NotNull JDBCPreparedStatement dbStat, int index, @NotNull byte[] bytes) throws SQLException {
         dbStat.setBytes(index, bytes);
     }
 
