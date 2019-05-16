@@ -23,14 +23,15 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
+import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
 import org.locationtech.jts.geom.Geometry;
 
 /**
- * GisAttribute.
- * Edits value as string. Also manager SRID.
+ * GISTextViewer.
+ * Edits value as string. Also manages SRID.
 */
-public class GISTextViewer extends StringInlineEditor implements IGeometryViewer {
+public class GISTextViewer extends StringInlineEditor implements IGeometryViewer, IGeometryValueEditor {
 
     private int valueSRID;
 
@@ -61,6 +62,16 @@ public class GISTextViewer extends StringInlineEditor implements IGeometryViewer
             }
         }
         return geometry;
+    }
+
+    @Override
+    public int getValueSRID() {
+        return valueSRID;
+    }
+
+    @Override
+    public void setValueSRID(int srid) {
+        this.valueSRID = srid;
     }
 
 }
