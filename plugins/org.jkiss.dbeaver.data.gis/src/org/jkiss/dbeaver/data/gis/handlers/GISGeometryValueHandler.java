@@ -79,7 +79,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (value instanceof byte[]) {
             bindBytes(statement, paramIndex, (byte[]) value);
         } else if (value instanceof Geometry) {
-            bindBytes(statement, paramIndex, GeometryConverter.getInstance().to((Geometry)value));
+            bindBytes(statement, paramIndex, convertGeometryToBinaryFormat(session, (Geometry)value));
         }
     }
 
@@ -103,13 +103,13 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Geometry) {
             geometry = new DBGeometry((Geometry)object);
         } else if (object instanceof byte[]) {
-            Geometry jtsGeometry = getGeometryFromBinaryFormat(session, (byte[]) object);
+            Geometry jtsGeometry = convertGeometryFromBinaryFormat(session, (byte[]) object);
 //            if (invertCoordinates) {
 //                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
 //            }
             geometry = new DBGeometry(jtsGeometry);
         } else if (object instanceof String) {
-            Geometry jtsGeometry = GeometryConverter.getInstance().from((String) object);
+            Geometry jtsGeometry = GeometryConverter.getInstance().fromWKT((String) object);
             geometry = new DBGeometry(jtsGeometry);
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
@@ -120,8 +120,12 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         return geometry;
     }
 
-    protected Geometry getGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
-        return GeometryConverter.getInstance().from(object);
+    protected Geometry convertGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
+        return GeometryConverter.getInstance().fromWKB(object);
+    }
+
+    protected byte[] convertGeometryToBinaryFormat(DBCSession session, Geometry geometry) throws DBCException {
+        return GeometryConverter.getInstance().toWKB(geometry);
     }
 
     @NotNull
