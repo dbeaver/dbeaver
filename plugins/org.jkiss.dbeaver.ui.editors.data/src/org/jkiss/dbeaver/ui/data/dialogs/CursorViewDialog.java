@@ -179,7 +179,12 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
 
     @Override
     public IResultSetDecorator createResultSetDecorator() {
-        return new QueryResultsDecorator();
+        return new QueryResultsDecorator() {
+            @Override
+            public long getDecoratorFeatures() {
+                return FEATURE_PANELS | FEATURE_STATUS_BAR;
+            }
+        };
     }
 
     private class CursorDataContainer implements DBSDataContainer {
@@ -197,6 +202,11 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         {
             DBCStatistics statistics = new DBCStatistics();
             DBRProgressMonitor monitor = session.getProgressMonitor();
+            try {
+                value.moveTo((int) firstRow);
+            } catch (DBCException e) {
+                log.debug(e);
+            }
             DBCResultSet dbResult = value;
             try {
                 long startTime = System.currentTimeMillis();
