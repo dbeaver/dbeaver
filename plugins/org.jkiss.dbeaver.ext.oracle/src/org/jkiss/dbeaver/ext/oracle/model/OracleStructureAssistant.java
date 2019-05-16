@@ -287,6 +287,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                                     return object;
                                 }
 
+                                @NotNull
                                 @Override
                                 public String getFullyQualifiedName(DBPEvaluationContext context) {
                                     if (objectType == OracleObjectType.SYNONYM && OracleConstants.USER_PUBLIC.equals(schemaName)) {
