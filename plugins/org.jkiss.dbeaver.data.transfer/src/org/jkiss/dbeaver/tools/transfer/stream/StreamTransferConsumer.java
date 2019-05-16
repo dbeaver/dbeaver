@@ -429,6 +429,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         String fileName = translatePattern(
             settings.getOutputFilePattern(),
             null).trim();
+        if (parameters.orderNumber > 0) {
+            fileName += "_" + String.valueOf(parameters.orderNumber + 1);
+        }
         if (multiFileNumber > 0) {
             fileName += "_" + String.valueOf(multiFileNumber + 1);
         }
