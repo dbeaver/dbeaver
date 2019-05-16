@@ -14,21 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.gis;
+package org.jkiss.dbeaver.ui.gis.panel;
 
-import org.eclipse.swt.widgets.Control;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Geometry value editor
+ * Database select dialog
  */
-public interface IGeometryValueEditor {
+public class GISEditorUtils {
 
-    Control getEditorControl();
+    private static final int MAX_RECENT_SRID_SIZE = 10;
 
-    int getValueSRID();
+    private static final List<Integer> recentSRIDs = new ArrayList<>();
 
-    void setValueSRID(int srid);
+    public static List<Integer> getRecentSRIDs() {
+        return recentSRIDs;
+    }
+
+    public static void addRecentSRID(int srid) {
+        if (!recentSRIDs.contains(srid)) {
+            recentSRIDs.add(srid);
+        }
+    }
+
+    public static void curRecentSRIDs() {
+        if (recentSRIDs.size() > MAX_RECENT_SRID_SIZE) {
+            recentSRIDs.remove(0);
+        }
+    }
 
 }
