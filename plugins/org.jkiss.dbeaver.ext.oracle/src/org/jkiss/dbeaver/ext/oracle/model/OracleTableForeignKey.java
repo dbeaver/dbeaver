@@ -55,6 +55,9 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
     }
+    
+    
+    
 
     public OracleTableForeignKey(
         DBRProgressMonitor monitor,
