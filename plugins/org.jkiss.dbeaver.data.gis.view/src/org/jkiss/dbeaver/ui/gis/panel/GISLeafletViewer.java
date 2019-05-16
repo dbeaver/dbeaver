@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.gis.panel;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.dnd.Clipboard;
@@ -39,7 +38,10 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -65,7 +67,6 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
-    private static final int MAX_RECENT_SRID_SIZE = 10;
 
     private static final String[] SUPPORTED_FORMATS = new String[] { "png", "gif", "bmp" };
 
@@ -77,7 +78,6 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     private File scriptFile;
     private final ToolBarManager toolBarManager;
     private int defaultSRID; // Target SRID used to render map
-    private List<Integer> recentSRIDs = new ArrayList<>();
 
     private boolean toolsVisible = true;
     private boolean flipCoordinates = false;
@@ -115,13 +115,16 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                     if (recentSRID == 0 || recentSRID == GeometryDataUtils.getDefaultSRID() || recentSRID == GisConstants.DEFAULT_OSM_SRID) {
                         continue;
                     }
-                    if (!recentSRIDs.contains(recentSRID)) {
-                        recentSRIDs.add(recentSRID);
-                    }
+                    GISEditorUtils.addRecentSRID(recentSRID);
                 }
             }
             //recentSRIDs.sort(Integer::compareTo);
         }
+    }
+
+    @Override
+    public Control getEditorControl() {
+        return composite;
     }
 
     @Override
@@ -145,14 +148,12 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         }
         {
             // Save SRID to the list of recently used SRIDs
-            if (srid != GeometryDataUtils.getDefaultSRID() && srid != GisConstants.DEFAULT_OSM_SRID && !recentSRIDs.contains(srid)) {
-                recentSRIDs.add(srid);
+            if (srid != GeometryDataUtils.getDefaultSRID() && srid != GisConstants.DEFAULT_OSM_SRID) {
+                GISEditorUtils.addRecentSRID(srid);
             }
-            if (recentSRIDs.size() > MAX_RECENT_SRID_SIZE) {
-                recentSRIDs.remove(0);
-            }
+            GISEditorUtils.curRecentSRIDs();
             StringBuilder sridListStr = new StringBuilder();
-            for (Integer sridInt : recentSRIDs) {
+            for (Integer sridInt : GISEditorUtils.getRecentSRIDs()) {
                 if (sridListStr.length() > 0) sridListStr.append(",");
                 sridListStr.append(sridInt);
             }
@@ -444,7 +445,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
 
         toolBarManager.add(new Separator());
 
-        Action crsSelectorAction = new ChangeCRSAction();
+        Action crsSelectorAction = new SelectCRSAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
 
         toolBarManager.add(new Action("Flip coordinates", Action.AS_CHECK_BOX) {
@@ -499,95 +500,6 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             browser.execute("javascript:showTools(" + toolsVisible +");");
         } finally {
             gc.dispose();
-        }
-    }
-
-    private class ChangeCRSAction extends Action implements IMenuCreator {
-
-        private MenuManager menuManager;
-
-        public ChangeCRSAction() {
-            super("EPSG:" + getValueSRID(), Action.AS_DROP_DOWN_MENU);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CHART_LINE));
-        }
-
-        @Override
-        public void run() {
-            SelectSRIDDialog manageCRSDialog = new SelectSRIDDialog(
-                UIUtils.getActiveWorkbenchShell(),
-                getValueSRID());
-            if (manageCRSDialog.open() == IDialogConstants.OK_ID) {
-                setValueSRID(manageCRSDialog.getSelectedSRID());
-            }
-        }
-
-        @Override
-        public IMenuCreator getMenuCreator() {
-            return this;
-        }
-
-        @Override
-        public void dispose() {
-            if (menuManager != null) {
-                menuManager.dispose();
-                menuManager = null;
-            }
-        }
-
-        @Override
-        public Menu getMenu(Control parent) {
-            if (menuManager == null) {
-                menuManager = new MenuManager();
-                menuManager.setRemoveAllWhenShown(true);
-                menuManager.addMenuListener(manager -> {
-                    menuManager.add(new SetCRSAction(GeometryDataUtils.getDefaultSRID()));
-                    menuManager.add(new SetCRSAction(GisConstants.DEFAULT_OSM_SRID));
-                    menuManager.add(new Separator());
-                    if (!recentSRIDs.isEmpty()) {
-                        for (Integer recentSRID : recentSRIDs) {
-                            menuManager.add(new SetCRSAction(recentSRID));
-                        }
-                        menuManager.add(new Separator());
-                    }
-                    menuManager.add(new Action("Other ...") {
-                        @Override
-                        public void run() {
-                            ChangeCRSAction.this.run();
-                        }
-                    });
-                    menuManager.add(new Action("Configuration ...") {
-                        @Override
-                        public void run() {
-                            new GISViewerConfigurationDialog(composite.getShell()).open();
-                        }
-                    });
-                });
-            }
-            return menuManager.createContextMenu(parent);
-        }
-
-        @Override
-        public Menu getMenu(Menu parent) {
-            return null;
-        }
-    }
-
-    private class SetCRSAction extends Action {
-        private final int srid;
-
-        public SetCRSAction(int srid) {
-            super("EPSG:" + srid, AS_CHECK_BOX);
-            this.srid = srid;
-        }
-
-        @Override
-        public boolean isChecked() {
-            return srid == getValueSRID();
-        }
-
-        @Override
-        public void run() {
-            setValueSRID(srid);
         }
     }
 

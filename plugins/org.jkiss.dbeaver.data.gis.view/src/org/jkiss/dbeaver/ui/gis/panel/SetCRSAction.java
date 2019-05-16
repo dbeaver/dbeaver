@@ -14,21 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.gis;
+package org.jkiss.dbeaver.ui.gis.panel;
 
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 
-import java.util.List;
+class SetCRSAction extends Action {
+    private final IGeometryValueEditor valueEditor;
+    private final int srid;
 
-/**
- * Geometry value editor
- */
-public interface IGeometryValueEditor {
+    public SetCRSAction(IGeometryValueEditor valueEditor, int srid) {
+        super("EPSG:" + srid, AS_CHECK_BOX);
+        this.valueEditor = valueEditor;
+        this.srid = srid;
+    }
 
-    Control getEditorControl();
+    @Override
+    public boolean isChecked() {
+        return srid == valueEditor.getValueSRID();
+    }
 
-    int getValueSRID();
-
-    void setValueSRID(int srid);
-
+    @Override
+    public void run() {
+        valueEditor.setValueSRID(srid);
+    }
 }
