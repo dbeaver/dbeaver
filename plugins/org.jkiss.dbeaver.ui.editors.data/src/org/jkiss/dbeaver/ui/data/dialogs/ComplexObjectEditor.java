@@ -673,9 +673,11 @@ public class ComplexObjectEditor extends TreeViewer {
                     children[i] = new CollItem(i, iterator.next());
                 }
             }
-            if (children != null) {
-                childrenMap.put(parent, children);
+            if (children == null) {
+                children = new ComplexElement[0];
             }
+            childrenMap.put(parent, children);
+
             return children;
         }
 
