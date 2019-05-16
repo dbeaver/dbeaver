@@ -16,30 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
-import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCursor;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Struct;
-import java.sql.Types;
-import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * PostgreArrayValueHandler
@@ -52,7 +40,14 @@ public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         // Fetch as string (#1735)
         // Fetching cursor as object will close it so it won;'t be possible to use cursor in consequent queries
-        return resultSet.getString(index);
+        Object object = resultSet.getObject(index);
+        if (object instanceof ResultSet) {
+            return new JDBCCursor(
+                (JDBCSession) session,
+                (ResultSet) object,
+                type.getTypeName());
+        }
+        return object;
     }
 
     @Override
