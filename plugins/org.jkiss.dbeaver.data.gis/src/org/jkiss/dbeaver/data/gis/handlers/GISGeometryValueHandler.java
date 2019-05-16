@@ -79,8 +79,12 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (value instanceof byte[]) {
             bindBytes(statement, paramIndex, (byte[]) value);
         } else if (value instanceof Geometry) {
-            bindBytes(statement, paramIndex, convertGeometryToBinaryFormat(session, (Geometry)value));
+            bindGeometryParameter(session, statement, paramIndex, (Geometry) value);
         }
+    }
+
+    protected void bindGeometryParameter(JDBCSession session, JDBCPreparedStatement statement, int paramIndex, Geometry value) throws SQLException, DBCException {
+        bindBytes(statement, paramIndex, convertGeometryToBinaryFormat(session, value));
     }
 
     @Override
