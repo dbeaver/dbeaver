@@ -26,6 +26,6 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 public interface DBDValueBinder extends DBDValueHandler
 {
 
-    String makeQueryBind(DBSAttributeBase attribute) throws DBCException;
+    String makeQueryBind(DBSAttributeBase attribute, Object value) throws DBCException;
 
 }
