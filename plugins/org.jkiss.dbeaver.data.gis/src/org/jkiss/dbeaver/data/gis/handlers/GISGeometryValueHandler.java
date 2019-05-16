@@ -103,7 +103,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Geometry) {
             geometry = new DBGeometry((Geometry)object);
         } else if (object instanceof byte[]) {
-            Geometry jtsGeometry = GeometryConverter.getInstance().from((byte[]) object);
+            Geometry jtsGeometry = getGeometryFromBinaryFormat(session, (byte[]) object);
 //            if (invertCoordinates) {
 //                jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
 //            }
@@ -118,6 +118,10 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             geometry.setSRID(defaultSRID);
         }
         return geometry;
+    }
+
+    protected Geometry getGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
+        return GeometryConverter.getInstance().from(object);
     }
 
     @NotNull
