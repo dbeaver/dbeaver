@@ -124,6 +124,11 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
     }
 
     @Override
+    protected boolean dependsOnExternalFocusListener() {
+        return false;
+    }
+
+    @Override
     protected void focusLost() {
         Control newFocus = getControl().getDisplay().getFocusControl();
         if (newFocus == null) {
