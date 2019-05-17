@@ -236,7 +236,10 @@ public class MetaDataPanel implements IResultSetPanel {
                     @Override
                     public void completeLoading(Collection<DBDAttributeBinding> items) {
                         super.completeLoading(items);
-                        ((TreeViewer)attributeList.getItemsViewer()).expandToLevel(2);
+                        TreeViewer itemsViewer = (TreeViewer) attributeList.getItemsViewer();
+                        if (!itemsViewer.getControl().isDisposed()) {
+                            itemsViewer.expandToLevel(2);
+                        }
                     }
                 });
         }
