@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -26,8 +27,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -55,23 +54,18 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     {
         super("Edit dictionary", entity);
         this.entity = entity;
-        this.dictionary = DBVUtils.findVirtualEntity(entity, true);
-        UIUtils.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                try {
-                    if (dictionary.getDescriptionColumnNames() == null) {
-                        Collection<? extends DBSEntityAttribute> tablePK = DBUtils.getBestTableIdentifier(monitor, entity);
-                        if (tablePK != null && !tablePK.isEmpty()) {
-                            dictionary.setDescriptionColumnNames(DBVEntity.getDefaultDescriptionColumn(monitor, tablePK.iterator().next()));
-                        }
+        this.dictionary = DBVUtils.getVirtualEntity(entity, true);
+        UIUtils.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), monitor -> {
+            try {
+                if (dictionary.getDescriptionColumnNames() == null) {
+                    Collection<? extends DBSEntityAttribute> tablePK = DBUtils.getBestTableIdentifier(monitor, entity);
+                    if (tablePK != null && !tablePK.isEmpty()) {
+                        dictionary.setDescriptionColumnNames(DBVEntity.getDefaultDescriptionColumn(monitor, tablePK.iterator().next()));
                     }
-                    descColumns = dictionary.getDescriptionColumns(monitor, entity);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
                 }
+                descColumns = dictionary.getDescriptionColumns(monitor, entity);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
             }
         });
     }
@@ -94,7 +88,10 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     @Override
     protected void createContentsAfterColumns(Composite panel)
     {
-        Group group = UIUtils.createControlGroup(panel, "Custom criteria", 1, GridData.FILL_HORIZONTAL, 0);
+        Composite group = new Composite(panel, SWT.NONE);
+        group.setLayout(new GridLayout(1, false));
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createControlLabel(group, "Custom criteria");
         criteriaText = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 50;
@@ -132,10 +129,14 @@ public class EditDictionaryPage extends AttributesSelectorPage {
     }
 
     @Override
-    protected void performFinish()
+    public void performFinish()
     {
-        dictionary.setDescriptionColumnNames(criteriaText.getText());
+        saveDictionarySettings();
         entity.getDataSource().getContainer().persistConfiguration();
+    }
+
+    public void saveDictionarySettings() {
+        dictionary.setDescriptionColumnNames(criteriaText.getText());
     }
 
 }

@@ -144,6 +144,7 @@ public class ModelMessages extends NLS {
 	public static String model_struct_Statistic;
 	public static String model_struct_Unique_Key;
     public static String model_struct_Virtual_Key;
+	public static String model_struct_Virtual_Foreign_Key;
     public static String model_struct_Pseudo_Key;
 	public static String model_struct_Unknown;
 

@@ -40,7 +40,7 @@ public abstract class BaseValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public Object createNewValueObject(DBCSession session, DBSTypedObject type) throws DBCException {
+    public Object createNewValueObject(@NotNull DBCSession session, @NotNull DBSTypedObject type) throws DBCException {
         throw new DBCException("New '" + type.getTypeName() + "' object create not supported");
     }
 

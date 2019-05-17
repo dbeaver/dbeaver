@@ -220,7 +220,7 @@ public class EditorUtils {
         }
     }
 
-    private static void setFileDataSource(File localFile, @Nullable DBPDataSourceContainer dataSourceContainer) {
+    public static void setFileDataSource(File localFile, @Nullable DBPDataSourceContainer dataSourceContainer) {
         final DBPExternalFileManager efManager = DBWorkbench.getPlatform().getExternalFileManager();
         efManager.setFileProperty(
             localFile,
@@ -245,6 +245,9 @@ public class EditorUtils {
     public static void openExternalFileEditor(File file, IWorkbenchWindow window) {
         try {
             IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+            if (desc == null) {
+                desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName() + ".txt");
+            }
             IFileStore fileStore = EFS.getStore(file.toURI());
             IEditorInput input = new FileStoreEditorInput(fileStore);
             IDE.openEditor(window.getActivePage(), input, desc.getId());

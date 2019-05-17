@@ -53,7 +53,7 @@ import java.util.List;
 /**
  * MySQLCatalog
  */
-public class MySQLCatalog implements DBSSchema, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
+public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
 {
 
     final TableCache tableCache = new TableCache();

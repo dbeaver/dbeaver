@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -495,7 +496,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
         final String propertyName = meta.getPropertyName();
         final PropertyValueReader valueReader = new PropertyValueReader(monitor, propertyName, valueObject);
-        DBUtils.tryExecuteRecover(monitor, getDataSource(), valueReader);
+        DBExecUtils.tryExecuteRecover(monitor, getDataSource(), valueReader);
         final Object propertyValue = valueReader.propertyValue;
         if (propertyValue == null) {
             return false;

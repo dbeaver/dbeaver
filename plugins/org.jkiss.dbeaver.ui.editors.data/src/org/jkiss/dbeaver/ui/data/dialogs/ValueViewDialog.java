@@ -96,92 +96,8 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
     protected IValueEditor createPanelEditor(final Composite placeholder)
         throws DBException
     {
-        IValueEditor editor = valueController.getValueManager().createEditor(new IValueController() {
-            @NotNull
-            @Override
-            public DBCExecutionContext getExecutionContext() {
-                return valueController.getExecutionContext();
-            }
-
-            @Override
-            public IDataController getDataController() {
-                return valueController.getDataController();
-            }
-
-            @Override
-            public String getValueName()
-            {
-                return valueController.getValueName();
-            }
-
-            @Override
-            public DBSTypedObject getValueType()
-            {
-                return valueController.getValueType();
-            }
-
-            @Override
-            public Object getValue()
-            {
-                return valueController.getValue();
-            }
-
-            @Override
-            public void updateValue(Object value, boolean updatePresentation)
-            {
-                valueController.updateValue(value, updatePresentation);
-            }
-
-            @Override
-            public void updateSelectionValue(Object value) {
-                valueController.updateSelectionValue(value);
-            }
-
-            @Override
-            public DBDValueHandler getValueHandler()
-            {
-                return valueController.getValueHandler();
-            }
-
-            @Override
-            public IValueManager getValueManager() {
-                return valueController.getValueManager();
-            }
-
-            @Override
-            public EditType getEditType()
-            {
-                return EditType.PANEL;
-            }
-
-            @Override
-            public boolean isReadOnly()
-            {
-                return valueController.isReadOnly();
-            }
-
-            @Override
-            public IWorkbenchPartSite getValueSite()
-            {
-                return valueController.getValueSite();
-            }
-
-            @Override
-            public Composite getEditPlaceholder()
-            {
-                return placeholder;
-            }
-
-            @Override
-            public void refreshEditor() {
-                valueController.refreshEditor();
-            }
-
-            @Override
-            public void showMessage(String message, DBPMessageType messageType)
-            {
-            }
-        });
+        IValueEditor editor = valueController.getValueManager().createEditor(
+            new ProxyValueController(valueController, placeholder));
         if (editor != null) {
             editor.createControl();
             Control control = editor.getControl();
@@ -368,5 +284,100 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
 
+    }
+
+    private static class ProxyValueController implements IValueController {
+        private final IValueController valueController;
+        private final Composite placeholder;
+
+        public ProxyValueController(IValueController valueController, Composite placeholder) {
+            this.valueController = valueController;
+            this.placeholder = placeholder;
+        }
+
+        @NotNull
+        @Override
+        public DBCExecutionContext getExecutionContext() {
+            return valueController.getExecutionContext();
+        }
+
+        @Override
+        public IDataController getDataController() {
+            return valueController.getDataController();
+        }
+
+        @Override
+        public String getValueName()
+        {
+            return valueController.getValueName();
+        }
+
+        @Override
+        public DBSTypedObject getValueType()
+        {
+            return valueController.getValueType();
+        }
+
+        @Override
+        public Object getValue()
+        {
+            return valueController.getValue();
+        }
+
+        @Override
+        public void updateValue(Object value, boolean updatePresentation)
+        {
+            valueController.updateValue(value, updatePresentation);
+        }
+
+        @Override
+        public void updateSelectionValue(Object value) {
+            valueController.updateSelectionValue(value);
+        }
+
+        @Override
+        public DBDValueHandler getValueHandler()
+        {
+            return valueController.getValueHandler();
+        }
+
+        @Override
+        public IValueManager getValueManager() {
+            return valueController.getValueManager();
+        }
+
+        @Override
+        public EditType getEditType()
+        {
+            return EditType.PANEL;
+        }
+
+        @Override
+        public boolean isReadOnly()
+        {
+            return valueController.isReadOnly();
+        }
+
+        @Override
+        public IWorkbenchPartSite getValueSite()
+        {
+            return valueController.getValueSite();
+        }
+
+        @Override
+        public Composite getEditPlaceholder()
+        {
+            return placeholder;
+        }
+
+        @Override
+        public void refreshEditor() {
+            valueController.refreshEditor();
+        }
+
+        @Override
+        public void showMessage(String message, DBPMessageType messageType)
+        {
+        }
     }
 }

@@ -48,19 +48,27 @@ public class DBVModel extends DBVContainer {
     private static final String TAG_CONTAINER = "container"; //$NON-NLS-1$
     private static final String TAG_ENTITY = "entity"; //$NON-NLS-1$
     private static final String TAG_CONSTRAINT = "constraint"; //$NON-NLS-1$
+    private static final String TAG_ASSOCIATION = "association"; //$NON-NLS-1$
     private static final String TAG_ATTRIBUTE = "attribute"; //$NON-NLS-1$
     private static final String ATTR_ID = "id"; //$NON-NLS-1$
     private static final String ATTR_NAME = "name"; //$NON-NLS-1$
     private static final String ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
     private static final String ATTR_CUSTOM = "custom"; //$NON-NLS-1$
+    private static final String ATTR_ENTITY = "entity"; //$NON-NLS-1$
+    private static final String ATTR_CONSTRAINT = "constraint"; //$NON-NLS-1$
     private static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
     private static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     private static final String ATTR_TYPE = "type"; //$NON-NLS-1$
     private static final String TAG_COLORS = "colors";
     private static final String TAG_COLOR = "color";
     private static final String ATTR_OPERATOR = "operator";
+    private static final String ATTR_RANGE = "range";
+    private static final String ATTR_SINGLE_COLUMN = "singleColumn";
     private static final String ATTR_FOREGROUND = "foreground";
     private static final String ATTR_BACKGROUND = "background";
+    private static final String ATTR_FOREGROUND2 = "foreground2";
+    private static final String ATTR_BACKGROUND2 = "background2";
+
     private static final String TAG_VALUE = "value";
     private static final String TAG_TRANSFORM = "transform";
     private static final String TAG_INCLUDE = "include";
@@ -164,6 +172,9 @@ public class DBVModel extends DBVContainer {
         }
         // Attributes
         for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.entityAttributes)) {
+            if (!attr.hasValuableData()) {
+                continue;
+            }
             try (final XMLBuilder.Element e3 = xml.startElement(TAG_ATTRIBUTE)) {
                 xml.addAttribute(ATTR_NAME, attr.getName());
                 final DBVTransformSettings transformSettings = attr.getTransformSettings();
@@ -211,6 +222,19 @@ public class DBVModel extends DBVContainer {
                 xml.endElement();
             }
         }
+        // Foreign keys
+        for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.entityForeignKeys)) {
+            xml.startElement(TAG_ASSOCIATION);
+            DBSEntity refEntity = fk.getAssociatedEntity();
+            xml.addAttribute(ATTR_ENTITY, DBUtils.getObjectFullId(refEntity));
+            xml.addAttribute(ATTR_CONSTRAINT, fk.getReferencedConstraint().getName());
+            for (DBVEntityForeignKeyColumn cc : CommonUtils.safeCollection(fk.getAttributeReferences(null))) {
+                xml.startElement(TAG_ATTRIBUTE);
+                xml.addAttribute(ATTR_NAME, cc.getAttributeName());
+                xml.endElement();
+            }
+            xml.endElement();
+        }
         // Colors
         if (!CommonUtils.isEmpty(entity.colorOverrides)) {
             xml.startElement(TAG_COLORS);
@@ -218,11 +242,23 @@ public class DBVModel extends DBVContainer {
                 xml.startElement(TAG_COLOR);
                 xml.addAttribute(ATTR_NAME, color.getAttributeName());
                 xml.addAttribute(ATTR_OPERATOR, color.getOperator().name());
+                if (color.isRange()) {
+                    xml.addAttribute(ATTR_RANGE, true);
+                }
+                if (color.isSingleColumn()) {
+                    xml.addAttribute(ATTR_SINGLE_COLUMN, true);
+                }
                 if (color.getColorForeground() != null) {
                     xml.addAttribute(ATTR_FOREGROUND, color.getColorForeground());
                 }
+                if (color.getColorForeground2() != null) {
+                    xml.addAttribute(ATTR_FOREGROUND2, color.getColorForeground2());
+                }
                 if (color.getColorBackground() != null) {
                     xml.addAttribute(ATTR_BACKGROUND, color.getColorBackground());
+                }
+                if (color.getColorBackground2() != null) {
+                    xml.addAttribute(ATTR_BACKGROUND2, color.getColorBackground2());
                 }
                 if (!ArrayUtils.isEmpty(color.getAttributeValues())) {
                     for (Object value : color.getAttributeValues()) {
@@ -344,6 +380,10 @@ public class DBVModel extends DBVContainer {
                                 atts.getValue(ATTR_FOREGROUND),
                                 atts.getValue(ATTR_BACKGROUND)
                             );
+                            curColor.setRange(CommonUtils.getBoolean(atts.getValue(ATTR_RANGE), false));
+                            curColor.setSingleColumn(CommonUtils.getBoolean(atts.getValue(ATTR_SINGLE_COLUMN), false));
+                            curColor.setColorForeground2(atts.getValue(ATTR_FOREGROUND2));
+                            curColor.setColorBackground2(atts.getValue(ATTR_BACKGROUND2));
                             curEntity.addColorOverride(curColor);
                         } catch (Throwable e) {
                             log.warn("Error reading color settings", e);

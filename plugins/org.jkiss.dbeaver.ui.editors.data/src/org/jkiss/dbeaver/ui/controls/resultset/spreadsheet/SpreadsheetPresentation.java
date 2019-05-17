@@ -146,6 +146,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
     private boolean rightJustifyDateTime = true;
+    private int rowBatchSize;
     private IValueEditor activeInlineEditor;
 
     public SpreadsheetPresentation() {
@@ -696,6 +697,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         colorizeDataTypes = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         rightJustifyNumbers = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         rightJustifyDateTime = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
+        rowBatchSize = preferenceStore.getInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
 
         spreadsheet.setRedraw(false);
         try {
@@ -1009,7 +1011,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
                         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
-                        controller.navigateAssociation(monitor, null, attr, row, ctrlPressed);
+                        controller.navigateAssociation(monitor, null, attr, Collections.singletonList(row), ctrlPressed);
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
                     }
@@ -1524,7 +1526,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 state |= STATE_LINK;
             } else {
                 String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-                if (strValue != null && strValue.contains(":")) {
+                if (strValue != null && strValue.contains("://")) {
                     try {
                         new URL(strValue);
                         state |= STATE_HYPER_LINK;
@@ -1652,7 +1654,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         {
             if (selected) {
                 Color normalColor = getCellBackground(colElement, rowElement, false);
-                if (normalColor == backgroundNormal) {
+                if (normalColor == null || normalColor == backgroundNormal) {
                     return backgroundSelected;
                 }
                 RGB mixRGB = UIUtils.blend(
@@ -1675,29 +1677,29 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
 
-            if (row.getState() == ResultSetRow.STATE_ADDED) {
-                return backgroundAdded;
-            }
-            if (row.getState() == ResultSetRow.STATE_REMOVED) {
-                return backgroundDeleted;
+            switch (row.getState()) {
+                case ResultSetRow.STATE_ADDED:
+                    return backgroundAdded;
+                case ResultSetRow.STATE_REMOVED:
+                    return backgroundDeleted;
             }
             if (row.changes != null && row.changes.containsKey(attribute)) {
                 return backgroundModified;
             }
+
             if (row.background != null) {
                 return row.background;
             }
 
             Object value = controller.getModel().getCellValue(attribute, row);
-            if (value instanceof DBDValueError) {
+            if (value != null && value.getClass() == DBDValueError.class) {
                 return backgroundError;
             }
-            if (attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
-                return backgroundReadOnly;
-            }
+//            if (attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
+//                return backgroundReadOnly;
+//            }
             if (!recordMode && showOddRows) {
                 // Determine odd/even row
-                int rowBatchSize = getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_ROW_BATCH_SIZE);
                 if (rowBatchSize < 1) {
                     rowBatchSize = 1;
                 }

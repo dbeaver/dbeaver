@@ -771,7 +771,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.IExternalTool"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.tools.IUserInterfaceTool"/>
                </appInfo>
             </annotation>
          </attribute>

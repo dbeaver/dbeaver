@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-public class ExasolExportTableTool implements IExternalTool {
+public class ExasolExportTableTool implements IUserInterfaceTool {
 
 
 	public ExasolExportTableTool()

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
@@ -124,7 +125,9 @@ public class GenericMetaModel {
                     // Use general schema reading method
                     log.debug("Error reading schemas in catalog '" + catalog.getName() + "' - " + e.getClass().getSimpleName() + " - " + e.getMessage());
                 }
-            } else {
+            } else if (dataSource.isSchemaFiltersEnabled()) {
+                // In some drivers (e.g. jt400) reading schemas with empty catalog leads to
+                // incorrect results.
                 try {
                     dbResult = session.getMetaData().getSchemas(
                         null,
@@ -134,7 +137,6 @@ public class GenericMetaModel {
                 } catch (SQLException e) {
                     log.debug("Error reading global schemas " + " - " + e.getMessage());
                 }
-
             }
             if (dbResult == null) {
                 dbResult = session.getMetaData().getSchemas();
@@ -438,7 +440,7 @@ public class GenericMetaModel {
     }
 
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        return JDBCUtils.generateTableDDL(monitor, sourceObject, options, false);
+        return DBStructUtils.generateTableDDL(monitor, sourceObject, options, false);
     }
 
     public boolean isSystemTable(GenericTable table) {

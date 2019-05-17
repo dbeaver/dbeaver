@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Collection;
@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Gather statistics
  */
-public class OracleToolGatherStatistics implements IExternalTool
+public class OracleToolGatherStatistics implements IUserInterfaceTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException

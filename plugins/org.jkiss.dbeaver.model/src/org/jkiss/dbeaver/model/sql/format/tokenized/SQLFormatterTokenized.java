@@ -118,16 +118,18 @@ public class SQLFormatterTokenized implements SQLFormatter {
             FormatterToken prev = argList.get(index - 1);
             token = argList.get(index);
 
+            String prevString = prev.getString();
+            String curString = token.getString();
             if (prev.getType() != TokenType.SPACE &&
                     token.getType() != TokenType.SPACE &&
-                    !prev.getString().equals("(") &&
-                    !token.getString().startsWith("(") &&
-                    !prev.getString().equals(")") &&
-                    !token.getString().equals(")")) {
-                if (token.getString().equals(",") || statementDelimiters.contains(token.getString())) { //$NON-NLS-1$
+                    !prevString.equals("(") &&
+                    !curString.startsWith("(") &&
+                    !prevString.equals(")") &&
+                    !curString.equals(")")) {
+                if (curString.equals(",") || statementDelimiters.contains(curString)) { //$NON-NLS-1$
                     continue;
                 }
-                if (formatterCfg.isFunction(prev.getString()) && token.getString().equals("(")) { //$NON-NLS-1$
+                if (formatterCfg.isFunction(prevString) && curString.equals("(")) { //$NON-NLS-1$
                     continue;
                 }
                 if (token.getType() == TokenType.VALUE && prev.getType() == TokenType.NAME) {
@@ -141,6 +143,14 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 }
                 if (token.getType() == TokenType.SYMBOL && prev.getType() == TokenType.SYMBOL) {
                     // Do not add space between symbols
+                    continue;
+                }
+                if ("+".equals(curString) &&
+                    prevString.length() > 1 && Character.isDigit(prevString.charAt(0)) &&
+                    (prevString.charAt(prevString.length() - 1) == 'E' || prevString.charAt(prevString.length() - 1) == 'e'))
+                {
+                    // Possible exponential numbers notation (5E+6)
+                    index++;
                     continue;
                 }
                 argList.add(index, new FormatterToken(TokenType.SPACE, " ")); //$NON-NLS-1$

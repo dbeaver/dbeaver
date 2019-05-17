@@ -68,6 +68,8 @@ class MySQLDialect extends JDBCSQLDialect {
             addSQLKeyword(kw);
         }
         removeSQLKeyword("SOURCE");
+
+        addDataTypes(Arrays.asList("GEOMETRY", "POINT"));
     }
 
     @Nullable

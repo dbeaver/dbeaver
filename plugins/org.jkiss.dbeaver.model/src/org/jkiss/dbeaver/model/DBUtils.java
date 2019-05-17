@@ -32,19 +32,16 @@ import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -123,14 +120,14 @@ public final class DBUtils {
     public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
         if (dataSource instanceof SQLDataSource) {
-            return getQuotedIdentifier((SQLDataSource)dataSource, str, true);
+            return getQuotedIdentifier((SQLDataSource)dataSource, str, true, false);
         } else {
             return str;
         }
     }
 
     @NotNull
-    public static String getQuotedIdentifier(@NotNull SQLDataSource dataSource, @NotNull String str, boolean caseSensitiveNames)
+    public static String getQuotedIdentifier(@NotNull SQLDataSource dataSource, @NotNull String str, boolean caseSensitiveNames, boolean quoteAlways)
     {
         if (isQuotedIdentifier(dataSource, str)) {
             // Already quoted
@@ -144,9 +141,9 @@ public final class DBUtils {
 
         // Check for keyword conflict
         final DBPKeywordType keywordType = sqlDialect.getKeywordType(str);
-        boolean hasBadChars =
-            (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE) &&
-            sqlDialect.isQuoteReservedWords();
+        boolean hasBadChars = quoteAlways ||
+            ((keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE) &&
+            sqlDialect.isQuoteReservedWords());
 
         if (!hasBadChars && !str.isEmpty()) {
             hasBadChars = !sqlDialect.validIdentifierStart(str.charAt(0));
@@ -467,7 +464,7 @@ public final class DBUtils {
         if (adapterType.isAssignableFrom(object.getClass())) {
             return adapterType.cast(object);
         } else if (object instanceof IAdaptable) {
-            return adapterType.cast(((IAdaptable)object).getAdapter(adapterType));
+            return ((IAdaptable)object).getAdapter(adapterType);
         } else {
             return null;
         }
@@ -560,18 +557,18 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
+    public static DBDAttributeBindingMeta getAttributeBinding(DBSDataContainer dataContainer, @NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
     {
-        return new DBDAttributeBindingMeta(session, attributeMeta);
+        return new DBDAttributeBindingMeta(dataContainer, session, attributeMeta);
     }
 
-    public static List<DBDAttributeBinding> makeResultAttributeBindings(DBCResultSet resultSet) throws DBCException {
+    public static List<DBDAttributeBinding> makeResultAttributeBindings(DBSDataContainer dataContainer, DBCResultSet resultSet) throws DBCException {
         List<DBDAttributeBinding> metaColumns = new ArrayList<>();
         List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
         DBCSession session = resultSet.getSession();
         if (attributes.size() == 1 && attributes.get(0).getDataKind() == DBPDataKind.DOCUMENT) {
             DBCAttributeMetaData attributeMeta = attributes.get(0);
-            DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(session, attributeMeta);
+            DBDAttributeBindingMeta docBinding = DBUtils.getAttributeBinding(dataContainer, session, attributeMeta);
             try {
                 docBinding.lateBinding(session, Collections.emptyList());
             } catch (DBException e) {
@@ -599,7 +596,7 @@ public final class DBUtils {
         }
         if (metaColumns.isEmpty()) {
             for (DBCAttributeMetaData attribute : attributes) {
-                DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(session, attribute);
+                DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(dataContainer, session, attribute);
                 metaColumns.add(columnBinding);
             }
         }
@@ -1647,16 +1644,6 @@ public final class DBUtils {
         return purpose == null ? productTitle : productTitle + " - " + purpose;
     }
 
-    @NotNull
-    public static DBPErrorAssistant.ErrorType discoverErrorType(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
-        DBPErrorAssistant errorAssistant = getAdapter(DBPErrorAssistant.class, dataSource);
-        if (errorAssistant != null) {
-            return ((DBPErrorAssistant) dataSource).discoverErrorType(error);
-        }
-
-        return DBPErrorAssistant.ErrorType.NORMAL;
-    }
-
     public static Collection<? extends DBSAttributeBase> getRealAttributes(Collection<? extends DBSAttributeBase> attributes) {
         List<DBSAttributeBase> list = new ArrayList<>();
         for (DBSAttributeBase attr : attributes) {
@@ -1666,60 +1653,6 @@ public final class DBUtils {
         }
 
         return list;
-    }
-
-    /**
-     * @param param DBRProgressProgress monitor or DBCSession
-     *
-     */
-    public static <T> boolean tryExecuteRecover(@NotNull T param, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableParametrized<T> runnable) throws DBException {
-        int tryCount = 1;
-        boolean recoverEnabled = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED);
-        if (recoverEnabled) {
-            tryCount += dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);
-        }
-        Throwable lastError = null;
-        for (int i = 0; i < tryCount; i++) {
-            try {
-                runnable.run(param);
-                lastError = null;
-                break;
-            } catch (InvocationTargetException e) {
-                lastError = e.getTargetException();
-                if (!recoverEnabled || discoverErrorType(dataSource, lastError) != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
-                    // Can't recover
-                    break;
-                }
-                log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
-                DBRProgressMonitor monitor;
-                if (param instanceof DBRProgressMonitor) {
-                    monitor = (DBRProgressMonitor) param;
-                } else if (param instanceof DBCSession) {
-                    monitor = ((DBCSession) param).getProgressMonitor();
-                } else {
-                    monitor = new VoidProgressMonitor();
-                }
-                if (!monitor.isCanceled()) {
-                    // Do not recover if connection was canceled
-                    InvalidateJob.invalidateDataSource(monitor, dataSource, false,
-                        () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
-                    if (i < tryCount - 1) {
-                        log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
-                    }
-                }
-            } catch (InterruptedException e) {
-                log.error("Operation interrupted");
-                return false;
-            }
-        }
-        if (lastError != null) {
-            if (lastError instanceof DBException) {
-                throw (DBException) lastError;
-            } else {
-                throw new DBException(lastError, dataSource);
-            }
-        }
-        return true;
     }
 
 
@@ -1742,16 +1675,6 @@ public final class DBUtils {
         }
         DBSInstance instance = getObjectOwnerInstance(object);
         return instance == null ? null : instance.getDefaultContext(meta);
-    }
-
-    public static DBSEntityConstraint getConstraint(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
-        for (DBSEntityConstraint constraint : CommonUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
-            DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
-            if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
-                return constraint;
-            }
-        }
-        return null;
     }
 
     public static List<DBPDataSourceRegistry> getAllRegistries() {
@@ -1782,6 +1705,30 @@ public final class DBUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Compares two values read from database.
+     * Main difference with regular compare is that all numbers are compared as doubles (i.e. data type oesn't matter).
+     * Also checks DBValue for nullability
+     */
+    public static int compareDataValues(Object cell1, Object cell2) {
+        if (cell1 == cell2) {
+            return 0;
+        } else if (isNullValue(cell1)) {
+            return 1;
+        } else if (isNullValue(cell2)) {
+            return -1;
+        } else if (cell1 instanceof Number && cell2 instanceof Number) {
+            // Actual data type for the same column may differ (e.g. partially read from server, partially added on client side)
+            return CommonUtils.compareNumbers((Number) cell1, (Number) cell2);
+        } else if (cell1 instanceof Comparable) {
+            return ((Comparable) cell1).compareTo(cell2);
+        } else {
+            String str1 = String.valueOf(cell1);
+            String str2 = String.valueOf(cell2);
+            return str1.compareTo(str2);
+        }
     }
 
     public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCEntityMetaData entityMeta) throws DBException {
@@ -1819,5 +1766,15 @@ public final class DBUtils {
             log.debug("Unsupported table class: " + entityObject.getClass().getName());
             return null;
         }
+    }
+
+    public static DBSEntityConstraint getConstraint(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
+        for (DBSEntityConstraint constraint : CommonUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
+            DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
+            if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
+                return constraint;
+            }
+        }
+        return null;
     }
 }

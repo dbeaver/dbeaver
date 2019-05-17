@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
@@ -91,7 +92,7 @@ public class EntityFigure extends Figure {
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
 
-        LineBorder border = new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND), ERDConstants.DEFAULT_ENTITY_BORDER_WIDTH);
+        LineBorder border = new LineBorder(getBorderColor(), ERDConstants.DEFAULT_ENTITY_BORDER_WIDTH);
 
         setBorder(border);
         setOpaque(true);
@@ -110,6 +111,14 @@ public class EntityFigure extends Figure {
         setToolTip(toolTip);
 */
         refreshColors();
+    }
+
+    protected Color getBorderColor() {
+        return UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND);
+    }
+
+    public EntityPart getPart() {
+        return part;
     }
 
     public void refreshColors() {

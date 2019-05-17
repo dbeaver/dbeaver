@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -109,7 +110,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         // Prepare columns
-        metaColumns = DBUtils.makeResultAttributeBindings(resultSet);
+        metaColumns = DBUtils.makeResultAttributeBindings(sourceObject instanceof DBSDataContainer ? (DBSDataContainer) sourceObject : null, resultSet);
         row = new Object[metaColumns.size()];
 
         if (!initialized) {
@@ -428,6 +429,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         String fileName = translatePattern(
             settings.getOutputFilePattern(),
             null).trim();
+        if (parameters.orderNumber > 0) {
+            fileName += "_" + String.valueOf(parameters.orderNumber + 1);
+        }
         if (multiFileNumber > 0) {
             fileName += "_" + String.valueOf(multiFileNumber + 1);
         }

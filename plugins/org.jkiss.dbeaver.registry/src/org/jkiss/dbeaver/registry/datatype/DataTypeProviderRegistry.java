@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -113,6 +114,9 @@ public class DataTypeProviderRegistry implements DBDRegistry
                 }
                 result.add(descriptor);
             }
+        }
+        if (result != null) {
+            result.sort(Comparator.comparing(AttributeTransformerDescriptor::getName));
         }
         return result;
     }

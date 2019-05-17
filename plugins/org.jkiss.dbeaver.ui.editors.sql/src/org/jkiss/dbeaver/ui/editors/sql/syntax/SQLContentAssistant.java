@@ -22,6 +22,9 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
  * SQL Completion proposal
  */
 public class SQLContentAssistant extends ContentAssistant {
+    public SQLContentAssistant() {
+        super(false); // Sync. Maybe we should make it async
+    }
 
     @Override
     protected AutoAssistListener createAutoAssistListener() {

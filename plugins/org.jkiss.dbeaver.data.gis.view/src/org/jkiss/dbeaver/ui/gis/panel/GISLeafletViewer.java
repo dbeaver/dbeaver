@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.gis.panel;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.dnd.Clipboard;
@@ -26,11 +24,14 @@ import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -44,26 +45,30 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
+import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GISLeafletViewer {
+public class GISLeafletViewer implements IGeometryValueEditor {
 
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
-    private static final int MAX_RECENT_SRID_SIZE = 10;
+
+    private static final String[] SUPPORTED_FORMATS = new String[] { "png", "gif", "bmp" };
 
     private final IValueController valueController;
     private final Browser browser;
@@ -73,13 +78,15 @@ public class GISLeafletViewer {
     private File scriptFile;
     private final ToolBarManager toolBarManager;
     private int defaultSRID; // Target SRID used to render map
-    private List<Integer> recentSRIDs = new ArrayList<>();
 
     private boolean toolsVisible = true;
+    private boolean flipCoordinates = false;
     private final Composite composite;
 
-    public GISLeafletViewer(Composite parent, IValueController valueController) {
+    public GISLeafletViewer(Composite parent, IValueController valueController, SpatialDataProvider spatialDataProvider) {
         this.valueController = valueController;
+
+        this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
 
         composite = UIUtils.createPlaceholder(parent, 1);
         CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -108,16 +115,26 @@ public class GISLeafletViewer {
                     if (recentSRID == 0 || recentSRID == GeometryDataUtils.getDefaultSRID() || recentSRID == GisConstants.DEFAULT_OSM_SRID) {
                         continue;
                     }
-                    if (!recentSRIDs.contains(recentSRID)) {
-                        recentSRIDs.add(recentSRID);
-                    }
+                    GISEditorUtils.addRecentSRID(recentSRID);
                 }
             }
             //recentSRIDs.sort(Integer::compareTo);
         }
     }
 
-    private void setSourceSRID(int srid) {
+    @Override
+    public Control getEditorControl() {
+        return composite;
+    }
+
+    @Override
+    public int getValueSRID() {
+        return actualSourceSRID != 0 ? actualSourceSRID :
+            defaultSRID != 0 ? defaultSRID : GeometryDataUtils.getDefaultSRID();
+    }
+
+    @Override
+    public void setValueSRID(int srid) {
         if (srid == sourceSRID) {
             //return;
         }
@@ -131,14 +148,12 @@ public class GISLeafletViewer {
         }
         {
             // Save SRID to the list of recently used SRIDs
-            if (srid != GeometryDataUtils.getDefaultSRID() && srid != GisConstants.DEFAULT_OSM_SRID && !recentSRIDs.contains(srid)) {
-                recentSRIDs.add(srid);
+            if (srid != GeometryDataUtils.getDefaultSRID() && srid != GisConstants.DEFAULT_OSM_SRID) {
+                GISEditorUtils.addRecentSRID(srid);
             }
-            if (recentSRIDs.size() > MAX_RECENT_SRID_SIZE) {
-                recentSRIDs.remove(0);
-            }
+            GISEditorUtils.curRecentSRIDs();
             StringBuilder sridListStr = new StringBuilder();
-            for (Integer sridInt : recentSRIDs) {
+            for (Integer sridInt : GISEditorUtils.getRecentSRIDs()) {
                 if (sridListStr.length() > 0) sridListStr.append(",");
                 sridListStr.append(sridInt);
             }
@@ -188,11 +203,21 @@ public class GISLeafletViewer {
             scriptFile = File.createTempFile("view", "gis.html", tempDir);
         }
         int baseSRID = 0;
-        String[] geomValues = new String[values.length];
-        String[] geomTipValues = new String[values.length];
+        List<String> geomValues = new ArrayList<>();
+        List<String> geomTipValues = new ArrayList<>();
         boolean showMap = false;
         for (int i = 0; i < values.length; i++) {
             DBGeometry value = values[i];
+            if (DBUtils.isNullValue(value)) {
+                continue;
+            }
+            if (flipCoordinates) {
+                try {
+                    value = value.flipCoordinates();
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
             Object targetValue = value.getRawValue();
             int srid = sourceSRID == 0 ? value.getSRID() : sourceSRID;
             if (srid == 0) {
@@ -230,9 +255,9 @@ public class GISLeafletViewer {
             if (targetValue == null) {
                 continue;
             }
-            geomValues[i] = "'" + targetValue + "'";
+            geomValues.add("'" + targetValue + "'");
             if (CommonUtils.isEmpty(value.getProperties())) {
-                geomTipValues[i] = "null";
+                geomTipValues.add("null");
             } else {
                 StringBuilder geomProps = new StringBuilder("{");
                 boolean first = true;
@@ -243,7 +268,7 @@ public class GISLeafletViewer {
                         .append(DBValueFormatting.getDefaultValueDisplayString(prop.getValue(), DBDDisplayFormat.UI).replace("\"", "\\\"")).append("\"");
                 }
                 geomProps.append("}");
-                geomTipValues[i] = geomProps.toString();
+                geomTipValues.add(geomProps.toString());
             }
         }
         if (baseSRID == 0) {
@@ -336,11 +361,6 @@ public class GISLeafletViewer {
         return lastValue;
     }
 
-    private int getCurrentSourceSRID() {
-        return actualSourceSRID != 0 ? actualSourceSRID :
-            defaultSRID != 0 ? defaultSRID : GeometryDataUtils.getDefaultSRID();
-    }
-
     private void updateToolbar() {
         toolBarManager.removeAll();
         toolBarManager.add(new Action("Open in browser", DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
@@ -367,7 +387,30 @@ public class GISLeafletViewer {
         toolBarManager.add(new Action("Save as picture", DBeaverIcons.getImageDescriptor(UIIcon.PICTURE_SAVE)) {
             @Override
             public void run() {
-/*
+                final Shell shell = browser.getShell();
+                FileDialog saveDialog = new FileDialog(shell, SWT.SAVE);
+                String[] extensions = new String[SUPPORTED_FORMATS.length];
+                String[] filterNames = new String[SUPPORTED_FORMATS.length];
+                for (int i = 0; i < SUPPORTED_FORMATS.length; i++) {
+                    extensions[i] = "*." + SUPPORTED_FORMATS[i];
+                    filterNames[i] = SUPPORTED_FORMATS[i].toUpperCase() + " (*." + SUPPORTED_FORMATS[i] + ")";
+                }
+                saveDialog.setFilterExtensions(extensions);
+                saveDialog.setFilterNames(filterNames);
+                String filePath = DialogUtils.openFileDialog(saveDialog);
+                if (filePath == null) {
+                    return;
+                }
+                int imageType = SWT.IMAGE_BMP;
+                {
+                    String filePathLower = filePath.toLowerCase();
+                    if (filePathLower.endsWith(".png")) {
+                        imageType = SWT.IMAGE_PNG;
+                    } else if (filePathLower.endsWith(".gif")) {
+                        imageType = SWT.IMAGE_GIF;
+                    }
+                }
+
                 Image image = new Image(Display.getDefault(), browser.getBounds());
                 GC gc = new GC(image);
                 try {
@@ -375,10 +418,16 @@ public class GISLeafletViewer {
                 } finally {
                     gc.dispose();
                 }
-                ImageTransfer imageTransfer = ImageTransfer.getInstance();
-                Clipboard clipboard = new Clipboard(Display.getCurrent());
-                clipboard.setContents(new Object[] {image.getImageData()}, new Transfer[]{imageTransfer});
-*/
+                ImageLoader imageLoader = new ImageLoader();
+                imageLoader.data = new ImageData[1];
+                imageLoader.data[0] = image.getImageData();
+                File outFile = new File(filePath);
+                try (OutputStream fos = new FileOutputStream(outFile)) {
+                    imageLoader.save(fos, imageType);
+                } catch (IOException e) {
+                    DBWorkbench.getPlatformUI().showError("Image save error", "Error saving as picture", e);
+                }
+                UIUtils.launchProgram(outFile.getAbsolutePath());
             }
         });
 
@@ -394,8 +443,33 @@ public class GISLeafletViewer {
             }
         });
 
-        Action crsSelectorAction = new ChangeCRSAction();
+        toolBarManager.add(new Separator());
+
+        Action crsSelectorAction = new SelectCRSAction(this);
         toolBarManager.add(ActionUtils.makeActionContribution(crsSelectorAction, true));
+
+        toolBarManager.add(new Action("Flip coordinates", Action.AS_CHECK_BOX) {
+            {
+                setToolTipText("Flip latitude/longitude coordinates in source data");
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.LINK_TO_EDITOR));
+            }
+
+            @Override
+            public boolean isChecked() {
+                return flipCoordinates;
+            }
+
+            @Override
+            public void run() {
+                flipCoordinates = !flipCoordinates;
+                try {
+                    reloadGeometryData(lastValue, true);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Render error", "Error rendering geometry", e);
+                }
+                updateToolbar();
+            }
+        });
 
         toolBarManager.add(new Separator());
 
@@ -426,95 +500,6 @@ public class GISLeafletViewer {
             browser.execute("javascript:showTools(" + toolsVisible +");");
         } finally {
             gc.dispose();
-        }
-    }
-
-    private class ChangeCRSAction extends Action implements IMenuCreator {
-
-        private MenuManager menuManager;
-
-        public ChangeCRSAction() {
-            super("EPSG:" + getCurrentSourceSRID(), Action.AS_DROP_DOWN_MENU);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CHART_LINE));
-        }
-
-        @Override
-        public void run() {
-            SelectSRIDDialog manageCRSDialog = new SelectSRIDDialog(
-                UIUtils.getActiveWorkbenchShell(),
-                getCurrentSourceSRID());
-            if (manageCRSDialog.open() == IDialogConstants.OK_ID) {
-                setSourceSRID(manageCRSDialog.getSelectedSRID());
-            }
-        }
-
-        @Override
-        public IMenuCreator getMenuCreator() {
-            return this;
-        }
-
-        @Override
-        public void dispose() {
-            if (menuManager != null) {
-                menuManager.dispose();
-                menuManager = null;
-            }
-        }
-
-        @Override
-        public Menu getMenu(Control parent) {
-            if (menuManager == null) {
-                menuManager = new MenuManager();
-                menuManager.setRemoveAllWhenShown(true);
-                menuManager.addMenuListener(manager -> {
-                    menuManager.add(new SetCRSAction(GeometryDataUtils.getDefaultSRID()));
-                    menuManager.add(new SetCRSAction(GisConstants.DEFAULT_OSM_SRID));
-                    menuManager.add(new Separator());
-                    if (!recentSRIDs.isEmpty()) {
-                        for (Integer recentSRID : recentSRIDs) {
-                            menuManager.add(new SetCRSAction(recentSRID));
-                        }
-                        menuManager.add(new Separator());
-                    }
-                    menuManager.add(new Action("Other ...") {
-                        @Override
-                        public void run() {
-                            ChangeCRSAction.this.run();
-                        }
-                    });
-                    menuManager.add(new Action("Configuration ...") {
-                        @Override
-                        public void run() {
-                            new GISViewerConfigurationDialog(composite.getShell()).open();
-                        }
-                    });
-                });
-            }
-            return menuManager.createContextMenu(parent);
-        }
-
-        @Override
-        public Menu getMenu(Menu parent) {
-            return null;
-        }
-    }
-
-    private class SetCRSAction extends Action {
-        private final int srid;
-
-        public SetCRSAction(int srid) {
-            super("EPSG:" + srid, AS_CHECK_BOX);
-            this.srid = srid;
-        }
-
-        @Override
-        public boolean isChecked() {
-            return srid == getCurrentSourceSRID();
-        }
-
-        @Override
-        public void run() {
-            setSourceSRID(srid);
         }
     }
 

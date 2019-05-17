@@ -32,58 +32,54 @@ import java.util.List;
 
 /**
  * Figure used to hold the column labels
+ *
  * @author Serge Rider
  */
-public class AttributeListFigure extends Figure
-{
+public class AttributeListFigure extends Figure {
 
-	public AttributeListFigure(ERDEntity entity, boolean key)
-	{
-		GridLayout layout = new GridLayout(2, false);
-		layout.verticalSpacing = 3;
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
+    public AttributeListFigure(ERDEntity entity, boolean key) {
+        GridLayout layout = new GridLayout(2, false);
+        layout.verticalSpacing = 3;
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
 /*
-		FlowLayout layout = new FlowLayout(false);
+        FlowLayout layout = new FlowLayout(false);
 		layout.setMinorAlignment(FlowLayout.ALIGN_TOPLEFT);
 		layout.setStretchMinorAxis(true);
 		layout.setMinorSpacing(2);
 */
-		setLayoutManager(layout);
-		setBorder(new ColumnFigureBorder());
-		ColorRegistry colorRegistry = UIUtils.getColorRegistry();
+        setLayoutManager(layout);
+        setBorder(new ColumnFigureBorder());
+        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
         setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
-		setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
+        setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
 
-		setOpaque(true);
-	}
+        setOpaque(true);
+    }
 
-	public List<AttributeItemFigure> getAttributes() {
-		List<AttributeItemFigure> result = new ArrayList<>();
-		for (Object child : getChildren()) {
-			if (child instanceof AttributeItemFigure) {
-				result.add((AttributeItemFigure) child);
-			}
-		}
-		return result;
-	}
+    public List<AttributeItemFigure> getAttributes() {
+        List<AttributeItemFigure> result = new ArrayList<>();
+        for (Object child : getChildren()) {
+            if (child instanceof AttributeItemFigure) {
+                result.add((AttributeItemFigure) child);
+            }
+        }
+        return result;
+    }
 
-	class ColumnFigureBorder extends AbstractBorder
-	{
+    class ColumnFigureBorder extends AbstractBorder {
 
-		@Override
-        public Insets getInsets(IFigure figure)
-		{
-			return new Insets(5, 3, 3, 3);
-		}
+        @Override
+        public Insets getInsets(IFigure figure) {
+            return new Insets(5, 3, 3, 3);
+        }
 
-		@Override
-        public void paint(IFigure figure, Graphics graphics, Insets insets)
-		{
-			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND));
-			Rectangle rect = getPaintRectangle(figure, insets);
-			graphics.setLineWidth(2);
-			graphics.drawLine(rect.getTopLeft(), tempRect.getTopRight());
-		}
-	}
+        @Override
+        public void paint(IFigure figure, Graphics graphics, Insets insets) {
+            graphics.setForegroundColor(((EntityFigure) getParent()).getBorderColor());
+            Rectangle rect = getPaintRectangle(figure, insets);
+            graphics.setLineWidth(2);
+            graphics.drawLine(rect.getTopLeft(), tempRect.getTopRight());
+        }
+    }
 }

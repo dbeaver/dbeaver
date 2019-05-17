@@ -78,9 +78,6 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.search.IObjectSearchPage"/>
-               </appInfo>
             </annotation>
          </attribute>
       </complexType>

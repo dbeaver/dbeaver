@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.*;
@@ -203,7 +203,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             monitor.beginTask("Load '" + root.getName() + "' content", 3);
             DBSObjectContainer objectContainer = (DBSObjectContainer) root;
             try {
-                DBUtils.tryExecuteRecover(monitor, objectContainer.getDataSource(), param -> {
+                DBExecUtils.tryExecuteRecover(monitor, objectContainer.getDataSource(), param -> {
                     try {
                         objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
                     } catch (DBException e) {

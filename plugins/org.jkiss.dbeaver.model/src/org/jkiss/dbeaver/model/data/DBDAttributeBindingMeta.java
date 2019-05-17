@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -38,7 +39,7 @@ import java.util.List;
  */
 public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @NotNull
-    private final DBPDataSource dataSource;
+    private DBSDataContainer dataContainer;
     @NotNull
     private final DBCAttributeMetaData metaAttribute;
     @Nullable
@@ -51,27 +52,28 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     private DBDPseudoAttribute pseudoAttribute;
 
     public DBDAttributeBindingMeta(
+        @NotNull DBSDataContainer dataContainer,
         @NotNull DBCSession session,
         @NotNull DBCAttributeMetaData metaAttribute)
     {
         super(DBUtils.findValueHandler(session, metaAttribute));
-        this.dataSource = session.getDataSource();
+        this.dataContainer = dataContainer;
         this.metaAttribute = metaAttribute;
     }
 
     public DBDAttributeBindingMeta(
-        @NotNull DBPDataSource dataSource,
+        @NotNull DBSDataContainer dataContainer,
         @NotNull DBCAttributeMetaData metaAttribute)
     {
-        super(DBUtils.findValueHandler(dataSource, metaAttribute));
-        this.dataSource = dataSource;
+        super(DBUtils.findValueHandler(dataContainer.getDataSource(), metaAttribute));
+        this.dataContainer = dataContainer;
         this.metaAttribute = metaAttribute;
     }
 
     @NotNull
     @Override
     public DBPDataSource getDataSource() {
-        return dataSource;
+        return dataContainer.getDataSource();
     }
 
     @Nullable
@@ -103,6 +105,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @Override
     public boolean isPseudoAttribute() {
         return pseudoAttribute != null;
+    }
+
+    @Override
+    public DBSDataContainer getDataContainer() {
+        return dataContainer;
     }
 
     @Override
@@ -146,7 +153,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @NotNull
     public String getLabel()
     {
-        if (dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)) {
+        if (getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)) {
             // Return name if label is ignored
             return getName();
         }
@@ -206,7 +213,11 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     public boolean setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute, boolean updateHandler) {
         this.entityAttribute = entityAttribute;
         if (updateHandler && entityAttribute != null && !haveEqualsTypes(metaAttribute, entityAttribute)) {
-            valueHandler = DBUtils.findValueHandler(getDataSource(), entityAttribute);
+            DBDValueHandler newValueHandler = DBUtils.findValueHandler(getDataSource(), entityAttribute);
+            if (newValueHandler != getDataSource().getContainer().getDefaultValueHandler()) {
+                // Change value handler only if it ws real
+                valueHandler = newValueHandler;
+            }
             return true;
         }
         return false;

@@ -41,7 +41,6 @@ public class DataTransferPropertyTester extends PropertyTester
         super();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
 

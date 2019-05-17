@@ -73,7 +73,7 @@ public class PostgreTriggerConfigurator implements DBEObjectConfigurator<Postgre
                     trigger.setFunction(editPage.selectedFunction);
                     trigger.setObjectDefinitionText("CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n"
                             + "BEFORE UPDATE" + " " + "\n" + "ON " + DBUtils.getQuotedIdentifier(parent)
-                            + " FOR EACH ROW EXECUTE PROCEDURE" + trigger.getFunction(monitor).getFullQualifiedSignature() + "\n");
+                            + " FOR EACH ROW" + "\n" + "EXECUTE PROCEDURE " + trigger.getFunction(monitor).getFullQualifiedSignature() + "\n");
                 } catch (DBException e) {
                     log.error(e);
                 }

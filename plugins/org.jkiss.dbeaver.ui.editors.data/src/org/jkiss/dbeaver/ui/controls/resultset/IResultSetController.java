@@ -22,7 +22,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,7 +33,6 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.data.IDataController;
 
@@ -140,10 +138,10 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     /**
      * Navigates to association. One of @association OR @attr must be specified.
      */
-    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityAssociation association, @Nullable DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
+    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityAssociation association, @Nullable DBDAttributeBinding attr, @NotNull List<ResultSetRow> rows, boolean newWindow)
         throws DBException;
 
-    void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull ResultSetRow row, boolean newWindow)
+    void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
         throws DBException;
 
     int getHistoryPosition();

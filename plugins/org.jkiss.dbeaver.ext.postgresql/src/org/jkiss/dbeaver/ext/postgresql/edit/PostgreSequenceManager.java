@@ -102,7 +102,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction("Rename sequence",
-                "ALTER SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                "ALTER SEQUENCE " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) +
                     " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())));
     }
 

@@ -211,6 +211,7 @@
         <command id="org.jkiss.dbeaver.core.resultset.navigateLink" name="%command.org.jkiss.dbeaver.core.resultset.navigateLink.name" description="%command.org.jkiss.dbeaver.core.resultset.navigateLink.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.cell.save" name="%command.org.jkiss.dbeaver.core.resultset.cell.save.name" description="%command.org.jkiss.dbeaver.core.resultset.cell.save.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.togglePreview" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.grid.activatePreview" name="%command.org.jkiss.dbeaver.core.resultset.grid.activatePreview.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.activatePreview.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.togglePanel" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePanel.description" categoryId="org.jkiss.dbeaver.core.rs">
             <commandParameter
@@ -291,6 +292,7 @@
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain">
             <!--<activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>-->
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.grid.activatePreview" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain"/>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerMain"/>
         <handler commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanel" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetHandlerTogglePanel">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
@@ -696,6 +698,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+R"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+7"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.grid.activatePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+7"/>
 
         <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" contextId="org.jkiss.dbeaver.ui.context.resultset.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+ENTER"/>
     </extension>
@@ -716,6 +719,170 @@
                 parentId="org.jkiss.dbeaver.ui.context.resultset"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.edit.name"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.edit.description"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.themes">
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.label" id="org.jkiss.dbeaver.ui.presentation.results">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.description</description>
+        </themeElementCategory>
+
+        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label">
+            <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
+        </fontDefinition>
+
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
+            value="COLOR_LIST_SELECTION">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
+            value="COLOR_LIST_SELECTION_TEXT">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.cell.odd.background"
+            value="219, 229, 241">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.preview.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.preview.background"
+            value="255,255,225">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.preview.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.modified.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.cell.modified.background"
+            value="255, 228, 181">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.modified.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.error.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.cell.error.background"
+            value="255, 128, 255">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.error.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.new.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.cell.new.background"
+            value="228, 255, 181">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.new.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background"
+            value="255, 99, 71">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
+            value="245, 245, 245">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.matched.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.cell.matched.background"
+            value="255, 215, 00">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.matched.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.normal.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.lines.normal"
+            value="240, 240, 240">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.normal.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.selected.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.lines.selected"
+            value="105, 105, 105">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.selected.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.header.background"
+            value="COLOR_WIDGET_BACKGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.header.foreground"
+            value="COLOR_LIST_FOREGROUND">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.selected.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.header.selected.background"
+            value="COLOR_LIST_SELECTION">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.selected.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results"
+            id="org.jkiss.dbeaver.sql.resultset.color.null.foreground"
+            value="COLOR_WIDGET_NORMAL_SHADOW">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.description</description>
+        </colorDefinition>
+
+        <!-- Colors for data types -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.label" id="org.jkiss.dbeaver.ui.presentation.results.datatypes" parentId="org.jkiss.dbeaver.ui.presentation.results">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.binary.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+            id="org.jkiss.dbeaver.sql.resultset.color.binary.foreground"
+            value="100, 100, 100">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.binary.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.boolean.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+            id="org.jkiss.dbeaver.sql.resultset.color.boolean.foreground"
+            value="255, 100, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.boolean.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.datetime.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+            id="org.jkiss.dbeaver.sql.resultset.color.datetime.foreground"
+            value="0, 102, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.datetime.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.numeric.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+            id="org.jkiss.dbeaver.sql.resultset.color.numeric.foreground"
+            value="0, 0, 255">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.numeric.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
+            id="org.jkiss.dbeaver.sql.resultset.color.string.foreground"
+            value="0, 0, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.description</description>
+        </colorDefinition>
     </extension>
 
 </plugin>

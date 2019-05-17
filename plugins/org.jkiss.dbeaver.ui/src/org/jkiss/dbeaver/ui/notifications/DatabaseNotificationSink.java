@@ -23,9 +23,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.window.Window;
-import org.eclipse.mylyn.commons.notifications.core.AbstractNotification;
-import org.eclipse.mylyn.commons.notifications.core.NotificationSink;
-import org.eclipse.mylyn.commons.notifications.core.NotificationSinkEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
@@ -33,7 +30,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 
 import java.util.*;
 
-public class DatabaseNotificationSink extends NotificationSink {
+public class DatabaseNotificationSink {
 
     private static final long DELAY_OPEN = 200;
 
@@ -116,7 +113,6 @@ public class DatabaseNotificationSink extends NotificationSink {
         return store.getBoolean(IWorkbenchPreferenceConstants.ENABLE_ANIMATIONS);
     }
 
-    @Override
     public void notify(NotificationSinkEvent event) {
         currentlyNotifying.addAll(event.getNotifications());
 

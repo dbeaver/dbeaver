@@ -55,7 +55,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     protected List<AttributeInfo> attributes = new ArrayList<>();
     protected Button toggleButton;
-    protected Group columnsGroup;
+    protected Composite columnsGroup;
 
     protected static class AttributeInfo {
         DBSEntityAttribute attribute;
@@ -140,7 +140,12 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     protected void createColumnsGroup(Composite panel)
     {
-        columnsGroup = UIUtils.createControlGroup(panel, EditorsMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
+        columnsGroup = new Composite(panel, SWT.NONE);
+        columnsGroup.setLayout(new GridLayout(1, false));
+        columnsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        UIUtils.createControlLabel(columnsGroup, EditorsMessages.dialog_struct_columns_select_group_columns);
+
         //columnsViewer = new TableViewer(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
         columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
         columnsTable.setHeaderVisible(true);

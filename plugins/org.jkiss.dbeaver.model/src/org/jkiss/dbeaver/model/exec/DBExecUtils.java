@@ -16,12 +16,28 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.net.*;
+import org.jkiss.dbeaver.model.net.DBWForwarder;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +46,8 @@ import java.util.List;
  * Execution utils
  */
 public class DBExecUtils {
+
+    private static final Log log = Log.getLog(DBExecUtils.class);
 
     /**
      * Current execution context. Used by global authenticators and network handlers
@@ -100,5 +118,69 @@ public class DBExecUtils {
             }
         }
         return false;
+    }
+
+    @NotNull
+    public static DBPErrorAssistant.ErrorType discoverErrorType(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
+        DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, dataSource);
+        if (errorAssistant != null) {
+            return ((DBPErrorAssistant) dataSource).discoverErrorType(error);
+        }
+
+        return DBPErrorAssistant.ErrorType.NORMAL;
+    }
+
+    /**
+     * @param param DBRProgressProgress monitor or DBCSession
+     *
+     */
+    public static <T> boolean tryExecuteRecover(@NotNull T param, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableParametrized<T> runnable) throws DBException {
+        int tryCount = 1;
+        boolean recoverEnabled = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED);
+        if (recoverEnabled) {
+            tryCount += dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);
+        }
+        Throwable lastError = null;
+        for (int i = 0; i < tryCount; i++) {
+            try {
+                runnable.run(param);
+                lastError = null;
+                break;
+            } catch (InvocationTargetException e) {
+                lastError = e.getTargetException();
+                if (!recoverEnabled || discoverErrorType(dataSource, lastError) != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                    // Can't recover
+                    break;
+                }
+                log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
+                DBRProgressMonitor monitor;
+                if (param instanceof DBRProgressMonitor) {
+                    monitor = (DBRProgressMonitor) param;
+                } else if (param instanceof DBCSession) {
+                    monitor = ((DBCSession) param).getProgressMonitor();
+                } else {
+                    monitor = new VoidProgressMonitor();
+                }
+                if (!monitor.isCanceled()) {
+                    // Do not recover if connection was canceled
+                    InvalidateJob.invalidateDataSource(monitor, dataSource, false,
+                        () -> DBWorkbench.getPlatformUI().openConnectionEditor(dataSource.getContainer()));
+                    if (i < tryCount - 1) {
+                        log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                    }
+                }
+            } catch (InterruptedException e) {
+                log.error("Operation interrupted");
+                return false;
+            }
+        }
+        if (lastError != null) {
+            if (lastError instanceof DBException) {
+                throw (DBException) lastError;
+            } else {
+                throw new DBException(lastError, dataSource);
+            }
+        }
+        return true;
     }
 }

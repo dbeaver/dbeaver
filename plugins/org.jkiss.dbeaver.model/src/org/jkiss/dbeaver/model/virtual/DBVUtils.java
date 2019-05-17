@@ -28,32 +28,66 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Virtual model utils
  */
 public abstract class DBVUtils {
 
+    // Entities for unmapped attributes (custom queries, pseudo attributes, etc)
+    private static final Map<String, DBVEntity> orphanVirtualEntities = new HashMap<>();
+
     @Nullable
     public static DBVTransformSettings getTransformSettings(@NotNull DBDAttributeBinding binding, boolean create) {
-        DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
-        if (entityAttribute != null) {
-            DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), create);
-            if (vEntity != null) {
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, create);
-                if (vAttr != null) {
-                    return getTransformSettings(vAttr, create);
-                }
+        DBVEntity vEntity = getVirtualEntity(binding, create);
+        if (vEntity != null) {
+            DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, create);
+            if (vAttr != null) {
+                return getTransformSettings(vAttr, create);
             }
         }
         return null;
+    }
+
+    public static DBVEntity getVirtualEntity(@NotNull DBDAttributeBinding binding, boolean create) {
+        DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
+        DBVEntity vEntity;
+        if (entityAttribute != null) {
+            vEntity = getVirtualEntity(entityAttribute.getParentObject(), create);
+        } else {
+            vEntity = getVirtualEntity(binding.getDataContainer(), create);
+
+        }
+        return vEntity;
+    }
+
+    @Nullable
+    public static DBVEntity getVirtualEntity(@NotNull DBSEntity source, boolean create)
+    {
+        return source.getDataSource().getContainer().getVirtualModel().findEntity(source, create);
+    }
+
+    public static DBVEntity getVirtualEntity(@NotNull DBSDataContainer dataContainer, boolean create) {
+        // Not an entity. Most likely a custom query. Use local cache for such attributes.
+        // There shouldn't be too many such settings as they are defined by user manually
+        // so we shouldn't eay too much memory for that
+        String attrKey = DBUtils.getObjectFullId(dataContainer);
+        synchronized (orphanVirtualEntities) {
+            DBVEntity vEntity = orphanVirtualEntities.get(attrKey);
+            if (vEntity == null && create) {
+                vEntity = new DBVEntity(
+                    dataContainer.getDataSource().getContainer().getVirtualModel(),
+                    dataContainer.getName(),
+                    "");
+                orphanVirtualEntities.put(attrKey, vEntity);
+            }
+            return vEntity;
+        }
     }
 
     @Nullable
@@ -86,12 +120,6 @@ public abstract class DBVUtils {
     }
 
     @Nullable
-    public static DBVEntity findVirtualEntity(@NotNull DBSEntity source, boolean create)
-    {
-        return source.getDataSource().getContainer().getVirtualModel().findEntity(source, create);
-    }
-
-    @Nullable
     public static DBDAttributeTransformer[] findAttributeTransformers(@NotNull DBDAttributeBinding binding, @Nullable Boolean custom)
     {
         DBPDataSource dataSource = binding.getDataSource();
@@ -102,18 +130,9 @@ public abstract class DBVUtils {
             return null;
         }
         boolean filtered = false;
-        DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
-        if (entityAttribute != null) {
-            DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), false);
-            if (vEntity != null) {
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
-                if (vAttr != null) {
-                    final DBVTransformSettings transformSettings = getTransformSettings(vAttr, false);
-                    if (transformSettings != null) {
-                        filtered = transformSettings.filterTransformers(tdList);
-                    }
-                }
-            }
+        final DBVTransformSettings transformSettings = getTransformSettings(binding, false);
+        if (transformSettings != null) {
+            filtered = transformSettings.filterTransformers(tdList);
         }
 
         if (!filtered) {
@@ -137,7 +156,7 @@ public abstract class DBVUtils {
     }
 
     public static String getDictionaryDescriptionColumns(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
-        DBVEntity dictionary = DBVUtils.findVirtualEntity(attribute.getParentObject(), false);
+        DBVEntity dictionary = DBVUtils.getVirtualEntity(attribute.getParentObject(), false);
         String descColumns = null;
         if (dictionary != null) {
             descColumns = dictionary.getDescriptionColumnNames();

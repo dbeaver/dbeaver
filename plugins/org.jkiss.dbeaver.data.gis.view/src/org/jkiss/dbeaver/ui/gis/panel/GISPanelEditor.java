@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -89,12 +90,6 @@ public class GISPanelEditor extends BaseValueEditor<Control> {
         //manager.add(new ViewerSwitchAction());
         if (curViewer != null) {
             curViewer.contributeActions(manager, controller);
-        }
-    }
-
-    public void createControl() {
-        if (curViewer != null) {
-            curViewer.createControl();
         }
     }
 

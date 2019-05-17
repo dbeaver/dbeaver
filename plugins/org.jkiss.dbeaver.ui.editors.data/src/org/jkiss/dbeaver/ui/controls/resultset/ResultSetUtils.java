@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -169,14 +170,6 @@ public class ResultSetUtils
                             binding.setEntityAttribute(tableColumn, false);
                             continue;
                         }
-/*
-                        final SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getName());
-                        if (selectItem != null && !selectItem.isPlainColumn()) {
-                            // It is not a column.
-                            // It maybe an expression, function or anything else
-                            continue;
-                        }
-*/
                     }
 
                     if (tableColumn != null && binding.setEntityAttribute(tableColumn, true) && rows != null) {
@@ -314,7 +307,7 @@ public class ResultSetUtils
         if (CommonUtils.isEmpty(identifiers)) {
             // No physical identifiers or row ids
             // Make new or use existing virtual identifier
-            DBVEntity virtualEntity = DBVUtils.findVirtualEntity(table, true);
+            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(table, true);
             identifiers.add(virtualEntity.getBestIdentifier());
         }
 
@@ -408,4 +401,41 @@ public class ResultSetUtils
             controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
                 (controller.isHasMoreData() || !CommonUtils.isEmpty(controller.getModel().getDataFilter().getOrder()));
     }
+
+    public static double makeNumericValue(Object value) {
+        if (value == null) {
+            return 0;
+        } else if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        } else if (value instanceof Date) {
+            return ((Date) value).getTime();
+        } else if (value instanceof String) {
+            try {
+                return Double.parseDouble((String) value);
+            } catch (NumberFormatException e) {
+                return 0.0;
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    // Use linear interpolation to make gradient color in a range
+    // It is dummy but simple and fast
+    public static RGB makeGradientValue(RGB c1, RGB c2, double minValue, double maxValue, double value) {
+        if (value <= minValue) {
+            return c1;
+        }
+        if (value >= maxValue) {
+            return c2;
+        }
+        double range = maxValue - minValue;
+        double p = (value - minValue) / range;
+
+        return new RGB(
+            (int)(c2.red * p + c1.red * (1 - p)),
+            (int)(c2.green * p + c1.green * (1 - p)),
+            (int)(c2.blue * p + c1.blue * (1 - p)));
+    }
+
 }

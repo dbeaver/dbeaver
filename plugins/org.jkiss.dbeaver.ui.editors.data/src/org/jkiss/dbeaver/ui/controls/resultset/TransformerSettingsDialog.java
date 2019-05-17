@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -28,15 +31,14 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.virtual.DBVTransformSettings;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 class TransformerSettingsDialog extends BaseDialog {
 
@@ -49,11 +51,17 @@ class TransformerSettingsDialog extends BaseDialog {
     private PropertyTreeViewer propertiesEditor;
     private PropertySourceCustom propertySource;
 
-    public TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding attr, DBVTransformSettings settings) {
+    private boolean selector;
+    private List<? extends DBDAttributeTransformerDescriptor> transformerList;
+    private Text infoText;
+    private DBDAttributeTransformerDescriptor transformer;
+
+    public TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding attr, DBVTransformSettings settings, boolean selector) {
         super(viewer.getControl().getShell(), "Transformer settings", null);
         this.viewer = viewer;
         this.attr = attr;
         this.settings = settings;
+        this.selector = selector;
     }
 
     @Override
@@ -64,7 +72,6 @@ class TransformerSettingsDialog extends BaseDialog {
         final DBPDataSource dataSource = viewer.getDataContainer() == null ? null : viewer.getDataContainer().getDataSource();
 
         Collection<? extends DBPPropertyDescriptor> properties = Collections.emptyList();
-        final DBDAttributeTransformerDescriptor transformer;
         if (dataSource != null && !CommonUtils.isEmpty(settings.getCustomTransformer())) {
             transformer = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getTransformer(settings.getCustomTransformer());
             if (transformer != null) {
@@ -73,13 +80,44 @@ class TransformerSettingsDialog extends BaseDialog {
         } else {
             transformer = null;
         }
-        if (transformer != null) {
+        if (selector || transformer != null) {
             final Composite placeholder = UIUtils.createControlGroup(composite, "Transformer", 2, GridData.FILL_HORIZONTAL, -1);
-            UIUtils.createLabelText(placeholder, "Name", transformer.getName(), SWT.READ_ONLY);
+            if (!selector) {
+                UIUtils.createLabelText(placeholder, "Name", transformer.getName(), SWT.READ_ONLY);
+            } else {
+                Combo transCombo = UIUtils.createLabelCombo(placeholder, "Name", SWT.DROP_DOWN | SWT.READ_ONLY);
+                transCombo.add(ResultSetViewer.EMPTY_TRANSFORMER_NAME);
+                transCombo.select(0);
+                transformerList = DBWorkbench.getPlatform().getValueHandlerRegistry().findTransformers(attr.getDataSource(), attr, null);
+                if (transformerList != null) {
+                    for (DBDAttributeTransformerDescriptor td : transformerList) {
+                        transCombo.add(td.getName());
+                        if (td == transformer) {
+                            transCombo.select(transCombo.getItemCount() - 1);
+                        }
+                    }
+                }
+                transCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        int selectionIndex = transCombo.getSelectionIndex();
+                        if (selectionIndex == 0) {
+                            transformer = null;
+                            infoText.setText("N/A");
+                            loadTransformerSettings(Collections.emptyList());
+                        } else {
+                            transformer = transformerList.get(selectionIndex - 1);
+                            infoText.setText(CommonUtils.notEmpty(transformer.getDescription()));
+                            loadTransformerSettings(transformer.getProperties());
+                        }
+                        composite.layout(true, true);
+                    }
+                });
+            }
             Label infoLabel = UIUtils.createControlLabel(placeholder, "Info");
             infoLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            final Text infoText = new Text(placeholder, SWT.READ_ONLY | SWT.WRAP);
-            if (transformer.getDescription() != null) {
+            infoText = new Text(placeholder, SWT.READ_ONLY | SWT.WRAP);
+            if (transformer != null && transformer.getDescription() != null) {
                 infoText.setText(transformer.getDescription());
             }
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -87,24 +125,28 @@ class TransformerSettingsDialog extends BaseDialog {
             infoText.setLayoutData(gd);
         }
 
-        Map<String, String> transformOptions = settings.getTransformOptions();
-        if (transformOptions == null) {
-            transformOptions = Collections.emptyMap();
-        }
-
         propertiesEditor = new PropertyTreeViewer(composite, SWT.BORDER);
-        propertySource = new PropertySourceCustom(
-            properties,
-            transformOptions);
-        propertiesEditor.loadProperties(propertySource);
+
+        loadTransformerSettings(properties);
 
         propertiesEditor.getControl().setFocus();
 
-        if (CommonUtils.isEmpty(properties)) {
+        if (!selector && CommonUtils.isEmpty(properties)) {
             UIUtils.asyncExec(this::okPressed);
         }
 
         return parent;
+    }
+
+    private void loadTransformerSettings(Collection<? extends DBPPropertyDescriptor> properties) {
+        Map<String, String> transformOptions = settings.getTransformOptions();
+        if (transformOptions == null) {
+            transformOptions = Collections.emptyMap();
+        }
+        propertySource = new PropertySourceCustom(
+            properties,
+            transformOptions);
+        propertiesEditor.loadProperties(propertySource);
     }
 
     @Override
@@ -117,10 +159,17 @@ class TransformerSettingsDialog extends BaseDialog {
     @Override
     protected void okPressed()
     {
-        final Map<Object, Object> properties = propertySource.getPropertiesWithDefaults();
-        for (Map.Entry<Object, Object> prop : properties.entrySet()) {
-            if (prop.getValue() != null) {
-                settings.setTransformOption(prop.getKey().toString(), prop.getValue().toString());
+        if (selector) {
+            settings.setCustomTransformer(transformer == null ? null : transformer.getId());
+        }
+        if (transformer == null) {
+            settings.setTransformOptions(new LinkedHashMap<>());
+        } else {
+            final Map<Object, Object> properties = propertySource.getPropertiesWithDefaults();
+            for (Map.Entry<Object, Object> prop : properties.entrySet()) {
+                if (prop.getValue() != null) {
+                    settings.setTransformOption(prop.getKey().toString(), prop.getValue().toString());
+                }
             }
         }
         super.okPressed();

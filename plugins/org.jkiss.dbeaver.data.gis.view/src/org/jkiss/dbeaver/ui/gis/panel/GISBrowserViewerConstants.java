@@ -22,7 +22,8 @@ public class GISBrowserViewerConstants {
         "leaflet.css",
         "leaflet.js",
         "wkx.js",
-        "wkx.min.js"
+        "wkx.min.js",
+        "layers.png"
     };
     public static final String WEB_INC_PATH = "web/inc/";
     public static final String VIEW_TEMPLATE_PATH = "web/view_template.html";

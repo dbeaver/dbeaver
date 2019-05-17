@@ -1041,4 +1041,14 @@ public final class SQLUtils {
         return ArrayUtils.containsIgnoreCase(dialect.getExecuteKeywords(), word);
     }
 
+    public static String stripColumnTypeModifiers(String type) {
+        int startPos = type.indexOf("(");
+        if (startPos != -1) {
+            int endPos = type.indexOf(")", startPos + 1);
+            if (endPos != -1) {
+                return type.substring(0, startPos).trim() + " " + type.substring(endPos + 1).trim();
+            }
+        }
+        return null;
+    }
 }

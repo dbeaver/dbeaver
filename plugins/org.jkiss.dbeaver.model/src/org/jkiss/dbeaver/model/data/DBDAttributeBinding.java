@@ -117,6 +117,10 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return false;
     }
 
+    public DBSDataContainer getDataContainer() {
+        return getParentObject().getDataContainer();
+    }
+
     /**
      * Row identifier (may be null)
      */

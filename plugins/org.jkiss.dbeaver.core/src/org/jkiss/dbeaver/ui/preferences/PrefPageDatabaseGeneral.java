@@ -55,7 +55,6 @@ import java.util.List;
 public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
-    private static final String NOTIFICATIONS_PAGE_ID = "org.eclipse.mylyn.commons.notifications.preferencePages.Notifications";
 
     private Button automaticUpdateCheck;
     private Combo workspaceLanguage;
@@ -119,12 +118,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
                 CoreMessages.pref_page_ui_general_label_enable_notifications_tip, false, 2);
 
             notificationsCloseDelay = UIUtils.createLabelSpinner(notificationsGroup, CoreMessages.pref_page_ui_general_label_notifications_close_delay, 0, 0, Integer.MAX_VALUE);
-
-            // Link to notifications config
-            new PreferenceLinkArea(notificationsGroup, SWT.NONE,
-                NOTIFICATIONS_PAGE_ID,
-                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
-                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
         }
 
         // Agent settings

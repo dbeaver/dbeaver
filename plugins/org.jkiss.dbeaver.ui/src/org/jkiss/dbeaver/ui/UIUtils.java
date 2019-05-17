@@ -26,6 +26,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
@@ -36,7 +37,6 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -63,9 +63,6 @@ import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.internal.UIActivator;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -75,10 +72,13 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.controls.*;
+import org.jkiss.dbeaver.ui.internal.UIActivator;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -181,6 +181,16 @@ public class UIUtils {
         TreeColumn column = new TreeColumn(tree, style);
         column.setText(text);
         return column;
+    }
+
+    public static void executeOnResize(Control control, Runnable runnable) {
+        control.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                runnable.run();
+                control.removeControlListener(this);
+            }
+        });
     }
 
     public static void packColumns(Table table)
@@ -438,11 +448,16 @@ public class UIUtils {
 
     public static boolean confirmAction(final Shell shell, final String title, final String question)
     {
+        return confirmAction(shell, title, question, SWT.ICON_QUESTION);
+    }
+
+    public static boolean confirmAction(final Shell shell, final String title, final String question, int iconType)
+    {
         return new UIConfirmation() {
             @Override
             public Boolean runTask() {
                 Shell activeShell = shell != null ? shell : getActiveWorkbenchShell();
-                MessageBox messageBox = new MessageBox(activeShell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+                MessageBox messageBox = new MessageBox(activeShell, iconType | SWT.YES | SWT.NO);
                 messageBox.setMessage(question);
                 messageBox.setText(title);
                 int response = messageBox.open();
@@ -508,17 +523,20 @@ public class UIUtils {
         return group;
     }
 
-    public static Label createControlLabel(Composite parent, String label)
-    {
+    public static Label createControlLabel(Composite parent, String label) {
+        return createControlLabel(parent, label, 1);
+    }
+
+    public static Label createControlLabel(Composite parent, String label, int hSpan) {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
-        // TODO: Should we make it right-aligned? Looks good but not in Eclipse-style
-        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER /*| GridData.HORIZONTAL_ALIGN_END*/));
+        GridData gd = new GridData(GridData.VERTICAL_ALIGN_CENTER /*| GridData.HORIZONTAL_ALIGN_END*/);
+        gd.horizontalSpan = hSpan;
+        textLabel.setLayoutData(gd);
         return textLabel;
     }
 
-    public static Label createLabel(Composite parent, String label)
-    {
+    public static Label createLabel(Composite parent, String label) {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label);
 
@@ -926,6 +944,33 @@ public class UIUtils {
         if (image != null) {
             button.setImage(image);
         }
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
+        return button;
+    }
+
+    @NotNull
+    public static Button createDialogButton(@NotNull Composite parent, @Nullable String label, @Nullable SelectionListener selectionListener)
+    {
+        Button button = new Button(parent, SWT.PUSH);
+        button.setText(label);
+        button.setFont(JFaceResources.getDialogFont());
+
+        // Dialog settings
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+        GC gc = new GC(button);
+        int widthHint;
+        try {
+            gc.setFont(JFaceResources.getDialogFont());
+            widthHint = org.eclipse.jface.dialogs.Dialog.convertHorizontalDLUsToPixels(gc.getFontMetrics(), IDialogConstants.BUTTON_WIDTH);
+        } finally {
+            gc.dispose();
+        }
+        Point minSize = button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+        gd.widthHint = Math.max(widthHint, minSize.x);
+        button.setLayoutData(gd);
+
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
         }
@@ -1612,6 +1657,14 @@ public class UIUtils {
             return null;
         }
         return sharedTextColors.getColor(rgbString);
+    }
+
+    @Nullable
+    public static Color getSharedColor(@Nullable RGB rgb) {
+        if (rgb == null) {
+            return null;
+        }
+        return sharedTextColors.getColor(rgb);
     }
 
     public static Color getConnectionColor(DBPConnectionConfiguration connectionInfo) {

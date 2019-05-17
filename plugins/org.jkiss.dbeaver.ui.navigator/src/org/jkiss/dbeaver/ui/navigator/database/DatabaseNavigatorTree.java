@@ -115,7 +115,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         initEditor();
     }
 
-    private void setInput(DBNNode rootNode) {
+    public void setInput(DBNNode rootNode) {
         treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 

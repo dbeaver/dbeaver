@@ -341,6 +341,7 @@ public class DBeaverCore implements DBPPlatform {
         return workspace;
     }
 
+    @NotNull
     @Override
     public DBPResourceHandler getDefaultResourceHandler() {
         return DefaultResourceHandlerImpl.INSTANCE;
@@ -352,6 +353,7 @@ public class DBeaverCore implements DBPPlatform {
         return getProjectRegistry();
     }
 
+    @NotNull
     @Override
     public OSDescriptor getLocalSystem() {
         return localSystem;
@@ -453,6 +455,7 @@ public class DBeaverCore implements DBPPlatform {
         return navigatorModel;
     }
 
+    @NotNull
     @Override
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
@@ -475,11 +478,13 @@ public class DBeaverCore implements DBPPlatform {
         return ObjectManagerRegistry.getInstance();
     }
 
+    @NotNull
     @Override
     public DBPDataFormatterRegistry getDataFormatterRegistry() {
         return DataFormatterRegistry.getInstance();
     }
 
+    @NotNull
     @Override
     public SQLFormatterRegistry getSQLFormatterRegistry() {
         return SQLFormatterConfigurationRegistry.getInstance();
@@ -531,9 +536,6 @@ public class DBeaverCore implements DBPPlatform {
                             tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
                             if (!tempFolder.mkdirs()) {
                                 tempFolder = new File(TEMP_PROJECT_NAME);
-                                if (!tempFolder.mkdirs()) {
-                                    log.error("Can't create temp directory!");
-                                }
                             }
                         }
 
@@ -541,14 +543,19 @@ public class DBeaverCore implements DBPPlatform {
                 }
             }
         }
+        if (!tempFolder.exists() && !tempFolder.mkdirs()) {
+            log.error("Can't create temp directory " + tempFolder.getAbsolutePath());
+        }
         return tempFolder;
     }
 
+    @NotNull
     @Override
     public File getConfigurationFile(String fileName) {
         return DBeaverActivator.getConfigurationFile(fileName);
     }
 
+    @NotNull
     @Override
     public File getCustomDriversHome() {
         return DriverDescriptor.getCustomDriversHome();

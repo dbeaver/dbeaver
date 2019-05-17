@@ -71,7 +71,7 @@ public abstract class BaseObjectEditPage extends DialogPage {
         this.container = container;
     }
 
-    protected void performFinish() throws DBException {
+    public void performFinish() throws DBException {
 
     }
 

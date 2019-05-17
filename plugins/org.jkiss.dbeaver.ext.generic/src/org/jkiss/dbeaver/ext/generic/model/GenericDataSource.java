@@ -527,6 +527,10 @@ public class GenericDataSource extends JDBCDataSource
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG), false);
     }
 
+    public boolean isSchemaFiltersEnabled() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SCHEMA_FILTER_ENABLED), true);
+    }
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {

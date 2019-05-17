@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
@@ -51,7 +52,10 @@ public class GeometryPresentation extends AbstractPresentation {
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
-        leafletViewer = new GISLeafletViewer(parent, null);
+        leafletViewer = new GISLeafletViewer(
+            parent,
+            null,
+            GisTransformUtils.getSpatialDataProvider(controller.getDataContainer().getDataSource()));
         leafletViewer.getBrowserComposite().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
@@ -124,8 +128,14 @@ public class GeometryPresentation extends AbstractPresentation {
         for (GeometryDataUtils.GeomAttrs geomAttrs : result) {
             for (ResultSetRow row : model.getAllRows()) {
                 Object value = model.getCellValue(geomAttrs.geomAttr, row);
-                if (value instanceof DBGeometry) {
-                    DBGeometry geometry = (DBGeometry)value;
+
+                DBGeometry geometry = GisTransformUtils.getGeometryValueFromObject(
+                    controller.getDataContainer(),
+                    geomAttrs.geomAttr.getValueHandler(),
+                    geomAttrs.geomAttr,
+                    value);
+
+                if (geometry != null) {
                     geometries.add(geometry);
                     // Now get description
                     if (!geomAttrs.descAttrs.isEmpty()) {
