@@ -24,7 +24,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -49,6 +51,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.perspective.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -121,13 +126,47 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         if (dataSource != null && dataSource.isConnected()) {
             schemaName = "<no schema>";
-            DBSObject[] defObjects = getSelectedSchema(dataSource);
-            if (defObjects.length > 0) {
-                schemaIcon = DBIcon.TREE_SCHEMA;
-                if (defObjects.length == 1) {
-                    schemaName = defObjects[0].getName();
-                } else {
-                    schemaName = defObjects[1].getName() + "@" + defObjects[0].getName();
+
+            IEditorInput editorInput = activeEditor.getEditorInput();
+            if (editorInput instanceof IDatabaseEditorInput) {
+                if (editorInput instanceof DatabaseLazyEditorInput) {
+                    activeEditor.addPropertyListener(new IPropertyListener() {
+                        @Override
+                        public void propertyChanged(Object source, int propId) {
+                            if (EntityEditor.PROP_TITLE == propId) {
+                                DataSourceToolbarUtils.updateCommandsUI();
+                                activeEditor.removePropertyListener(this);
+                            }
+                        }
+                    });
+                }
+                DBSObjectContainer schemaObject = null;
+                DBSObject curObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+                for (DBSObject parent = curObject; parent != null; parent = parent.getParentObject()) {
+                    if (parent instanceof DBSObjectContainer) {
+                        schemaObject = (DBSObjectContainer) parent;
+                        if (parent.getParentObject() instanceof DBSObjectSelector) {
+                            break;
+                        }
+                    }
+                }
+                if (schemaObject != null) {
+                    DBSObject schemaParent = schemaObject.getParentObject();
+                    if (schemaParent instanceof DBSObjectContainer && !(schemaParent instanceof DBPDataSource)) {
+                        schemaName = schemaObject.getName() + "@" + schemaParent.getName();
+                    } else {
+                        schemaName = schemaObject.getName();
+                    }
+                }
+            } else {
+                DBSObject[] defObjects = getSelectedSchema(dataSource);
+                if (defObjects.length > 0) {
+                    schemaIcon = DBIcon.TREE_SCHEMA;
+                    if (defObjects.length == 1) {
+                        schemaName = defObjects[0].getName();
+                    } else {
+                        schemaName = defObjects[1].getName() + "@" + defObjects[0].getName();
+                    }
                 }
             }
         }

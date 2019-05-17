@@ -82,6 +82,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
     implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, ITabbedFolderContainer, IDataSourceContainerProvider, IEntityEditorContext
 {
     public static final String ID = "org.jkiss.dbeaver.ui.editors.entity.EntityEditor"; //$NON-NLS-1$
+
+    // fired when editor is initialized with a database object (e.g. after lazy loading, navigation or history browsing).
+    public static final int PROP_OBJECT_INIT = 0x212;
     
     private static final Log log = Log.getLog(EntityEditor.class);
 
@@ -895,6 +898,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public void recreateEditorControl() {
         recreatePages();
+        firePropertyChange(PROP_OBJECT_INIT);
     }
 
     private static final int MAX_BREADCRUMBS_MENU_ITEM = 300;
