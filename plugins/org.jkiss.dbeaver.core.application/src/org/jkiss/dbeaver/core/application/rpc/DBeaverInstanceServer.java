@@ -90,7 +90,7 @@ public class DBeaverInstanceServer implements IInstanceController {
             connectionSpec,
             instanceConParameters,
             false,
-            true);
+            instanceConParameters.createNewConnection);
 
         if (dataSource == null) {
             return;
@@ -199,7 +199,7 @@ public class DBeaverInstanceServer implements IInstanceController {
     }
 
     private static class InstanceConnectionParameters implements GeneralUtils.IParameterHandler {
-        boolean makeConnect = true, openConsole = false;
+        boolean makeConnect = true, openConsole = false, createNewConnection = true;
 
         @Override
         public boolean setParameter(String name, String value) {
@@ -209,6 +209,9 @@ public class DBeaverInstanceServer implements IInstanceController {
                     return true;
                 case "openConsole":
                     openConsole = CommonUtils.toBoolean(value);
+                    return true;
+                case "create":
+                    createNewConnection = CommonUtils.toBoolean(value);
                     return true;
                 default:
                     return false;
