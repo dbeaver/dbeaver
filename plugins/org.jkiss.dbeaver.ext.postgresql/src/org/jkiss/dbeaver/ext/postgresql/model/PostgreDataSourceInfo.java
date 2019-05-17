@@ -33,6 +33,11 @@ class PostgreDataSourceInfo extends JDBCDataSourceInfo {
     }
 
     @Override
+    public boolean supportsMultipleResults() {
+        return true;
+    }
+
+    @Override
     public boolean supportsResultSetLimit() {
         // ??? Disable maxRows for data transfer - it turns cursors off ?
         return supportsLimits;
