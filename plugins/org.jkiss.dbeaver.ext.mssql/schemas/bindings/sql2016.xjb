@@ -1,0 +1,17 @@
+﻿<jxb:bindings 
+  xmlns:jxb="http://java.sun.com/xml/ns/jaxb" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  schemaLocation="../schemas/sql2016/showplanxml.xsd"
+  jxb:version="2.0">
+  
+    <jxb:bindings node="//xsd:complexType[@name='ConvertType']/xsd:sequence/xsd:element[@name='Style']">
+        <jxb:property name="ConvertStyle"/>
+    </jxb:bindings>
+
+	 <jxb:schemaBindings>
+            <jxb:nameXmlTransform>
+                <jxb:typeName suffix="_sql2016"/>
+                <jxb:anonymousTypeName suffix="_sql2016"/>
+            </jxb:nameXmlTransform>
+        </jxb:schemaBindings>
+</jxb:bindings>

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.PreparedStatement;
@@ -129,7 +130,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         throws DBException
     {
         if (!isPersisted()) {
-            return JDBCUtils.generateTableDDL(monitor, this, options, false);
+            return DBStructUtils.generateTableDDL(monitor, this, options, false);
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Retrieve table DDL")) {
             try (PreparedStatement dbStat = session.prepareStatement(

@@ -23,6 +23,7 @@
         <language code="it" label="%language.it.label"/>
         <language code="ja" label="%language.ja.label"/>
         <language code="es" label="%language.es.label"/>
+        <language code="ko" label="%language.ko.label"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.driverManager">

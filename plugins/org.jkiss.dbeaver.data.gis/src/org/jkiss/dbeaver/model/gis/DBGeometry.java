@@ -17,10 +17,15 @@
 
 package org.jkiss.dbeaver.model.gis;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.data.gis.handlers.GeometryConverter;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.utils.CommonUtils;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -40,9 +45,20 @@ public class DBGeometry implements DBDValue {
         this.rawValue = rawValue;
     }
 
+    public DBGeometry(DBGeometry source) {
+        this.rawValue = source.rawValue;
+        this.srid = source.srid;
+        this.properties = source.properties == null ? null : new LinkedHashMap<>(source.properties);
+    }
+
     public DBGeometry(Geometry rawValue) {
         this.rawValue = rawValue;
         this.srid = rawValue == null ? 0 : rawValue.getSRID();
+    }
+
+    public DBGeometry(Object rawValue, int srid) {
+        this.rawValue = rawValue;
+        this.srid = srid;
     }
 
     public Geometry getGeometry() {
@@ -86,11 +102,30 @@ public class DBGeometry implements DBDValue {
         this.srid = srid;
     }
 
+    public DBGeometry flipCoordinates() throws DBException {
+        Geometry jtsGeometry = getGeometry();
+        if (jtsGeometry == null) {
+            try {
+                jtsGeometry = new WKTReader().read(getString());
+            } catch (Exception e) {
+                throw new DBException("Error parsing geometry WKT", e);
+            }
+        } else {
+            jtsGeometry = jtsGeometry.copy();
+        }
+        jtsGeometry.apply(GeometryConverter.INVERT_COORDINATE_FILTER);
+        return new DBGeometry(jtsGeometry, srid);
+    }
+
     public Map<String, Object> getProperties() {
         return properties;
     }
 
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
+    }
+
+    public DBGeometry copy() {
+        return new DBGeometry(this);
     }
 }

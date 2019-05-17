@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -58,6 +59,15 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
                 }
                 newProcedure.setName(editPage.getProcedureName());
                 newProcedure.setLanguage(editPage.getLanguage());
+                newProcedure.setObjectDefinitionText(
+                    "CREATE OR REPLACE FUNCTION " + newProcedure.getFullQualifiedSignature() +
+                    (newProcedure.getReturnType() == null ? "" : "\n\tRETURNS " + newProcedure.getReturnType().getFullyQualifiedName(DBPEvaluationContext.DDL)) +
+                    "\n\tLANGUAGE " + editPage.getLanguage().getName() +
+                    "\nAS $$" +
+                    "\n\tBEGIN\n" +
+                    "\n\tEND;" +
+                    "\n$$\n"
+                );
                 return newProcedure;
             }
         }.execute();

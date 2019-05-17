@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.perspective.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -120,10 +121,14 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         if (dataSource != null && dataSource.isConnected()) {
             schemaName = "<no schema>";
-            DBSObject defObject = getSelectedSchema(dataSource);
-            if (defObject != null) {
-                schemaName = defObject.getName();
+            DBSObject[] defObjects = getSelectedSchema(dataSource);
+            if (defObjects.length > 0) {
                 schemaIcon = DBIcon.TREE_SCHEMA;
+                if (defObjects.length == 1) {
+                    schemaName = defObjects[0].getName();
+                } else {
+                    schemaName = defObjects[1].getName() + "@" + defObjects[0].getName();
+                }
             }
         }
         element.setText(schemaName);
@@ -131,24 +136,29 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         element.setTooltip(schemaTooltip);
     }
 
-    public static DBSObject getSelectedSchema(DBPDataSourceContainer dataSource) {
-        //DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
+    public static DBSObject[] getSelectedSchema(DBPDataSourceContainer dataSource) {
+
+        DBSObject firstContainer = null, secondContainer = null;
         DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
         if (objectSelector != null && objectSelector.supportsDefaultChange()) {
-            DBSObject defObject = objectSelector.getDefaultObject();
+            firstContainer = objectSelector.getDefaultObject();
 
-            if (defObject instanceof DBSObjectContainer) {
+            if (firstContainer instanceof DBSObjectContainer) {
                 // Default object can be object container + object selector (e.g. in PG)
-                DBSObjectSelector objectSelector2 = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
+                DBSObjectSelector objectSelector2 = DBUtils.getAdapter(DBSObjectSelector.class, firstContainer);
                 if (objectSelector2 != null && objectSelector2.supportsDefaultChange()) {
                     //objectContainer = (DBSObjectContainer) defObject;
-                    return objectSelector2.getDefaultObject();
-                } else {
-                    return defObject;
+                    secondContainer = objectSelector2.getDefaultObject();
                 }
             }
         }
-        return null;
+        if (firstContainer == null && secondContainer == null) {
+            return new DBSObject[0];
+        } else if (secondContainer == null) {
+            return new DBSObject[] { firstContainer };
+        } else {
+            return new DBSObject[]{firstContainer, secondContainer};
+        }
     }
 
     private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, @Nullable String curInstanceName, @Nullable String newInstanceName, @NotNull String newSchemaName) {
@@ -278,7 +288,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 return;
             }
 
-            DBSObject defObject = getSelectedSchema(dataSourceContainer);
+            DBSObject[] defObjects = getSelectedSchema(dataSourceContainer);
             for (DBNDatabaseNode node : databaseListReader.nodeList) {
                 menuItems.add(
                     new ActionContributionItem(new Action(node.getName(), Action.AS_CHECK_BOX) {
@@ -287,7 +297,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         }
                         @Override
                         public boolean isChecked() {
-                            return node.getObject() == defObject;
+                            return ArrayUtils.contains(defObjects, node.getObject());
                         }
                         @Override
                         public void run() {

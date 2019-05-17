@@ -40,24 +40,24 @@
 								<artifact><id>commons-cli:commons-cli:1.3.1</id></artifact>
 
 								<!-- POI and dependencies -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:3.16.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id></artifact>
 								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
 
 								<!-- GIS -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:1.0.1</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id></artifact>
 
 								<!-- JFreeChart -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:1.0.19</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.jfreechart:LATEST</id></artifact>
 
 								<!-- SSH and BouncyCastle -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:0.27.0</id></artifact>
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:1.60.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:LATEST</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:LATEST</id></artifact>
 
 								<!-- Batik -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.1</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:LATEST</id></artifact>
 								<!-- GraphQL -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:12.0.3</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.graphql.java:LATEST</id></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 

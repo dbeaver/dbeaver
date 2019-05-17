@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -182,7 +183,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     protected OBJECT_TYPE configureObject(DBRProgressMonitor monitor, CONTAINER_TYPE parent, OBJECT_TYPE object) {
-        DBEObjectConfigurator<CONTAINER_TYPE, OBJECT_TYPE> configurator = (DBEObjectConfigurator<CONTAINER_TYPE, OBJECT_TYPE>) DBWorkbench.getPlatform().getEditorsRegistry().getObjectConfigurator(object);
+        DBEObjectConfigurator<CONTAINER_TYPE, OBJECT_TYPE> configurator = GeneralUtils.adapt(object, DBEObjectConfigurator.class);
         if (configurator != null) {
             return configurator.configureObject(monitor, parent, object);
         }
@@ -292,7 +293,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
-    protected class ObjectCreateCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler> {
+    public class ObjectCreateCommand extends NestedObjectCommand<OBJECT_TYPE, PropertyHandler> {
 
         protected ObjectCreateCommand(OBJECT_TYPE object, String title)
         {

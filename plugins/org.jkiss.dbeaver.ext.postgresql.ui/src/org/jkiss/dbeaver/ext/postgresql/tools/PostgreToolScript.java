@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 import org.jkiss.utils.CommonUtils;
@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Database import
  */
-public class PostgreToolScript implements IExternalTool
+public class PostgreToolScript implements IUserInterfaceTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException

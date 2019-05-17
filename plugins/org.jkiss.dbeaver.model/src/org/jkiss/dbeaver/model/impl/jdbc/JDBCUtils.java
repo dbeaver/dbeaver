@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -774,17 +775,6 @@ public class JDBCUtils {
         } else {
             return DBPDataKind.UNKNOWN;
         }
-    }
-
-    public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull JDBCTable table, Map<String, Object> options, boolean addComments) throws DBException {
-        final DBERegistry editorsRegistry = table.getDataSource().getContainer().getPlatform().getEditorsRegistry();
-        final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
-        if (entityEditor instanceof SQLTableManager) {
-            DBEPersistAction[] ddlActions = ((SQLTableManager) entityEditor).getTableDDL(monitor, table, options);
-            return SQLUtils.generateScript(table.getDataSource(), ddlActions, addComments);
-        }
-        log.debug("Table editor not found for " + table.getClass().getName());
-        return SQLUtils.generateCommentLine(table.getDataSource(), "Can't generate DDL: table editor not found for " + table.getClass().getName());
     }
 
     public static String escapeWildCards(JDBCSession session, String string) {

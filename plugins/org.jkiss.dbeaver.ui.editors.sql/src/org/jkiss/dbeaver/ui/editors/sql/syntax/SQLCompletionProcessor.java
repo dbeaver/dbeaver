@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -364,7 +365,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 try {
                     monitor.subTask("Find proposals");
                     SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
-                    DBUtils.tryExecuteRecover(monitor, editor.getDataSource(), analyzer);
+                    DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), analyzer);
                 } finally {
                     monitor.done();
                 }

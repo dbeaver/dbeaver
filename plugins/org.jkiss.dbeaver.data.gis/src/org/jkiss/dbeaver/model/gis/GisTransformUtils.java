@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.gis;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import org.cts.CRSFactory;
 import org.cts.IllegalCoordinateException;
 import org.cts.crs.CRSException;
@@ -28,9 +26,20 @@ import org.cts.op.CoordinateOperation;
 import org.cts.op.CoordinateOperationException;
 import org.cts.op.CoordinateOperationFactory;
 import org.cts.registry.*;
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,15 +134,12 @@ public class GisTransformUtils {
         if (crs1 instanceof GeodeticCRS && crs2 instanceof GeodeticCRS) {
             Set<CoordinateOperation> coordOps = CoordinateOperationFactory.createCoordinateOperations((GeodeticCRS) crs1, (GeodeticCRS) crs2);
             if (!coordOps.isEmpty()) {
-                // Test each transformation method (generally, only one method is available)
-                for (CoordinateOperation op : coordOps) {
-                    // Transform coord using the op CoordinateOperation from crs1 to crs2
-                    jtsValue = transformGeometry(jtsValue, op);
-                }
+            	CoordinateOperation op = CoordinateOperationFactory.getMostPrecise(coordOps);
+                // Transform coord using the op CoordinateOperation from crs1 to crs2
+                jtsValue = transformGeometry(jtsValue, op);
                 return jtsValue;
             }
         }
-
         return jtsValue;
     }
 
@@ -168,4 +174,36 @@ public class GisTransformUtils {
         return srcCoord;
     }
 
+    public static DBGeometry getGeometryValueFromObject(DBSDataContainer dataContainer, DBDValueHandler valueHandler, DBSTypedObject valueType, Object cellValue) {
+        if (cellValue instanceof DBGeometry) {
+            return (DBGeometry) cellValue;
+        }
+
+        // Convert value from string, binary or some other format.
+        // This may be needed if use some attribute transformer or some datasource
+        // uses plain string data type with GIS value manager.
+        // Use void monitor because this transformation shouldn't interact with
+        // any external systems or make db queries.
+        try (DBCSession utilSession = DBUtils.openUtilSession(new VoidProgressMonitor(), dataContainer, "Convert GIS value"))  {
+            Object convertedValue = valueHandler.getValueFromObject(
+                utilSession,
+                valueType,
+                cellValue,
+                false);
+            if (convertedValue instanceof DBGeometry) {
+                return (DBGeometry) convertedValue;
+            }
+        } catch (DBCException e) {
+            log.debug("Error trandforming geometry value", e);
+        }
+
+        return null;
+    }
+
+    public static SpatialDataProvider getSpatialDataProvider(DBPDataSource dataSource) {
+        if (dataSource instanceof IAdaptable) {
+            return ((IAdaptable) dataSource).getAdapter(SpatialDataProvider.class);
+        }
+        return null;
+    }
 }

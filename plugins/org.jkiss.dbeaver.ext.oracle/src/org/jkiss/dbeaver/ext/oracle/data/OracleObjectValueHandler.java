@@ -24,14 +24,16 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Struct;
 
 /**
  * Object type support
  */
-public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
+public class OracleObjectValueHandler extends JDBCStructValueHandler {
 
     public static final OracleObjectValueHandler INSTANCE = new OracleObjectValueHandler();
 
@@ -47,7 +49,7 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    protected OracleObjectValue fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException
     {
         //final Object object = resultSet.getObject(columnIndex);
         Object object = resultSet.getObject(index);
@@ -68,10 +70,12 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public OracleObjectValue getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             return new OracleObjectValue(null);
+        } else if (object instanceof Struct) {
+            return super.getValueFromObject(session, type, object, copy);
         } else if (object instanceof OracleObjectValue) {
             return copy ? new OracleObjectValue(((OracleObjectValue) object).getValue()) : (OracleObjectValue)object;
         } else {

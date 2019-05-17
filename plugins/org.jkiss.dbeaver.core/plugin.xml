@@ -23,10 +23,8 @@
 
     <!-- UI extensions -->
     <extension-point id="org.jkiss.dbeaver.objectManager" name="%extension-point.org.jkiss.dbeaver.objectManager.name" schema="schema/org.jkiss.dbeaver.objectManager.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
     <extension-point id="org.jkiss.dbeaver.tools" name="%extension-point.org.jkiss.dbeaver.tools.name" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.ui.propertyConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.propertyConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.propertyConfigurator.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -45,6 +43,18 @@
             properties="standalone,hasActiveProject,hasMultipleProjects"
             type="java.lang.Object"/>
         <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+            namespace="org.jkiss.dbeaver.core.object"
+            properties="canOpen,canCreate,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
+            type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
+            namespace="org.jkiss.dbeaver.core.tools"
+            properties="hasTools"
+            type="org.eclipse.ui.IWorkbenchPart"/>
+        <propertyTester
             class="org.jkiss.dbeaver.ui.actions.UIPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.UIPropertyTester"
             namespace="org.jkiss.dbeaver.core.ui"
@@ -62,18 +72,6 @@
             namespace="org.jkiss.dbeaver.core.datasourceContainer"
             properties="driverId,driverClass,connected"
             type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-        <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
-            namespace="org.jkiss.dbeaver.core.object"
-            properties="canOpen,canCreate,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
-            type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
-        <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
-            namespace="org.jkiss.dbeaver.core.tools"
-            properties="hasTools"
-            type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
@@ -523,7 +521,7 @@
                 <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
-                <separator name="sql-tools" visible="true"/>
+                <separator name="connection-tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.connect">
                     <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
                 </command>
@@ -648,38 +646,7 @@
 
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
-            <command commandId="org.jkiss.dbeaver.core.connect">
-               <visibleWhen>
-                   <with variable="selection">
-                       <count value="1"/>
-                       <iterate operator="and">
-                           <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                       </iterate>
-                   </with>
-               </visibleWhen>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.invalidate">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.disconnect">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
-            </command>
-
-            <separator name="navigator_commands" visible="true"/>
+            <separator name="sql-tools" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
                 <visibleWhen>
@@ -706,14 +673,11 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <separator name="create" visible="false"/>
+            <separator name="create" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu id="dbeaver-menu-create" label="%menu.create.label">
-                <dynamic id="org.jkiss.dbeaver.core.menu.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew$MenuCreateContributor"/>
-            </menu>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">
                 <visibleWhen checkEnabled="true"/>
             </command>
@@ -755,6 +719,40 @@
             <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
                 <visibleWhen checkEnabled="true"/>
             </command>
+
+            <separator name="connection-tools" visible="true"/>
+
+            <command commandId="org.jkiss.dbeaver.core.connect">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.invalidate">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.disconnect">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+
         </menuContribution>
 
         <!-- Additions end - Copy/Paste/etc -->
@@ -939,42 +937,6 @@
     </extension>
 
 
-    <!-- Legacy action sets. We have to use them to manage Eclipse search framework. -->
-
-    <extension point="org.eclipse.ui.actionSets">
-        <actionSet
-                id="org.jkiss.dbeaver.search.searchActionSet"
-                label="DBeaver Search"
-                visible="true">
-            <!-- Some ancient Eclipse bug makes us to do this crazy things.
-            Redefine search menu placeholders. Otherwise it doesn't work. -->
-            <menu
-                    label="%menu.search"
-                    path="navigate"
-                    id="org.eclipse.search.menu">
-                <groupMarker name="internalDialogGroup"/>   <!-- not to be used by clients  -->
-                <groupMarker name="dialogGroup"/>           <!-- to be used by clients      -->
-                <separator name="fileSearchContextMenuActionsGroup"/> <!-- to be used by clients      -->
-                <separator name="contextMenuActionsGroup"/> <!-- to be used by clients -->
-                <separator name="occurencesActionsGroup"/> <!-- to be used by clients -->
-                <separator name="extraSearchGroup"/> <!-- to be used by clients -->
-            </menu>
-
-            <action id="org.jkiss.dbeaver.search.OpenDataSearchPage"
-                    definitionId="org.jkiss.dbeaver.search.OpenDataSearchPage"
-                    menubarPath="org.eclipse.search.menu/dialogGroup"
-                    label="%search.page.label.db.fulltext"
-                    icon="icons/search/data.png"
-                    class="org.jkiss.dbeaver.ui.search.data.OpenDataSearchPageAction"/>
-            <action id="org.jkiss.dbeaver.search.OpenMetadataSearchPage"
-                    definitionId="org.jkiss.dbeaver.search.OpenMetadataSearchPage"
-                    menubarPath="org.eclipse.search.menu/dialogGroup"
-                    label="%search.page.label.db.metadata"
-                    icon="icons/search/metadata.png"
-                    class="org.jkiss.dbeaver.ui.search.metadata.OpenMetadataSearchPageAction"/>
-        </actionSet>
-    </extension>
-
     <extension point="org.eclipse.ui.bindings">
 
         <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+`"/>
@@ -1104,260 +1066,6 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
-        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.label" id="org.jkiss.dbeaver.ui.presentation.results">
-            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.description</description>
-        </themeElementCategory>
-
-        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label">
-            <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
-        </fontDefinition>
-
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
-                value="COLOR_LIST_SELECTION">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
-                value="COLOR_LIST_SELECTION_TEXT">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.cell.odd.background"
-                value="219, 229, 241">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.odd.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.preview.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.preview.background"
-                value="255,255,225">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.preview.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.modified.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.cell.modified.background"
-                value="255, 228, 181">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.modified.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.error.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.cell.error.background"
-                value="255, 128, 255">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.error.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.new.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.cell.new.background"
-                value="228, 255, 181">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.new.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background"
-                value="255, 99, 71">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
-                value="245, 245, 245">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.matched.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.cell.matched.background"
-                value="255, 215, 00">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.matched.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.normal.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.lines.normal"
-                value="240, 240, 240">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.normal.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.selected.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.lines.selected"
-                value="105, 105, 105">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.selected.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.header.background"
-                value="COLOR_WIDGET_BACKGROUND">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.header.foreground"
-                value="COLOR_LIST_FOREGROUND">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.selected.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.header.selected.background"
-                value="COLOR_LIST_SELECTION">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.header.selected.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results"
-                id="org.jkiss.dbeaver.sql.resultset.color.null.foreground"
-                value="COLOR_WIDGET_NORMAL_SHADOW">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.null.foreground.description</description>
-        </colorDefinition>
-
-        <!-- Colors for data types -->
-        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.label" id="org.jkiss.dbeaver.ui.presentation.results.datatypes" parentId="org.jkiss.dbeaver.ui.presentation.results">
-            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.description</description>
-        </themeElementCategory>
-
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.binary.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
-                id="org.jkiss.dbeaver.sql.resultset.color.binary.foreground"
-                value="100, 100, 100">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.binary.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.boolean.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
-                id="org.jkiss.dbeaver.sql.resultset.color.boolean.foreground"
-                value="255, 100, 0">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.boolean.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.datetime.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
-                id="org.jkiss.dbeaver.sql.resultset.color.datetime.foreground"
-                value="0, 102, 0">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.datetime.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.numeric.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
-                id="org.jkiss.dbeaver.sql.resultset.color.numeric.foreground"
-                value="0, 0, 255">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.numeric.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
-                id="org.jkiss.dbeaver.sql.resultset.color.string.foreground"
-                value="0, 0, 0">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.string.foreground.description</description>
-        </colorDefinition>
-
-        <!-- Colors for SQL editor -->
-        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.label" id="org.jkiss.dbeaver.ui.presentation.sql">
-            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.description</description>
-        </themeElementCategory>
-
-        <fontDefinition
-                id="org.jkiss.dbeaver.sql.editor.font.output"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                label="%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.label"
-                value="Courier New-regular-10">
-            <description>%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.description</description>
-            <fontValue os="linux" value="Monospace-regular-10"/>
-            <fontValue os="macosx" value="Courier-regular-11"/>
-        </fontDefinition>
-
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.keyword.foreground"
-                value="COLOR_DARK_RED">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.datatype.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.datatype.foreground"
-                value="COLOR_DARK_BLUE">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.datatype.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.string.foreground"
-                value="COLOR_DARK_GREEN">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.string.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.number.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.number.foreground"
-                value="COLOR_BLUE">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.number.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.comment.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.comment.foreground"
-                value="COLOR_DARK_GRAY">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.comment.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.delimiter.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground"
-                value="COLOR_RED">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.delimiter.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.command.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.command.foreground"
-                value="COLOR_DARK_MAGENTA">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.command.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.parameter.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.parameter.foreground"
-                value="COLOR_DARK_BLUE">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.parameter.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.foreground.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.text.foreground"
-                value="COLOR_BLACK">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.foreground.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.text.background"
-                value="COLOR_WHITE">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.text.background.description</description>
-        </colorDefinition>
-        <colorDefinition
-                label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.label"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.editor.color.disabled.background"
-                value="COLOR_WIDGET_BACKGROUND">
-            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.description</description>
-        </colorDefinition>
 
         <!-- Colors for transactions -->
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.label" id="org.jkiss.dbeaver.ui.presentation.qm">
@@ -1515,41 +1223,6 @@
         <repository id="maven-central" name="%maven.respository.central" url="https://repo1.maven.org/maven2/" order="0"/>
 
         <repository id="maven-central-unsecure" name="%maven.respository.central.unsecure" url="http://central.maven.org/maven2/" order="99999"/>
-    </extension>
-
-    <extension
-        point="org.eclipse.search.searchPages">
-        <page
-            class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
-            enabled="true"
-            icon="icons/search/metadata.png"
-            id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
-            label="%search.page.label.db.metadata">
-        </page>
-        <page
-            class="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
-            enabled="true"
-            icon="icons/search/data.png"
-            id="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
-            label="%search.page.label.db.fulltext">
-        </page>
-    </extension>
-    <extension
-        point="org.eclipse.search.searchResultViewPages">
-        <viewPage
-            class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
-            icon="icons/search/metadata.png"
-            id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
-            label="%search.result.view.page.metadata.result.name"
-            searchResultClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResult">
-        </viewPage>
-        <viewPage
-            class="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
-            icon="icons/search/data.png"
-            id="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
-            label="%search.result.view.page.data.result.name"
-            searchResultClass="org.jkiss.dbeaver.ui.search.data.SearchDataResult">
-        </viewPage>
     </extension>
 
     <!-- Perspective -->

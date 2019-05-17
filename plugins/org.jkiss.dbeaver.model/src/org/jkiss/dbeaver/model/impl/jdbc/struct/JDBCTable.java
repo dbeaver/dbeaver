@@ -325,7 +325,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
             @NotNull
             @Override
-            protected DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException {
+            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues) throws DBCException {
                 // Make query
                 StringBuilder query = new StringBuilder(200);
                 query
@@ -358,7 +358,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                     if (hasKey) query.append(","); //$NON-NLS-1$
                     hasKey = true;
-                    query.append("?"); //$NON-NLS-1$
+
+                    DBDValueHandler valueHandler = handlers[i];
+                    if (valueHandler instanceof DBDValueBinder) {
+                        query.append(((DBDValueBinder) valueHandler) .makeQueryBind(attribute, attributeValues[i]));
+                    } else {
+                        query.append("?"); //$NON-NLS-1$
+                    }
                 }
                 query.append(")"); //$NON-NLS-1$
 
@@ -408,7 +414,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new ExecuteBatchImpl(attributes, keysReceiver, false) {
             @NotNull
             @Override
-            protected DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException {
+            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues) throws DBCException {
                 String tableAlias = null;
                 SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
                 if (dialect.supportsAliasInUpdate()) {
@@ -423,13 +429,20 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 query.append("\nSET "); //$NON-NLS-1$ //$NON-NLS-2$
 
                 boolean hasKey = false;
-                for (DBSAttributeBase attribute : updateAttributes) {
+                for (int i = 0; i < updateAttributes.length; i++) {
+                    DBSAttributeBase attribute = updateAttributes[i];
                     if (hasKey) query.append(","); //$NON-NLS-1$
                     hasKey = true;
                     if (tableAlias != null) {
                         query.append(tableAlias).append(dialect.getStructSeparator());
                     }
-                    query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
+                    query.append(getAttributeName(attribute)).append("="); //$NON-NLS-1$
+                    DBDValueHandler valueHandler = handlers[i];
+                    if (valueHandler instanceof DBDValueBinder) {
+                        query.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
+                    } else {
+                        query.append("?"); //$NON-NLS-1$
+                    }
                 }
                 if (keyAttributes.length > 0) {
                     query.append("\nWHERE "); //$NON-NLS-1$
@@ -477,7 +490,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new ExecuteBatchImpl(keyAttributes, null, false) {
             @NotNull
             @Override
-            protected DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException {
+            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues) throws DBCException {
                 String tableAlias = null;
                 SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
                 if (dialect.supportsAliasInUpdate()) {

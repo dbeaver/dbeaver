@@ -249,12 +249,15 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
 
     @Property(viewable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
-        if (getDataSource().getServerType().supportsDatabaseDescription())
+        if (!getDataSource().getServerType().supportsDatabaseDescription()) {
+            return null;
+        }
         if (description != null) {
             return description;
         }
+
         // Query row count
-        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database description")) {
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read database description")) {
             description = JDBCUtils.queryString(session, "select description from pg_shdescription "
                     + "join pg_database on objoid = pg_database.oid where datname = ?", getName());
         } catch (SQLException e) {
@@ -314,7 +317,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         if (!getDataSource().getServerType().supportsRoles()) {
             return null;
         }
-
+        checkInstanceConnection(monitor);
         return PostgreUtils.getObjectById(monitor, roleCache, this, roleId);
     }
 
@@ -323,7 +326,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         if (!getDataSource().getServerType().supportsRoles()) {
             return null;
         }
-
+        checkInstanceConnection(monitor);
         return roleCache.getObject(monitor, owner, roleName);
     }
 
@@ -669,7 +672,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     @Nullable
     @Override
     public PostgreSchema getDefaultObject() {
-        return schemaCache.getCachedObject(activeSchemaName);
+        return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
     }
 
     @Override

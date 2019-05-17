@@ -94,7 +94,7 @@ public class OracleDataSource extends JDBCDataSource
         return super.getDataSourceFeature(featureId);
     }
 
-    public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @NotNull String schemaName, @NotNull String viewName) {
+    public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @Nullable String schemaName, @NotNull String viewName) {
         viewName = viewName.toUpperCase();
         Boolean available;
         synchronized (availableViews) {
@@ -103,9 +103,11 @@ public class OracleDataSource extends JDBCDataSource
         if (available == null) {
             try {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Check view existence")) {
+                    String viewNameQuoted = DBUtils.getQuotedIdentifier(this, viewName);
                     try (final JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "SELECT 1 FROM " + DBUtils.getQuotedIdentifier(this, schemaName) + "." +
-                        DBUtils.getQuotedIdentifier(this, viewName) + " WHERE 1<>1"))
+                        "SELECT 1 FROM " +
+                            (schemaName == null ? viewNameQuoted : DBUtils.getQuotedIdentifier(this, schemaName) + "." + viewNameQuoted) +
+                            " WHERE 1<>1"))
                     {
                         dbStat.setFetchSize(1);
                         dbStat.execute();
@@ -822,16 +824,18 @@ public class OracleDataSource extends JDBCDataSource
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             StringBuilder schemasQuery = new StringBuilder();
-            boolean manyObjects = CommonUtils.toBoolean(owner.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
+            // PROP_CHECK_SCHEMA_CONTENT set to true when option "Hide empty schemas" is set
+            boolean showAllSchemas = ! CommonUtils.toBoolean(owner.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
             schemasQuery.append("SELECT U.* FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "USERS")).append(" U\n");
 
 //                if (owner.isAdmin() && false) {
 //                    schemasQuery.append(
 //                        "WHERE (U.USER_ID IN (SELECT DISTINCT OWNER# FROM SYS.OBJ$) ");
 //                } else {
+            
             schemasQuery.append(
                 "WHERE (");
-            if (manyObjects) {
+            if (showAllSchemas) {
                 schemasQuery.append("U.USERNAME IS NOT NULL");
             } else {
                 schemasQuery.append("U.USERNAME IN (SELECT DISTINCT OWNER FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "OBJECTS")).append(")");

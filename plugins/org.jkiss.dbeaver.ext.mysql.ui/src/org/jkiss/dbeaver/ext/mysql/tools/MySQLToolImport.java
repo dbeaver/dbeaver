@@ -22,7 +22,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.Collection;
 /**
  * Database import
  */
-public class MySQLToolImport implements IExternalTool
+public class MySQLToolImport implements IUserInterfaceTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException

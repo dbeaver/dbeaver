@@ -47,7 +47,7 @@ import java.util.List;
 public class ResultSetValueController implements IAttributeController, IRowController {
 
     protected final IResultSetController controller;
-    protected final Composite inlinePlaceholder;
+    protected Composite inlinePlaceholder;
     protected EditType editType;
     protected ResultSetRow curRow;
     protected DBDAttributeBinding binding;
@@ -55,7 +55,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public ResultSetValueController(
         @NotNull IResultSetController controller,
         @NotNull DBDAttributeBinding binding,
-        @NotNull ResultSetRow row,
+        @Nullable ResultSetRow row,
         @NotNull EditType editType,
         @Nullable Composite inlinePlaceholder)
     {

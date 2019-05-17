@@ -105,7 +105,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             // Extract column info
             metaColumns = new DBDAttributeBindingMeta[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
-                metaColumns[i] = DBUtils.getAttributeBinding(session, rsAttributes.get(i));
+                metaColumns[i] = DBUtils.getAttributeBinding(resultSetViewer.getDataContainer(), session, rsAttributes.get(i));
             }
 
             resultSetViewer.setMetaData(resultSet, metaColumns);

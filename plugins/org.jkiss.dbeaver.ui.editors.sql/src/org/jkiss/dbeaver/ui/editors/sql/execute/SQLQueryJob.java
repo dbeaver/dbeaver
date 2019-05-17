@@ -116,10 +116,10 @@ public class SQLQueryJob extends DataSourceJob
         @NotNull IWorkbenchPartSite partSite,
         @NotNull String name,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSDataContainer dataContainer,
+        @Nullable DBSDataContainer dataContainer,
         @NotNull List<SQLScriptElement> queries,
         @NotNull SQLScriptContext scriptContext,
-        @NotNull SQLResultsConsumer resultsConsumer,
+        @Nullable SQLResultsConsumer resultsConsumer,
         @Nullable SQLQueryListener listener)
     {
         super(name, executionContext);
@@ -402,7 +402,7 @@ public class SQLQueryJob extends DataSourceJob
 
             SQLQuery execStatement = sqlQuery;
             long execStartTime = startTime;
-            DBUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
+            DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
                 try {
                     executeStatement(session, execStatement, execStartTime, curResult);
                 } catch (Throwable e) {
@@ -541,7 +541,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeControlCommand(SQLControlCommand command) throws DBException {
+    public boolean executeControlCommand(SQLControlCommand command) throws DBException {
         if (command.isEmptyCommand()) {
             return true;
         }

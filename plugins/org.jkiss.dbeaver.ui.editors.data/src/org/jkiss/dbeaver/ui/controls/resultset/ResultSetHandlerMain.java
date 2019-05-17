@@ -78,6 +78,7 @@ import java.util.List;
 public class ResultSetHandlerMain extends AbstractHandler {
 
     public static final String CMD_TOGGLE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
+    public static final String CMD_ACTIVATE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.activatePreview";
     public static final String CMD_TOGGLE_MAXIMIZE = "org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize";
     public static final String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.core.resultset.grid.toggleLayout";
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
@@ -166,6 +167,9 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             case CMD_TOGGLE_PANELS:
                 rsv.showPanels(!rsv.isPanelsVisible(), true, true);
+                break;
+            case CMD_ACTIVATE_PANELS:
+                rsv.togglePanelsFocus();
                 break;
             case CMD_TOGGLE_MAXIMIZE:
                 rsv.togglePanelsMaximize();
@@ -384,14 +388,13 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 action.run();
                 break;
             case CMD_NAVIGATE_LINK: {
-                final ResultSetRow row = rsv.getCurrentRow();
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-                if (row != null && attr != null) {
+                if (attr != null) {
                     new AbstractJob("Navigate association") {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
                             try {
-                                rsv.navigateAssociation(monitor, null, attr, row, false);
+                                rsv.navigateAssociation(monitor, null, attr, rsv.getSelection().getSelectedRows(), false);
                             } catch (DBException e) {
                                 return GeneralUtils.makeExceptionStatus(e);
                             }

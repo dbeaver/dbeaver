@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -126,7 +127,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        return JDBCUtils.generateTableDDL(monitor, this, options, false);
+        return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 
     @Override
@@ -210,7 +211,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return result;
     }
 
-    @NotNull
+    @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
         if (superTables == null && getDataSource().getServerType().supportsInheritance()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
@@ -260,7 +261,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return hasSubClasses;
     }
 
-    @NotNull
+    @Nullable
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
             List<PostgreTableInheritance> tables = new ArrayList<>();

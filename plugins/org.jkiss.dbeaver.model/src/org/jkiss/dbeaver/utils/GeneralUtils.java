@@ -634,20 +634,20 @@ public class GeneralUtils {
             return null;
         }
         if (adapter.isInstance(sourceObject)) {
-            return (T) sourceObject;
+            return adapter.cast(sourceObject);
         }
 
         if (sourceObject instanceof IAdaptable) {
             IAdaptable adaptable = (IAdaptable) sourceObject;
 
-            Object result = adaptable.getAdapter(adapter);
+            T result = adaptable.getAdapter(adapter);
             if (result != null) {
                 // Sanity-check
                 if (!adapter.isInstance(result)) {
                     throw new AssertionFailedException(adaptable.getClass().getName() + ".getAdapter(" + adapter.getName() + ".class) returned " //$NON-NLS-1$//$NON-NLS-2$
                         + result.getClass().getName() + " that is not an instance the requested type"); //$NON-NLS-1$
                 }
-                return (T) result;
+                return result;
             }
         }
 
@@ -676,7 +676,7 @@ public class GeneralUtils {
         return adapt(sourceObject, adapter, true);
     }
 
-    private static Object queryAdapterManager(Object sourceObject, String adapterId, boolean allowActivation) {
+    public static Object queryAdapterManager(Object sourceObject, String adapterId, boolean allowActivation) {
         Object result;
         if (allowActivation) {
             result = AdapterManager.getDefault().loadAdapter(sourceObject, adapterId);

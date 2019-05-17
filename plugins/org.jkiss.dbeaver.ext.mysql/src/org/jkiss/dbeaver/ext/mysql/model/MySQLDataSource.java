@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.gis.GisConstants;
+import org.jkiss.dbeaver.model.gis.SpatialDataProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -615,6 +617,17 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             return adapter.cast(helpProvider);
         } else if (adapter == DBAServerSessionManager.class) {
             return adapter.cast(new MySQLSessionManager(this));
+        } else if (adapter == SpatialDataProvider.class) {
+            return adapter.cast(new SpatialDataProvider() {
+                @Override
+                public boolean isFlipCoordinates() {
+                    return true;
+                }
+                @Override
+                public int getDefaultSRID() {
+                    return GisConstants.DEFAULT_SRID;
+                }
+            });
         }
         return super.getAdapter(adapter);
     }

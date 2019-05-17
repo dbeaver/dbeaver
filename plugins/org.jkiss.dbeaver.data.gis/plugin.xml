@@ -2,4 +2,23 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <!-- Spatial transformer -->
+        <transformer
+            class="org.jkiss.dbeaver.data.gis.handlers.GeometryAttributeTransformer"
+            id="GeometryAttributeTransformer"
+            name="Geometry"
+            description="Shows string (WKT) or binary (WKB) value as Geometry (spatial data type)"
+            applyByDefault="false"
+            custom="true">
+            <type kind="STRING"/>
+            <type kind="BINARY"/>
+            <propertyGroup label="Properties">
+                <property id="srid" label="SRID" type="string" description="CRS identifier of source value" defaultValue="4326" required="false" validValues=""/>
+                <property id="invertCoordinates" label="Invert coordinates" type="boolean" description="Invert latitude/longitude coordinates" defaultValue="false" required="false"/>
+            </propertyGroup>
+        </transformer>
+
+    </extension>
+
 </plugin>

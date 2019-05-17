@@ -101,7 +101,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         this();
         this.dataSourceDescriptor = dataSourceDescriptor;
 
-        bootstrapQueries = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries();
+        bootstrapQueries = new ArrayList<>(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries());
         ignoreBootstrapErrors = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().isIgnoreErrors();
     }
 

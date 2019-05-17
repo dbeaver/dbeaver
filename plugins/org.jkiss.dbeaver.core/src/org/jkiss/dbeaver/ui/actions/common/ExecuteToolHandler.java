@@ -22,9 +22,9 @@ import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.tools.ToolDescriptor;
+import org.jkiss.dbeaver.tools.registry.ToolDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -55,7 +55,7 @@ public class ExecuteToolHandler implements IActionDelegate
     private void executeTool(IWorkbenchPart part, Collection<DBSObject> objects)
     {
         try {
-            IExternalTool toolInstance = tool.createTool();
+            IUserInterfaceTool toolInstance = tool.createTool();
             toolInstance.execute(window, part, objects);
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Tool error", "Error executing tool '" + tool.getLabel() + "'", e);

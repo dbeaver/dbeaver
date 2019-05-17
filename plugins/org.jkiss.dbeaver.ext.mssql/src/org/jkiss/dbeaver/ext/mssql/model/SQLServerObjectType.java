@@ -23,6 +23,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Object type
  */
@@ -113,4 +117,13 @@ public enum SQLServerObjectType implements DBSObjectType {
         }
     }
 
+    public static List<SQLServerObjectType> getTypesForClass(Class<?> theClass) {
+        List<SQLServerObjectType> result = new ArrayList<>();
+        for (SQLServerObjectType ot : SQLServerObjectType.values()) {
+            if (ot.theClass == theClass) {
+                result.add(ot);
+            }
+        }
+        return result;
+    }
 }

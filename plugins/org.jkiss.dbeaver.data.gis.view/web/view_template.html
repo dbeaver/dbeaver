@@ -10,6 +10,11 @@
     <script src="inc/wkx.min.js"></script>
 
     <style>
+        .leaflet-touch .leaflet-control-layers-toggle {
+            background-image: url(inc/layers.png);
+            width: 30px;
+            height: 30px;
+	    }
     </style>
 </head>
 
@@ -22,7 +27,7 @@
         var geomSRID = ${geomSRID};
 
         var wkx = require('wkx');
-        var geoMap = L.map('gisMap'); //.setView([51.505, -0.09], 13);
+        var geoMap = L.map('gisMap');
 
         if (${showMap}) {
             L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {

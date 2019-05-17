@@ -44,6 +44,11 @@ public class SQLEditorMessages extends NLS {
     public static String dialog_sql_param_hide_checkbox_tip;
     public static String dialog_sql_param_hint;
 
+    public static String editor_file_delete_error_title;
+    public static String editor_file_delete_error_text;
+    public static String editor_file_delete_confirm_delete_text;
+    public static String editor_file_delete_confirm_delete_title;
+
     public static String editor_query_log_viewer_draw_text_type_qury_part;
 
 	public static String editor_sql_preference;

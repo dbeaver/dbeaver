@@ -25,6 +25,10 @@
             <adapter type="org.eclipse.core.resources.IFolder"/>
             <adapter type="org.eclipse.ui.model.IWorkbenchAdapter"/>
         </factory>
+
+        <factory adaptableType="org.jkiss.dbeaver.model.struct.DBSObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorConfiguratorFactory">
+            <adapter type="org.jkiss.dbeaver.model.edit.DBEObjectConfigurator"/>
+        </factory>
     </extension>
 
     <extension point="org.eclipse.ui.views">
@@ -92,6 +96,25 @@
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
+            namespace="org.jkiss.dbeaver.core.global"
+            properties="standalone,hasActiveProject,hasMultipleProjects"
+            type="java.lang.Object"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+            namespace="org.jkiss.dbeaver.core.object"
+            properties="canOpen,canCreateSingle,canCreateMulti,canPaste,canDelete,canRename,canMoveUp,canMoveDown,canFilter,canFilterObject,hasFilter"
+            type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ToolsPropertyTester"
+            namespace="org.jkiss.dbeaver.core.tools"
+            properties="hasTools"
+            type="org.eclipse.ui.IWorkbenchPart"/>
+
         <propertyTester
             class="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
             id="org.jkiss.dbeaver.ui.navigator.ResourcePropertyTester"
@@ -699,6 +722,29 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
+            <command commandId="org.jkiss.dbeaver.core.object.create">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.canCreateSingle"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <menu id="dbeaver-menu-create" label="%menu.create.label">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.canCreateMulti"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+                <dynamic id="org.jkiss.dbeaver.core.menu.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew$MenuCreateContributor"/>
+            </menu>
+        </menuContribution>
 
     </extension>
 

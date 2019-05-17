@@ -44,15 +44,6 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     implements DBEObjectRenamer<GenericTableColumn>, DBEObjectReorderer<GenericTableColumn>
 {
 
-    protected final ColumnModifier<GenericTableColumn> FBDefaultModifier = (monitor, column, sql, command) -> {
-        if (CommonUtils.isEmpty(command.getObject().getDefaultValue())) {
-            sql.append(" DROP DEFAULT");
-        } else {
-            sql.append(" SET DEFAULT ");
-            DefaultModifier.appendModifier(monitor, column, sql, command);
-        }
-    };
-
     @Override
     public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTable owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options)
     {
@@ -70,7 +61,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
         // According to SQL92 DEFAULT comes before constraints
-        return new ColumnModifier[] {DataTypeModifier, FBDefaultModifier, NotNullModifier};
+        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NotNullModifier};
     }
 
     /**

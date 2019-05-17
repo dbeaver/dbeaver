@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.model.edit;
 
-import org.jkiss.dbeaver.model.DBPObject;
-
 /**
  * Editors editor
  */
@@ -27,7 +25,5 @@ public interface DBERegistry {
     DBEObjectManager<?> getObjectManager(Class<?> aClass);
 
     <T> T getObjectManager(Class<?> objectClass, Class<T> managerType);
-
-    DBEObjectConfigurator<?, ?> getObjectConfigurator(DBPObject object);
 
 }

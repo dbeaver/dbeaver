@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.net.sshj.feature"
       label="%featureName"
-      version="1.0.29.qualifier"
+      version="1.0.30.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -18,7 +18,7 @@
    </license>
 
    <requires>
-      <import feature="org.jkiss.dbeaver.core.feature" version="1.0.0"/>
+      <import feature="org.jkiss.dbeaver.runtime.feature" version="1.0.0"/>
    </requires>
 
    <plugin id="org.jkiss.dbeaver.net.ssh.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

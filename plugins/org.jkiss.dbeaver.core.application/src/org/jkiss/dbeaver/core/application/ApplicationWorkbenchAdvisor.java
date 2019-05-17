@@ -55,9 +55,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     private static final String PERSPECTIVE_ID = DBeaverPerspective.PERSPECTIVE_ID;
     public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$
 
-    private static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
-    private static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
-    protected static final String MYLYN_PREF_PAGE_ID = "org.eclipse.mylyn.preferencePages.Mylyn";
+    protected static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
+    protected static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
+    //protected static final String MYLYN_PREF_PAGE_ID = "org.eclipse.mylyn.preferencePages.Mylyn";
 
     private static final String[] EXCLUDE_PREF_PAGES = {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
@@ -67,14 +67,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
-        MYLYN_PREF_PAGE_ID,
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
 
         // Disable Install/Update
         //"org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",
 
         // Team preferences - not needed in CE
-        "org.eclipse.team.ui.TeamPreferences",
-
+        //"org.eclipse.team.ui.TeamPreferences",
     };
     //private DBPPreferenceListener settingsChangeListener;
 

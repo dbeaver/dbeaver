@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
@@ -104,8 +105,10 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         this.tree = createNavigatorTree(parent, getRootNode());
 
         getViewSite().setSelectionProvider(tree.getViewer());
-        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
-        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
+        getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+        getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
+//        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+//        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
     }
 
     private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)

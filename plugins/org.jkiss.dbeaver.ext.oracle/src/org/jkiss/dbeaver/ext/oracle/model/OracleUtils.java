@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -145,7 +146,7 @@ public class OracleUtils {
         } catch (SQLException e) {
             if (object instanceof OracleTablePhysical) {
                 log.error("Error generating Oracle DDL. Generate default.", e);
-                return JDBCUtils.generateTableDDL(monitor, object, options, true);
+                return DBStructUtils.generateTableDDL(monitor, object, options, true);
             } else {
                 throw new DBException(e, dataSource);
             }

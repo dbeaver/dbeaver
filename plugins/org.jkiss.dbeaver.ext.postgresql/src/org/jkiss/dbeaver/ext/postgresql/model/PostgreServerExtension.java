@@ -96,6 +96,8 @@ public interface PostgreServerExtension
 
     List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
 
+    boolean supportsExplainPlan();
+
     boolean supportsExplainPlanXML();
 
     boolean supportsExplainPlanVerbose();

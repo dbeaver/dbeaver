@@ -142,6 +142,21 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsExplainPlan() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsExplainPlanVerbose() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsExplainPlanXML() {
+        return false;
+    }
+
+    @Override
     public List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase table, boolean includeNestedObjects) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load CockroachDB table grants")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS ON " + table.getFullyQualifiedName(DBPEvaluationContext.DDL))) {

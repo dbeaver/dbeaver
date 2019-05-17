@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
@@ -101,7 +102,22 @@ public class UIServiceSQLImpl implements UIServiceSQL {
 
         editorPH.addDisposeListener(e -> editor.dispose());
 
-        return editor.getTextViewer();
+        TextViewer textViewer = editor.getTextViewer();
+        textViewer.setData("editor", editor);
+
+        return textViewer;
+    }
+
+    @Override
+    public void setSQLPanelText(Object panelObject, String sqlText) {
+        if (panelObject instanceof TextViewer) {
+            Object editor = ((TextViewer) panelObject).getData("editor");
+            if (editor instanceof SQLEditorBase) {
+                ((SQLEditorBase) editor).setInput(
+                    new StringEditorInput("SQL", sqlText, true, GeneralUtils.getDefaultFileEncoding()));
+                ((SQLEditorBase) editor).reloadSyntaxRules();
+            }
+        }
     }
 
     @Override

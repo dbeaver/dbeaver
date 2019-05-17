@@ -143,7 +143,7 @@ class DataFilterRegistry {
         }
     }
 
-    private String makeObjectId(DBSObject object) {
+    public static String makeObjectId(DBSObject object) {
         DBSObject[] path = DBUtils.getObjectPath(object, true);
         StringBuilder objName = new StringBuilder();
         for (DBSObject p : path) {

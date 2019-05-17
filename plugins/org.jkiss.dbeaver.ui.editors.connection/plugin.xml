@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension-point id="org.jkiss.dbeaver.dataSourceView" name="%extension-point.org.jkiss.dbeaver.dataSourceView.name" schema="schema/org.jkiss.dbeaver.dataSourceView.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.ui.propertyConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.propertyConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.propertyConfigurator.exsd"/>
+
+</plugin>

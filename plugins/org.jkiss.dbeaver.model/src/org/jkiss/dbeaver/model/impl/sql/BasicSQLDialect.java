@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
@@ -249,7 +250,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Override
     public String[] getParametersPrefixes() {
-        return new String[]{String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)};
+        return new String[0];//{String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)};
     }
 
     @Override

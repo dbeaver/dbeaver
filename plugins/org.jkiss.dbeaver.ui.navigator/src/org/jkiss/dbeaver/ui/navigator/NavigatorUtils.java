@@ -220,7 +220,7 @@ public class NavigatorUtils {
             if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
                 manager.add(new Separator());
                 // Add properties button
-                if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
+                if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement()) && selection.getFirstElement() instanceof DBNResource) {
                     manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
                 }
 

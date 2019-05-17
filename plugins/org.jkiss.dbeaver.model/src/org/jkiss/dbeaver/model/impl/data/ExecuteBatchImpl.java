@@ -148,7 +148,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     }
                 }
                 if (statement == null || !reuse) {
-                    statement = prepareStatement(session, rowValues);
+                    statement = prepareStatement(session, handlers, rowValues);
                     statistics.setQueryText(statement.getQueryString());
                     statistics.addStatementsCount();
                 }
@@ -324,7 +324,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     }
 
     @NotNull
-    protected abstract DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException;
+    protected abstract DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues) throws DBCException;
 
     protected abstract void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException;
 

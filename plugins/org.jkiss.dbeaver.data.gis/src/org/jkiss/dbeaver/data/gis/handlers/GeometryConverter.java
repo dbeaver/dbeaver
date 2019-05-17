@@ -1,8 +1,8 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
-import com.vividsolutions.jts.geom.*;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory;
-import com.vividsolutions.jts.io.*;
+import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory;
+import org.locationtech.jts.io.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,10 +40,18 @@ public class GeometryConverter {
         return INSTANCE;
     }
 
+    public Geometry fromWKT(String str) {
+        try {
+            return new WKTReader().read(str);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     /**
      * Convert byte array containing SRID + WKB Geometry into Geometry object
      */
-    public Geometry from(byte[] bytes) {
+    public Geometry fromWKB(byte[] bytes) {
         if (bytes == null) {
             return null;
         }
@@ -66,18 +74,10 @@ public class GeometryConverter {
         }
     }
 
-    public Geometry from(String str) {
-        try {
-            return new WKTReader().read(str);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     /**
      * Convert Geometry object into byte array containing SRID + WKB Geometry
      */
-    public byte[] to(Geometry userObject) {
+    public byte[] toWKB(Geometry userObject) {
         if (userObject == null) {
             return null;
         }

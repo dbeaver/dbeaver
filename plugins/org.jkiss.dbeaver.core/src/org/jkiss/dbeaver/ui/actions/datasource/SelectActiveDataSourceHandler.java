@@ -95,11 +95,13 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
             connectionName = dataSource.getName();
             connectionIcon = dataSource.getDriver().getIcon();
         }
-        GC gc = new GC(workbenchWindow.getShell());
-        try {
-            connectionName = TextUtils.getShortText(gc, connectionName, 200);
-        } finally {
-            gc.dispose();
+        if (workbenchWindow != null) {
+            GC gc = new GC(workbenchWindow.getShell());
+            try {
+                connectionName = TextUtils.getShortText(gc, connectionName, 200);
+            } finally {
+                gc.dispose();
+            }
         }
         element.setText(connectionName);
         element.setIcon(DBeaverIcons.getImageDescriptor(connectionIcon));
