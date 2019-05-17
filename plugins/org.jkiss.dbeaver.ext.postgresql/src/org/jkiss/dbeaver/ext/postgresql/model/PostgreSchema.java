@@ -488,6 +488,9 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema postgreSchema, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.oid,c.*,d.description");
+            if (getDataSource().isServerVersionAtLeast(10, 0)) {
+                sql.append(",pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr");
+            }
             sql.append("\nFROM pg_catalog.pg_class c\n")
                 .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n")
                 .append("WHERE c.relnamespace=? AND c.relkind not in ('i','c')")
@@ -503,7 +506,11 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected PostgreTableBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            final String kindString = JDBCUtils.safeGetString(dbResult, "relkind");
+            final String kindString = getDataSource().isServerVersionAtLeast(10, 0) 
+                                      && JDBCUtils.safeGetString(dbResult, "relkind").equals(PostgreClass.RelKind.r.getCode()) 
+                                      && JDBCUtils.safeGetBoolean(dbResult, "relispartition") 
+                                      ? PostgreClass.RelKind.R.getCode() : JDBCUtils.safeGetString(dbResult, "relkind");
+            
             PostgreClass.RelKind kind = PostgreClass.RelKind.valueOf(kindString);
             return owner.getDataSource().getServerType().createRelationOfClass(PostgreSchema.this, kind, dbResult);
         }
