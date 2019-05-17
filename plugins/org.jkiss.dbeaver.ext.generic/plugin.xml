@@ -719,6 +719,7 @@
 
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="supports-references" value="false"/>
+                    <parameter name="schema-filters-enabled" value="true"/>
                 </driver>
 
                 <!-- Cloudera -->

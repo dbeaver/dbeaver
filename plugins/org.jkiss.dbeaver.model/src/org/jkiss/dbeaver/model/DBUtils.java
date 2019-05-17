@@ -150,7 +150,9 @@ public final class DBUtils {
         }
         if (!hasBadChars && caseSensitiveNames) {
             // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
-            if (sqlDialect.supportsQuotedMixedCase()) {
+            // Disable supportsQuotedMixedCase checking. Let's quote identifiers always if storage case doesn't match actual case
+            /*if (sqlDialect.supportsQuotedMixedCase()) */
+            {
                 // See how unquoted idents are stored
                 // If passed identifier case differs from unquoted then we need to escape it
                 if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
