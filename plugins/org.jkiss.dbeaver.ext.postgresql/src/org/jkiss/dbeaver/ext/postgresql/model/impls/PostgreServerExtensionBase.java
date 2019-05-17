@@ -160,6 +160,8 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r) {
             return new PostgreTableRegular(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.R) {
+                return new PostgreTablePartition(schema, dbResult);    
         } else if (kind == PostgreClass.RelKind.v) {
             return new PostgreView(schema, dbResult);
         } else if (kind == PostgreClass.RelKind.m) {
