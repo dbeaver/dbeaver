@@ -94,7 +94,7 @@ public class OracleDataSource extends JDBCDataSource
         return super.getDataSourceFeature(featureId);
     }
 
-    public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @NotNull String schemaName, @NotNull String viewName) {
+    public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @Nullable String schemaName, @NotNull String viewName) {
         viewName = viewName.toUpperCase();
         Boolean available;
         synchronized (availableViews) {
