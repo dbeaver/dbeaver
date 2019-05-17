@@ -452,7 +452,7 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
-                        <test property="org.jkiss.dbeaver.core.datasource.supportsTransactions" value="true"/>
+                        <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
                     </adapt>
                 </with>
             </enabledWhen>
