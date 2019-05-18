@@ -116,19 +116,19 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         Display.setAppName(GeneralUtils.getProductName());
 
         Location instanceLoc = Platform.getInstanceLocation();
-        if (!instanceLoc.isSet()) {
-            if (!setDefaultWorkspacePath(instanceLoc)) {
-                return IApplication.EXIT_OK;
-            }
-        }
         // Lock the workspace
         try {
-            // Check for locked workspace
-            if (instanceLoc.isLocked()) {
+            if (!instanceLoc.isSet()) {
+                if (!setDefaultWorkspacePath(instanceLoc)) {
+                    return IApplication.EXIT_OK;
+                }
+            } else if (instanceLoc.isLocked()) {
+                // Check for locked workspace
                 if (!setDefaultWorkspacePath(instanceLoc)) {
                     return IApplication.EXIT_OK;
                 }
             }
+
             // Lock the workspace
             if (!instanceLoc.isLocked()) {
                 instanceLoc.lock();
