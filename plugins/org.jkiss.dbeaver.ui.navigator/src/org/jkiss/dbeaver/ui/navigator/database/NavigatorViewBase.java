@@ -284,6 +284,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             case ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS:
             case NavigatorPreferences.NAVIGATOR_SORT_ALPHABETICALLY:
             case NavigatorPreferences.NAVIGATOR_SORT_FOLDERS_FIRST:
+            case NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES:
             case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:
                 tree.getViewer().refresh();
                 break;
