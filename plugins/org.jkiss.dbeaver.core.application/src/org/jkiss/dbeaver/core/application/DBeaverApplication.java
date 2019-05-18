@@ -55,7 +55,6 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
 
@@ -121,6 +120,21 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             if (!setDefaultWorkspacePath(instanceLoc)) {
                 return IApplication.EXIT_OK;
             }
+        }
+        // Lock the workspace
+        try {
+            // Check for locked workspace
+            if (instanceLoc.isLocked()) {
+                if (!setDefaultWorkspacePath(instanceLoc)) {
+                    return IApplication.EXIT_OK;
+                }
+            }
+            // Lock the workspace
+            if (!instanceLoc.isLocked()) {
+                instanceLoc.lock();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         // Create display
@@ -287,7 +301,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
                 defaultHomePath);
             boolean keepTrying = true;
             while (keepTrying) {
-                if (!instanceLoc.set(defaultHomeURL, true)) {
+                if (instanceLoc.isLocked() || !instanceLoc.set(defaultHomeURL, true)) {
                     if (reuseWorkspace) {
                         instanceLoc.set(defaultHomeURL, false);
                         keepTrying = false;
