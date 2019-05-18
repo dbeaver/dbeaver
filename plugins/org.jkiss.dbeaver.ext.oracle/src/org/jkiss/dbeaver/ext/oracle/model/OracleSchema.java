@@ -499,7 +499,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     /**
-     * Index cache implementation
+     * Constraint cache implementation
      */
     class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableConstraint, OracleTableConstraintColumn> {
         ConstraintCache()
@@ -513,22 +513,61 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
-            sql
-                .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\n" +
-                    "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION," +
-                    "col.COLUMN_NAME,col.POSITION\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") +
-                    " c, " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\n" +
-                    "WHERE c.CONSTRAINT_TYPE<>'R' AND c.OWNER=? AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME");
-            if (forTable != null) {
-                sql.append(" AND c.TABLE_NAME=?");
-            }
-            sql.append("\nORDER BY c.CONSTRAINT_NAME,col.POSITION");
-
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, OracleSchema.this.getName());
-            if (forTable != null) {
-                dbStat.setString(2, forTable.getName());
+            JDBCPreparedStatement dbStat;
+            
+            if (owner.getDataSource().isAtLeastV10() && forTable != null) {
+                
+                 sql.append("SELECT\r\n" + 
+                         "    c.TABLE_NAME,\r\n" + 
+                         "    c.CONSTRAINT_NAME,\r\n" + 
+                         "    c.CONSTRAINT_TYPE,\r\n" + 
+                         "    c.STATUS,\r\n" + 
+                         "    c.SEARCH_CONDITION,\r\n" + 
+                         "    (\r\n" + 
+                         "        SELECT LTRIM(MAX(SYS_CONNECT_BY_PATH(cname || ':' || NVL(p,1),','))    KEEP (DENSE_RANK LAST ORDER BY curr),',') \r\n" + 
+                         "        FROM   (SELECT \r\n" + 
+                         "                       col.CONSTRAINT_NAME cn,col.POSITION p,col.COLUMN_NAME cname,\r\n" + 
+                         "                       ROW_NUMBER() OVER (PARTITION BY col.CONSTRAINT_NAME ORDER BY col.POSITION) AS curr,\r\n" + 
+                         "                       ROW_NUMBER() OVER (PARTITION BY col.CONSTRAINT_NAME ORDER BY col.POSITION) -1 AS prev\r\n" + 
+                         "                FROM   DBA_CONS_COLUMNS col \r\n" + 
+                         "                WHERE  col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME \r\n" + 
+                         "                )   GROUP BY cn CONNECT BY prev = PRIOR curr AND cn = PRIOR cn START WITH curr = 1      \r\n" + 
+                         "        ) COLUMN_NAMES_NUMS\r\n" + 
+                         "FROM\r\n" + 
+                         "    ALL_CONSTRAINTS c\r\n" + 
+                         "WHERE\r\n" + 
+                         "    c.CONSTRAINT_TYPE <> 'R'\r\n" + 
+                         "    AND c.OWNER = ?\r\n" + 
+                         "    AND c.TABLE_NAME = ?");   
+                 // 1- owner
+                 // 2-table name
+                 // 3-owner
+                 // 4-table name
+                 
+                 dbStat = session.prepareStatement(sql.toString());
+                 dbStat.setString(1, OracleSchema.this.getName());
+                 dbStat.setString(2, forTable.getName());
+                 dbStat.setString(3, OracleSchema.this.getName());
+                 dbStat.setString(4, forTable.getName());
+                
+            } else {
+                sql
+                    .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\n" +
+                        "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION," +
+                        "col.COLUMN_NAME,col.POSITION\n" +
+                        "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") +
+                        " c, " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\n" +
+                        "WHERE c.CONSTRAINT_TYPE<>'R' AND c.OWNER=? AND c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME");
+                if (forTable != null) {
+                    sql.append(" AND c.TABLE_NAME=?");
+                }
+                sql.append("\nORDER BY c.CONSTRAINT_NAME,col.POSITION");
+    
+                dbStat = session.prepareStatement(sql.toString());
+                dbStat.setString(1, OracleSchema.this.getName());
+                if (forTable != null) {
+                    dbStat.setString(2, forTable.getName());
+                }
             }
             return dbStat;
         }
@@ -548,11 +587,38 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             OracleTableBase parent, OracleTableConstraint object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            final OracleTableColumn tableColumn = getTableColumn(session, parent, dbResult, JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME"));
-            return tableColumn == null ? null : new OracleTableConstraintColumn[] { new OracleTableConstraintColumn(
-                object,
-                tableColumn,
-                JDBCUtils.safeGetInt(dbResult, "POSITION")) };
+            //resultset has field COLUMN_NAMES_NUMS - special query was used
+            if (JDBCUtils.safeGetString(dbResult, "COLUMN_NAMES_NUMS") != null) {
+                
+                List<SpecialPosition>  positions = parsePositions(JDBCUtils.safeGetString(dbResult, "COLUMN_NAMES_NUMS"));
+                
+                OracleTableConstraintColumn[] result = new OracleTableConstraintColumn[positions.size()];
+                
+                for(int idx = 0;idx < positions.size();idx++) {
+                    
+                    final OracleTableColumn column = getTableColumn(session, parent, dbResult,positions.get(idx).getColumn());
+                    
+                    if (column == null) {
+                        continue;
+                    }
+                    
+                    result[idx] =  new OracleTableConstraintColumn(
+                            object,
+                            column,
+                            positions.get(idx).getPos());
+                }
+                
+                return result;
+                
+                
+            } else {
+                
+                final OracleTableColumn tableColumn = getTableColumn(session, parent, dbResult, JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME"));
+                return tableColumn == null ? null : new OracleTableConstraintColumn[] { new OracleTableConstraintColumn(
+                    object,
+                    tableColumn,
+                    JDBCUtils.safeGetInt(dbResult, "POSITION")) };
+            }
         }
 
         @Override
