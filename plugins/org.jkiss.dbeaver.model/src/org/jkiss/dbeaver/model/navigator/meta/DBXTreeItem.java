@@ -86,7 +86,7 @@ public class DBXTreeItem extends DBXTreeNode
     }
 
     @Override
-    public String getChildrenType(DBPDataSource dataSource, String locale)
+    public String getChildrenType(@Nullable DBPDataSource dataSource, String locale)
     {
         final String term = getNodeTerm(dataSource, label, true);
         if (term != null) {
@@ -96,7 +96,7 @@ public class DBXTreeItem extends DBXTreeNode
     }
 
     @Override
-    public String getNodeType(@NotNull DBPDataSource dataSource, @Nullable String locale)
+    public String getNodeType(@Nullable DBPDataSource dataSource, @Nullable String locale)
     {
         final String term = getNodeTerm(dataSource, itemLabel, false);
         if (term != null) {
@@ -105,7 +105,7 @@ public class DBXTreeItem extends DBXTreeNode
         return itemLabel;
     }
 
-    private String getNodeTerm(DBPDataSource dataSource, String termId, boolean multiple)
+    private String getNodeTerm(@Nullable DBPDataSource dataSource, String termId, boolean multiple)
     {
         if (termId.startsWith("#") && dataSource instanceof DBPTermProvider) {
             final String term = ((DBPTermProvider) dataSource).getObjectTypeTerm(getPath(), termId.substring(1), multiple);

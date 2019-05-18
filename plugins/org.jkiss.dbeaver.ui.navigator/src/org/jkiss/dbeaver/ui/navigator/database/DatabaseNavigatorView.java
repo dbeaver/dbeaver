@@ -67,6 +67,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     {
         UIUtils.asyncExec(() -> {
             getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));
+            getSite().getSelectionProvider().setSelection(getNavigatorTree().getViewer().getSelection());
         });
 
     }

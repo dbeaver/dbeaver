@@ -92,12 +92,7 @@ public class NavigatorHandlerLocalFolderCreate extends AbstractHandler {
         if (parentFolder != null && activePart instanceof NavigatorViewBase) {
             final TreeViewer viewer = ((NavigatorViewBase) activePart).getNavigatorViewer();
             if (viewer != null) {
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        viewer.expandToLevel(parentFolder, 1);
-                    }
-                });
+                UIUtils.asyncExec(() -> viewer.expandToLevel(parentFolder, 1));
             }
         }
         DBNModel.updateConfigAndRefreshDatabases(databases);
