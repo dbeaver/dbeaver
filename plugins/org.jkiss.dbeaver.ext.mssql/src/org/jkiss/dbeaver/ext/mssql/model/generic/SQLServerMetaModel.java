@@ -232,9 +232,8 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'"
                 :
                 "SELECT sc.text\n" +
-                "FROM " + systemSchema + ".sysobjects so\n" +
-                "INNER JOIN " + systemSchema + ".syscomments sc on sc.id = so.id\n" +
-                "WHERE user_name(so.uid)=? AND so.name=?";
+                "FROM " + systemSchema + ".sysobjects so, " + systemSchema + ".syscomments sc\n" +
+                "WHERE user_name(so.uid)=? AND so.name=? and sc.id = so.id";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(mdQuery)) {
                 if (serverType == ServerType.SYBASE) {
                     dbStat.setString(1, schema);
