@@ -47,6 +47,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button showObjectTipsCheck;
     private Button sortCaseInsensitiveCheck;
     private Button sortFoldersFirstCheck;
+    private Button colorAllNodesCheck;
     private Button showResourceFolderPlaceholdersCheck;
     private Button groupByDriverCheck;
     private Text longListFetchSizeText;
@@ -82,6 +83,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_group_database_by_driver, "", false, 2);
             groupByDriverCheck.setEnabled(false);
 
+            colorAllNodesCheck = UIUtils.createCheckbox(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_color_all_nodes, UINavigatorMessages.pref_page_database_general_label_color_all_nodes_tip, false, 2);
+
             longListFetchSizeText = UIUtils.createLabelText(navigatorGroup, UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size, "", SWT.BORDER);
             longListFetchSizeText.setToolTipText(UINavigatorMessages.pref_page_database_general_label_long_list_fetch_size_tip);
             longListFetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
@@ -112,6 +115,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         showObjectTipsCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS));
         sortCaseInsensitiveCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
         sortFoldersFirstCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
+        colorAllNodesCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES));
         showResourceFolderPlaceholdersCheck.setSelection(store.getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS));
         groupByDriverCheck.setSelection(store.getBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER));
         longListFetchSizeText.setText(store.getString(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
@@ -130,6 +134,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, showObjectTipsCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES, colorAllNodesCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS, showResourceFolderPlaceholdersCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE, longListFetchSizeText.getText());

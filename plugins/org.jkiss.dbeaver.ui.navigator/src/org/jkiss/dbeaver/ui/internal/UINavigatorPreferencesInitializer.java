@@ -42,6 +42,7 @@ public class UINavigatorPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES, false);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, false);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, false);
 
