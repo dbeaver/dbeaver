@@ -56,9 +56,12 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     private static final Log log = Log.getLog(JDBCCollection.class);
 
     private Object[] contents;
-    private final DBSDataType type;
-    private final DBDValueHandler valueHandler;
+    private DBSDataType type;
+    private DBDValueHandler valueHandler;
     private boolean modified;
+
+    public JDBCCollection() {
+    }
 
     public JDBCCollection(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents) {
         this.type = type;
@@ -157,6 +160,9 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     }
 
     public Array getArrayValue() throws DBCException {
+        if (contents == null) {
+            return null;
+        }
         Object[] attrs = new Object[contents.length];
         for (int i = 0; i < contents.length; i++) {
             Object attr = contents[i];
@@ -210,7 +216,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         try {
             if (elementType == null) {
                 if (array == null) {
-                    return null;
+                    return new JDBCCollection();
                 }
                 try {
                     return makeCollectionFromResultSet(session, array, null);
