@@ -75,16 +75,16 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         sql.append("CREATE DATABASE ").append(DBUtils.getQuotedIdentifier(database));
 
         if (database.getInitialOwner() != null) {
-            sql.append("\nOWNER = ").append(database.getInitialOwner().getName());
+            sql.append("\nOWNER = ").append(DBUtils.getQuotedIdentifier(database.getInitialOwner()));
         }
         if (!CommonUtils.isEmpty(database.getTemplateName())) {
-            sql.append("\nTEMPLATE = ").append(database.getTemplateName());
+            sql.append("\nTEMPLATE = ").append(DBUtils.getQuotedIdentifier(database.getDataSource(), database.getTemplateName()));
         }
         if (database.getInitialEncoding() != null) {
             sql.append("\nENCODING = '").append(database.getInitialEncoding().getName()).append("'");
         }
         if (database.getInitialTablespace() != null) {
-            sql.append("\nTABLESPACE = ").append(database.getInitialTablespace().getName());
+            sql.append("\nTABLESPACE = ").append(DBUtils.getQuotedIdentifier(database.getDataSource(), database.getInitialTablespace().getName()));
         }
         actions.add(new CreateDatabaseAction(database, sql));
     }
