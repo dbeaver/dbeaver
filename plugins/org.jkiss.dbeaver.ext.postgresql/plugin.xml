@@ -387,6 +387,8 @@
                         <file type="lib" name="libwinpthread-1.dll"/>
                         <file type="lib" name="ssleay32.dll"/>
                         <file type="lib" name="libpq.dll"/>
+                        <file type="lib" name="zlib1.dll"/>
+                        <file type="lib" name="libeay32.dll"/>
                     </dist>
                 </client>
             </nativeClients>
