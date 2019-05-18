@@ -133,7 +133,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public boolean allowsChildren()
     {
-        return !dataSources.isEmpty();
+        return !dataSources.isEmpty() || !dataSourceRegistry.getRootFolders().isEmpty();
     }
 
     @Override
