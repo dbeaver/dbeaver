@@ -22,6 +22,7 @@
     <includes id="org.jkiss.dbeaver.ui.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.db.debug.feature" version="0.0.0"/>
 
     <plugin id="org.jkiss.dbeaver.core.eclipse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
