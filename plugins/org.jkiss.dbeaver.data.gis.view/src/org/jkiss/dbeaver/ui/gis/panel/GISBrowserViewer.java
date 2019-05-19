@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryViewer;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,15 +80,28 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
             }
 
             IResultSetSelection selection = resultSetController.getSelection();
-            for (Object cell : selection.toArray()) {
-                DBDAttributeBinding attr = selection.getElementAttribute(cell);
-                ResultSetRow row = selection.getElementRow(cell);
-                Object cellValue = resultSetController.getModel().getCellValue(attr, row);
-                DBGeometry geometry = GisTransformUtils.getGeometryValueFromObject(
-                    valueController.getDataController().getDataContainer(),
-                    valueController.getValueHandler(),
-                    valueController.getValueType(),
-                    cellValue);
+            Object[] selectedValues = selection.toArray();
+            if (ArrayUtils.isEmpty(selectedValues)) {
+                selectedValues = new Object[] { value };
+            }
+            for (Object cell : selectedValues) {
+                DBGeometry geometry;
+                DBDAttributeBinding attr;
+                ResultSetRow row;
+                if (cell instanceof DBGeometry) {
+                    attr = resultSetController.getActivePresentation().getCurrentAttribute();
+                    row = resultSetController.getCurrentRow();
+                    geometry = (DBGeometry) cell;
+                } else {
+                    attr = selection.getElementAttribute(cell);
+                    row = selection.getElementRow(cell);
+                    Object cellValue = resultSetController.getModel().getCellValue(attr, row);
+                    geometry = GisTransformUtils.getGeometryValueFromObject(
+                        valueController.getDataController().getDataContainer(),
+                        valueController.getValueHandler(),
+                        valueController.getValueType(),
+                        cellValue);
+                }
 
                 if (geometry != null) {
                     geometries.add(geometry);
