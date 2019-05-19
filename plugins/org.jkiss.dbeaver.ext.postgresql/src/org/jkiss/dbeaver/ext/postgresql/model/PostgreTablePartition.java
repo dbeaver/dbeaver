@@ -18,9 +18,12 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import java.sql.ResultSet;
+import java.util.Map;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 public class PostgreTablePartition extends PostgreTable
@@ -42,6 +45,11 @@ public class PostgreTablePartition extends PostgreTable
 	@Property(category = CAT_PARTITIONING, editable = false, viewable = true, order = 90)
     public String getExpr() {
         return expr;
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return "/*Partition DDL not implemented yet.*/";
     }
 	
 	
