@@ -223,7 +223,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             if (srid == 0) {
                 srid = GeometryDataUtils.getDefaultSRID();
             }
-            if (srid == GeometryDataUtils.getDefaultSRID()) {
+            if (srid == GisConstants.DEFAULT_SRID) {
                 showMap = true;
                 actualSourceSRID = srid;
             } else {

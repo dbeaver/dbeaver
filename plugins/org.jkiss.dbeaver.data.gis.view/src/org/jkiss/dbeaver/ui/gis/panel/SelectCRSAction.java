@@ -72,7 +72,7 @@ class SelectCRSAction extends Action implements IMenuCreator {
             menuManager = new MenuManager();
             menuManager.setRemoveAllWhenShown(true);
             menuManager.addMenuListener(manager -> {
-                menuManager.add(new SetCRSAction(valueEditor, GeometryDataUtils.getDefaultSRID()));
+                menuManager.add(new SetCRSAction(valueEditor, GisConstants.DEFAULT_SRID));
                 menuManager.add(new SetCRSAction(valueEditor, GisConstants.DEFAULT_OSM_SRID));
                 menuManager.add(new Separator());
                 List<Integer> recentSRIDs = GISEditorUtils.getRecentSRIDs();
