@@ -352,7 +352,13 @@ public class Spreadsheet extends LightGrid implements Listener {
         if (oldEditor != null) {
             if (!oldEditor.isDisposed()) {
                 oldEditor.dispose();
-                //UIUtils.asyncExec(this::setFocus);
+                UIUtils.asyncExec(() -> {
+                    if (UIUtils.getActiveWorkbenchWindow().getShell().isFocusControl()) {
+                        // Set focus to spreadsheet only if it was reset to the top Window (MacOS)
+                        // #5949
+                        setFocus();
+                    }
+                });
             }
             tableEditor.setEditor(null);
         }
