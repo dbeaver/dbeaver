@@ -1625,8 +1625,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return foregroundSelected;
             }
             ResultSetRow row = (ResultSetRow) (!controller.isRecordMode() ?  rowElement : colElement);
-            if (row.foreground != null) {
-                return row.foreground;
+            if (row.colorInfo != null) {
+                if (row.colorInfo.cellFgColors != null) {
+                    Color cellFG = row.colorInfo.cellFgColors[((DBDAttributeBinding) (rowElement instanceof DBDAttributeBinding ? rowElement : colElement)).getOrdinalPosition()];
+                    if (cellFG != null) {
+                        return cellFG;
+                    }
+                }
+                if (row.colorInfo.rowForeground != null) {
+                    return row.colorInfo.rowForeground;
+                }
             }
 
             Object value = getCellValue(colElement, rowElement, false);
@@ -1687,8 +1695,16 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return backgroundModified;
             }
 
-            if (row.background != null) {
-                return row.background;
+            if (row.colorInfo != null) {
+                if (row.colorInfo.cellBgColors != null) {
+                    Color cellBG = row.colorInfo.cellBgColors[((DBDAttributeBinding) (rowElement instanceof DBDAttributeBinding ? rowElement : colElement)).getOrdinalPosition()];
+                    if (cellBG != null) {
+                        return cellBG;
+                    }
+                }
+                if (row.colorInfo.rowBackground != null) {
+                    return row.colorInfo.rowBackground;
+                }
             }
 
             Object value = controller.getModel().getCellValue(attribute, row);
