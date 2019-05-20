@@ -759,6 +759,10 @@ public class ResultSetViewer extends Viewer
                     });
                     panelButton.setChecked(panelsVisible && isPanelVisible(panel.getId()));
                 }
+
+                UIUtils.createEmptyLabel(panelSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
+                VerticalButton.create(panelSwitchFolder, SWT.RIGHT | SWT.CHECK, getSite(), ResultSetHandlerMain.CMD_TOGGLE_LAYOUT, false);
+
             }
         } else {
             if (viewerSash != null) {
@@ -1499,6 +1503,7 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            addToolbBarManagerar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
             addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
             addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
