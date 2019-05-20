@@ -93,7 +93,11 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     {
         PostgreViewBase view = (PostgreViewBase)command.getObject();
         actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP " + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
+            new SQLDatabasePersistAction(
+                "Drop view", 
+                "DROP " + view.getViewType() + 
+                    " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : ""))
         );
     }
 
