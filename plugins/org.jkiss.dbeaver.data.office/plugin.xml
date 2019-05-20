@@ -28,6 +28,7 @@
                         <property id="splitSqlText" label="%dataTransfer.processor.xlsx.property.splitSqlText.name" type="boolean" description="%dataTransfer.processor.xlsx.property.splitSqlText.description" defaultValue="false" required="false"/>
                         <property id="splitByRowCount" label="%dataTransfer.processor.xlsx.property.splitByRowCount.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByRowCount.description" defaultValue="1048575" required="false"/>
                         <property id="splitByColNum" label="%dataTransfer.processor.xlsx.property.splitByColNum.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByColNum.description" defaultValue="0" required="false"/>
+                        <property id="dateFormat" label="%dataTransfer.processor.xlsx.property.dateFormat.name" type="string" description="%dataTransfer.processor.xlsx.property.dateFormat.description" defaultValue="m/d/yy" required="false" validValues="m/d/yy,d-mmm-yy,d-mmm,mmm-yy,h:mm AM/PM,h:mm:ss AM/PM,h:mm,h:mm:ss,m/d/yy h:mm"/>
                     </propertyGroup>
             </processor>
          </node>
