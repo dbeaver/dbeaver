@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private static final String PROP_SPLIT_BYROWCOUNT = "splitByRowCount";
     private static final String PROP_SPLIT_BYCOL = "splitByColNum";
+    
+    private static final String PROP_DATE_FORMAT = "dateFormat";
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private boolean showDescription;
@@ -93,12 +96,14 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private boolean booleRedefined;
     private boolean exportSql = false;
     private boolean splitSqlText = false;
+    private String dateFormat="";
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
     private int rowCount = 0;
 
     private XSSFCellStyle style;
+    private XSSFCellStyle styleDate;
     private XSSFCellStyle styleHeader;
 
     private HashMap<Object, Worksheet> worksheets;
@@ -116,6 +121,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_SPLIT_SQLTEXT, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
+        properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
         return properties;
     }
 
@@ -172,6 +178,12 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             splitByCol = (Integer) site.getProperties().get(PROP_SPLIT_BYCOL);
         } catch (Exception e) {
             splitByCol = -1;
+        }
+        
+        try {
+            dateFormat = (String) site.getProperties().get(PROP_DATE_FORMAT);
+        } catch (Exception e) {
+            dateFormat = "";
         }
 
 
@@ -243,6 +255,20 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         style.setBorderBottom(border);
         style.setBorderLeft(border);
         style.setBorderRight(border);
+        
+        styleDate = (XSSFCellStyle) wb.createCellStyle();
+        styleDate.setBorderTop(border);
+        styleDate.setBorderBottom(border);
+        styleDate.setBorderLeft(border);
+        styleDate.setBorderRight(border);
+        
+        if (dateFormat == null || dateFormat.length() == 0) {
+            styleDate.setDataFormat((short)14);
+        } else {
+           styleDate.setDataFormat(
+                wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
+        }
+        
         this.rowCount = 0;
 
         super.init(site);
@@ -466,6 +492,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
                 cell.setCellValue(((Number) row[i]).doubleValue());
 
+            } else if (row[i] instanceof Date) {
+
+                cell.setCellValue((Date) row[i]);
+                cell.setCellStyle(styleDate);
+                
             } else {
 
                 String stringValue = super.getValueDisplayString(column, row[i]);
