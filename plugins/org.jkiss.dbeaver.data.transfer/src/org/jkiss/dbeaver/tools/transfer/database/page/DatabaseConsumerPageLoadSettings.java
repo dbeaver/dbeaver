@@ -21,10 +21,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
@@ -32,6 +29,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTransferWizard> {
+
+    private Button truncateTargetTable;
 
     public DatabaseConsumerPageLoadSettings() {
         super("Data load");
@@ -51,14 +50,18 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         composite.setLayout(gl);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        final DatabaseConsumerSettings settings = getSettings();
 
         {
             Group loadSettings = UIUtils.createControlGroup(composite, "Data load", 1, GridData.FILL_HORIZONTAL, 0);
-            final Button truncateTargetTable = UIUtils.createCheckbox(loadSettings, "Truncate target table before load", settings.isTruncateBeforeLoad());
+            truncateTargetTable = UIUtils.createCheckbox(loadSettings, "Truncate target table(s) before load", settings.isTruncateBeforeLoad());
             truncateTargetTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+                    if (truncateTargetTable.getSelection() && !warnDataTruncate()) {
+                        truncateTargetTable.setSelection(false);
+                        return;
+                    }
                     settings.setTruncateBeforeLoad(truncateTargetTable.getSelection());
                 }
             });
@@ -83,8 +86,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             final Button useTransactionsCheck = UIUtils.createCheckbox(performanceSettings, "Use transactions", null, settings.isUseTransactions(), 4);
             useTransactionsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     settings.setUseTransactions(useTransactionsCheck.getSelection());
                 }
             });
@@ -92,8 +94,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
             final Spinner commitAfterEdit = UIUtils.createLabelSpinner(performanceSettings, "Commit after insert of ", settings.getCommitAfterRows(), 1, Integer.MAX_VALUE);
             commitAfterEdit.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     settings.setCommitAfterRows(commitAfterEdit.getSelection());
                 }
             });
@@ -121,17 +122,43 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         setControl(composite);
     }
 
-    @Override
-    public void activatePage()
-    {
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
-
-        updatePageCompletion();
+    private DatabaseConsumerSettings getSettings() {
+        return getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
     }
 
     @Override
-    protected boolean determinePageCompletion()
-    {
+    public void activatePage() {
+
+        updatePageCompletion();
+
+        UIUtils.asyncExec(() -> {
+            DatabaseConsumerSettings settings = getSettings();
+            if (settings.isTruncateBeforeLoad() && !warnDataTruncate()) {
+                truncateTargetTable.setSelection(false);
+                settings.setTruncateBeforeLoad(false);
+            }
+        });
+    }
+
+    public boolean warnDataTruncate() {
+        Shell shell = getContainer().getShell();
+        if (shell.isVisible() || getSettings().isTruncateBeforeLoad()) {
+            if (!UIUtils.confirmAction(shell, "Data truncate attention", "'Truncate target table' option is enabled.\nThis will remove ALL data from target table, it will not be possible to revert this.\n" +
+                "Are you absolutely sure you want to proceed?"))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void deactivatePage() {
+        super.deactivatePage();
+    }
+
+    @Override
+    protected boolean determinePageCompletion() {
         return true;
     }
 
