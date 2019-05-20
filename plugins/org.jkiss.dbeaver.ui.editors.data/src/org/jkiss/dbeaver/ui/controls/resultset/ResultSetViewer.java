@@ -2226,6 +2226,7 @@ public class ResultSetViewer extends Viewer
                     viewMenu.add(customizeAction);
                 }
                 viewMenu.add(new TransformComplexTypesToggleAction());
+                viewMenu.add(new Separator());
                 viewMenu.add(new ColorizeDataTypesToggleAction());
                 {
                     if (valueController != null) {
@@ -2238,8 +2239,8 @@ public class ResultSetViewer extends Viewer
                     if (getModel().getSingleSource() != null && getModel().hasColorMapping(getModel().getSingleSource())) {
                         viewMenu.add(new ResetAllColorAction());
                     }
-                    viewMenu.add(new Separator());
                 }
+                viewMenu.add(new Separator());
                 viewMenu.add(new VirtualEntityEditAction());
                 viewMenu.add(new Action(ResultSetMessages.controls_resultset_viewer_action_data_formats) {
                     @Override

@@ -37,6 +37,17 @@ public class ResultSetRow {
     public static final byte STATE_ADDED = 2;
     public static final byte STATE_REMOVED = 3;
 
+    public static class ColorInfo {
+        @Nullable
+        public Color rowForeground;
+        @Nullable
+        public Color rowBackground;
+        @Nullable
+        public Color[] cellFgColors;
+        @Nullable
+        public Color[] cellBgColors;
+    }
+
     // Physical row number
     private int rowNumber;
     // Row number in grid
@@ -50,7 +61,8 @@ public class ResultSetRow {
     private byte state;
     @Nullable
     public Map<DBDValue, CollectionElementData> collections;
-    public Color foreground, background;
+    @Nullable
+    public ColorInfo colorInfo;
 
     ResultSetRow(int rowNumber, @NotNull Object[] values) {
         this.rowNumber = rowNumber;
