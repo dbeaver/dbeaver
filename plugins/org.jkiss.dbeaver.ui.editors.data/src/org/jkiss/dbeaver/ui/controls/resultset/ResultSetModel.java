@@ -618,14 +618,14 @@ public class ResultSetModel {
     private void updateRowColors(boolean reset, List<ResultSetRow> rows) {
         if (colorMapping.isEmpty() || reset) {
             for (ResultSetRow row : rows) {
-                row.foreground = null;
-                row.background = null;
+                row.colorInfo = null;
             }
         }
         if (!colorMapping.isEmpty()) {
             for (Map.Entry<DBDAttributeBinding, List<AttributeColorSettings>> entry : colorMapping.entrySet()) {
                 for (ResultSetRow row : rows) {
                     for (AttributeColorSettings acs : entry.getValue()) {
+                        Color background = null, foreground = null;
                         if (acs.rangeCheck) {
                             if (acs.attributeValues != null && acs.attributeValues.length > 1) {
                                 double minValue = ResultSetUtils.makeNumericValue(acs.attributeValues[0]);
@@ -635,18 +635,47 @@ public class ResultSetModel {
                                     final Object cellValue = getCellValue(binding, row);
                                     double value = ResultSetUtils.makeNumericValue(cellValue);
                                     if (value >= minValue && value <= maxValue) {
+                                        foreground = acs.colorForeground;
                                         RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                        row.background = UIUtils.getSharedColor(rowRGB);
+                                        background = UIUtils.getSharedColor(rowRGB);
                                     }
                                 }
                             }
-
                         } else {
                             final DBDAttributeBinding binding = entry.getKey();
                             final Object cellValue = getCellValue(binding, row);
                             if (acs.evaluate(cellValue)) {
-                                row.foreground = acs.colorForeground;
-                                row.background = acs.colorBackground;
+                                foreground = acs.colorForeground;
+                                background = acs.colorBackground;
+                            }
+                        }
+                        if (foreground != null || background != null) {
+                            ResultSetRow.ColorInfo colorInfo = row.colorInfo;
+                            if (colorInfo == null) {
+                                colorInfo = new ResultSetRow.ColorInfo();
+                                row.colorInfo = colorInfo;
+                            }
+                            if (!acs.singleColumn) {
+                                colorInfo.rowForeground = acs.colorForeground;
+                                colorInfo.rowBackground = acs.colorBackground;
+                            } else {
+                                // Single column color
+                                if (foreground != null) {
+                                    Color[] cellFgColors = colorInfo.cellFgColors;
+                                    if (cellFgColors == null) {
+                                        cellFgColors = new Color[attributes.length];
+                                        colorInfo.cellFgColors = cellFgColors;
+                                    }
+                                    cellFgColors[entry.getKey().getOrdinalPosition()] = foreground;
+                                }
+                                if (background != null) {
+                                    Color[] cellBgColors = colorInfo.cellBgColors;
+                                    if (cellBgColors == null) {
+                                        cellBgColors = new Color[attributes.length];
+                                        colorInfo.cellBgColors = cellBgColors;
+                                    }
+                                    cellBgColors[entry.getKey().getOrdinalPosition()] = background;
+                                }
                             }
                         }
                     }

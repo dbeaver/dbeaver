@@ -313,8 +313,6 @@ class ColorSettingsDialog extends BaseDialog {
         }
         bgColorSelector2.setEnabled(isRange);
         fgColorSelector2.setEnabled(isRange);
-
-        singleColumnCheck.setEnabled(false);
     }
 
     private IValueEditor createValueEditor(Composite panel, int index) {
