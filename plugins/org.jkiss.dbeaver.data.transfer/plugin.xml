@@ -173,6 +173,7 @@
                     label="%dataTransfer.processor.html.name"
                     appFileExtension="html"
                     appName="%dataTransfer.processor.web.name"
+                    html="true"
                     order="20">
                 <propertyGroup label="%dataTransfer.processor.html.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.html.property.extension.label" defaultValue="html"/>

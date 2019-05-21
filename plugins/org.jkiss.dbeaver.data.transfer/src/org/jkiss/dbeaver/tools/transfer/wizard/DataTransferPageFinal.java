@@ -131,7 +131,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             }
 
             IDataTransferConsumer.TransferParameters parameters = new IDataTransferConsumer.TransferParameters(
-                processorDescriptor != null && processorDescriptor.isBinaryFormat());
+                processorDescriptor != null && processorDescriptor.isBinaryFormat(),
+                processorDescriptor != null && processorDescriptor.isHTMLFormat());
             parameters.orderNumber = i;
             parameters.totalConsumers = dataPipes.size();
             consumer.initTransfer(
