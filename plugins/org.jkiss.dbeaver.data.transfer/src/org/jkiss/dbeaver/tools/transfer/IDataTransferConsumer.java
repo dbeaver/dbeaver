@@ -33,12 +33,14 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
         public int orderNumber;
         public int totalConsumers;
         public boolean isBinary;
+        public boolean isHTML;
 
         public TransferParameters() {
         }
 
-        public TransferParameters(boolean isBinary) {
+        public TransferParameters(boolean isBinary, boolean isHTML) {
             this.isBinary = isBinary;
+            this.isHTML = isHTML;
         }
     }
 
