@@ -78,28 +78,26 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite catPanel = UIUtils.createPlaceholder(sash, 1);
+            Composite catPanel = UIUtils.createComposite(sash, 1);
             catPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
             catalogTable = new Table(catPanel, SWT.BORDER | SWT.CHECK);
-            catalogTable.addListener(SWT.Selection, new Listener() {
-                public void handleEvent(Event event) {
-                    TableItem item = (TableItem) event.item;
-                    if (item != null) {
-                        MySQLCatalog catalog = (MySQLCatalog) item.getData();
-                        if (event.detail == SWT.CHECK) {
-                            catalogTable.select(catalogTable.indexOf(item));
-                            checkedObjects.remove(catalog);
-                        }
-                        loadTables(catalog);
-                        updateState();
+            catalogTable.addListener(SWT.Selection, event -> {
+                TableItem item = (TableItem) event.item;
+                if (item != null) {
+                    MySQLCatalog catalog = (MySQLCatalog) item.getData();
+                    if (event.detail == SWT.CHECK) {
+                        catalogTable.select(catalogTable.indexOf(item));
+                        checkedObjects.remove(catalog);
                     }
+                    loadTables(catalog);
+                    updateState();
                 }
             });
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 50;
             catalogTable.setLayoutData(gd);
 
-            Composite buttonsPanel = UIUtils.createPlaceholder(catPanel, 3, 5);
+            Composite buttonsPanel = UIUtils.createComposite(catPanel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             new Label(buttonsPanel, SWT.NONE).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, catalogTable);
@@ -107,22 +105,20 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
         final Button exportViewsCheck;
         {
-            Composite tablesPanel = UIUtils.createPlaceholder(sash, 1);
+            Composite tablesPanel = UIUtils.createComposite(sash, 1);
             tablesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             tablesTable = new Table(tablesPanel, SWT.BORDER | SWT.CHECK);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 50;
             tablesTable.setLayoutData(gd);
-            tablesTable.addListener(SWT.Selection, new Listener() {
-                public void handleEvent(Event event) {
-                    if (event.detail == SWT.CHECK) {
-                        updateCheckedTables();
-                        updateState();
-                    }
+            tablesTable.addListener(SWT.Selection, event -> {
+                if (event.detail == SWT.CHECK) {
+                    updateCheckedTables();
+                    updateState();
                 }
             });
-            Composite buttonsPanel = UIUtils.createPlaceholder(tablesPanel, 3, 5);
+            Composite buttonsPanel = UIUtils.createComposite(tablesPanel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, "Show views", false);
@@ -229,18 +225,15 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                     if (wizard.showViews) {
                         objects.addAll(curCatalog.getViews(monitor));
                     }
-                    Collections.sort(objects, DBUtils.nameComparator());
-                    UIUtils.syncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            tablesTable.removeAll();
-                            for (MySQLTableBase table : objects) {
-                                TableItem item = new TableItem(tablesTable, SWT.NONE);
-                                item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
-                                item.setText(0, table.getName());
-                                item.setData(table);
-                                item.setChecked(isCatalogChecked && (checkedObjects == null || checkedObjects.contains(table)));
-                            }
+                    objects.sort(DBUtils.nameComparator());
+                    UIUtils.syncExec(() -> {
+                        tablesTable.removeAll();
+                        for (MySQLTableBase table : objects) {
+                            TableItem item = new TableItem(tablesTable, SWT.NONE);
+                            item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
+                            item.setText(0, table.getName());
+                            item.setData(table);
+                            item.setChecked(isCatalogChecked && (checkedObjects == null || checkedObjects.contains(table)));
                         }
                     });
                 } catch (DBException e) {
