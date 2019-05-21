@@ -84,7 +84,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite catPanel = UIUtils.createPlaceholder(sash, 1);
+            Composite catPanel = UIUtils.createComposite(sash, 1);
             catPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
             schemasTable = new Table(catPanel, SWT.BORDER | SWT.CHECK);
             schemasTable.addListener(SWT.Selection, event -> {
@@ -101,7 +101,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             gd.heightHint = 50;
             schemasTable.setLayoutData(gd);
 
-            Composite buttonsPanel = UIUtils.createPlaceholder(catPanel, 3, 5);
+            Composite buttonsPanel = UIUtils.createComposite(catPanel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             new Label(buttonsPanel, SWT.NONE).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, schemasTable);
@@ -109,7 +109,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
 
         final Button exportViewsCheck;
         {
-            Composite tablesPanel = UIUtils.createPlaceholder(sash, 1);
+            Composite tablesPanel = UIUtils.createComposite(sash, 1);
             tablesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             tablesTable = new Table(tablesPanel, SWT.BORDER | SWT.CHECK);
@@ -123,7 +123,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                 }
             });
 
-            Composite buttonsPanel = UIUtils.createPlaceholder(tablesPanel, 3, 5);
+            Composite buttonsPanel = UIUtils.createComposite(tablesPanel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_show_view, false);
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
