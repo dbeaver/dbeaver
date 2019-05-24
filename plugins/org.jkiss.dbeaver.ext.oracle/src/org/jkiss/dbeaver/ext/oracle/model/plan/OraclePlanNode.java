@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -33,6 +34,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,28 @@ import java.util.Map;
 public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlanCostNode {
 
     public final static String CAT_DETAILS = "Details";
+    
+    private final static List<String> allowedKind = new ArrayList<>( 
+              Arrays.asList("result",
+                            "project",
+                            "filter",
+                            "collector",
+                            "index",
+                            "hash",
+                            "foregin",
+                            "aggregate",
+                            "modify",
+                            "inset",
+                            "update",
+                            "delete",
+                            "loop",
+                            "join",
+                            "merge",
+                            "sort",
+                            "merge",
+                            "group",
+                            "materialize",
+                            "function"));
 
     private final OracleDataSource dataSource;
     private String statementId;
@@ -84,6 +108,8 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
 
     private OraclePlanNode parent;
     protected final List<OraclePlanNode> nested = new ArrayList<>();
+    
+
 
     private String aGetString(Map<String,String> attributes,String name) {
         return attributes.containsKey(name) ? attributes.get(name).toString() : "";
@@ -124,6 +150,84 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
         } else {
             return 0;
         }
+    }
+    
+     @Override
+    public DBCPlanNodeKind getNodeKind() {
+
+        String op = operation.toLowerCase();
+
+        for (String kind : allowedKind) {
+            if (op.contains(kind)) {
+
+                switch (kind) {
+
+                case "result":
+                    return DBCPlanNodeKind.RESULT;
+
+                case "project":
+                    return DBCPlanNodeKind.SET;
+
+                case "filter":
+                    return DBCPlanNodeKind.FILTER;
+
+                case "collector":
+                    return DBCPlanNodeKind.AGGREGATE;
+
+                case "index":
+                    return DBCPlanNodeKind.INDEX_SCAN;
+
+                case "hash":
+                    return DBCPlanNodeKind.HASH;
+
+                case "foregin":
+                    return DBCPlanNodeKind.TABLE_SCAN;
+
+                case "aggregate":
+                    return DBCPlanNodeKind.AGGREGATE;
+
+                case "modify":
+                    return DBCPlanNodeKind.MODIFY;
+
+                case "insert":
+                    return DBCPlanNodeKind.MODIFY;
+
+                case "update":
+                    return DBCPlanNodeKind.MODIFY;
+
+                case "delete":
+                    return DBCPlanNodeKind.MODIFY;
+
+                case "loop":
+                    return DBCPlanNodeKind.JOIN;
+
+                case "join":
+                    return DBCPlanNodeKind.JOIN;
+
+                case "merge":
+                    return DBCPlanNodeKind.MERGE;
+
+                case "sort":
+                    return DBCPlanNodeKind.SORT;
+
+                case "group":
+                    return DBCPlanNodeKind.GROUP;
+
+                case "materialize":
+                    return DBCPlanNodeKind.MATERIALIZE;
+
+                case "function":
+                    return DBCPlanNodeKind.FUNCTION;
+
+                default:
+                    return DBCPlanNodeKind.DEFAULT;
+
+                }
+
+            }
+        }
+
+        return DBCPlanNodeKind.DEFAULT;
     }
 
     public OraclePlanNode(OracleDataSource dataSource, IntKeyMap<OraclePlanNode> prevNodes, Map<String,String> attributes) {

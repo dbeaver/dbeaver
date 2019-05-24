@@ -27,7 +27,7 @@ public abstract class AbstractExecutionPlanNode implements DBCPlanNode {
 
     @Override
     public DBCPlanNodeKind getNodeKind() {
-        return null;
+        return DBCPlanNodeKind.DEFAULT;
     }
 
     @Override
