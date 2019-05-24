@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -199,9 +200,49 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
 
         return title.toString();
     }
+    
+    @Override
+    public DBCPlanNodeKind getNodeKind() {
+        if (nodeType.toLowerCase().indexOf("result") >= 0) {
+            return DBCPlanNodeKind.RESULT;
+        } else if (nodeType.toLowerCase().indexOf("project") >= 0) {
+            return DBCPlanNodeKind.SET;
+        } else if (nodeType.toLowerCase().indexOf("index") >= 0) {
+            return DBCPlanNodeKind.INDEX_SCAN;
+        } else if (nodeType.toLowerCase().indexOf("hash") >= 0) {
+            return DBCPlanNodeKind.HASH;
+        } else if (nodeType.toLowerCase().indexOf("foregin") >= 0) {
+            return DBCPlanNodeKind.TABLE_SCAN;
+        } else if (nodeType.toLowerCase().indexOf("aggregate") >= 0) {
+            return DBCPlanNodeKind.AGGREGATE;    
+        } else if (nodeType.toLowerCase().indexOf("modify") >= 0 ||
+                   nodeType.toLowerCase().indexOf("inset") >= 0  ||
+                   nodeType.toLowerCase().indexOf("update") >= 0 ||
+                   nodeType.toLowerCase().indexOf("delete") >= 0) {
+           return DBCPlanNodeKind.MODIFY; 
+        } else if (nodeType.toLowerCase().indexOf("loop") >= 0 ||
+                    nodeType.toLowerCase().indexOf("join") >= 0) {
+            return DBCPlanNodeKind.JOIN;
+        } else if (nodeType.toLowerCase().indexOf("merge") >= 0) {
+            return DBCPlanNodeKind.MERGE;
+        } else if (nodeType.toLowerCase().indexOf("sort") >= 0) {
+            return DBCPlanNodeKind.SORT;
+        } else if (nodeType.toLowerCase().indexOf("merge") >= 0) {
+            return DBCPlanNodeKind.MERGE;
+        } else if (nodeType.toLowerCase().indexOf("group") >= 0) {
+            return DBCPlanNodeKind.GROUP;
+        } else if (nodeType.toLowerCase().indexOf("materialize") >= 0) {
+            return DBCPlanNodeKind.MATERIALIZE;
+        } else if (nodeType.toLowerCase().indexOf("function") >= 0) {
+            return DBCPlanNodeKind.FUNCTION;
+        }
+        
+        return DBCPlanNodeKind.DEFAULT;
+    }
 
     //////////////////////////////////////////////////////////
     // Properties
+
 
     @Override
     public Object getEditableValue() {

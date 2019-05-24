@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -124,6 +125,49 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
         } else {
             return 0;
         }
+    }
+    
+    @Override
+    public DBCPlanNodeKind getNodeKind() {
+        if (operation.toLowerCase().indexOf("result") >= 0) {
+            return DBCPlanNodeKind.RESULT;
+        } else if (operation.toLowerCase().indexOf("project") >= 0) {
+            return DBCPlanNodeKind.SET;
+        } else if (operation.toLowerCase().indexOf("filter") >= 0) {
+            return DBCPlanNodeKind.FILTER;
+        } else if (operation.toLowerCase().indexOf("collector") >= 0) {
+            return DBCPlanNodeKind.AGGREGATE;    
+        } else if (operation.toLowerCase().indexOf("index") >= 0) {
+            return DBCPlanNodeKind.INDEX_SCAN;
+        } else if (operation.toLowerCase().indexOf("hash") >= 0) {
+            return DBCPlanNodeKind.HASH;
+        } else if (operation.toLowerCase().indexOf("foregin") >= 0) {
+            return DBCPlanNodeKind.TABLE_SCAN;
+        } else if (operation.toLowerCase().indexOf("aggregate") >= 0) {
+            return DBCPlanNodeKind.AGGREGATE;    
+        } else if (operation.toLowerCase().indexOf("modify") >= 0 ||
+                   operation.toLowerCase().indexOf("inset") >= 0  ||
+                   operation.toLowerCase().indexOf("update") >= 0 ||
+                   operation.toLowerCase().indexOf("delete") >= 0) {
+           return DBCPlanNodeKind.MODIFY; 
+        } else if (operation.toLowerCase().indexOf("loop") >= 0 ||
+                    operation.toLowerCase().indexOf("join") >= 0) {
+            return DBCPlanNodeKind.JOIN;
+        } else if (operation.toLowerCase().indexOf("merge") >= 0) {
+            return DBCPlanNodeKind.MERGE;
+        } else if (operation.toLowerCase().indexOf("sort") >= 0) {
+            return DBCPlanNodeKind.SORT;
+        } else if (operation.toLowerCase().indexOf("merge") >= 0) {
+            return DBCPlanNodeKind.MERGE;
+        } else if (operation.toLowerCase().indexOf("group") >= 0) {
+            return DBCPlanNodeKind.GROUP;
+        } else if (operation.toLowerCase().indexOf("materialize") >= 0) {
+            return DBCPlanNodeKind.MATERIALIZE;
+        } else if (operation.toLowerCase().indexOf("function") >= 0) {
+            return DBCPlanNodeKind.FUNCTION;
+        }
+        
+        return DBCPlanNodeKind.DEFAULT;
     }
 
     public OraclePlanNode(OracleDataSource dataSource, IntKeyMap<OraclePlanNode> prevNodes, Map<String,String> attributes) {
