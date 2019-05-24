@@ -52,6 +52,26 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
     
     public static final String ATTR_OBJECT_NAME = "Object name";
 
+    private final static List<String> allowedKind = new ArrayList<>( 
+            Arrays.asList("result",
+                          "project",
+                          "index",
+                          "hash",
+                          "foregin",
+                          "aggregate",
+                          "modify",
+                          "inset",
+                          "update",
+                          "delete",
+                          "loop",
+                          "join",
+                          "merge",
+                          "sort",
+                          "merge",
+                          "group",
+                          "materialize",
+                          "function"));
+
     private PostgreDataSource dataSource;
     protected NODE parent;
     protected final List<NODE> nested = new ArrayList<>();
@@ -203,39 +223,79 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
     
     @Override
     public DBCPlanNodeKind getNodeKind() {
-        if (nodeType.toLowerCase().indexOf("result") >= 0) {
-            return DBCPlanNodeKind.RESULT;
-        } else if (nodeType.toLowerCase().indexOf("project") >= 0) {
-            return DBCPlanNodeKind.SET;
-        } else if (nodeType.toLowerCase().indexOf("index") >= 0) {
-            return DBCPlanNodeKind.INDEX_SCAN;
-        } else if (nodeType.toLowerCase().indexOf("hash") >= 0) {
-            return DBCPlanNodeKind.HASH;
-        } else if (nodeType.toLowerCase().indexOf("foregin") >= 0) {
-            return DBCPlanNodeKind.TABLE_SCAN;
-        } else if (nodeType.toLowerCase().indexOf("aggregate") >= 0) {
-            return DBCPlanNodeKind.AGGREGATE;    
-        } else if (nodeType.toLowerCase().indexOf("modify") >= 0 ||
-                   nodeType.toLowerCase().indexOf("inset") >= 0  ||
-                   nodeType.toLowerCase().indexOf("update") >= 0 ||
-                   nodeType.toLowerCase().indexOf("delete") >= 0) {
-           return DBCPlanNodeKind.MODIFY; 
-        } else if (nodeType.toLowerCase().indexOf("loop") >= 0 ||
-                    nodeType.toLowerCase().indexOf("join") >= 0) {
-            return DBCPlanNodeKind.JOIN;
-        } else if (nodeType.toLowerCase().indexOf("merge") >= 0) {
-            return DBCPlanNodeKind.MERGE;
-        } else if (nodeType.toLowerCase().indexOf("sort") >= 0) {
-            return DBCPlanNodeKind.SORT;
-        } else if (nodeType.toLowerCase().indexOf("merge") >= 0) {
-            return DBCPlanNodeKind.MERGE;
-        } else if (nodeType.toLowerCase().indexOf("group") >= 0) {
-            return DBCPlanNodeKind.GROUP;
-        } else if (nodeType.toLowerCase().indexOf("materialize") >= 0) {
-            return DBCPlanNodeKind.MATERIALIZE;
-        } else if (nodeType.toLowerCase().indexOf("function") >= 0) {
-            return DBCPlanNodeKind.FUNCTION;
+       
+        String op = nodeType.toLowerCase();
+
+        for (String kind : allowedKind) {
+            if (op.contains(kind)) {
+
+                switch (kind) {
+
+                case "result":
+                    return DBCPlanNodeKind.RESULT;
+
+                case "project":
+                    return DBCPlanNodeKind.SET;
+
+                case "filter":
+                    return DBCPlanNodeKind.FILTER;
+
+                case "collector":
+                    return DBCPlanNodeKind.AGGREGATE;
+
+                case "index":
+                    return DBCPlanNodeKind.INDEX_SCAN;
+
+                case "hash":
+                    return DBCPlanNodeKind.HASH;
+
+                case "foregin":
+                    return DBCPlanNodeKind.TABLE_SCAN;
+
+                case "aggregate":
+                    return DBCPlanNodeKind.AGGREGATE;
+
+                case "modify":
+                    return DBCPlanNodeKind.MODIFY;
+
+                case "insert":
+                    return DBCPlanNodeKind.MODIFY;
+
+                case "update":
+                    return DBCPlanNodeKind.MODIFY;
+
+                case "delete":
+                    return DBCPlanNodeKind.MODIFY;
+
+                case "loop":
+                    return DBCPlanNodeKind.JOIN;
+
+                case "join":
+                    return DBCPlanNodeKind.JOIN;
+
+                case "merge":
+                    return DBCPlanNodeKind.MERGE;
+
+                case "sort":
+                    return DBCPlanNodeKind.SORT;
+
+                case "group":
+                    return DBCPlanNodeKind.GROUP;
+
+                case "materialize":
+                    return DBCPlanNodeKind.MATERIALIZE;
+
+                case "function":
+                    return DBCPlanNodeKind.FUNCTION;
+
+                default:
+                    return DBCPlanNodeKind.DEFAULT;
+
+                }
+
+            }
         }
+
         
         return DBCPlanNodeKind.DEFAULT;
     }
