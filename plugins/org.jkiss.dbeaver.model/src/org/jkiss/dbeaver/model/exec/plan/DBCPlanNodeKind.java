@@ -30,10 +30,18 @@ public enum DBCPlanNodeKind {
     TABLE_SCAN("Table scan", RelationalObjectType.TYPE_TABLE),
     INDEX_SCAN("Index scan", RelationalObjectType.TYPE_INDEX),
     JOIN("Join", null),
+    HASH("Hash", null),
     UNION("Union", null),
     FILTER("Filter", null),
     AGGREGATE("Aggregate", null),
-    SORT("Sort", null);
+    SORT("Sort", null),
+    RESULT("Result", null),
+    SET("Set", null),
+    MERGE("Merge", null),
+    GROUP("Group", null),
+    MATERIALIZE("Materialize", null),
+    FUNCTION("Function", null),
+    MODIFY("Modify", null);
 
     private final String title;
     private final DBSObjectType objectType;
