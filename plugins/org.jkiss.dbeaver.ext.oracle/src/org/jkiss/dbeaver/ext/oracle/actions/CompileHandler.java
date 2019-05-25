@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.ext.oracle.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -41,11 +41,12 @@ import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -170,9 +171,13 @@ public class CompileHandler extends OracleTaskHandler
         }
         if (objects.isEmpty()) {
             final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-            final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleSourceObject.class);
-            if (sourceObject != null) {
-                objects.add(sourceObject);
+            if (activePart instanceof IEditorPart) {
+                if (((IEditorPart) activePart).getEditorInput() instanceof IDatabaseEditorInput) {
+                    DBSObject dbsObject = ((IDatabaseEditorInput) ((IEditorPart) activePart).getEditorInput()).getDatabaseObject();
+                    if (dbsObject instanceof OracleSourceObject) {
+                        objects.add((OracleSourceObject)dbsObject);
+                    }
+                }
             }
         }
         return objects;
