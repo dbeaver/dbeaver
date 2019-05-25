@@ -45,6 +45,11 @@ public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBW
     }
 
     @Override
+    public void resetSettings(DBWHandlerConfiguration configuration) {
+
+    }
+
+    @Override
     public boolean isComplete()
     {
         return false;

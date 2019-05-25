@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.registry;
+package org.jkiss.dbeaver.model.sql.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.code.Nullable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
-import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLFormatterDescriptor
@@ -37,8 +35,6 @@ public class SQLFormatterDescriptor extends AbstractContextDescriptor {
     private final String label;
     private final String description;
     private final AbstractDescriptor.ObjectType formatterImplClass;
-    private final AbstractDescriptor.ObjectType configurerImplClass;
-
 
     public SQLFormatterDescriptor(IConfigurationElement config) {
         super(config);
@@ -46,11 +42,6 @@ public class SQLFormatterDescriptor extends AbstractContextDescriptor {
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.formatterImplClass = new AbstractDescriptor.ObjectType(config.getAttribute("class"));
-        if (!CommonUtils.isEmpty(config.getAttribute("configurerClass"))) {
-            this.configurerImplClass = new AbstractDescriptor.ObjectType(config.getAttribute("configurerClass"));
-        } else {
-            this.configurerImplClass = null;
-        }
     }
 
     public String getId() {
@@ -69,15 +60,6 @@ public class SQLFormatterDescriptor extends AbstractContextDescriptor {
     public SQLFormatter createFormatter()
         throws DBException {
         return formatterImplClass.createInstance(SQLFormatter.class);
-    }
-
-    @Nullable
-    public SQLFormatterConfigurator createConfigurer()
-        throws DBException {
-        if (configurerImplClass == null) {
-            return null;
-        }
-        return configurerImplClass.createInstance(SQLFormatterConfigurator.class);
     }
 
 }

@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -220,7 +220,7 @@ public class MySQLView extends MySQLTableBase implements DBSView
                             }
                         }
                         additionalInfo.setDefinition(
-                            SQLUtils.formatSQL(getDataSource(), definition));
+                            SQLFormatUtils.formatSQL(getDataSource(), definition));
 
                     }
                 }

@@ -14,25 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.dialogs.net;
 
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+package org.jkiss.dbeaver.model.sql;
 
 /**
- * SSL configuration
+ * Preferences constants
  */
-public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
+public final class SQLModelPreferences {
 
-    @Override
-    public void resetSettings(DBWHandlerConfiguration configuration) {
-
-    }
-
-    @Override
-    public boolean isComplete()
-    {
-        return false;
-    }
+    public final static String SQL_FORMAT_FORMATTER = "sql.format.formatter";
 
 }

@@ -7,7 +7,11 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20190611
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.model.sql
+Export-Package: org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.model.sql.format,
+ org.jkiss.dbeaver.model.sql.format.external,
+ org.jkiss.dbeaver.model.sql.format.tokenized,
+ org.jkiss.dbeaver.model.sql.registry
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
