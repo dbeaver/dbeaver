@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -24,17 +23,16 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.dbeaver.ui.editors.text.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.editors.text.parser.SQLWordPartDetector;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -667,7 +665,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
 
     private SQLCompletionProposal makeProposalsFromObject(DBSObject object, boolean useShortName)
     {
-        DBNNode node = NavigatorUtils.getNodeByObject(monitor, object, false);
+        DBNNode node = DBNUtils.getNodeByObject(monitor, object, false);
 
         DBPImage objectIcon = node == null ? null : node.getNodeIconDefault();
         if (objectIcon == null) {
@@ -775,14 +773,13 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             }
         }
 
-        Image img = image == null ? null : DBeaverIcons.getImage(image);
         return new SQLCompletionProposal(
             request,
             displayString,
             replaceString, // replacementString
             replaceString.length(), //cursorPosition the position of the cursor following the insert
                                 // relative to replacementOffset
-            img, //image to display
+            image, //image to display
             null,//new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
             proposalType,
             null,

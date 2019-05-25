@@ -493,12 +493,12 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     if (parentContainer == null) {
                         parentContainer = getDatabaseObject().getParentObject();
                     }
-                    DBNDatabaseNode dbNode = NavigatorUtils.getNodeByObject(parentContainer);
+                    DBNDatabaseNode dbNode = DBNUtils.getNodeByObject(parentContainer);
                     DBNDatabaseNode rootNode;
                     if (isRoleEditor()) {
-                        rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, DBSSchema.class);
+                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, DBSSchema.class);
                     } else {
-                        rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, DBARole.class);
+                        rootNode = DBNUtils.getChildFolder(monitor, dbNode, DBARole.class);
                     }
                     if (rootNode == null) {
                         DBWorkbench.getPlatformUI().showError("Object tree", "Can't detect root node for objects tree");

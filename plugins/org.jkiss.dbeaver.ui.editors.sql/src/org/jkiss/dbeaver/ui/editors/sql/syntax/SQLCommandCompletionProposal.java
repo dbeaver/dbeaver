@@ -12,7 +12,6 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 
 /**
@@ -29,7 +28,7 @@ public class SQLCommandCompletionProposal extends SQLCompletionProposal {
                 descriptor.getId(),
                 descriptor.getId(),
                 descriptor.getId().length(),
-                descriptor.getIcon() == null ? null : DBeaverIcons.getImage(descriptor.getIcon()),
+                descriptor.getIcon(),
                 null,
                 DBPKeywordType.OTHER,
                 descriptor.getDescription(),

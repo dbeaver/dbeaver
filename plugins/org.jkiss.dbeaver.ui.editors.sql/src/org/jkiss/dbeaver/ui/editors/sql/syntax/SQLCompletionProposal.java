@@ -30,13 +30,11 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.text.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -54,35 +52,48 @@ import java.util.Locale;
 /**
  * SQL Completion proposal
  */
-public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2,ICompletionProposalExtension4,ICompletionProposalExtension5 {
+public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension4, ICompletionProposalExtension5 {
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
 
     private final DBPDataSource dataSource;
     private SQLSyntaxManager syntaxManager;
 
-    /** The string to be displayed in the completion proposal popup. */
+    /**
+     * The string to be displayed in the completion proposal popup.
+     */
     private String displayString;
-    /** The replacement string. */
+    /**
+     * The replacement string.
+     */
     private String replacementString;
     private String replacementFull;
     private String replacementLast;
     // Tail
     private String replacementAfter;
 
-    /** The replacement offset. */
+    /**
+     * The replacement offset.
+     */
     private int replacementOffset;
-    /** The replacement length. */
+    /**
+     * The replacement length.
+     */
     private int replacementLength;
-    /** The cursor position after this proposal has been applied. */
+    /**
+     * The cursor position after this proposal has been applied.
+     */
     private int cursorPosition;
-    /** The image to be displayed in the completion proposal popup. */
-    private Image image;
-    /** The context information of this proposal. */
+    /**
+     * The image to be displayed in the completion proposal popup.
+     */
+    private DBPImage image;
+    /**
+     * The context information of this proposal.
+     */
     private IContextInformation contextInformation;
     private DBPKeywordType proposalType;
     private String additionalProposalInfo;
-    private boolean simpleMode;
 
     private DBPNamedObject object;
     private int proposalScore;
@@ -92,19 +103,18 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         String displayString,
         String replacementString,
         int cursorPosition,
-        @Nullable Image image,
+        @Nullable DBPImage image,
         IContextInformation contextInformation,
         DBPKeywordType proposalType,
         String description,
-        DBPNamedObject object)
-    {
+        DBPNamedObject object) {
         this.dataSource = request.editor.getDataSource();
         this.syntaxManager = request.editor.getSyntaxManager();
         this.displayString = displayString;
         this.replacementString = replacementString;
         this.replacementFull = this.dataSource == null ?
-                replacementString :
-                DBUtils.getUnQuotedIdentifier(this.dataSource, replacementString.toLowerCase(Locale.ENGLISH)); // Convert to lower to compare IN VALIDATE FUNCTION
+            replacementString :
+            DBUtils.getUnQuotedIdentifier(this.dataSource, replacementString.toLowerCase(Locale.ENGLISH)); // Convert to lower to compare IN VALIDATE FUNCTION
         int divPos = this.replacementFull.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos == -1) {
             this.replacementLast = null;
@@ -120,7 +130,6 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         setPosition(request.wordDetector);
 
         this.object = object;
-        this.simpleMode = request.simpleMode;
     }
 
     public DBPDataSource getDataSource() {
@@ -131,8 +140,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         return object;
     }
 
-    private void setPosition(SQLWordPartDetector wordDetector)
-    {
+    private void setPosition(SQLWordPartDetector wordDetector) {
         final String fullWord = wordDetector.getFullWord();
         final int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
         final char structSeparator = syntaxManager.getStructSeparator();
@@ -289,32 +297,28 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     @Override
     public Object getAdditionalProposalInfo(IProgressMonitor monitor) {
         if (additionalProposalInfo == null) {
-            additionalProposalInfo = SQLContextInformer.readAdditionalProposalInfo(new DefaultProgressMonitor(monitor), dataSource, object, new String[] {displayString}, proposalType);
+            additionalProposalInfo = SQLContextInformer.readAdditionalProposalInfo(new DefaultProgressMonitor(monitor), dataSource, object, new String[]{displayString}, proposalType);
         }
         return additionalProposalInfo;
     }
 
     @Override
-    public String getAdditionalProposalInfo()
-    {
+    public String getAdditionalProposalInfo() {
         return CommonUtils.toString(getAdditionalProposalInfo(new NullProgressMonitor()));
     }
 
     @Override
-    public String getDisplayString()
-    {
+    public String getDisplayString() {
         return displayString;
     }
 
     @Override
-    public Image getImage()
-    {
-        return image;
+    public Image getImage() {
+        return image == null ? null : DBeaverIcons.getImage(image);
     }
 
     @Override
-    public IContextInformation getContextInformation()
-    {
+    public IContextInformation getContextInformation() {
         return contextInformation;
     }
 
@@ -322,26 +326,22 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     // ICompletionProposalExtension2
 
     @Override
-    public void apply(ITextViewer viewer, char trigger, int stateMask, int offset)
-    {
+    public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
         apply(viewer.getDocument());
     }
 
     @Override
-    public void selected(ITextViewer viewer, boolean smartToggle)
-    {
+    public void selected(ITextViewer viewer, boolean smartToggle) {
 
     }
 
     @Override
-    public void unselected(ITextViewer viewer)
-    {
+    public void unselected(ITextViewer viewer) {
 
     }
 
     @Override
-    public boolean validate(IDocument document, int offset, DocumentEvent event)
-    {
+    public boolean validate(IDocument document, int offset, DocumentEvent event) {
         if (event == null) {
             return false;
         }

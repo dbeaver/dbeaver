@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectBase;
@@ -56,7 +57,7 @@ public class NavigateBookmarkHandler extends NavigatorHandlerObjectBase {
                     log.debug("Can't find datasource '" + storage.getDataSourceId() + "'"); //$NON-NLS-2$
                     return null;
                 }
-                final DBNDataSource dsNode = (DBNDataSource) NavigatorUtils.getNodeByObject(dataSourceContainer);
+                final DBNDataSource dsNode = (DBNDataSource) DBNUtils.getNodeByObject(dataSourceContainer);
                 if (dsNode == null) {
                     log.error("Can't find datasource node for '" + dataSourceContainer.getName() + "'"); //$NON-NLS-2$
                     return null;

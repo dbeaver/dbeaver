@@ -67,6 +67,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -111,7 +112,6 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -310,7 +310,7 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, container);
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null) {
-                NavigatorUtils.refreshNavigatorResource(file, container);
+                DBNUtils.refreshNavigatorResource(file, container);
             } else {
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor

@@ -27,13 +27,13 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -71,7 +71,7 @@ public class EntityAddCommand extends Command
                 // Entity is not initialized
                 if (entity.getDataSource() != null) {
                     DBSObject selectedObject = DBUtils.getSelectedObject(entity.getDataSource(), true);
-                    DBNDatabaseNode dsNode = NavigatorUtils.getNodeByObject(selectedObject != null ? selectedObject : entity.getDataSource().getContainer());
+                    DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(selectedObject != null ? selectedObject : entity.getDataSource().getContainer());
                     if (dsNode != null) {
                         DBNNode tableNode = DBWorkbench.getPlatformUI().selectObject(
                                 UIUtils.getActiveWorkbenchShell(),

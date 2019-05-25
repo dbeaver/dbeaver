@@ -40,10 +40,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
@@ -65,7 +62,6 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -926,7 +922,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                         }
                         breadcrumbsMenu = new Menu(item.getParent().getShell());
                         try {
-                            final DBNNode[] childNodes = NavigatorUtils.getNodeChildrenFiltered(new VoidProgressMonitor(), databaseNode, false);
+                            final DBNNode[] childNodes = DBNUtils.getNodeChildrenFiltered(new VoidProgressMonitor(), databaseNode, false);
                             if (!ArrayUtils.isEmpty(childNodes)) {
                                 for (final DBNNode folderItem : childNodes) {
                                     MenuItem childItem = new MenuItem(breadcrumbsMenu, SWT.NONE);

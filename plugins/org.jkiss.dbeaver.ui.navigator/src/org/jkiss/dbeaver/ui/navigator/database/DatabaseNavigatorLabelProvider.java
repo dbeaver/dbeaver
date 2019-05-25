@@ -27,13 +27,13 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -117,7 +117,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public Font getFont(Object element)
     {
-        if (NavigatorUtils.isDefaultElement(element)) {
+        if (DBNUtils.isDefaultElement(element)) {
             return boldFont;
         } else {
             if (element instanceof DBNDataSource) {
