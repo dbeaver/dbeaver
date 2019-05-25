@@ -640,6 +640,7 @@
                     </visibleWhen>
                 </command>
                 <separator name="query" visible="true"/>
+                <separator name="plan" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain">
                     <visibleWhen>
                         <with variable="activeEditor">
@@ -681,8 +682,10 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
+                <separator name="additions_plan" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
+                <separator name="plan" visible="true"/>
                 <separator name="additions_active_object" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"/>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"/>
