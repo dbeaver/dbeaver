@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -44,7 +45,6 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -216,7 +216,7 @@ public class ItemListControl extends NodeListControl
         {
             try {
                 List<DBNNode> items = new ArrayList<>();
-                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(monitor, getRootNode(), false);
+                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, getRootNode(), false);
                 if (ArrayUtils.isEmpty(children)) {
                     return items;
                 }
@@ -315,7 +315,7 @@ public class ItemListControl extends NodeListControl
         public Font getFont(Object element)
         {
             final Object object = getObjectValue((DBNNode) element);
-            return objectColumn.isNameColumn(object) && NavigatorUtils.isDefaultElement(element) ? boldFont : normalFont;
+            return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ? boldFont : normalFont;
         }
 
         @Override

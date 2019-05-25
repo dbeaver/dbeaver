@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectObjectDialog;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -126,7 +126,7 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
                 }
                 List<DBNDatabaseNode> nodeList = new ArrayList<>(databaseList.size());
                 for (DBSObject database : databaseList) {
-                    DBNDatabaseNode databaseNode = NavigatorUtils.getNodeByObject(monitor, database, false);
+                    DBNDatabaseNode databaseNode = DBNUtils.getNodeByObject(monitor, database, false);
                     if (databaseNode != null) {
                         nodeList.add(databaseNode);
                     }

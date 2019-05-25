@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.tools.IUserInterfaceTool;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -63,7 +63,7 @@ public abstract class PostgreToolTriggerToggle implements IUserInterfaceTool {
             UIUtils.runInProgressDialog(monitor -> {
                 for (PostgreTrigger trigger : triggeList) {
                     try {
-                        DBNDatabaseNode triggerNode = NavigatorUtils.getNodeByObject(trigger);
+                        DBNDatabaseNode triggerNode = DBNUtils.getNodeByObject(trigger);
                         if (triggerNode != null) {
                             triggerNode.refreshNode(monitor, PostgreToolTriggerToggle.this);
                         } else {
