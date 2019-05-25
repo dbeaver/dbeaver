@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.registry;
+package org.jkiss.dbeaver.ui.editors.sql.preferences.format;
 
-import org.eclipse.jface.dialogs.IDialogPage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.registry.SQLFormatterDescriptor;
 
 /**
- * SQL Formatter configurer
+ * SQL Formatter configurator
  */
-public interface SQLFormatterConfigurator extends IDialogPage {
+public interface SQLFormatterConfigurator {
 
     /**
      * Sets configuration parameters

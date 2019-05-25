@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -31,21 +32,26 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal;
+import org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized;
+import org.jkiss.dbeaver.model.sql.registry.SQLFormatterConfigurationRegistry;
+import org.jkiss.dbeaver.model.sql.registry.SQLFormatterDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLExternalFormatterConfigurationPage;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLFormatterConfigurator;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.format.tokenized.SQLTokenizedFormatterConfigurationPage;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurator;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterDescriptor;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -91,7 +97,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         return
             store.contains(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) ||
 
-            store.contains(ModelPreferences.SQL_FORMAT_FORMATTER);
+            store.contains(SQLModelPreferences.SQL_FORMAT_FORMATTER);
     }
 
     @Override
@@ -221,7 +227,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     {
         styleBoldKeywords.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS));
 
-        String formatterId = store.getString(ModelPreferences.SQL_FORMAT_FORMATTER);
+        String formatterId = store.getString(SQLModelPreferences.SQL_FORMAT_FORMATTER);
         for (int i = 0; i < formatters.size(); i++) {
             if (formatters.get(i).getId().equalsIgnoreCase(formatterId)) {
                 formatterSelector.select(i);
@@ -242,7 +248,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         }
         store.setValue(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS, styleBoldKeywords.getSelection());
 
-        store.setValue(ModelPreferences.SQL_FORMAT_FORMATTER,
+        store.setValue(SQLModelPreferences.SQL_FORMAT_FORMATTER,
             formatters.get(formatterSelector.getSelectionIndex()).getId().toUpperCase(Locale.ENGLISH));
 
         PrefUtils.savePreferenceStore(store);
@@ -253,7 +259,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     {
         store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
 
-        store.setToDefault(ModelPreferences.SQL_FORMAT_FORMATTER);
+        store.setToDefault(SQLModelPreferences.SQL_FORMAT_FORMATTER);
         if (curConfigurator != null) {
             curConfigurator.resetSettings(store);
         }
@@ -280,11 +286,19 @@ public class PrefPageSQLFormat extends TargetPrefPage
         SQLFormatterDescriptor selFormatter = formatters.get(formatterSelector.getSelectionIndex());
 
         try {
-            curConfigurator = selFormatter.createConfigurer();
-            if (curConfigurator != null) {
+            SQLFormatter sqlFormatter = selFormatter.createFormatter();
+            // FIXME: this is a dirty hack because I'm too lazy to make proper registry/adapter for formatter UI configurators
+            // FIXME: for now we support only predefined list of formatters
+            if (sqlFormatter instanceof SQLFormatterTokenized) {
+                curConfigurator = new SQLTokenizedFormatterConfigurationPage();
+            } else if (sqlFormatter instanceof SQLFormatterExternal) {
+                curConfigurator = new SQLExternalFormatterConfigurationPage();
+            } else {
+                curConfigurator = GeneralUtils.adapt(sqlFormatter, SQLFormatterConfigurator.class);
+            }
+            if (curConfigurator instanceof IDialogPage) {
                 curConfigurator.configure(selFormatter);
-
-                curConfigurator.createControl(formatterConfigPlaceholder);
+                ((IDialogPage)curConfigurator).createControl(formatterConfigPlaceholder);
                 curConfigurator.loadSettings(getTargetPreferenceStore());
             }
         } catch (DBException e) {

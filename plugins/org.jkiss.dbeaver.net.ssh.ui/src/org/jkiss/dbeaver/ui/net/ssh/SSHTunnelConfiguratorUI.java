@@ -269,6 +269,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         properties.put(SSHConstants.PROP_CONNECT_TIMEOUT, tunnelTimeout.getText());
     }
 
+    @Override
+    public void resetSettings(DBWHandlerConfiguration configuration) {
+
+    }
+
     private void updatePrivateKeyVisibility()
     {
         boolean isPassword = authMethodCombo.getSelectionIndex() == 0;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.registry;
+package org.jkiss.dbeaver.model.sql.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -95,22 +95,6 @@ public class SQLFormatterConfigurationRegistry implements SQLFormatterRegistry
             return formatterDesc.createFormatter();
         } catch (DBException e) {
             log.error("Error creating formatter", e);
-            return null;
-        }
-    }
-
-    @Nullable
-    public SQLFormatterConfigurator createConfigurator(SQLFormatterConfiguration configuration) {
-        final String formatterId = configuration.getFormatterId();
-        SQLFormatterDescriptor formatterDesc = getFormatter(formatterId);
-        if (formatterDesc == null) {
-            log.error("Formatter '" + formatterId + "' not found");
-            return null;
-        }
-        try {
-            return formatterDesc.createConfigurer();
-        } catch (DBException e) {
-            log.error("Error creating and configuring formatter", e);
             return null;
         }
     }
