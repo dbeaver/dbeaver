@@ -190,7 +190,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     }
 
     @Override
-    public void checkInstanceConnection(DBRProgressMonitor monitor) throws DBException {
+    public void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (executionContext == null) {
             initializeMainContext(monitor);
             initializeMetaContext(monitor);
@@ -201,6 +201,11 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
                 throw new DBException(e, getDataSource());
             }
         }
+    }
+
+    @Override
+    public boolean isInstanceConnected() {
+        return executionContext != null;
     }
 
     private void loadInfo(ResultSet dbResult) {
