@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.text;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.swt.graphics.Point;
 
 import java.util.Locale;
 
