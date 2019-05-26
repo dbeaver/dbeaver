@@ -192,23 +192,23 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
                     "    END AS refname,\n" +
                     "    COALESCE(nsc.nspname, nso.nspname, nsp.nspname, nst.nspname, nsrw.nspname) AS nspname\n" +
                     "FROM pg_depend dep\n" +
-                    "LEFT JOIN pg_class cl ON dep.objid=cl.oid\n" +
-                    "LEFT JOIN pg_attribute att ON dep.objid=att.attrelid AND dep.objsubid=att.attnum\n" +
+                    "LEFT JOIN pg_class cl ON dep." + queryObjId + "=cl.oid\n" +
+                    "LEFT JOIN pg_attribute att ON dep." + queryObjId + "=att.attrelid AND dep.objsubid=att.attnum\n" +
                     "LEFT JOIN pg_namespace nsc ON cl.relnamespace=nsc.oid\n" +
-                    "LEFT JOIN pg_proc pr ON dep.objid=pr.oid\n" +
+                    "LEFT JOIN pg_proc pr ON dep." + queryObjId + "=pr.oid\n" +
                     "LEFT JOIN pg_namespace nsp ON pr.pronamespace=nsp.oid\n" +
-                    "LEFT JOIN pg_trigger tg ON dep.objid=tg.oid\n" +
-                    "LEFT JOIN pg_type ty ON dep.objid=ty.oid\n" +
+                    "LEFT JOIN pg_trigger tg ON dep." + queryObjId + "=tg.oid\n" +
+                    "LEFT JOIN pg_type ty ON dep." + queryObjId + "=ty.oid\n" +
                     "LEFT JOIN pg_namespace nst ON ty.typnamespace=nst.oid\n" +
-                    "LEFT JOIN pg_constraint co ON dep.objid=co.oid\n" +
+                    "LEFT JOIN pg_constraint co ON dep." + queryObjId + "=co.oid\n" +
                     "LEFT JOIN pg_class coc ON co.conrelid=coc.oid\n" +
                     "LEFT JOIN pg_namespace nso ON co.connamespace=nso.oid\n" +
-                    "LEFT JOIN pg_rewrite rw ON dep.objid=rw.oid\n" +
+                    "LEFT JOIN pg_rewrite rw ON dep." + queryObjId + "=rw.oid\n" +
                     "LEFT JOIN pg_class clrw ON clrw.oid=rw.ev_class\n" +
                     "LEFT JOIN pg_namespace nsrw ON clrw.relnamespace=nsrw.oid\n" +
-                    "LEFT JOIN pg_language la ON dep.objid=la.oid\n" +
-                    "LEFT JOIN pg_namespace ns ON dep.objid=ns.oid\n" +
-                    "LEFT JOIN pg_attrdef ad ON ad.oid=dep.objid\n" +
+                    "LEFT JOIN pg_language la ON dep." + queryObjId + "=la.oid\n" +
+                    "LEFT JOIN pg_namespace ns ON dep." + queryObjId + "=ns.oid\n" +
+                    "LEFT JOIN pg_attrdef ad ON ad.oid=dep." + queryObjId + "\n" +
                     "LEFT JOIN pg_attribute attr ON attr.attrelid=ad.adrelid and attr.attnum=ad.adnum\n" +
                     "WHERE dep." + condObjId + "=?\n" +
                     "ORDER BY type"))
