@@ -58,14 +58,6 @@ import java.util.*;
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     private static final Log log = Log.getLog(SQLCompletionProcessor.class);
-    static final String ALL_COLUMNS_PATTERN = "*";
-
-    enum QueryType {
-        TABLE,
-        JOIN,
-        COLUMN,
-        EXEC
-    }
 
     private static IContextInformationValidator VALIDATOR = new Validator();
     private static boolean lookupTemplates = false;
@@ -95,7 +87,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         ITextViewer viewer,
         int documentOffset)
     {
-        final SQLCompletionAnalyzer.CompletionRequest request = new SQLCompletionAnalyzer.CompletionRequest(editor, documentOffset, simpleMode);
+        final SQLCompletionAnalyzer.CompletionRequest request = new SQLCompletionAnalyzer.CompletionRequest(
+            editor.getCompletionContext(),
+            editor.getDocument(),
+            documentOffset,
+            editor.extractQueryAtPos(documentOffset),
+            simpleMode);
         SQLWordPartDetector wordDetector = request.wordDetector =
             new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
         request.wordPart = wordDetector.getWordPart();
@@ -126,20 +123,20 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         !CommonUtils.isEmpty(wordDetector.getPrevWords()) &&
                         ("(".equals(wordDetector.getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
                     {
-                        request.queryType = QueryType.COLUMN;
+                        request.queryType = SQLCompletionAnalyzer.QueryType.COLUMN;
                     } else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord)) {
-                        request.queryType = QueryType.JOIN;
+                        request.queryType = SQLCompletionAnalyzer.QueryType.JOIN;
                     } else {
-                        request.queryType = QueryType.TABLE;
+                        request.queryType = SQLCompletionAnalyzer.QueryType.TABLE;
                     }
                 } else if (editor.getSyntaxManager().getDialect().isAttributeQueryWord(prevKeyWord)) {
-                    request.queryType = QueryType.COLUMN;
-                    if (!request.simpleMode && CommonUtils.isEmpty(request.wordPart) && wordDetector.getPrevDelimiter().equals(ALL_COLUMNS_PATTERN)) {
+                    request.queryType = SQLCompletionAnalyzer.QueryType.COLUMN;
+                    if (!request.simpleMode && CommonUtils.isEmpty(request.wordPart) && wordDetector.getPrevDelimiter().equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN)) {
                         wordDetector.moveToDelimiter();
-                        searchPrefix = ALL_COLUMNS_PATTERN;
+                        searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
                     }
                 } else if (SQLUtils.isExecQuery(editor.getSyntaxManager().getDialect(), prevKeyWord)) {
-                    request.queryType = QueryType.EXEC;
+                    request.queryType = SQLCompletionAnalyzer.QueryType.EXEC;
                 }
             }
         }
@@ -167,7 +164,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     if (keywordType == DBPKeywordType.TYPE) {
                         continue;
                     }
-                    if (request.queryType == QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD)) {
+                    if (request.queryType == SQLCompletionAnalyzer.QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD)) {
                         continue;
                     }
                     request.proposals.add(
