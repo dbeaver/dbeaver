@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.text.parser;
+package org.jkiss.dbeaver.model.sql.parser;
 
 /**
  * Determines whether a given character is valid as part of an SQL keyword in

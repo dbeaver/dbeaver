@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.text.parser;
+package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
