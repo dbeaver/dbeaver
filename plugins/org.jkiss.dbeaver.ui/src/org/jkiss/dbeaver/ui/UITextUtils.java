@@ -17,16 +17,10 @@
 
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Locale;
-import java.util.StringTokenizer;
 
 /**
  * Text utils
@@ -120,6 +114,40 @@ public class UITextUtils {
     public static boolean isPointInRectangle(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight)
     {
         return (x >= rectX) && (y >= rectY) && x < (rectX + rectWidth) && y < (rectY + rectHeight);
+    }
+
+    /**
+     * Gets text size.
+     * x: maximum line length
+     * y: number of lines
+     * @param text    source text
+     * @return size
+     */
+    public static Point getTextSize(String text) {
+        int length = text.length();
+        int maxLength = 0;
+        int lineCount = 1;
+        int lineLength = 0;
+        for (int i = 0; i < length; i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '\n':
+                    maxLength = Math.max(maxLength, lineLength);
+                    lineCount++;
+                    lineLength = 0;
+                    break;
+                case '\r':
+                    break;
+                case '\t':
+                    lineLength += 4;
+                    break;
+                default:
+                    lineLength++;
+                    break;
+            }
+        }
+        maxLength = Math.max(maxLength, lineLength);
+        return new Point(maxLength, lineCount);
     }
 
 }
