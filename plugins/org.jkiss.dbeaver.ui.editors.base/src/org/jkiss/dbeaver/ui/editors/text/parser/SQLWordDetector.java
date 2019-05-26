@@ -16,21 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.editors.text.parser;
 
-import org.eclipse.jface.text.rules.IWordDetector;
-
 /**
  * Determines whether a given character is valid as part of an SQL keyword in
  * the current context.
  */
-public class SQLWordDetector implements IWordDetector
+public class SQLWordDetector
 {
 
-    @Override
     public boolean isWordStart(char c) {
         return Character.isUnicodeIdentifierStart(c);
     }
 
-    @Override
     public boolean isWordPart(char c) {
         return Character.isUnicodeIdentifierPart(c) || c == '$';
     }
