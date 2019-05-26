@@ -60,8 +60,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         try {
-            this.monitor = monitor;
-            runAnalyzer();
+            runAnalyzer(monitor);
         } catch (DBException e) {
             throw new InvocationTargetException(e);
         }
@@ -73,6 +72,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
     public boolean isSearchFinished() {
         return searchFinished;
+    }
+
+    public void runAnalyzer(DBRProgressMonitor monitor) throws DBException {
+        this.monitor = monitor;
+        runAnalyzer();
     }
 
     private void runAnalyzer() throws DBException {
