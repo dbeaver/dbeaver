@@ -7,6 +7,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20190611
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.model.sql.internal.SQLModelActivator
 Export-Package: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.sql.format,
  org.jkiss.dbeaver.model.sql.format.external,
