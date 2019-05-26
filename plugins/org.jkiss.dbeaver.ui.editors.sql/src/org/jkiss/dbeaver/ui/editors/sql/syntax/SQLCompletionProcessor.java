@@ -25,19 +25,15 @@ import org.eclipse.jface.text.templates.TemplateProposal;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.text.TextUtils;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -49,7 +45,9 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * The SQL content assist processor. This content assist processor proposes text
@@ -87,15 +85,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         ITextViewer viewer,
         int documentOffset)
     {
-        final SQLCompletionAnalyzer.CompletionRequest request = new SQLCompletionAnalyzer.CompletionRequest(
+        final SQLCompletionRequest request = new SQLCompletionRequest(
             editor.getCompletionContext(),
             editor.getDocument(),
             documentOffset,
             editor.extractQueryAtPos(documentOffset),
             simpleMode);
-        SQLWordPartDetector wordDetector = request.wordDetector =
-            new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
-        request.wordPart = wordDetector.getWordPart();
+        SQLWordPartDetector wordDetector = request.getWordDetector();
 
         if (lookupTemplates) {
             return makeTemplateProposals(viewer, request);
@@ -103,132 +99,39 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         try {
             String commandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
-            if (request.wordDetector.getStartOffset() >= commandPrefix.length() &&
-                viewer.getDocument().get(request.wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix))
+            if (wordDetector.getStartOffset() >= commandPrefix.length() &&
+                viewer.getDocument().get(wordDetector.getStartOffset() - commandPrefix.length(), commandPrefix.length()).equals(commandPrefix))
             {
-                return makeCommandProposals(request, request.wordPart);
+                return makeCommandProposals(request, request.getWordPart());
             }
         } catch (BadLocationException e) {
             log.debug(e);
         }
 
-        String searchPrefix = request.wordPart;
-        request.queryType = null;
-        {
-            final String prevKeyWord = wordDetector.getPrevKeyWord();
-            if (!CommonUtils.isEmpty(prevKeyWord)) {
-                if (editor.getSyntaxManager().getDialect().isEntityQueryWord(prevKeyWord)) {
-                    // TODO: its an ugly hack. Need a better way
-                    if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
-                        !CommonUtils.isEmpty(wordDetector.getPrevWords()) &&
-                        ("(".equals(wordDetector.getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
-                    {
-                        request.queryType = SQLCompletionAnalyzer.QueryType.COLUMN;
-                    } else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord)) {
-                        request.queryType = SQLCompletionAnalyzer.QueryType.JOIN;
-                    } else {
-                        request.queryType = SQLCompletionAnalyzer.QueryType.TABLE;
-                    }
-                } else if (editor.getSyntaxManager().getDialect().isAttributeQueryWord(prevKeyWord)) {
-                    request.queryType = SQLCompletionAnalyzer.QueryType.COLUMN;
-                    if (!request.simpleMode && CommonUtils.isEmpty(request.wordPart) && wordDetector.getPrevDelimiter().equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN)) {
-                        wordDetector.moveToDelimiter();
-                        searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
-                    }
-                } else if (SQLUtils.isExecQuery(editor.getSyntaxManager().getDialect(), prevKeyWord)) {
-                    request.queryType = SQLCompletionAnalyzer.QueryType.EXEC;
-                }
-            }
-        }
-        request.wordPart = searchPrefix;
+
+        SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
         DBPDataSource dataSource = editor.getDataSource();
-        if (request.wordPart != null) {
+        if (request.getWordPart() != null) {
             if (dataSource != null) {
-                ProposalSearchJob searchJob = new ProposalSearchJob(request);
+                ProposalSearchJob searchJob = new ProposalSearchJob(analyzer);
                 searchJob.schedule();
                 // Wait until job finished
                 UIUtils.waitJobCompletion(searchJob);
             }
         }
 
-        if (!request.searchFinished && !CommonUtils.isEmpty(request.wordPart))  {
-            // Keyword assist
-            List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(request.wordPart);
-            if (!request.simpleMode) {
-                // Sort using fuzzy match
-                matchedKeywords.sort(Comparator.comparingInt(o -> TextUtils.fuzzyScore(o, request.wordPart)));
-            }
-            for (String keyWord : matchedKeywords) {
-                DBPKeywordType keywordType = editor.getSyntaxManager().getDialect().getKeywordType(keyWord);
-                if (keywordType != null) {
-                    if (keywordType == DBPKeywordType.TYPE) {
-                        continue;
-                    }
-                    if (request.queryType == SQLCompletionAnalyzer.QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD)) {
-                        continue;
-                    }
-                    request.proposals.add(
-                        SQLCompletionAnalyzer.createCompletionProposal(
-                            request,
-                            keyWord,
-                            keyWord,
-                            keywordType,
-                            null,
-                            false,
-                            null)
-                    );
-                }
+        List<SQLCompletionProposalBase> proposals = analyzer.getProposals();
+        List<ICompletionProposal> result = new ArrayList<>();
+        for (SQLCompletionProposalBase cp : proposals) {
+            if (cp instanceof ICompletionProposal) {
+                result.add((ICompletionProposal) cp);
             }
         }
-        filterProposals(request, dataSource);
 
-        return ArrayUtils.toArray(ICompletionProposal.class, request.proposals);
+        return ArrayUtils.toArray(ICompletionProposal.class, result);
     }
 
-    private void filterProposals(SQLCompletionAnalyzer.CompletionRequest request, DBPDataSource dataSource) {
-
-        // Remove duplications
-        final Set<String> proposalMap = new HashSet<>(request.proposals.size());
-        for (int i = 0; i < request.proposals.size(); ) {
-            SQLCompletionProposal proposal = request.proposals.get(i);
-            if (proposalMap.contains(proposal.getDisplayString())) {
-                request.proposals.remove(i);
-                continue;
-            }
-            proposalMap.add(proposal.getDisplayString());
-            i++;
-        }
-
-        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
-        boolean hideDups = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
-        if (hideDups) {
-            for (int i = 0; i < request.proposals.size(); i++) {
-                SQLCompletionProposal proposal = request.proposals.get(i);
-                for (int j = 0; j < request.proposals.size(); ) {
-                    SQLCompletionProposal proposal2 = request.proposals.get(j);
-                    if (i != j && proposal.hasStructObject() && proposal2.hasStructObject() &&
-                            CommonUtils.equalObjects(proposal.getObject().getName(), proposal2.getObject().getName()) &&
-                            proposal.getObjectContainer() == selectedObject) {
-                        request.proposals.remove(j);
-                    } else {
-                        j++;
-                    }
-                }
-            }
-        }
-
-        if (hideDups) {
-            // Remove duplicates from non-active schema
-
-            if (selectedObject instanceof DBSObjectContainer) {
-
-            }
-
-        }
-
-    }
-
-    private ICompletionProposal[] makeCommandProposals(SQLCompletionAnalyzer.CompletionRequest request, String prefix) {
+    private ICompletionProposal[] makeCommandProposals(SQLCompletionRequest request, String prefix) {
         final String controlCommandPrefix = editor.getSyntaxManager().getControlCommandPrefix();
         if (prefix.startsWith(controlCommandPrefix)) {
             prefix = prefix.substring(controlCommandPrefix.length());
@@ -243,8 +146,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     @NotNull
-    private ICompletionProposal[] makeTemplateProposals(ITextViewer viewer, SQLCompletionAnalyzer.CompletionRequest request) {
-        String wordPart = request.wordPart.toLowerCase();
+    private ICompletionProposal[] makeTemplateProposals(ITextViewer viewer, SQLCompletionRequest request) {
+        String wordPart = request.getWordPart().toLowerCase();
         final List<SQLTemplateCompletionProposal> templateProposals = new ArrayList<>();
         // Templates
         for (Template template : editor.getTemplatesPage().getTemplateStore().getTemplates()) {
@@ -254,9 +157,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     new SQLContext(
                         SQLTemplatesRegistry.getInstance().getTemplateContextRegistry().getContextType(template.getContextTypeId()),
                         viewer.getDocument(),
-                        new Position(request.wordDetector.getStartOffset(), request.wordDetector.getLength()),
+                        new Position(request.getWordDetector().getStartOffset(), request.getWordDetector().getLength()),
                         editor),
-                    new Region(request.documentOffset, 0),
+                    new Region(request.getDocumentOffset(), 0),
                     null));
             }
         }
@@ -347,12 +250,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     private class ProposalSearchJob extends AbstractJob {
-        private final SQLCompletionAnalyzer.CompletionRequest request;
+        private final SQLCompletionAnalyzer analyzer;
 
-        ProposalSearchJob(SQLCompletionAnalyzer.CompletionRequest request) {
+        ProposalSearchJob(SQLCompletionAnalyzer analyzer) {
             super("Search proposals...");
             setSystem(false);
-            this.request = request;
+            this.analyzer = analyzer;
         }
 
         @Override
@@ -361,12 +264,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 monitor.beginTask("Seeking for SQL completion proposals", 1);
                 try {
                     monitor.subTask("Find proposals");
-                    SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
                     DBExecUtils.tryExecuteRecover(monitor, editor.getDataSource(), analyzer);
                 } finally {
                     monitor.done();
                 }
-                applyFilters();
                 return Status.OK_STATUS;
             } catch (Throwable e) {
                 log.error(e);
@@ -374,37 +275,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
 
-        private void applyFilters() {
-            DBPDataSource dataSource = editor.getDataSource();
-            if (dataSource == null) {
-                return;
-            }
-            DBPDataSourceContainer dsContainer = dataSource.getContainer();
-            Map<DBSObject, Map<Class, List<SQLCompletionProposal>>> containerMap = new HashMap<>();
-            for (SQLCompletionProposal proposal : request.proposals) {
-                DBSObject container = proposal.getObjectContainer();
-                DBPNamedObject object = proposal.getObject();
-                if (object == null) {
-                    continue;
-                }
-                Map<Class, List<SQLCompletionProposal>> typeMap = containerMap.computeIfAbsent(container, k -> new HashMap<>());
-                Class objectType = object instanceof DBSObjectReference ? ((DBSObjectReference) object).getObjectClass() : object.getClass();
-                List<SQLCompletionProposal> list = typeMap.computeIfAbsent(objectType, k -> new ArrayList<>());
-                list.add(proposal);
-            }
-            for (Map.Entry<DBSObject, Map<Class, List<SQLCompletionProposal>>> entry : containerMap.entrySet()) {
-                for (Map.Entry<Class, List<SQLCompletionProposal>> typeEntry : entry.getValue().entrySet()) {
-                    DBSObjectFilter filter = dsContainer.getObjectFilter(typeEntry.getKey(), entry.getKey(), true);
-                    if (filter != null && filter.isEnabled()) {
-                        for (SQLCompletionProposal proposal : typeEntry.getValue()) {
-                            if (!filter.matches(proposal.getObject().getName())) {
-                                request.proposals.remove(proposal);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
 }

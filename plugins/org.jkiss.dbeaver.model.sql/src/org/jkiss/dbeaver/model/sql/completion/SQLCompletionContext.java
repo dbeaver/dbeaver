@@ -16,8 +16,14 @@
  */
 package org.jkiss.dbeaver.model.sql.completion;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 
 /**
  * SQL Completion proposal
@@ -41,4 +47,25 @@ public interface SQLCompletionContext {
     boolean isUseShortNames();
 
     int getInsertCase();
+
+    boolean isSearchProcedures();
+
+    boolean isSearchInsideNames();
+
+    boolean isSortAlphabetically();
+
+    boolean isSearchGlobally();
+
+    boolean isHideDuplicates();
+
+    SQLCompletionProposalBase createProposal(
+        @NotNull SQLCompletionRequest request,
+        @NotNull String displayString,
+        @NotNull String replacementString,
+        int cursorPosition,
+        @Nullable DBPImage image,
+        @NotNull DBPKeywordType proposalType,
+        @Nullable String description,
+        @Nullable DBPNamedObject object);
+
 }

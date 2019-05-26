@@ -1239,7 +1239,7 @@ public final class DBUtils {
         return dataTypeProvider.getLocalDataType(fullTypeName);
     }
 
-    public static DBPObject getPublicObject(@NotNull DBPObject object)
+    public static DBPObject getPublicObject(@Nullable DBPObject object)
     {
         if (object instanceof DBPDataSourceContainer) {
             return ((DBPDataSourceContainer) object).getDataSource();
