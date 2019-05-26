@@ -36,6 +36,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceMap;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -275,6 +276,14 @@ public class PropertyTreeViewer extends TreeViewer {
                                 collection = (Collection<?>) propertyValue;
                             }
                             PropertySourceCollection psc = new PropertySourceCollection(collection);
+                            for (DBPPropertyDescriptor pd : psc.getPropertyDescriptors2()) {
+                                new TreeNode(propNode, psc, pd);
+                            }
+                        }
+                    } else if (Map.class.isAssignableFrom(propType)) {
+                        Map<?,?> propertyValue = (Map<?, ?>) propertySource.getPropertyValue(monitor, prop.getId());
+                        if (propertyValue != null) {
+                            PropertySourceMap psc = new PropertySourceMap(propertyValue);
                             for (DBPPropertyDescriptor pd : psc.getPropertyDescriptors2()) {
                                 new TreeNode(propNode, psc, pd);
                             }

@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * BaseDataSourceInfo
@@ -86,6 +87,11 @@ public abstract class BaseDataSourceInfo implements DBPDataSourceInfo
     public boolean isReadOnlyMetaData()
     {
         return false;
+    }
+
+    @Override
+    public Map<String, Object> getDatabaseProductDetails() {
+        return null;
     }
 
     @Override

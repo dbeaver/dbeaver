@@ -23,25 +23,22 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
- * Simple property source which store properties in map
+ * Map-based property source
  */
-public class PropertySourceCollection implements DBPPropertySource {
+public class PropertySourceMap implements DBPPropertySource {
 
     private List<DBPPropertyDescriptor> props = new ArrayList<>();
 
-    private List<Object> items;
+    private Map<?, ?> items;
 
-    public PropertySourceCollection(Collection<?> collection)
+    public PropertySourceMap(Map<?, ?> map)
     {
-        items = new ArrayList<Object>(collection);
-        for (int i = 0; i < items.size(); i++) {
-            //props.addAll(ObjectPropertyDescriptor.extractAnnotations(this, item.getClass(), null));
-            props.add(new ItemPropertyDescriptor(i, items.get(i)));
+        items = new LinkedHashMap<>(map);
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            props.add(new ItemPropertyDescriptor(entry.getKey(), entry.getValue()));
         }
     }
 
@@ -59,7 +56,7 @@ public class PropertySourceCollection implements DBPPropertySource {
     @Override
     public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
-        return items.get((Integer) id);
+        return items.get(id);
     }
 
     @Override
@@ -96,16 +93,16 @@ public class PropertySourceCollection implements DBPPropertySource {
 
     @Override
     public String toString() {
-        return "[...]";
+        return "<...>";
     }
 
     private class ItemPropertyDescriptor implements DBPPropertyDescriptor {
-        private Integer id;
-        private Object item;
+        private Object name;
+        private Object value;
 
-        private ItemPropertyDescriptor(Integer id, Object item) {
-            this.id = id;
-            this.item = item;
+        public ItemPropertyDescriptor(Object name, Object value) {
+            this.name = name;
+            this.value = value;
         }
 
         @Override
@@ -146,13 +143,13 @@ public class PropertySourceCollection implements DBPPropertySource {
         @NotNull
         @Override
         public String getDisplayName() {
-            return DBUtils.getObjectShortName(item);
+            return DBUtils.getObjectShortName(name);
         }
 
         @NotNull
         @Override
         public Object getId() {
-            return id;
+            return name;
         }
     }
 }
