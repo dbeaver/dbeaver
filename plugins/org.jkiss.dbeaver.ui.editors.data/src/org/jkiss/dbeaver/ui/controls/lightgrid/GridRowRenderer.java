@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
@@ -110,7 +110,7 @@ class GridRowRenderer extends AbstractRenderer {
         int selectionOffset = 0;
 
         y += (bounds.height - gc.stringExtent(text).y) / 2;
-        gc.drawString(TextUtils.getShortString(grid.fontMetrics, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
+        gc.drawString(UITextUtils.getShortString(grid.fontMetrics, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
     }
 
     public int computeHeaderWidth(Object element, int level) {
