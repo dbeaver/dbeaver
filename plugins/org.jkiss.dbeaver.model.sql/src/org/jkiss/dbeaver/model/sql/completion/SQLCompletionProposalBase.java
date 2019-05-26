@@ -230,6 +230,18 @@ public class SQLCompletionProposalBase {
         return displayString;
     }
 
+    public String getReplacementString() {
+        return replacementString;
+    }
+
+    public int getReplacementOffset() {
+        return replacementOffset;
+    }
+
+    public int getReplacementLength() {
+        return replacementLength;
+    }
+
     public DBPKeywordType getProposalType() {
         return proposalType;
     }

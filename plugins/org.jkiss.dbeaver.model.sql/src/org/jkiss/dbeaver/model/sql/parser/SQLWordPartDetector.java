@@ -63,7 +63,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         int topIndex = 0, documentLength = document.getLength();
         try {
             boolean inQuote = false;
-            while (startOffset >= topIndex) {
+            while (startOffset >= topIndex && startOffset < documentLength) {
                 char c = document.getChar(startOffset);
                 if (inQuote) {
                     startOffset--;
