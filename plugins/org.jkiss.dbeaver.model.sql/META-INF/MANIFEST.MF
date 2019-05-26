@@ -12,7 +12,8 @@ Export-Package: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.sql.format,
  org.jkiss.dbeaver.model.sql.format.external,
  org.jkiss.dbeaver.model.sql.format.tokenized,
- org.jkiss.dbeaver.model.sql.registry
+ org.jkiss.dbeaver.model.sql.registry,
+ org.jkiss.dbeaver.model.text
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
