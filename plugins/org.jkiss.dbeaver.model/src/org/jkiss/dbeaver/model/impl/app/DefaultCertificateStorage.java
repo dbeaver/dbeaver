@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -23,10 +24,7 @@ import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.utils.Base64;
 
 import java.io.*;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.KeyStore;
-import java.security.PrivateKey;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -41,6 +39,10 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     private static final Log log = Log.getLog(DefaultCertificateStorage.class);
     public static final char[] DEFAULT_PASSWORD = "".toCharArray();
     public static final String JKS_EXTENSION = ".jks";
+
+    public static final String CA_CERT_ALIAS = "ca-cert";
+    public static final String CLIENT_CERT_ALIAS = "client-cert";
+    public static final String KEY_CERT_ALIAS = "key-cert";
 
     private final File localPath;
 
@@ -109,24 +111,24 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     }
 
     @Override
-    public void addCertificate(DBPDataSourceContainer dataSource, String certType, byte[] caCertData, byte[] clientCertData, byte[] keyData) throws DBException {
+    public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, byte[] caCertData, byte[] clientCertData, byte[] keyData) throws DBException {
         final KeyStore keyStore = getKeyStore(dataSource, certType);
         try {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             List<Certificate> certChain = new ArrayList<>();
             if (caCertData != null) {
                 Certificate caCert = cf.generateCertificate(new ByteArrayInputStream(caCertData));
-                keyStore.setCertificateEntry("ca-cert", caCert);
+                keyStore.setCertificateEntry(CA_CERT_ALIAS, caCert);
                 //certChain.add(caCert);
             }
             if (clientCertData != null) {
                 Certificate clientCert = cf.generateCertificate(new ByteArrayInputStream(clientCertData));
-                keyStore.setCertificateEntry("client-cert", clientCert);
+                keyStore.setCertificateEntry(CLIENT_CERT_ALIAS, clientCert);
                 certChain.add(clientCert);
             }
             if (keyData != null) {
                 PrivateKey privateKey = loadPrivateKeyFromPEM(keyData);
-               keyStore.setKeyEntry("key-cert", privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[certChain.size()]));
+               keyStore.setKeyEntry(KEY_CERT_ALIAS, privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[certChain.size()]));
             }
 
             saveKeyStore(dataSource, certType, keyStore);
@@ -137,12 +139,34 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     }
 
     @Override
-    public void deleteCertificate(DBPDataSourceContainer dataSource, String certType) throws DBException {
+    public void addSelfSignedCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull String certDN) throws DBException {
         final KeyStore keyStore = getKeyStore(dataSource, certType);
         try {
-            keyStore.deleteEntry("ca-cert");
-            keyStore.deleteEntry("client-cert");
-            keyStore.deleteEntry("key-cert");
+            List<Certificate> certChain = new ArrayList<>();
+
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            Certificate clientCert = CertificateGenHelper.generateCertificate(certDN, keyPair, 365, "SHA256withRSA");
+
+            keyStore.setCertificateEntry(CLIENT_CERT_ALIAS, clientCert);
+            certChain.add(clientCert);
+
+            PrivateKey privateKey = keyPair.getPrivate();
+            keyStore.setKeyEntry(KEY_CERT_ALIAS, privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[certChain.size()]));
+
+            saveKeyStore(dataSource, certType, keyStore);
+        } catch (Throwable e) {
+            throw new DBException("Error adding self signed certificate to keystore", e);
+        }
+    }
+
+    @Override
+    public void deleteCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType) throws DBException {
+        final KeyStore keyStore = getKeyStore(dataSource, certType);
+        try {
+            keyStore.deleteEntry(CA_CERT_ALIAS);
+            keyStore.deleteEntry(CLIENT_CERT_ALIAS);
+            keyStore.deleteEntry(KEY_CERT_ALIAS);
             saveKeyStore(dataSource, certType, keyStore);
         } catch (Exception e) {
             throw new DBException("Error deleting certificate from keystore", e);

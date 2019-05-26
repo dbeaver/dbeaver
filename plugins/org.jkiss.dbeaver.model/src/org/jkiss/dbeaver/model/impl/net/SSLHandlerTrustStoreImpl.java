@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.net;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
+import org.jkiss.dbeaver.model.impl.app.CertificateGenHelper;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,6 +40,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
     public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
+    public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String CERT_TYPE = "ssl";
 
     /**
@@ -50,14 +52,19 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         final String caCertProp = sslConfig.getProperties().get(PROP_SSL_CA_CERT);
         final String clientCertProp = sslConfig.getProperties().get(PROP_SSL_CLIENT_CERT);
         final String clientCertKeyProp = sslConfig.getProperties().get(PROP_SSL_CLIENT_KEY);
+        final String selfSignedCert = sslConfig.getProperties().get(PROP_SSL_SELF_SIGNED_CERT);
 
         {
             // Trust keystore
             if (!CommonUtils.isEmpty(caCertProp) || !CommonUtils.isEmpty(clientCertProp)) {
+                monitor.subTask("Load certificates");
                 byte[] caCertData = CommonUtils.isEmpty(caCertProp) ? null : IOUtils.readFileToBuffer(new File(caCertProp));
                 byte[] clientCertData = CommonUtils.isEmpty(clientCertProp) ? null : IOUtils.readFileToBuffer(new File(clientCertProp));
                 byte[] keyData = CommonUtils.isEmpty(clientCertKeyProp) ? null : IOUtils.readFileToBuffer(new File(clientCertKeyProp));
                 securityManager.addCertificate(dataSource.getContainer(), CERT_TYPE, caCertData, clientCertData, keyData);
+            } else if (CommonUtils.toBoolean(selfSignedCert)) {
+                monitor.subTask("Generate self-signed certificate");
+                securityManager.addSelfSignedCertificate(dataSource.getContainer(), CERT_TYPE, "CN=" + dataSource.getContainer().getActualConnectionConfiguration().getHostName());
             } else {
                 securityManager.deleteCertificate(dataSource.getContainer(), CERT_TYPE);
             }
@@ -79,7 +86,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         System.setProperty("javax.net.ssl.keyStorePassword", String.valueOf(DefaultCertificateStorage.DEFAULT_PASSWORD));
     }
 
-    public static SSLContext createTrustStoreSslContext(DBPDataSource dataSource) throws Exception {
+    public static SSLContext createTrustStoreSslContext(DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws Exception {
         final DBACertificateStorage securityManager = dataSource.getContainer().getPlatform().getCertificateStorage();
         KeyStore trustStore = securityManager.getKeyStore(dataSource.getContainer(), CERT_TYPE);
 
@@ -87,17 +94,22 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         keyManagerFactory.init(trustStore, DefaultCertificateStorage.DEFAULT_PASSWORD);
         KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
 
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
-        trustManagerFactory.init(trustStore);
-        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+        TrustManager[] trustManagers;
+        if (CommonUtils.toBoolean(sslConfig.getProperties().get(PROP_SSL_SELF_SIGNED_CERT))) {
+            trustManagers = CertificateGenHelper.NON_VALIDATING_TRUST_MANAGERS;
+        } else {
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
+            trustManagerFactory.init(trustStore);
+            trustManagers = trustManagerFactory.getTrustManagers();
+        }
 
         SSLContext sslContext = SSLContext.getInstance("SSL");
         sslContext.init(keyManagers, trustManagers, new SecureRandom());
         return sslContext;
     }
 
-    public static SSLSocketFactory createTrustStoreSslSocketFactory(DBPDataSource dataSource) throws Exception {
-        return createTrustStoreSslContext(dataSource).getSocketFactory();
+    public static SSLSocketFactory createTrustStoreSslSocketFactory(DBPDataSource dataSource, DBWHandlerConfiguration sslConfig) throws Exception {
+        return createTrustStoreSslContext(dataSource, sslConfig).getSocketFactory();
     }
 
 }
