@@ -119,7 +119,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
 
     protected String getDropIndexPattern(OBJECT_TYPE index)
     {
-        return "DROP INDEX " + PATTERN_ITEM_INDEX; //$NON-NLS-1$
+        return "DROP INDEX " + index.getName() + " ON " + index.getTable();
     }
 
 
