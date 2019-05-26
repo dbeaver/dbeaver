@@ -30,7 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -78,12 +77,12 @@ public class StandardErrorDialog extends ErrorDialog {
                         }
                     }
                 }
-                this.message = TextUtils.cutExtraLines(lastMessage, 20);
+                this.message = CommonUtils.cutExtraLines(lastMessage, 20);
             } else {
-                this.message = TextUtils.cutExtraLines(rootStatus.getMessage(), 20);
+                this.message = CommonUtils.cutExtraLines(rootStatus.getMessage(), 20);
             }
         } else {
-            this.message = TextUtils.cutExtraLines(JFaceResources.format("Reason", message, status.getMessage()), 20); //$NON-NLS-1$
+            this.message = CommonUtils.cutExtraLines(JFaceResources.format("Reason", message, status.getMessage()), 20); //$NON-NLS-1$
         }
     }
 

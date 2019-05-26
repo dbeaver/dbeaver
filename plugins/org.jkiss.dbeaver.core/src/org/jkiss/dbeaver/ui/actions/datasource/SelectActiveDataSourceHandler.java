@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -98,7 +98,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
         if (workbenchWindow != null) {
             GC gc = new GC(workbenchWindow.getShell());
             try {
-                connectionName = TextUtils.getShortText(gc, connectionName, 200);
+                connectionName = UITextUtils.getShortText(gc, connectionName, 200);
             } finally {
                 gc.dispose();
             }

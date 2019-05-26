@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.text.parser.SQLWordPartDetector;

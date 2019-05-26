@@ -15,15 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.model.text;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.swt.graphics.FontMetrics;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -51,90 +48,6 @@ public class TextUtils {
         }
         String str = document.get(region.getOffset(), region.getLength());
         return str.indexOf(pattern);
-    }
-
-    /**
-     * Shortens a supplied string so that it fits within the area specified by
-     * the width argument. Strings that have been shorted have an "..." attached
-     * to the end of the string. The width is computed using the
-     * {@link org.eclipse.swt.graphics.GC#textExtent(String)}.
-     *
-     * @param gc    GC used to perform calculation.
-     * @param t     text to modify.
-     * @param width Pixels to display.
-     * @return shortened string that fits in area specified.
-     */
-    public static String getShortText(GC gc, String t, int width) {
-        if (CommonUtils.isEmpty(t)) {
-            return t;
-        }
-
-        if (width >= gc.textExtent(t).x) {
-            return t;
-        }
-
-        int w = gc.textExtent("...").x;
-        String text = t;
-        int l = text.length();
-        int pivot = l / 2;
-        int s = pivot;
-        int e = pivot + 1;
-
-        while (s >= 0 && e < l) {
-            String s1 = text.substring(0, s);
-            String s2 = text.substring(e, l);
-            int l1 = gc.textExtent(s1).x;
-            int l2 = gc.textExtent(s2).x;
-            if (l1 + w + l2 < width) {
-                text = s1 + " ... " + s2;
-                break;
-            }
-            s--;
-            e++;
-        }
-
-        if (s == 0 || e == l) {
-            text = text.substring(0, 1) + "..." + text.substring(l - 1, l);
-        }
-
-        return text;
-    }
-
-    /**
-     * Shortens a supplied string so that it fits within the area specified by
-     * the width argument. Strings that have been shorted have an "..." attached
-     * to the end of the string. The width is computed using the
-     * {@link org.eclipse.swt.graphics.GC#stringExtent(String)}.
-     * <p/>
-     * Text shorten removed due to awful algorithm (it works really slow on long strings).
-     * TODO: make something better
-     *
-     * @param fontMetrics    fontMetrics used to perform calculation.
-     * @param t     text to modify.
-     * @param width Pixels to display.
-     * @return shortened string that fits in area specified.
-     */
-    public static String getShortString(FontMetrics fontMetrics, String t, int width) {
-
-//        return t;
-        if (CommonUtils.isEmpty(t)) {
-            return t;
-        }
-
-        if (width <= 0) {
-            return ""; //$NON-NLS-1$
-        }
-        int avgCharWidth = fontMetrics.getAverageCharWidth();
-        float length = t.length();
-        if (width < length * avgCharWidth) {
-            length = (float) width / avgCharWidth;
-            length *= 2; // In case of big number of narrow characters
-            if (length < t.length()) {
-                t = t.substring(0, (int) length);
-                //return getShortText(gc, t, width);
-            }
-        }
-        return t;
     }
 
     public static String formatSentence(String sent)
@@ -204,11 +117,6 @@ public class TextUtils {
         }
         maxLength = Math.max(maxLength, lineLength);
         return new Point(maxLength, lineCount);
-    }
-
-    public static boolean isPointInRectangle(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight)
-    {
-        return (x >= rectX) && (y >= rectY) && x < (rectX + rectWidth) && y < (rectY + rectHeight);
     }
 
     /**
@@ -291,23 +199,4 @@ public class TextUtils {
         return score;
     }
 
-    public static String cutExtraLines(String message, int maxLines) {
-        if (message == null || message.indexOf('\n') == -1) {
-            return message;
-        }
-        int lfCount = 0;
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < message.length(); i++) {
-            char c = message.charAt(i);
-            if (c == '\n') {
-                lfCount++;
-            }
-            buf.append(c);
-            if (lfCount == maxLines) {
-                buf.append("...");
-                break;
-            }
-        }
-        return buf.toString();
-    }
 }

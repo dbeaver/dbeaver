@@ -24,7 +24,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
 
@@ -140,7 +140,7 @@ class GridColumnRenderer extends AbstractRenderer
         {
             // Column name
             String text = getColumnText(element);
-            text = TextUtils.getShortString(grid.fontMetrics, text, width);
+            text = UITextUtils.getShortString(grid.fontMetrics, text, width);
             gc.setFont(grid.normalFont);
             gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
         }
@@ -169,7 +169,7 @@ class GridColumnRenderer extends AbstractRenderer
             String text = getColumnDescription(element);
             if (!CommonUtils.isEmpty(text)) {
                 y += TOP_MARGIN + grid.fontMetrics.getHeight();
-                text = TextUtils.getShortString(grid.fontMetrics, text, width);
+                text = UITextUtils.getShortString(grid.fontMetrics, text, width);
                 gc.setFont(grid.normalFont);
                 gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
             }
