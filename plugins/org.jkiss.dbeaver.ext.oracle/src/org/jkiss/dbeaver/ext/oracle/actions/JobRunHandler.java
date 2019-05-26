@@ -29,6 +29,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
+import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -43,7 +44,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -165,7 +165,7 @@ public class JobRunHandler extends OracleTaskHandler
                 element.setText("Run " + objects.size() + " jobs");
             } else {
                 final OracleSourceObject sourceObject = objects.get(0);
-                String objectType = TextUtils.formatWord(sourceObject.getSourceType().name());
+                String objectType = OracleUtils.formatWord(sourceObject.getSourceType().name());
                 element.setText("Run " + objectType/* + " '" + sourceObject.getName() + "'"*/);
             }
         }

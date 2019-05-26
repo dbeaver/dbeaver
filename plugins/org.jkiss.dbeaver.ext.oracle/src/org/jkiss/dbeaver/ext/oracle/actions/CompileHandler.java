@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -44,7 +45,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -193,7 +193,7 @@ public class CompileHandler extends OracleTaskHandler
                 element.setText("Compile " + objects.size() + " objects");
             } else {
                 final OracleSourceObject sourceObject = objects.get(0);
-                String objectType = TextUtils.formatWord(sourceObject.getSourceType().name());
+                String objectType = OracleUtils.formatWord(sourceObject.getSourceType().name());
                 element.setText("Compile " + objectType/* + " '" + sourceObject.getName() + "'"*/);
             }
         }

@@ -23,7 +23,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.graphics.Point;
 
 import java.util.Locale;
-import java.util.StringTokenizer;
 
 /**
  * Text utils
@@ -49,41 +48,6 @@ public class TextUtils {
         String str = document.get(region.getOffset(), region.getLength());
         return str.indexOf(pattern);
     }
-
-    public static String formatSentence(String sent)
-	{
-		if (sent == null) {
-			return "";
-		}
-		StringBuilder result = new StringBuilder();
-		StringTokenizer st = new StringTokenizer(sent, " \t\n\r-,.\\/", true);
-		while (st.hasMoreTokens()) {
-			String word = st.nextToken();
-			if (word.length() > 0) {
-				result.append(formatWord(word));
-			}
-		}
-
-		return result.toString();
-	}
-
-    public static String formatWord(String word)
-	{
-		if (word == null) {
-			return "";
-		}
-		StringBuilder sb = new StringBuilder(word.length());
-		sb.append(Character.toUpperCase(word.charAt(0)));
-		for (int i = 1; i < word.length(); i++) {
-			char c = word.charAt(i);
-			if ((c == 'i' || c == 'I') && sb.charAt(i - 1) == 'I') {
-				sb.append('I');
-			} else {
-				sb.append(Character.toLowerCase(c));
-			}
-		}
-		return sb.toString();
-	}
 
     /**
      * Gets text size.
