@@ -23,10 +23,15 @@ import org.eclipse.ui.views.properties.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCollection;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceMap;
+import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 public class PropertyPageStandard extends PropertySheetPage implements ILazyPropertyLoadListener, IPropertySourceProvider {
 
@@ -133,6 +138,13 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
                     return cache.propertySource;
                 }
             }
+        }
+        if (object instanceof Collection) {
+            return new PropertySourceDelegate(
+                new PropertySourceCollection((Collection<?>) object));
+        } else if (object instanceof Map) {
+            return new PropertySourceDelegate(
+                new PropertySourceMap((Map<?, ?>) object));
         }
         return RuntimeUtils.getObjectAdapter(object, IPropertySource.class);
     }
