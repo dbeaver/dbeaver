@@ -35,9 +35,9 @@ import java.util.Locale;
 /**
  * SQL Completion proposal
  */
-public class SQLStringCompletionProposal {
+public class SQLCompletionProposalBase {
 
-    private static final Log log = Log.getLog(SQLStringCompletionProposal.class);
+    private static final Log log = Log.getLog(SQLCompletionProposalBase.class);
 
     private final SQLCompletionContext context;
 
@@ -73,7 +73,7 @@ public class SQLStringCompletionProposal {
     private DBPNamedObject object;
     private int proposalScore;
 
-    public SQLStringCompletionProposal(
+    public SQLCompletionProposalBase(
         SQLCompletionContext context,
         SQLWordPartDetector wordPartDetector,
         String displayString,

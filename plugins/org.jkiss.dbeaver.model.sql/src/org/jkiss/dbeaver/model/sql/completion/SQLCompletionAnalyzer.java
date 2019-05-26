@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.syntax;
+package org.jkiss.dbeaver.model.sql.completion;
 
-import org.eclipse.jface.text.IDocument;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -28,11 +27,9 @@ import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.text.TextUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,48 +39,21 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Completion utils
+ * Completion analyzer
  */
-class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonitor> {
+public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonitor> {
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
     public static final String ALL_COLUMNS_PATTERN = "*";
     public static final String MATCH_ANY_PATTERN = "%";
 
-    public enum QueryType {
-        TABLE,
-        JOIN,
-        COLUMN,
-        EXEC
-    }
-
-    static class CompletionRequest {
-        final SQLCompletionContext context;
-        final IDocument document;
-        final int documentOffset;
-        final SQLScriptElement activeQuery;
-        final boolean simpleMode;
-
-        SQLWordPartDetector wordDetector;
-        String wordPart;
-        QueryType queryType;
-
-        final List<SQLCompletionProposal> proposals = new ArrayList<>();
-        boolean searchFinished = false;
-
-        CompletionRequest(SQLCompletionContext context, IDocument document, int documentOffset, SQLScriptElement activeQuery, boolean simpleMode) {
-            this.context = context;
-            this.document = document;
-            this.documentOffset = documentOffset;
-            this.activeQuery = activeQuery;
-            this.simpleMode = simpleMode;
-        }
-    }
-
-    private final CompletionRequest request;
+    private final SQLCompletionRequest request;
     private DBRProgressMonitor monitor;
 
-    SQLCompletionAnalyzer(CompletionRequest request) {
+    final List<SQLCompletionProposalBase> proposals = new ArrayList<>();
+    boolean searchFinished = false;
+
+    public SQLCompletionAnalyzer(SQLCompletionRequest request) {
         this.request = request;
     }
 
@@ -97,23 +67,65 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         }
     }
 
+    public List<SQLCompletionProposalBase> getProposals() {
+        return proposals;
+    }
+
+    public boolean isSearchFinished() {
+        return searchFinished;
+    }
 
     private void runAnalyzer() throws DBException {
-        DBPDataSource dataSource = request.context.getDataSource();
+        String searchPrefix = request.getWordPart();
+        request.setQueryType(null);
+        SQLWordPartDetector wordDetector = request.getWordDetector();
+        SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
+        {
+            final String prevKeyWord = request.getWordDetector().getPrevKeyWord();
+            if (!CommonUtils.isEmpty(prevKeyWord)) {
+                if (syntaxManager.getDialect().isEntityQueryWord(prevKeyWord)) {
+                    // TODO: its an ugly hack. Need a better way
+                    if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
+                        !CommonUtils.isEmpty(request.getWordDetector().getPrevWords()) &&
+                        ("(".equals(request.getWordDetector().getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
+                    {
+                        request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
+                    } else if (SQLConstants.KEYWORD_JOIN.equals(prevKeyWord)) {
+                        request.setQueryType(SQLCompletionRequest.QueryType.JOIN);
+                    } else {
+                        request.setQueryType(SQLCompletionRequest.QueryType.TABLE);
+                    }
+                } else if (syntaxManager.getDialect().isAttributeQueryWord(prevKeyWord)) {
+                    request.setQueryType(SQLCompletionRequest.QueryType.COLUMN);
+                    if (!request.isSimpleMode() && CommonUtils.isEmpty(request.getWordPart()) && wordDetector.getPrevDelimiter().equals(SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN)) {
+                        wordDetector.moveToDelimiter();
+                        searchPrefix = SQLCompletionAnalyzer.ALL_COLUMNS_PATTERN;
+                    }
+                } else if (SQLUtils.isExecQuery(syntaxManager.getDialect(), prevKeyWord)) {
+                    request.setQueryType(SQLCompletionRequest.QueryType.EXEC);
+                }
+            }
+        }
+        request.setWordPart(searchPrefix);
+
+        DBPDataSource dataSource = request.getContext().getDataSource();
         if (dataSource == null) {
             return;
         }
-        boolean emptyWord = request.wordPart.length() == 0;
-        if (request.queryType != null) {
+        String wordPart = request.getWordPart();
+        boolean emptyWord = wordPart.length() == 0;
+
+        SQLCompletionRequest.QueryType queryType = request.getQueryType();
+        if (queryType != null) {
             // Try to determine which object is queried (if wordPart is not empty)
             // or get list of root database objects
             if (emptyWord) {
                 // Get root objects
                 DBPObject rootObject = null;
-                if (request.queryType == QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
+                if (queryType == SQLCompletionRequest.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Try to detect current table
                     rootObject = getTableFromAlias((DBSObjectContainer)dataSource, null);
-                    if (rootObject instanceof DBSEntity && SQLConstants.KEYWORD_ON.equals(request.wordDetector.getPrevKeyWord())) {
+                    if (rootObject instanceof DBSEntity && SQLConstants.KEYWORD_ON.equals(wordDetector.getPrevKeyWord())) {
                         // Join?
                         if (makeJoinColumnProposals((DBSObjectContainer)dataSource, (DBSEntity)rootObject)) {
                             return;
@@ -132,7 +144,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 if (rootObject != null) {
                     makeProposalsFromChildren(rootObject, null, false);
                 }
-                if (request.queryType == QueryType.JOIN && !request.proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
+                if (queryType == SQLCompletionRequest.QueryType.JOIN && !proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
                     // Filter out non-joinable tables
                     DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null);
                     if (leftTable instanceof DBSEntity) {
@@ -141,7 +153,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 }
             } else {
                 DBSObject rootObject = null;
-                if (request.queryType == QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
+                if (queryType == SQLCompletionRequest.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Part of column name
                     // Try to get from active object
                     DBSObjectContainer sc = (DBSObjectContainer) dataSource;
@@ -149,32 +161,32 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     if (selectedObject instanceof DBSObjectContainer) {
                         sc = (DBSObjectContainer)selectedObject;
                     }
-                    int divPos = request.wordPart.indexOf(request.context.getSyntaxManager().getStructSeparator());
-                    String tableAlias = divPos == -1 ? null : request.wordPart.substring(0, divPos);
-                    if (tableAlias == null && !CommonUtils.isEmpty(request.wordPart)) {
+                    int divPos = wordPart.indexOf(syntaxManager.getStructSeparator());
+                    String tableAlias = divPos == -1 ? null : wordPart.substring(0, divPos);
+                    if (tableAlias == null && !CommonUtils.isEmpty(wordPart)) {
                         // May be an incomplete table alias. Try to find such table
-                        rootObject = getTableFromAlias(sc, request.wordPart);
+                        rootObject = getTableFromAlias(sc, wordPart);
                         if (rootObject != null) {
                             // Found alias - no proposals
-                            request.searchFinished = true;
+                            searchFinished = true;
                             return;
                         }
                     }
                     rootObject = getTableFromAlias(sc, tableAlias);
                 }
                 if (rootObject != null) {
-                    makeProposalsFromChildren(rootObject, request.wordPart, false);
+                    makeProposalsFromChildren(rootObject, wordPart, false);
                 } else {
                     // Get root object or objects from active database (if any)
-                    if (request.queryType != QueryType.COLUMN && request.queryType != QueryType.EXEC) {
+                    if (queryType != SQLCompletionRequest.QueryType.COLUMN && queryType != SQLCompletionRequest.QueryType.EXEC) {
                         makeDataSourceProposals();
                     }
                 }
             }
 
-            if (!request.simpleMode &&
-                (request.queryType ==  QueryType.EXEC ||
-                    (request.queryType == QueryType.COLUMN && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES))) &&
+            if (!request.isSimpleMode() &&
+                (queryType ==  SQLCompletionRequest.QueryType.EXEC ||
+                    (queryType == SQLCompletionRequest.QueryType.COLUMN && request.getContext().isSearchProcedures())) &&
                 dataSource instanceof DBSObjectContainer)
             {
                 // Add procedures/functions for column proposals
@@ -185,10 +197,10 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     sc = (DBSObjectContainer)selectedObject;
                 }
                 if (structureAssistant != null) {
-                    makeProposalsFromAssistant(dataSource, structureAssistant,
+                    makeProposalsFromAssistant(structureAssistant,
                         sc,
                         new DBSObjectType[] {RelationalObjectType.TYPE_PROCEDURE },
-                        request.wordPart);
+                        wordPart);
                 }
             }
         } else {
@@ -199,27 +211,131 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         if (!emptyWord) {
             makeProposalsFromQueryParts();
         }
+
+        // Final filtering
+        if (!searchFinished && !CommonUtils.isEmpty(request.getWordPart()))  {
+            // Keyword assist
+            List<String> matchedKeywords = syntaxManager.getDialect().getMatchedKeywords(request.getWordPart());
+            if (!request.isSimpleMode()) {
+                // Sort using fuzzy match
+                matchedKeywords.sort(Comparator.comparingInt(o -> TextUtils.fuzzyScore(o, request.getWordPart())));
+            }
+            for (String keyWord : matchedKeywords) {
+                DBPKeywordType keywordType = syntaxManager.getDialect().getKeywordType(keyWord);
+                if (keywordType != null) {
+                    if (keywordType == DBPKeywordType.TYPE) {
+                        continue;
+                    }
+                    if (request.getQueryType() == SQLCompletionRequest.QueryType.COLUMN && !(keywordType == DBPKeywordType.FUNCTION || keywordType == DBPKeywordType.KEYWORD)) {
+                        continue;
+                    }
+                    proposals.add(
+                        SQLCompletionAnalyzer.createCompletionProposal(
+                            request,
+                            keyWord,
+                            keyWord,
+                            keywordType,
+                            null,
+                            false,
+                            null)
+                    );
+                }
+            }
+        }
+        filterProposals(dataSource);
+    }
+
+    private void filterProposals(DBPDataSource dataSource) {
+
+        // Remove duplications
+        final Set<String> proposalMap = new HashSet<>(proposals.size());
+        for (int i = 0; i < proposals.size(); ) {
+            SQLCompletionProposalBase proposal = proposals.get(i);
+            if (proposalMap.contains(proposal.getDisplayString())) {
+                proposals.remove(i);
+                continue;
+            }
+            proposalMap.add(proposal.getDisplayString());
+            i++;
+        }
+
+        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
+        boolean hideDups = request.getContext().isHideDuplicates() && selectedObject != null;
+        if (hideDups) {
+            for (int i = 0; i < proposals.size(); i++) {
+                SQLCompletionProposalBase proposal = proposals.get(i);
+                for (int j = 0; j < proposals.size(); ) {
+                    SQLCompletionProposalBase proposal2 = proposals.get(j);
+                    if (i != j && proposal.hasStructObject() && proposal2.hasStructObject() &&
+                        CommonUtils.equalObjects(proposal.getObject().getName(), proposal2.getObject().getName()) &&
+                        proposal.getObjectContainer() == selectedObject) {
+                        proposals.remove(j);
+                    } else {
+                        j++;
+                    }
+                }
+            }
+        }
+
+        if (hideDups) {
+            // Remove duplicates from non-active schema
+
+            if (selectedObject instanceof DBSObjectContainer) {
+
+            }
+
+        }
+
+        // Apply navigator object filters
+        if (dataSource != null) {
+            DBPDataSourceContainer dsContainer = dataSource.getContainer();
+            Map<DBSObject, Map<Class, List<SQLCompletionProposalBase>>> containerMap = new HashMap<>();
+            for (SQLCompletionProposalBase proposal : proposals) {
+                DBSObject container = proposal.getObjectContainer();
+                DBPNamedObject object = proposal.getObject();
+                if (object == null) {
+                    continue;
+                }
+                Map<Class, List<SQLCompletionProposalBase>> typeMap = containerMap.computeIfAbsent(container, k -> new HashMap<>());
+                Class objectType = object instanceof DBSObjectReference ? ((DBSObjectReference) object).getObjectClass() : object.getClass();
+                List<SQLCompletionProposalBase> list = typeMap.computeIfAbsent(objectType, k -> new ArrayList<>());
+                list.add(proposal);
+            }
+            for (Map.Entry<DBSObject, Map<Class, List<SQLCompletionProposalBase>>> entry : containerMap.entrySet()) {
+                for (Map.Entry<Class, List<SQLCompletionProposalBase>> typeEntry : entry.getValue().entrySet()) {
+                    DBSObjectFilter filter = dsContainer.getObjectFilter(typeEntry.getKey(), entry.getKey(), true);
+                    if (filter != null && filter.isEnabled()) {
+                        for (SQLCompletionProposalBase proposal : typeEntry.getValue()) {
+                            if (!filter.matches(proposal.getObject().getName())) {
+                                proposals.remove(proposal);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void makeProposalsFromQueryParts() {
+        String wordPart = request.getWordPart();
         // Find all aliases matching current word
-        if (!CommonUtils.isEmpty(request.activeQuery.getText()) && !CommonUtils.isEmpty(request.wordPart)) {
-            if (request.wordPart.indexOf(request.context.getSyntaxManager().getStructSeparator()) != -1 || request.wordPart.equals(ALL_COLUMNS_PATTERN)) {
+        if (!CommonUtils.isEmpty(request.getActiveQuery().getText()) && !CommonUtils.isEmpty(wordPart)) {
+            if (wordPart.indexOf(request.getContext().getSyntaxManager().getStructSeparator()) != -1 || wordPart.equals(ALL_COLUMNS_PATTERN)) {
                 return;
             }
-            SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(request.context.getDataSource());
+            SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(request.getContext().getDataSource());
             String tableNamePattern = getTableNamePattern(sqlDialect);
-            String tableAliasPattern = getTableAliasPattern("(" + request.wordPart + "[a-z]*)", tableNamePattern);
+            String tableAliasPattern = getTableAliasPattern("(" + wordPart + "[a-z]*)", tableNamePattern);
             Pattern rp = Pattern.compile(tableAliasPattern);
-            Matcher matcher = rp.matcher(request.activeQuery.getText());
+            Matcher matcher = rp.matcher(request.getActiveQuery().getText());
             while (matcher.find()) {
                 String tableName = matcher.group(1);
                 String tableAlias = matcher.group(2);
-                if (tableAlias.equals(request.wordPart)) {
+                if (tableAlias.equals(wordPart)) {
                     continue;
                 }
 
-                request.proposals.add(
+                proposals.add(
                     0,
                     SQLCompletionAnalyzer.createCompletionProposal(
                         request,
@@ -230,7 +346,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                         false,
                         null)
                 );
-                request.proposals.add(
+                proposals.add(
                     0,
                     SQLCompletionAnalyzer.createCompletionProposal(
                         request,
@@ -247,14 +363,14 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
 
     private boolean makeJoinColumnProposals(DBSObjectContainer sc, DBSEntity leftTable) {
         SQLWordPartDetector joinTableDetector = new SQLWordPartDetector(
-            request.document,
-            request.context.getSyntaxManager(),
-            request.wordDetector.getStartOffset(),
+            request.getDocument(),
+            request.getContext().getSyntaxManager(),
+            request.getWordDetector().getStartOffset(),
             2);
         List<String> prevWords = joinTableDetector.getPrevWords();
 
         if (!CommonUtils.isEmpty(prevWords)) {
-            DBPDataSource dataSource = request.context.getDataSource();
+            DBPDataSource dataSource = request.getContext().getDataSource();
             SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
             String rightTableName = prevWords.get(0);
             String[] allNames = SQLUtils.splitFullIdentifier(
@@ -262,11 +378,11 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 sqlDialect.getCatalogSeparator(),
                 sqlDialect.getIdentifierQuoteStrings(),
                 false);
-            DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, Arrays.asList(allNames), !request.simpleMode, request.wordDetector);
+            DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
             if (rightTable instanceof DBSEntity) {
                 try {
                     String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, DBUtils.getQuotedIdentifier(leftTable), (DBSEntity) rightTable, DBUtils.getQuotedIdentifier(rightTable));
-                    request.proposals.add(createCompletionProposal(request, joinCriteria, joinCriteria, DBPKeywordType.OTHER, "Join condition"));
+                    proposals.add(createCompletionProposal(request, joinCriteria, joinCriteria, DBPKeywordType.OTHER, "Join condition"));
                     return true;
                 } catch (DBException e) {
                     log.error("Error generating join condition", e);
@@ -278,9 +394,8 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
 
     private void filterNonJoinableProposals(DBSEntity leftTable) {
         // Remove all table proposals which don't have FKs between them and leftTable
-        List<SQLCompletionProposal> proposals = request.proposals;
-        List<SQLCompletionProposal> joinableProposals = new ArrayList<>();
-        for (SQLCompletionProposal proposal : proposals) {
+        List<SQLCompletionProposalBase> joinableProposals = new ArrayList<>();
+        for (SQLCompletionProposalBase proposal : proposals) {
             if (proposal.getObject() instanceof DBSEntity) {
                 DBSEntity rightTable = (DBSEntity) proposal.getObject();
                 if (tableHaveJoins(rightTable, leftTable) || tableHaveJoins(leftTable, rightTable)) {
@@ -290,8 +405,8 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             }
         }
         if (!joinableProposals.isEmpty()) {
-            request.proposals.clear();
-            request.proposals.addAll(joinableProposals);
+            proposals.clear();
+            proposals.addAll(joinableProposals);
         }
     }
 
@@ -313,7 +428,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
     }
 
     private void makeDataSourceProposals() throws DBException {
-        DBPDataSource dataSource = request.context.getDataSource();
+        DBPDataSource dataSource = request.getContext().getDataSource();
         final DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (rootContainer == null) {
             return;
@@ -321,7 +436,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
 
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
-        String[] tokens = request.wordDetector.splitWordPart();
+        String[] tokens = request.getWordDetector().splitWordPart();
 
         // Detect selected object (container).
         // There could be multiple selected objects on different hierarchy levels (e.g. PG)
@@ -337,7 +452,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         String lastToken = null;
         for (int i = 0; i < tokens.length; i++) {
             final String token = tokens[i];
-            if (i == tokens.length - 1 && !request.wordDetector.getWordPart().endsWith(".")) {
+            if (i == tokens.length - 1 && !request.getWordDetector().getWordPart().endsWith(".")) {
                 lastToken = token;
                 break;
             }
@@ -346,7 +461,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             }
             // Get next structure container
             final String objectName =
-                request.wordDetector.isQuoted(token) ? request.wordDetector.removeQuotes(token) :
+                request.getWordDetector().isQuoted(token) ? request.getWordDetector().removeQuotes(token) :
                 DBObjectNameCaseTransformer.transformName(dataSource, token);
             childObject = objectName == null ? null : sc.getChild(monitor, objectName);
             if (childObject == null && i == 0 && objectName != null) {
@@ -365,7 +480,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 if (i == 0) {
                     // Assume it's a table alias ?
                     childObject = getTableFromAlias(sc, token);
-                    if (childObject == null && !request.simpleMode) {
+                    if (childObject == null && !request.isSimpleMode()) {
                         // Search using structure assistant
                         DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                         if (structureAssistant != null) {
@@ -373,8 +488,8 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                                 monitor,
                                 null,
                                 structureAssistant.getAutoCompleteObjectTypes(),
-                                request.wordDetector.removeQuotes(token),
-                                request.wordDetector.isQuoted(token),
+                                request.getWordDetector().removeQuotes(token),
+                                request.getWordDetector().isQuoted(token),
                                 false,
                                 2);
                             if (!references.isEmpty()) {
@@ -414,7 +529,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     }
                 }
 
-                if (request.proposals.isEmpty() && !request.simpleMode) {
+                if (proposals.isEmpty() && !request.isSimpleMode()) {
                     // At last - try to find child tables by pattern
                     DBSStructureAssistant structureAssistant = null;
                     for (DBSObject object = childObject; object != null; object =  object.getParentObject()) {
@@ -424,7 +539,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                         }
                     }
                     if (structureAssistant != null) {
-                        makeProposalsFromAssistant(dataSource, structureAssistant, sc, null, lastToken);
+                        makeProposalsFromAssistant(structureAssistant, sc, null, lastToken);
                     }
                 }
             }
@@ -440,11 +555,11 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             return null;
         }
 
-        final DBPDataSource dataSource = request.context.getDataSource();
+        final DBPDataSource dataSource = request.getContext().getDataSource();
         if (!(dataSource instanceof SQLDataSource)) {
             return null;
         }
-        if (request.activeQuery == null) {
+        if (request.getActiveQuery() == null) {
             return null;
         }
 
@@ -471,7 +586,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 String kwList = "from|update|join|into";
-                if (request.queryType != QueryType.COLUMN) {
+                if (request.getQueryType() != SQLCompletionRequest.QueryType.COLUMN) {
                     kwList = kwList + "|,";
                 }
                 structNamePattern = "(?:" + kwList + ")\\s+" + tableNamePattern;
@@ -486,7 +601,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 // Bad pattern - seems to be a bad token
                 return null;
             }
-            String testQuery = SQLUtils.stripComments(request.context.getSyntaxManager().getDialect(), request.activeQuery.getText());
+            String testQuery = SQLUtils.stripComments(request.getContext().getSyntaxManager().getDialect(), request.getActiveQuery().getText());
             Matcher matcher = aliasPattern.matcher(testQuery);
             if (matcher.find()) {
                 int groupCount = matcher.groupCount();
@@ -502,7 +617,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             }
         }
 
-        return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, true, request.wordDetector);
+        return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, true, request.getWordDetector());
     }
 
     private String getTableAliasPattern(String alias, String tableNamePattern) {
@@ -524,19 +639,19 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
     }
 
     private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart, boolean addFirst) throws DBException {
-        if (request.queryType == QueryType.EXEC) {
+        if (request.getQueryType() == SQLCompletionRequest.QueryType.EXEC) {
             return;
         }
+        SQLWordPartDetector wordDetector = request.getWordDetector();
         if (startPart != null) {
-            startPart = request.wordDetector.removeQuotes(startPart).toUpperCase(Locale.ENGLISH);
-            int divPos = startPart.lastIndexOf(request.context.getSyntaxManager().getStructSeparator());
+            startPart = wordDetector.removeQuotes(startPart).toUpperCase(Locale.ENGLISH);
+            int divPos = startPart.lastIndexOf(request.getContext().getSyntaxManager().getStructSeparator());
             if (divPos != -1) {
                 startPart = startPart.substring(divPos + 1);
             }
         }
 
-        DBPDataSource dataSource = request.context.getDataSource();
-        boolean matchContains = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
+        DBPDataSource dataSource = request.getContext().getDataSource();
         Collection<? extends DBSObject> children = null;
         if (parent instanceof DBSObjectContainer) {
             children = ((DBSObjectContainer)parent).getChildren(monitor);
@@ -548,13 +663,13 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
 
             List<DBSObject> matchedObjects = new ArrayList<>();
             final Map<String, Integer> scoredMatches = new HashMap<>();
-            boolean simpleMode = request.simpleMode;
+            boolean simpleMode = request.isSimpleMode();
             boolean allObjects = !simpleMode && ALL_COLUMNS_PATTERN.equals(startPart);
             String objPrefix = null;
             if (allObjects) {
-                if (!CommonUtils.isEmpty(request.wordDetector.getPrevWords())) {
-                    String prevWord = request.wordDetector.getPrevWords().get(0);
-                    if (prevWord.length() > 0 && prevWord.charAt(prevWord.length() - 1) == request.context.getSyntaxManager().getStructSeparator()) {
+                if (!CommonUtils.isEmpty(wordDetector.getPrevWords())) {
+                    String prevWord = wordDetector.getPrevWords().get(0);
+                    if (prevWord.length() > 0 && prevWord.charAt(prevWord.length() - 1) == request.getContext().getSyntaxManager().getStructSeparator()) {
                         objPrefix = prevWord;
                     }
                 }
@@ -572,7 +687,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     }
                     combinedMatch.append(DBUtils.getQuotedIdentifier(child));
                 } else {
-                    if (dataSource != null && !dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS)) {
+                    if (dataSource != null && !request.getContext().isSearchInsideNames()) {
                         // startsWith
                         if (CommonUtils.isEmpty(startPart) || CommonUtils.startsWithIgnoreCase(child.getName(), startPart)) {
                             matchedObjects.add(child);
@@ -590,7 +705,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             if (combinedMatch.length() > 0) {
                 String replaceString = combinedMatch.toString();
 
-                request.proposals.add(createCompletionProposal(
+                proposals.add(createCompletionProposal(
                     request,
                     replaceString,
                     replaceString,
@@ -598,7 +713,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     "All objects"));
             } else if (!matchedObjects.isEmpty()) {
                 if (startPart == null || scoredMatches.isEmpty()) {
-                    if (dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY)) {
+                    if (dataSource != null && request.getContext().isSortAlphabetically()) {
                         matchedObjects.sort(DBUtils.nameComparatorIgnoreCase());
                     }
                 } else {
@@ -614,9 +729,9 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                         return score2 - score1;
                     });
                 }
-                List<SQLCompletionProposal> childProposals = new ArrayList<>(matchedObjects.size());
+                List<SQLCompletionProposalBase> childProposals = new ArrayList<>(matchedObjects.size());
                 for (DBSObject child : matchedObjects) {
-                    SQLCompletionProposal proposal = makeProposalsFromObject(child, !(parent instanceof DBPDataSource));
+                    SQLCompletionProposalBase proposal = makeProposalsFromObject(child, !(parent instanceof DBPDataSource));
                     if (!scoredMatches.isEmpty()) {
                         int proposalScore = scoredMatches.get(child.getName());
                         proposal.setProposalScore(proposalScore);
@@ -626,9 +741,9 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 }
                 if (addFirst) {
                     // Add proposals in the beginning (because the most strict identifiers have to be first)
-                    request.proposals.addAll(0, childProposals);
+                    proposals.addAll(0, childProposals);
                 } else {
-                    request.proposals.addAll(childProposals);
+                    proposals.addAll(childProposals);
                 }
             }
         }
@@ -636,41 +751,40 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
 
     private boolean objectNameMatches(@Nullable String startPart, DBSObject child, boolean matchContains) {
         String nameCI = child.getName().toUpperCase(Locale.ENGLISH);
-        return matchContains ? nameCI.contains(startPart) : nameCI.startsWith(startPart);
+        return !CommonUtils.isEmpty(startPart) && (matchContains ? nameCI.contains(startPart) : nameCI.startsWith(startPart));
     }
 
     private void makeProposalsFromAssistant(
-            DBPDataSource dataSource,
-            DBSStructureAssistant assistant,
-            @Nullable DBSObjectContainer rootSC,
-            DBSObjectType[] objectTypes,
-            String objectName) throws DBException
+        DBSStructureAssistant assistant,
+        @Nullable DBSObjectContainer rootSC,
+        DBSObjectType[] objectTypes,
+        String objectName) throws DBException
     {
         Collection<DBSObjectReference> references = assistant.findObjectsByMask(
             monitor,
             rootSC,
             objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
-            makeObjectNameMask(dataSource, request.wordDetector.removeQuotes(objectName)),
-            request.wordDetector.isQuoted(objectName),
-            dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),
+            makeObjectNameMask(request.getWordDetector().removeQuotes(objectName)),
+            request.getWordDetector().isQuoted(objectName),
+            request.getContext().isSearchGlobally(),
             100);
         for (DBSObjectReference reference : references) {
-            request.proposals.add(makeProposalsFromObject(
+            proposals.add(makeProposalsFromObject(
                 reference,
                 !(rootSC instanceof DBPDataSource),
                 reference.getObjectType().getImage()));
         }
     }
 
-    private String makeObjectNameMask(DBPDataSource dataSource, String objectName) {
-        if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS)) {
+    private String makeObjectNameMask(String objectName) {
+        if (request.getContext().isSearchInsideNames()) {
             return MATCH_ANY_PATTERN + objectName + MATCH_ANY_PATTERN;
         } else {
             return objectName + MATCH_ANY_PATTERN;
         }
     }
 
-    private SQLCompletionProposal makeProposalsFromObject(DBSObject object, boolean useShortName)
+    private SQLCompletionProposalBase makeProposalsFromObject(DBSObject object, boolean useShortName)
     {
         DBNNode node = DBNUtils.getNodeByObject(monitor, object, false);
 
@@ -681,7 +795,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         return makeProposalsFromObject(object, useShortName, objectIcon);
     }
 
-    private SQLCompletionProposal makeProposalsFromObject(
+    private SQLCompletionProposalBase makeProposalsFromObject(
         DBPNamedObject object,
         boolean useShortName,
         @Nullable DBPImage objectIcon)
@@ -692,13 +806,13 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
 
         boolean isSingleObject = true;
         String replaceString = null;
-        DBPDataSource dataSource = request.context.getDataSource();
+        DBPDataSource dataSource = request.getContext().getDataSource();
         if (dataSource != null) {
             // If we replace short name with referenced object
             // and current active schema (catalog) is not this object's container then
             // replace with full qualified name
-            if (!request.context.isUseShortNames() && object instanceof DBSObjectReference) {
-                if (request.wordDetector.getFullWord().indexOf(request.context.getSyntaxManager().getStructSeparator()) == -1) {
+            if (!request.getContext().isUseShortNames() && object instanceof DBSObjectReference) {
+                if (request.getWordDetector().getFullWord().indexOf(request.getContext().getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
                         DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
@@ -710,7 +824,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 }
             }
             if (replaceString == null) {
-                if (request.context.isUseFQNames() && object instanceof DBPQualifiedObject) {
+                if (request.getContext().isUseFQNames() && object instanceof DBPQualifiedObject) {
                     replaceString = ((DBPQualifiedObject)object).getFullyQualifiedName(DBPEvaluationContext.DML);
                 } else {
                     replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
@@ -732,8 +846,8 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
     /*
         * Turns the vector into an Array of ICompletionProposal objects
         */
-    static SQLCompletionProposal createCompletionProposal(
-        CompletionRequest request,
+    static SQLCompletionProposalBase createCompletionProposal(
+        SQLCompletionRequest request,
         String replaceString,
         String displayString,
         DBPKeywordType proposalType,
@@ -743,7 +857,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
     {
         //SQLEditorBase editor = request.editor;
         //DBPPreferenceStore store = editor.getActivePreferenceStore();
-        DBPDataSource dataSource = request.context.getDataSource();
+        DBPDataSource dataSource = request.getContext().getDataSource();
         if (dataSource != null) {
             if (isObject) {
                 // Escape replace string if required
@@ -753,9 +867,9 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         }
 
         // If we have quoted string then ignore pref settings
-        boolean quotedString = request.wordDetector.isQuoted(replaceString);
+        boolean quotedString = request.getWordDetector().isQuoted(replaceString);
         if (!quotedString) {
-            final int proposalCase = request.context.getInsertCase();
+            final int proposalCase = request.getContext().getInsertCase();
             switch (proposalCase) {
                 case SQLCompletionContext.PROPOSAL_CASE_UPPER:
                     replaceString = replaceString.toUpperCase();
@@ -766,10 +880,10 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                 default:
                     // Do not convert case if we got it directly from object
                     if (!isObject) {
-                        SQLDialect dialect = request.context.getSyntaxManager().getDialect();
+                        SQLDialect dialect = request.getContext().getSyntaxManager().getDialect();
                         DBPKeywordType keywordType = dialect.getKeywordType(replaceString);
                         if (keywordType == DBPKeywordType.KEYWORD) {
-                            replaceString = request.context.getSyntaxManager().getKeywordCase().transform(replaceString);
+                            replaceString = request.getContext().getSyntaxManager().getKeywordCase().transform(replaceString);
                         } else {
                             replaceString = dialect.storesUnquotedCase().transform(replaceString);
                         }
@@ -778,33 +892,33 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             }
         }
 
-        return new SQLCompletionProposal(
+        return request.getContext().createProposal(
             request,
             displayString,
             replaceString, // replacementString
             replaceString.length(), //cursorPosition the position of the cursor following the insert
                                 // relative to replacementOffset
             image, //image to display
-            null,//new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
+            //new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
             proposalType,
             null,
             object);
     }
 
-    protected static SQLCompletionProposal createCompletionProposal(
-        CompletionRequest request,
+    protected static SQLCompletionProposalBase createCompletionProposal(
+        SQLCompletionRequest request,
         String replaceString,
         String displayString,
         DBPKeywordType proposalType,
         String description)
     {
-        return new SQLCompletionProposal(
+        return request.getContext().createProposal(
             request,
             displayString,
             replaceString, // replacementString
             replaceString.length(), //cursorPosition the position of the cursor following the insert
             null, //image to display
-            null,//new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
+            //new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
             proposalType,
             description,
             null);

@@ -11,6 +11,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
 
 
@@ -21,7 +22,7 @@ public class SQLCommandCompletionProposal extends SQLCompletionProposal {
 
 
     public SQLCommandCompletionProposal(
-            SQLCompletionAnalyzer.CompletionRequest request,
+            SQLCompletionRequest request,
             SQLCommandHandlerDescriptor descriptor)
     {
         super(request,
@@ -29,8 +30,7 @@ public class SQLCommandCompletionProposal extends SQLCompletionProposal {
                 descriptor.getId(),
                 descriptor.getId().length(),
                 descriptor.getIcon(),
-                null,
-                DBPKeywordType.OTHER,
+            DBPKeywordType.OTHER,
                 descriptor.getDescription(),
                 null);
     }

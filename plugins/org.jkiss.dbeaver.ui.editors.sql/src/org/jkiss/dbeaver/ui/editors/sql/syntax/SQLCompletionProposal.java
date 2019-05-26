@@ -35,8 +35,8 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
-import org.jkiss.dbeaver.model.sql.completion.SQLStringCompletionProposal;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.text.TextUtils;
@@ -50,33 +50,29 @@ import java.util.Locale;
 /**
  * SQL Completion proposal
  */
-public class SQLCompletionProposal extends SQLStringCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension4, ICompletionProposalExtension5 {
+public class SQLCompletionProposal extends SQLCompletionProposalBase implements ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension4, ICompletionProposalExtension5 {
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
 
     private String replacementLast;
 
-    private IContextInformation contextInformation;
-
     public SQLCompletionProposal(
-        SQLCompletionAnalyzer.CompletionRequest request,
+        SQLCompletionRequest request,
         String displayString,
         String replacementString,
         int cursorPosition,
         @Nullable DBPImage image,
-        IContextInformation contextInformation,
         DBPKeywordType proposalType,
         String description,
         DBPNamedObject object)
     {
-        super(request.context, request.wordDetector, displayString, replacementString, cursorPosition, image, proposalType, description, object);
+        super(request.getContext(), request.getWordDetector(), displayString, replacementString, cursorPosition, image, proposalType, description, object);
         int divPos = this.replacementFull.lastIndexOf(getContext().getSyntaxManager().getStructSeparator());
         if (divPos == -1) {
             this.replacementLast = null;
         } else {
             this.replacementLast = this.replacementFull.substring(divPos + 1);
         }
-        this.contextInformation = contextInformation;
     }
 
     @Override
@@ -146,7 +142,7 @@ public class SQLCompletionProposal extends SQLStringCompletionProposal implement
 
     @Override
     public IContextInformation getContextInformation() {
-        return contextInformation;
+        return null;
     }
 
     //////////////////////////////////////////////////////////////////
