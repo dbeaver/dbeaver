@@ -50,40 +50,6 @@ public class TextUtils {
     }
 
     /**
-     * Gets text size.
-     * x: maximum line length
-     * y: number of lines
-     * @param text    source text
-     * @return size
-     */
-    public static Point getTextSize(String text) {
-        int length = text.length();
-        int maxLength = 0;
-        int lineCount = 1;
-        int lineLength = 0;
-        for (int i = 0; i < length; i++) {
-            char c = text.charAt(i);
-            switch (c) {
-                case '\n':
-                    maxLength = Math.max(maxLength, lineLength);
-                    lineCount++;
-                    lineLength = 0;
-                    break;
-                case '\r':
-                    break;
-                case '\t':
-                    lineLength += 4;
-                    break;
-                default:
-                    lineLength++;
-                    break;
-            }
-        }
-        maxLength = Math.max(maxLength, lineLength);
-        return new Point(maxLength, lineCount);
-    }
-
-    /**
      * Copied from Apache FuzzyScore  implementation.
      * One point is given for every matched character. Subsequent matches yield two bonus points. A higher score
      * indicates a higher similarity.
