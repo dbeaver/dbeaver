@@ -69,7 +69,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.ui.editors.text.parser.SQLWordDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
