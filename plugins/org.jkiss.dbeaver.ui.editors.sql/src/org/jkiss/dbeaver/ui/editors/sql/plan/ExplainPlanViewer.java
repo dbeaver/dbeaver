@@ -187,16 +187,18 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                 try (Reader r = new FileReader(selected)) {
 
                     lastPlan = ((DBCQueryPlannerSerializable) planner).deserialize(r);
-                    
-                    lastQuery =  new SQLQuery(contextProvider.getExecutionContext().getDataSource(),  lastPlan.getQueryString());
+
+                    lastQuery = new SQLQuery(contextProvider.getExecutionContext().getDataSource(),
+                            lastPlan.getQueryString());
 
                     lastQueryId = lastPlan.getQueryString();
-                    
-                     refresh();
+
+                    refresh();
 
                 } catch (IOException | InvocationTargetException e) {
 
-                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ", (e.getCause() != null) ? e.getCause().getCause() : e);
+                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ",
+                            (e.getCause() != null) ? e.getCause().getCause() : e);
 
                 }
 

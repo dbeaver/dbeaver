@@ -697,7 +697,9 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
                 <separator name="additions_plan" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>                <separator name="additions_active_object" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>
+                <separator name="plan" visible="true"/>
+                <separator name="additions_active_object" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"/>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"/>
             </menu>
