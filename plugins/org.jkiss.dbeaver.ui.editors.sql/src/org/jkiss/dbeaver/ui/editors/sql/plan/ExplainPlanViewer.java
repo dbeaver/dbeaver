@@ -28,18 +28,19 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
 import org.jkiss.dbeaver.model.exec.plan.DBCSavedQueryPlanner;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -52,14 +53,19 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -92,6 +98,8 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
     private DBCPlan lastPlan;
 
     private RefreshPlanAction refreshPlanAction;
+    
+    private String curFolder;
 
     public ExplainPlanViewer(final IWorkbenchPart workbenchPart, DBPContextProvider contextProvider, Composite parent)
     {
@@ -161,6 +169,42 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
 
     public SQLQuery getQuery() {
         return lastQuery;
+    }
+    
+  
+    public void loadQueryPlan(DBCQueryPlanner planner, Viewer viewer) {
+        if (planner instanceof DBCQueryPlannerSerializable) {
+
+            FileDialog fd = new FileDialog(viewer.getControl().getShell(), SWT.OPEN | SWT.SINGLE);
+            fd.setText(UIMessages.save_execution_plan);
+            fd.setFilterPath(curFolder);
+            fd.setFilterExtensions(SQLPlanSaveProvider.EXT);
+            String selected = fd.open();
+            if (selected != null) {
+
+                curFolder = fd.getFilterPath();
+
+                try (Reader r = new FileReader(selected)) {
+
+                    lastPlan = ((DBCQueryPlannerSerializable) planner).deserialize(r);
+
+                    lastQuery = new SQLQuery(contextProvider.getExecutionContext().getDataSource(),
+                            lastPlan.getQueryString());
+
+                    lastQueryId = lastPlan.getQueryString();
+
+                    refresh();
+
+                } catch (IOException | InvocationTargetException e) {
+
+                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ",
+                            (e.getCause() != null) ? e.getCause().getCause() : e);
+
+                }
+
+            }
+
+        }
     }
 
     public void explainQueryPlan(SQLQuery query, Object queryId) {

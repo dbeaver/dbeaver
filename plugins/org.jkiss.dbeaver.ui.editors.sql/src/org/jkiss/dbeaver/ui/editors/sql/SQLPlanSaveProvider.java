@@ -1,9 +1,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 
@@ -23,11 +21,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
 
-    private static final String[] EXT = {"*.dbplan", "*"}; //$NON-NLS-1$ //$NON-NLS-2$;
+    public static final String[] EXT = {"*.dbplan", "*"}; //$NON-NLS-1$ //$NON-NLS-2$;
     private static final String[] NAMES = {"DBeaver Plan File", "All files"}; //$NON-NLS-1$ //$NON-NLS-2$;
 
     private Viewer viewer;
@@ -35,9 +32,7 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
     private DBCPlan plan;
 
     private SaveAction saveAction = new SaveAction("Save plan", DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS), this);
-    private LoadAction loadAction = new LoadAction("Load plan", DBeaverIcons.getImageDescriptor(UIIcon.LOAD), this);
 
-    private String curFolder;
     private DBCQueryPlanner planner;
 
     protected abstract void showPlan(Viewer viewer, SQLQuery query, DBCPlan plan);
@@ -74,44 +69,6 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
         }
     }
 
-    protected void doLoad() {
-        if (query != null) {
-
-
-            DBCQueryPlanner planner = DBUtils.getAdapter(DBCQueryPlanner.class, query.getDataSource());
-
-            if (planner instanceof DBCQueryPlannerSerializable) {
-
-                FileDialog fd = new FileDialog(viewer.getControl().getShell(), SWT.OPEN | SWT.SINGLE);
-                fd.setText(UIMessages.save_execution_plan);
-                fd.setFilterPath(curFolder);
-                fd.setFilterExtensions(EXT);
-                String selected = fd.open();
-                if (selected != null) {
-
-                    curFolder = fd.getFilterPath();
-
-                    try (Reader r = new FileReader(selected)) {
-
-                        plan = ((DBCQueryPlannerSerializable) planner).deserialize(r);
-
-                        showPlan(viewer, query, plan);
-
-                    } catch (IOException | InvocationTargetException e) {
-
-                        DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan", e);
-
-                    }
-
-                }
-
-            } else {
-                loadAction.setEnabled(false);
-            }
-        }
-    }
-
-
     protected void fillPlan(SQLQuery query, DBCPlan plan) {
         this.query = query;
         this.plan = plan;
@@ -124,7 +81,6 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
 
         if (saveAction.isEnabled()) {
             contributionManager.add(saveAction);
-            contributionManager.add(loadAction);
             contributionManager.add(new Separator());
         }
     }
@@ -146,26 +102,6 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
         @Override
         public void run() {
             provider.doSave();
-        }
-    }
-
-    class LoadAction extends Action {
-
-        SQLPlanSaveProvider provider;
-
-        public LoadAction(String text, ImageDescriptor image, SQLPlanSaveProvider provider) {
-            super(text, image);
-            this.provider = provider;
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return planner instanceof DBCQueryPlannerSerializable;
-        }
-
-        @Override
-        public void run() {
-            provider.doLoad();
         }
     }
 }

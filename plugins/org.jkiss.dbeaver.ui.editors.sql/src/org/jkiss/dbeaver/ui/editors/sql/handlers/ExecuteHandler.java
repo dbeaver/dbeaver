@@ -67,6 +67,9 @@ public class ExecuteHandler extends AbstractHandler
             case SQLEditorCommands.CMD_EXPLAIN_PLAN:
                 editor.explainQueryPlan();
                 break;
+            case SQLEditorCommands.CMD_LOAD_PLAN:
+                editor.loadQueryPlan();
+                break;
             default:
                 log.error("Unsupported SQL editor command: " + actionId);
                 break;
