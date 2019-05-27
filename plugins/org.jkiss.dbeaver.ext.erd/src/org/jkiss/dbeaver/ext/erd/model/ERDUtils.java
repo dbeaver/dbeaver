@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -124,7 +125,7 @@ public class ERDUtils
     public static void openObjectEditor(@NotNull ERDObject object) {
         if (object.getObject() instanceof DBSObject) {
             UIUtils.runUIJob("Open object editor", monitor -> {
-                DBNDatabaseNode node = NavigatorUtils.getNodeByObject(
+                DBNDatabaseNode node = DBNUtils.getNodeByObject(
                     monitor,
                     (DBSObject) object.getObject(),
                     true

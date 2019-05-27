@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -46,7 +47,6 @@ import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.service.prefs.BackingStoreException;
@@ -220,7 +220,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
         }
         if (!refreshedResources.isEmpty()) {
             for (IResource resource : refreshedResources) {
-                NavigatorUtils.refreshNavigatorResource(resource, this);
+                DBNUtils.refreshNavigatorResource(resource, this);
             }
         }
 

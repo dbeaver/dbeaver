@@ -530,8 +530,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                          "                       ROW_NUMBER() OVER (PARTITION BY col.CONSTRAINT_NAME ORDER BY col.POSITION) AS curr,\r\n" + 
                          "                       ROW_NUMBER() OVER (PARTITION BY col.CONSTRAINT_NAME ORDER BY col.POSITION) -1 AS prev\r\n" + 
                          "                FROM   "+ OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") +" col \r\n" + 
-                         "                WHERE  col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME \r\n" + 
-                         "                )   GROUP BY cn CONNECT BY prev = PRIOR curr AND cn = PRIOR cn START WITH curr = 1      \r\n" + 
+                         "                WHERE  col.OWNER =? AND col.TABLE_NAME = ? \r\n" + 
+                         "                ) WHERE cn = c.CONSTRAINT_NAME  GROUP BY cn CONNECT BY prev = PRIOR curr AND cn = PRIOR cn START WITH curr = 1      \r\n" + 
                          "        ) COLUMN_NAMES_NUMS\r\n" + 
                          "FROM\r\n" + 
                          "    " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") + " c\r\n" + 
@@ -727,8 +727,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                         + "                FROM   "
                         + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS")
                         + " col \r\n"
-                        + "                WHERE  col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME \r\n"
-                        + "                )   GROUP BY cn CONNECT BY prev = PRIOR curr AND cn = PRIOR cn START WITH curr = 1      \r\n"
+                        + "                WHERE  col.OWNER =? AND col.TABLE_NAME = ? \r\n"
+                        + "                )  WHERE cn = c.CONSTRAINT_NAME GROUP BY cn CONNECT BY prev = PRIOR curr AND cn = PRIOR cn START WITH curr = 1      \r\n"
                         + "        ) COLUMN_NAMES_NUMS\r\n" + "FROM\r\n" + "    "
                         + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(),
                                 "CONSTRAINTS")

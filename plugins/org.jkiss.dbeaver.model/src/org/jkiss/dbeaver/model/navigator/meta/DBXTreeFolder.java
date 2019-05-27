@@ -100,7 +100,7 @@ public class DBXTreeFolder extends DBXTreeNode {
                 for (DBPEditorContribution editor : editors) {
                     DBXTreeObject editorNode = new DBXTreeObject(
                         getSource(),
-                        this,
+                        null, // No parent - otherwise we'll have dups after each call
                         null,
                         null,
                         editor.getLabel(),

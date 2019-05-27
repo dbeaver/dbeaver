@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.hive.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -28,7 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -65,7 +64,7 @@ public class HiveMetaModel extends GenericMetaModel
                     }
                     String ddl = sql.toString();
                     if (sourceObject.isView()) {
-                        return SQLUtils.formatSQL(sourceObject.getDataSource(), ddl);
+                        return SQLFormatUtils.formatSQL(sourceObject.getDataSource(), ddl);
                     }
                     return ddl;
                 }

@@ -135,15 +135,21 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         } else if (!CommonUtils.isEmpty(arg.getTables())) {
             for (PostgreTableBase table : arg.getTables()) {
                 cmd.add("-t");
-                cmd.add(table.getFullyQualifiedName(DBPEvaluationContext.DDL));
+                // Use explicit quotes in case of quoted identifiers (#5950)
+                cmd.add(escapeCLIIdentifier(table.getFullyQualifiedName(DBPEvaluationContext.DDL)));
             }
         }
         if (!CommonUtils.isEmpty(arg.getSchemas())) {
             for (PostgreSchema schema : arg.getSchemas()) {
                 cmd.add("-n");
-                cmd.add(DBUtils.getQuotedIdentifier(schema));
+                // Use explicit quotes in case of quoted identifiers (#5950)
+                cmd.add(escapeCLIIdentifier(DBUtils.getQuotedIdentifier(schema)));
             }
         }
+    }
+
+    private static String escapeCLIIdentifier(String name) {
+        return "\"" + name.replace("\"", "\\\"") + "\"";
     }
 
     @Override

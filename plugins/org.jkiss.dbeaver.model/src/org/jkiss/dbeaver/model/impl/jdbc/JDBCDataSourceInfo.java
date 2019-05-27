@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.BaseDataSourceInfo;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * JDBCDataSourceInfo
  */
-public class JDBCDataSourceInfo implements DBPDataSourceInfo
+public class JDBCDataSourceInfo extends BaseDataSourceInfo
 {
     private static final Log log = Log.getLog(JDBCDataSourceInfo.class);
 

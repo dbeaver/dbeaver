@@ -341,7 +341,8 @@ public class DataTransferSettings {
                     IDataTransferConsumer consumerNode = (IDataTransferConsumer) consumer.createNode();
                     if (pipe.getProducer() != null) {
                         IDataTransferConsumer.TransferParameters parameters = new IDataTransferConsumer.TransferParameters(
-                            processor != null && processor.isBinaryFormat());
+                            processor != null && processor.isBinaryFormat(),
+                            processor != null && processor.isHTMLFormat());
                         parameters.orderNumber = i;
                         parameters.totalConsumers = dataPipes.size();
 

@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.ui.feature"
         label="%featureName"
-        version="1.0.0.qualifier"
+        version="6.1.0.qualifier"
         provider-name="%providerName">
 
     <description>
@@ -57,6 +57,7 @@
     <plugin id="org.jkiss.dbeaver.ext.mockdata" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.data.transfer" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- Compare -->
     <plugin id="org.jkiss.dbeaver.cmp.simple.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

@@ -26,8 +26,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.utils.CommonUtils;
+
 import java.util.*;
 
 /**
@@ -159,7 +160,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
             cond = attributes.get(ATTR_FILTER);
         }
         if (!CommonUtils.isEmpty(cond)) {
-            cond = SQLUtils.formatSQL(dataSource, cond);
+            cond = SQLFormatUtils.formatSQL(dataSource, cond);
         }
         return cond;
     }

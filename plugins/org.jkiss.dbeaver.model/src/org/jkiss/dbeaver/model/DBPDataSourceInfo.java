@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model;
 import org.osgi.framework.Version;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * DBPDataSourceInfo
@@ -54,6 +55,12 @@ public interface DBPDataSourceInfo
      * @return database version number
      */
     String getDatabaseProductVersion();
+
+    /**
+     * Detailed server information.
+     * @return server version details or null
+     */
+    Map<String, Object> getDatabaseProductDetails();
 
     /**
      * Database server version

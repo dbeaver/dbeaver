@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
@@ -271,7 +272,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
                 String triggerSource = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
                 if (triggerSource != null) {
-                    triggerSource = SQLUtils.formatSQL(getDataSource(), triggerSource);
+                    triggerSource = SQLFormatUtils.formatSQL(getDataSource(), triggerSource);
                     ddl.append(triggerSource).append(";");
                 }
             } catch (SQLException e) {

@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectRename;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -308,7 +307,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 return findActiveNode(monitor, children[0]);
             }
             for (DBNNode child : children) {
-                if (NavigatorUtils.isDefaultElement(child)) {
+                if (DBNUtils.isDefaultElement(child)) {
                     return child;
                 }
             }

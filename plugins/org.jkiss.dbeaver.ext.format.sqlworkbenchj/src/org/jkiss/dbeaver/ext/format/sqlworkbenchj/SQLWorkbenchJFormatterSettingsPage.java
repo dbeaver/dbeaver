@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
-import org.jkiss.dbeaver.ui.editors.sql.format.BaseFormatterConfigurationPage;
+import org.jkiss.dbeaver.ui.editors.sql.preferences.format.BaseFormatterConfigurationPage;
 import org.jkiss.utils.CommonUtils;
 
 /**
