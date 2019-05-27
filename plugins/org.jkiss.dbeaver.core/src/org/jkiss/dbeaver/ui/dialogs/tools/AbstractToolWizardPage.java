@@ -49,8 +49,8 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
 
 
     protected void createCheckButtons(Composite buttonsPanel, final Table table) {
-        UIUtils.createPushButton(buttonsPanel, "All", null, new CheckListener(table, true));
-        UIUtils.createPushButton(buttonsPanel, "None", null, new CheckListener(table, false));
+        UIUtils.createDialogButton(buttonsPanel, "All", new CheckListener(table, true));
+        UIUtils.createDialogButton(buttonsPanel, "None", new CheckListener(table, false));
     }
 
     protected void createExtraArgsInput(Composite outputGroup) {

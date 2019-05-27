@@ -39,7 +39,7 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
 
     @NotNull
     protected final DATASOURCE dataSource;
-    @NotNull
+    @Nullable
     protected JDBCExecutionContext executionContext;
     @Nullable
     protected JDBCExecutionContext metaContext;
@@ -60,11 +60,13 @@ public class JDBCRemoteInstance<DATASOURCE extends JDBCDataSource> implements DB
         return dataSource;
     }
 
+    @NotNull
     @Override
     public DATASOURCE getDataSource() {
         return dataSource;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return dataSource.getName();

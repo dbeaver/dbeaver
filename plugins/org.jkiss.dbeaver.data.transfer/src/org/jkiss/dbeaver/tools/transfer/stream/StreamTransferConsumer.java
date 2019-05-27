@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Color;
@@ -371,10 +372,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (!parameters.isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
                 UIUtils.syncExec(() -> {
+
                     TextTransfer textTransfer = TextTransfer.getInstance();
-                    new Clipboard(UIUtils.getDisplay()).setContents(
-                        new Object[]{outputBuffer.toString()},
-                        new Transfer[]{textTransfer});
+                    String strContents = outputBuffer.toString();
+                    Clipboard clipboard = new Clipboard(UIUtils.getDisplay());
+                    if (parameters.isHTML) {
+                        HTMLTransfer htmlTransfer = HTMLTransfer.getInstance();
+                        clipboard.setContents(
+                            new Object[]{strContents, strContents},
+                            new Transfer[]{textTransfer, htmlTransfer});
+                    } else {
+                        clipboard.setContents(
+                            new Object[]{strContents},
+                            new Transfer[]{textTransfer});
+                    }
                 });
                 outputBuffer = null;
             }

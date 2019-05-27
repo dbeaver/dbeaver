@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -113,7 +113,7 @@ public class HANAMetaModel extends GenericMetaModel
                     }
                     if (ddl.length() > 0) {
                         // Format DDL
-                        return SQLUtils.formatSQL(sourceObject.getDataSource(), ddl.toString());
+                        return SQLFormatUtils.formatSQL(sourceObject.getDataSource(), ddl.toString());
                     }
                 }
             }

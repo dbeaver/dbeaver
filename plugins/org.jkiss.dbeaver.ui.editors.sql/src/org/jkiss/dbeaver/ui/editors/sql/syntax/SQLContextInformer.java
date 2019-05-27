@@ -33,19 +33,13 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.DirectObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
-import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.text.parser.SQLIdentifierDetector;
-import org.jkiss.dbeaver.ui.editors.text.parser.SQLWordPartDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -240,80 +234,6 @@ public class SQLContextInformer
                 editor.getEditorControl().addDisposeListener(e -> registry.removeDataSourceListener(dbpEventListener));
             }
             return cacheMap;
-        }
-    }
-
-    public static String readAdditionalProposalInfo(@Nullable DBRProgressMonitor monitor, final DBPDataSource dataSource, DBPNamedObject object, final String[] keywords, final DBPKeywordType keywordType) {
-        if (object != null) {
-            if (monitor == null) {
-                String[] desc = new String[1];
-                SystemJob searchJob = new SystemJob("Extract object properties info", monitor1 ->
-                {
-                    desc[0] = DBInfoUtils.makeObjectDescription(monitor1, object, true);
-                });
-                searchJob.schedule();
-                UIUtils.waitJobCompletion(searchJob);
-                return desc[0];
-            } else {
-                return DBInfoUtils.makeObjectDescription(monitor, object, true);
-            }
-        } else if (keywordType != null && dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS)) {
-            HelpReader helpReader = new HelpReader(dataSource, keywordType, keywords);
-            if (monitor == null) {
-                SystemJob searchJob = new SystemJob("Read help topic", helpReader);
-                searchJob.schedule();
-                UIUtils.waitJobCompletion(searchJob);
-            } else {
-                helpReader.run(monitor);
-            }
-
-            return helpReader.info;
-        } else {
-            return keywords.length == 0 ? null : keywords[0];
-        }
-    }
-
-    private static String readDataSourceHelp(DBRProgressMonitor monitor, DBPDataSource dataSource, DBPKeywordType keywordType, String keyword) {
-        final SQLHelpProvider helpProvider = DBUtils.getAdapter(SQLHelpProvider.class, dataSource);
-        if (helpProvider == null) {
-            return null;
-        }
-        final SQLHelpTopic helpTopic = helpProvider.findHelpTopic(monitor, keyword, keywordType);
-        if (helpTopic == null) {
-            return null;
-        }
-        if (!CommonUtils.isEmpty(helpTopic.getContents())) {
-            return helpTopic.getContents();
-        } else if (!CommonUtils.isEmpty(helpTopic.getUrl())) {
-            return "<a href=\"" + helpTopic.getUrl() + "\">" + keyword + "</a>";
-        } else {
-            return null;
-        }
-    }
-
-    private static class HelpReader implements DBRRunnableWithProgress {
-        private final DBPDataSource dataSource;
-        private final DBPKeywordType keywordType;
-        private final String[] keywords;
-        private String info;
-
-        public HelpReader(DBPDataSource dataSource, DBPKeywordType keywordType, String[] keywords) {
-            this.dataSource = dataSource;
-            this.keywordType = keywordType;
-            this.keywords = keywords;
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) {
-            for (String keyword : keywords) {
-                info = readDataSourceHelp(monitor, dataSource, keywordType, keyword);
-                if (info != null) {
-                    break;
-                }
-            }
-            if (CommonUtils.isEmpty(info)) {
-                info = "<b>" + keywords[0] + "</b> (" + keywordType.name() + ")";
-            }
         }
     }
 

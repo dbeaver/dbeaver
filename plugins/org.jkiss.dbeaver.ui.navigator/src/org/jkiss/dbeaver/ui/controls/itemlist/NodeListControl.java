@@ -174,7 +174,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                         if (parentElement instanceof DBNDatabaseNode) {
                             try {
                                 // Read children with void progress monitor because inline children SHOULD be already cached
-                                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(new VoidProgressMonitor(), (DBNDatabaseNode)parentElement, false);
+                                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(new VoidProgressMonitor(), (DBNDatabaseNode)parentElement, false);
                                 if (ArrayUtils.isEmpty(children)) {
                                     return null;
                                 } else {

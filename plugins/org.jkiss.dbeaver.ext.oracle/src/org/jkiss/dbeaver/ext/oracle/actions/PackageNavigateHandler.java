@@ -183,7 +183,7 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
                 element.setText("Compile " + objects.size() + " objects");
             } else {
                 final OracleSourceObject sourceObject = objects.get(0);
-                String objectType = TextUtils.formatWord(sourceObject.getSourceType().name());
+                String objectType = UITextUtils.formatWord(sourceObject.getSourceType().name());
                 element.setText("Compile " + objectType*/
 /* + " '" + sourceObject.getName() + "'"*//*
 );

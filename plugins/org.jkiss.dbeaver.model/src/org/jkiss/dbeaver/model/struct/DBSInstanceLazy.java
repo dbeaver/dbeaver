@@ -31,4 +31,6 @@ public interface DBSInstanceLazy extends DBSInstance
      */
     void checkInstanceConnection(@NotNull DBRProgressMonitor monitor) throws DBException;
 
+    boolean isInstanceConnected();
+
 }

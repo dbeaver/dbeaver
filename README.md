@@ -34,8 +34,8 @@ DBeaver requires Java (JRE) 1.8+ to run.
 
 ## Documentation
 
-<a href="https://github.com/dbeaver/dbeaver/wiki">WIKI</a>
-<a href="https://github.com/dbeaver/dbeaver/issues">Issue tracker</a>
+* <a href="https://github.com/dbeaver/dbeaver/wiki">WIKI</a>
+* <a href="https://github.com/dbeaver/dbeaver/issues">Issue tracker</a>
 
 ## Building
 
@@ -72,4 +72,5 @@ That's really cool, we are glad that you like DBeaver.
 
 Save wild animals :) Thank you!  
 
-DBeaver Team
+- <a href="https://github.com/dbeaver/dbeaver/graphs/contributors">DBeaver Team</a> (contributors)
+- <a href="https://github.com/serge-rider/">Serge Rider</a>  (author and maintainer)

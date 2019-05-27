@@ -49,7 +49,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Clob;
@@ -572,7 +572,7 @@ public class DB2Utils {
     {
 
         // First let the defaut SQL formater operate
-        String result = SQLUtils.formatSQL(db2DataSource, rawText);
+        String result = SQLFormatUtils.formatSQL(db2DataSource, rawText);
 
         // Put some kwywords on the same line
         result = result.replace("CREATE\r\n    PROCEDURE", "CREATE PROCEDURE");

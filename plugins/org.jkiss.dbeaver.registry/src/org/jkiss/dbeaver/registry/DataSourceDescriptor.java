@@ -1230,6 +1230,16 @@ public class DataSourceDescriptor
     }
 
     @Nullable
+    @Property(order = 7, category = "Server")
+    public Map<String, Object> getPropertyServerDetails()
+    {
+        if (dataSource != null) {
+            return dataSource.getInfo().getDatabaseProductDetails();
+        }
+        return null;
+    }
+
+    @Nullable
     @Property(order = 21, category = "Driver")
     public String getPropertyDriver()
     {

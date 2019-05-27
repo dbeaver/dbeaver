@@ -759,6 +759,10 @@ public class ResultSetViewer extends Viewer
                     });
                     panelButton.setChecked(panelsVisible && isPanelVisible(panel.getId()));
                 }
+
+                UIUtils.createEmptyLabel(panelSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
+                VerticalButton.create(panelSwitchFolder, SWT.RIGHT | SWT.CHECK, getSite(), ResultSetHandlerMain.CMD_TOGGLE_LAYOUT, false);
+
             }
         } else {
             if (viewerSash != null) {
@@ -1499,6 +1503,9 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            addToolbBarManagerar.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
+            //addToolbBarManagerar.add(new OpenWithAction());
+
             addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
             addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
@@ -3740,6 +3747,48 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private class OpenWithAction extends Action implements IMenuCreator {
+        OpenWithAction()
+        {
+            super(null, IAction.AS_DROP_DOWN_MENU);
+            setActionDefinitionId(ResultSetHandlerOpenWith.CMD_OPEN_WITH);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS));
+        }
+
+        @Override
+        public IMenuCreator getMenuCreator()
+        {
+            return this;
+        }
+
+        @Override
+        public void runWithEvent(Event event)
+        {
+        }
+
+        @Override
+        public void dispose()
+        {
+
+        }
+
+        @Override
+        public Menu getMenu(Control parent)
+        {
+            MenuManager menuManager = new MenuManager();
+            fillOpenWithMenu(menuManager);
+            return menuManager.createContextMenu(parent);
+        }
+
+        @Nullable
+        @Override
+        public Menu getMenu(Menu parent)
+        {
+            return null;
+        }
+
+    }
+
     private class ConfigAction extends Action implements IMenuCreator {
         ConfigAction()
         {
@@ -3757,15 +3806,6 @@ public class ResultSetViewer extends Viewer
         public void runWithEvent(Event event)
         {
             new VirtualEntityEditAction().run();
-/*
-            Menu menu = getMenu(activePresentation.getControl());
-            if (menu != null && event.widget instanceof ToolItem) {
-                Rectangle bounds = ((ToolItem) event.widget).getBounds();
-                Point point = ((ToolItem) event.widget).getParent().toDisplay(bounds.x, bounds.y + bounds.height);
-                menu.setLocation(point.x, point.y);
-                menu.setVisible(true);
-            }
-*/
         }
 
         @Override
@@ -3985,7 +4025,7 @@ public class ResultSetViewer extends Viewer
         DBCExecutionContext executionContext = getExecutionContext();
         String strValue = executionContext == null ? String.valueOf(value) : attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.UI);
         strValue = strValue.trim();
-        strValue = TextUtils.cutExtraLines(strValue, 1);
+        strValue = CommonUtils.cutExtraLines(strValue, 1);
         strValue = CommonUtils.truncateString(strValue, 30);
         if (operator.getArgumentCount() == 0) {
             return operator.getStringValue();

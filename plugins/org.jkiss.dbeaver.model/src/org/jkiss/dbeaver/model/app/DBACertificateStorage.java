@@ -37,6 +37,11 @@ public interface DBACertificateStorage
         @Nullable byte[] clientCertStream,
         @Nullable byte[] keyStream) throws DBException;
 
+    void addSelfSignedCertificate(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull String certType,
+        @NotNull String certDN) throws DBException;
+
     void deleteCertificate(
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull String certType) throws DBException;
