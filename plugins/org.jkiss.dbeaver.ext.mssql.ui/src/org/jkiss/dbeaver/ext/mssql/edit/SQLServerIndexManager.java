@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndexColumn;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -90,6 +91,11 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
                 return index;
             }
         }.execute();
+    }
+    
+    protected String getDropIndexPattern(SQLServerTableIndex index)
+    {
+        return "DROP INDEX " + index.getName() + " ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
 }
