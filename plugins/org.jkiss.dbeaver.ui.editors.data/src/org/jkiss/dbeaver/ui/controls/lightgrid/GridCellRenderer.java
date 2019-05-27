@@ -21,7 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
 
@@ -104,7 +104,7 @@ class GridCellRenderer extends AbstractRenderer
         // Get cell text
         if (text != null && !text.isEmpty()) {
             // Get shortern version of string
-            text = TextUtils.getShortString(grid.fontMetrics, text, width);
+            text = UITextUtils.getShortString(grid.fontMetrics, text, width);
             // Replace linefeeds with space
             text = CommonUtils.getSingleLineString(text);
 

@@ -100,10 +100,6 @@ public class SQLPreferenceConstants
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
 
-    public static final int PROPOSAL_CASE_DEFAULT                       = 0;
-    public static final int PROPOSAL_CASE_UPPER                         = 1;
-    public static final int PROPOSAL_CASE_LOWER                         = 2;
-
     public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
     public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource";
     public final static String SQL_FORMAT_BOLD_KEYWORDS                 = "SQLEditor.format.boldKeywords";

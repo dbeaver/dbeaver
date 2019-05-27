@@ -30,8 +30,6 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
@@ -293,18 +291,6 @@ public final class SQLUtils {
             result.append(c);
         }
         return result.toString();
-    }
-
-    public static String formatSQL(SQLDataSource dataSource, String query)
-    {
-        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
-        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(dataSource, syntaxManager);
-        SQLFormatter formatter = dataSource.getDataSource().getContainer().getPlatform().getSQLFormatterRegistry().createFormatter(configuration);
-        if (formatter == null) {
-            return query;
-        }
-        return formatter.format(query, configuration);
     }
 
     public static void appendLikeCondition(StringBuilder sql, String value, boolean not)

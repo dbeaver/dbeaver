@@ -67,6 +67,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -111,7 +112,6 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -310,7 +310,7 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, container);
             IFile file = EditorUtils.getFileFromInput(input);
             if (file != null) {
-                NavigatorUtils.refreshNavigatorResource(file, container);
+                DBNUtils.refreshNavigatorResource(file, container);
             } else {
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor
@@ -1505,38 +1505,17 @@ public class SQLEditor extends SQLEditorBase implements
         super.setFocus();
     }
 
-    public void loadQueryPlan()
-    {
+    public void loadQueryPlan() {
         DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
-        if (planner == null) {
-            DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan load isn't supported by current datasource");
-            return;
-        }
-        
-        DBCPlanStyle planStyle = planner.getPlanStyle();
-        if (planStyle == DBCPlanStyle.QUERY) {
-            DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan load isn't supported by current datasource");
-            return;
-        }
-        
+        ExplainPlanViewer planView = getPlanView(null, planner);
 
-        ExplainPlanViewer planView = new ExplainPlanViewer(this, this, resultTabs);
+        if (planView != null) {
+            planView.loadQueryPlan(planner, planView);
+        }
 
-        final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
-        item.setControl(planView.getControl());
-        item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title);
-        item.setImage(IMG_EXPLAIN_PLAN);
-        item.setData(planView);
-        item.addDisposeListener(resultTabDisposeListener);
-        UIUtils.disposeControlOnItemDispose(item);
-        resultTabs.setSelection(item);
-        
-        planView.loadQueryPlan(planner, planView);
-                
     }
     
-    public void explainQueryPlan()
-    {
+    public void explainQueryPlan() {
         // Notify listeners
         synchronized (listeners) {
             for (SQLEditorListener listener : listeners) {
@@ -1554,55 +1533,71 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         explainQueryPlan((SQLQuery) scriptElement);
-        
-        
+
     }
 
     private void explainQueryPlan(SQLQuery sqlQuery)
     {
-        // 1. Determine whether planner supports plan extraction
         DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
+        ExplainPlanViewer planView = getPlanView(sqlQuery,planner);
+       
+        
+        if (planView != null) {
+            planView.explainQueryPlan(sqlQuery, planner); 
+        }
+      
+    }
+
+    private ExplainPlanViewer getPlanView(SQLQuery sqlQuery, DBCQueryPlanner planner) {
+        
+        // 1. Determine whether planner supports plan extraction
+        
         if (planner == null) {
             DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan explain isn't supported by current datasource");
-            return;
+            return null;
         }
         // Transform query parameters
-        new SQLQueryJob(getSite(), "Plan query", getExecutionContext(), null, Collections.emptyList(), this.globalScriptContext, null, null)
+        if (sqlQuery != null) {
+            new SQLQueryJob(getSite(), "Plan query", getExecutionContext(), null, Collections.emptyList(), this.globalScriptContext, null, null)
             .transformQueryWithParameters(sqlQuery);
-
-        DBCPlanStyle planStyle = planner.getPlanStyle();
-        if (planStyle == DBCPlanStyle.QUERY) {
-            explainPlanFromQuery(planner, sqlQuery);
-            return;
         }
-
+        
         ExplainPlanViewer planView = null;
-        for (CTabItem item : resultTabs.getItems()) {
-            if (item.getData() instanceof ExplainPlanViewer) {
-                ExplainPlanViewer pv = (ExplainPlanViewer) item.getData();
-                if (pv.getQuery() != null && pv.getQuery().equals(sqlQuery)) {
-                    resultTabs.setSelection(item);
-                    planView = pv;
-                    break;
+
+        if (sqlQuery != null) {
+            DBCPlanStyle planStyle = planner.getPlanStyle();
+            if (planStyle == DBCPlanStyle.QUERY) {
+                explainPlanFromQuery(planner, sqlQuery);
+                return null;
+            }
+    
+            for (CTabItem item : resultTabs.getItems()) {
+                if (item.getData() instanceof ExplainPlanViewer) {
+                    ExplainPlanViewer pv = (ExplainPlanViewer) item.getData();
+                    if (pv.getQuery() != null && pv.getQuery().equals(sqlQuery)) {
+                        resultTabs.setSelection(item);
+                        planView = pv;
+                        break;
+                    }
                 }
             }
         }
 
         if (planView == null) {
             planView = new ExplainPlanViewer(this, this, resultTabs);
-
             final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
             item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title);
-            item.setToolTipText(sqlQuery.getText());
+            if (sqlQuery != null) {
+                item.setToolTipText(sqlQuery.getText());
+            }
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
             item.addDisposeListener(resultTabDisposeListener);
             UIUtils.disposeControlOnItemDispose(item);
             resultTabs.setSelection(item);
         }
-
-        planView.explainQueryPlan(sqlQuery, null);
+        return planView;
     }
 
     private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {

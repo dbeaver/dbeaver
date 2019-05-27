@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -173,17 +174,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 return editor;
             }
 
-            if (selectedNode instanceof DBNDatabaseObject) {
-                DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
-                if (!objectNode.isPersisted()) {
-                    return null;
-                }
-                ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
-                setInputAttributes(objectInput, defaultPageId, defaultFolderId, attributes);
-                return workbenchWindow.getActivePage().openEditor(
-                    objectInput,
-                    objectNode.getMeta().getEditorId());
-            } else if (selectedNode instanceof DBNDatabaseNode) {
+            if (selectedNode instanceof DBNDatabaseNode) {
                 DBNDatabaseNode dnNode = (DBNDatabaseNode) selectedNode;
                 DBSObject databaseObject = dnNode.getObject();
                 if (databaseObject != null) {
@@ -192,10 +183,11 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     }
                     if (DBUtils.getDefaultContext(databaseObject, false) == null) {
                         // Not connected - try to connect
-                        if (databaseObject instanceof DBSInstanceLazy) {
+                        DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(databaseObject);
+                        if (ownerInstance instanceof DBSInstanceLazy && !((DBSInstanceLazy)ownerInstance).isInstanceConnected()) {
                             if (!RuntimeUtils.runTask(monitor -> {
                                 try {
-                                    ((DBSInstanceLazy) databaseObject).checkInstanceConnection(monitor);
+                                    ((DBSInstanceLazy) ownerInstance).checkInstanceConnection(monitor);
                                 } catch (DBException e) {
                                     throw new InvocationTargetException(e);
                                 }
@@ -206,18 +198,31 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         }
                         //
                     }
-                    DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(dnNode);
-                    if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
-                        if (databaseObject instanceof DBSObjectContainer) {
-                            // do not auto-refresh object containers (too expensive)
-                        } else {
-                            refreshDatabaseNode(dnNode);
+
+                    if (selectedNode instanceof DBNDatabaseObject) {
+                        DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
+                        if (!objectNode.isPersisted()) {
+                            return null;
                         }
+                        ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
+                        setInputAttributes(objectInput, defaultPageId, defaultFolderId, attributes);
+                        return workbenchWindow.getActivePage().openEditor(
+                            objectInput,
+                            objectNode.getMeta().getEditorId());
+                    } else {
+                        DatabaseNodeEditorInput editorInput = new DatabaseNodeEditorInput(dnNode);
+                        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN)) {
+                            if (databaseObject instanceof DBSObjectContainer) {
+                                // do not auto-refresh object containers (too expensive)
+                            } else {
+                                refreshDatabaseNode(dnNode);
+                            }
+                        }
+                        setInputAttributes(editorInput, defaultPageId, defaultFolderId, attributes);
+                        return workbenchWindow.getActivePage().openEditor(
+                            editorInput,
+                            EntityEditor.class.getName());
                     }
-                    setInputAttributes(editorInput, defaultPageId, defaultFolderId, attributes);
-                    return workbenchWindow.getActivePage().openEditor(
-                        editorInput,
-                        EntityEditor.class.getName());
                 } else {
                     DBWorkbench.getPlatformUI().showError("No object", "Node has no associated database object");
                     return null;

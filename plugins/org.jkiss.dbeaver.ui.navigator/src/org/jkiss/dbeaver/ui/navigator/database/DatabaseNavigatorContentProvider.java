@@ -22,11 +22,11 @@ import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadVisualizer;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeLazyExpander;
@@ -117,7 +117,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             try {
                 // Read children with null monitor cos' it's not a lazy node
                 // and no blocking process will occur
-                DBNNode[] children = NavigatorUtils.getNodeChildrenFiltered(
+                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(
                     new VoidProgressMonitor(), parentNode, true);
                 if (ArrayUtils.isEmpty(children)) {
                     return EMPTY_CHILDREN;

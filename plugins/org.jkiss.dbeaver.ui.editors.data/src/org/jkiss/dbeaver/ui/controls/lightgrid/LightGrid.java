@@ -2581,6 +2581,7 @@ public abstract class LightGrid extends Canvas {
 
         } else /*if (eventSource == EventSource.MOUSE)*/ {
             // Ctrl selection works only for mouse events
+            boolean alt = (stateMask & SWT.MOD3) == SWT.MOD3;
             boolean reverse = reverseDuplicateSelections;
             if (!selectedCells.containsAll(newCells))
                 reverse = false;
@@ -2593,6 +2594,14 @@ public abstract class LightGrid extends Canvas {
             if (reverse) {
                 selectedCells.removeAll(newCells);
             } else {
+                if (alt && newCells.size() == 1) {
+                    // Alt pressed - select all cells selected in other rows (#5988)
+                    int row = newCells.get(0).row;
+                    newCells = new ArrayList<>();
+                    for (GridColumn col : selectedColumns) {
+                        newCells.add(new GridPos(col.getIndex(), row));
+                    }
+                }
                 for (GridPos newCell : newCells) {
                     addToCellSelection(newCell);
                 }
@@ -2843,6 +2852,7 @@ public abstract class LightGrid extends Canvas {
             }
 
             if (col == null && rowHeaderVisible && e.x <= rowHeaderWidth) {
+                // Click on header
                 boolean shift = ((e.stateMask & SWT.MOD2) != 0);
                 boolean ctrl = false;
                 if (!shift) {

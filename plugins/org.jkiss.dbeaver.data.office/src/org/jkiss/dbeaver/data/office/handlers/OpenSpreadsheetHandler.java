@@ -111,7 +111,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     settings.setOutputFilePattern(tempFile.getName());
 
                     Map<Object, Object> properties = DataExporterXLSX.getDefaultProperties();
-                    consumer.initTransfer(dataContainer, settings, new IDataTransferConsumer.TransferParameters(true), exporter, properties);
+                    consumer.initTransfer(dataContainer, settings, new IDataTransferConsumer.TransferParameters(true, false), exporter, properties);
 
                     DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);

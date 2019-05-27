@@ -149,7 +149,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     consumer.initTransfer(
                         dataContainer,
                         settings,
-                        new IDataTransferConsumer.TransferParameters(processor.isBinaryFormat()),
+                        new IDataTransferConsumer.TransferParameters(processor.isBinaryFormat(), processor.isHTMLFormat()),
                         exporter,
                         properties);
 

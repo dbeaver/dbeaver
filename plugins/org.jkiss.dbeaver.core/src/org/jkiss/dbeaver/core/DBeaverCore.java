@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -56,7 +55,6 @@ import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -482,12 +480,6 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public DBPDataFormatterRegistry getDataFormatterRegistry() {
         return DataFormatterRegistry.getInstance();
-    }
-
-    @NotNull
-    @Override
-    public SQLFormatterRegistry getSQLFormatterRegistry() {
-        return SQLFormatterConfigurationRegistry.getInstance();
     }
 
     @NotNull

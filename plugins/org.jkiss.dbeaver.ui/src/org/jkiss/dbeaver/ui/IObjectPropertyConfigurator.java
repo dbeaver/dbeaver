@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.swt.widgets.Composite;
 
 /**
- * IDataSourceConnectionEditor
+ * IObjectPropertyConfigurator
  */
 public interface IObjectPropertyConfigurator<T>
 {
@@ -28,6 +28,8 @@ public interface IObjectPropertyConfigurator<T>
     void loadSettings(T configuration);
 
     void saveSettings(T configuration);
+
+    void resetSettings(T configuration);
 
     boolean isComplete();
 

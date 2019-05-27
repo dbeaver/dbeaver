@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
@@ -30,17 +29,16 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -54,7 +52,6 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -458,23 +455,6 @@ public class NavigatorUtils {
         });
     }
 
-    public static boolean isDefaultElement(Object element)
-    {
-        if (element instanceof DBSWrapper) {
-            DBSObject object = ((DBSWrapper) element).getObject();
-            DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                DBSObjectSelector.class, object);
-            if (activeContainer != null) {
-                return activeContainer.getDefaultObject() == object;
-            }
-        } else if (element instanceof DBNProject) {
-            if (((DBNProject)element).getProject() == DBWorkbench.getPlatform().getProjectManager().getActiveProject()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static NavigatorViewBase getActiveNavigatorView(ExecutionEvent event) {
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         if (activePart instanceof NavigatorViewBase) {
@@ -568,78 +548,6 @@ public class NavigatorUtils {
         return true;
     }
 
-    public static DBNDatabaseNode getNodeByObject(DBSObject object) {
-        return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
-    }
-
-    public static DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered) {
-        return DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, object, addFiltered);
-    }
-
-    public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {
-        try {
-            for (DBNDatabaseNode childNode : node.getChildren(monitor)) {
-                if (childNode instanceof DBNDatabaseFolder && folderType.getName().equals(((DBNDatabaseFolder) childNode).getMeta().getType())) {
-                    return childNode;
-                }
-            }
-        } catch (DBException e) {
-            log.error("Error reading child folder", e);
-        }
-        return null;
-    }
-
-    public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node, boolean forTree) throws DBException {
-        DBNNode[] children = node.getChildren(monitor);
-        if (children != null && children.length > 0) {
-            children = filterNavigableChildren(children, forTree);
-        }
-        return children;
-    }
-
-    public static DBNNode[] filterNavigableChildren(DBNNode[] children, boolean forTree)
-    {
-        if (ArrayUtils.isEmpty(children)) {
-            return children;
-        }
-        List<DBNNode> filtered = null;
-        if (forTree) {
-            for (int i = 0; i < children.length; i++) {
-                DBNNode node = children[i];
-                if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
-                    if (filtered == null) {
-                        filtered = new ArrayList<>(children.length);
-                        for (int k = 0; k < i; k++) {
-                            filtered.add(children[k]);
-                        }
-                    }
-                } else if (filtered != null) {
-                    filtered.add(node);
-                }
-            }
-        }
-        DBNNode[] result = filtered == null ? children : filtered.toArray(new DBNNode[filtered.size()]);
-        sortNodes(result);
-        return result;
-    }
-
-    private static void sortNodes(DBNNode[] children)
-    {
-        final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
-
-        // Sort children is we have this feature on in preferences
-        // and if children are not folders
-        if (children.length > 0 && prefStore.getBoolean(NavigatorPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-            if (!(children[0] instanceof DBNContainer)) {
-                Arrays.sort(children, NodeNameComparator.INSTANCE);
-            }
-        }
-
-        if (children.length > 0 && prefStore.getBoolean(NavigatorPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
-            Arrays.sort(children, NodeFolderComparator.INSTANCE);
-        }
-    }
-
     public static void openNavigatorNode(Object node, IWorkbenchWindow window) {
         if (node instanceof DBNResource) {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -651,16 +559,6 @@ public class NavigatorUtils {
                 (DBNNode) node,
                 null,
                 window);
-        }
-    }
-
-    public static void refreshNavigatorResource(@NotNull IResource resource, Object source) {
-        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(resource.getProject());
-        if (projectNode != null) {
-            final DBNResource fileNode = projectNode.findResource(resource);
-            if (fileNode != null) {
-                fileNode.refreshResourceState(source);
-            }
         }
     }
 
@@ -681,21 +579,4 @@ public class NavigatorUtils {
         return (IStructuredSelection)selection;
     }
 
-    private static class NodeNameComparator implements Comparator<DBNNode> {
-        static NodeNameComparator INSTANCE = new NodeNameComparator();
-        @Override
-        public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeName().compareToIgnoreCase(node2.getNodeName());
-        }
-    }
-
-    private static class NodeFolderComparator implements Comparator<DBNNode> {
-        static NodeFolderComparator INSTANCE = new NodeFolderComparator();
-        @Override
-        public int compare(DBNNode node1, DBNNode node2) {
-            int first = node1 instanceof DBNLocalFolder || node1 instanceof DBSFolder ? -1 : 1;
-            int second = node2 instanceof DBNLocalFolder || node2 instanceof DBSFolder ? -1 : 1;
-            return first - second;
-        }
-    }
 }

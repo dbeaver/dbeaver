@@ -6,7 +6,6 @@
     <extension-point id="org.jkiss.dbeaver.sql.covert" name="%extension-point.org.jkiss.dbeaver.sql.covertname" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sql.plan.view" name="%extension-point.org.jkiss.dbeaver.sqlPlanView.name" schema="schema/org.jkiss.dbeaver.sqlPlanView.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
@@ -37,12 +36,6 @@
                         icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"
                         name="%view.database.output.title"/>
         -->
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.sqlFormatter">
-        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="%sql.formatter.default.name" description="%sql.formatter.default.tip"/>
-        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="%sql.formatter.compact.name" description="%sql.formatter.compact.tip"/>
-        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.SQLExternalFormatterConfigurationPage" label="%sql.formatter.external.name" description="%sql.formatter.external.tip"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
@@ -580,7 +573,7 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+/"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+/"/>
 
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+E"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+W"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.rename" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F2"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.text.content.format" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+F"/>
@@ -652,6 +645,7 @@
                     </visibleWhen>
                 </command>
                 <separator name="query" visible="true"/>
+                <separator name="plan" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain">
                     <visibleWhen>
                         <with variable="activeEditor">
@@ -701,10 +695,9 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
-                <separator name="plans" visible="true"/>
+                <separator name="additions_plan" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>
-                <separator name="additions_active_object" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>                <separator name="additions_active_object" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"/>
                 <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"/>
             </menu>
