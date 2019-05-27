@@ -28,6 +28,7 @@ public interface SQLEditorFeatures {
     DBRFeature SQL_EDITOR = DBRFeature.createCategory("SQL Editor", "SQL Editor features");
     DBRFeature SQL_EDITOR_QUERY_PARAMS = DBRFeature.createFeature(SQL_EDITOR, "Use SQL query parameters");
     DBRFeature SQL_EDITOR_EXPLAIN_PLAN = DBRFeature.createCommandFeature(SQL_EDITOR, SQLEditorCommands.CMD_EXPLAIN_PLAN);
+    DBRFeature SQL_EDITOR_LOAD_PLAN = DBRFeature.createCommandFeature(SQL_EDITOR, SQLEditorCommands.CMD_LOAD_PLAN);
     DBRFeature SQL_EDITOR_EXECUTE_SCRIPT = DBRFeature.createFeature(SQL_EDITOR, "Execute SQL script");
     DBRFeature SQL_EDITOR_EXECUTE_QUERY_NEW = DBRFeature.createCommandFeature(SQL_EDITOR, SQLEditorCommands.CMD_EXECUTE_STATEMENT_NEW);
     DBRFeature SQL_EDITOR_EXECUTE_QUERY = DBRFeature.createCommandFeature(SQL_EDITOR, SQLEditorCommands.CMD_EXECUTE_STATEMENT);
