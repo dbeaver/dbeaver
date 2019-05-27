@@ -85,13 +85,29 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         ITextViewer viewer,
         int documentOffset)
     {
+        IDocument document = editor.getDocument();
+        if (document == null) {
+            return new ICompletionProposal[0];
+        }
         final SQLCompletionRequest request = new SQLCompletionRequest(
             editor.getCompletionContext(),
-            editor.getDocument(),
+            document,
             documentOffset,
             editor.extractQueryAtPos(documentOffset),
             simpleMode);
         SQLWordPartDetector wordDetector = request.getWordDetector();
+
+
+        try {
+            // Check that word start position is in default partition (#5994)
+            String contentType = TextUtilities.getContentType(document, SQLPartitionScanner.SQL_PARTITIONING, wordDetector.getStartOffset(), true);
+            if (contentType == null || !IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
+                return new ICompletionProposal[0];
+            }
+        } catch (BadLocationException e) {
+            log.debug(e);
+            return new ICompletionProposal[0];
+        }
 
         if (lookupTemplates) {
             return makeTemplateProposals(viewer, request);
