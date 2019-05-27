@@ -771,6 +771,7 @@ public class SQLEditor extends SQLEditorBase implements
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT_NEW, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXPLAIN_PLAN, false);
+        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_LOAD_PLAN, false);
 
         UIUtils.createEmptyLabel(sideToolBar, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
@@ -1504,6 +1505,36 @@ public class SQLEditor extends SQLEditorBase implements
         super.setFocus();
     }
 
+    public void loadQueryPlan()
+    {
+        DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
+        if (planner == null) {
+            DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan load isn't supported by current datasource");
+            return;
+        }
+        
+        DBCPlanStyle planStyle = planner.getPlanStyle();
+        if (planStyle == DBCPlanStyle.QUERY) {
+            DBWorkbench.getPlatformUI().showError("Execution plan", "Execution plan load isn't supported by current datasource");
+            return;
+        }
+        
+
+        ExplainPlanViewer planView = new ExplainPlanViewer(this, this, resultTabs);
+
+        final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
+        item.setControl(planView.getControl());
+        item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title);
+        item.setImage(IMG_EXPLAIN_PLAN);
+        item.setData(planView);
+        item.addDisposeListener(resultTabDisposeListener);
+        UIUtils.disposeControlOnItemDispose(item);
+        resultTabs.setSelection(item);
+        
+        planView.loadQueryPlan(planner, planView);
+                
+    }
+    
     public void explainQueryPlan()
     {
         // Notify listeners
@@ -1523,6 +1554,8 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         explainQueryPlan((SQLQuery) scriptElement);
+        
+        
     }
 
     private void explainQueryPlan(SQLQuery sqlQuery)
