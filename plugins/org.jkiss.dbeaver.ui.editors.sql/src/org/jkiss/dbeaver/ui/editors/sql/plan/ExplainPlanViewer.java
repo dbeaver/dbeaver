@@ -172,7 +172,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
     }
     
   
-    public void loadQueryPlan(DBCQueryPlanner planner, Viewer viewer) {
+    public boolean loadQueryPlan(DBCQueryPlanner planner, Viewer viewer) {
         if (planner instanceof DBCQueryPlannerSerializable) {
 
             FileDialog fd = new FileDialog(viewer.getControl().getShell(), SWT.OPEN | SWT.SINGLE);
@@ -185,26 +185,23 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                 curFolder = fd.getFilterPath();
 
                 try (Reader r = new FileReader(selected)) {
-
                     lastPlan = ((DBCQueryPlannerSerializable) planner).deserialize(r);
-
-                    lastQuery = new SQLQuery(contextProvider.getExecutionContext().getDataSource(),
+                    lastQuery = new SQLQuery(
+                        contextProvider.getExecutionContext().getDataSource(),
                             lastPlan.getQueryString());
-
                     lastQueryId = lastPlan.getQueryString();
 
                     refresh();
 
-                } catch (IOException | InvocationTargetException e) {
+                    return true;
 
+                } catch (IOException | InvocationTargetException e) {
                     DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ",
                             (e.getCause() != null) ? e.getCause().getCause() : e);
-
                 }
-
             }
-
         }
+        return false;
     }
 
     public void explainQueryPlan(SQLQuery query, Object queryId) {

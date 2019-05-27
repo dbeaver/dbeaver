@@ -771,7 +771,7 @@ public class SQLEditor extends SQLEditorBase implements
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXECUTE_SCRIPT_NEW, false);
         VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_EXPLAIN_PLAN, false);
-        VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_LOAD_PLAN, false);
+        //VerticalButton.create(sideToolBar, SWT.LEFT | SWT.PUSH, getSite(), SQLEditorCommands.CMD_LOAD_PLAN, false);
 
         UIUtils.createEmptyLabel(sideToolBar, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
@@ -875,7 +875,9 @@ public class SQLEditor extends SQLEditorBase implements
                     extraPresentationCurrentPanel.activatePanel();
                 } else if (data instanceof ExplainPlanViewer) {
                     SQLQuery planQuery = ((ExplainPlanViewer) data).getQuery();
-                    getSelectionProvider().setSelection(new TextSelection(planQuery.getOffset(), 0));
+                    if (planQuery != null) {
+                        getSelectionProvider().setSelection(new TextSelection(planQuery.getOffset(), 0));
+                    }
                 }
             }
         });
@@ -1510,7 +1512,9 @@ public class SQLEditor extends SQLEditorBase implements
         ExplainPlanViewer planView = getPlanView(null, planner);
 
         if (planView != null) {
-            planView.loadQueryPlan(planner, planView);
+            if (!planView.loadQueryPlan(planner, planView)) {
+                closeActiveTab();
+            }
         }
 
     }
@@ -1536,12 +1540,17 @@ public class SQLEditor extends SQLEditorBase implements
 
     }
 
-    private void explainQueryPlan(SQLQuery sqlQuery)
-    {
+    private void explainQueryPlan(SQLQuery sqlQuery) {
         DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
+
+        DBCPlanStyle planStyle = planner.getPlanStyle();
+        if (planStyle == DBCPlanStyle.QUERY) {
+            explainPlanFromQuery(planner, sqlQuery);
+            return;
+        }
+
         ExplainPlanViewer planView = getPlanView(sqlQuery,planner);
-       
-        
+
         if (planView != null) {
             planView.explainQueryPlan(sqlQuery, planner); 
         }
@@ -1558,19 +1567,21 @@ public class SQLEditor extends SQLEditorBase implements
         }
         // Transform query parameters
         if (sqlQuery != null) {
-            new SQLQueryJob(getSite(), "Plan query", getExecutionContext(), null, Collections.emptyList(), this.globalScriptContext, null, null)
-            .transformQueryWithParameters(sqlQuery);
+            new SQLQueryJob(
+                getSite(),
+                "Plan query",
+                getExecutionContext(),
+                null,
+                Collections.emptyList(),
+                this.globalScriptContext,
+                null,
+                null)
+                .transformQueryWithParameters(sqlQuery);
         }
         
         ExplainPlanViewer planView = null;
 
         if (sqlQuery != null) {
-            DBCPlanStyle planStyle = planner.getPlanStyle();
-            if (planStyle == DBCPlanStyle.QUERY) {
-                explainPlanFromQuery(planner, sqlQuery);
-                return null;
-            }
-    
             for (CTabItem item : resultTabs.getItems()) {
                 if (item.getData() instanceof ExplainPlanViewer) {
                     ExplainPlanViewer pv = (ExplainPlanViewer) item.getData();
