@@ -88,6 +88,11 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
     }
 
     @Override
+    public void resetSettings(DBWHandlerConfiguration configuration) {
+
+    }
+
+    @Override
     public boolean isComplete()
     {
         return false;

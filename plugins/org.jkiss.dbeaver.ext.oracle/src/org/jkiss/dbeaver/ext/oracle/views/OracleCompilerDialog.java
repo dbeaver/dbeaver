@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.oracle.actions.CompileHandler;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -45,7 +46,6 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -112,7 +112,7 @@ public class OracleCompilerDialog extends BaseDialog
                 public void update(ViewerCell cell)
                 {
                     DBSObject unit = (DBSObject) cell.getElement();
-                    final DBNDatabaseNode node = NavigatorUtils.getNodeByObject(unit);
+                    final DBNDatabaseNode node = DBNUtils.getNodeByObject(unit);
                     if (node != null) {
                         cell.setText(node.getNodeName());
                         cell.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
@@ -126,7 +126,7 @@ public class OracleCompilerDialog extends BaseDialog
                 public void update(ViewerCell cell)
                 {
                     DBSObject unit = (DBSObject) cell.getElement();
-                    final DBNDatabaseNode node = NavigatorUtils.getNodeByObject(unit);
+                    final DBNDatabaseNode node = DBNUtils.getNodeByObject(unit);
                     if (node != null) {
                         cell.setText(node.getNodeType());
                     } else {

@@ -39,13 +39,13 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
@@ -279,7 +279,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
             if (dialog.open() != IDialogConstants.CANCEL_ID) {
                 DBPDataSourceContainer dataSource = dialog.getDataSource();
                 if (dataSource != null) {
-                    DBNNode dsNode = NavigatorUtils.getNodeByObject(dataSource);
+                    DBNNode dsNode = DBNUtils.getNodeByObject(dataSource);
                     if (dsNode instanceof DBNDataSource) {
                         prefDialog = PreferencesUtil.createPropertyDialogOn(
                             getShell(),

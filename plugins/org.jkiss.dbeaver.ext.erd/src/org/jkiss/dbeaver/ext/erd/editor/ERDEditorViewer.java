@@ -24,8 +24,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -149,7 +149,7 @@ public class ERDEditorViewer extends Viewer
         private Object convertObject(Object object) {
             if (object instanceof EntityPart) {
                 final DBSEntity entity = ((EntityPart) object).getEntity().getObject();
-                return entity == null ? null : NavigatorUtils.getNodeByObject(entity);
+                return entity == null ? null : DBNUtils.getNodeByObject(entity);
             }
             return object;
         }

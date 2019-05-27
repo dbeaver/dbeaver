@@ -25,6 +25,11 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 public abstract class SSLConfiguratorAbstractUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
 
     @Override
+    public void resetSettings(DBWHandlerConfiguration configuration) {
+
+    }
+
+    @Override
     public boolean isComplete()
     {
         return false;

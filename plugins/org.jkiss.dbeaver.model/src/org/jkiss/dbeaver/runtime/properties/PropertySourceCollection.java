@@ -94,6 +94,11 @@ public class PropertySourceCollection implements DBPPropertySource {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "[...]";
+    }
+
     private class ItemPropertyDescriptor implements DBPPropertyDescriptor {
         private Integer id;
         private Object item;

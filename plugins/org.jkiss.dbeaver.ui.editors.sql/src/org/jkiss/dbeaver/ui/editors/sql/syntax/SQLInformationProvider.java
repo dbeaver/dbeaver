@@ -26,6 +26,7 @@ import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
@@ -159,7 +160,12 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         } else if (ArrayUtils.isEmpty(informer.getKeywords())) {
             return null;
         }
-        return SQLContextInformer.readAdditionalProposalInfo(null, editor.getDataSource(), object, informer.getKeywords(), informer.getKeywordType());
+        return SQLCompletionHelper.readAdditionalProposalInfo(
+            null,
+            editor.getCompletionContext(),
+            object,
+            informer.getKeywords(),
+            informer.getKeywordType());
     }
 
     /*

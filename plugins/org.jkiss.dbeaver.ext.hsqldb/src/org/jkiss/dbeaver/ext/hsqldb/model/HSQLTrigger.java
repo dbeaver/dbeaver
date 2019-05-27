@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 
 /**
  * HSQLTrigger
@@ -42,7 +42,7 @@ public class HSQLTrigger extends GenericTrigger {
         timing = JDBCUtils.safeGetString(dbResult, "ACTION_TIMING");
         statement = JDBCUtils.safeGetString(dbResult, "ACTION_STATEMENT");
         if (statement != null) {
-            statement = SQLUtils.formatSQL(getDataSource(), statement);
+            statement = SQLFormatUtils.formatSQL(getDataSource(), statement);
         }
     }
 

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
  * Used to receive some result set data.
  * Result set can be a result of some query execution, cursor returned from stored procedure, generated keys result set, etc.
  */
-public interface DBDDataReceiver {
+public interface DBDDataReceiver extends AutoCloseable {
 
     void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows)
         throws DBCException;

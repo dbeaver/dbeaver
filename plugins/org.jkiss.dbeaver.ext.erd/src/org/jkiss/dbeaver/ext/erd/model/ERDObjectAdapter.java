@@ -21,11 +21,11 @@ import org.eclipse.gef.EditPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 /**
  * ERD object adapter
@@ -42,7 +42,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
             if (model instanceof ERDObject) {
                 Object object = ((ERDObject<?>) model).getObject();
                 if (object instanceof DBSObject) {
-                    DBNDatabaseNode node = NavigatorUtils.getNodeByObject((DBSObject) object);
+                    DBNDatabaseNode node = DBNUtils.getNodeByObject((DBSObject) object);
                     if (node != null) {
                         return adapterType.cast(node);
                     }
