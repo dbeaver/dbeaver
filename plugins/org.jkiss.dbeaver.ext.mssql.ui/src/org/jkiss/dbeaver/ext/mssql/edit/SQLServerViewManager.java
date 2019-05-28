@@ -39,6 +39,12 @@ import java.util.Map;
  */
 public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerView> {
 
+    enum ViewAction {
+        CREATE,
+        ALTER,
+        DROP
+    }
+
     @Override
     public Class<?>[] getChildTypes() {
         return new Class[0];
@@ -66,24 +72,22 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
-        createOrReplaceViewQuery(actions, command.getObject(), true);
+        createOrReplaceViewQuery(actions, command.getObject(), ViewAction.CREATE);
     }
 
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceViewQuery(actionList, command.getObject(), false);
+            createOrReplaceViewQuery(actionList, command.getObject(), ViewAction.ALTER);
         }
     }
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        actions.add(
-            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
-        );
+        createOrReplaceViewQuery(actions, command.getObject(), ViewAction.DROP);
     }
 
-    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, SQLServerView view, boolean create)
+    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, SQLServerView view, ViewAction action)
     {
         SQLServerDatabase procDatabase = view.getContainer().getDatabase();
         SQLServerDatabase defaultDatabase = procDatabase.getDataSource().getDefaultObject();
@@ -91,10 +95,16 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(procDatabase), false)); //$NON-NLS-2$
         }
 
-        if (create) {
-            actions.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
-        } else {
-            actions.add(new SQLDatabasePersistAction("Alter view", SQLServerUtils.changeCreateToAlterDDL(view.getDataSource().getSQLDialect(), view.getDDL())));
+        switch (action) {
+            case CREATE:
+                actions.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
+                break;
+            case ALTER:
+                actions.add(new SQLDatabasePersistAction("Alter view", SQLServerUtils.changeCreateToAlterDDL(view.getDataSource().getSQLDialect(), view.getDDL())));
+                break;
+            case DROP:
+                actions.add(new SQLDatabasePersistAction("Drop view", "DROP VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$
+                break;
         }
 
         if (defaultDatabase != procDatabase) {
