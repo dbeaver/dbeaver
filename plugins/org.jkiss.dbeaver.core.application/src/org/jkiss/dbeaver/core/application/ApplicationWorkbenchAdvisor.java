@@ -98,7 +98,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
         declareWorkbenchImages(configurer);
 
-        TrayDialog.setDialogHelpAvailable(true);
+        //TrayDialog.setDialogHelpAvailable(true);
 
 /*
         // Set default resource encoding to UTF-8
