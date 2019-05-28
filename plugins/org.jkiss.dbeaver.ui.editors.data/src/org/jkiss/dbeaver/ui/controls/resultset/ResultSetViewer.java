@@ -1391,6 +1391,12 @@ public class ResultSetViewer extends Viewer
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
         fireResultSetChange();
         updateToolbar();
+        // Enable presentations
+        for (VerticalButton pb : presentationSwitchFolder.getItems()) {
+            if (pb.getData() instanceof ResultSetPresentationDescriptor) {
+                pb.setVisible(!recordMode || ((ResultSetPresentationDescriptor) pb.getData()).supportsRecordMode());
+            }
+        }
     }
 
     /**
