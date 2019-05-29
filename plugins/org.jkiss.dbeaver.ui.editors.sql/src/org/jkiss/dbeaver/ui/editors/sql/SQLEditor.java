@@ -77,6 +77,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -384,22 +385,25 @@ public class SQLEditor extends SQLEditorBase implements
                 releaseExecutionContext();
                 curDataSource = dataSource;
                 if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION)) {
-                    final OpenContextJob job = new OpenContextJob(dataSource);
-                    job.addJobChangeListener(new JobChangeAdapter() {
-                        @Override
-                        public void done(IJobChangeEvent event) {
-                            if (job.error != null) {
-                                releaseExecutionContext();
-                                DBWorkbench.getPlatformUI().showError("Open context", "Can't open editor connection", job.error);
-                            } else {
-                                if (onSuccess != null) {
-                                    onSuccess.run();
+                    DBSInstance dsInstance = dataSource.getDefaultInstance();
+                    if (dsInstance != null) {
+                        final OpenContextJob job = new OpenContextJob(dsInstance);
+                        job.addJobChangeListener(new JobChangeAdapter() {
+                            @Override
+                            public void done(IJobChangeEvent event) {
+                                if (job.error != null) {
+                                    releaseExecutionContext();
+                                    DBWorkbench.getPlatformUI().showError("Open context", "Can't open editor connection", job.error);
+                                } else {
+                                    if (onSuccess != null) {
+                                        onSuccess.run();
+                                    }
+                                    fireDataSourceChange();
                                 }
-                                fireDataSourceChange();
-                            }
-                        }
-                    });
-                    job.schedule();
+                                }
+                        });
+                        job.schedule();
+                    }
                 } else {
                     if (onSuccess != null) {
                         onSuccess.run();
@@ -549,11 +553,11 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private class OpenContextJob extends AbstractJob {
-        private final DBPDataSource dataSource;
+        private final DBSInstance instance;
         private Throwable error;
-        OpenContextJob(DBPDataSource dataSource) {
-            super("Open connection to " + dataSource.getContainer().getName());
-            this.dataSource = dataSource;
+        OpenContextJob(DBSInstance instance) {
+            super("Open connection to " + instance.getDataSource().getContainer().getName());
+            this.instance = instance;
             setUser(true);
         }
 
@@ -563,7 +567,7 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 String title = "SQLEditor <" + getEditorInput().getName() + ">";
                 monitor.subTask("Open context " + title);
-                executionContext = dataSource.getDefaultInstance().openIsolatedContext(monitor, title);
+                executionContext = instance.openIsolatedContext(monitor, title);
             } catch (DBException e) {
                 error = e;
                 return Status.OK_STATUS;
