@@ -234,10 +234,13 @@ public class ReferenceValueEditor {
                 DBDDisplayFormat.UI);
             boolean valueFound = false;
             if (curTextValue != null) {
-                for (TableItem item : editorSelector.getItems()) {
+                TableItem[] items = editorSelector.getItems();
+                for (int i = 0; i < items.length; i++) {
+                    TableItem item = items[i];
                     if (curTextValue.equalsIgnoreCase(item.getText(0)) || curTextValue.equalsIgnoreCase(item.getText(1))) {
                         editorSelector.select(editorSelector.indexOf(item));
                         editorSelector.showItem(item);
+                        editorSelector.setTopIndex(i);
                         valueFound = true;
                         break;
                     }
@@ -337,15 +340,22 @@ public class ReferenceValueEditor {
                         DBDDisplayFormat.UI);
 
                 TableItem curItem = null;
-                for (TableItem item : editorSelector.getItems()) {
+                int curItemIndex = -1;
+                TableItem[] items = editorSelector.getItems();
+                for (int i = 0; i < items.length; i++) {
+                    TableItem item = items[i];
                     if (item.getText(0).equals(curTextValue)) {
                         curItem = item;
+                        curItemIndex = i;
                         break;
                     }
                 }
                 if (curItem != null) {
                     editorSelector.setSelection(curItem);
                     editorSelector.showItem(curItem);
+                    // Show cur item on top
+                    int finalCurItemIndex = curItemIndex;
+                    UIUtils.asyncExec(() -> editorSelector.setTopIndex(finalCurItemIndex));
                 } else {
                     editorSelector.deselectAll();
                 }
