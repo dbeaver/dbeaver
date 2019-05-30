@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +87,12 @@ public class DataExporterTXT extends StreamExporterAbstract {
 
         for (int i = 0; i < columns.size(); i++) {
             DBDAttributeBinding attr = columns.get(i);
-            colWidths[i] = Math.max(getAttributeName(attr).length(), (int) attr.getMaxLength());
+            int maxLength = (int) attr.getMaxLength();
+            if (attr.getDataKind() == DBPDataKind.DATETIME) {
+                // DATETIME attributes are converted to strings so their actual length may differ
+                maxLength = getCellString(attr, new Date(), DBDDisplayFormat.EDIT).length();
+            }
+            colWidths[i] = Math.max(getAttributeName(attr).length(), maxLength);
         }
         for (int i = 0; i < colWidths.length; i++) {
             if (colWidths[i] > maxColumnSize) {
