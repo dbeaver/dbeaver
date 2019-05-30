@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextUtilities;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
@@ -62,7 +63,8 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         endOffset = documentOffset;
         int topIndex = 0, documentLength = document.getLength();
         try {
-            boolean inQuote = false;
+            String contentType = TextUtilities.getContentType(document, SQLParserPartitions.SQL_PARTITIONING, documentOffset, true);
+            boolean inQuote = SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED.equals(contentType);
             while (startOffset >= topIndex && startOffset < documentLength) {
                 char c = document.getChar(startOffset);
                 if (inQuote) {

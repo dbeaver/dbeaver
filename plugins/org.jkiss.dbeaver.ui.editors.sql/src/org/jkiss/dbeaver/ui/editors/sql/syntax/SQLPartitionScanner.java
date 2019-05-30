@@ -23,6 +23,7 @@ import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.rules.*;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -36,27 +37,13 @@ import java.util.List;
  * and SQL code sections.
  */
 public class SQLPartitionScanner extends RuleBasedPartitionScanner {
-    public final static String SQL_PARTITIONING = "___sql_partitioning";
-
-    public final static String CONTENT_TYPE_SQL_COMMENT = "sql_comment";
-    public final static String CONTENT_TYPE_SQL_MULTILINE_COMMENT = "sql_multiline_comment";
-    public final static String CONTENT_TYPE_SQL_STRING = "sql_character";
-    public final static String CONTENT_TYPE_SQL_QUOTED = "sql_quoted";
-
-    public final static String[] SQL_CONTENT_TYPES = new String[]{
-        IDocument.DEFAULT_CONTENT_TYPE,
-        CONTENT_TYPE_SQL_COMMENT,
-        CONTENT_TYPE_SQL_MULTILINE_COMMENT,
-        CONTENT_TYPE_SQL_STRING,
-        CONTENT_TYPE_SQL_QUOTED,
-    };
 
     // Syntax higlight
     private final List<IPredicateRule> rules = new ArrayList<>();
-    private final IToken commentToken = new Token(CONTENT_TYPE_SQL_COMMENT);
-    private final IToken multilineCommentToken = new Token(CONTENT_TYPE_SQL_MULTILINE_COMMENT);
-    private final IToken sqlStringToken = new Token(CONTENT_TYPE_SQL_STRING);
-    private final IToken sqlQuotedToken = new Token(CONTENT_TYPE_SQL_QUOTED);
+    private final IToken commentToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT);
+    private final IToken multilineCommentToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT);
+    private final IToken sqlStringToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
+    private final IToken sqlQuotedToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
 
     /**
      * Detector for empty comments.
@@ -188,7 +175,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     {
         ITypedRegion[] regions = null;
         try {
-            regions = TextUtilities.computePartitioning(doc, SQLPartitionScanner.SQL_PARTITIONING, 0, doc.getLength(), false);
+            regions = TextUtilities.computePartitioning(doc, SQLParserPartitions.SQL_PARTITIONING, 0, doc.getLength(), false);
         }
         catch (BadLocationException e) {
             // ignore

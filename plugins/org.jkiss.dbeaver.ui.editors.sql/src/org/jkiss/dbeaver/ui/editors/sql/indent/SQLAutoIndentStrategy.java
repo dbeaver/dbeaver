@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.HashMap;
@@ -365,7 +365,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
             int start = reg.getOffset();
             ITypedRegion region = TextUtilities.getPartition(document, partitioning, start, true);
-            if (SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(region.getType())) {
+            if (SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(region.getType())) {
                 start = document.getLineInformationOfOffset(region.getOffset()).getOffset();
             }
 

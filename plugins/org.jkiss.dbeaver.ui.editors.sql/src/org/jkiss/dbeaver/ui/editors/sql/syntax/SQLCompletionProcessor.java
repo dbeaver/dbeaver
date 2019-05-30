@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -100,8 +101,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         try {
             // Check that word start position is in default partition (#5994)
-            String contentType = TextUtilities.getContentType(document, SQLPartitionScanner.SQL_PARTITIONING, wordDetector.getStartOffset(), true);
-            if (contentType == null || !IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
+            String contentType = TextUtilities.getContentType(document, SQLParserPartitions.SQL_PARTITIONING, wordDetector.getStartOffset(), true);
+            if (contentType == null || (!IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) && !SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED.equals(contentType))) {
                 return new ICompletionProposal[0];
             }
         } catch (BadLocationException e) {

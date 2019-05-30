@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.ui.*;
@@ -403,11 +404,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         char[] matchChars = BRACKETS; //which brackets to match
         try {
             characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars,
-                SQLPartitionScanner.SQL_PARTITIONING,
+                SQLParserPartitions.SQL_PARTITIONING,
                 true);
         } catch (Throwable e) {
             // If we below Eclipse 4.2.1
-            characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars, SQLPartitionScanner.SQL_PARTITIONING);
+            characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars, SQLParserPartitions.SQL_PARTITIONING);
         }
         support.setCharacterPairMatcher(characterPairMatcher);
         support.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
@@ -587,10 +588,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
                 new SQLPartitionScanner(dialect),
-                SQLPartitionScanner.SQL_CONTENT_TYPES);
+                SQLParserPartitions.SQL_CONTENT_TYPES);
             partitioner.connect(document);
             try {
-                ((IDocumentExtension3)document).setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+                ((IDocumentExtension3)document).setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
             } catch (Throwable e) {
                 log.warn("Error setting SQL partitioner", e); //$NON-NLS-1$
             }
@@ -695,7 +696,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
             return null;
         }
         final int docLength = document.getLength();
-        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING) : null;
+        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING) : null;
         if (partitioner != null) {
             // Move to default partition. We don't want to be in the middle of multi-line comment or string
             while (currentPos < docLength && isMultiCommentPartition(partitioner, currentPos)) {
@@ -829,7 +830,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
     }
 
     private static boolean isMultiCommentPartition(IDocumentPartitioner partitioner, int currentPos) {
-        return partitioner != null && SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
+        return partitioner != null && SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
     }
 
     private void startScriptEvaluation() {
