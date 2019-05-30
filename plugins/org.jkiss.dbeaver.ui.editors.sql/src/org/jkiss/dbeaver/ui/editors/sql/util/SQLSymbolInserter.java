@@ -31,8 +31,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 
 import java.util.ArrayList;
@@ -190,7 +190,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                 try {
                     ITypedRegion partition = TextUtilities.getPartition(
                         document,
-                        SQLPartitionScanner.SQL_PARTITIONING,
+                        SQLParserPartitions.SQL_PARTITIONING,
                         offset,
                         true);
                     if (!IDocument.DEFAULT_CONTENT_TYPE.equals(partition.getType())

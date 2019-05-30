@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
@@ -116,11 +117,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType)
     {
         if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
-            return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING, editor.getSyntaxManager()) } ;
-        } else if (SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT.equals(contentType) || SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
-            return new IAutoEditStrategy[] { new SQLCommentAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
-        } else if (SQLPartitionScanner.CONTENT_TYPE_SQL_STRING.equals(contentType)) {
-            return new IAutoEditStrategy[] { new SQLStringAutoIndentStrategy(SQLPartitionScanner.CONTENT_TYPE_SQL_STRING) };
+            return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING, editor.getSyntaxManager()) } ;
+        } else if (SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType) || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
+            return new IAutoEditStrategy[] { new SQLCommentAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING) } ;
+        } else if (SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(contentType)) {
+            return new IAutoEditStrategy[] { new SQLStringAutoIndentStrategy(SQLParserPartitions.CONTENT_TYPE_SQL_STRING) };
         }
         return new IAutoEditStrategy[0];
     }
@@ -134,7 +135,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer)
     {
-        return SQLPartitionScanner.SQL_PARTITIONING;
+        return SQLParserPartitions.SQL_PARTITIONING;
     }
 
     /**
@@ -153,7 +154,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         // Set content assist processors for various content types.
         if (completionProcessor != null) {
-            assistant.setContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+            assistant.addContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+            assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
         }
 
         // Configure how content assist information will appear.
@@ -210,10 +212,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public IContentFormatter getContentFormatter(ISourceViewer sourceViewer)
     {
         ContentFormatter formatter = new ContentFormatter();
-        formatter.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
+        formatter.setDocumentPartitioning(SQLParserPartitions.SQL_PARTITIONING);
 
         IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(sourceViewer, this, editor.getSyntaxManager());
-        for (String ct : SQLPartitionScanner.SQL_CONTENT_TYPES) {
+        for (String ct : SQLParserPartitions.SQL_CONTENT_TYPES) {
             formatter.setFormattingStrategy(formattingStrategy, ct);
         }
 
@@ -258,13 +260,13 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         // rule for multiline comments
         // We just need a scanner that does nothing but returns a token with
         // the corresponding text attributes
-        addContentTypeDamageRepairer(reconciler, SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within one-line SQL comments.
-        addContentTypeDamageRepairer(reconciler, SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within quoted literals.
-        addContentTypeDamageRepairer(reconciler, SQLPartitionScanner.CONTENT_TYPE_SQL_STRING, SQLConstants.CONFIG_COLOR_STRING);
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING, SQLConstants.CONFIG_COLOR_STRING);
         // Add a "damager-repairer" for changes within quoted literals.
-        addContentTypeDamageRepairer(reconciler, SQLPartitionScanner.CONTENT_TYPE_SQL_QUOTED, SQLConstants.CONFIG_COLOR_DATATYPE);
+        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED, SQLConstants.CONFIG_COLOR_DATATYPE);
 
         return reconciler;
     }
@@ -306,7 +308,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
     {
-        return SQLPartitionScanner.SQL_CONTENT_TYPES;
+        return SQLParserPartitions.SQL_CONTENT_TYPES;
     }
 
     @Override

@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * Determines whether a given character is valid as part of an SQL identifier.
@@ -85,9 +86,16 @@ public class SQLIdentifierDetector extends SQLWordDetector {
     }
 
     public String removeQuotes(String name) {
+        // Remove leading (and trailing) quotes if any
         for (int i = 0; i < quoteStrings.length; i++) {
-            name = DBUtils.getUnQuotedIdentifier(name, quoteStrings[i][0], quoteStrings[i][1]);
+            if (name.startsWith(quoteStrings[i][0])) {
+                name = name.substring(quoteStrings[i][0].length());
+            }
+            if (name.endsWith(quoteStrings[i][1])) {
+                name = name.substring(0, name.length() - quoteStrings[i][0].length());
+            }
         }
+
         return name;
     }
 

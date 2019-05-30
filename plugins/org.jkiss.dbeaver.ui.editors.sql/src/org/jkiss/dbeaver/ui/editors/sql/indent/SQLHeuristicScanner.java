@@ -22,7 +22,7 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 
 
 /**
@@ -154,7 +154,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     }
 
     public SQLHeuristicScanner(IDocument document, SQLSyntaxManager syntaxManager) {
-        this(document, SQLPartitionScanner.SQL_PARTITIONING, IDocument.DEFAULT_CONTENT_TYPE, syntaxManager);
+        this(document, SQLParserPartitions.SQL_PARTITIONING, IDocument.DEFAULT_CONTENT_TYPE, syntaxManager);
     }
 
     public int getPosition() {
