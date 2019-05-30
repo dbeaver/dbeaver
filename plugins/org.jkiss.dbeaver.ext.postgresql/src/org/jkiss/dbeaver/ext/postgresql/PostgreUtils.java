@@ -447,7 +447,7 @@ public class PostgreUtils {
             }
         }
         switch (itemType.getTypeID()) {
-            case Types.BOOLEAN: return Boolean.valueOf(string); 
+            case Types.BOOLEAN: return string.length() > 0 && Character.toLowerCase(string.charAt(0)) == 't';
             case Types.TINYINT: return Byte.parseByte(string); 
             case Types.SMALLINT: return Short.parseShort(string); 
             case Types.INTEGER: return Integer.parseInt(string); 
