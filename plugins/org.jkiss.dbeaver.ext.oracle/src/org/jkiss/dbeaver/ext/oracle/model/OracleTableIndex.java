@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -40,7 +41,7 @@ import java.util.Map;
 /**
  * OracleTableIndex
  */
-public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePhysical> implements DBSObjectLazy, OracleScriptObject
+public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePhysical> implements DBSObjectLazy, DBPScriptObject
 {
 
     private Object tablespace;
@@ -170,10 +171,6 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
         return indexDDL;
     }
 
-    @Override
-    public void setObjectDefinitionText(String sourceText) {
-
-    }
 
     
 }
