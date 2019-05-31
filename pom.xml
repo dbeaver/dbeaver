@@ -253,6 +253,41 @@
             </properties>
         </profile>
 
+        <!--
+            Profile for 32bit builds.
+            Also requires profile eclipse-oxygen (as newer Eclipse versions don't support 32bit arch).
+            Also Java 1.8 must be used.
+        -->
+        <profile>
+            <id>32bit</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>target-platform-configuration</artifactId>
+                        <version>${tycho-version}</version>
+                        <configuration>
+                            <environments>
+                                <environment>
+                                    <os>win32</os>
+                                    <ws>win32</ws>
+                                    <arch>x86</arch>
+                                </environment>
+                                <environment>
+                                    <os>linux</os>
+                                    <ws>gtk</ws>
+                                    <arch>x86</arch>
+                                </environment>
+                            </environments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Profile for jars sign -->
         <profile>
             <id>sign-code</id>
