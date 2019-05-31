@@ -99,6 +99,12 @@ class MySQLDialect extends JDBCSQLDialect {
         return "DELIMITER";
     }
 
+    @Override
+    public String[][] getBlockBoundStrings() {
+        // No anonymous blocks in MySQL
+        return null;
+    }
+
     @NotNull
     @Override
     public String escapeString(String string) {
