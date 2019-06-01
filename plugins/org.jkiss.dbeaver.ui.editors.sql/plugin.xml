@@ -676,8 +676,8 @@
                     </visibleWhen>
                 </command>
                 <separator name="misc" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"/>
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"/>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"><parameter name="noCustomLabel" value="true"/></command>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"><parameter name="noCustomLabel" value="true"/></command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" style="push"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
@@ -700,8 +700,12 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>
                 <separator name="plan" visible="true"/>
                 <separator name="additions_active_object" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection"/>
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"/>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection">
+                   <parameter name="noCustomLabel" value="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema">
+                    <parameter name="noCustomLabel" value="true"/>
+                </command>
             </menu>
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file.label">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.rename"/>
