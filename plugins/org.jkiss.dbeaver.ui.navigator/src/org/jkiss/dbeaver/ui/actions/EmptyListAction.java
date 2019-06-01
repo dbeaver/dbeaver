@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.actions.common;
+package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.jface.action.Action;
 

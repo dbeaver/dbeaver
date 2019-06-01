@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.perspective;
+package org.jkiss.dbeaver.ui.navigator.dialogs;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.dialogs.SelectObjectDialog;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
         Collection<DBNDatabaseNode> selected)
     {
         super(parentShell,
-            PerspectiveMessages.label_choose_catalog,
+            UINavigatorMessages.label_choose_catalog,
             true,
             "SchemaSelector", //$NON-NLS-1$
             objects,
@@ -84,7 +84,7 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
                 Composite instancePanel = UIUtils.createComposite(dialogArea, 3);
                 instancePanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 UIUtils.createLabel(instancePanel, dataSourceContainer.getDriver().getIcon());
-                Combo instanceCombo = UIUtils.createLabelCombo(instancePanel, PerspectiveMessages.label_instance, PerspectiveMessages.label_active_service_instance, SWT.DROP_DOWN | SWT.READ_ONLY);
+                Combo instanceCombo = UIUtils.createLabelCombo(instancePanel, UINavigatorMessages.label_instance, UINavigatorMessages.label_active_service_instance, SWT.DROP_DOWN | SWT.READ_ONLY);
                 instanceCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 //                Label databaseTermLabel = UIUtils.createControlLabel(instancePanel, dataSource.getInfo().getSchemaTerm());
 //                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -100,7 +100,7 @@ public class SelectDatabaseDialog extends SelectObjectDialog<DBNDatabaseNode>
                         instanceCombo.setText(currentInstanceName);
                     }
                 } catch (DBException e) {
-                    log.error(PerspectiveMessages.label_error_list, e);
+                    log.error(UINavigatorMessages.label_error_list, e);
                 }
 
                 instanceCombo.addModifyListener(e -> {
