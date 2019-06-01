@@ -84,6 +84,9 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
+        if ("true".equals(parameters.get("noCustomLabel"))) {
+            return;
+        }
         IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         String connectionName;

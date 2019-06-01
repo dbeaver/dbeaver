@@ -110,6 +110,9 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
+        if ("true".equals(parameters.get("noCustomLabel"))) {
+            return;
+        }
         IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
         if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
             return;
