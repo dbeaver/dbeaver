@@ -28,6 +28,18 @@ public class UINavigatorMessages extends NLS {
     public static String obj_editor_properties_control_action_configure_columns_description;
     //object properties editor
 
+    public static String toolbar_datasource_selector_empty;
+    public static String toolbar_datasource_selector_action_read_databases;
+    public static String toolbar_datasource_selector_combo_database_tooltip;
+    public static String toolbar_datasource_selector_combo_datasource_tooltip;
+    public static String toolbar_datasource_selector_error_change_database_message;
+    public static String toolbar_datasource_selector_error_change_database_title;
+    public static String toolbar_datasource_selector_error_database_not_found;
+    public static String toolbar_datasource_selector_error_database_change_not_supported;
+    public static String toolbar_datasource_selector_resultset_segment_size;
+    public static String toolbar_datasource_selector_connected;
+    public static String toolbar_datasource_selector_all;
+
     public static String dialog_filter_global_link;
     public static String dialog_filter_list_exclude;
     public static String dialog_filter_list_include;
@@ -170,7 +182,11 @@ public class UINavigatorMessages extends NLS {
 	public static String pref_page_target_button_use_datasource_settings;
     public static String pref_page_target_link_show_datasource_settings;
     public static String pref_page_target_link_show_global_settings;
-    public static String toolbar_datasource_selector_empty;
+
+    public static String label_active_service_instance;
+    public static String label_choose_catalog;
+    public static String label_error_list;
+    public static String label_instance;
 
     static {
         // initialize resource bundle

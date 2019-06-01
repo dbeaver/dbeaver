@@ -404,17 +404,6 @@ public class CoreMessages extends NLS {
 	public static String runtime_jobs_disconnect_error;
 	public static String runtime_jobs_disconnect_name;
 
-	public static String toolbar_datasource_selector_action_read_databases;
-	public static String toolbar_datasource_selector_combo_database_tooltip;
-	public static String toolbar_datasource_selector_combo_datasource_tooltip;
-	public static String toolbar_datasource_selector_error_change_database_message;
-	public static String toolbar_datasource_selector_error_change_database_title;
-	public static String toolbar_datasource_selector_error_database_not_found;
-	public static String toolbar_datasource_selector_error_database_change_not_supported;
-	public static String toolbar_datasource_selector_resultset_segment_size;
-	public static String toolbar_datasource_selector_connected;
-	public static String toolbar_datasource_selector_all;
-	
 	public static String toolbar_editors_sql_run_statement_name;
 	public static String toolbar_editors_sql_run_statementNew_name;
 	public static String toolbar_editors_sql_run_script_name;

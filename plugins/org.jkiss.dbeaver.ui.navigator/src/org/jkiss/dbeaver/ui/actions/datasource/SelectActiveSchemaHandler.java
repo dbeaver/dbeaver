@@ -34,7 +34,6 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -54,7 +53,8 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.perspective.SelectDatabaseDialog;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -121,7 +121,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
         String schemaName = "<No active connection>";
         DBIcon schemaIcon = DBIcon.TREE_SCHEMA;
-        String schemaTooltip = CoreMessages.toolbar_datasource_selector_combo_database_tooltip;
+        String schemaTooltip = UINavigatorMessages.toolbar_datasource_selector_combo_database_tooltip;
 
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         if (dataSource != null && dataSource.isConnected()) {
@@ -233,10 +233,10 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                             if (newChild != null) {
                                 os.setDefaultObject(monitor, newChild);
                             } else {
-                                throw new DBException(MessageFormat.format(CoreMessages.toolbar_datasource_selector_error_database_not_found, newSchemaName));
+                                throw new DBException(MessageFormat.format(UINavigatorMessages.toolbar_datasource_selector_error_database_not_found, newSchemaName));
                             }
                         } else {
-                            throw new DBException(CoreMessages.toolbar_datasource_selector_error_database_change_not_supported);
+                            throw new DBException(UINavigatorMessages.toolbar_datasource_selector_error_database_change_not_supported);
                         }
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
@@ -267,7 +267,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 return;
             }
             try {
-                monitor.beginTask(CoreMessages.toolbar_datasource_selector_action_read_databases, 1);
+                monitor.beginTask(UINavigatorMessages.toolbar_datasource_selector_action_read_databases, 1);
                 currentDatabaseInstanceName = null;
                 Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
                 if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {

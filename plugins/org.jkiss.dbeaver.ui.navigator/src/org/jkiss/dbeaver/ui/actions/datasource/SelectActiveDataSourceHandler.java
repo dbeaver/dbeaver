@@ -28,7 +28,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -41,6 +40,7 @@ import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 
 import java.util.*;
@@ -105,7 +105,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
         }
         element.setText(connectionName);
         element.setIcon(DBeaverIcons.getImageDescriptor(connectionIcon));
-        element.setTooltip(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
+        element.setTooltip(UINavigatorMessages.toolbar_datasource_selector_combo_datasource_tooltip);
     }
 
     private static List<? extends DBPDataSourceContainer> getAvailableDataSources() {

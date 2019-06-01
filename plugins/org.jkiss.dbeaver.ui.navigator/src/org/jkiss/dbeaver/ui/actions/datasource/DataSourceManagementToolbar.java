@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.perspective;
+package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -39,16 +39,13 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -61,14 +58,14 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
+import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.controls.CSmartSelector;
 import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -78,7 +75,7 @@ import java.util.*;
 
 /**
  * DataSource Toolbar
- * Deprecated everything was moved to org.jkiss.dbeaver.ui.actions.datasource.*
+ * Deprecated. Everything was moved to org.jkiss.dbeaver.ui.actions.datasource.*
  */
 @Deprecated
 public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, DBPPreferenceListener, INavigatorListener {
@@ -109,7 +106,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         private boolean enabled;
 
         DatabaseListReader(@NotNull DBCExecutionContext context) {
-            super(CoreMessages.toolbar_datasource_selector_action_read_databases, context);
+            super(UINavigatorMessages.toolbar_datasource_selector_action_read_databases, context);
             setSystem(true);
             this.enabled = false;
         }
@@ -123,7 +120,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 return Status.CANCEL_STATUS;
             }
             try {
-                monitor.beginTask(CoreMessages.toolbar_datasource_selector_action_read_databases, 1);
+                monitor.beginTask(UINavigatorMessages.toolbar_datasource_selector_action_read_databases, 1);
                 currentDatabaseInstanceName = null;
                 Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
                 if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
@@ -440,7 +437,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 }
             }
             connectionCombo.select(selectionIndex);
-            connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip + "\n" + connectionCombo.getText());
+            connectionCombo.setToolTipText(UINavigatorMessages.toolbar_datasource_selector_combo_datasource_tooltip + "\n" + connectionCombo.getText());
         } finally {
             if (update) {
                 connectionCombo.setRedraw(true);
@@ -467,8 +464,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         // but in fact it doesn't. I don't know better way than trigger update explicitly.
         // TODO: replace with something smarter
         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
-            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
-            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
+            //DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
+            //DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
             UIUtils.asyncExec(
                 () -> {
                     IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
@@ -491,7 +488,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 resultSetSize.setText(""); //$NON-NLS-1$
             } else {
                 resultSetSize.setEnabled(true);
-                resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
+                resultSetSize.setText(String.valueOf(200));
+                //resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
             }
         }
 
@@ -507,9 +505,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             if (rsSize.length() == 0) {
                 rsSize = "1"; //$NON-NLS-1$
             }
-            DBPPreferenceStore store = dsContainer.getPreferenceStore();
-            store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, rsSize);
-            PrefUtils.savePreferenceStore(store);
+            //DBPPreferenceStore store = dsContainer.getPreferenceStore();
+            //store.setValue(ResultSetPreferences.RESULT_SET_MAX_ROWS, rsSize);
+            //PrefUtils.savePreferenceStore(store);
         }
     }
 
@@ -568,7 +566,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             } else {
                 curDataSourceContainer = null;
                 databaseCombo.removeAll();
-                databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
+                databaseCombo.setToolTipText(UINavigatorMessages.toolbar_datasource_selector_combo_database_tooltip);
             }
         }
     }
@@ -606,7 +604,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 }
             }
             databaseCombo.setEnabled(reader.enabled);
-            databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip + "\n" + databaseCombo.getText());
+            databaseCombo.setToolTipText(UINavigatorMessages.toolbar_datasource_selector_combo_database_tooltip + "\n" + databaseCombo.getText());
         } finally {
             if (!databaseCombo.isDisposed()) {
                 databaseCombo.setRedraw(true);
@@ -674,10 +672,10 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             if (newChild != null) {
                                 os.setDefaultObject(monitor, newChild);
                             } else {
-                                throw new DBException(MessageFormat.format(CoreMessages.toolbar_datasource_selector_error_database_not_found, newName));
+                                throw new DBException(MessageFormat.format(UINavigatorMessages.toolbar_datasource_selector_error_database_not_found, newName));
                             }
                         } else {
-                            throw new DBException(CoreMessages.toolbar_datasource_selector_error_database_change_not_supported);
+                            throw new DBException(UINavigatorMessages.toolbar_datasource_selector_error_database_change_not_supported);
                         }
                     } catch (DBException e) {
                         return GeneralUtils.makeExceptionStatus(e);
@@ -690,11 +688,13 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
+/*
         if (event.getProperty().equals(ResultSetPreferences.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
             if (event.getNewValue() != null) {
                 resultSetSize.setText(event.getNewValue().toString());
             }
         }
+*/
     }
 
     Control createControl(Composite parent) {
@@ -721,7 +721,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         comboGroup.setLayout(layout);
 
         final int fontHeight = UIUtils.getFontHeight(parent);
-        int comboWidth = fontHeight * DBWorkbench.getPlatform().getPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH);
+        int comboWidth = fontHeight * 20;
 
         connectionCombo = new SelectDataSourceCombo(comboGroup) {
 
@@ -740,11 +740,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.setLayoutData(rd);
         connectionCombo.setVisibleItemCount(15);
         connectionCombo.setWidthHint(comboWidth);
-        connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
+        connectionCombo.setToolTipText(UINavigatorMessages.toolbar_datasource_selector_combo_datasource_tooltip);
         connectionCombo.addItem(null);
         connectionCombo.select(0);
 
-        comboWidth = fontHeight * DBWorkbench.getPlatform().getPreferenceStore().getInt(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH);
+        comboWidth = fontHeight * 20;
         databaseCombo = new CSmartSelector<DBNDatabaseNode>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER,
             new DatabaseLabelProviders.DatabaseLabelProvider() {
                 @Override
@@ -769,7 +769,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         databaseCombo.setLayoutData(rd);
         databaseCombo.setVisibleItemCount(15);
         databaseCombo.setWidthHint(comboWidth);
-        databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
+        databaseCombo.setToolTipText(UINavigatorMessages.toolbar_datasource_selector_combo_database_tooltip);
         databaseCombo.addItem(null);
         databaseCombo.select(0);
 
@@ -778,11 +778,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         rd = new RowData();
         rd.width = fontHeight * 4;
         resultSetSize.setLayoutData(rd);
-        resultSetSize.setToolTipText(CoreMessages.toolbar_datasource_selector_resultset_segment_size);
+        resultSetSize.setToolTipText(UINavigatorMessages.toolbar_datasource_selector_resultset_segment_size);
 
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
-            resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
+            //resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS)));
         }
         //resultSetSize.setDigits(7);
         resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
