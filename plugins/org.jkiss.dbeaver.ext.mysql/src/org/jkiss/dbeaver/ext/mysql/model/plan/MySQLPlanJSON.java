@@ -98,6 +98,11 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
         }
     }
 
+    public MySQLPlanJSON(MySQLDataSource dataSource, String query, List<MySQLPlanNodeJSON> rootNodes) {
+        super(dataSource, query);
+        this.rootNodes = rootNodes;
+    }
+
     @Override
     public Object getPlanFeature(String feature) {
         if (dataSource.isMariaDB()) {

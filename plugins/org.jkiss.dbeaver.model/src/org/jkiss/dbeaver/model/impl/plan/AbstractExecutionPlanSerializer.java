@@ -64,16 +64,15 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
 
         info.addNodeProperties(node,nodeJson);
 
-        JsonArray nodes = new JsonArray();
-
-        if (node.getNested() != null) {
+        if (!CommonUtils.isEmpty(node.getNested())) {
+            JsonArray nodes = new JsonArray();
             for(DBCPlanNode childNode : node.getNested()) {
                 nodes.add(serializeNode(childNode,info));
             }
+            nodeJson.add(PROP_CHILD, nodes);
         }
 
 
-        nodeJson.add(PROP_CHILD, nodes);
         return nodeJson;
     }
 

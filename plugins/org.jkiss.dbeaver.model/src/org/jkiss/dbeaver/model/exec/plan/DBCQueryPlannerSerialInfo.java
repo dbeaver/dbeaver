@@ -22,9 +22,9 @@ import com.google.gson.JsonObject;
 
 public interface DBCQueryPlannerSerialInfo {
 
-    public String version();
+    String version();
 
-    public void addNodeProperties(DBCPlanNode node,JsonObject nodeJson);
+    void addNodeProperties(DBCPlanNode node,JsonObject nodeJson);
     
 
 }

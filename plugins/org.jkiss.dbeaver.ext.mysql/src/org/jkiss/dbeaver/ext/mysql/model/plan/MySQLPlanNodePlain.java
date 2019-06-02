@@ -26,6 +26,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQL execution plan node.
@@ -82,6 +83,21 @@ public class MySQLPlanNodePlain extends MySQLPlanNode {
         this.rowCount = JDBCUtils.safeGetLongNullable(dbResult, "rows");
         this.filtered = JDBCUtils.safeGetLongNullable(dbResult, "filtered");
         this.extra = JDBCUtils.safeGetString(dbResult, "extra");
+    }
+
+    public MySQLPlanNodePlain(MySQLPlanNodePlain parent, Map<String, String> props) {
+        this.parent = parent;
+        this.id = props.containsKey("id") ? CommonUtils.toInt(props.get("id")) : null;
+        this.selectType = props.get("select_type");
+        this.table = props.get("table");
+        this.type = props.get("type");
+        this.possibleKeys = props.get("possible_keys");
+        this.key = props.get("key");
+        this.keyLength = props.get("key_len");
+        this.ref = props.get("ref");
+        this.rowCount = props.containsKey("rows") ? CommonUtils.toLong(props.get("rows")) : null;
+        this.filtered =  props.containsKey("filtered") ? CommonUtils.toLong(props.get("filtered")) : null;
+        this.extra = props.get("extra");
     }
 
     public MySQLPlanNodePlain(MySQLPlanNodePlain parent, String type) {
