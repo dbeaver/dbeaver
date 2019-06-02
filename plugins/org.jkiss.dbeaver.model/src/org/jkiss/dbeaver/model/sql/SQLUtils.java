@@ -858,7 +858,7 @@ public final class SQLUtils {
                 }
                 script.append(scriptLine);
                 if (action.getType() != DBEPersistAction.ActionType.COMMENT) {
-                    if (script.lastIndexOf(delimiter) != (script.length()-1)){
+                    if (script.lastIndexOf(delimiter) != (script.length()-delimiter.length())){
                         script.append(delimiter);
                     }    
                 } else {
