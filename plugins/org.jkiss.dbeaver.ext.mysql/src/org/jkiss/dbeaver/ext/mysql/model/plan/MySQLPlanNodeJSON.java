@@ -21,6 +21,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -37,7 +38,7 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     private MySQLPlanNodeJSON parent;
     private String name;
     private JsonObject object;
-    private Map<String, Object> nodeProps = new LinkedHashMap<>();
+    protected Map<String, Object> nodeProps = new LinkedHashMap<>();
     private List<MySQLPlanNodeJSON> nested;
 
     public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent, String name, JsonObject object) {
@@ -46,6 +47,14 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         this.object = object;
 
         parseObject(name, object);
+    }
+
+     public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent,  JsonObject object) {
+        this.parent = parent;
+        this.name = object.get(MySQLPlanJSON.SERIAL_NAME).getAsString();
+        this.object = object;
+        
+        parseObject(name, object.getAsJsonObject(MySQLPlanJSON.SERIAL_OBJECT));
     }
 
     private void parseObject(String objName, JsonObject object) {
@@ -187,6 +196,10 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     @Override
     public String toString() {
         return object.toString();
+    }
+    
+    protected JsonObject getObject() {
+        return object;
     }
 
     //////////////////////////////////////////////////////////

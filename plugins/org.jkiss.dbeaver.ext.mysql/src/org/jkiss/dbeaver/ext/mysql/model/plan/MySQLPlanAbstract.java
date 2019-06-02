@@ -25,13 +25,20 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * MySQL execution plan analyser
@@ -44,6 +51,19 @@ public abstract class MySQLPlanAbstract extends AbstractExecutionPlan {
     public MySQLPlanAbstract(MySQLDataSource dataSource, String query) {
         this.dataSource = dataSource;
         this.query = query;
+    }
+    
+    protected Map<String,String> getNodeAttributes(JsonObject nodeObject){
+        Map<String,String> attributes = new HashMap<>(1);
+
+        JsonArray attrs =  nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        for(JsonElement attr : attrs) {
+            for (Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+                attributes.put(p.getKey(), p.getValue().getAsString());
+            }
+        }
+
+        return attributes;
     }
 
 }

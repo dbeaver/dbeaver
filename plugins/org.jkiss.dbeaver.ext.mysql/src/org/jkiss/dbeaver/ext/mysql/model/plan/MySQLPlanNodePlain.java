@@ -26,6 +26,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQL execution plan node.
@@ -83,6 +84,50 @@ public class MySQLPlanNodePlain extends MySQLPlanNode {
         this.filtered = JDBCUtils.safeGetLongNullable(dbResult, "filtered");
         this.extra = JDBCUtils.safeGetString(dbResult, "extra");
     }
+    
+    public MySQLPlanNodePlain(MySQLPlanNodePlain parent, Map<String,String> props) {
+        this.parent = parent;
+        this.id = aGetInt(props, "id");
+        this.selectType = aGetString(props, "select_type");
+        this.table = aGetString(props, "table");
+        this.type = aGetString(props, "type");
+        this.possibleKeys = aGetString(props, "possible_keys");
+        this.key = aGetString(props, "key");
+        this.keyLength = aGetString(props, "key_len");
+        this.ref = aGetString(props, "ref");
+        this.rowCount = aGetLong(props, "rows");
+        this.filtered =  aGetLong(props, "filtered");
+        this.extra = aGetString(props, "extra");
+    }
+    
+    private String aGetString(Map<String,String> attributes,String name) {
+        return attributes.containsKey(name) ? attributes.get(name).toString() : "";
+    }
+
+    private long aGetLong(Map<String,String> attributes,String name) {
+        if (attributes.containsKey(name)) {
+            try {
+                return Long.parseLong(attributes.get(name));
+            } catch (Exception e) {
+                return 0L;
+            }       
+        } else {
+            return 0L;
+        }
+    }
+
+    private int aGetInt(Map<String,String> attributes,String name) {
+        if (attributes.containsKey(name)) {
+            try {
+                return Integer.parseInt(attributes.get(name));
+            } catch (Exception e) {
+                return 0;
+            }       
+        } else {
+            return 0;
+        }
+    }
+
 
     public MySQLPlanNodePlain(MySQLPlanNodePlain parent, String type) {
         this.parent = parent;

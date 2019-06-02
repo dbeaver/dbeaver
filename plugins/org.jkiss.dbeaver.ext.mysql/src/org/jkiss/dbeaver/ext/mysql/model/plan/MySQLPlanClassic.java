@@ -24,10 +24,19 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +45,10 @@ import java.util.Map;
 /**
  * MySQL execution plan analyser
  */
-public class MySQLPlanClassic extends MySQLPlanAbstract {
+public class MySQLPlanClassic extends MySQLPlanAbstract implements DBCQueryPlannerSerialInfo {
 
+    protected final static String FORMAT_VERSION = "classic.1";
+    
     private List<MySQLPlanNodePlain> rootNodes;
 
     public MySQLPlanClassic(JDBCSession session, String query) throws DBCException {
@@ -60,6 +71,11 @@ public class MySQLPlanClassic extends MySQLPlanAbstract {
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         }
+    }
+
+    public MySQLPlanClassic(MySQLDataSource dataSource, String query, List<MySQLPlanNodePlain> rootNodes) {
+        super((MySQLDataSource) dataSource, query);
+        this.rootNodes = rootNodes;
     }
 
     @Override
@@ -159,6 +175,56 @@ public class MySQLPlanClassic extends MySQLPlanAbstract {
             leftNode = nodeJoin;
         }
         return leftNode;
+    }
+
+    public void deserialize(MySQLDataSource dataSource, JsonObject jo) throws InvocationTargetException {
+
+            this.query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
+
+            ExecutionPlanDeserializer<MySQLPlanNodePlain> loader = new ExecutionPlanDeserializer<>();
+
+            rootNodes = loader.loadRoot(dataSource, jo, (datasource, node, parent) -> {
+                return new MySQLPlanNodePlain(parent, getNodeAttributes(node));
+            });
+
+    }
+
+    @Override
+    public String version() {
+        return FORMAT_VERSION;
+    }
+
+    
+    private JsonObject createAttr(String key,String value) {
+        JsonObject attr = new JsonObject();
+        attr.add(key,new JsonPrimitive(CommonUtils.notEmpty(value)));
+        return attr; 
+    }
+
+    private JsonObject createAttr(String key,long value) {
+        JsonObject attr = new JsonObject();
+        attr.add(key,new JsonPrimitive(value));
+        return attr; 
+    }
+
+    @Override
+    public void addNodeProperties(DBCPlanNode node, JsonObject nodeJson) {
+        JsonArray attributes = new JsonArray();
+        if (node instanceof MySQLPlanNodePlain) {
+            MySQLPlanNodePlain plainNode = (MySQLPlanNodePlain) node;
+            attributes.add(createAttr("id", plainNode.getId()));
+            attributes.add(createAttr("select_type", plainNode.getSelectType()));
+            attributes.add(createAttr("table", plainNode.getTable()));
+            attributes.add(createAttr("type", plainNode.getNodeType()));
+            attributes.add(createAttr("possible_keys", plainNode.getPossibleKeys()));
+            attributes.add(createAttr("key", plainNode.getKey()));
+            attributes.add(createAttr("key_len", plainNode.getKeyLength()));
+            attributes.add(createAttr("ref", plainNode.getRef()));
+            attributes.add(createAttr("rows", plainNode.getRowCount()));
+            attributes.add(createAttr("filtered", plainNode.getFiltered()));
+            attributes.add(createAttr("extra", plainNode.getExtra()));
+         }
+        nodeJson.add(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES, attributes);
     }
 
 }
