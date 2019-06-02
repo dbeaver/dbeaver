@@ -607,7 +607,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             return adapter.cast(new SpatialDataProvider() {
                 @Override
                 public boolean isFlipCoordinates() {
-                    return true;
+                    return false;
                 }
                 @Override
                 public int getDefaultSRID() {
