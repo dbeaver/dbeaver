@@ -1599,10 +1599,18 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (planView == null) {
-            planView = new ExplainPlanViewer(this, this, resultTabs);
+            int maxPlanNumber = 0;
+            for (CTabItem item : resultTabs.getItems()) {
+                if (item.getData() instanceof ExplainPlanViewer) {
+                    maxPlanNumber = Math.max(maxPlanNumber, ((ExplainPlanViewer) item.getData()).getPlanNumber());
+                }
+            }
+            maxPlanNumber++;
+
+            planView = new ExplainPlanViewer(this, this, resultTabs, maxPlanNumber);
             final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
-            item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title);
+            item.setText(SQLEditorMessages.editors_sql_error_execution_plan_title + " - " + maxPlanNumber);
             if (sqlQuery != null) {
                 item.setToolTipText(sqlQuery.getText());
             }

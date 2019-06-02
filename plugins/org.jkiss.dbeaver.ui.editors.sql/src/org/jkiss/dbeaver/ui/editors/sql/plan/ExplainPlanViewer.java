@@ -96,15 +96,17 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
     private SQLQuery lastQuery;
     private Object lastQueryId;
     private DBCPlan lastPlan;
+    private int planNumber;
 
     private RefreshPlanAction refreshPlanAction;
     
     private String curFolder;
 
-    public ExplainPlanViewer(final IWorkbenchPart workbenchPart, DBPContextProvider contextProvider, Composite parent)
+    public ExplainPlanViewer(final IWorkbenchPart workbenchPart, DBPContextProvider contextProvider, Composite parent, int planNumber)
     {
         this.workbenchPart = workbenchPart;
         this.contextProvider = contextProvider;
+        this.planNumber = planNumber;
 
         this.refreshPlanAction = new RefreshPlanAction();
         this.refreshPlanAction.setEnabled(false);
@@ -170,8 +172,11 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
     public SQLQuery getQuery() {
         return lastQuery;
     }
-    
-  
+
+    public int getPlanNumber() {
+        return planNumber;
+    }
+
     public boolean loadQueryPlan(DBCQueryPlanner planner, Viewer viewer) {
         if (planner instanceof DBCQueryPlannerSerializable) {
 

@@ -256,16 +256,18 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     }
 
     private void createPlannerTab(CTabFolder previewFolder) {
-        planViewer = new ExplainPlanViewer(workbenchPart, sqlViewer, previewFolder);
+        planViewer = new ExplainPlanViewer(workbenchPart, sqlViewer, previewFolder, 0);
 
 //        planTree = new PlanNodesTree(previewFolder, SWT.SHEET, workbenchPart.getSite());
 //        planTree.substituteProgressPanel(getSessionListControl());
         planViewer.addSelectionChangedListener(event -> showPlanNode());
 
+
         CTabItem sqlPlanItem = new CTabItem(previewFolder, SWT.NONE);
         sqlPlanItem.setText(CoreMessages.viewer_sql_plan_item_execution_plan);
         sqlPlanItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
         sqlPlanItem.setControl(planViewer.getControl());
+        sqlPlanItem.setData(planViewer);
     }
 
     private void showPlanNode()
