@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -206,6 +203,14 @@ public class DBVModel extends DBVContainer {
                         }
                     }
                 }
+                if (!CommonUtils.isEmpty(attr.properties)) {
+                    for (Map.Entry<String, String> prop : attr.properties.entrySet()) {
+                        xml.startElement(TAG_PROPERTY);
+                        xml.addAttribute(ATTR_NAME, prop.getKey());
+                        xml.addAttribute(ATTR_VALUE, prop.getValue());
+                        xml.endElement();
+                    }
+                }
             }
         }
         // Constraints
@@ -227,7 +232,10 @@ public class DBVModel extends DBVContainer {
             xml.startElement(TAG_ASSOCIATION);
             DBSEntity refEntity = fk.getAssociatedEntity();
             xml.addAttribute(ATTR_ENTITY, DBUtils.getObjectFullId(refEntity));
-            xml.addAttribute(ATTR_CONSTRAINT, fk.getReferencedConstraint().getName());
+            DBSEntityConstraint refConstraint = fk.getReferencedConstraint();
+            if (refConstraint != null) {
+                xml.addAttribute(ATTR_CONSTRAINT, refConstraint.getName());
+            }
             for (DBVEntityForeignKeyColumn cc : CommonUtils.safeCollection(fk.getAttributeReferences(null))) {
                 xml.startElement(TAG_ATTRIBUTE);
                 xml.addAttribute(ATTR_NAME, cc.getAttributeName());
@@ -320,6 +328,10 @@ public class DBVModel extends DBVContainer {
                 case TAG_PROPERTY:
                     if (curTransformSettings != null) {
                         curTransformSettings.setTransformOption(
+                            atts.getValue(ATTR_NAME),
+                            atts.getValue(ATTR_VALUE));
+                    } else if (curAttribute != null) {
+                        curAttribute.setProperty(
                             atts.getValue(ATTR_NAME),
                             atts.getValue(ATTR_VALUE));
                     } else if (curEntity != null) {
