@@ -16,14 +16,21 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 
 /**
  * MySQL execution plan analyser
  */
-public class MySQLPlanAnalyser {
+public class MySQLPlanAnalyser implements DBCQueryPlanner {
 
     private MySQLDataSource dataSource;
 
@@ -45,6 +52,23 @@ public class MySQLPlanAnalyser {
         } else {
             return dataSource.isServerVersionAtLeast(5, 6);
         }
+    }
+
+    @Override
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query) throws DBCException {
+        return explain((JDBCSession) session, query);
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
     }
 
 }
