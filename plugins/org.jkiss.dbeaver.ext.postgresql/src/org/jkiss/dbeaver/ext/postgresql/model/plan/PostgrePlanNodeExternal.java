@@ -18,9 +18,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -31,13 +29,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class PostgresPlanNodeExternal  extends PostgrePlanNodeBase<PostgresPlanNodeExternal> {
+/**
+ * Plan node loaded from external JSON file
+ */
+public class PostgrePlanNodeExternal extends PostgrePlanNodeBase<PostgrePlanNodeExternal> {
 
-    private PostgresPlanNodeExternal(PostgreDataSource dataSource, PostgresPlanNodeExternal parent) {
+    private PostgrePlanNodeExternal(PostgreDataSource dataSource, PostgrePlanNodeExternal parent) {
         super(dataSource, parent);
     }
 
-    protected PostgresPlanNodeExternal(PostgreDataSource dataSource,JsonObject data,PostgresPlanNodeExternal parent) {		
+    protected PostgrePlanNodeExternal(PostgreDataSource dataSource, JsonObject data, PostgrePlanNodeExternal parent) {
         super(dataSource, parent);
 
         Map<String, String> attributes = new HashMap<String, String>(); 
