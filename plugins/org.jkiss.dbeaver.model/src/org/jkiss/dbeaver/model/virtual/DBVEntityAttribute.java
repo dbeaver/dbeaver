@@ -38,6 +38,7 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     private String defaultValue;
     private String description;
     private DBVTransformSettings transformSettings;
+    Map<String, String> properties;
 
     public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
         this.entity = entity;
@@ -51,6 +52,9 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         this.name = copy.name;
         for (DBVEntityAttribute child : copy.children) {
             this.children.add(new DBVEntityAttribute(entity, this, child));
+        }
+        if (!CommonUtils.isEmpty(copy.properties)) {
+            this.properties = new LinkedHashMap<>(copy.properties);
         }
     }
 
@@ -177,6 +181,28 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         this.transformSettings = transformSettings;
     }
 
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    @Nullable
+    public String getProperty(String name)
+    {
+        return CommonUtils.isEmpty(properties) ? null : properties.get(name);
+    }
+
+    public void setProperty(String name, @Nullable String value)
+    {
+        if (properties == null) {
+            properties = new LinkedHashMap<>();
+        }
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.put(name, value);
+        }
+    }
+
     public boolean hasValuableData() {
         if (!CommonUtils.isEmpty(defaultValue) || !CommonUtils.isEmpty(description)) {
             return true;
@@ -188,6 +214,6 @@ public class DBVEntityAttribute implements DBSEntityAttribute
                 }
             }
         }
-        return transformSettings != null && transformSettings.hasValuableData();
+        return transformSettings != null && transformSettings.hasValuableData() || !CommonUtils.isEmpty(properties);
     }
 }

@@ -33,10 +33,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.gis.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -44,6 +49,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
+import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
@@ -69,6 +75,9 @@ public class GISLeafletViewer implements IGeometryValueEditor {
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
 
     private static final String[] SUPPORTED_FORMATS = new String[] { "png", "gif", "bmp" };
+
+    private static final String PROP_FLIP_COORDINATES = "gis.flipCoords";
+    private static final String PROP_SRID = "gis.srid";
 
     private final IValueController valueController;
     private final Browser browser;
@@ -118,7 +127,23 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                     GISEditorUtils.addRecentSRID(recentSRID);
                 }
             }
-            //recentSRIDs.sort(Integer::compareTo);
+        }
+
+        {
+            // Check for save settings
+            if (valueController instanceof IAttributeController) {
+                DBDAttributeBinding binding = ((IAttributeController) valueController).getBinding();
+                if (binding.getEntityAttribute() != null) {
+                    DBVEntity vEntity = DBVUtils.getVirtualEntity(binding, false);
+                    if (vEntity != null) {
+                        DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
+                        if (vAttr != null) {
+                            this.flipCoordinates = CommonUtils.getBoolean(vAttr.getProperty(PROP_FLIP_COORDINATES), this.flipCoordinates);
+                            this.sourceSRID = CommonUtils.toInt(vAttr.getProperty(PROP_SRID), this.sourceSRID);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -159,6 +184,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
             }
             GISViewerActivator.getDefault().getPreferences().setValue(PREF_RECENT_SRID_LIST, sridListStr.toString());
         }
+        saveAttributeSettings();
     }
 
     public void setGeometryData(@Nullable DBGeometry[] values) throws DBException {
@@ -467,6 +493,7 @@ public class GISLeafletViewer implements IGeometryValueEditor {
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Render error", "Error rendering geometry", e);
                 }
+                saveAttributeSettings();
                 updateToolbar();
             }
         });
@@ -492,6 +519,21 @@ public class GISLeafletViewer implements IGeometryValueEditor {
         });
 
         toolBarManager.update(true);
+    }
+
+    private void saveAttributeSettings() {
+        if (valueController instanceof IAttributeController) {
+            DBDAttributeBinding binding = ((IAttributeController) valueController).getBinding();
+            if (binding.getEntityAttribute() != null) {
+                DBVEntity vEntity = DBVUtils.getVirtualEntity(binding, true);
+                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, true);
+                if (vAttr != null) {
+                    vAttr.setProperty(PROP_FLIP_COORDINATES, String.valueOf(flipCoordinates));
+                    vAttr.setProperty(PROP_SRID, String.valueOf(getValueSRID()));
+                }
+                valueController.getExecutionContext().getDataSource().getContainer().getRegistry().flushConfig();
+            }
+        }
     }
 
     private void updateControlsVisibility() {
