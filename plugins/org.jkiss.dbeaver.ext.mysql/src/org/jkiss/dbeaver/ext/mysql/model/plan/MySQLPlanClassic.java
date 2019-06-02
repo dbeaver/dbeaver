@@ -62,6 +62,11 @@ public class MySQLPlanClassic extends MySQLPlanAbstract {
         }
     }
 
+    public MySQLPlanClassic(MySQLDataSource dataSource, String query, List<MySQLPlanNodePlain> rootNodes) {
+        super(dataSource, query);
+        this.rootNodes = rootNodes;
+    }
+
     @Override
     public Object getPlanFeature(String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {

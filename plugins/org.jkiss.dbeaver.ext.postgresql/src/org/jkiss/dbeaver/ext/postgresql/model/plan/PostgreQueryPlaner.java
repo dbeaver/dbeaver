@@ -101,9 +101,7 @@ public class PostgreQueryPlaner extends AbstractExecutionPlanSerializer implemen
 
     @Override
     public DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException {
-
         try {
-
             JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
 
             String query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();

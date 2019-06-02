@@ -37,8 +37,8 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     private MySQLPlanNodeJSON parent;
     private String name;
     private JsonObject object;
-    private Map<String, Object> nodeProps = new LinkedHashMap<>();
-    private List<MySQLPlanNodeJSON> nested;
+    private Map<String, String> nodeProps = new LinkedHashMap<>();
+    private List<MySQLPlanNodeJSON> nested = new ArrayList<>();
 
     public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent, String name, JsonObject object) {
         this.parent = parent;
@@ -46,6 +46,15 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         this.object = object;
 
         parseObject(name, object);
+    }
+
+    public MySQLPlanNodeJSON(MySQLPlanNodeJSON parent,  Map<String, String> attributes) {
+        this.parent = parent;
+        this.nodeProps.putAll(attributes);
+    }
+
+    public Map<String, String> getNodeProps() {
+        return nodeProps;
     }
 
     private void parseObject(String objName, JsonObject object) {
@@ -186,7 +195,7 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
 
     @Override
     public String toString() {
-        return object.toString();
+        return object == null ? nodeProps.toString() : object.toString();
     }
 
     //////////////////////////////////////////////////////////
@@ -201,7 +210,7 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     public DBPPropertyDescriptor[] getPropertyDescriptors2() {
         DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[nodeProps.size()];
         int index = 0;
-        for (Map.Entry<String, Object> attr : nodeProps.entrySet()) {
+        for (Map.Entry<String, String> attr : nodeProps.entrySet()) {
             props[index++] = new PropertyDescriptor(
                 "Details",
                 attr.getKey(),

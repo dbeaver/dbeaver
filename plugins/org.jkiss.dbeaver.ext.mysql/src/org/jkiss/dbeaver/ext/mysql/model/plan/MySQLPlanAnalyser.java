@@ -16,21 +16,33 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.*;
+import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
+import org.jkiss.utils.CommonUtils;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * MySQL execution plan analyser
  */
-public class MySQLPlanAnalyser implements DBCQueryPlanner {
+public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implements DBCQueryPlanner {
 
     private MySQLDataSource dataSource;
 
@@ -69,6 +81,85 @@ public class MySQLPlanAnalyser implements DBCQueryPlanner {
     @Override
     public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;
+    }
+
+    @Override
+    public void serialize(@NotNull Writer writer, @NotNull DBCPlan plan) throws IOException, InvocationTargetException {
+
+        serializeJson(writer, plan, dataSource.getInfo().getDriverName(), new DBCQueryPlannerSerialInfo() {
+
+            @Override
+            public String version() {
+                return plan instanceof MySQLPlanClassic ? "classic" : "json";
+            }
+
+            @Override
+            public void addNodeProperties(DBCPlanNode node, JsonObject nodeJson) {
+
+                JsonObject attributes = new JsonObject();
+                if (node instanceof MySQLPlanNodePlain) {
+                    MySQLPlanNodePlain plainNode = (MySQLPlanNodePlain) node;
+                    attributes.add("id", new JsonPrimitive(plainNode.getId()));
+                    attributes.add("select_type", new JsonPrimitive(plainNode.getSelectType()));
+                    attributes.add("table", new JsonPrimitive(plainNode.getTable()));
+                    attributes.add("type", new JsonPrimitive(plainNode.getNodeType()));
+                    attributes.add("possible_keys", new JsonPrimitive(plainNode.getPossibleKeys()));
+                    attributes.add("key", new JsonPrimitive(plainNode.getKey()));
+                    attributes.add("key_len", new JsonPrimitive(plainNode.getKeyLength()));
+                    attributes.add("ref", new JsonPrimitive(plainNode.getRef()));
+                    attributes.add("rows", new JsonPrimitive(plainNode.getRowCount()));
+                    attributes.add("filtered", new JsonPrimitive(plainNode.getFiltered()));
+                    attributes.add("extra", new JsonPrimitive(plainNode.getExtra()));
+                } else if (node instanceof MySQLPlanNodeJSON) {
+                    MySQLPlanNodeJSON jsNode = (MySQLPlanNodeJSON) node;
+                    for(Map.Entry<String, String>  e : jsNode.getNodeProps().entrySet()) {
+                        attributes.add(e.getKey(), new JsonPrimitive(CommonUtils.notEmpty(e.getValue())));
+                    }
+                }
+                nodeJson.add(PROP_ATTRIBUTES, attributes);
+            }
+        });
+
+/*
+        if (plan instanceof MySQLPlanClassic) {
+            serializeJson(planData, plan,dataSource.getInfo().getDriverName(),(MySQLPlanClassic) plan);
+        } else if (plan instanceof MySQLPlanJSON) {
+            serializeJson(planData, plan,dataSource.getInfo().getDriverName(),(MySQLPlanJSON) plan);
+        }
+*/
+
+    }
+
+    private static Map<String, String> getNodeAttributes(JsonObject nodeObject){
+        Map<String,String> attributes = new HashMap<>();
+
+        JsonObject attrs =  nodeObject.getAsJsonObject(PROP_ATTRIBUTES);
+        for(Map.Entry<String, JsonElement> attr : attrs.entrySet()) {
+            attributes.put(attr.getKey(), attr.getValue().getAsString());
+        }
+
+        return attributes;
+    }
+
+    @Override
+    public DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException {
+
+        JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
+        String savedVersion = jo.get(AbstractExecutionPlanSerializer.PROP_VERSION).getAsString();
+        String query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
+
+        if (savedVersion.equals("classic")) {
+            ExecutionPlanDeserializer<MySQLPlanNodePlain> loader = new ExecutionPlanDeserializer<>();
+            List<MySQLPlanNodePlain> rootNodes = loader.loadRoot(dataSource, jo,
+                (datasource, node, parent) -> new MySQLPlanNodePlain(parent, getNodeAttributes(node)));
+            return new MySQLPlanClassic(dataSource, query, rootNodes);
+        } else {
+            ExecutionPlanDeserializer<MySQLPlanNodeJSON> loader = new ExecutionPlanDeserializer<>();
+            List<MySQLPlanNodeJSON> rootNodes = loader.loadRoot(dataSource, jo,
+                (datasource, node, parent) -> new MySQLPlanNodeJSON(parent, getNodeAttributes(node)));
+            return new MySQLPlanJSON(dataSource,query,rootNodes);
+        }
+
     }
 
 }
