@@ -16,22 +16,26 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.plan;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.*;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
+import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IntKeyMap;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Oracle execution plan node
@@ -54,7 +58,7 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
 
     @Override
     public DBCPlan planQueryExecution(DBCSession session, String query) throws DBException {
-        OraclePlanAnalyser plan = new OraclePlanAnalyser(dataSource, (JDBCSession) session, query);
+        OracleExecutionPlan plan = new OracleExecutionPlan(dataSource, (JDBCSession) session, query);
         plan.explain();
         return plan;
     }
@@ -62,7 +66,7 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
     /*
     @Override
     public DBCPlan readSavedQueryExecutionPlan(DBCSession session, Object savedQueryId) throws DBException {
-        OraclePlanAnalyser plan = new OraclePlanAnalyser(dataSource, (JDBCSession) session, savedQueryId);
+        OracleExecutionPlan plan = new OracleExecutionPlan(dataSource, (JDBCSession) session, savedQueryId);
         plan.readHistoric();
         return plan;
     }
@@ -150,11 +154,41 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
     }
 
 
+    private Map<String,String> getNodeAttributes(JsonObject nodeObject){
+        Map<String,String> attributes = new HashMap<>(44);
+
+        JsonArray attrs =  nodeObject.getAsJsonArray(AbstractExecutionPlanSerializer.PROP_ATTRIBUTES);
+        for(JsonElement attr : attrs) {
+            for (Map.Entry<String, JsonElement> p : attr.getAsJsonObject().entrySet()) {
+                attributes.put(p.getKey(), p.getValue().getAsString());
+            }
+        }
+
+        return attributes;
+    }
+
     @Override
-    public DBCPlan deserialize(Reader planData) throws IOException,InvocationTargetException {
-        OraclePlanLoader plan = new OraclePlanLoader();
-        plan.deserialize(dataSource, planData);
-        return plan;
+    public DBCPlan deserialize(@NotNull Reader planData) throws IOException,InvocationTargetException {
+        try {
+
+            JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
+
+            String query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
+
+            ExecutionPlanDeserializer<OraclePlanNode> loader = new ExecutionPlanDeserializer<>();
+
+            IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<>();
+
+            List<OraclePlanNode> rootNodes = loader.loadRoot(dataSource, jo, (datasource, node, parent) -> {
+                OraclePlanNode nodeOra = new OraclePlanNode(dataSource, allNodes, getNodeAttributes(node));
+                allNodes.put(nodeOra.getId(), nodeOra);
+                return nodeOra;
+            });
+            return new OracleExecutionPlan(query, rootNodes);
+
+        } catch (Throwable e) {
+            throw new InvocationTargetException(e);
+        }
     }
 
 }
