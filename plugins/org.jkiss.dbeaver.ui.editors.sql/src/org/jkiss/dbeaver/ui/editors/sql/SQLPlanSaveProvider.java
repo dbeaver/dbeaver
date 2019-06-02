@@ -12,7 +12,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
@@ -21,6 +20,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
 
@@ -31,16 +31,18 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
     private SQLQuery query;
     private DBCPlan plan;
 
-    private SaveAction saveAction = new SaveAction("Save plan", DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS), this);
+    private SaveAction saveAction;
 
     private DBCQueryPlanner planner;
 
     protected abstract void showPlan(Viewer viewer, SQLQuery query, DBCPlan plan);
+    
+    public SQLPlanSaveProvider() {
+       saveAction = new SaveAction("Save plan", DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS), this);
+    }
 
     protected void doSave() {
         if (query != null) {
-
-            DBCQueryPlanner planner = DBUtils.getAdapter(DBCQueryPlanner.class, query.getDataSource());
 
             if (planner instanceof DBCQueryPlannerSerializable) {
 
@@ -72,7 +74,7 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
     protected void fillPlan(SQLQuery query, DBCPlan plan) {
         this.query = query;
         this.plan = plan;
-        this.planner = DBUtils.getAdapter(DBCQueryPlanner.class, query.getDataSource());
+        this.planner = GeneralUtils.adapt(query.getDataSource(),DBCQueryPlanner.class);
     }
 
     @Override
