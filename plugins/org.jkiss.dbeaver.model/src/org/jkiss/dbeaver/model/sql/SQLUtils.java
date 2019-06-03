@@ -450,8 +450,10 @@ public final class SQLUtils {
                     // Most likely it is an expression so we don't want to quote it
                     attrName = binding.getMetaAttribute().getName();
                 }
-            } else {
+            } else if (cAttr != null) {
                 attrName = DBUtils.getObjectFullName(dataSource, cAttr, DBPEvaluationContext.DML);
+            } else {
+                attrName = DBUtils.getQuotedIdentifier(dataSource, constraint.getAttributeName());
             }
             query.append(attrName).append(' ').append(condition);
         }

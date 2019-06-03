@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 
@@ -84,7 +85,7 @@ public class DBDDataFilter {
     public DBDAttributeConstraint getConstraint(String name)
     {
         for (DBDAttributeConstraint co : constraints) {
-            if (CommonUtils.equalObjects(co.getAttribute().getName(), name)) {
+            if (CommonUtils.equalObjects(co.getAttributeName(), name)) {
                 return co;
             }
         }
@@ -103,13 +104,7 @@ public class DBDDataFilter {
                 visibleConstraints.add(constraint);
             }
         }
-        Collections.sort(visibleConstraints, new Comparator<DBDAttributeConstraint>() {
-            @Override
-            public int compare(DBDAttributeConstraint o1, DBDAttributeConstraint o2)
-            {
-                return o1.getVisualPosition() - o2.getVisualPosition();
-            }
-        });
+        visibleConstraints.sort(Comparator.comparingInt(DBDAttributeConstraintBase::getVisualPosition));
         List<DBSAttributeBase> attributes = new ArrayList<>(visibleConstraints.size());
         for (DBDAttributeConstraint constraint : visibleConstraints) {
             attributes.add(constraint.getAttribute());
@@ -196,15 +191,9 @@ public class DBDDataFilter {
             }
         }
         if (result != null && result.size() > 1) {
-            Collections.sort(result, new Comparator<DBDAttributeConstraint>() {
-                @Override
-                public int compare(DBDAttributeConstraint o1, DBDAttributeConstraint o2)
-                {
-                    return o1.getOrderPosition() - o2.getOrderPosition();
-                }
-            });
+            result.sort(Comparator.comparingInt(DBDAttributeConstraintBase::getOrderPosition));
         }
-        return result == null ? Collections.<DBDAttributeConstraint>emptyList() : result;
+        return result == null ? Collections.emptyList() : result;
     }
 
     public int getMaxOrderingPosition()
@@ -234,6 +223,15 @@ public class DBDDataFilter {
         }
         this.order = null;
         this.where = null;
+    }
+
+    public void bindAttributes(DBDAttributeBinding[] bindings) {
+        for (DBDAttributeConstraint constr : constraints) {
+            DBDAttributeBinding attrBinding = DBUtils.findObject(bindings, constr.getAttributeName());
+            if (attrBinding != null) {
+                constr.setAttribute(attrBinding);
+            }
+        }
     }
 
     @Override
@@ -286,7 +284,7 @@ public class DBDDataFilter {
     public boolean hasNameDuplicates(String name) {
         int count = 0;
         for (DBDAttributeConstraint c : constraints) {
-            if (name.equalsIgnoreCase(c.getAttribute().getName())) {
+            if (name.equalsIgnoreCase(c.getAttributeName())) {
                 count++;
             }
         }

@@ -395,6 +395,11 @@ public final class DBUtils {
         return null;
     }
 
+    @Nullable
+    public static <T extends DBPNamedObject> T findObject(@Nullable Collection<T> theList, String objectName) {
+        return findObject(theList, objectName, false);
+    }
+
     /**
      * Finds object by its name (case insensitive)
      *
@@ -403,11 +408,10 @@ public final class DBUtils {
      * @return object or null
      */
     @Nullable
-    public static <T extends DBPNamedObject> T findObject(@Nullable Collection<T> theList, String objectName)
-    {
+    public static <T extends DBPNamedObject> T findObject(@Nullable Collection<T> theList, String objectName, boolean caseInsensitive) {
         if (theList != null && !theList.isEmpty()) {
             for (T object : theList) {
-                if (object.getName().equalsIgnoreCase(objectName)) {
+                if (caseInsensitive ? object.getName().equalsIgnoreCase(objectName) : object.getName().equals(objectName)) {
                     return object;
                 }
             }
@@ -415,16 +419,17 @@ public final class DBUtils {
         return null;
     }
 
+    /**
+     * Find object (case-sensitive)
+     */
     @Nullable
-    public static <T extends DBPNamedObject> T findObject(@Nullable List<T> theList, String objectName)
+    public static <T extends DBPNamedObject> T findObject(@Nullable T[] theList, String objectName)
     {
-        if (theList != null) {
-            int size = theList.size();
-            for (int i = 0; i < size; i++) {
-                if (theList.get(i).getName().equalsIgnoreCase(objectName)) {
-                    return theList.get(i);
+        if (theList != null && theList.length > 0 ) {
+            for (T object : theList) {
+                if (object.getName().equals(objectName)) {
+                    return object;
                 }
-
             }
         }
         return null;

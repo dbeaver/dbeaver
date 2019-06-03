@@ -83,7 +83,6 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
             if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
                 return DBValueFormatting.convertNumberToNativeString((Number) value);
             } else {
-
                 if (numberFormatter == null) {
                     try {
                         numberFormatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, type);

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 
@@ -25,33 +26,45 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
-    private final DBSAttributeBase attribute;
-    private final int originalVisualPosition;
+    private DBSAttributeBase attribute;
+    private String attributeName;
+    private int originalVisualPosition;
 
-    public DBDAttributeConstraint(DBDAttributeBinding attribute)
-    {
-        this.attribute = attribute;
-        this.originalVisualPosition = attribute.getOrdinalPosition();
+    public DBDAttributeConstraint(DBDAttributeBinding attribute) {
+        setAttribute(attribute);
         setVisualPosition(this.originalVisualPosition);
     }
 
-    public DBDAttributeConstraint(DBSAttributeBase attribute, int visualPosition)
-    {
-        this.attribute = attribute;
-        this.originalVisualPosition = visualPosition;
+    public DBDAttributeConstraint(DBSAttributeBase attribute, int visualPosition) {
+        setAttribute(attribute);
         setVisualPosition(this.originalVisualPosition);
     }
 
-    public DBDAttributeConstraint(DBDAttributeConstraint source)
-    {
+    public DBDAttributeConstraint(String attributeName, int originalVisualPosition) {
+        this.attribute = null;
+        this.attributeName = attributeName;
+        this.originalVisualPosition = originalVisualPosition;
+    }
+
+    public DBDAttributeConstraint(DBDAttributeConstraint source) {
         super(source);
         this.attribute = source.attribute;
+        this.attributeName = source.attributeName;
         this.originalVisualPosition = source.originalVisualPosition;
     }
 
-    public DBSAttributeBase getAttribute()
-    {
+    public DBSAttributeBase getAttribute() {
         return attribute;
+    }
+
+    void setAttribute(@NotNull DBSAttributeBase binding) {
+        this.attribute = binding;
+        this.attributeName = this.attribute.getName();
+        this.originalVisualPosition = attribute.getOrdinalPosition();
+    }
+
+    public String getAttributeName() {
+        return attributeName;
     }
 
     public int getOriginalVisualPosition() {
@@ -63,34 +76,30 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         return super.hasFilter() || originalVisualPosition != getVisualPosition();
     }
 
-    public void reset()
-    {
+    public void reset() {
         super.reset();
         setVisualPosition(originalVisualPosition);
     }
 
-    public boolean equalFilters(DBDAttributeConstraintBase obj, boolean compareOrders)
-    {
+    public boolean equalFilters(DBDAttributeConstraintBase obj, boolean compareOrders) {
         return
             obj instanceof DBDAttributeConstraint &&
-            CommonUtils.equalObjects(this.attribute, ((DBDAttributeConstraint)obj).attribute) &&
-            super.equalFilters(obj, compareOrders);
+                CommonUtils.equalObjects(this.attribute, ((DBDAttributeConstraint) obj).attribute) &&
+                super.equalFilters(obj, compareOrders);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return this.attribute.hashCode();
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (obj instanceof DBDAttributeConstraint) {
             DBDAttributeConstraint source = (DBDAttributeConstraint) obj;
             return
                 CommonUtils.equalObjects(this.attribute, source.attribute) &&
-                super.equals(obj);
+                    super.equals(obj);
         } else {
             return false;
         }
@@ -106,6 +115,8 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     public boolean matches(DBSAttributeBase attr, boolean matchByName) {
         return attribute == attr ||
-            (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr, matchByName));
+            (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr, matchByName)) ||
+            (matchByName && attributeName.equals(attr.getName()));
     }
+
 }
