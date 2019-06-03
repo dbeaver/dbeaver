@@ -18,6 +18,9 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 
@@ -26,33 +29,35 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
+    @Nullable
     private DBSAttributeBase attribute;
     private String attributeName;
     private int originalVisualPosition;
 
-    public DBDAttributeConstraint(DBDAttributeBinding attribute) {
+    public DBDAttributeConstraint(@NotNull DBDAttributeBinding attribute) {
         setAttribute(attribute);
-        setVisualPosition(this.originalVisualPosition);
+        setVisualPosition(attribute.getOrdinalPosition());
     }
 
-    public DBDAttributeConstraint(DBSAttributeBase attribute, int visualPosition) {
+    public DBDAttributeConstraint(@NotNull DBSAttributeBase attribute, int visualPosition) {
         setAttribute(attribute);
-        setVisualPosition(this.originalVisualPosition);
+        setVisualPosition(visualPosition);
     }
 
-    public DBDAttributeConstraint(String attributeName, int originalVisualPosition) {
+    public DBDAttributeConstraint(@NotNull String attributeName, int originalVisualPosition) {
         this.attribute = null;
         this.attributeName = attributeName;
         this.originalVisualPosition = originalVisualPosition;
     }
 
-    public DBDAttributeConstraint(DBDAttributeConstraint source) {
+    public DBDAttributeConstraint(@NotNull DBDAttributeConstraint source) {
         super(source);
         this.attribute = source.attribute;
         this.attributeName = source.attributeName;
         this.originalVisualPosition = source.originalVisualPosition;
     }
 
+    @Nullable
     public DBSAttributeBase getAttribute() {
         return attribute;
     }
@@ -63,8 +68,14 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         this.originalVisualPosition = attribute.getOrdinalPosition();
     }
 
+    @NotNull
     public String getAttributeName() {
         return attributeName;
+    }
+
+    @NotNull
+    public String getFullAttributeName() {
+        return attribute == null ? attributeName : DBUtils.getObjectFullName(attribute, DBPEvaluationContext.DML);
     }
 
     public int getOriginalVisualPosition() {
@@ -90,7 +101,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
 
     @Override
     public int hashCode() {
-        return this.attribute.hashCode();
+        return this.attributeName.hashCode() + getVisualPosition();
     }
 
     @Override
@@ -110,7 +121,7 @@ public class DBDAttributeConstraint extends DBDAttributeConstraintBase {
         String clause = getOperator() == null ?
             (getCriteria() == null ? "" : getCriteria()) :
             (isReverseOperator() ? "NOT " : "") + getOperator().getStringValue() + " " + getValue();
-        return attribute.getName() + " " + clause;
+        return attributeName + " " + clause;
     }
 
     public boolean matches(DBSAttributeBase attr, boolean matchByName) {
