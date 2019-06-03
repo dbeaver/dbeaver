@@ -332,7 +332,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             String tableNamePattern = getTableNamePattern(sqlDialect);
             String tableAliasPattern = getTableAliasPattern("(" + wordPart + "[a-z]*)", tableNamePattern);
             Pattern rp = Pattern.compile(tableAliasPattern);
-            Matcher matcher = rp.matcher(request.getActiveQuery().getText());
+            // Append trailing space to let alias regex match correctly
+            Matcher matcher = rp.matcher(request.getActiveQuery().getText() + " ");
             while (matcher.find()) {
                 String tableName = matcher.group(1);
                 String tableAlias = matcher.group(2);
@@ -606,7 +607,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 // Bad pattern - seems to be a bad token
                 return null;
             }
-            String testQuery = SQLUtils.stripComments(request.getContext().getSyntaxManager().getDialect(), request.getActiveQuery().getText());
+            // Append trailing space to let alias regex match correctly
+            String testQuery = SQLUtils.stripComments(request.getContext().getSyntaxManager().getDialect(), request.getActiveQuery().getText()) + " ";
             Matcher matcher = aliasPattern.matcher(testQuery);
             if (matcher.find()) {
                 int groupCount = matcher.groupCount();
