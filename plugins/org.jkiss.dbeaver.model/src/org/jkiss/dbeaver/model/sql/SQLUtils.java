@@ -471,11 +471,11 @@ public final class SQLUtils {
         for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
             if (hasOrder) query.append(',');
             String orderString = null;
-            if (co.getAttribute() instanceof DBDAttributeBindingMeta) {
-                String orderColumn = co.getAttribute().getName();
-                if (PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
+            if (co.getAttribute() == null || co.getAttribute() instanceof DBDAttributeBindingMeta) {
+                String orderColumn = co.getAttributeName();
+                if (co.getAttribute() == null || PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
                     // It is a simple column.
-                    orderString = DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML);
+                    orderString = co.getFullAttributeName();
                     if (conditionTable != null) {
                         orderString = conditionTable + '.' + orderString;
                     }
