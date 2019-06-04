@@ -46,7 +46,8 @@ import org.jkiss.utils.CommonUtils;
 
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor
 {
-    protected IDataSourceConnectionEditorSite site;
+    // FIXME: make it private
+    public IDataSourceConnectionEditorSite site;
     // Driver name
     protected Text driverText;
     protected Button savePasswordCheck;
