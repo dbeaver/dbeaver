@@ -75,6 +75,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private static final String PROP_SPLIT_BYCOL = "splitByColNum";
     
     private static final String PROP_DATE_FORMAT = "dateFormat";
+    
+    private static final String PROP_AUTOSIZE = "autosize";
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private boolean showDescription;
@@ -97,6 +99,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private boolean exportSql = false;
     private boolean splitSqlText = false;
     private String dateFormat="";
+    private boolean autosize = false;
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
@@ -122,6 +125,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
+        properties.put(DataExporterXLSX.PROP_AUTOSIZE, false);
         return properties;
     }
 
@@ -185,6 +189,13 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         } catch (Exception e) {
             dateFormat = "";
         }
+        
+        try {
+            autosize = (Boolean) site.getProperties().get(PROP_AUTOSIZE);
+        } catch (Exception e) {
+            autosize = false;
+        }
+
 
 
         wb = new SXSSFWorkbook(ROW_WINDOW);
@@ -360,7 +371,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         int startCol = rowNumber ? 1 : 0;
 
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            sh.trackColumnForAutoSizing(i);
+            if (autosize) {
+                sh.trackColumnForAutoSizing(i);
+            }
             DBDAttributeBinding column = columns.get(i);
 
             String colName = column.getLabel();
@@ -385,9 +398,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 descCell.setCellStyle(styleHeader);
             }
         }
-
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            sh.autoSizeColumn(i);
+        
+        if (autosize) {
+            for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+                sh.autoSizeColumn(i);
+            }          
         }
 
         wsh.incRow();
