@@ -43,6 +43,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
@@ -158,6 +160,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
         Shell activeShell = HandlerUtil.getActiveShell(event);
         String actionId = event.getCommand().getId();
         IResultSetPresentation presentation = rsv.getActivePresentation();
+        DBPDataSource dataSource = rsv.getDataContainer().getDataSource();
         switch (actionId) {
             case IWorkbenchCommandConstants.FILE_REFRESH:
                 rsv.refreshData(null);
@@ -284,8 +287,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
                     }
                     if (!sqlScript.isEmpty()) {
                         String scriptText = SQLUtils.generateScript(
-                            rsv.getDataContainer() == null ? null : rsv.getDataContainer().getDataSource(),
-                            sqlScript.toArray(new DBEPersistAction[sqlScript.size()]),
+                            rsv.getDataContainer() == null ? null : dataSource,
+                            sqlScript.toArray(new DBEPersistAction[0]),
                             false);
                         scriptText =
                             SQLUtils.generateCommentLine(
@@ -330,7 +333,11 @@ public class ResultSetHandlerMain extends AbstractHandler {
                     if (CommonUtils.isEmpty(colName)) {
                         colName = attr.getName();
                     }
-                    buffer.append(colName);
+                    if (dataSource == null) {
+                        buffer.append(colName);
+                    } else {
+                        buffer.append(DBUtils.getQuotedIdentifier(dataSource, colName));
+                    }
                 }
 
                 ResultSetUtils.copyToClipboard(buffer.toString());
