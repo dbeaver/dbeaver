@@ -73,7 +73,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private static final String PROP_SPLIT_BYROWCOUNT = "splitByRowCount";
     private static final String PROP_SPLIT_BYCOL = "splitByColNum";
-    
+
     private static final String PROP_DATE_FORMAT = "dateFormat";
 
     private static final int EXCEL2007MAXROWS = 1048575;
@@ -96,7 +96,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private boolean booleRedefined;
     private boolean exportSql = false;
     private boolean splitSqlText = false;
-    private String dateFormat="";
+    private String dateFormat = "";
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
@@ -179,20 +179,18 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         } catch (Exception e) {
             splitByCol = -1;
         }
-        
+
         try {
             dateFormat = (String) site.getProperties().get(PROP_DATE_FORMAT);
         } catch (Exception e) {
             dateFormat = "";
         }
 
-
         wb = new SXSSFWorkbook(ROW_WINDOW);
 
         worksheets = new HashMap<>(1);
 
         styleHeader = (XSSFCellStyle) wb.createCellStyle();
-
 
         BorderStyle border;
 
@@ -218,7 +216,6 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         }
 
-
         styleHeader.setBorderTop(border);
         styleHeader.setBorderBottom(border);
         styleHeader.setBorderLeft(border);
@@ -228,24 +225,24 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         switch (fontStyle) {
 
-            case BOLD:
-                fontBold.setBold(true);
-                break;
+        case BOLD:
+            fontBold.setBold(true);
+            break;
 
-            case ITALIC:
-                fontBold.setItalic(true);
-                break;
+        case ITALIC:
+            fontBold.setItalic(true);
+            break;
 
-            case STRIKEOUT:
-                fontBold.setStrikeout(true);
-                break;
+        case STRIKEOUT:
+            fontBold.setStrikeout(true);
+            break;
 
-            case UNDERLINE:
-                fontBold.setUnderline((byte) 3);
-                break;
+        case UNDERLINE:
+            fontBold.setUnderline((byte) 3);
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         styleHeader.setFont(fontBold);
@@ -255,20 +252,20 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         style.setBorderBottom(border);
         style.setBorderLeft(border);
         style.setBorderRight(border);
-        
+
         styleDate = (XSSFCellStyle) wb.createCellStyle();
         styleDate.setBorderTop(border);
         styleDate.setBorderBottom(border);
         styleDate.setBorderLeft(border);
         styleDate.setBorderRight(border);
-        
+
         if (dateFormat == null || dateFormat.length() == 0) {
-            styleDate.setDataFormat((short)14);
+            styleDate.setDataFormat((short) 14);
         } else {
            styleDate.setDataFormat(
                 wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
         }
-        
+
         this.rowCount = 0;
 
         super.init(site);
@@ -283,7 +280,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
                     Sheet sh = wb.createSheet();
                     if (splitSqlText) {
-                        String[] sqlText = getSite().getSource().getName().split("\n", wb.getSpreadsheetVersion().getMaxRows());
+                        String[] sqlText = getSite().getSource().getName().split("\n",
+                                wb.getSpreadsheetVersion().getMaxRows());
 
                         int sqlRownum = 0;
 
@@ -321,7 +319,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     public void exportHeader(DBCSession session) throws DBException, IOException {
 
         columns = getSite().getAttributes();
-        showDescription = session.getDataSource().getContainer().getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
+        showDescription = session.getDataSource().getContainer().getPreferenceStore()
+                .getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
     }
 
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
@@ -354,13 +353,13 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             }
         }
 
-        SXSSFSheet  sh = (SXSSFSheet)wsh.getSh();
+        SXSSFSheet sh = (SXSSFSheet) wsh.getSh();
         Row row = sh.createRow(wsh.getCurrentRow());
 
         int startCol = rowNumber ? 1 : 0;
 
+        sh.trackAllColumnsForAutoSizing();
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            sh.trackColumnForAutoSizing(i);
             DBDAttributeBinding column = columns.get(i);
 
             String colName = column.getLabel();
@@ -391,14 +390,21 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         }
 
         wsh.incRow();
-    }
 
+        try {
+            sh.flushRows();
+        } catch (IOException e) {
+            throw new DBException("Error processing header", e);
+        }
+
+        sh.untrackAllColumnsForAutoSizing();
+    }
 
     private void writeCellValue(Cell cell, Reader reader) throws IOException {
         try {
             StringBuilder sb = new StringBuilder();
             char buffer[] = new char[2000];
-            for (; ; ) {
+            for (;;) {
                 int count = reader.read(buffer);
                 if (count <= 0) {
                     break;
@@ -412,7 +418,6 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             ContentUtils.close(reader);
         }
     }
-
 
     private Worksheet createSheet(DBCResultSet resultSet, Object colValue) throws DBException {
         Worksheet w = new Worksheet(wb.createSheet(), colValue, 0);
@@ -496,7 +501,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
                 cell.setCellValue((Date) row[i]);
                 cell.setCellStyle(styleDate);
-                
+
             } else {
 
                 String stringValue = super.getValueDisplayString(column, row[i]);
@@ -510,25 +515,22 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private CellType getCellType(DBDAttributeBinding column) {
         switch (column.getDataKind()) {
-            case NUMERIC:
-                return CellType.NUMERIC;
-            case BOOLEAN:
-                return CellType.BOOLEAN;
-            case STRING:
-                return CellType.STRING;
-            default:
-                return CellType.BLANK;
+        case NUMERIC:
+            return CellType.NUMERIC;
+        case BOOLEAN:
+            return CellType.BOOLEAN;
+        case STRING:
+            return CellType.STRING;
+        default:
+            return CellType.BLANK;
         }
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor)
-        throws DBException, IOException
-    {
+    public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
         if (rowCount == 0) {
             exportRow(null, null, new Object[columns.size()]);
         }
     }
-
 
 }
