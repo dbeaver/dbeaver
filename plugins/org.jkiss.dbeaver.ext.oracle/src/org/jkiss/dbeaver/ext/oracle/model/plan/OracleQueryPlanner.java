@@ -173,7 +173,7 @@ public class OracleQueryPlanner  extends AbstractExecutionPlanSerializer impleme
 
             JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
 
-            String query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
+            String query = getQuery(jo);
 
             ExecutionPlanDeserializer<OraclePlanNode> loader = new ExecutionPlanDeserializer<>();
 

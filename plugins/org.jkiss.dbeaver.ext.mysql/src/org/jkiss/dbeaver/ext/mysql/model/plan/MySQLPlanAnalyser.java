@@ -145,8 +145,10 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implement
     public DBCPlan deserialize(@NotNull Reader planData) throws IOException, InvocationTargetException {
 
         JsonObject jo = new JsonParser().parse(planData).getAsJsonObject();
-        String savedVersion = jo.get(AbstractExecutionPlanSerializer.PROP_VERSION).getAsString();
-        String query = jo.get(AbstractExecutionPlanSerializer.PROP_SQL).getAsString();
+ 
+        String savedVersion = getVersion(jo);
+        
+        String query = getQuery(jo);
 
         if (savedVersion.equals("classic")) {
             ExecutionPlanDeserializer<MySQLPlanNodePlain> loader = new ExecutionPlanDeserializer<>();
