@@ -23,18 +23,16 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -228,9 +226,7 @@ public class GroupingPanel implements IResultSetPanel {
         }
     }
 
-    class DefaultSortingAction extends Action implements IMenuCreator {
-
-        private MenuManager menuManager;
+    class DefaultSortingAction extends Action {
 
         DefaultSortingAction() {
             super(ResultSetMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
@@ -239,32 +235,13 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public IMenuCreator getMenuCreator() {
-            return this;
-        }
-
-        @Override
-        public void dispose() {
-            if (menuManager != null) {
-                menuManager.dispose();
-                menuManager = null;
-            }
-        }
-
-        @Override
-        public Menu getMenu(Control parent)
-        {
-            if (menuManager == null) {
-                menuManager = new MenuManager();
+            return new MenuCreator(control -> {
+                MenuManager menuManager = new MenuManager();
                 menuManager.add(new ChangeSortingAction(null));
                 menuManager.add(new ChangeSortingAction(Boolean.FALSE));
                 menuManager.add(new ChangeSortingAction(Boolean.TRUE));
-            }
-            return menuManager.createContextMenu(parent);
-        }
-
-        @Override
-        public Menu getMenu(Menu parent) {
-            return null;
+                return menuManager;
+            });
         }
     }
 
