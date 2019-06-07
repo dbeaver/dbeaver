@@ -16,15 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
@@ -40,11 +39,13 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -109,9 +110,35 @@ public class ItemListControl extends NodeListControl
             contributionManager.add(ActionUtils.makeCommandContribution(
                 workbenchSite,
                 NavigatorCommands.CMD_OBJECT_OPEN));
-            contributionManager.add(ActionUtils.makeCommandContribution(
-                workbenchSite,
-                NavigatorCommands.CMD_OBJECT_CREATE));
+            {
+                if (ObjectPropertyTester.canCreateObject(rootNode, true)) {
+                    contributionManager.add(ActionUtils.makeCommandContribution(
+                        workbenchSite,
+                        NavigatorCommands.CMD_OBJECT_CREATE));
+                } else if (ObjectPropertyTester.canCreateObject(rootNode, false)) {
+                    contributionManager.add(new Action(null, Action.AS_DROP_DOWN_MENU) {
+                        {
+                            setActionDefinitionId(NavigatorCommands.CMD_OBJECT_CREATE);
+                        }
+                        @Override
+                        public void run() {
+                            super.run();
+                        }
+
+                        @Override
+                        public IMenuCreator getMenuCreator() {
+                            return new MenuCreator(control -> {
+                                List<IContributionItem> items = NavigatorHandlerObjectCreateNew.fillCreateMenuItems((IWorkbenchPartSite) workbenchSite, rootNode);
+                                MenuManager menuManager = new MenuManager();
+                                for (IContributionItem cc : items) {
+                                    menuManager.add(cc);
+                                }
+                                return menuManager;
+                            });
+                        }
+                    });
+                }
+            }
             contributionManager.add(ActionUtils.makeCommandContribution(
                 workbenchSite,
                 NavigatorCommands.CMD_OBJECT_DELETE));

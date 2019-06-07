@@ -21,20 +21,17 @@ import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
 import org.jkiss.dbeaver.model.gis.GisConstants;
+import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
 
 import java.util.List;
 
-class SelectCRSAction extends Action implements IMenuCreator {
+class SelectCRSAction extends Action {
 
-    private MenuManager menuManager;
     private IGeometryValueEditor valueEditor;
 
     public SelectCRSAction(IGeometryValueEditor valueEditor) {
@@ -55,21 +52,8 @@ class SelectCRSAction extends Action implements IMenuCreator {
 
     @Override
     public IMenuCreator getMenuCreator() {
-        return this;
-    }
-
-    @Override
-    public void dispose() {
-        if (menuManager != null) {
-            menuManager.dispose();
-            menuManager = null;
-        }
-    }
-
-    @Override
-    public Menu getMenu(Control parent) {
-        if (menuManager == null) {
-            menuManager = new MenuManager();
+        return new MenuCreator(control -> {
+            MenuManager menuManager = new MenuManager();
             menuManager.setRemoveAllWhenShown(true);
             menuManager.addMenuListener(manager -> {
                 menuManager.add(new SetCRSAction(valueEditor, GisConstants.DEFAULT_SRID));
@@ -95,12 +79,8 @@ class SelectCRSAction extends Action implements IMenuCreator {
                     }
                 });
             });
-        }
-        return menuManager.createContextMenu(parent);
+            return menuManager;
+        });
     }
 
-    @Override
-    public Menu getMenu(Menu parent) {
-        return null;
-    }
 }

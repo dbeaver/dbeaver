@@ -207,7 +207,7 @@ public class ObjectPropertyTester extends PropertyTester
         return false;
     }
 
-    private boolean canCreateObject(DBNNode node, Boolean onlySingle) {
+    public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
         if (onlySingle == null) {
             // Just try to find first create handler
             if (node instanceof DBNDataSource) {
@@ -255,7 +255,7 @@ public class ObjectPropertyTester extends PropertyTester
         }
     }
 
-    private boolean isReadOnly(DBSObject object)
+    public static boolean isReadOnly(DBSObject object)
     {
         if (object == null) {
             return true;

@@ -3753,7 +3753,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class OpenWithAction extends Action implements IMenuCreator {
+    private class OpenWithAction extends Action {
         OpenWithAction()
         {
             super(null, IAction.AS_DROP_DOWN_MENU);
@@ -3764,7 +3764,11 @@ public class ResultSetViewer extends Viewer
         @Override
         public IMenuCreator getMenuCreator()
         {
-            return this;
+            return new MenuCreator(control -> {
+                MenuManager menuManager = new MenuManager();
+                fillOpenWithMenu(menuManager);
+                return menuManager;
+            });
         }
 
         @Override
@@ -3772,30 +3776,9 @@ public class ResultSetViewer extends Viewer
         {
         }
 
-        @Override
-        public void dispose()
-        {
-
-        }
-
-        @Override
-        public Menu getMenu(Control parent)
-        {
-            MenuManager menuManager = new MenuManager();
-            fillOpenWithMenu(menuManager);
-            return menuManager.createContextMenu(parent);
-        }
-
-        @Nullable
-        @Override
-        public Menu getMenu(Menu parent)
-        {
-            return null;
-        }
-
     }
 
-    private class ConfigAction extends Action implements IMenuCreator {
+    private class ConfigAction extends Action {
         ConfigAction()
         {
             super(ResultSetMessages.controls_resultset_viewer_action_options, IAction.AS_DROP_DOWN_MENU);
@@ -3805,88 +3788,71 @@ public class ResultSetViewer extends Viewer
         @Override
         public IMenuCreator getMenuCreator()
         {
-            return this;
+            return new MenuCreator(control -> {
+                MenuManager configMenuManager = new MenuManager();
+                configMenuManager.add(new ShowFiltersAction(false));
+                //menuManager.add(new CustomizeColorsAction());
+                configMenuManager.add(new Separator());
+                VirtualUniqueKeyEditAction vkAction = new VirtualUniqueKeyEditAction(true);
+                if (vkAction.isEnabled()) {
+                    configMenuManager.add(vkAction);
+                }
+                VirtualUniqueKeyEditAction vkRemoveAction = new VirtualUniqueKeyEditAction(false);
+                if (vkRemoveAction.isEnabled()) {
+                    configMenuManager.add(vkRemoveAction);
+                }
+                configMenuManager.add(new DictionaryEditAction());
+                if (getDataContainer() != null) {
+                    configMenuManager.add(new VirtualEntityEditAction());
+                }
+                configMenuManager.add(new Separator());
+                if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
+                    configMenuManager.add(new ToggleModeAction());
+                }
+                activePresentation.fillMenu(configMenuManager);
+                if (!CommonUtils.isEmpty(availablePresentations) && availablePresentations.size() > 1) {
+                    configMenuManager.add(new Separator());
+                    for (final ResultSetPresentationDescriptor pd : availablePresentations) {
+                        Action action = new Action(pd.getLabel(), IAction.AS_RADIO_BUTTON) {
+                            @Override
+                            public boolean isEnabled() {
+                                return !isRefreshInProgress();
+                            }
+                            @Override
+                            public boolean isChecked() {
+                                return pd == activePresentationDescriptor;
+                            }
+
+                            @Override
+                            public void run() {
+                                switchPresentation(pd);
+                            }
+                        };
+                        if (pd.getIcon() != null) {
+                            //action.setImageDescriptor(ImageDescriptor.createFromImage(pd.getIcon()));
+                        }
+                        configMenuManager.add(action);
+                    }
+                }
+                configMenuManager.add(new Separator());
+                configMenuManager.add(new Action("Preferences") {
+                    @Override
+                    public void run()
+                    {
+                        UIUtils.showPreferencesFor(
+                            getControl().getShell(),
+                            ResultSetViewer.this,
+                            PrefPageResultSetMain.PAGE_ID);
+                    }
+                });
+                return configMenuManager;
+            });
         }
 
         @Override
         public void runWithEvent(Event event)
         {
             new VirtualEntityEditAction().run();
-        }
-
-        @Override
-        public void dispose()
-        {
-
-        }
-
-        @Override
-        public Menu getMenu(Control parent)
-        {
-            MenuManager menuManager = new MenuManager();
-            menuManager.add(new ShowFiltersAction(false));
-            //menuManager.add(new CustomizeColorsAction());
-            menuManager.add(new Separator());
-            VirtualUniqueKeyEditAction vkAction = new VirtualUniqueKeyEditAction(true);
-            if (vkAction.isEnabled()) {
-                menuManager.add(vkAction);
-            }
-            VirtualUniqueKeyEditAction vkRemoveAction = new VirtualUniqueKeyEditAction(false);
-            if (vkRemoveAction.isEnabled()) {
-                menuManager.add(vkRemoveAction);
-            }
-            menuManager.add(new DictionaryEditAction());
-            if (getDataContainer() != null) {
-                menuManager.add(new VirtualEntityEditAction());
-            }
-            menuManager.add(new Separator());
-            if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
-                menuManager.add(new ToggleModeAction());
-            }
-            activePresentation.fillMenu(menuManager);
-            if (!CommonUtils.isEmpty(availablePresentations) && availablePresentations.size() > 1) {
-                menuManager.add(new Separator());
-                for (final ResultSetPresentationDescriptor pd : availablePresentations) {
-                    Action action = new Action(pd.getLabel(), IAction.AS_RADIO_BUTTON) {
-                        @Override
-                        public boolean isEnabled() {
-                            return !isRefreshInProgress();
-                        }
-                        @Override
-                        public boolean isChecked() {
-                            return pd == activePresentationDescriptor;
-                        }
-
-                        @Override
-                        public void run() {
-                            switchPresentation(pd);
-                        }
-                    };
-                    if (pd.getIcon() != null) {
-                        //action.setImageDescriptor(ImageDescriptor.createFromImage(pd.getIcon()));
-                    }
-                    menuManager.add(action);
-                }
-            }
-            menuManager.add(new Separator());
-            menuManager.add(new Action("Preferences") {
-                @Override
-                public void run()
-                {
-                    UIUtils.showPreferencesFor(
-                        getControl().getShell(),
-                        ResultSetViewer.this,
-                        PrefPageResultSetMain.PAGE_ID);
-                }
-            });
-            return menuManager.createContextMenu(parent);
-        }
-
-        @Nullable
-        @Override
-        public Menu getMenu(Menu parent)
-        {
-            return null;
         }
 
     }
