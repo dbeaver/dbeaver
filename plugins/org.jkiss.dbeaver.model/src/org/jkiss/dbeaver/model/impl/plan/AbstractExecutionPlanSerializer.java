@@ -21,9 +21,12 @@ package org.jkiss.dbeaver.model.impl.plan;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 
 import com.google.gson.*;
+
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerialInfo;
@@ -97,6 +100,32 @@ public abstract class AbstractExecutionPlanSerializer  implements DBCQueryPlanne
         root.add(PROP_NODES, nodes);
 
         writer.write(gson.toJson(root));
+    }
+    
+     protected String getVersion(@NotNull JsonObject o)  throws InvocationTargetException {
+        
+        JsonElement queryElement = o.get(AbstractExecutionPlanSerializer.PROP_VERSION);
+        
+        if (queryElement == null) {
+            
+            throw new InvocationTargetException(new Exception("Incorrect file format"));
+            
+        }
+
+        return queryElement.getAsString();
+    }
+    
+    protected String getQuery(@NotNull JsonObject o)  throws InvocationTargetException {
+        
+        JsonElement queryElement = o.get(AbstractExecutionPlanSerializer.PROP_SQL);
+        
+        if (queryElement == null) {
+            
+            throw new InvocationTargetException(new Exception("Incorrect file format"));
+            
+        }
+
+        return queryElement.getAsString();
     }
 
 
