@@ -638,13 +638,15 @@ public class ResultSetModel {
                                         foreground = acs.colorForeground;
                                         RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
                                         background = UIUtils.getSharedColor(rowRGB);
-                                    } else if (value < minValue) {
+                                    }
+                                    // FIXME: coloring value before and after range. Maybe we need an option for this.
+                                    /* else if (value < minValue) {
                                         foreground = acs.colorForeground;
                                         background = acs.colorBackground;
                                     } else if (value > maxValue) {
                                         foreground = acs.colorForeground2;
                                         background = acs.colorBackground2;
-                                    }
+                                    }*/
                                 }
                             }
                         } else {
