@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -45,6 +46,7 @@ public class GroupingDataContainer implements DBSDataContainer {
         return parentController.getDataContainer();
     }
 
+    @NotNull
     @Override
     public String getName() {
         return "Grouping";
@@ -65,9 +67,14 @@ public class GroupingDataContainer implements DBSDataContainer {
         return DATA_SELECT;
     }
 
+    @NotNull
     @Override
-    public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
         DBCStatistics statistics = new DBCStatistics();
+        if (query == null) {
+            statistics.addMessage("Empty query");
+            return statistics;
+        }
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -128,7 +135,7 @@ public class GroupingDataContainer implements DBSDataContainer {
     }
 
     @Override
-    public long countData(DBCExecutionSource source, DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags) throws DBCException {
         return 0;
     }
 
