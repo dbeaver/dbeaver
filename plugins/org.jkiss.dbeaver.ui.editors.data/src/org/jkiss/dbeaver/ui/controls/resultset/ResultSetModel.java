@@ -638,6 +638,12 @@ public class ResultSetModel {
                                         foreground = acs.colorForeground;
                                         RGB rowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
                                         background = UIUtils.getSharedColor(rowRGB);
+                                    } else if (value < minValue) {
+                                        foreground = acs.colorForeground;
+                                        background = acs.colorBackground;
+                                    } else if (value > maxValue) {
+                                        foreground = acs.colorForeground2;
+                                        background = acs.colorBackground2;
                                     }
                                 }
                             }
@@ -656,8 +662,8 @@ public class ResultSetModel {
                                 row.colorInfo = colorInfo;
                             }
                             if (!acs.singleColumn) {
-                                colorInfo.rowForeground = acs.colorForeground;
-                                colorInfo.rowBackground = acs.colorBackground;
+                                colorInfo.rowForeground = foreground;
+                                colorInfo.rowBackground = background;
                             } else {
                                 // Single column color
                                 if (foreground != null) {
