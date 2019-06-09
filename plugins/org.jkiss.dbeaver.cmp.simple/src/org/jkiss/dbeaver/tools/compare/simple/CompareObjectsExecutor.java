@@ -219,7 +219,7 @@ public class CompareObjectsExecutor {
         List<ObjectPropertyDescriptor> properties = ObjectPropertyDescriptor.extractAnnotations(
             null,
             firstNode.getObject().getClass(),
-            getDataSourceFilter(firstNode));
+            getDataSourceFilter(firstNode), null);
         for (ObjectPropertyDescriptor prop : properties) {
             if (prop.isLazy()) {
                 compareLazyProperties = true;

@@ -29,17 +29,15 @@ import org.jkiss.utils.CommonUtils;
 /**
  * DBNDatabaseObject
  */
-public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
-{
+public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
     private DBXTreeObject meta;
 
-    DBNDatabaseObject(DBNNode parent, DBXTreeObject meta)
-    {
+    DBNDatabaseObject(DBNNode parent, DBXTreeObject meta) {
         super(parent);
         this.meta = meta;
         registerNode();
     }
-    
+
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBSObject.class) {
@@ -50,15 +48,13 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     }
 
     @Override
-    protected void dispose(boolean reflect)
-    {
+    protected void dispose(boolean reflect) {
         unregisterNode(reflect);
         super.dispose(reflect);
     }
 
     @Override
-    public DBXTreeObject getMeta()
-    {
+    public DBXTreeObject getMeta() {
         return meta;
     }
 
@@ -68,20 +64,17 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     }
 
     @Override
-    public DBSObject getObject()
-    {
+    public DBSObject getObject() {
         return this;
     }
 
     @Override
-    public Object getValueObject()
-    {
+    public Object getValueObject() {
         return this;
     }
 
     @Override
-    public String getNodeFullName()
-    {
+    public String getNodeFullName() {
         StringBuilder pathName = new StringBuilder();
         for (DBNNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {
             if (parent instanceof DBNDatabaseFolder) {
@@ -105,35 +98,35 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return meta.getNodeType(getDataSource(), null);
+    }
+
+    @Override
+    public String getLocalizedName(String locale) {
+        return meta.getNodeType(getDataSource(), locale);
     }
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return meta.getDescription();
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
-        return getParentNode() instanceof DBNDatabaseNode ? ((DBSWrapper)getParentNode()).getObject() : null;
+    public DBSObject getParentObject() {
+        return getParentNode() instanceof DBNDatabaseNode ? ((DBSWrapper) getParentNode()).getObject() : null;
     }
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource()
-    {
+    public DBPDataSource getDataSource() {
         DBSObject parentObject = getParentObject();
         return parentObject == null ? null : parentObject.getDataSource();
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return true;
     }
 
