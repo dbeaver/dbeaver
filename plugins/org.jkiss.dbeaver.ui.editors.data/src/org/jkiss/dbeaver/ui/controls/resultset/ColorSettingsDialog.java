@@ -280,7 +280,7 @@ class ColorSettingsDialog extends BaseDialog {
                 }
                 if (curOverride.isRange()) {
                     if (valueEditor2 != null) {
-                        valueEditor2.primeEditorValue(values.length < 2 ? null : values[1]);
+                        valueEditor2.primeEditorValue(ArrayUtils.isEmpty(values) || values.length < 2 ? null : values[1]);
                     }
                     if (!CommonUtils.isEmpty(curOverride.getColorBackground2())) {
                         bgColorSelector2.setColorValue(StringConverter.asRGB(curOverride.getColorBackground2()));
