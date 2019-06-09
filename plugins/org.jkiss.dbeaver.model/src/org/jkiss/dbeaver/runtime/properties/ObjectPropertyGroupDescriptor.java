@@ -39,11 +39,12 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
         ObjectPropertyGroupDescriptor parent,
         Method getter,
         PropertyGroup groupInfo,
-        IPropertyFilter filter)
+        IPropertyFilter filter,
+        String locale)
     {
         super(source, parent, getter, groupInfo.id(), groupInfo.order());
         this.groupInfo = groupInfo;
-        extractAnnotations(source, this, getGetter().getReturnType(), children, filter);
+        extractAnnotations(source, this, getGetter().getReturnType(), children, filter, locale);
     }
 
     @Override

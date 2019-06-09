@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
@@ -162,12 +163,13 @@ public abstract class ObjectAttributeDescriptor {
     public abstract String getDescription();
 
     public static List<ObjectPropertyDescriptor> extractAnnotations(
-        DBPPropertySource source,
+        @Nullable DBPPropertySource source,
         Class<?> theClass,
-        IPropertyFilter filter)
+        IPropertyFilter filter,
+        @Nullable String locale)
     {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
-        extractAnnotations(source, null, theClass, annoProps, filter);
+        extractAnnotations(source, null, theClass, annoProps, filter, locale);
         return annoProps;
     }
 
@@ -178,13 +180,19 @@ public abstract class ObjectAttributeDescriptor {
     {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<>();
         for (Class<?> objectClass : classList) {
-            annoProps.addAll(ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter));
+            annoProps.addAll(ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter, null));
         }
         Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);
         return annoProps;
     }
 
-    static void extractAnnotations(DBPPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IPropertyFilter filter)
+    static void extractAnnotations(
+        DBPPropertySource source,
+        @Nullable ObjectPropertyGroupDescriptor parent,
+        Class<?> theClass,
+        List<ObjectPropertyDescriptor> annoProps,
+        IPropertyFilter filter,
+        @Nullable String locale)
     {
         Method[] methods = theClass.getMethods();
         Map<String, Method> passedNames = new HashMap<>();
@@ -203,7 +211,7 @@ public abstract class ObjectAttributeDescriptor {
             final PropertyGroup propGroupInfo = method.getAnnotation(PropertyGroup.class);
             if (propGroupInfo != null && method.getReturnType() != null) {
                 // Property group
-                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(source, parent, method, propGroupInfo, filter);
+                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(source, parent, method, propGroupInfo, filter, locale);
                 annoProps.addAll(groupDescriptor.getChildren());
             } else {
                 final Property propInfo = method.getAnnotation(Property.class);
@@ -211,23 +219,20 @@ public abstract class ObjectAttributeDescriptor {
                     continue;
                 }
                 // Single property
-                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method);
+                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method, locale);
                 if (filter != null && !filter.select(desc)) {
                     continue;
                 }
                 if (prevMethod != null) {
                     // Remove previous anno
-                    for (Iterator<ObjectPropertyDescriptor> iter = annoProps.iterator(); iter.hasNext(); ) {
-                        if (iter.next().getId().equals(desc.getId())) {
-                            iter.remove();
-                        }
-                    }
+                    annoProps.removeIf(
+                        objectPropertyDescriptor -> objectPropertyDescriptor.getId().equals(desc.getId()));
                 }
                 annoProps.add(desc);
                 passedNames.put(methodFullName, method);
             }
         }
-        Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);
+        annoProps.sort(ATTRIBUTE_DESCRIPTOR_COMPARATOR);
     }
 
 }

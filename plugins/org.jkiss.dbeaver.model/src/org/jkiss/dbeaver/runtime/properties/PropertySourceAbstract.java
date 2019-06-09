@@ -52,6 +52,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     private final Map<Object, Object> lazyValues = new HashMap<>();
     private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<>();
     private Job lazyLoadJob;
+    private String locale;
 
     /**
      * constructs property source
@@ -313,7 +314,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             } else {
                 filter = new DataSourcePropertyFilter();
             }
-            List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter);
+            List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter, locale);
             for (final ObjectPropertyDescriptor desc : annoProps) {
                 addProperty(desc);
             }
@@ -329,6 +330,10 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             }
         }
         return !props.isEmpty();
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
     }
 
     private class PropertySheetLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
