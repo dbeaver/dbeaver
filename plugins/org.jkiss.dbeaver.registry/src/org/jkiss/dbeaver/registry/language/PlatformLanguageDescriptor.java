@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.language;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -25,44 +26,47 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 /**
  * PlatformLanguageDescriptor
  */
-public class PlatformLanguageDescriptor extends AbstractContextDescriptor implements DBPPlatformLanguage
-{
+public class PlatformLanguageDescriptor extends AbstractContextDescriptor implements DBPPlatformLanguage, DBPNamedObjectLocalized {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.language"; //$NON-NLS-1$
 
-    private final String code;
-    private final String label;
-    private final String description;
+    private final IConfigurationElement config;
 
-    public PlatformLanguageDescriptor(
-        IConfigurationElement config)
-    {
+    public PlatformLanguageDescriptor(IConfigurationElement config) {
         super(config);
 
-        this.code = config.getAttribute(RegistryConstants.ATTR_CODE);
-        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.config = config;
     }
 
     @NotNull
     @Override
     public String getCode() {
-        return code;
+        return config.getAttribute(RegistryConstants.ATTR_CODE);
     }
 
     @NotNull
     @Override
-    public String getLabel()
-    {
-        return label;
+    public String getLabel() {
+        return config.getAttribute(RegistryConstants.ATTR_LABEL);
     }
 
-    public String getDescription()
-    {
-        return description;
+    public String getDescription() {
+        return config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
     }
 
     @Override
     public String toString() {
-        return code;
+        return getCode();
     }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return getLabel();
+    }
+
+    @Override
+    public String getLocalizedName(String locale) {
+        return config.getAttribute(RegistryConstants.ATTR_LABEL, locale);
+    }
+
 }
