@@ -23,13 +23,11 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 /**
  * DBNDatabaseItem
  */
-public class DBNDatabaseItem extends DBNDatabaseNode
-{
+public class DBNDatabaseItem extends DBNDatabaseNode {
     private DBXTreeItem meta;
     private DBSObject object;
 
-    DBNDatabaseItem(DBNNode parent, DBXTreeItem meta, DBSObject object, boolean reflect)
-    {
+    DBNDatabaseItem(DBNNode parent, DBXTreeItem meta, DBSObject object, boolean reflect) {
         super(parent);
         this.meta = meta;
         this.object = object;
@@ -37,22 +35,19 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     }
 
     @Override
-    public boolean isDisposed()
-    {
+    public boolean isDisposed() {
         return object == null || super.isDisposed();
     }
 
     @Override
-    protected void dispose(boolean reflect)
-    {
+    protected void dispose(boolean reflect) {
         unregisterNode(reflect);
         this.object = null;
         super.dispose(reflect);
     }
 
     @Override
-    public DBXTreeItem getMeta()
-    {
+    public DBXTreeItem getMeta() {
         return meta;
     }
 
@@ -67,32 +62,30 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     }
 
     @Override
-    public DBSObject getObject()
-    {
+    public DBSObject getObject() {
+        if (object == null) {
+            throw new IllegalStateException("Null object in navigator node. Node was disposed?");
+        }
         return object;
     }
 
     @Override
-    public Object getValueObject()
-    {
+    public Object getValueObject() {
         return object;
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return object != null && object.isPersisted();
     }
 
     @Override
-    public final boolean isManagable()
-    {
+    public final boolean isManagable() {
         return true;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return object == null ? super.toString() : object.toString();
     }
 }
