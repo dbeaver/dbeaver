@@ -260,8 +260,10 @@ class EditVirtualEntityDialog extends BaseDialog {
             if (!coList.isEmpty()) {
                 java.util.List<String> coStrings = new ArrayList<>();
                 for (DBVColorOverride co : coList) {
-                    for (Object value : co.getAttributeValues()) {
-                        coStrings.add(CommonUtils.toString(value));
+                    if (co.getAttributeValues() != null) {
+                        for (Object value : co.getAttributeValues()) {
+                            coStrings.add(CommonUtils.toString(value));
+                        }
                     }
                 }
                 colorSettings = String.join(",", coStrings);
