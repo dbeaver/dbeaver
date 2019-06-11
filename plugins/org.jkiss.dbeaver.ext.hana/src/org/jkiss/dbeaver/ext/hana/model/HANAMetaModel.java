@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -28,10 +32,14 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -122,5 +130,54 @@ public class HANAMetaModel extends GenericMetaModel
         }
 
         return super.getTableDDL(monitor, sourceObject, options);
+    }
+    
+    @Override
+    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
+        return true;
+    }
+    
+    @Override
+    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+        if (table == null) {
+            return Collections.emptyList();
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT TRIGGER_NAME FROM SYS.TRIGGERS WHERE SUBJECT_TABLE_NAME=?")) {
+                dbStat.setString(1, table.getName());
+                List<GenericTrigger> result = new ArrayList<>();
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, 1);
+                        result.add(new GenericTrigger(container, table, name, null));
+                    }
+                }
+                return result;
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
+        }
+    }
+	
+	@Override
+	public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger sourceObject) throws DBException {
+        GenericDataSource dataSource = sourceObject.getDataSource();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HANA trigger source")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT SCHEMA_NAME,TRIGGER_NAME,DEFINITION FROM SYS.TRIGGERS\n" +
+                    "WHERE SCHEMA_NAME = ? AND TRIGGER_NAME = ?"))
+            {
+                dbStat.setString(1, sourceObject.getContainer().getName());
+                dbStat.setString(2, sourceObject.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.nextRow()) {
+                        return dbResult.getString(3);
+                    }
+                    return "-- HANA trigger source not found";
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
     }
 }
