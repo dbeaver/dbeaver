@@ -143,7 +143,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return getValueController().getExecutionContext();
+        return getValueController() == null ? null : getValueController().getExecutionContext();
     }
 
     @Nullable
@@ -167,8 +167,12 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     }
 
     @Override
-    public void openNewContainer(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter newFilter) {
-        final DBNDatabaseNode targetNode = getExecutionContext().getDataSource().getContainer().getPlatform().getNavigatorModel().getNodeByObject(monitor, dataContainer, false);
+    public void openNewContainer(DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter newFilter) {
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            return;
+        }
+        final DBNDatabaseNode targetNode = executionContext.getDataSource().getContainer().getPlatform().getNavigatorModel().getNodeByObject(monitor, dataContainer, false);
         if (targetNode == null) {
             UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI) + "' - navigator node not found", SWT.ICON_ERROR);
             return;
@@ -265,7 +269,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
             return null;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBPDataSource getDataSource()
         {
