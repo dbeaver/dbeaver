@@ -70,7 +70,8 @@ public class GreenplumExternalTable extends PostgreTable {
     }
 
     public enum RejectLimitType {
-        r("ROWS");
+        r("ROWS"),
+        p("PERCENT ");
 
         private String rejectLimitType;
 
@@ -122,7 +123,7 @@ public class GreenplumExternalTable extends PostgreTable {
                 && JDBCUtils.safeGetBoolean(dbResult, "is_logging_errors");
         this.command = JDBCUtils.safeGetString(dbResult, "command");
         if (rejectlimittype != null && rejectlimittype.length() > 0) {
-            this.rejectLimitType = RejectLimitType.valueOf(rejectlimittype);
+            this.rejectLimitType = CommonUtils.valueOf(RejectLimitType.class, rejectlimittype, RejectLimitType.r);
         } else {
             this.rejectLimitType = null;
         }
