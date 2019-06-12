@@ -81,7 +81,7 @@ public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
         try {
             File file = new File(url.toURI());
             return file.getAbsolutePath();
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             return url.toString();
         }
     }
