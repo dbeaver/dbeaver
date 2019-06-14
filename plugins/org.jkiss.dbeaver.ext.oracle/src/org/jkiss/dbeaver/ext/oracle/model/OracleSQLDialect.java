@@ -396,7 +396,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     @Override
     public boolean isDisableScriptEscapeProcessing() {
-        return preferenceStore.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
+        return preferenceStore == null || preferenceStore.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
     }
 
     @Override
