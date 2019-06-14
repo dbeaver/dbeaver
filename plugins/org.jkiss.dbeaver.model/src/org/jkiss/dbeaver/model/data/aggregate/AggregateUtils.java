@@ -23,7 +23,8 @@ public class AggregateUtils {
 
     public static int compareValues(Comparable val1, Comparable val2) {
         if (val1 instanceof Number && val2 instanceof Number) {
-            return (int)(((Number) val1).doubleValue() - ((Number) val2).doubleValue());
+            double cmpr = ((Number) val1).doubleValue() - ((Number) val2).doubleValue();
+            return cmpr < 0 ? -1 : (cmpr > 0 ? 1 : 0);
         } else if (val1.getClass() == val2.getClass()) {
             return val1.compareTo(val2);
         } else {
