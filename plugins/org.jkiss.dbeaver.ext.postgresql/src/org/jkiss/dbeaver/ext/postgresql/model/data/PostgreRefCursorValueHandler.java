@@ -22,11 +22,9 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCursor;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -38,6 +36,9 @@ public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
 
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+        String cursorName = resultSet.getString(index);
+        return new PostgreRefCursor(cursorName);
+/*
         // Fetch as string (#1735)
         // Fetching cursor as object will close it so it won;'t be possible to use cursor in consequent queries
         Object object = resultSet.getObject(index);
@@ -47,10 +48,13 @@ public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
                 (ResultSet) object,
                 type.getTypeName());
             // Set cursor name
-            cursor.setCursorName(resultSet.getString(index));
+            cursor.setCursorName(cursorName);
+            // Disable resulset close on cursor release. Otherwise cusor can't be referred by other queries (#6074)
+            cursor.setCloseResultsOnRelease(false);
             return cursor;
         }
         return object;
+*/
     }
 
     @Override

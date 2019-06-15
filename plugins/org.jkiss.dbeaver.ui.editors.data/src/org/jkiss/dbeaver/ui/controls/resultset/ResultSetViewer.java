@@ -142,6 +142,8 @@ public class ResultSetViewer extends Viewer
 
     static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
 
+    public static final String DEFAULT_QUERY_TEXT = "SQL";
+
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
     private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
@@ -3136,6 +3138,24 @@ public class ResultSetViewer extends Viewer
         return getPreferenceStore().getInt(ResultSetPreferences.RESULT_SET_MAX_ROWS);
     }
 
+    @NotNull
+    public String getActiveQueryText() {
+        DBCStatistics statistics = getModel().getStatistics();
+        String queryText = statistics == null ? null : statistics.getQueryText();
+        if (queryText == null || queryText.isEmpty()) {
+            DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null) {
+                if (dataContainer instanceof SQLQueryContainer) {
+                    return ((SQLQueryContainer) dataContainer).getQuery().getText();
+                }
+                return dataContainer.getName();
+            }
+            queryText = DEFAULT_QUERY_TEXT;
+        }
+        return queryText;
+    }
+
+
     private synchronized boolean runDataPump(
         @NotNull final DBSDataContainer dataContainer,
         @Nullable final DBDDataFilter dataFilter,
@@ -3217,7 +3237,7 @@ public class ResultSetViewer extends Viewer
                             } else if (dataContainer instanceof SQLQueryContainer) {
                                 sqlText = ((SQLQueryContainer) dataContainer).getQuery().getText();
                             } else {
-                                sqlText = filtersPanel.getActiveQueryText();
+                                sqlText = getActiveQueryText();
                             }
 
                             if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG)) {

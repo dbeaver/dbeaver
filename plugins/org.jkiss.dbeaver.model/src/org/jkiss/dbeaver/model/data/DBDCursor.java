@@ -17,13 +17,19 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Resultset
  *
  * @author Serge Rider
  */
-public interface DBDCursor extends DBDValue, DBCResultSet {
+public interface DBDCursor extends DBDValue {
+
+    DBCResultSet openResultSet(DBCSession session) throws DBCException;
+
+    String getCursorName();
 
 }
