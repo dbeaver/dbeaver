@@ -43,13 +43,13 @@ public class SQLiteDataSource extends GenericDataSource {
         // Resolve type name according to https://www.sqlite.org/datatype3.html
         typeName = typeName.toUpperCase(Locale.ENGLISH);
         SQLiteAffinity affinity;
-        if (typeName.contains("INT")) {
+        if (typeName.startsWith("INT")) {
             affinity = SQLiteAffinity.INTEGER;
-        } else if (typeName.contains("CHAR") || typeName.contains("CLOB") || typeName.contains("TEXT")) {
+        } else if (typeName.contains("CHAR") || typeName.contains("CLOB") || typeName.contains("TEXT") || typeName.startsWith("DATE") || typeName.startsWith("TIME")) {
             affinity = SQLiteAffinity.TEXT;
         } else if (typeName.contains("BLOB")) {
             affinity = SQLiteAffinity.BLOB;
-        } else if (typeName.contains("REAL") || typeName.contains("FLOA") || typeName.contains("DOUB")) {
+        } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
         } else {
             affinity = SQLiteAffinity.NUMERIC;
