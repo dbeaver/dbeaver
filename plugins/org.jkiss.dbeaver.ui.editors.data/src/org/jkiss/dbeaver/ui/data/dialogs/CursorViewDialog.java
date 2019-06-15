@@ -56,6 +56,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     private static final Log log = Log.getLog(CursorViewDialog.class);
 
     private DBDCursor value;
+    private DBCResultSet resultSet;
     private ResultSetViewer resultSetViewer;
     private CursorDataContainer dataContainer;
     private static boolean keepStatementOpenToggleState = false;
@@ -205,25 +206,28 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
         {
             DBCStatistics statistics = new DBCStatistics();
+            resultSet = value == null ? null : value.openResultSet(session);
+            if (resultSet == null) {
+                return statistics;
+            }
             DBRProgressMonitor monitor = session.getProgressMonitor();
             try {
-                value.moveTo((int) firstRow);
+                resultSet.moveTo((int) firstRow);
             } catch (DBCException e) {
                 log.debug(e);
             }
-            DBCResultSet dbResult = value;
             try {
                 long startTime = System.currentTimeMillis();
-                dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
+                dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
                 long rowCount;
                 try {
                     rowCount = 0;
-                    while (dbResult.nextRow()) {
+                    while (resultSet.nextRow()) {
                         if (monitor.isCanceled()) {
                             // Fetch not more than max rows
                             break;
                         }
-                        dataReceiver.fetchRow(session, dbResult);
+                        dataReceiver.fetchRow(session, resultSet);
                         rowCount++;
                         if (rowCount >= maxRows) {
                             break;
@@ -236,7 +240,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
                     }
                 } finally {
                     try {
-                        dataReceiver.fetchEnd(session, dbResult);
+                        dataReceiver.fetchEnd(session, resultSet);
                     } catch (DBCException e) {
                         log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                     }

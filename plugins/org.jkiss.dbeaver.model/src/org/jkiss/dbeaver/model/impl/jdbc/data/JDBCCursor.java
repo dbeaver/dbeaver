@@ -17,9 +17,15 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDCursor;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,17 +33,24 @@ import java.sql.SQLException;
 /**
  * Result set holder
  */
-public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
+public class JDBCCursor implements DBDCursor {
 
+    private static final Log log = Log.getLog(JDBCCursor.class);
+
+    private JDBCSession session;
+    private JDBCResultSet resultSet;
     private String cursorName;
+    private boolean closeResultsOnRelease = true;
 
-    public JDBCCursor(JDBCSession session, ResultSet original, String description) {
-        super(session, null, original, description, true);
+    public JDBCCursor(JDBCSession session, ResultSet resultSet, String description) throws SQLException {
+        //super(session, null, original, description, true);
+        this.session = session;
+        this.resultSet = JDBCResultSetImpl.makeResultSet(session, null, resultSet, description, true);
     }
 
     @Override
     public Object getRawValue() {
-        return getOriginal();
+        return resultSet;
     }
 
     @Override
@@ -52,20 +65,35 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
 
     @Override
     public void release() {
-        super.close();
+        if (resultSet != null) {
+            if (closeResultsOnRelease) {
+                try {
+                    resultSet.close();
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+            resultSet = null;
+        }
+    }
+
+    @Override
+    public DBCResultSet openResultSet(DBCSession session) {
+        return resultSet;
     }
 
     @Nullable
     @Override
-    public String getCursorName() throws SQLException {
-        if (cursorName != null) {
-            return cursorName;
-        }
-        return super.getCursorName();
+    public String getCursorName() {
+        return cursorName;
     }
 
     public void setCursorName(String cursorName) {
         this.cursorName = cursorName;
+    }
+
+    public void setCloseResultsOnRelease(boolean closeResultsOnRelease) {
+        this.closeResultsOnRelease = closeResultsOnRelease;
     }
 
     @Override
@@ -73,7 +101,10 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
         if (cursorName != null) {
             return cursorName;
         }
-        return getStatement().getQueryString();
+        if (resultSet == null) {
+            return DBConstants.NULL_VALUE_LABEL;
+        }
+        return CommonUtils.toString(resultSet.getSourceStatement().getQueryString());
     }
 
 }

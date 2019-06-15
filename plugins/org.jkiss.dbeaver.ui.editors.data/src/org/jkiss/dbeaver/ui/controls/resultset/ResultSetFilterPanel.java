@@ -45,13 +45,12 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
-import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -60,11 +59,10 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
-import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.DBStyles;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,8 +81,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private static final int MIN_FILTER_TEXT_WIDTH = 50;
     private static final int MIN_FILTER_TEXT_HEIGHT = 20;
     private static final int MAX_HISTORY_PANEL_HEIGHT = 200;
-
-    private static final String DEFAULT_QUERY_TEXT = "SQL";
 
     private final ResultSetViewer viewer;
     private final ActiveObjectPanel activeObjectPanel;
@@ -110,7 +106,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final GC sizingGC;
     private final Font hintFont;
 
-    private String activeDisplayName = DEFAULT_QUERY_TEXT;
+    private String activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
 
     private String prevQuery = null;
     private final List<String> filtersHistory = new ArrayList<>();
@@ -409,7 +405,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             displayName = CommonUtils.compactWhiteSpaces(displayName);
             activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
             if (CommonUtils.isEmpty(activeDisplayName)) {
-                activeDisplayName = DEFAULT_QUERY_TEXT;
+                activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
             }
         }
 
@@ -454,23 +450,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         return filtersText.getText();
     }
 
-    @NotNull
-    public String getActiveQueryText() {
-        DBCStatistics statistics = viewer.getModel().getStatistics();
-        String queryText = statistics == null ? null : statistics.getQueryText();
-        if (queryText == null || queryText.isEmpty()) {
-            DBSDataContainer dataContainer = viewer.getDataContainer();
-            if (dataContainer != null) {
-                if (dataContainer instanceof SQLQueryContainer) {
-                    return ((SQLQueryContainer) dataContainer).getQuery().getText();
-                }
-                return dataContainer.getName();
-            }
-            queryText = DEFAULT_QUERY_TEXT;
-        }
-        return queryText;
-    }
-
     @Nullable
     private DBPImage getActiveObjectImage() {
         DBSDataContainer dataContainer = viewer.getDataContainer();
@@ -499,7 +478,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (dataContainer != null) {
             displayName = dataContainer.getName();
         } else {
-            displayName = getActiveQueryText();
+            displayName = viewer.getActiveQueryText();
         }
         return displayName;
     }
@@ -591,7 +570,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         try {
             UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
             if (serviceSQL != null) {
-                Object sqlPanel = serviceSQL.createSQLPanel(viewer.getSite(), editorPH, viewer, DEFAULT_QUERY_TEXT, false, getActiveQueryText());
+                Object sqlPanel = serviceSQL.createSQLPanel(viewer.getSite(), editorPH, viewer, ResultSetViewer.DEFAULT_QUERY_TEXT, false, viewer.getActiveQueryText());
                 if (sqlPanel instanceof TextViewer) {
                     StyledText textWidget = ((TextViewer) sqlPanel).getTextWidget();
                     //textWidget.setAlwaysShowScrollBars(false);
@@ -621,7 +600,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             serviceSQL.openSQLConsole(
                 dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
                 editorName,
-                getActiveQueryText()
+                viewer.getActiveQueryText()
             );
         }
     }
