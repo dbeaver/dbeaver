@@ -16,19 +16,22 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Result set holder
  */
 public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
 
-    public JDBCCursor(JDBCSession session, ResultSet original, String description)
-    {
+    private String cursorName;
+
+    public JDBCCursor(JDBCSession session, ResultSet original, String description) {
         super(session, null, original, description, true);
     }
 
@@ -38,8 +41,7 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
     }
 
     @Override
-    public boolean isNull()
-    {
+    public boolean isNull() {
         return false;
     }
 
@@ -49,14 +51,28 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
     }
 
     @Override
-    public void release()
-    {
+    public void release() {
         super.close();
     }
 
+    @Nullable
     @Override
-    public String toString()
-    {
+    public String getCursorName() throws SQLException {
+        if (cursorName != null) {
+            return cursorName;
+        }
+        return super.getCursorName();
+    }
+
+    public void setCursorName(String cursorName) {
+        this.cursorName = cursorName;
+    }
+
+    @Override
+    public String toString() {
+        if (cursorName != null) {
+            return cursorName;
+        }
         return getStatement().getQueryString();
     }
 

@@ -42,10 +42,13 @@ public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
         // Fetching cursor as object will close it so it won;'t be possible to use cursor in consequent queries
         Object object = resultSet.getObject(index);
         if (object instanceof ResultSet) {
-            return new JDBCCursor(
+            JDBCCursor cursor = new JDBCCursor(
                 (JDBCSession) session,
                 (ResultSet) object,
                 type.getTypeName());
+            // Set cursor name
+            cursor.setCursorName(resultSet.getString(index));
+            return cursor;
         }
         return object;
     }
