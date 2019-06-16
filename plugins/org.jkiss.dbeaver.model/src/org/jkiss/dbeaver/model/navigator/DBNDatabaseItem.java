@@ -63,9 +63,10 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
 
     @Override
     public DBSObject getObject() {
-        if (object == null) {
-            throw new IllegalStateException("Null object in navigator node. Node was disposed?");
-        }
+        // FIXME: we can't throw error here because too many
+//        if (object == null) {
+//            throw new IllegalStateException("Null object in navigator node. Node was disposed?");
+//        }
         return object;
     }
 

@@ -588,7 +588,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     @NotNull
     public DBPDataSource getDataSource() {
-        return getObject().getDataSource();
+        DBSObject object = getObject();
+        if (object != null) {
+            return object.getDataSource();
+        }
+        if (parentNode instanceof DBNDatabaseNode) {
+            return ((DBNDatabaseNode) parentNode).getDataSource();
+        }
+        throw new IllegalStateException("No datasource is associated with database node " + this);
     }
 
     public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch) {
