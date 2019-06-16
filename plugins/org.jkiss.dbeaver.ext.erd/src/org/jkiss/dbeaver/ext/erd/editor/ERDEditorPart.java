@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PrintFigureOperation;
 import org.eclipse.draw2d.geometry.Dimension;
@@ -32,7 +33,6 @@ import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
-import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
@@ -73,12 +73,11 @@ import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartSettingsAction;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatRegistry;
-import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
-import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.model.*;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.ext.erd.part.NodePart;
+import org.jkiss.dbeaver.ext.erd.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
@@ -1091,7 +1090,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     setInfo("Empty diagram due to error (see error log)");
                 }
                 getCommandStack().flush();
-                getGraphicalViewer().setContents(entityDiagram);
+                if (entityDiagram != null) {
+                    EditPart oldContents = getGraphicalViewer().getContents();
+                    if (oldContents instanceof DiagramPart) {
+                        if (restoreVisualSettings((DiagramPart) oldContents, entityDiagram)) {
+                            entityDiagram.setLayoutManualAllowed(true);
+                            entityDiagram.setLayoutManualDesired(true);
+                        }
+                    }
+                    getGraphicalViewer().setContents(entityDiagram);
+                }
+                //
                 if (zoomCombo != null) {
                     zoomCombo.setZoomManager(rootPart.getZoomManager());
                 }
@@ -1099,6 +1108,30 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
         }
 
+    }
+
+    private boolean restoreVisualSettings(DiagramPart oldDiagram, EntityDiagram newDiagram) {
+        boolean hasChanges = false;
+        // Collect visual settings from old diagram and apply them to the new one
+        for (ERDEntity newEntity : newDiagram.getEntities()) {
+            NodePart oldEntity = oldDiagram.getChildByObject(newEntity.getObject());
+            if (oldEntity instanceof EntityPart) {
+                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo(oldEntity);
+                newDiagram.addVisualInfo(newEntity.getObject(), vi);
+                hasChanges = true;
+            }
+        }
+
+        for (ERDNote newNote : newDiagram.getNotes()) {
+            NodePart oldNotePart = oldDiagram.getChildByObject(newNote.getObject());
+            if (oldNotePart instanceof NotePart) {
+                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo(oldNotePart);
+                vi.initBounds = oldNotePart.getBounds();
+                newDiagram.addVisualInfo(newNote, vi);
+                hasChanges = true;
+            }
+        }
+        return hasChanges;
     }
 
     private class Searcher extends ObjectSearcher<DBPNamedObject> {

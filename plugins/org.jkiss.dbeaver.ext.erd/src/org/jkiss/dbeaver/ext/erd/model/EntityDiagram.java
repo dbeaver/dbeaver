@@ -19,6 +19,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -28,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
+import org.jkiss.dbeaver.ext.erd.part.NodePart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -53,6 +55,20 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         public int borderWidth = -1;
 
         public ERDAttributeVisibility attributeVisibility;
+
+        public NodeVisualInfo() {
+        }
+
+        public NodeVisualInfo(NodePart part) {
+            this.initBounds = part.getBounds();
+            IFigure figure = part.getFigure();
+            if (figure != null) {
+                this.transparent = !figure.isOpaque();
+                this.bgColor = figure.getBackgroundColor();
+                this.fgColor = figure.getForegroundColor();
+                this.font = figure.getFont();
+            }
+        }
     }
 
     private ERDDecorator decorator;
