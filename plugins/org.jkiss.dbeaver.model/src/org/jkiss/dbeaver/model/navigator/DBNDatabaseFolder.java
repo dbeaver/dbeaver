@@ -107,7 +107,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     @NotNull
     @Override
     public DBPDataSource getDataSource() {
-        return ((DBNDatabaseNode) getParentNode()).getDataSource();
+        return ((DBNDatabaseNode) parentNode).getDataSource();
     }
 
     @Override
