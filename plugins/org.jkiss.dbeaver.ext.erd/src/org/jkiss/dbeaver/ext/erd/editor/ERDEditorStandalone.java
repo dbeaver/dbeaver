@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Standalone ERD editor
@@ -126,8 +125,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         diagramLoadingJob = LoadingJob.createService(
             new AbstractLoadService<EntityDiagram>("Load diagram '" + getEditorInput().getName() + "'") {
                 @Override
-                public EntityDiagram evaluate(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
+                public EntityDiagram evaluate(DBRProgressMonitor monitor) {
                     try {
                         return loadContentFromFile(monitor);
                     } catch (DBException e) {
