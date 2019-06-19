@@ -24,6 +24,7 @@
 
     <extension point="org.jkiss.dbeaver.postgresql.serverType">
         <serverType id="postgresql" name="PostgreSQL" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL" logo="icons/postgresql_logo.png"/>
+        <serverType id="edb" name="EnterpriseDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerEdb" logo="icons/edb_logo.png" customURL="true"/>
         <serverType id="redshift" name="Redshift" class="org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift" logo="icons/redshift_logo.png" defaultDatbase="dev" defaultUser="awsuser" customURL="true"/>
         <serverType id="timescale" name="TimescaleDB" class="org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTimescale" logo="icons/timescale_logo.png"/>
         <serverType id="yellowbrick" name="Yellowbrick" class="org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick" logo="icons/yellowbrick_logo.png"/>
@@ -34,7 +35,7 @@
         PostgreSQL extension
      -->
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel" driverClass="org.postgresql.Driver,com.amazon.redshift.jdbc4.Driver,com.amazon.redshift.jdbc41.Driver,com.amazon.redshift.jdbc42.Driver"/>
+        <meta id="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel" driverClass="org.postgresql.Driver,com.edb.Driver,com.amazon.redshift.jdbc4.Driver,com.amazon.redshift.jdbc41.Driver,com.amazon.redshift.jdbc42.Driver"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
@@ -375,6 +376,28 @@
                     <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE"/>
 
                     <parameter name="serverType" value="redshift"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                </driver>
+
+                <driver
+                        id="postgres-edb-jdbc"
+                        label="EnterpriseDB"
+                        icon="icons/edb_icon.png"
+                        iconBig="icons/edb_icon_big.png"
+                        class="com.edb.Driver"
+                        sampleURL="jdbc:edb://{host}[:{port}]/[{database}]"
+                        useURL="true"
+                        defaultPort="5444"
+                        webURL="http://enterprisedb.com/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        description="%driver.edb.description"
+                        categories="sql">
+                    <file type="jar" path="maven:/com.edb:edb-jdbc18:RELEASE[9.4.1212.1]" bundle="!drivers.postgresql"/>
+
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="edb"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
