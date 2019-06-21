@@ -393,10 +393,8 @@
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.edb.description"
                         categories="sql">
-                    <file type="jar" path="maven:/com.edb:edb-jdbc18:RELEASE[9.4.1212.1]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/com.edb:edb-jdbc18:RELEASE[9.4.1212.1]"/>
 
-                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
-                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="edb"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
