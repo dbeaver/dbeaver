@@ -176,7 +176,7 @@
                         category="DB2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
-                        defaultPort=""
+                        defaultPort="446"
                         description="DB2 iSeries/AS 400 driver"
                         categories="sql">
 
