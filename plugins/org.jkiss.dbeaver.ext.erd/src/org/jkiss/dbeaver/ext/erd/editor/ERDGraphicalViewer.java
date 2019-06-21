@@ -19,10 +19,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.eclipse.gef.DefaultEditDomain;
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.GraphicalViewer;
-import org.eclipse.gef.Tool;
+import org.eclipse.gef.*;
 import org.eclipse.gef.palette.PaletteContainer;
 import org.eclipse.gef.palette.PaletteDrawer;
 import org.eclipse.gef.palette.PaletteRoot;
@@ -32,6 +29,7 @@ import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.Font;
@@ -83,7 +81,10 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 
         themeManager = editor.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
         themeManager.addPropertyChangeListener(this);
-	}
+
+        setProperty(MouseWheelHandler.KeyGenerator.getKey(SWT.MOD1), MouseWheelZoomHandler.SINGLETON);
+        //setProperty(MouseWheelHandler.KeyGenerator.getKey(SWT.MOD2), MouseWheelHorizontalScrollHandler.SINGLETON);
+    }
 
     public ERDEditorPart getEditor()
     {
