@@ -103,4 +103,6 @@ public interface PostgreServerExtension
     boolean supportsExplainPlanVerbose();
 
     boolean supportsDatabaseDescription();
+
+    boolean supportsTemporalAccessor();
 }

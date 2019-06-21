@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -46,7 +47,11 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
             case Types.TIME_WITH_TIMEZONE:
             case Types.TIMESTAMP:
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                return new PostgreDateTimeValueHandler(preferences.getDataFormatterProfile());
+                if (((PostgreDataSource)dataSource).getServerType().supportsTemporalAccessor()) {
+                    return new PostgreTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
+                } else {
+                    return new PostgreDateTimeValueHandler(preferences.getDataFormatterProfile());
+                }
             default:
                 switch (typedObject.getTypeName()) {
                     case PostgreConstants.TYPE_JSONB:
