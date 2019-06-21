@@ -329,6 +329,14 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return dataSource.isServerVersionAtLeast(9, 4);
     }
 
+    @Override
+    public boolean supportsTemporalAccessor() {
+        // Disable temporal accessor (which stands for java.util.Date).
+        // It doesn't make sense as PG server doesn't support timezones.
+        // Everything is in UTC.
+        return false;
+    }
+
     public String createWithClause(PostgreTableRegular table, PostgreTableBase tableBase) {
         StringBuilder withClauseBuilder = new StringBuilder();
 

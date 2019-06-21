@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -29,13 +31,20 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 /**
- * JDBC strict string value handler.
+ * PostgreDateTimeValueHandler.
  */
 public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
 
 
     public PostgreDateTimeValueHandler(DBDDataFormatterProfile formatterProfile) {
         super(formatterProfile);
+    }
+
+    @Override
+    public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
+        Object value = super.fetchValueObject(session, resultSet, type, index);
+        //if (value instanceof )
+        return value;
     }
 
     @Override
@@ -51,4 +60,5 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         }
         super.bindValueObject(session, statement, type, index, value);
     }
+
 }
