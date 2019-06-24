@@ -134,7 +134,7 @@ public class GenericMetaModel {
                         schemaFilters != null && schemaFilters.hasSingleMask() ?
                             schemaFilters.getSingleMask() :
                             dataSource.getAllObjectsPattern());
-                } catch (SQLException e) {
+                } catch (Throwable e) {
                     log.debug("Error reading global schemas " + " - " + e.getMessage());
                 }
             }
@@ -200,7 +200,7 @@ public class GenericMetaModel {
             // Schemas are not supported
             log.debug("Can't read schema list: " + e.getMessage());
             return null;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             // Schemas do not supported - just ignore this error
             log.warn("Can't read schema list", ex);
             return null;
