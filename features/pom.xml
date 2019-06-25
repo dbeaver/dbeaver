@@ -26,6 +26,7 @@
         <module>org.jkiss.dbeaver.ext.office.feature</module>
         <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
         <module>org.jkiss.dbeaver.net.sshj.feature</module>
+        <module>org.jkiss.dbeaver.git.feature</module>
     </modules>
 
 </project>
