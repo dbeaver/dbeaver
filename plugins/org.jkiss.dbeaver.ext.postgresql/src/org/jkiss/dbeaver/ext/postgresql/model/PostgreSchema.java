@@ -361,6 +361,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         if (!CommonUtils.isEmpty(getDescription())) {
             sql.append("\nCOMMENT ON SCHEMA ").append(DBUtils.getQuotedIdentifier(this))
                 .append(" IS ").append(SQLUtils.quoteString(this, getDescription()));
+            sql.append(";\n");
         }
 
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_FULL)) {
