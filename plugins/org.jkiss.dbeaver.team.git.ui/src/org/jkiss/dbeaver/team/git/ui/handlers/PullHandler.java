@@ -24,7 +24,7 @@ public class PullHandler extends AbstractGitHandler {
     private static final String CMD_PULL = "org.eclipse.egit.ui.team.Pull";
 
     @Override
-    protected String getCmd() {
+    protected String getEgitCommandId() {
         return CMD_PULL;
     }
 

@@ -23,7 +23,7 @@ public class CommitHandler  extends AbstractGitHandler{
     private static final String CMD_COMMIT = "org.eclipse.egit.ui.team.Commit";
 
     @Override
-    protected String getCmd() {
+    protected String getEgitCommandId() {
         return CMD_COMMIT;
     }
 

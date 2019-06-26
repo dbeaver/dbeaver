@@ -46,6 +46,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -314,7 +315,7 @@ public class ActionUtils
                     }
                 }
             } catch (Exception e) {
-                log.error("Can't execute command '" + commandId + "'", e);
+                DBWorkbench.getPlatformUI().showError("Error running command", "Can't execute command '" + commandId + "'", e);
             }
         }
     }

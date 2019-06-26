@@ -25,7 +25,7 @@ public class PushHandler extends AbstractGitHandler{
     private static final String CMD_PUSH = "org.eclipse.egit.ui.team.SimplePush";
 
     @Override
-    protected String getCmd() {
+    protected String getEgitCommandId() {
         return CMD_PUSH;
     }
 
