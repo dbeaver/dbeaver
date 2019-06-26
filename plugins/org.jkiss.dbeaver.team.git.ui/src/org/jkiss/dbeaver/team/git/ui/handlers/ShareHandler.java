@@ -11,6 +11,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class ShareHandler extends AbstractHandler {
     
@@ -41,7 +42,7 @@ public class ShareHandler extends AbstractHandler {
         try {
             handlerService.executeCommand(pshareCommand, null);
         } catch (Exception ex) {
-            throw new ExecutionException("Unable to execute share",ex);
+            DBWorkbench.getPlatformUI().showError("Error sharing a project", "Can't execute command '" + CMD_SHARE + "'", ex);
         }
 	    
 	    return null;
