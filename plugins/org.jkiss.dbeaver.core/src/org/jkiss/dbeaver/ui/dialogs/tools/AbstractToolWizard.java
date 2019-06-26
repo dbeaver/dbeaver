@@ -74,6 +74,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private boolean finished;
     protected boolean transferFinished;
     private boolean refreshObjects;
+    private boolean isSuccess;
+    private String errorMessage;
 
     protected AbstractToolWizard(Collection<BASE_OBJECT> databaseObjects, String task)
     {
@@ -279,7 +281,11 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         }
         long workTime = System.currentTimeMillis() - startTime;
         notifyToolFinish(task + " finished", workTime);
-        onSuccess(workTime);
+        if (isSuccess) {
+            onSuccess(workTime);
+        } else {
+            onError();
+        }
         return false;
     }
 
@@ -305,7 +311,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
     {
         try {
-            boolean isSuccess = true;
+            isSuccess = true;
             for (PROCESS_ARG arg : getRunInfo()) {
                 if (monitor.isCanceled()) break;
                 if (!executeProcess(monitor, arg)) {
@@ -362,7 +368,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 try {
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
-                        logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_process_exit_code, exitCode) + "\n", true);
+                        errorMessage = NLS.bind(CoreMessages.tools_wizard_log_process_exit_code, exitCode);
+                        logPage.appendLog(errorMessage + "\n", true);
                         return false;
                     }
                 } catch (IllegalThreadStateException e) {
@@ -399,6 +406,15 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     protected void onSuccess(long workTime)
     {
 
+    }
+
+    protected void onError()
+    {
+        UIUtils.showMessageBox(
+                getShell(),
+                task,
+                errorMessage == null ? "Internal error" : errorMessage,
+                SWT.ICON_ERROR);
     }
 
     abstract protected java.util.List<String> getCommandLine(PROCESS_ARG arg) throws IOException;
