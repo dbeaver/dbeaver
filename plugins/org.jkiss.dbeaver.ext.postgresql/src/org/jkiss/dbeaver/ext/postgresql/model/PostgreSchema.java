@@ -490,7 +490,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.oid,c.*,d.description");
             if (getDataSource().isServerVersionAtLeast(10, 0)) {
-                sql.append(",pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr");
+                sql.append(",pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr,  pg_catalog.pg_get_partkeydef(c.oid) as partition_key ");
             }
             sql.append("\nFROM pg_catalog.pg_class c\n")
                 .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n")
