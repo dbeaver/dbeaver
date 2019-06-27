@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
- org.eclipse.egit.core,
+ org.eclipse.jgit;visibility:=reexport,
  org.eclipse.core.resources,
  org.eclipse.core.expressions
 Bundle-Localization: OSGI-INF/l10n/bundle

@@ -16,19 +16,19 @@
         <image commandId="org.jkiss.dbeaver.git.commands.commit" icon="icons/push.png"/>
     </extension>
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.git.commands.share" class="org.jkiss.dbeaver.team.git.ui.handlers.ShareHandler">
+        <handler commandId="org.jkiss.dbeaver.git.commands.share" class="org.jkiss.dbeaver.team.git.ui.handlers.ProjectShareHandler">
             <activeWhen>
                 <not>
                     <test property="GitSelection.projectsSingleRepository" />
                 </not>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.git.commands.update" class="org.jkiss.dbeaver.team.git.ui.handlers.UpdateHandler">
+        <handler commandId="org.jkiss.dbeaver.git.commands.update" class="org.jkiss.dbeaver.team.git.ui.handlers.GITUpdateHandler">
             <activeWhen>
                 <test property="GitSelection.resourcesSingleRepository"/>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.git.commands.commit" class="org.jkiss.dbeaver.team.git.ui.handlers.CommitHandler">
+        <handler commandId="org.jkiss.dbeaver.git.commands.commit" class="org.jkiss.dbeaver.team.git.ui.handlers.GITCommitHandler">
             <activeWhen>
                 <test property="GitSelection.resourcesSingleRepository"/>
             </activeWhen>

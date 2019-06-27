@@ -25,13 +25,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 public class GitUIUtils {
 
@@ -40,9 +39,17 @@ public class GitUIUtils {
         if (project == null) {
             IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
             if (activeEditor != null) {
-                IFile input = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
-                if (input != null) {
-                    project = input.getProject();
+                IEditorInput editorInput = activeEditor.getEditorInput();
+                if (editorInput instanceof IDatabaseEditorInput) {
+                    DBNDatabaseNode node = ((IDatabaseEditorInput) editorInput).getNavigatorNode();
+                    if (node != null) {
+                        return node.getOwnerProject();
+                    }
+                } else {
+                    IFile input = EditorUtils.getFileFromInput(editorInput);
+                    if (input != null) {
+                        project = input.getProject();
+                    }
                 }
             }
         }
