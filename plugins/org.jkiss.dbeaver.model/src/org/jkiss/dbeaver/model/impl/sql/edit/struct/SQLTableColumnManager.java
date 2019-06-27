@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -121,9 +122,9 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     }
 
     @Override
-    public boolean canCreateObject(TABLE_TYPE parent)
+    public boolean canCreateObject(Object continer)
     {
-        return parent != null && !parent.isView();
+        return continer instanceof DBSTable && !((DBSTable)continer).isView();
     }
 
     @Override

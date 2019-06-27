@@ -54,7 +54,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public boolean canCreateObject(DBPObject parent)
+    public boolean canCreateObject(Object continer)
     {
         return true;
     }

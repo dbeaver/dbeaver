@@ -28,11 +28,9 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +41,7 @@ import java.util.Map;
 public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, PostgreTableReal> {//implements DBEObjectRenamer<PostgreTrigger> {
 
     @Override
-    public boolean canCreateObject(PostgreTableReal parent) {
+    public boolean canCreateObject(Object continer) {
         return true;
     }
 

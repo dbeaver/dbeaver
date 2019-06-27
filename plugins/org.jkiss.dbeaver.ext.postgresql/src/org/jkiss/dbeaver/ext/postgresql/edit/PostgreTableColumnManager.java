@@ -102,7 +102,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             try {
                 String geometryType = column.getAttributeGeometryType(monitor);
                 int geometrySRID = column.getAttributeGeometrySRID(monitor);
-                if (!PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
+                if (geometryType != null && !PostgreConstants.TYPE_GEOMETRY.equalsIgnoreCase(geometryType) && !PostgreConstants.TYPE_GEOGRAPHY.equalsIgnoreCase(geometryType)) {
                     // If data type is exactly GEOMETRY or GEOGRAPHY then it doesn't have qualifiers
                     sql.append("(").append(geometryType);
                     if (geometrySRID > 0) {
