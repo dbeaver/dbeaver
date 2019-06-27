@@ -17,18 +17,11 @@
       %license
    </license>
 
-   <plugin
-         id="org.jkiss.dbeaver.team.git"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+   <requires>
+      <import feature="org.eclipse.egit"/>
+   </requires>
 
-   <plugin
-         id="org.jkiss.dbeaver.team.git.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.team.git" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.team.git.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>

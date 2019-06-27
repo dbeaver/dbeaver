@@ -49,10 +49,15 @@
         </menuContribution>
         <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="org.jkiss.dbeaver.team.git.toolbar">
-                <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G"/>
-
-                <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L"/>
-                <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C"/>
+                <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
             </toolbar>
         </menuContribution>
     </extension>

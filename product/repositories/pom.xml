@@ -20,6 +20,7 @@
         <module>org.jkiss.dbeaver.office.repository</module>
         <module>org.jkiss.dbeaver.svg.repository</module>
         <module>org.jkiss.dbeaver.net.sshj.repository</module>
+        <module>org.jkiss.dbeaver.git.repository</module>
     </modules>
 
 </project>

@@ -22,14 +22,14 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.IServiceLocator;
-import org.jkiss.dbeaver.team.git.ui.utils.SelectionUtil;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.team.git.ui.utils.GitUIUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 public abstract class AbstractGitHandler extends AbstractHandler {
@@ -43,10 +43,10 @@ public abstract class AbstractGitHandler extends AbstractHandler {
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         IServiceLocator serviceLocator = activePart == null ? window : activePart.getSite();
 
-        IProject project = SelectionUtil.extractProject(window.getActivePage().getSelection());
+        IProject project = GitUIUtils.extractActiveProject(event);
         
         if (project == null) {
-            MessageDialog.openInformation(window.getShell(),
+            DBWorkbench.getPlatformUI().showError(
             "Nothing to operate - no active project",
             "Select an object to operate");
             return null;
