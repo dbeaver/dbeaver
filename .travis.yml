@@ -2,7 +2,7 @@ language: java
 script: mvn clean verify
 dist: precise
 jdk:
-  - openjdbk11
+  - openjdk11
 
 maven:
   version: 3.6.0
