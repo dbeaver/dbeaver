@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 
 public class PostgreTablePartition extends PostgreTable
 {
@@ -49,7 +50,7 @@ public class PostgreTablePartition extends PostgreTable
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        return "/*Partition DDL not implemented yet.*/";
+        return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 	
 	
