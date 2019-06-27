@@ -68,6 +68,16 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
     {
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
+    
+    protected String createVerb(OBJECT_TYPE table,String tableName) {
+        StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$ //$NON-NLS-2$
+        sb.append(getCreateTableType(table)).append(" ").append(tableName).append(" (").append(GeneralUtils.getDefaultLineSeparator()); //$NON-NLS-1$ //$NON-NLS-2$
+        return sb.toString();
+    }
+    
+    protected boolean hasAttrDeclarations() {
+        return true;
+    }
 
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
@@ -83,7 +93,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
         final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
-        createQuery.append("CREATE ").append(getCreateTableType(table)).append(" ").append(tableName).append(" (").append(lineSeparator); //$NON-NLS-1$ //$NON-NLS-2$
+        createQuery.append(createVerb(table,tableName));
         boolean hasNestedDeclarations = false;
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
         for (NestedObjectCommand nestedCommand : orderedCommands) {
@@ -123,7 +133,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
             }
         }
 
-        createQuery.append(lineSeparator).append(")"); //$NON-NLS-1$
+        createQuery.append(lineSeparator); //$NON-NLS-1$
+        if (hasAttrDeclarations()) createQuery.append(")"); //$NON-NLS-1$
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );

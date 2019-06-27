@@ -225,7 +225,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             if (!alter) {
                 try {
                     final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
-                    if (!CommonUtils.isEmpty(superTables)) {
+                    if (!CommonUtils.isEmpty(superTables) && ! tableBase.isPartition()) {
                         ddl.append("\nINHERITS (");
                         for (int i = 0; i < superTables.size(); i++) {
                             if (i > 0) ddl.append(",");
@@ -236,6 +236,9 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                 } catch (DBException e) {
                     log.error(e);
                 }
+            }
+            if (tableBase instanceof PostgreTablePartition && !alter) {
+                ddl.append(((PostgreTablePartition) tableBase).getExpr());                
             }
         }
 
