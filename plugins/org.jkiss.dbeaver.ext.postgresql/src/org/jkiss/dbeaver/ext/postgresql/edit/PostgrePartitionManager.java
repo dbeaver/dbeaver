@@ -62,20 +62,16 @@ public class PostgrePartitionManager extends PostgreTableManager {
     }   
     
     @Override
-    protected boolean hasAttrDeclarations() {
-        return false;
+    protected String beginCreateTableStatement(PostgreTableBase table, String tableName) {
+        return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " +
+                getParentTable((PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$
     }
-    
+
     @Override
-    protected String createVerb(PostgreTableBase table, String tableName) {
-
-        StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$ //$NON-NLS-2$
-
-        sb.append(getCreateTableType(table)).append(" ").append(tableName).append(" PARTITION OF ")
-                .append(getParentTable((PostgreTablePartition) table)).append(" "); //$NON-NLS-1$ //$NON-NLS-2$
-        return sb.toString();
+    protected String endCreateTableStatement(PostgreTableBase table) {
+        return "";
     }
-    
+
     @Override
     protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
         return !(command.getObject() instanceof PostgreTableConstraint);
