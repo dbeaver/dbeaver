@@ -21,16 +21,10 @@ import java.util.List;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Postgre table manager
@@ -83,7 +77,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
     }
 
     @Override
-    public boolean canCreateObject(PostgreSchema parent) {
+    public boolean canCreateObject(Object continer) {
         return false;
     }
 

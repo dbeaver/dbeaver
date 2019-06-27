@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class SQLServerGenericTriggerManager extends SQLTriggerManager<SQLServerGenericTrigger, SQLServerGenericTable> {
     @Override
-    public boolean canCreateObject(SQLServerGenericTable parent) {
+    public boolean canCreateObject(Object continer) {
         return false;
     }
 

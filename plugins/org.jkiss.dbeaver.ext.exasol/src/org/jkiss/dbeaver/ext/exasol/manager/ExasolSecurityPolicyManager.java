@@ -107,7 +107,7 @@ public class ExasolSecurityPolicyManager
     }
 
     @Override
-    public boolean canCreateObject(ExasolDataSource parent) {
+    public boolean canCreateObject(Object continer) {
     	return false;
     }
 

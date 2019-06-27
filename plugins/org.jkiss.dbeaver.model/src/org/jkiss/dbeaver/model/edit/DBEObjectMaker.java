@@ -49,7 +49,7 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     @Nullable
     DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object);
 
-    boolean canCreateObject(CONTAINER_TYPE parent);
+    boolean canCreateObject(Object continer);
 
     boolean canDeleteObject(OBJECT_TYPE object);
 
