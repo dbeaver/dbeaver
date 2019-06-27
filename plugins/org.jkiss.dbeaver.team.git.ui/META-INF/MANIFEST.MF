@@ -17,6 +17,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.egit.ui,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
+ org.jkiss.dbeaver.team.git,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base
 Bundle-Localization: OSGI-INF/l10n/bundle

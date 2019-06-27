@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +17,29 @@
 
 package org.jkiss.dbeaver.team.git.ui.handlers;
 
-public class CommitHandler  extends AbstractGitHandler{
 
-    private static final String CMD_COMMIT = "org.eclipse.egit.ui.team.Commit";
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.egit.ui.internal.pull.PullOperationUI;
+import org.eclipse.jgit.lib.Repository;
+
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+public class GITUpdateHandler extends GITAbstractHandler {
+
 
     @Override
-    protected String getEgitCommandId() {
-        return CMD_COMMIT;
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        Repository[] repos = this.getRepositories(event);
+        if (repos.length == 0) {
+            return null;
+        } else {
+            Set<Repository> repositories = new LinkedHashSet<>(Arrays.asList(repos));
+            (new PullOperationUI(repositories)).start();
+            return null;
+        }
     }
 
-  
 }
