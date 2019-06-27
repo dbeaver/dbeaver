@@ -69,14 +69,14 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
     
-    protected String createVerb(OBJECT_TYPE table,String tableName) {
-        StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$ //$NON-NLS-2$
-        sb.append(getCreateTableType(table)).append(" ").append(tableName).append(" (").append(GeneralUtils.getDefaultLineSeparator()); //$NON-NLS-1$ //$NON-NLS-2$
-        return sb.toString();
+    protected String beginCreateTableStatement(OBJECT_TYPE table, String tableName) {
+        return "CREATE " + getCreateTableType(table) + " " + tableName +
+                " (" + GeneralUtils.getDefaultLineSeparator() //$NON-NLS-1$ //$NON-NLS-2$
+                ;
     }
     
     protected boolean hasAttrDeclarations() {
-        return true;
+        return false;
     }
 
     @Override
@@ -93,7 +93,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
         final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
-        createQuery.append(createVerb(table,tableName));
+        createQuery.append(beginCreateTableStatement(table,tableName));
         boolean hasNestedDeclarations = false;
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
         for (NestedObjectCommand nestedCommand : orderedCommands) {

@@ -2,7 +2,10 @@ language: java
 script: mvn clean verify
 dist: precise
 jdk:
-  - oraclejdk8
+  - openjdk11
+
+maven:
+  version: 3.6.0
 
 notifications:
   email:

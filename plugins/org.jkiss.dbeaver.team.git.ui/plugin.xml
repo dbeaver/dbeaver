@@ -3,157 +3,63 @@
 
 <plugin>
 
-  <extension name="GitCommandsLabel" point="org.eclipse.ui.commands">
-      <category
-            id="org.jkiss.dbeaver.git.commands.category"
-            name="Git Category">
-      </category>
-      <command
-            categoryId="org.jkiss.dbeaver.git.commands.category"
-            id="org.jkiss.dbeaver.git.commands.shareCommand"
-            name="Share">
-      </command>
-      <command
-            categoryId="org.jkiss.dbeaver.git.commands.category"
-            id="org.jkiss.dbeaver.git.commands.pushCommand"
-            name="Push">
-      </command>   
-      <command
-            categoryId="org.jkiss.dbeaver.git.commands.category"
-            id="org.jkiss.dbeaver.git.commands.commitCommand"
-            name="Commit">
-      </command>      
-           <command
-            categoryId="org.jkiss.dbeaver.git.commands.category"
-            id="org.jkiss.dbeaver.git.commands.pullCommand"
-            name="Pull">
-      </command>               
-   </extension>
-  <extension point="org.eclipse.ui.handlers">
-     <handler
-           class="org.jkiss.dbeaver.team.git.ui.handlers.ShareHandler"
-           commandId="org.jkiss.dbeaver.git.commands.shareCommand">
-     </handler>
-     <handler
-           class="org.jkiss.dbeaver.team.git.ui.handlers.PushHandler"
-           commandId="org.jkiss.dbeaver.git.commands.pushCommand">
-     </handler>
-     <handler
-           class="org.jkiss.dbeaver.team.git.ui.handlers.PullHandler"
-           commandId="org.jkiss.dbeaver.git.commands.pullCommand">
-     </handler>
-     <handler
-           class="org.jkiss.dbeaver.team.git.ui.handlers.CommitHandler"
-           commandId="org.jkiss.dbeaver.git.commands.commitCommand">
-     </handler>  
-     <handler
-            commandId="org.eclipse.egit.ui.team.SimplePush">
-         <class
-               class="org.eclipse.egit.ui.internal.actions.SimplePushActionHandler">
-         </class>
-      </handler>   
-       <handler
-            commandId="org.eclipse.egit.ui.team.Pull">
-         <class
-               class="org.eclipse.egit.ui.internal.actions.PullFromUpstreamActionHandler">
-         </class>        
-      </handler>
-         <handler
-            commandId="org.eclipse.egit.ui.team.Commit">
-         <class
-               class="org.eclipse.egit.ui.internal.actions.CommitActionHandler">
-         </class>        
-      </handler>
-  </extension>
-  <extension point="org.eclipse.ui.bindings">
-     <key
-           commandId="org.jkiss.dbeaver.git.commands.shareCommand"
-           contextId="org.eclipse.ui.contexts.window"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           sequence="M1+6">
-     </key>
-  </extension>
-  <extension point="org.eclipse.ui.bindings">
-     <key
-           commandId="org.jkiss.dbeaver.git.commands.pushCommand"
-           contextId="org.eclipse.ui.contexts.window"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           sequence="M1+7">
-     </key>
-  </extension>
-  <extension point="org.eclipse.ui.bindings">
-     <key
-           commandId="org.jkiss.dbeaver.git.commands.pullCommand"
-           contextId="org.eclipse.ui.contexts.window"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           sequence="M1+8">
-     </key>
-  </extension>
-   <extension point="org.eclipse.ui.bindings">
-     <key
-           commandId="org.jkiss.dbeaver.git.commands.commitCommand"
-           contextId="org.eclipse.ui.contexts.window"
-           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-           sequence="M1+9">
-     </key>
-  </extension>
-  <extension point="org.eclipse.ui.menus">
-     <menuContribution
-           locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-        <menu
-              id="org.jkiss.dbeaver.git.menus.gitMenu"
-              label="Git"
-              mnemonic="M">
-           <command
-                 commandId="org.jkiss.dbeaver.git.commands.shareCommand"
-                 id="org.jkiss.dbeaver.git.menus.shareCommand"
-                 mnemonic="S">
-           </command>
-           <command
-                 commandId="org.jkiss.dbeaver.git.commands.pushCommand"
-                 id="org.jkiss.dbeaver.git.menus.pushCommand"
-                 mnemonic="P">
-           </command>
-           <command
-                 commandId="org.jkiss.dbeaver.git.commands.pullCommand"
-                 id="org.jkiss.dbeaver.git.menus.pullCommand"
-                 mnemonic="P">
-           </command>  
-           <command
-                 commandId="org.jkiss.dbeaver.git.commands.commitCommand"
-                 id="org.jkiss.dbeaver.git.menus.commitCommand"
-                 mnemonic="P">
-           </command>          
-        </menu>
-     </menuContribution>
-     <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-        <toolbar id="org.jkiss.dbeaver.git.toolbars.cloudToolbar">
-           <command
-                 commandId="org.jkiss.dbeaver.git.commands.shareCommand"
-                 icon="icons/share.png"
-                 id="org.jkiss.dbeaver.git.toolbars.shareCommand"
-                 tooltip="Share project in git repository">
-           </command>
-           <command
-                 commandId="org.jkiss.dbeaver.git.commands.pushCommand"
-                 icon="icons/push.png"
-                 id="org.jkiss.dbeaver.git.toolbars.pushCommand"
-                 tooltip="Push in repo">
-           </command>
-           <command
-                 commandId="org.jkiss.dbeaver.git.commands.pullCommand"
-                 icon="icons/pull.png"                
-                 id="org.jkiss.dbeaver.git.toolbars.pullCommand"
-                 tooltip="Pull from repo">
-           </command>  
-           <command
-                 commandId="org.jkiss.dbeaver.git.commands.commitCommand"
-                 icon="icons/commit.png"
-                 id="org.jkiss.dbeaver.git.toolbars.commitCommand"
-                 tooltip="Commit changes">
-           </command>                                   
-        </toolbar>
-     </menuContribution>
-  </extension>
+    <extension name="GitCommandsLabel" point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.git.commands.category" name="Git Category"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.share" name="Share"/>
+<!--        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.push" name="Push"/>-->
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.commit" name="Commit"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.update" name="Pull"/>
+    </extension>
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.git.commands.share" icon="icons/share.png"/>
+        <image commandId="org.jkiss.dbeaver.git.commands.update" icon="icons/pull.png"/>
+        <image commandId="org.jkiss.dbeaver.git.commands.commit" icon="icons/push.png"/>
+    </extension>
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.git.commands.share" class="org.jkiss.dbeaver.team.git.ui.handlers.ProjectShareHandler">
+            <activeWhen>
+                <not>
+                    <test property="GitSelection.projectsSingleRepository" />
+                </not>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.git.commands.update" class="org.jkiss.dbeaver.team.git.ui.handlers.GITUpdateHandler">
+            <activeWhen>
+                <test property="GitSelection.resourcesSingleRepository"/>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.git.commands.commit" class="org.jkiss.dbeaver.team.git.ui.handlers.GITCommitHandler">
+            <activeWhen>
+                <test property="GitSelection.resourcesSingleRepository"/>
+            </activeWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="org.jkiss.dbeaver.team.git.menu" label="Git" mnemonic="M">
+                <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G"/>
+
+                <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L"/>
+                <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C"/>
+            </menu>
+        </menuContribution>
+        <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+            <toolbar id="org.jkiss.dbeaver.team.git.toolbar">
+                <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+            </toolbar>
+        </menuContribution>
+    </extension>
 
 </plugin>
