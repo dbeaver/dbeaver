@@ -62,8 +62,8 @@ public class PostgrePartitionManager extends PostgreTableManager {
     }
 
     @Override
-    protected String endCreateTableStatement(PostgreTableBase table) {
-        return "";
+    protected boolean hasAttrDeclarations() {
+        return false;
     }
 
     @Override

@@ -74,9 +74,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
                 " (" + GeneralUtils.getDefaultLineSeparator() //$NON-NLS-1$ //$NON-NLS-2$
                 ;
     }
-
-    protected String endCreateTableStatement(OBJECT_TYPE table) {
-        return ")";
+    
+    protected boolean hasAttrDeclarations() {
+        return false;
     }
 
     @Override
@@ -116,13 +116,17 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
                         }
                     }
                     if (lastCommentPos < 0 || lastCommentPos < lastLFPos) {
-                        createQuery.append(","); //$NON-NLS-1$
+                          createQuery.append(","); //$NON-NLS-1$
                     } else {
-                        createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
+                           createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
                     }
                     createQuery.append(lineSeparator); //$NON-NLS-1$
                 }
-                createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
+                if (!hasNestedDeclarations && !hasAttrDeclarations()) {
+                    createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$  
+                } else {
+                 createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
+                }
                 hasNestedDeclarations = true;
             } else {
                 // This command should be executed separately
@@ -134,7 +138,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
         }
 
         createQuery.append(lineSeparator); //$NON-NLS-1$
-        createQuery.append(endCreateTableStatement(table)); //$NON-NLS-1$
+        if (hasAttrDeclarations() || hasNestedDeclarations) createQuery.append(")"); //$NON-NLS-1$
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
