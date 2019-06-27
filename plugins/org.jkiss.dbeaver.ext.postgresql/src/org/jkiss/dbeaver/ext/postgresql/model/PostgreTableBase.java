@@ -51,6 +51,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private long ownerId;
     private String description;
 	private boolean isPartition;
+	private boolean hasPartitions;
+	private String part_key;
     private Object acl;
     private String[] relOptions;
 
@@ -70,6 +72,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.isPartition =
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
+        this.part_key = getDataSource().isServerVersionAtLeast(10, 0) ? JDBCUtils.safeGetString(dbResult, "partition_key")  : null;
+        this.hasPartitions = this.part_key != null;
         this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
         if (getDataSource().isServerVersionAtLeast(8, 2)) {
             this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
@@ -265,5 +269,15 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             }
         }
     }
+
+    public boolean hasPartitions() {
+        return hasPartitions;
+    }
+
+    public String getPartKey() {
+        return part_key;
+    }
+    
+    
 
 }
