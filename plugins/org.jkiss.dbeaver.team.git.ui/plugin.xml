@@ -6,13 +6,13 @@
     <extension name="GitCommandsLabel" point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.git.commands.category" name="Git Category"/>
         <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.share" name="Share"/>
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.push" name="Push"/>
+<!--        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.push" name="Push"/>-->
         <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.commit" name="Commit"/>
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.pull" name="Pull"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.update" name="Pull"/>
     </extension>
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.git.commands.share" icon="icons/share.png"/>
-        <image commandId="org.jkiss.dbeaver.git.commands.pull" icon="icons/pull.png"/>
+        <image commandId="org.jkiss.dbeaver.git.commands.update" icon="icons/pull.png"/>
         <image commandId="org.jkiss.dbeaver.git.commands.push" icon="icons/push.png"/>
         <image commandId="org.jkiss.dbeaver.git.commands.commit" icon="icons/commit.png"/>
     </extension>
@@ -26,8 +26,8 @@
                 commandId="org.jkiss.dbeaver.git.commands.push">
         </handler>
         <handler
-                class="org.jkiss.dbeaver.team.git.ui.handlers.PullHandler"
-                commandId="org.jkiss.dbeaver.git.commands.pull">
+                class="org.jkiss.dbeaver.team.git.ui.handlers.UpdateHandler"
+                commandId="org.jkiss.dbeaver.git.commands.update">
         </handler>
         <handler
                 class="org.jkiss.dbeaver.team.git.ui.handlers.CommitHandler"
@@ -49,7 +49,7 @@
                 sequence="M1+7">
         </key>
         <key
-                commandId="org.jkiss.dbeaver.git.commands.pull"
+                commandId="org.jkiss.dbeaver.git.commands.update"
                 contextId="org.eclipse.ui.contexts.window"
                 schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
                 sequence="M1+8">
@@ -67,7 +67,7 @@
         <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="org.jkiss.dbeaver.team.git.menu" label="Git" mnemonic="M">
                 <command commandId="org.jkiss.dbeaver.git.commands.push" mnemonic="S"/>
-                <command commandId="org.jkiss.dbeaver.git.commands.pull" mnemonic="L"/>
+                <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L"/>
                 <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C"/>
 
                 <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G"/>
@@ -76,7 +76,7 @@
         <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="org.jkiss.dbeaver.team.git.toolbar">
                 <command commandId="org.jkiss.dbeaver.git.commands.push" mnemonic="S"/>
-                <command commandId="org.jkiss.dbeaver.git.commands.pull" mnemonic="L"/>
+                <command commandId="org.jkiss.dbeaver.git.commands.update" mnemonic="L"/>
                 <command commandId="org.jkiss.dbeaver.git.commands.commit" mnemonic="C"/>
 
                 <command commandId="org.jkiss.dbeaver.git.commands.share" mnemonic="G"/>
