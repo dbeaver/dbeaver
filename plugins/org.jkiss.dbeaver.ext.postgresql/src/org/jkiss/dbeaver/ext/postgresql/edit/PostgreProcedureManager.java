@@ -40,7 +40,6 @@ import java.util.Map;
 
 /**
  * PostgreProcedureManager
- *
  */
 public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, PostgreSchema> implements DBEObjectRenamer<PostgreProcedure> {
 
