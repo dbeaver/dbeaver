@@ -79,7 +79,7 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
     }
 
     @Override
-    public boolean canCreateObject(Object continer) {
+    public boolean canCreateObject(Object container) {
         return false;
     }
 

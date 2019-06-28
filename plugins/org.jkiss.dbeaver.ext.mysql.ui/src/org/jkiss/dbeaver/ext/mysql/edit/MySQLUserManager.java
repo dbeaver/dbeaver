@@ -54,7 +54,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     }
 
     @Override
-    public boolean canCreateObject(Object continer)
+    public boolean canCreateObject(Object container)
     {
         return true;
     }

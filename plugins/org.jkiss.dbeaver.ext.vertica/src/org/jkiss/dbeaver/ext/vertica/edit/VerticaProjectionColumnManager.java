@@ -40,7 +40,7 @@ import java.util.Map;
  */
 public class VerticaProjectionColumnManager extends SQLTableColumnManager<VerticaProjectionColumn, VerticaProjection> {
     @Override
-    public boolean canCreateObject(Object continer) {
+    public boolean canCreateObject(Object container) {
         return false;
     }
 

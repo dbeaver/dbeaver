@@ -44,7 +44,7 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     }
 
     @Override
-    public boolean canCreateObject(Object continer)
+    public boolean canCreateObject(Object container)
     {
         return false;
     }

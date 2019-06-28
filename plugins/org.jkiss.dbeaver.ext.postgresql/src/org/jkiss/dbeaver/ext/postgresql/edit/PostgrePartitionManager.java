@@ -77,7 +77,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
     }
 
     @Override
-    public boolean canCreateObject(Object continer) {
+    public boolean canCreateObject(Object container) {
         return false;
     }
 
