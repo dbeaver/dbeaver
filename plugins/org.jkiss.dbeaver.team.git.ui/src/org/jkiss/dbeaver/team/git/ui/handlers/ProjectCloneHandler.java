@@ -34,6 +34,7 @@ public class ProjectCloneHandler extends AbstractHandler {
         try {
             // FIXME: this is a EGIT hack
             // Set new project default option (Create general project. As Create New Project is broken)
+            // https://bugs.eclipse.org/bugs/show_bug.cgi?id=324145
             org.eclipse.egit.ui.Activator.getDefault().getDialogSettings().put(
                     "org.eclipse.egit.ui.internal.clone.GitSelectWizardPageWizardSel",
                     GitSelectWizardPage.GENERAL_WIZARD);
