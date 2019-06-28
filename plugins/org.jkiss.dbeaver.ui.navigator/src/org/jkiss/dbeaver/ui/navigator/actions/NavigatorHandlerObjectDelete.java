@@ -136,7 +136,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, new NullProgressMonitor());
             }
         } catch (CoreException e) {
-            log.error(e);
+            DBWorkbench.getPlatformUI().showError("Resource delete error", "Error deleting '" + resource.getFullPath().toString() + "'", e);
             return false;
         }
         return true;
