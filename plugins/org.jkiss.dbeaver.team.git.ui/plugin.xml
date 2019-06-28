@@ -5,13 +5,15 @@
 
     <extension name="GitCommandsLabel" point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.git.commands.category" name="Git Category"/>
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.share" name="Share"/>
-<!--        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.push" name="Push"/>-->
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.commit" name="Commit"/>
-        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.update" name="Pull"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.share" name="Share project in Git"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.projectFromGit" name="Create project from Git"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.commit" name="Commit changes to Git"/>
+        <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.update" name="Update changes from Git"/>
     </extension>
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.git.commands.share" icon="icons/share.png"/>
+        <image commandId="org.jkiss.dbeaver.git.commands.projectFromGit" icon="icons/clone.png"/>
+
         <image commandId="org.jkiss.dbeaver.git.commands.update" icon="icons/pull.png"/>
         <image commandId="org.jkiss.dbeaver.git.commands.commit" icon="icons/push.png"/>
     </extension>
@@ -23,6 +25,7 @@
                 </not>
             </activeWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.git.commands.projectFromGit" class="org.jkiss.dbeaver.team.git.ui.handlers.ProjectCloneHandler"/>
         <handler commandId="org.jkiss.dbeaver.git.commands.update" class="org.jkiss.dbeaver.team.git.ui.handlers.GITUpdateHandler">
             <activeWhen>
                 <test property="GitSelection.resourcesSingleRepository"/>
@@ -60,6 +63,11 @@
                 </command>
             </toolbar>
         </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator?before=additions">
+            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit"/>
+        </menuContribution>
+
     </extension>
 
 </plugin>
