@@ -35,8 +35,6 @@
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
 
-    <includes id="org.jkiss.dbeaver.debug.feature" version="0.0.0"/>
-
     <!-- Additional plugins for standalone version -->
 
     <plugin id="org.jkiss.dbeaver.ext.sample.database" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
