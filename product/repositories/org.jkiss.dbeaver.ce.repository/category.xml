@@ -15,5 +15,16 @@
     <feature id="org.jkiss.dbeaver.ide.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-
+    <feature id="org.jkiss.dbeaver.ext.office.feature">
+        <category name="org.jikss.dbeaver.external"/>
+    </feature>
+    <feature id="org.jkiss.dbeaver.git.feature">
+        <category name="org.jikss.dbeaver.external"/>
+    </feature>
+    <feature id="org.jkiss.dbeaver.net.sshj.feature">
+        <category name="org.jikss.dbeaver.external"/>
+    </feature>
+    <feature id="org.jkiss.dbeaver.ext.ui.svg.feature">
+        <category name="org.jikss.dbeaver.external"/>
+    </feature>
 </site>
