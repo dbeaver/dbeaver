@@ -76,7 +76,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
     }
     
     protected boolean hasAttrDeclarations() {
-        return false;
+        return true;
     }
 
     @Override
