@@ -39,6 +39,11 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
     }
 
     @Override
+    public boolean canCreateObject(Object container) {
+        return container instanceof GenericTable;
+    }
+
+    @Override
     protected GenericTableIndex createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
         Object from)
