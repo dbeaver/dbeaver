@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.eclipse.core.internal.runtime.Activator;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -265,10 +266,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
         Method getter = getGetter();
-        Object[] params = null;
-        if (getter.getParameterCount() > 0) {
-            params = new Object[getter.getParameterCount()];
-        }
+        Object[] params = getter.getParameterCount() > 0 ?
+            new Object[getter.getParameterCount()] : null;
+
         if (isLazy() && params != null) {
             // Lazy (probably cached)
             if (isLazy(object, true) && progressMonitor == null && !supportsPreview()) {
@@ -276,7 +276,24 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
             params[0] = progressMonitor;
         }
-        value = getter.invoke(object, params);
+        if (progressMonitor != null && isLazy() && object instanceof DBSObject) {
+            Object finalObject = object;
+            Object[] finalResult = new Object[1];
+            try {
+                DBExecUtils.tryExecuteRecover(progressMonitor, ((DBSObject) object).getDataSource(), param -> {
+                    try {
+                        finalResult[0] = getter.invoke(finalObject, params);
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (Exception e) {
+                throw new InvocationTargetException(e);
+            }
+            value = finalResult[0];
+        } else {
+            value = getter.invoke(object, params);
+        }
 
         if (valueRenderer != null) {
             value = valueRenderer.transform(object, value);
