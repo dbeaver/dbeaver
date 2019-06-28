@@ -39,6 +39,11 @@ public class SQLiteDataSource extends GenericDataSource {
     }
 
     @Override
+    protected boolean isPopulateClientAppName() {
+        return false;
+    }
+
+    @Override
     public DBSDataType getLocalDataType(String typeName) {
         // Resolve type name according to https://www.sqlite.org/datatype3.html
         typeName = typeName.toUpperCase(Locale.ENGLISH);
