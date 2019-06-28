@@ -426,7 +426,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             findClassButton.setText(CoreMessages.dialog_edit_driver_button_bind_class);
             findClassButton.addListener(SWT.Selection, event -> {
                 try {
-                    DriverClassFindJob classFinder = new DriverClassFindJob(driver, "java/sql/Driver", true);
+                    DriverClassFindJob classFinder = new DriverClassFindJob(driver, java.sql.Driver.class.getName(), true);
                     UIUtils.runInProgressDialog(classFinder);
 
                     if (classListCombo != null && !classListCombo.isDisposed()) {

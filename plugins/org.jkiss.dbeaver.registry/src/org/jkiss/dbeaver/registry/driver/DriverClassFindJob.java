@@ -37,7 +37,7 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
 
     public DriverClassFindJob(DBPDriver driver, String interfaceName, boolean isInterface) {
         this.driver = (DriverDescriptor) driver;
-        this.interfaceName = interfaceName;
+        this.interfaceName = interfaceName.replace(".", "/");
         this.isInterface = isInterface;
     }
 

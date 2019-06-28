@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorAbstractUI;
 import org.jkiss.utils.CommonUtils;
 
+import javax.net.ssl.SSLSocketFactory;
+
 /**
  * PostgreSSLConfigurator
  */
@@ -105,7 +107,7 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
             protected IStatus run(IProgressMonitor monitor) {
                 final DriverClassFindJob finder = new DriverClassFindJob(
                     configuration.getDriver(),
-                    "javax/net/ssl/SSLSocketFactory",
+                    SSLSocketFactory.class.getName(),
                     false);
                 finder.run(new DefaultProgressMonitor(monitor));
                 UIUtils.syncExec(() -> {
