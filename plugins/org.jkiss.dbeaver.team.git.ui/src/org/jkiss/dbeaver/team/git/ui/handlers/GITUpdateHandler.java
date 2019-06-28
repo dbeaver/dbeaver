@@ -37,7 +37,8 @@ public class GITUpdateHandler extends GITAbstractHandler {
             return null;
         } else {
             Set<Repository> repositories = new LinkedHashSet<>(Arrays.asList(repos));
-            (new PullOperationUI(repositories)).start();
+            PullOperationUI pullOperationUI = new PullOperationUI(repositories);
+            pullOperationUI.start();
             return null;
         }
     }

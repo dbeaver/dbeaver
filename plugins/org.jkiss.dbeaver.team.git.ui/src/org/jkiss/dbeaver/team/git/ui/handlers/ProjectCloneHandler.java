@@ -18,18 +18,29 @@ package org.jkiss.dbeaver.team.git.ui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.egit.ui.internal.clone.GitImportWizard;
-import org.eclipse.egit.ui.internal.sharing.SharingWizard;
+import org.eclipse.egit.ui.internal.clone.GitSelectWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.Log;
 
 public class ProjectCloneHandler extends AbstractHandler {
-    
+
+    private static final Log log = Log.getLog(ProjectCloneHandler.class);
+
     @Override
 	public Object execute(ExecutionEvent event) {
+        try {
+            // FIXME: this is a EGIT hack
+            // Set new project default option (Create general project. As Create New Project is broken)
+            org.eclipse.egit.ui.Activator.getDefault().getDialogSettings().put(
+                    "org.eclipse.egit.ui.internal.clone.GitSelectWizardPageWizardSel",
+                    GitSelectWizardPage.GENERAL_WIZARD);
+        } catch (Throwable e) {
+            log.debug(e);
+        }
+
         IWorkbench workbench = HandlerUtil.getActiveWorkbenchWindow(event).getWorkbench();
         GitImportWizard wizard = new GitImportWizard();
         wizard.init(workbench, HandlerUtil.getCurrentStructuredSelection(event));
