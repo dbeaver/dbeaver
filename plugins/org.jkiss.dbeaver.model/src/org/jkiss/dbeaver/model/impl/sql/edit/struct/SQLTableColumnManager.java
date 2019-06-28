@@ -122,9 +122,9 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     }
 
     @Override
-    public boolean canCreateObject(Object continer)
+    public boolean canCreateObject(Object container)
     {
-        return continer instanceof DBSTable && !((DBSTable)continer).isView();
+        return container instanceof DBSTable && !((DBSTable) container).isView();
     }
 
     @Override

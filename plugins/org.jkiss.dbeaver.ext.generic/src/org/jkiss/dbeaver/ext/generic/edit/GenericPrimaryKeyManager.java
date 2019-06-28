@@ -40,8 +40,8 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
     }
 
     @Override
-    public boolean canCreateObject(Object continer) {
-        return continer instanceof GenericTable && ((GenericTable)continer).getDataSource().getSQLDialect().supportsAlterTableConstraint();
+    public boolean canCreateObject(Object container) {
+        return container instanceof GenericTable && ((GenericTable) container).getDataSource().getSQLDialect().supportsAlterTableConstraint();
     }
 
     @Override

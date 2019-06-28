@@ -62,7 +62,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     @Override
-    public boolean canCreateObject(Object continer)
+    public boolean canCreateObject(Object container)
     {
         return true;
     }

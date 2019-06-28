@@ -41,7 +41,7 @@ import java.util.Map;
 public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, PostgreTableReal> {//implements DBEObjectRenamer<PostgreTrigger> {
 
     @Override
-    public boolean canCreateObject(Object continer) {
+    public boolean canCreateObject(Object container) {
         return true;
     }
 
