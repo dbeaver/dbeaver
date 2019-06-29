@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -237,7 +238,7 @@ class GenericFilterValueEdit {
         }
 
         Pattern pattern = null;
-        if (!CommonUtils.isEmpty(filterPattern)) {
+        if (!CommonUtils.isEmpty(filterPattern) && attr.getDataKind() == DBPDataKind.STRING) {
             pattern = Pattern.compile(SQLUtils.makeLikePattern("%" + filterPattern + "%"), Pattern.CASE_INSENSITIVE);
         }
 
@@ -276,6 +277,17 @@ class GenericFilterValueEdit {
                 final DBDLabelValuePair valuePair = iter.next();
                 String itemString = attr.getValueHandler().getValueDisplayString(attr, valuePair.getValue(), DBDDisplayFormat.UI);
                 if (!pattern.matcher(itemString).matches() && (valuePair.getLabel() == null || !pattern.matcher(valuePair.getLabel()).matches())) {
+                    iter.remove();
+                }
+            }
+        } else if (filterPattern != null && attr.getDataKind() == DBPDataKind.NUMERIC) {
+            // Filter numeric values
+            double minValue = CommonUtils.toDouble(filterPattern);
+            for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
+                final DBDLabelValuePair valuePair = iter.next();
+                String itemString = attr.getValueHandler().getValueDisplayString(attr, valuePair.getValue(), DBDDisplayFormat.EDIT);
+                double itemValue = CommonUtils.toDouble(itemString);
+                if (itemValue < minValue) {
                     iter.remove();
                 }
             }

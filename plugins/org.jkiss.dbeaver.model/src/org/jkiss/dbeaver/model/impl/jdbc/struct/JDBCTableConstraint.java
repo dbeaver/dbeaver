@@ -210,7 +210,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
 
         DBDValueHandler keyValueHandler = DBUtils.findValueHandler(session, keyColumn);
 
-        if (keyPattern instanceof CharSequence) {
+        if (keyPattern instanceof CharSequence && keyColumn.getDataKind() != DBPDataKind.NUMERIC) {
             if (((CharSequence)keyPattern).length() > 0) {
                 keyPattern = "%" + keyPattern.toString() + "%";
             } else {
@@ -242,7 +242,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                         searchInKeys = false;
                     }
                 } else if (keyPattern instanceof String) {
-                    searchInKeys = false;
+                    //searchInKeys = false;
                     // Ignore it
                     //keyPattern = Double.parseDouble((String) keyPattern) - gapSize;
                 }
@@ -265,6 +265,18 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         query.append(" FROM ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DML));
 
         boolean searchInDesc = keyPattern instanceof CharSequence && descAttributes != null;
+        if (searchInDesc) {
+            boolean hasStringAttrs = false;
+            for (DBSEntityAttribute descAttr : descAttributes) {
+                if (descAttr.getDataKind() == DBPDataKind.STRING) {
+                    hasStringAttrs = true;
+                    break;
+                }
+            }
+            if (!hasStringAttrs) {
+                searchInDesc = false;
+            }
+        }
 
         if (!CommonUtils.isEmpty(preceedingKeys) || searchInKeys || searchInDesc) {
             query.append(" WHERE ");
@@ -282,28 +294,27 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             if (hasCond) query.append(" AND (");
             if (searchInKeys) {
                 query.append(DBUtils.getQuotedIdentifier(keyColumn));
-                if (keyPattern instanceof CharSequence) {
-                    query.append(" LIKE ?");
-                } else {
+                if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
                     query.append(" >= ?");
+                } else {
+                    query.append(" LIKE ?");
                 }
             }
-
-            // Add desc columns conditions
-            if (searchInDesc) {
-                boolean hasCondition = searchInKeys;
-                for (DBSEntityAttribute descAttr : descAttributes) {
-                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
-                        if (hasCondition) {
-                            query.append(" OR ");
-                        }
-                        query.append(DBUtils.getQuotedIdentifier(descAttr)).append(" LIKE ?");
-                        hasCondition = true;
-                    }
-                }
-            }
-            if (hasCond) query.append(")");
         }
+        // Add desc columns conditions
+        if (searchInDesc) {
+            boolean hasCondition = searchInKeys;
+            for (DBSEntityAttribute descAttr : descAttributes) {
+                if (descAttr.getDataKind() == DBPDataKind.STRING) {
+                    if (hasCondition) {
+                        query.append(" OR ");
+                    }
+                    query.append(DBUtils.getQuotedIdentifier(descAttr)).append(" LIKE ?");
+                    hasCondition = true;
+                }
+            }
+        }
+        if (hasCond) query.append(")");
         query.append(" ORDER BY ");
         if (sortByValue) {
             query.append(DBUtils.getQuotedIdentifier(keyColumn));
