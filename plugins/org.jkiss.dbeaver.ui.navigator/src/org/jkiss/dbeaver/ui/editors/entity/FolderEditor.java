@@ -203,11 +203,11 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
         @Nullable
         @Override
-        protected Object getCellValue(Object element, ObjectColumn objectColumn) {
+        protected Object getCellValue(Object element, ObjectColumn objectColumn, boolean formatValue) {
             if (element instanceof DBNRoot) {
                 return objectColumn.isNameColumn(getObjectValue((DBNRoot)element)) ? ".." : "";
             }
-            return super.getCellValue(element, objectColumn);
+            return super.getCellValue(element, objectColumn, formatValue);
         }
 
         @Override

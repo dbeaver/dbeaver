@@ -28,7 +28,7 @@ public interface IPropertySourceMulti extends DBPPropertySource {
 
     boolean isPropertySet(Object object, ObjectPropertyDescriptor id);
 
-    Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop);
+    Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop, boolean formatValue);
 
     boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop);
 

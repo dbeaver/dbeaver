@@ -258,7 +258,7 @@ public class CompareObjectsExecutor {
                         continue;
                     }
                 }
-                Object propertyValue = propertySource.getPropertyValue(monitor, databaseObject, prop);
+                Object propertyValue = propertySource.getPropertyValue(monitor, databaseObject, prop, true);
                 synchronized (PROPS_LOCK) {
                     if (propertyValue instanceof DBPNamedObject) {
                         // Compare just object names

@@ -306,7 +306,7 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = objectColumn.getProperty(getObjectValue(object));
             if (property != null) {
-                return getListPropertySource().getPropertyValue(null, getObjectValue(object), property);
+                return getListPropertySource().getPropertyValue(null, getObjectValue(object), property, true);
             }
             return null;
         }
