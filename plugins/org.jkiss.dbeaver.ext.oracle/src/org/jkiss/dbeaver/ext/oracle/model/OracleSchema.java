@@ -669,7 +669,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             
             this.column = data[0];
             
-            this.pos = Integer.valueOf(data[1]);
+            this.pos = data.length == 1 ? 0 : Integer.valueOf(data[1]);
             
             
         }
