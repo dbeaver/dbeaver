@@ -707,7 +707,11 @@ public class ComplexObjectEditor extends TreeViewer {
     private ArrayInfo makeArrayInfo(DBDCollection array) {
         ArrayInfo arrayInfo = new ArrayInfo();
         arrayInfo.componentType = array.getComponentType();
-        arrayInfo.valueHandler = DBUtils.findValueHandler(arrayInfo.componentType.getDataSource(), arrayInfo.componentType);
+        if (arrayInfo.componentType == null) {
+            arrayInfo.valueHandler = null;
+        } else {
+            arrayInfo.valueHandler = DBUtils.findValueHandler(arrayInfo.componentType.getDataSource(), arrayInfo.componentType);
+        }
         return arrayInfo;
     }
 
