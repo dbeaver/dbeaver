@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -45,12 +46,17 @@ import java.util.Locale;
  */
 public final class DBValueFormatting {
 
-    public static final DecimalFormat NATIVE_DECIMAL_FORMATTER = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+    public static final DecimalFormat NATIVE_FLOAT_FORMATTER = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+    public static final DecimalFormat NATIVE_DOUBLE_FORMATTER = new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
     private static final Log log = Log.getLog(DBValueFormatting.class);
 
     static {
-        DBValueFormatting.NATIVE_DECIMAL_FORMATTER.setMaximumFractionDigits(340);
+        NATIVE_FLOAT_FORMATTER.setMaximumFractionDigits(NumberDataFormatter.MAX_FLOAT_FRACTION_DIGITS);
+        NATIVE_FLOAT_FORMATTER.setDecimalSeparatorAlwaysShown(false);
+
+        NATIVE_DOUBLE_FORMATTER.setMaximumFractionDigits(340);
+        NATIVE_DOUBLE_FORMATTER.setDecimalSeparatorAlwaysShown(false);
     }
 
     @NotNull
@@ -217,8 +223,10 @@ public final class DBValueFormatting {
     public static String convertNumberToNativeString(Number value) {
         if (value instanceof BigDecimal) {
             return ((BigDecimal) value).toPlainString();
-        } else if (value instanceof Float || value instanceof Double) {
-            return NATIVE_DECIMAL_FORMATTER.format(value);
+        } else if (value instanceof Float) {
+            return NATIVE_FLOAT_FORMATTER.format(value);
+        } else if (value instanceof Double) {
+            return NATIVE_DOUBLE_FORMATTER.format(value);
         } else {
             return value.toString();
         }
