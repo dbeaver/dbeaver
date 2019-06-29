@@ -101,12 +101,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 value = resultSet.getDouble(index);
                 break;
             case Types.FLOAT:
-                try {
-                    // Read value with maximum precision. Some drivers reports FLOAT but means double [JDBC:SQLite]
-                    value = resultSet.getDouble(index);
-                } catch (SQLException | ClassCastException | NumberFormatException e) {
-                    value = resultSet.getFloat(index);
-                }
+                value = resultSet.getFloat(index);
                 break;
             case Types.INTEGER:
                 try {

@@ -34,6 +34,7 @@ import java.util.Map;
 public class NumberDataFormatter implements DBDDataFormatter {
 
     public static final int MAX_DEFAULT_FRACTIONS_DIGITS = 16;
+    public static final int MAX_FLOAT_FRACTION_DIGITS = 7; // Bug with float fomratting (too high precision) - see #6116
 
     private DecimalFormat numberFormat;
     private StringBuffer buffer;
@@ -62,6 +63,8 @@ public class NumberDataFormatter implements DBDDataFormatter {
         Object minFractDigits = properties.get(NumberFormatSample.PROP_MIN_FRACT_DIGITS);
         if (minFractDigits != null) {
             numberFormat.setMinimumFractionDigits(CommonUtils.toInt(minFractDigits));
+        } else {
+            numberFormat.setMinimumFractionDigits(0);
         }
         String roundingMode = CommonUtils.toString(properties.get(NumberFormatSample.PROP_ROUNDING_MODE));
         if (!CommonUtils.isEmpty(roundingMode)) {
@@ -100,7 +103,18 @@ public class NumberDataFormatter implements DBDDataFormatter {
         try {
             synchronized (this) {
                 buffer.setLength(0);
-                return numberFormat.format(value, buffer, position).toString();
+                int oldFractionDigits = -1;
+                if (value instanceof Float) {
+                    if (numberFormat.getMaximumFractionDigits() > MAX_FLOAT_FRACTION_DIGITS) {
+                        oldFractionDigits = numberFormat.getMaximumFractionDigits();
+                        numberFormat.setMaximumFractionDigits(MAX_FLOAT_FRACTION_DIGITS);
+                    }
+                }
+                String result = numberFormat.format(value, buffer, position).toString();
+                if (oldFractionDigits >= 0) {
+                    numberFormat.setMaximumFractionDigits(oldFractionDigits);
+                }
+                return result;
             }
         } catch (Exception e) {
             return value.toString();
