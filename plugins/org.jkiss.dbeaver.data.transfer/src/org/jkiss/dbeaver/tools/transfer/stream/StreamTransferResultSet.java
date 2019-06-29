@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
@@ -24,14 +25,10 @@ import org.jkiss.dbeaver.model.impl.local.LocalResultSetColumn;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +37,8 @@ import java.util.List;
  * Stream producer result set
  */
 public class StreamTransferResultSet implements DBCResultSet {
+
+    private static final Log log = Log.getLog(StreamTransferResultSet.class);
 
     private final StreamTransferSession session;
     private final DBCStatement statement;
@@ -94,7 +93,11 @@ public class StreamTransferResultSet implements DBCResultSet {
         if (value != null && dateTimeFormat != null && attr.getTargetAttribute() != null && attr.getTargetAttribute().getDataKind() == DBPDataKind.DATETIME) {
             // Convert string to timestamp
             try {
-                TemporalAccessor ta = dateTimeFormat.parse(CommonUtils.toString(value));
+                String strValue = CommonUtils.toString(value);
+                if (CommonUtils.isEmptyTrimmed(strValue)) {
+                    return null;
+                }
+                TemporalAccessor ta = dateTimeFormat.parse(strValue);
                 try {
                     ZonedDateTime zdt = ZonedDateTime.from(ta);
                     value = java.util.Date.from(zdt.toInstant());
@@ -106,6 +109,7 @@ public class StreamTransferResultSet implements DBCResultSet {
                 }
             } catch (Exception e) {
                 // Can't parse. Ignore format then
+                log.debug("Error parsing datetime string: " + e.getMessage());
             }
         }
 
