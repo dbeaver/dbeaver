@@ -31,7 +31,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 public abstract class GITAbstractHandler extends AbstractHandler {
 
     protected IResource[] getResourcesInScope(ExecutionEvent event)
-            throws ExecutionException {
+        throws ExecutionException {
         try {
             IResource[] selectedResources = getSelectedResources(event);
             if (selectedResources.length > 0) {
@@ -47,8 +47,7 @@ public abstract class GITAbstractHandler extends AbstractHandler {
         }
     }
 
-    protected Repository getRepository(boolean warn, ExecutionEvent event)
-            throws ExecutionException {
+    protected Repository getRepository(boolean warn, ExecutionEvent event) {
         IStructuredSelection selection = HandlerUtil.getCurrentStructuredSelection(event);
         if (warn) {
             Shell shell = HandlerUtil.getActiveShell(event);
@@ -58,13 +57,12 @@ public abstract class GITAbstractHandler extends AbstractHandler {
         }
     }
 
-    protected IResource[] getSelectedResources(ExecutionEvent event)
-            throws ExecutionException {
+    protected IResource[] getSelectedResources(ExecutionEvent event) {
         IStructuredSelection selection = HandlerUtil.getCurrentStructuredSelection(event);
         return SelectionUtils.getSelectedResources(selection);
     }
 
-    protected Repository[] getRepositories(ExecutionEvent event) throws ExecutionException {
+    protected Repository[] getRepositories(ExecutionEvent event) {
         IStructuredSelection selection = HandlerUtil.getCurrentStructuredSelection(event);
         return SelectionUtils.getRepositories(selection);
     }
