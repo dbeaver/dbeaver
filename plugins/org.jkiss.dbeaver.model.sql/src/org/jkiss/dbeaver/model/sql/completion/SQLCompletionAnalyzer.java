@@ -165,7 +165,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     if (selectedObject instanceof DBSObjectContainer) {
                         sc = (DBSObjectContainer)selectedObject;
                     }
-                    int divPos = wordPart.indexOf(syntaxManager.getStructSeparator());
+                    int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
                     String tableAlias = divPos == -1 ? null : wordPart.substring(0, divPos);
                     if (tableAlias == null && !CommonUtils.isEmpty(wordPart)) {
                         // May be an incomplete table alias. Try to find such table
@@ -177,6 +177,16 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         }
                     }
                     rootObject = getTableFromAlias(sc, tableAlias);
+                    if (rootObject == null && tableAlias != null) {
+                        // Maybe alias ss a table name
+                        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(request.getContext().getDataSource());
+                        String[] allNames = SQLUtils.splitFullIdentifier(
+                            tableAlias,
+                            sqlDialect.getCatalogSeparator(),
+                            sqlDialect.getIdentifierQuoteStrings(),
+                            false);
+                        rootObject = SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, Arrays.asList(allNames), !request.isSimpleMode(), request.getWordDetector());
+                    }
                 }
                 if (rootObject != null) {
                     makeProposalsFromChildren(rootObject, wordPart, false);
