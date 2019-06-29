@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -49,11 +50,11 @@ public abstract class CreateLinkHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        IStructuredSelection structured = HandlerUtil.getCurrentStructuredSelection(event);
-        if (structured.isEmpty()) {
+        ISelection structured = HandlerUtil.getCurrentSelection(event);
+        if (structured.isEmpty() || !(structured instanceof IStructuredSelection)) {
             return null;
         }
-        Object first = structured.getFirstElement();
+        Object first = ((IStructuredSelection)structured).getFirstElement();
         IResource resource = GeneralUtils.adapt(first, IResource.class);
         IContainer container = extractContainer(resource);
         if (container == null) {
