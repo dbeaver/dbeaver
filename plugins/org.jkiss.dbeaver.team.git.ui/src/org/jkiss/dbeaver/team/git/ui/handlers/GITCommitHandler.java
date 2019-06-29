@@ -19,13 +19,19 @@ package org.jkiss.dbeaver.team.git.ui.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.egit.ui.internal.commit.CommitUI;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.team.git.ui.utils.GitUIUtils;
 
-public class GITCommitHandler extends GITAbstractHandler {
+import java.util.Map;
+
+public class GITCommitHandler extends GITAbstractHandler implements IElementUpdater {
 
     @Override
     public Object execute(final ExecutionEvent event) throws ExecutionException {
@@ -42,6 +48,14 @@ public class GITCommitHandler extends GITAbstractHandler {
             commitUi.commit();
         }
         return null;
+    }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        IProject project = GitUIUtils.extractActiveProject(element.getServiceLocator());
+        if (project != null) {
+            element.setText("Commit '" + project.getName() + "' changes to Git");
+        }
     }
 
 }

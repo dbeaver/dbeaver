@@ -39,11 +39,9 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
 import java.util.Map;
 
-public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler implements IElementUpdater
-{
+public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler implements IElementUpdater {
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         DBCExecutionContext context = getExecutionContext(event, true);
         if (context != null) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
@@ -71,8 +69,7 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
+    public void updateElement(UIElement element, Map parameters) {
         IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
         if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
             return;
