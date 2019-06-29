@@ -252,7 +252,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return displayFormat;
     }
 
-    public Object readValue(Object object, @Nullable DBRProgressMonitor progressMonitor)
+    public Object readValue(Object object, @Nullable DBRProgressMonitor progressMonitor, boolean formatValue)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         if (object == null) {
@@ -295,13 +295,20 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             value = getter.invoke(object, params);
         }
 
+        if (formatValue) {
+            value = formatValue(object, value);
+        }
+        return value;
+    }
+
+    public Object formatValue(Object object, Object value) {
         if (valueRenderer != null) {
             value = valueRenderer.transform(object, value);
         }
         if (value instanceof Number) {
             final Format displayFormat = getDisplayFormat();
             if (displayFormat != null) {
-                return displayFormat.format(value);
+                value = displayFormat.format(value);
             }
         }
         return value;

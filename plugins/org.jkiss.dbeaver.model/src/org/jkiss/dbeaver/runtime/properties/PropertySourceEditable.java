@@ -88,7 +88,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (prop.getValueTransformer() != null) {
             newValue = prop.getValueTransformer().transform(editableValue, newValue);
         }
-        final Object oldValue = getPropertyValue(monitor, editableValue, prop);
+        final Object oldValue = getPropertyValue(monitor, editableValue, prop, true);
         if (!updatePropertyValue(monitor, editableValue, prop, newValue, false)) {
             return;
         }
@@ -162,7 +162,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
                     }
                 }
             }
-            final Object oldValue = getPropertyValue(monitor, editableValue, prop);
+            final Object oldValue = getPropertyValue(monitor, editableValue, prop, true);
             if (CommonUtils.equalObjects(oldValue, value)) {
                 return false;
             }

@@ -477,7 +477,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                         boolean matches = false;
                         for (DBPPropertyDescriptor property : getAllProperties()) {
                             if (property instanceof ObjectPropertyDescriptor) {
-                                Object value = ((ObjectPropertyDescriptor) property).readValue(element, null);
+                                Object value = ((ObjectPropertyDescriptor) property).readValue(element, null, true);
                                 if (value != null && pattern.matcher(CommonUtils.toString(value)).find()) {
                                     matches = true;
                                     break;

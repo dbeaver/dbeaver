@@ -165,7 +165,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     public boolean isPropertySet(Object object, ObjectPropertyDescriptor prop)
     {
         try {
-            return !prop.isLazy(object, true) && prop.readValue(object, null) != null;
+            return !prop.isLazy(object, true) && prop.readValue(object, null, false) != null;
         } catch (Exception e) {
             log.error("Error reading property '" + prop.getId() + "' from " + object, e);
             return false;
@@ -177,14 +177,14 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
-            value = getPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value);
+            value = getPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value, true);
         }
         return value;
     }
 
 
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object object, final ObjectPropertyDescriptor prop)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object object, final ObjectPropertyDescriptor prop, boolean formatValue)
     {
         try {
             if (monitor == null && prop.isLazy(object, true) && !prop.supportsPreview()) {
@@ -205,8 +205,8 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                             // We assume that it can be called ONLY by properties viewer
                             // So, start lazy loading job to update it after value will be loaded
                             lazyLoadJob = DBWorkbench.getPlatformUI().createLoadingService(
-                                new PropertySheetLoadService(),
-                                new PropertySheetLoadVisualizer());
+                                new PropertyValueLoadService(),
+                                new PropertyValueLoadVisualizer());
                             lazyLoadJob.addJobChangeListener(new JobChangeAdapter() {
                                 @Override
                                 public void done(IJobChangeEvent event)
@@ -228,7 +228,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                     return null;
                 }
             } else {
-                return prop.readValue(object, monitor);
+                return prop.readValue(object, monitor, formatValue);
             }
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
@@ -336,11 +336,11 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         this.locale = locale;
     }
 
-    private class PropertySheetLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
+    private class PropertyValueLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
 
         public static final String TEXT_LOADING = "...";
 
-        public PropertySheetLoadService()
+        public PropertyValueLoadService()
         {
             super(TEXT_LOADING);
         }
@@ -355,7 +355,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    result.put(prop, prop.readValue(getEditableValue(), monitor));
+                    result.put(prop, prop.readValue(getEditableValue(), monitor, true));
                 }
                 return result;
             } catch (Throwable ex) {
@@ -387,12 +387,12 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
     }
 
-    private class PropertySheetLoadVisualizer implements ILoadVisualizer<Map<ObjectPropertyDescriptor, Object>> {
+    private class PropertyValueLoadVisualizer implements ILoadVisualizer<Map<ObjectPropertyDescriptor, Object>> {
         //private Object propertyId;
         //private int callCount = 0;
         private boolean completed = false;
 
-        private PropertySheetLoadVisualizer()
+        private PropertyValueLoadVisualizer()
         {
         }
 
@@ -419,7 +419,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             case 2: dots = ".."; break;
             case 3: default: dots = "..."; break;
             }
-            propValues.put(propertyId, PropertySheetLoadService.TEXT_LOADING + dots);
+            propValues.put(propertyId, PropertyValueLoadService.TEXT_LOADING + dots);
             refreshProperties(false);
 */
         }

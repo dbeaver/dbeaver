@@ -420,7 +420,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             if (!CommonUtils.isEmpty(items)) {
                                 for (OBJECT_TYPE item : items) {
                                     try {
-                                        Object propValue = prop.readValue(getObjectValue(item), null);
+                                        Object propValue = prop.readValue(getObjectValue(item), null, true);
                                         if (propValue != null) {
                                             propHasValue = true;
                                             break;
@@ -631,11 +631,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     @Nullable
     protected final Object getCellValue(Object element, int columnIndex) {
         final ObjectColumn columnInfo = getColumnByIndex(columnIndex);
-        return getCellValue(element, columnInfo);
+        return getCellValue(element, columnInfo, true);
     }
 
     @Nullable
-    protected Object getCellValue(Object element, ObjectColumn objectColumn) {
+    protected Object getCellValue(Object element, ObjectColumn objectColumn, boolean formatValue) {
         OBJECT_TYPE object = (OBJECT_TYPE) element;
 
         Object objectValue = getObjectValue(object);
@@ -654,25 +654,28 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             synchronized (lazyCache) {
                 final Map<String, Object> cache = lazyCache.get(object);
                 if (cache != null) {
-                    final Object value = cache.get(objectColumn.id);
+                    Object value = cache.get(objectColumn.id);
                     if (value != null) {
                         if (value == NULL_VALUE) {
                             return null;
                         } else {
+                            if (formatValue) {
+                                value = prop.formatValue(object, value);
+                            }
                             return value;
                         }
                     }
                 }
             }
             if (prop.supportsPreview()) {
-                final Object previewValue = getListPropertySource().getPropertyValue(null, objectValue, prop);
+                final Object previewValue = getListPropertySource().getPropertyValue(null, objectValue, prop, formatValue);
                 if (previewValue != null) {
                     return new LazyValue(previewValue);
                 }
             }
             return DEF_LAZY_VALUE;
         }
-        return getListPropertySource().getPropertyValue(null, objectValue, prop);
+        return getListPropertySource().getPropertyValue(null, objectValue, prop, formatValue);
     }
 
     /**
@@ -845,7 +848,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         try {
                             ObjectPropertyDescriptor nameProperty = nameColumn.getProperty(object);
                             if (nameProperty != null) {
-                                objectName = CommonUtils.toString(nameProperty.readValue(object, null));
+                                objectName = CommonUtils.toString(nameProperty.readValue(object, null, true));
                             }
                         } catch (Throwable e) {
                             log.debug(e);
@@ -1016,7 +1019,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public String getText(Object element, boolean forUI) {
-            Object cellValue = getCellValue(element, objectColumn);
+            Object cellValue = getCellValue(element, objectColumn, forUI);
             if (cellValue instanceof LazyValue) {
                 cellValue = ((LazyValue) cellValue).value;
             }
@@ -1101,7 +1104,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         final boolean isFocusCell = focusObject == object && focusColumn == objectColumn;
 
                         final Object objectValue = getObjectValue(object);
-                        Object cellValue = getCellValue(object, objectColumn);
+                        Object cellValue = getCellValue(object, objectColumn, true);
 
                         if (cellValue instanceof LazyValue) {
                             if (!lazyLoadCanceled) {
@@ -1167,7 +1170,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                                     continue;
                                 }
                             }
-                            Object lazyValue = prop.readValue(object, monitor);
+                            Object lazyValue = prop.readValue(object, monitor, false);
                             if (lazyValue == null) {
                                 lazyValue = NULL_VALUE;
                             }
@@ -1190,32 +1193,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (!isDisposed()) {
                 // Make refresh of whole table
                 // Some other objects could also be updated implicitly with our lazy loader
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!isDisposed()) {
-                            itemsViewer.refresh();
-                        }
+                UIUtils.asyncExec(() -> {
+                    if (!isDisposed()) {
+                        itemsViewer.refresh();
                     }
                 });
             }
-
-/*
-            // Update viewer
-            if (!isDisposed()) {
-                getDisplay().asyncExec(new Runnable() {
-                    public void run()
-                    {
-                        itemsViewer.getControl().setRedraw(false);
-                        try {
-                            itemsViewer.update(objectMap.keySet().toArray(), null);
-                        } finally {
-                            itemsViewer.getControl().setRedraw(true);
-                        }
-                    }
-                });
-            }
-*/
             if (monitor.isCanceled()) {
                 lazyLoadCanceled = true;
                 obtainLazyObjects();
@@ -1346,7 +1329,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             for (int i = 0; i < columnsCount; i++) {
                 ObjectPropertyDescriptor property = getColumnByIndex(i).getProperty(object);
                 try {
-                    Object cellValue = property == null ? null : property.readValue(object, new VoidProgressMonitor());
+                    Object cellValue = property == null ? null : property.readValue(object, new VoidProgressMonitor(), true);
                     if (i > 0) buf.append("\t");
                     String strValue = DBValueFormatting.getDefaultValueDisplayString(cellValue, DBDDisplayFormat.UI);
                     if (strValue.contains("\n") || strValue.contains("\t")) {
