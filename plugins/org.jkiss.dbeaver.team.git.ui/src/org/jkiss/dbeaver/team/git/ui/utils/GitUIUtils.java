@@ -24,10 +24,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.*;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -39,18 +40,7 @@ public class GitUIUtils {
         if (project == null) {
             IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
             if (activeEditor != null) {
-                IEditorInput editorInput = activeEditor.getEditorInput();
-                if (editorInput instanceof IDatabaseEditorInput) {
-                    DBNDatabaseNode node = ((IDatabaseEditorInput) editorInput).getNavigatorNode();
-                    if (node != null) {
-                        return node.getOwnerProject();
-                    }
-                } else {
-                    IFile input = EditorUtils.getFileFromInput(editorInput);
-                    if (input != null) {
-                        project = input.getProject();
-                    }
-                }
+                return extractProject(activeEditor);
             }
         }
         return project;
@@ -77,4 +67,48 @@ public class GitUIUtils {
         }
     }
 
+    public static IProject extractProject(IEditorPart activeEditor) {
+        IEditorInput editorInput = activeEditor.getEditorInput();
+        if (editorInput instanceof IDatabaseEditorInput) {
+            DBNDatabaseNode node = ((IDatabaseEditorInput) editorInput).getNavigatorNode();
+            if (node != null) {
+                return node.getOwnerProject();
+            }
+        } else {
+            IFile input = EditorUtils.getFileFromInput(editorInput);
+            if (input != null) {
+                return input.getProject();
+            }
+        }
+        return null;
+    }
+
+    public static IProject extractActiveProject(IServiceLocator serviceLocator) {
+        IWorkbenchWindow workbenchWindow = serviceLocator == null ? null : serviceLocator.getService(IWorkbenchWindow.class);
+        if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
+            return null;
+        }
+        return GitUIUtils.extractActiveProject(workbenchWindow);
+    }
+
+    public static IProject extractActiveProject(IWorkbenchWindow window) {
+        IWorkbenchPage activePage = window.getActivePage();
+        if (activePage != null) {
+            IWorkbenchPart activePart = activePage.getActivePart();
+            if (activePart != null) {
+                ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
+                if (selectionProvider != null) {
+                    IProject project = extractProject(selectionProvider.getSelection());
+                    if (project != null) {
+                        return project;
+                    }
+                }
+            }
+            IEditorPart activeEditor = activePage.getActiveEditor();
+            if (activeEditor != null) {
+                return extractProject(activeEditor);
+            }
+        }
+        return null;
+    }
 }

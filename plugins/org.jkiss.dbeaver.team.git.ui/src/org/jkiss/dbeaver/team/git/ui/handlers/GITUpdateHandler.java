@@ -20,14 +20,19 @@ package org.jkiss.dbeaver.team.git.ui.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.egit.ui.internal.pull.PullOperationUI;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.ui.commands.IElementUpdater;
+import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.team.git.ui.utils.GitUIUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
-public class GITUpdateHandler extends GITAbstractHandler {
+public class GITUpdateHandler extends GITAbstractHandler implements IElementUpdater {
 
 
     @Override
@@ -40,6 +45,14 @@ public class GITUpdateHandler extends GITAbstractHandler {
             PullOperationUI pullOperationUI = new PullOperationUI(repositories);
             pullOperationUI.start();
             return null;
+        }
+    }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        IProject project = GitUIUtils.extractActiveProject(element.getServiceLocator());
+        if (project != null) {
+            element.setText("Update '" + project.getName() + "' changes from Git");
         }
     }
 
