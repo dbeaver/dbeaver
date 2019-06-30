@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -40,7 +41,7 @@ import java.sql.Types;
 /**
  * JDBC number value handler
  */
-public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
+public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements DBDValueDefaultGenerator {
 
     private static final Log log = Log.getLog(JDBCNumberValueHandler.class);
     private DBSTypedObject type;
@@ -352,4 +353,50 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
+    public String getDefaultValueLabel() {
+        return "Zero";
+    }
+
+    @Override
+    public Object generateDefaultValue(DBSTypedObject type) {
+        switch (type.getTypeID()) {
+            case Types.BIGINT:
+                return 0L;
+            case Types.DECIMAL:
+            case Types.DOUBLE:
+            case Types.REAL:
+                if (CommonUtils.toInt(type.getScale()) > 0) {
+                    // Workaround for Oracle #3062
+                    return 0D;
+                }
+                return new BigDecimal(0);
+            case Types.FLOAT:
+                if (CommonUtils.toInt(type.getScale()) > 0) {
+                    // Workaround for Oracle #3062
+                    return 0F;
+                }
+                return new BigDecimal(0);
+            case Types.INTEGER:
+                return 0;
+            case Types.SMALLINT:
+            case Types.TINYINT:
+                return (short)0;
+            case Types.BIT:
+                if (CommonUtils.toInt(type.getPrecision()) <= 1) {
+                    return (byte)0;
+                } else {
+                    // bit string (hopefully long is enough)
+                    return (long)0;
+                }
+            case Types.NUMERIC:
+                return new BigDecimal(0);
+            default:
+                if (CommonUtils.toInt(type.getScale()) > 0) {
+                    return 0D;
+                } else {
+                    return 0L;
+                }
+        }
+    }
 }
