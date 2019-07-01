@@ -48,6 +48,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button useSysSchemaCheckbox;
     private Button useRuleHint;
     private Button useOptimizerHint;
+    private Button useSimpleConstraints;
 
     public OracleConnectionExtraPage()
     {
@@ -104,6 +105,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_show, OracleMessages.edit_create_checkbox_content_group_show_discription, false, 1);
             useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use,  OracleMessages.edit_create_checkbox_content_group_use_discription, false, 1);
             useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
+            useSimpleConstraints = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
         }
 
         {
@@ -160,7 +162,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
         useDBAViewsCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS), false));
         useSysSchemaCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA), false));
-        useSysSchemaCheckbox.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SYS_SCHEMA), false));
+        useSimpleConstraints.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS), false));
         useRuleHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
         useOptimizerHint.setSelection(CommonUtils.getBoolean(providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER), false));
     }
@@ -203,6 +205,12 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                 OracleConstants.PROP_METADATA_USE_SYS_SCHEMA,
                 String.valueOf(useSysSchemaCheckbox.getSelection()));
+            providerProperties.put(
+                    OracleConstants.PROP_METADATA_USE_SYS_SCHEMA,
+                    String.valueOf(useSysSchemaCheckbox.getSelection()));
+            providerProperties.put(
+                    OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS,
+                    String.valueOf(useSimpleConstraints.getSelection()));
 
             providerProperties.put(
                 OracleConstants.PROP_USE_RULE_HINT,

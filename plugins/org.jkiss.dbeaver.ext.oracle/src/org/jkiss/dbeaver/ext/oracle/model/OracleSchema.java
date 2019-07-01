@@ -512,10 +512,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTableBase forTable)
             throws SQLException
         {
+            
+            boolean useSimpleConnection = CommonUtils.toBoolean(session.getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
+
             StringBuilder sql = new StringBuilder(500);
             JDBCPreparedStatement dbStat;
             
-            if (owner.getDataSource().isAtLeastV11() && forTable != null) {
+            if (owner.getDataSource().isAtLeastV11() && forTable != null && !useSimpleConnection) {
                 
                 sql.append("SELECT\r\n" + 
                         "    c.TABLE_NAME,\r\n" + 
@@ -545,7 +548,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 dbStat.setString(3, OracleSchema.this.getName());
                 dbStat.setString(4, forTable.getName());
                 
-            } else if (owner.getDataSource().isAtLeastV10() && forTable != null) {
+            } else if (owner.getDataSource().isAtLeastV10() && forTable != null && !useSimpleConnection) {
                 
                  sql.append("SELECT\r\n" + 
                          "    c.TABLE_NAME,\r\n" + 
@@ -738,9 +741,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTable forTable)
             throws SQLException
         {
+            boolean useSimpleConnection = CommonUtils.toBoolean(session.getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
+
             StringBuilder sql = new StringBuilder(500);
             JDBCPreparedStatement dbStat;
-             if (owner.getDataSource().isAtLeastV11() && forTable != null) {
+             if (owner.getDataSource().isAtLeastV11() && forTable != null && !useSimpleConnection) {
                  sql.append("SELECT \r\n" 
                          + "    c.TABLE_NAME,\r\n" 
                          + "    c.CONSTRAINT_NAME,\r\n"
@@ -773,7 +778,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                  dbStat.setString(4, forTable.getName());
 
 
-             }else if (owner.getDataSource().isAtLeastV10() && forTable != null) {
+             }else if (owner.getDataSource().isAtLeastV10() && forTable != null && !useSimpleConnection) {
                 sql.append("SELECT \r\n" + "    c.TABLE_NAME,\r\n" + "    c.CONSTRAINT_NAME,\r\n"
                         + "    c.CONSTRAINT_TYPE,\r\n" + "    c.STATUS,\r\n" + "    c.R_OWNER,\r\n"
                         + "    c.R_CONSTRAINT_NAME,\r\n" + "    (SELECT rc.TABLE_NAME FROM "
