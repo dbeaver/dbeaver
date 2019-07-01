@@ -70,7 +70,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         this.metaAttribute = metaAttribute;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPDataSource getDataSource() {
         return dataContainer.getDataSource();
@@ -153,7 +153,8 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @NotNull
     public String getLabel()
     {
-        if (getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)) {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_IGNORE_COLUMN_LABEL)) {
             // Return name if label is ignored
             return getName();
         }
