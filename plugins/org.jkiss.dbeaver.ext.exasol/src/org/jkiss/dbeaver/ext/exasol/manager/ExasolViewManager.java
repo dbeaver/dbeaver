@@ -70,7 +70,7 @@ public class ExasolViewManager
 
     @Override
     protected ExasolView createDatabaseObject(DBRProgressMonitor monitor,
-            DBECommandContext context, ExasolSchema parent, Object copyFrom)
+                                              DBECommandContext context, ExasolSchema parent, Object copyFrom, Map<String, Object> options)
             throws DBException
     {
         ExasolView newView = new ExasolView(parent);

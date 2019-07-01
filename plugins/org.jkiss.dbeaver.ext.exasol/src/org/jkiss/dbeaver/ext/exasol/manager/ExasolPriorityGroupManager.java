@@ -53,7 +53,7 @@ public class ExasolPriorityGroupManager extends SQLObjectEditor<ExasolPriorityGr
 
 	@Override
 	protected ExasolPriorityGroup createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-			ExasolDataSource parent, Object copyFrom) throws DBException {
+                                                       ExasolDataSource parent, Object copyFrom, Map<String, Object> options) throws DBException {
 		return new UITask<ExasolPriorityGroup>() {
 			@Override
 			protected ExasolPriorityGroup runTask()

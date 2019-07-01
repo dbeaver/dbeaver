@@ -86,4 +86,7 @@ public class GenericConstants {
     public static final String OBJECT_PROCEDURE_COLUMN = "procedure-column";
 
     public static final String META_MODEL_STANDARD = "standard";
+
+    public static final String TABLE_TYPE_VIEW = "VIEW";
+    public static final String TABLE_TYPE_TABLE = "TABLE";
 }

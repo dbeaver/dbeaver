@@ -67,7 +67,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
 
     @Override
     protected DB2Schema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2DataSource parent,
-                                             Object copyFrom)
+                                             Object copyFrom, Map<String, Object> options)
     {
         return new UITask<DB2Schema>() {
             @Override

@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
+import java.util.Map;
+
 /**
  * Generic index manager
  */
@@ -46,7 +48,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
     @Override
     protected GenericTableIndex createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return parent.getDataSource().getMetaModel().createIndexImpl(
             parent,

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.*;
@@ -77,10 +79,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     // Commands
 
     @Override
-    public final OBJECT_TYPE createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom) throws DBException {
+    public final OBJECT_TYPE createNewObject(DBRProgressMonitor monitor, @NotNull  DBECommandContext commandContext, CONTAINER_TYPE parent, @Nullable Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         OBJECT_TYPE newObject;
         try {
-            newObject = createDatabaseObject(monitor, commandContext, parent, copyFrom);
+            newObject = createDatabaseObject(monitor, commandContext, parent, copyFrom, options);
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + parent.getClass().getSimpleName());
         }
@@ -119,7 +121,8 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         DBRProgressMonitor monitor,
         DBECommandContext context,
         CONTAINER_TYPE parent,
-        Object copyFrom) throws DBException;
+        Object copyFrom,
+        Map<String, Object> options) throws DBException;
 
     //////////////////////////////////////////////////
     // Actions

@@ -51,6 +51,7 @@ import java.util.*;
 public class GenericMetaModel {
 
     private static final Log log = Log.getLog(GenericMetaModel.class);
+
     GenericMetaModelDescriptor descriptor;
 
     public GenericMetaModel()
@@ -449,7 +450,7 @@ public class GenericMetaModel {
     }
 
     public boolean isView(GenericTable table) {
-        return table.getTableType().toUpperCase(Locale.ENGLISH).contains("VIEW");
+        return table.getTableType().toUpperCase(Locale.ENGLISH).contains(GenericConstants.TABLE_TYPE_VIEW);
     }
 
     //////////////////////////////////////////////////////

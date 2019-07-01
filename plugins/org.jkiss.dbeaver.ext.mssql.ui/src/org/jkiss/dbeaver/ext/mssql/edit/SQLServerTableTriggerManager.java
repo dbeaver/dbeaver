@@ -47,7 +47,7 @@ public class SQLServerTableTriggerManager extends SQLTriggerManager<SQLServerTab
     }
 
     @Override
-    protected SQLServerTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable parent, Object copyFrom)
+    protected SQLServerTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable parent, Object copyFrom, Map<String, Object> options)
     {
         String newTriggerName = "NewTrigger";
         SQLServerTableTrigger newTrigger = new SQLServerTableTrigger(parent, newTriggerName);

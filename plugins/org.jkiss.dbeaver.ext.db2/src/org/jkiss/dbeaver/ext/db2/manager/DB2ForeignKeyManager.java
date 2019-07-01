@@ -79,7 +79,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     // Create
     // ------
     @Override
-    public DB2TableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2Table table, Object from)
+    public DB2TableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2Table table, Object from, Map<String, Object> options)
     {
         return new UITask<DB2TableForeignKey>() {
             @Override

@@ -38,7 +38,7 @@ import java.util.Map;
 public class PostgreMViewManager extends PostgreViewManager {
 
     @Override
-    protected PostgreMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom)
+    protected PostgreMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom, Map<String, Object> options)
     {
         PostgreMaterializedView newMV = new PostgreMaterializedView(parent);
         newMV.setName("new_mview"); //$NON-NLS-1$

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 Unique Keys Manager
@@ -74,7 +75,7 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
 
     @Override
     public DB2TableUniqueKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2Table table,
-        Object from)
+                                                  Object from, Map<String, Object> options)
     {
         return new UITask<DB2TableUniqueKey>() {
             @Override

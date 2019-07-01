@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.util.Map;
+
 /**
  * MySQL foreign key manager
  */
@@ -43,7 +45,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
     }
 
     @Override
-    protected MySQLTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable table, Object from)
+    protected MySQLTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable table, Object from, Map<String, Object> options)
     {
         try {
             if (MySQLEngine.MYISAM.equalsIgnoreCase(table.getAdditionalInfo(monitor).getEngine().getName())) {

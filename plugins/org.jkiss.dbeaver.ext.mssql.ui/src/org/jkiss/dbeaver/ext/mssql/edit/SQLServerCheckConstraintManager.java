@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -28,7 +27,6 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -58,7 +56,7 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
     @Override
     protected SQLServerTableCheckConstraint createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new UITask<SQLServerTableCheckConstraint>() {
             @Override

@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -50,6 +49,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase {
 
@@ -132,7 +133,10 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 openEditor);
 
             // Parent is model object - not node
-            createDatabaseObject(commandTarget, objectMaker, parentObject instanceof DBPObject ? (DBPObject) parentObject : null, sourceObject);
+            Map<String, Object> options = new HashMap<>();
+            options.put(DBEObjectMaker.OPTION_CONTAINER, container);
+            options.put(DBEObjectMaker.OPTION_OBJECT_TYPE, newObjectType);
+            createDatabaseObject(commandTarget, objectMaker, parentObject instanceof DBPObject ? (DBPObject) parentObject : null, sourceObject, options);
         }
         catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError("Create object", null, e);
@@ -146,9 +150,10 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         CommandTarget commandTarget,
         DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker,
         CONTAINER_TYPE parentObject,
-        DBSObject sourceObject) throws DBException
+        DBSObject sourceObject,
+        Map<String, Object> options) throws DBException
     {
-        ObjectCreator<OBJECT_TYPE, CONTAINER_TYPE> objectCreator = new ObjectCreator<>(objectMaker, commandTarget, parentObject, sourceObject);
+        ObjectCreator<OBJECT_TYPE, CONTAINER_TYPE> objectCreator = new ObjectCreator<>(objectMaker, commandTarget, parentObject, sourceObject, options);
         try {
             UIUtils.runInProgressService(objectCreator);
         } catch (InvocationTargetException e) {
@@ -279,18 +284,20 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         private final CONTAINER_TYPE parentObject;
         private final DBSObject sourceObject;
         private OBJECT_TYPE newObject;
+        private Map<String, Object> options;
 
-        public ObjectCreator(DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CommandTarget commandTarget, CONTAINER_TYPE parentObject, DBSObject sourceObject) {
+        public ObjectCreator(DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CommandTarget commandTarget, CONTAINER_TYPE parentObject, DBSObject sourceObject, Map<String, Object> options) {
             this.objectMaker = objectMaker;
             this.commandTarget = commandTarget;
             this.parentObject = parentObject;
             this.sourceObject = sourceObject;
+            this.options = options;
         }
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             try {
-                newObject = objectMaker.createNewObject(monitor, commandTarget.getContext(), parentObject, sourceObject);
+                newObject = objectMaker.createNewObject(monitor, commandTarget.getContext(), parentObject, sourceObject, options);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }

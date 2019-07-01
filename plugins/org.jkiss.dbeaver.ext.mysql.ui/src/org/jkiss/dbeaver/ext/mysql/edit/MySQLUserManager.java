@@ -66,7 +66,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     }
 
     @Override
-    public MySQLUser createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
+    public MySQLUser createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom, Map<String, Object> options)
     {
         MySQLUser newUser = new MySQLUser(parent, null);
         if (copyFrom instanceof MySQLUser) {

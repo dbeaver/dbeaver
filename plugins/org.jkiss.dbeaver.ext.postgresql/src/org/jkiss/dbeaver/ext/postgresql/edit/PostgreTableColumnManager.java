@@ -183,7 +183,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected PostgreTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final PostgreTableBase parent, Object copyFrom)
+    protected PostgreTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final PostgreTableBase parent, Object copyFrom, Map<String, Object> options)
     {
         final PostgreTableColumn column = new PostgreTableColumn(parent);
         column.setName(getNewColumnName(monitor, context, parent));

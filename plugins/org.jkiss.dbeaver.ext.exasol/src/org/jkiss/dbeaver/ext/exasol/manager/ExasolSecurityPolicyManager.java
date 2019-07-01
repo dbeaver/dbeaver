@@ -53,7 +53,7 @@ public class ExasolSecurityPolicyManager
     
     @Override
     protected ExasolSecurityPolicy createDatabaseObject(DBRProgressMonitor monitor,
-            DBECommandContext context, ExasolDataSource parent, Object copyFrom)
+                                                        DBECommandContext context, ExasolDataSource parent, Object copyFrom, Map<String, Object> options)
             throws DBException
     {
     	throw new DBException("Not Supported");

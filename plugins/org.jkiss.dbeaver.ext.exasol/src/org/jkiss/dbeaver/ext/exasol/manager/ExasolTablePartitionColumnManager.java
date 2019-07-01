@@ -49,7 +49,7 @@ public class ExasolTablePartitionColumnManager extends SQLObjectEditor<ExasolTab
 
 	@Override
 	protected ExasolTablePartitionColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-			ExasolTable parent, Object copyFrom) throws DBException {
+                                                              ExasolTable parent, Object copyFrom, Map<String, Object> options) throws DBException {
 		return new ExasolTablePartitionColumn(parent);
 	}
 

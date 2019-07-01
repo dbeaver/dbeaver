@@ -36,6 +36,9 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     long FEATURE_EDITOR_ON_CREATE       = 4;
     long FEATURE_DELETE_CASCADE         = 8;
 
+    String OPTION_CONTAINER = "container";
+    String OPTION_OBJECT_TYPE = "objectType";
+
     String OPTION_DELETE_CASCADE = "deleteCascade";
 
     long getMakerOptions(DBPDataSource dataSource);
@@ -64,13 +67,15 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * @param commandContext command context
      * @param parent parent object
      * @param copyFrom template for new object (usually result of "paste" operation)
+     * @param options
      * @return null if no additional actions should be performed
      */
     OBJECT_TYPE createNewObject(
         DBRProgressMonitor monitor,
         DBECommandContext commandContext,
         CONTAINER_TYPE parent,
-        Object copyFrom) throws DBException;
+        Object copyFrom,
+        Map<String, Object> options) throws DBException;
 
     /**
      * Deletes specified object.

@@ -55,8 +55,8 @@ public class ExasolPrimaryKeyManager
 
 	@Override
 	protected ExasolTableUniqueKey createDatabaseObject(
-			DBRProgressMonitor monitor, DBECommandContext context,
-			ExasolTable parent, Object copyFrom) throws DBException
+        DBRProgressMonitor monitor, DBECommandContext context,
+        ExasolTable parent, Object copyFrom, Map<String, Object> options) throws DBException
 	{
 		return new UITask<ExasolTableUniqueKey>() {
 			@Override

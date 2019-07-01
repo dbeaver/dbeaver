@@ -53,7 +53,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     @Override
     protected OracleTableConstraint createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final OracleTableBase parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new UITask<OracleTableConstraint>() {
             @Override

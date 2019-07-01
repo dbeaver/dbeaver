@@ -109,7 +109,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final MySQLTableBase parent, Object copyFrom)
+    protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final MySQLTableBase parent, Object copyFrom, Map<String, Object> options)
     {
         MySQLTableColumn column = new MySQLTableColumn(parent);
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$

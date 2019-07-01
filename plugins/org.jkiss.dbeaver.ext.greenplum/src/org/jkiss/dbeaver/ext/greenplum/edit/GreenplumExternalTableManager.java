@@ -24,7 +24,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema;
-import org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -43,9 +42,9 @@ import java.util.Map;
 public class GreenplumExternalTableManager extends PostgreTableManager {
     @Override
     protected GreenplumExternalTable createDatabaseObject(DBRProgressMonitor monitor,
-                                                DBECommandContext context,
-                                                PostgreSchema parent,
-                                                Object copyFrom) {
+                                                          DBECommandContext context,
+                                                          PostgreSchema parent,
+                                                          Object copyFrom, Map<String, Object> options) {
         GreenplumExternalTable externalTable = new GreenplumExternalTable(parent);
         try {
             setTableName(monitor, parent, externalTable);

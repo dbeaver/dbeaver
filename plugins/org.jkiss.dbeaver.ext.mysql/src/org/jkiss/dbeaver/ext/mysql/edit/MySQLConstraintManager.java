@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
+import java.util.Map;
+
 /**
  * MySQL constraint manager
  */
@@ -42,7 +44,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
     @Override
     protected MySQLTableConstraint createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new MySQLTableConstraint(
             parent,
