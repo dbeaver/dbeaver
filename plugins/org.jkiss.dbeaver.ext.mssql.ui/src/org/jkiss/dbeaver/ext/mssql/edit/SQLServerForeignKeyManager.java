@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 
+import java.util.Map;
+
 /**
  * SQL Server foreign key manager
  */
@@ -43,7 +45,7 @@ public class SQLServerForeignKeyManager extends SQLForeignKeyManager<SQLServerTa
     }
 
     @Override
-    protected SQLServerTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable table, Object from)
+    protected SQLServerTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable table, Object from, Map<String, Object> options)
     {
         return new UITask<SQLServerTableForeignKey>() {
             @Override

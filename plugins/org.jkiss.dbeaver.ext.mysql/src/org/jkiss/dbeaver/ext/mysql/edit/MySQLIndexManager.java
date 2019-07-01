@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+
 /**
  * MySQL index manager
  */
@@ -46,7 +48,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
     @Override
     protected MySQLTableIndex createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new MySQLTableIndex(
             parent,

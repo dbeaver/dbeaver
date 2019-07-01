@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Oracle index manager
@@ -52,7 +53,7 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
     @Override
     protected OracleTableIndex createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final OracleTablePhysical parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new UITask<OracleTableIndex>() {
             @Override

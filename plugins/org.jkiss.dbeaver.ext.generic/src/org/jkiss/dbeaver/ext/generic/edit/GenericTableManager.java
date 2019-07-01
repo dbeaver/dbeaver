@@ -19,15 +19,21 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
@@ -66,15 +72,25 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
     }
 
     @Override
-    protected GenericTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericStructContainer parent, Object copyFrom)
+    protected GenericTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericStructContainer parent, Object copyFrom, Map<String, Object> options)
     {
+        boolean isView = false;
+        Object navContainer = options.get(DBEObjectMaker.OPTION_CONTAINER);
+        if (navContainer instanceof DBNDatabaseFolder) {
+            List<DBXTreeNode> folderChildren = ((DBNDatabaseFolder) navContainer).getMeta().getChildren((DBNNode) navContainer);
+            if (folderChildren.size() == 1 && folderChildren.get(0) instanceof DBXTreeItem && ((DBXTreeItem) folderChildren.get(0)).getPropertyName().equals("views")) {
+                isView = true;
+            }
+        }
         String tableName = "";
         try {
-            tableName = getNewChildName(monitor, parent);
+            tableName = getNewChildName(monitor, parent, isView ? BASE_VIEW_NAME : BASE_TABLE_NAME);
         } catch (DBException e) {
             log.error(e);
         }
-        return parent.getDataSource().getMetaModel().createTableImpl(parent, tableName, "TABLE", null);
+        return parent.getDataSource().getMetaModel().createTableImpl(parent, tableName,
+            isView ? GenericConstants.TABLE_TYPE_VIEW : GenericConstants.TABLE_TYPE_TABLE,
+            null);
     }
 
     @Override

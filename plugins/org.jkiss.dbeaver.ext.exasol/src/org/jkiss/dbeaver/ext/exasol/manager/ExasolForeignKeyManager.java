@@ -37,7 +37,7 @@ public class ExasolForeignKeyManager
     @Override
     protected ExasolTableForeignKey createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context,
-        ExasolTable parent, Object copyFrom) throws DBException {
+        ExasolTable parent, Object copyFrom, Map<String, Object> options) throws DBException {
         return new UITask<ExasolTableForeignKey>() {
             @Override
             protected ExasolTableForeignKey runTask() {

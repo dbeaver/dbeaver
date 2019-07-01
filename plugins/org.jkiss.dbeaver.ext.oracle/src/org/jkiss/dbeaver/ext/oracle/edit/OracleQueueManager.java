@@ -61,7 +61,7 @@ public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchem
     @Override
     protected OracleQueue createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
                                                final OracleSchema schema,
-                                               Object copyFrom)
+                                               Object copyFrom, Map<String, Object> options)
     {
         return new UITask<OracleQueue>() {
             @Override

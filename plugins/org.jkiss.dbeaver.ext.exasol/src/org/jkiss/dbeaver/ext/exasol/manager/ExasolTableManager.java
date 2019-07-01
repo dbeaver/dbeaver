@@ -78,7 +78,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
 
     @Override
     public ExasolTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, ExasolSchema exasolSchema,
-                                            Object copyFrom) {
+                                            Object copyFrom, Map<String, Object> options) {
         ExasolTable table = new ExasolTable(exasolSchema, NEW_TABLE_NAME);
         try {
             setTableName(monitor, exasolSchema, table);

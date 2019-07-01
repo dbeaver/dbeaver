@@ -87,7 +87,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @Override
     public DB2Table createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2Schema db2Schema,
-                                         Object copyFrom)
+                                         Object copyFrom, Map<String, Object> options)
     {
         DB2Table table = new DB2Table(db2Schema, NEW_TABLE_NAME);
         try {

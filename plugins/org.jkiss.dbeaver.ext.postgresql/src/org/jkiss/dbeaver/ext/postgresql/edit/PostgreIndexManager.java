@@ -51,7 +51,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     @Override
     protected PostgreIndex createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new PostgreIndex(
             parent,

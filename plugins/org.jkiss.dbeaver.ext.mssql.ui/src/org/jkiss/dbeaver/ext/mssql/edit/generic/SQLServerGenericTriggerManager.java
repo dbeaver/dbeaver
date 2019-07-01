@@ -56,7 +56,7 @@ public class SQLServerGenericTriggerManager extends SQLTriggerManager<SQLServerG
     }
 
     @Override
-    protected SQLServerGenericTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerGenericTable parent, Object copyFrom)
+    protected SQLServerGenericTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerGenericTable parent, Object copyFrom, Map<String, Object> options)
     {
         return null;
     }

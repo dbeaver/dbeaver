@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Map;
+
 /**
  * Generic constraint manager
  */
@@ -52,7 +54,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
     @Override
     protected GenericPrimaryKey createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new GenericPrimaryKey(
             parent,

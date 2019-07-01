@@ -66,7 +66,7 @@ public class ExasolSchemaManager
     
     @Override
     protected ExasolSchema createDatabaseObject(DBRProgressMonitor monitor,
-            DBECommandContext context, ExasolDataSource parent, Object copyFrom)
+                                                DBECommandContext context, ExasolDataSource parent, Object copyFrom, Map<String, Object> options)
             throws DBException
     {
         return new UITask<ExasolSchema>(){

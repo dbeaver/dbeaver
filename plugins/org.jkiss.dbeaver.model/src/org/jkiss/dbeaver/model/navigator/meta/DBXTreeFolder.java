@@ -87,6 +87,7 @@ public class DBXTreeFolder extends DBXTreeNode {
         return hasChildren;
     }
 
+    @NotNull
     @Override
     public List<DBXTreeNode> getChildren(DBNNode context) {
         List<DBXTreeNode> children = super.getChildren(context);

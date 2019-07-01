@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -68,7 +67,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected OracleSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleDataSource parent, Object copyFrom)
+    protected OracleSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleDataSource parent, Object copyFrom, Map<String, Object> options)
     {
         return new UITask<OracleSchema>() {
             @Override

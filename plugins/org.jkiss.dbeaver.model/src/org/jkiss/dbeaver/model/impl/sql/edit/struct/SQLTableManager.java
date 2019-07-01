@@ -49,7 +49,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
     extends SQLStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
 {
 
-    private static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
+    protected static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
+    protected static final String BASE_VIEW_NAME = "NewView"; //$NON-NLS-1$
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource)

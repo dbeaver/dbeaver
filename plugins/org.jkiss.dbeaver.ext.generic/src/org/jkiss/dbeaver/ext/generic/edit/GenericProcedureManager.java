@@ -56,7 +56,7 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
     @Override
     protected GenericProcedure createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final GenericStructContainer parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         throw new IllegalStateException("Not implemented");
     }

@@ -88,7 +88,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
 
     @Override
     protected ExasolTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, ExasolTableBase parent,
-                                                     Object copyFrom) {
+                                                     Object copyFrom, Map<String, Object> options) {
         ExasolTableColumn column = new ExasolTableColumn(parent);
         column.setName(getNewColumnName(monitor, context, parent));
         return column;

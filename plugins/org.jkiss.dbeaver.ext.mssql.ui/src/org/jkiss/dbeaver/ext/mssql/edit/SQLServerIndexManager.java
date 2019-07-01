@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * SQL Server index manager
@@ -51,7 +52,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
     @Override
     protected SQLServerTableIndex createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTableBase parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new UITask<SQLServerTableIndex>() {
             @Override

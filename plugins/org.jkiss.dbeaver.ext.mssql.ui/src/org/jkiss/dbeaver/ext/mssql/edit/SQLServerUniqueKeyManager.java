@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
+import java.util.Map;
+
 /**
  * SQL server unique constraint manager
  */
@@ -46,7 +48,7 @@ public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTab
     @Override
     protected SQLServerTableUniqueKey createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable parent,
-        Object from)
+        Object from, Map<String, Object> options)
     {
         return new UITask<SQLServerTableUniqueKey>() {
             @Override
