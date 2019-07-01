@@ -518,7 +518,7 @@ public class ResultSetModel {
                 if (topAttr.getDataKind() == DBPDataKind.DOCUMENT || topAttr.getDataKind() == DBPDataKind.STRUCT) {
                     List<DBDAttributeBinding> nested = topAttr.getNestedBindings();
                     if (nested != null && !nested.isEmpty()) {
-                        attributes = nested.toArray(new DBDAttributeBinding[nested.size()]);
+                        attributes = nested.toArray(new DBDAttributeBinding[0]);
                         fillVisibleAttributes();
                     }
                 }
@@ -534,7 +534,7 @@ public class ResultSetModel {
         } else {
             DBDDataFilter prevFilter = dataFilter;
             this.dataFilter = createDataFilter();
-            updateDataFilter(prevFilter);
+            updateDataFilter(prevFilter, false);
         }
         this.visibleAttributes.sort(POSITION_SORTER);
 
@@ -863,13 +863,14 @@ public class ResultSetModel {
         return false;
     }
 
-    void updateDataFilter(DBDDataFilter filter) {
+    void updateDataFilter(DBDDataFilter filter, boolean metaChanged) {
         this.visibleAttributes.clear();
         Collections.addAll(this.visibleAttributes, this.attributes);
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
-            if (filterConstraint == null) {
-                //log.warn("Constraint for attribute [" + constraint.getAttribute().getName() + "] not found");
+            if (filterConstraint == null || constraint.getVisualPosition() != filterConstraint.getVisualPosition()) {
+                // If visual position doesn't match then probably it is a wrong attribute.
+                // There can be multiple attributes with the same name in rs (in some databases)
                 continue;
             }
             if (constraint.getOperator() != null) {
@@ -883,12 +884,13 @@ public class ResultSetModel {
             filterConstraint.setOrderDescending(constraint.isOrderDescending());
             filterConstraint.setVisible(constraint.isVisible());
             filterConstraint.setVisualPosition(constraint.getVisualPosition());
-            if (filterConstraint.getAttribute() instanceof DBDAttributeBinding) {
+            DBSAttributeBase cAttr = filterConstraint.getAttribute();
+            if (cAttr instanceof DBDAttributeBinding) {
                 if (!constraint.isVisible()) {
-                    visibleAttributes.remove(filterConstraint.getAttribute());
+                    visibleAttributes.remove(cAttr);
                 } else {
-                    if (!visibleAttributes.contains(filterConstraint.getAttribute())) {
-                        DBDAttributeBinding attribute = (DBDAttributeBinding) filterConstraint.getAttribute();
+                    if (!visibleAttributes.contains(cAttr)) {
+                        DBDAttributeBinding attribute = (DBDAttributeBinding) cAttr;
                         if (attribute.getParentObject() == null) {
                             // Add only root attributes
                             visibleAttributes.add(attribute);
