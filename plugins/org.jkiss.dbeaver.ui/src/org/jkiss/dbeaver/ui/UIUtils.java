@@ -1423,6 +1423,9 @@ public class UIUtils {
                         text.append(item.getText(i));
                     }
                 }
+                if (text.length() == 0) {
+                    return;
+                }
                 UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
             }
         });
@@ -1440,6 +1443,9 @@ public class UIUtils {
                         if (i > 0) text.append("\t");
                         text.append(item.getText(i));
                     }
+                }
+                if (text.length() == 0) {
+                    return;
                 }
                 UIUtils.setClipboardContents(tree.getDisplay(), TextTransfer.getInstance(), text.toString());
             }
