@@ -68,19 +68,18 @@ import java.util.*;
 public class PostgreUtils {
 
     private static final Log log = Log.getLog(PostgreUtils.class);
-    
+
     private static final int UNKNOWN_LENGTH = -1;
 
     public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
-        throws DBException
-    {
+            throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load PostgreSQL description")) {
             return JDBCUtils.queryString(
-                session,
-                "select description from pg_catalog.pg_description\n" +
-                "join pg_catalog.pg_class on pg_description.objoid = pg_class.oid\n" +
-                "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid\n" +
-                "where pg_class.relname = ? and pg_namespace.nspname=?", object, schema);
+                    session,
+                    "select description from pg_catalog.pg_description\n" +
+                            "join pg_catalog.pg_class on pg_description.objoid = pg_class.oid\n" +
+                            "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid\n" +
+                            "where pg_class.relname = ? and pg_namespace.nspname=?", object, schema);
         } catch (Exception e) {
             log.debug(e);
             return null;
@@ -89,14 +88,22 @@ public class PostgreUtils {
 
     public static String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
-            case BOOLEAN: return "bool";
-            case NUMERIC: return "int";
-            case STRING: return "varchar";
-            case DATETIME: return "timestamp";
-            case BINARY: return "bytea";
-            case CONTENT: return "bytea";
-            case ROWID: return "oid";
-            default: return "varchar";
+            case BOOLEAN:
+                return "bool";
+            case NUMERIC:
+                return "int";
+            case STRING:
+                return "varchar";
+            case DATETIME:
+                return "timestamp";
+            case BINARY:
+                return "bytea";
+            case CONTENT:
+                return "bytea";
+            case ROWID:
+                return "oid";
+            default:
+                return "varchar";
         }
     }
 
@@ -134,12 +141,11 @@ public class PostgreUtils {
 
     @Nullable
     public static <OWNER extends DBSObject, OBJECT extends PostgreObject> OBJECT getObjectById(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AbstractObjectCache<OWNER,OBJECT> cache,
-        @NotNull OWNER owner,
-        long objectId)
-        throws DBException
-    {
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull AbstractObjectCache<OWNER, OBJECT> cache,
+            @NotNull OWNER owner,
+            long objectId)
+            throws DBException {
         for (OBJECT object : cache.getAllObjects(monitor, owner)) {
             if (object.getObjectId() == objectId) {
                 return object;
@@ -174,7 +180,7 @@ public class PostgreUtils {
             }
             return result;
         } else if (pgVector instanceof Number) {
-            return new long[] {((Number) pgVector).longValue()};
+            return new long[]{((Number) pgVector).longValue()};
         } else {
             throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }
@@ -257,7 +263,7 @@ public class PostgreUtils {
             case PostgreOid.NUMERIC:
                 if (typeMod == -1)
                     return 0;
-                return ((typeMod-4) & 0xFFFF0000) >> 16;
+                return ((typeMod - 4) & 0xFFFF0000) >> 16;
 
             case PostgreOid.CHAR:
             case PostgreOid.BOOL:
@@ -296,7 +302,7 @@ public class PostgreUtils {
 
     public static int getDisplaySize(long oid, int typmod) {
         //oid = convertArrayToBaseOid(oid);
-        switch((int)oid) {
+        switch ((int) oid) {
             case PostgreOid.INT2:
                 return 6; // -32768 to +32767
             case PostgreOid.INT4:
@@ -323,7 +329,7 @@ public class PostgreUtils {
             case PostgreOid.TIMESTAMPTZ:
                 // Calculate the number of decimal digits + the decimal point.
                 int secondSize;
-                switch(typmod) {
+                switch (typmod) {
                     case -1:
                         secondSize = 6 + 1;
                         break;
@@ -345,7 +351,7 @@ public class PostgreUtils {
                 // date = '294276-11-20' = 12 --enable-integer-datetimes
                 // zone = '+11:30' = 6;
 
-                switch((int)oid) {
+                switch ((int) oid) {
                     case PostgreOid.TIME:
                         return 8 + secondSize;
                     case PostgreOid.TIMETZ:
@@ -365,8 +371,8 @@ public class PostgreUtils {
             case PostgreOid.NUMERIC:
                 if (typmod == -1)
                     return 131089; // SELECT LENGTH(pow(10::numeric,131071)); 131071 = 2^17-1
-                int precision = (typmod-4 >> 16) & 0xffff;
-                int scale = (typmod-4) & 0xffff;
+                int precision = (typmod - 4 >> 16) & 0xffff;
+                int scale = (typmod - 4) & 0xffff;
                 // sign + digits + decimal point (only if we have nonzero scale)
                 return 1 + precision + (scale != 0 ? 1 : 0);
             case PostgreOid.BIT:
@@ -385,7 +391,7 @@ public class PostgreUtils {
 
     public static int getScale(long oid, int typmod) {
         //oid = convertArrayToBaseOid(oid);
-        switch((int)oid) {
+        switch ((int) oid) {
             case PostgreOid.FLOAT4:
                 return 8;
             case PostgreOid.FLOAT8:
@@ -393,7 +399,7 @@ public class PostgreUtils {
             case PostgreOid.NUMERIC:
                 if (typmod == -1)
                     return 0;
-                return (typmod-4) & 0xFFFF;
+                return (typmod - 4) & 0xFFFF;
             case PostgreOid.TIME:
             case PostgreOid.TIMETZ:
             case PostgreOid.TIMESTAMP:
@@ -412,19 +418,19 @@ public class PostgreUtils {
 
     public static PostgreDataType findDataType(PostgreDataSource dataSource, DBSTypedObject type) {
         if (type instanceof PostgreAttribute) {
-            return  ((PostgreAttribute) type).getDataType();
+            return ((PostgreAttribute) type).getDataType();
         } else {
             String typeName = type.getTypeName();
             return dataSource.getLocalDataType(typeName);
         }
     }
-    
+
     public static Object convertStringToValue(DBCSession session, DBSTypedObject itemType, String string, boolean unescape) throws DBCException {
         if (itemType.getDataKind() == DBPDataKind.ARRAY) {
             if (CommonUtils.isEmpty(string)) {
                 return new Object[0];
             } else if (string.startsWith("{") && string.endsWith("}")) {
-                DBSDataType arrayDataType = itemType instanceof DBSDataType ? (DBSDataType) itemType : ((DBSTypedObjectEx)itemType).getDataType();
+                DBSDataType arrayDataType = itemType instanceof DBSDataType ? (DBSDataType) itemType : ((DBSTypedObjectEx) itemType).getDataType();
                 try {
                     DBSDataType componentType = arrayDataType.getComponentType(session.getProgressMonitor());
                     if (componentType == null) {
@@ -446,23 +452,37 @@ public class PostgreUtils {
                 return null;
             }
         }
+        if (CommonUtils.isEmpty(string)) {
+            return convertStringToSimpleValue(session, itemType, string);
+        }
         switch (itemType.getTypeID()) {
-            case Types.BOOLEAN: return string.length() > 0 && Character.toLowerCase(string.charAt(0)) == 't';
-            case Types.TINYINT: return Byte.parseByte(string); 
-            case Types.SMALLINT: return Short.parseShort(string); 
-            case Types.INTEGER: return Integer.parseInt(string); 
-            case Types.BIGINT: return Long.parseLong(string); 
-            case Types.FLOAT: return Float.parseFloat(string); 
+            case Types.BOOLEAN:
+                return string.length() > 0 && Character.toLowerCase(string.charAt(0)) == 't';
+            case Types.TINYINT:
+                return Byte.parseByte(string);
+            case Types.SMALLINT:
+                return Short.parseShort(string);
+            case Types.INTEGER:
+                return Integer.parseInt(string);
+            case Types.BIGINT:
+                return Long.parseLong(string);
+            case Types.FLOAT:
+                return Float.parseFloat(string);
             case Types.REAL:
-            case Types.DOUBLE: return Double.parseDouble(string); 
+            case Types.DOUBLE:
+                return Double.parseDouble(string);
             default: {
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
-                if (valueHandler != null) {
-                    return valueHandler.getValueFromObject(session, itemType, string, false);
-                } else {
-                    return string;
-                }
+                return convertStringToSimpleValue(session, itemType, string);
             }
+        }
+    }
+
+    private static Object convertStringToSimpleValue(DBCSession session, DBSTypedObject itemType, String string) throws DBCException {
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
+        if (valueHandler != null) {
+            return valueHandler.getValueFromObject(session, itemType, string, false);
+        } else {
+            return string;
         }
     }
 
@@ -543,15 +563,15 @@ public class PostgreUtils {
 
                 List<PostgrePrivilegeGrant> privileges = new ArrayList<>();
                 privileges.add(
-                    new PostgrePrivilegeGrant(
-                        granteeName,
-                        granteeName,
-                        owner.getDatabase().getName(),
-                        owner.getSchema().getName(),
-                        owner.getName(),
-                        PostgrePrivilegeType.ALL,
-                        false,
-                        false));
+                        new PostgrePrivilegeGrant(
+                                granteeName,
+                                granteeName,
+                                owner.getDatabase().getName(),
+                                owner.getSchema().getName(),
+                                owner.getName(),
+                                PostgrePrivilegeType.ALL,
+                                false,
+                                false));
                 PostgreObjectPrivilege permission = new PostgreObjectPrivilege(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
                 return Collections.singletonList(permission);
             }
@@ -599,13 +619,13 @@ public class PostgreUtils {
                     k++;
                 }
                 privileges.add(new PostgrePrivilegeGrant(
-                    grantor, grantee,
-                    owner.getDatabase().getName(),
-                    owner.getSchema().getName(),
-                    owner.getName(),
-                    PostgrePrivilegeType.getByCode(pCode),
-                    withGrantOption,
-                    false
+                        grantor, grantee,
+                        owner.getDatabase().getName(),
+                        owner.getSchema().getName(),
+                        owner.getName(),
+                        PostgrePrivilegeType.getByCode(pCode),
+                        withGrantOption,
+                        false
                 ));
             }
             permissions.add(new PostgreObjectPrivilege(owner, grantee, privileges));
@@ -671,8 +691,8 @@ public class PostgreUtils {
                 for (PostgrePrivilege permission : permissions) {
                     if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
-                            new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[] { PostgrePrivilegeType.ALL })
-                                .getPersistActions(monitor, options));
+                                new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
+                                        .getPersistActions(monitor, options));
                     } else {
                         PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
                         Collections.addAll(actions, grant.getPersistActions(monitor, options));
@@ -684,6 +704,6 @@ public class PostgreUtils {
 
     public static boolean isGISDataType(String typeName) {
         return PostgreConstants.TYPE_GEOMETRY.equals(typeName) ||
-            PostgreConstants.TYPE_GEOGRAPHY.equals(typeName);
+                PostgreConstants.TYPE_GEOGRAPHY.equals(typeName);
     }
 }
