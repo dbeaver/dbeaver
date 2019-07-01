@@ -55,7 +55,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         if (minIntDigits != null) {
             numberFormat.setMinimumIntegerDigits(CommonUtils.toInt(minIntDigits));
         }
-        if (type != null && type.getPrecision() > 8) {
+        if (type != null && type.getPrecision() != null && type.getPrecision() > 8) {
             // Set fraction digits limit only for double precision, see #6111)
             // By some reason float numers are formatted incorrectly if we set fraction limits
             Object maxFractDigits = properties.get(NumberFormatSample.PROP_MAX_FRACT_DIGITS);
