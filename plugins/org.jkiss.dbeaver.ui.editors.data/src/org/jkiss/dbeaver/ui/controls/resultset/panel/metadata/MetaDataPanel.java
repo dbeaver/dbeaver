@@ -189,6 +189,9 @@ public class MetaDataPanel implements IResultSetPanel {
                             text.append(((DBDAttributeBinding) item).getName());
                         }
                     }
+                    if (text.length() == 0) {
+                        return;
+                    }
                     UIUtils.setClipboardContents(getDisplay(), TextTransfer.getInstance(), text.toString());
                 }
             });
