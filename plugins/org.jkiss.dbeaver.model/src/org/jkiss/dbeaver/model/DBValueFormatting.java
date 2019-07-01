@@ -52,10 +52,10 @@ public final class DBValueFormatting {
     private static final Log log = Log.getLog(DBValueFormatting.class);
 
     static {
-        NATIVE_FLOAT_FORMATTER.setMaximumFractionDigits(NumberDataFormatter.MAX_FLOAT_FRACTION_DIGITS);
+        //NATIVE_FLOAT_FORMATTER.setMaximumFractionDigits(NumberDataFormatter.MAX_FLOAT_FRACTION_DIGITS);
         NATIVE_FLOAT_FORMATTER.setDecimalSeparatorAlwaysShown(false);
 
-        NATIVE_DOUBLE_FORMATTER.setMaximumFractionDigits(340);
+        //NATIVE_DOUBLE_FORMATTER.setMaximumFractionDigits(340);
         NATIVE_DOUBLE_FORMATTER.setDecimalSeparatorAlwaysShown(false);
     }
 
