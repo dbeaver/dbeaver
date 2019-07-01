@@ -3265,7 +3265,7 @@ public class ResultSetViewer extends Viewer
                             }
 
                             if (dataFilter != null) {
-                                model.updateDataFilter(dataFilter);
+                                model.updateDataFilter(dataFilter, true);
                                 // New data filter may have different columns visibility
                                 redrawData(true, false);
                             }
