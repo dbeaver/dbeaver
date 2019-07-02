@@ -205,13 +205,13 @@ class GenericFilterValueEdit {
                 final DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
                 if (fkAttribute != null && enumConstraint != null) {
                     return enumConstraint.getKeyEnumeration(
-                        session,
-                        refColumn,
-                        filterPattern,
-                        null,
-                        true,
-                        true,
-                        MAX_MULTI_VALUES);
+                            session,
+                            refColumn,
+                            filterPattern,
+                            null,
+                            true,
+                            true,
+                            MAX_MULTI_VALUES);
                 }
                 return null;
             }
@@ -265,7 +265,7 @@ class GenericFilterValueEdit {
                 hasNulls = true;
                 continue;
             }
-            if (!rowData.containsKey(cellValue)) {
+            if (!keyPresents(rowData, cellValue)) {
                 String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
                 rowData.put(cellValue, new DBDLabelValuePair(itemString, cellValue));
             }
@@ -301,7 +301,7 @@ class GenericFilterValueEdit {
             log.error("Error sorting value collection", e);
         }
         if (hasNulls) {
-            if (!rowData.containsKey(null)) {
+            if (!keyPresents(rowData, null)) {
                 sortedList.add(0, new DBDLabelValuePair(DBValueFormatting.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
             }
         }
@@ -348,6 +348,17 @@ class GenericFilterValueEdit {
                 tableViewer.getTable().showItem((TableItem) item);
             }
         }
+    }
+
+    private boolean keyPresents(Map<Object, DBDLabelValuePair> rowData, Object cellValue) {
+        if (cellValue instanceof Number) {
+            for (Object key : rowData.keySet()) {
+                if (key instanceof Number && CommonUtils.compareNumbers((Number) key, (Number) cellValue) == 0) {
+                    return true;
+                }
+            }
+        }
+        return rowData.containsKey(cellValue);
     }
 
     private abstract class KeyLoadJob extends AbstractJob {
