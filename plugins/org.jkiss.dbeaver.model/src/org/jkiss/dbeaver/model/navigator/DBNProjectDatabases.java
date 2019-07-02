@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -251,7 +252,16 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 if (event.getObject() instanceof DBPDataSourceContainer) {
                     addDataSource((DBPDataSourceContainer) event.getObject(), true, event.getEnabled() != null && event.getEnabled());
                 } else if (model.getNodeByObject(event.getObject()) == null) {
-                    DBNDatabaseNode parentNode = model.getParentNode(event.getObject());
+                    DBNDatabaseNode parentNode = null;
+                    if (event.getOptions() != null) {
+                        Object containerNode = event.getOptions().get(DBEObjectMaker.OPTION_CONTAINER);
+                        if (containerNode instanceof DBNDatabaseNode) {
+                            parentNode = (DBNDatabaseNode) containerNode;
+                        }
+                    }
+                    if (parentNode == null) {
+                        parentNode = model.getParentNode(event.getObject());
+                    }
                     boolean parentFound = (parentNode != null);
                     if (parentNode == null) {
                         // Not yet loaded. Parent node might be a folder (like Tables)

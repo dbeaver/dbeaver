@@ -129,7 +129,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
                 Collection<SQLServerTableCheckConstraint> checkConstraints = CommonUtils.safeCollection(table.getCheckConstraints(monitor));
                 if (!CommonUtils.isEmpty(checkConstraints)) {
                     for (SQLServerTableCheckConstraint checkConstraint : checkConstraints) {
-                        createCommand.aggregateCommand(ccm.makeCreateCommand(checkConstraint));
+                        createCommand.aggregateCommand(ccm.makeCreateCommand(checkConstraint, options));
                     }
                 }
             } catch (DBException e) {

@@ -1161,11 +1161,13 @@ public final class DBUtils {
         }
     }
 
-    public static void fireObjectAdd(DBSObject object)
+    public static void fireObjectAdd(DBSObject object, Map<String, Object> options)
     {
         final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
-            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_ADD, object));
+            DBPEvent event = new DBPEvent(DBPEvent.Action.OBJECT_ADD, object);
+            event.setOptions(options);
+            container.fireEvent(event);
         }
     }
 

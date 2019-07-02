@@ -217,7 +217,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
             }
         }
 
-        StructCreateCommand command = makeCreateCommand(table);
+        StructCreateCommand command = makeCreateCommand(table, options);
         if (tcm != null) {
             // Aggregate nested column, constraint and index commands
             for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
@@ -225,7 +225,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
                     // Do not include hidden (pseudo?) and inherited columns in DDL
                     continue;
                 }
-                command.aggregateCommand(tcm.makeCreateCommand(column));
+                command.aggregateCommand(tcm.makeCreateCommand(column, options));
             }
         }
         if (pkm != null) {
@@ -234,7 +234,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
                     if (DBUtils.isHiddenObject(constraint) || DBUtils.isInheritedObject(constraint)) {
                         continue;
                     }
-                    command.aggregateCommand(pkm.makeCreateCommand(constraint));
+                    command.aggregateCommand(pkm.makeCreateCommand(constraint, options));
                 }
             } catch (DBException e) {
                 // Ignore primary keys
@@ -250,7 +250,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
                     {
                         continue;
                     }
-                    command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey));
+                    command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options));
                 }
             } catch (DBException e) {
                 // Ignore primary keys
@@ -263,7 +263,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSTable, CONTAINER_TY
                     if (!isIncludeIndexInDDL(index)) {
                         continue;
                     }
-                    command.aggregateCommand(im.makeCreateCommand(index));
+                    command.aggregateCommand(im.makeCreateCommand(index, options));
                 }
             } catch (DBException e) {
                 // Ignore indexes

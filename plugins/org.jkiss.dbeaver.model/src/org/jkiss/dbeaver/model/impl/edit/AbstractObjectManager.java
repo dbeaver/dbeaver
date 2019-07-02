@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Map;
+
 /**
  * Abstract object manager
  */
@@ -86,7 +88,11 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         public void redoCommand(DBECommand<OBJECT_TYPE> command)
         {
             cacheModelObject(command.getObject());
-            DBUtils.fireObjectAdd(command.getObject());
+            Map<String, Object> options = null;
+            if (command instanceof DBECommandWithOptions) {
+                options = ((DBECommandWithOptions) command).getOptions();
+            }
+            DBUtils.fireObjectAdd(command.getObject(), options);
         }
 
         @Override
@@ -114,7 +120,11 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         public void undoCommand(DBECommand<OBJECT_TYPE> command)
         {
             cacheModelObject(command.getObject());
-            DBUtils.fireObjectAdd(command.getObject());
+            Map<String, Object> options = null;
+            if (command instanceof DBECommandWithOptions) {
+                options = ((DBECommandWithOptions) command).getOptions();
+            }
+            DBUtils.fireObjectAdd(command.getObject(), options);
         }
 
     }
