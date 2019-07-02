@@ -36,7 +36,14 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     long FEATURE_EDITOR_ON_CREATE       = 4;
     long FEATURE_DELETE_CASCADE         = 8;
 
+    /**
+     * New object container.
+     * Usually it is a navigator node (DBNNode).
+     */
     String OPTION_CONTAINER = "container";
+    /**
+     * Object type (class)
+     */
     String OPTION_OBJECT_TYPE = "objectType";
 
     String OPTION_DELETE_CASCADE = "deleteCascade";
