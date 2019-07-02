@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,13 +26,13 @@ import org.jkiss.dbeaver.ui.editors.object.struct.CreateSequencePage;
 /**
  * Postgre sequence configurator
  */
-public class PostgreSequenceConfigurator implements DBEObjectConfigurator<PostgreSchema, PostgreSequence> {
+public class PostgreSequenceConfigurator implements DBEObjectConfigurator<PostgreSequence> {
     @Override
-    public PostgreSequence configureObject(DBRProgressMonitor monitor, PostgreSchema parent, PostgreSequence sequence) {
+    public PostgreSequence configureObject(DBRProgressMonitor monitor, Object parent, PostgreSequence sequence) {
         return new UITask<PostgreSequence>() {
             @Override
             protected PostgreSequence runTask() {
-                CreateSequencePage editPage = new CreateSequencePage(parent);
+                CreateSequencePage editPage = new CreateSequencePage(sequence);
                 if (!editPage.edit()) {
                     return null;
                 }

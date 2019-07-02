@@ -74,14 +74,14 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     // Commands
 
     @Override
-    public final OBJECT_TYPE createNewObject(DBRProgressMonitor monitor, @NotNull DBECommandContext commandContext, CONTAINER_TYPE parent, @Nullable Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    public final OBJECT_TYPE createNewObject(DBRProgressMonitor monitor, @NotNull DBECommandContext commandContext, Object container, @Nullable Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         OBJECT_TYPE newObject;
         try {
-            newObject = createDatabaseObject(monitor, commandContext, parent, copyFrom, options);
+            newObject = createDatabaseObject(monitor, commandContext, (CONTAINER_TYPE) container, copyFrom, options);
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + parent.getClass().getSimpleName());
+            throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + container.getClass().getSimpleName());
         }
-        newObject = configureObject(monitor, parent, newObject);
+        newObject = configureObject(monitor, container, newObject);
         if (newObject == null) {
             return null;
         }
@@ -171,8 +171,8 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         commandContext.addCommand(command, new ReorderObjectReflector(), true);
     }
 
-    protected OBJECT_TYPE configureObject(DBRProgressMonitor monitor, CONTAINER_TYPE parent, OBJECT_TYPE object) {
-        DBEObjectConfigurator<CONTAINER_TYPE, OBJECT_TYPE> configurator = GeneralUtils.adapt(object, DBEObjectConfigurator.class);
+    protected OBJECT_TYPE configureObject(DBRProgressMonitor monitor, Object parent, OBJECT_TYPE object) {
+        DBEObjectConfigurator<OBJECT_TYPE> configurator = GeneralUtils.adapt(object, DBEObjectConfigurator.class);
         if (configurator != null) {
             return configurator.configureObject(monitor, parent, object);
         }
@@ -249,7 +249,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectModifyActions(monitor, actions, this, options);
             addObjectExtraActions(monitor, actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override
@@ -286,7 +286,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(monitor, actions, this, options);
             addObjectExtraActions(monitor, actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override
@@ -320,7 +320,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options) {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectDeleteActions(actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override
@@ -355,7 +355,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options) {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectRenameActions(monitor, actions, this, options);
-            return actions.toArray(new DBEPersistAction[actions.size()]);
+            return actions.toArray(new DBEPersistAction[0]);
         }
 
         @Override
@@ -399,7 +399,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         private int oldPosition;
         private int newPosition;
 
-        public ObjectReorderCommand(OBJECT_TYPE object, List<? extends DBPOrderedObject> siblings, String title, int newPosition) {
+        ObjectReorderCommand(OBJECT_TYPE object, List<? extends DBPOrderedObject> siblings, String title, int newPosition) {
             super(object, title);
             this.siblings = siblings;
             this.oldPosition = ((DBPOrderedObject) object).getOrdinalPosition();

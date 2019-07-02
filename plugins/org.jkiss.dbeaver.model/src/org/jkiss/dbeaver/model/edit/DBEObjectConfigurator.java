@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Object configurator.
  * May perform UI interactions.
  */
-public interface DBEObjectConfigurator<CONTAINER extends DBSObject, OBJECT_TYPE extends DBSObject> {
+public interface DBEObjectConfigurator<OBJECT_TYPE extends DBSObject> {
 
-    OBJECT_TYPE configureObject(DBRProgressMonitor monitor, CONTAINER container, OBJECT_TYPE object);
+    OBJECT_TYPE configureObject(DBRProgressMonitor monitor, Object container, OBJECT_TYPE object);
 
 }

@@ -110,6 +110,10 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
         return unique;
     }
 
+    public void setUnique(boolean unique) {
+        this.unique = unique;
+    }
+
     @Override
     @Property(viewable = false, order = 6)
     public boolean isPrimary() {
@@ -122,6 +126,10 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     public String getDescription()
     {
         return indexComment;
+    }
+
+    public void setDescription(String indexComment) {
+        this.indexComment = indexComment;
     }
 
     @Override

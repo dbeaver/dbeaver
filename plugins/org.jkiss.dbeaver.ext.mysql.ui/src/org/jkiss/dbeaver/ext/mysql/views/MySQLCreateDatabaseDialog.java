@@ -21,10 +21,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCharset;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCollation;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -34,14 +37,14 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 public class MySQLCreateDatabaseDialog extends BaseDialog
 {
     public static final String DEFAULT_CHARSET_NAME = "utf8";
-    private final MySQLDataSource dataSource;
+    private final MySQLCatalog database;
     private String name;
     private MySQLCharset charset;
     private MySQLCollation collation;
 
-    public MySQLCreateDatabaseDialog(Shell parentShell, MySQLDataSource dataSource) {
+    public MySQLCreateDatabaseDialog(Shell parentShell, MySQLCatalog database) {
         super(parentShell, "Create database", null);
-        this.dataSource = dataSource;
+        this.database = database;
     }
 
     @Override
@@ -61,14 +64,14 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
         });
 
         final Combo charsetCombo = UIUtils.createLabelCombo(group, "Charset", SWT.BORDER | SWT.DROP_DOWN);
-        for (MySQLCharset cs : dataSource.getCharsets()) {
+        for (MySQLCharset cs : database.getDataSource().getCharsets()) {
             charsetCombo.add(cs.getName());
         }
-        charset = dataSource.getDefaultCharset();
+        charset = database.getDataSource().getDefaultCharset();
         if (charset == null) {
-            charset = dataSource.getCharset(DEFAULT_CHARSET_NAME);
+            charset = database.getDataSource().getCharset(DEFAULT_CHARSET_NAME);
         }
-        collation = dataSource.getDefaultCollation();
+        collation = database.getDataSource().getDefaultCollation();
         if (collation == null) {
             collation = charset.getDefaultCollation();
         }
@@ -82,7 +85,7 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
             UIUtils.setComboSelection(collationCombo, collation.getName());
         }
         charsetCombo.addModifyListener(e -> {
-            charset = dataSource.getCharset(charsetCombo.getText());
+            charset = database.getDataSource().getCharset(charsetCombo.getText());
             assert charset != null;
 
             collationCombo.removeAll();

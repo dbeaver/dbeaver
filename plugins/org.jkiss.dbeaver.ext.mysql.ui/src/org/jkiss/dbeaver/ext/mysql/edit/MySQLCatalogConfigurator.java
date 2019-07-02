@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.views.MySQLCreateDatabaseDialog;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,12 +28,12 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * MySQL database configurator
  */
-public class MySQLCatalogConfigurator implements DBEObjectConfigurator<MySQLDataSource, MySQLCatalog> {
+public class MySQLCatalogConfigurator implements DBEObjectConfigurator<MySQLCatalog> {
 
     @Override
-    public MySQLCatalog configureObject(DBRProgressMonitor monitor, MySQLDataSource dataSource, MySQLCatalog database) {
+    public MySQLCatalog configureObject(DBRProgressMonitor monitor, Object dataSource, MySQLCatalog database) {
         return UITask.run(() -> {
-            MySQLCreateDatabaseDialog dialog = new MySQLCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), dataSource);
+            MySQLCreateDatabaseDialog dialog = new MySQLCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), database);
             if (dialog.open() != IDialogConstants.OK_ID) {
                 return null;
             }

@@ -54,24 +54,28 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
         DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTableBase parent,
         Object from, Map<String, Object> options)
     {
+        final SQLServerTableIndex index = new SQLServerTableIndex(
+            parent,
+            true,
+            false,
+            null,
+            DBSIndexType.UNKNOWN,
+            null,
+            false);
+
         return new UITask<SQLServerTableIndex>() {
             @Override
             protected SQLServerTableIndex runTask() {
                 EditIndexPage editPage = new EditIndexPage(
                     "Create index",
-                    parent,
+                    index,
                     Collections.singletonList(DBSIndexType.OTHER));
                 if (!editPage.edit()) {
                     return null;
                 }
-                final SQLServerTableIndex index = new SQLServerTableIndex(
-                    parent,
-                    editPage.isUnique(),
-                    false,
-                    null,
-                    editPage.getIndexType(),
-                    editPage.getDescription(),
-                    false);
+                index.setUnique(editPage.isUnique());
+                index.setIndexType(editPage.getIndexType());
+                index.setDescription(editPage.getDescription());
                 StringBuilder idxName = new StringBuilder(64);
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
                 int colIndex = 1;

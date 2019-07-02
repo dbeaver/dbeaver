@@ -77,18 +77,19 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
     public DB2TableUniqueKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2Table table,
                                                   Object from, Map<String, Object> options)
     {
+        DB2TableUniqueKey constraint = new DB2TableUniqueKey(table, DBSEntityConstraintType.UNIQUE_KEY);
+
         return new UITask<DB2TableUniqueKey>() {
             @Override
             protected DB2TableUniqueKey runTask()
             {
-                EditConstraintPage editPage = new EditConstraintPage(DB2Messages.edit_db2_constraint_manager_dialog_title, table,
-                    CONS_TYPES);
+                EditConstraintPage editPage = new EditConstraintPage(DB2Messages.edit_db2_constraint_manager_dialog_title, constraint, CONS_TYPES);
 
                 if (!editPage.edit()) {
                     return null;
                 }
 
-                DB2TableUniqueKey constraint = new DB2TableUniqueKey(table, editPage.getConstraintType());
+                constraint.setConstraintType(editPage.getConstraintType());
                 constraint.setName(editPage.getConstraintName());
 
                 List<DB2TableKeyColumn> columns = new ArrayList<>(editPage.getSelectedAttributes().size());

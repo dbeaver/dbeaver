@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -29,13 +28,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * Postgre sequence configurator
  */
-public class PostgreSchemaConfigurator implements DBEObjectConfigurator<PostgreDatabase, PostgreSchema> {
+public class PostgreSchemaConfigurator implements DBEObjectConfigurator<PostgreSchema> {
     @Override
-    public PostgreSchema configureObject(DBRProgressMonitor monitor, PostgreDatabase parent, PostgreSchema schema) {
+    public PostgreSchema configureObject(DBRProgressMonitor monitor, Object parent, PostgreSchema schema) {
         return new UITask<PostgreSchema>() {
             @Override
             protected PostgreSchema runTask() {
-                PostgreCreateSchemaDialog dialog = new PostgreCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), parent);
+                PostgreCreateSchemaDialog dialog = new PostgreCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), schema);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
