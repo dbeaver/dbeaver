@@ -48,16 +48,13 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         @NotNull OracleTableBase oracleTable,
         @Nullable String name,
         @Nullable OracleObjectStatus status,
-        @NotNull OracleTableConstraint referencedKey,
+        @Nullable OracleTableConstraint referencedKey,
         @NotNull DBSForeignKeyModifyRule deleteRule)
     {
         super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, status, false);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
     }
-    
-    
-    
 
     public OracleTableForeignKey(
         DBRProgressMonitor monitor,
@@ -110,12 +107,20 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         return referencedKey;
     }
 
+    public void setReferencedConstraint(OracleTableConstraint referencedKey) {
+        this.referencedKey = referencedKey;
+    }
+
     @NotNull
     @Override
     @Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSForeignKeyModifyRule getDeleteRule()
     {
         return deleteRule;
+    }
+
+    public void setDeleteRule(DBSForeignKeyModifyRule deleteRule) {
+        this.deleteRule = deleteRule;
     }
 
     // Update rule is not supported by Oracle

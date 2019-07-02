@@ -27,19 +27,19 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 public class CreateSequencePage extends BaseObjectEditPage {
 
-    private DBSObjectContainer container;
+    private DBSSequence sequence;
     private String name;
     private DBSProcedureType type;
 
-    public CreateSequencePage(DBSObjectContainer container)
-    {
+    public CreateSequencePage(DBSSequence sequence) {
         super(EditorsMessages.dialog_struct_create_procedure_title);
-        this.container = container;
+        this.sequence = sequence;
     }
 
     @Override
@@ -49,19 +49,17 @@ public class CreateSequencePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_sequence_container, DBUtils.getObjectFullName(container, DBPEvaluationContext.UI)).setEditable(false);
-        final Text nameText = UIUtils.createLabelText(propsGroup,  EditorsMessages.dialog_struct_create_sequence_name, null);
+        UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_sequence_container, DBUtils.getObjectFullName(sequence.getParentObject(), DBPEvaluationContext.UI)).setEditable(false);
+        final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_sequence_name, null);
         nameText.addModifyListener(e -> name = nameText.getText());
         return propsGroup;
     }
 
-    public DBSProcedureType getProcedureType()
-    {
+    public DBSProcedureType getProcedureType() {
         return type;
     }
 
-    public String getSequenceName()
-    {
-        return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+    public String getSequenceName() {
+        return DBObjectNameCaseTransformer.transformName(sequence.getDataSource(), name);
     }
 }

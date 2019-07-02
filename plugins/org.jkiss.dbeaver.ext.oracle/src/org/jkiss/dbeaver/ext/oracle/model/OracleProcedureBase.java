@@ -63,6 +63,10 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
         return procedureType ;
     }
 
+    public void setProcedureType(DBSProcedureType procedureType) {
+        this.procedureType = procedureType;
+    }
+
     @Override
     public DBSObjectContainer getContainer()
     {

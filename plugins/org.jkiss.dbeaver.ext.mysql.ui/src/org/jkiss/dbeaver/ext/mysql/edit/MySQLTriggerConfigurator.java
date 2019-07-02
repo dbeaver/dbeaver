@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -29,12 +28,12 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 /**
  * MySQL sequence configurator
  */
-public class MySQLTriggerConfigurator implements DBEObjectConfigurator<MySQLTableBase, MySQLTrigger> {
+public class MySQLTriggerConfigurator implements DBEObjectConfigurator<MySQLTrigger> {
     
     @Override
-    public MySQLTrigger configureObject(DBRProgressMonitor monitor, MySQLTableBase parent, MySQLTrigger trigger) {
+    public MySQLTrigger configureObject(DBRProgressMonitor monitor, Object parent, MySQLTrigger trigger) {
         return UITask.run(() -> {
-            EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
+            EntityEditPage editPage = new EntityEditPage(trigger.getDataSource(), DBSEntityType.TRIGGER);
             if (!editPage.edit()) {
                 return null;
             }
@@ -43,7 +42,7 @@ public class MySQLTriggerConfigurator implements DBEObjectConfigurator<MySQLTabl
             trigger.setObjectDefinitionText(
                 "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(trigger) + "\n" +
                     trigger.getActionTiming() + " " + trigger.getManipulationType() + "\n" +
-                    "ON " + DBUtils.getQuotedIdentifier(parent) + " FOR EACH ROW\n");
+                    "ON " + DBUtils.getQuotedIdentifier(trigger.getParentObject()) + " FOR EACH ROW\n");
             return trigger;
         });
     }

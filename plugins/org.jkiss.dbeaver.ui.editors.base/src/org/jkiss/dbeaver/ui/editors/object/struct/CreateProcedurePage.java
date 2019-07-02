@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
@@ -35,14 +35,13 @@ import org.jkiss.utils.CommonUtils;
 
 public class CreateProcedurePage extends BaseObjectEditPage {
 
-    private DBSObjectContainer container;
+    private DBSProcedure procedure;
     private String name;
     private DBSProcedureType type;
 
-    public CreateProcedurePage(DBSObjectContainer container)
-    {
+    public CreateProcedurePage(DBSProcedure procedure) {
         super(EditorsMessages.dialog_struct_create_procedure_title);
-        this.container = container;
+        this.procedure = procedure;
     }
 
     @Override
@@ -52,7 +51,7 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text containerText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_procedure_container, DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
+        final Text containerText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_procedure_container, DBUtils.getObjectFullName(this.procedure.getParentObject(), DBPEvaluationContext.UI));
         containerText.setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, EditorsMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(e -> {
@@ -91,20 +90,17 @@ public class CreateProcedurePage extends BaseObjectEditPage {
 
     }
 
-    public DBSProcedureType getProcedureType()
-    {
+    public DBSProcedureType getProcedureType() {
         DBSProcedureType procedureType = getPredefinedProcedureType();
         return procedureType == null ? type : procedureType;
     }
 
-    public DBSProcedureType getPredefinedProcedureType()
-    {
+    public DBSProcedureType getPredefinedProcedureType() {
         return null;
     }
 
-    public String getProcedureName()
-    {
-        return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+    public String getProcedureName() {
+        return DBObjectNameCaseTransformer.transformName(procedure.getDataSource(), name);
     }
 
     @Override

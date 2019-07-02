@@ -96,7 +96,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
     public PostgreTableForeignKey(
         @NotNull PostgreTableBase table,
-        @NotNull DBSEntityConstraint refConstraint,
+        @Nullable DBSEntityConstraint refConstraint,
         @NotNull DBSForeignKeyModifyRule deleteRule,
         @NotNull DBSForeignKeyModifyRule updateRule)
     {

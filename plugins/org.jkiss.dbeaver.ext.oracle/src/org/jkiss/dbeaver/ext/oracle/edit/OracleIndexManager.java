@@ -55,12 +55,18 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
         DBRProgressMonitor monitor, DBECommandContext context, final OracleTablePhysical parent,
         Object from, Map<String, Object> options)
     {
+        final OracleTableIndex index = new OracleTableIndex(
+            parent.getSchema(),
+            parent,
+            "INDEX",
+            true,
+            DBSIndexType.UNKNOWN);
         return new UITask<OracleTableIndex>() {
             @Override
             protected OracleTableIndex runTask() {
                 EditIndexPage editPage = new EditIndexPage(
                     OracleMessages.edit_oracle_index_manager_dialog_title,
-                    parent,
+                    index,
                     Collections.singletonList(DBSIndexType.OTHER));
                 if (!editPage.edit()) {
                     return null;
@@ -70,12 +76,9 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
                 idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
                     .append(CommonUtils.escapeIdentifier(editPage.getSelectedAttributes().iterator().next().getName()))
                     .append("_IDX"); //$NON-NLS-1$
-                final OracleTableIndex index = new OracleTableIndex(
-                    parent.getSchema(),
-                    parent,
-                    DBObjectNameCaseTransformer.transformName(parent.getDataSource(), idxName.toString()),
-                    editPage.isUnique(),
-                    editPage.getIndexType());
+                index.setName(DBObjectNameCaseTransformer.transformName(parent.getDataSource(), idxName.toString()));
+                index.setUnique(editPage.isUnique());
+                index.setIndexType(editPage.getIndexType());
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     index.addColumn(

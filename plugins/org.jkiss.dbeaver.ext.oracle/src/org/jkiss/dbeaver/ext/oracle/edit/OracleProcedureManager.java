@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 
@@ -49,17 +50,21 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     @Override
     protected OracleProcedureStandalone createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleSchema parent, Object copyFrom, Map<String, Object> options)
     {
+        OracleProcedureStandalone procedure = new OracleProcedureStandalone(
+            parent,
+            "PROC",
+            DBSProcedureType.PROCEDURE);
         return new UITask<OracleProcedureStandalone>() {
             @Override
             protected OracleProcedureStandalone runTask() {
-                CreateProcedurePage editPage = new CreateProcedurePage(parent);
+                CreateProcedurePage editPage = new CreateProcedurePage(procedure);
                 if (!editPage.edit()) {
                     return null;
                 }
-                return new OracleProcedureStandalone(
-                    parent,
-                    editPage.getProcedureName(),
-                    editPage.getProcedureType());
+                procedure.setName(editPage.getProcedureName());
+                procedure.setProcedureType(editPage.getProcedureType());
+
+                return procedure;
             }
         }.execute();
     }

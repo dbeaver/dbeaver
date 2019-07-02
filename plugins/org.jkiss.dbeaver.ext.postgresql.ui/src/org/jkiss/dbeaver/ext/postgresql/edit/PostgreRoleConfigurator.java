@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateRoleDialog;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -29,13 +28,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * Postgre role configurator
  */
-public class PostgreRoleConfigurator implements DBEObjectConfigurator<PostgreDatabase, PostgreRole> {
+public class PostgreRoleConfigurator implements DBEObjectConfigurator<PostgreRole> {
     @Override
-    public PostgreRole configureObject(DBRProgressMonitor monitor, PostgreDatabase parent, PostgreRole role) {
+    public PostgreRole configureObject(DBRProgressMonitor monitor, Object parent, PostgreRole role) {
         return new UITask<PostgreRole>() {
             @Override
             protected PostgreRole runTask() {
-                PostgreCreateRoleDialog dialog = new PostgreCreateRoleDialog(UIUtils.getActiveWorkbenchShell(), parent);
+                PostgreCreateRoleDialog dialog = new PostgreCreateRoleDialog(UIUtils.getActiveWorkbenchShell(), role);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }

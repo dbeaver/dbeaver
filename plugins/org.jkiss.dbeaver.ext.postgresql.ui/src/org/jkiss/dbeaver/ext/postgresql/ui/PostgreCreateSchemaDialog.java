@@ -31,9 +31,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,14 +48,14 @@ import java.util.List;
  */
 public class PostgreCreateSchemaDialog extends BaseDialog
 {
-    private final PostgreDatabase database;
+    private final PostgreSchema schema;
     private List<PostgreRole> allUsers;
     private String name;
     private PostgreRole owner;
 
-    public PostgreCreateSchemaDialog(Shell parentShell, PostgreDatabase database) {
+    public PostgreCreateSchemaDialog(Shell parentShell, PostgreSchema schema) {
         super(parentShell, PostgreMessages.dialog_create_schema_title, null);
-        this.database = database;
+        this.schema = schema;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
                 getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
             }
         });
-        final Text databaseText = UIUtils.createLabelText(group, "Database", database.getName(), SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+        final Text databaseText = UIUtils.createLabelText(group, "Database", schema.getDatabase().getName(), SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
 
         final Combo userCombo = UIUtils.createLabelCombo(group, PostgreMessages.dialog_create_schema_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
 
@@ -91,22 +91,19 @@ public class PostgreCreateSchemaDialog extends BaseDialog
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     final List<String> userNames = new ArrayList<>();
-                    allUsers = new ArrayList<>(database.getUsers(monitor));
-                    final PostgreRole dba = database.getDBA(monitor);
+                    allUsers = new ArrayList<>(schema.getDatabase().getUsers(monitor));
+                    final PostgreRole dba = schema.getDatabase().getDBA(monitor);
                     final String defUserName = dba == null ? "" : dba.getName(); //$NON-NLS-1$
 
-                    UIUtils.syncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (PostgreRole authId : allUsers) {
-                                String name = authId.getName();
-                                userCombo.add(name);
-                                if (name.equals(defUserName)) {
-                                    owner = authId;
-                                }
+                    UIUtils.syncExec(() -> {
+                        for (PostgreRole authId : allUsers) {
+                            String name = authId.getName();
+                            userCombo.add(name);
+                            if (name.equals(defUserName)) {
+                                owner = authId;
                             }
-                            userCombo.setText(defUserName);
                         }
+                        userCombo.setText(defUserName);
                     });
                 } catch (DBException e) {
                     return GeneralUtils.makeExceptionStatus(e);

@@ -66,16 +66,16 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, DBPObject parent, Object copyFrom, Map<String, Object> options)
+    public DataSourceDescriptor createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container, Object copyFrom, Map<String, Object> options)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
             DBPDataSourceRegistry registry;
             DBPDataSourceFolder folder = null;
-            if (parent instanceof DataSourceRegistry) {
-                registry = (DBPDataSourceRegistry) parent;
-            } else if (parent instanceof DBPDataSourceFolder) {
-                folder = (DBPDataSourceFolder)parent;
+            if (container instanceof DataSourceRegistry) {
+                registry = (DBPDataSourceRegistry) container;
+            } else if (container instanceof DBPDataSourceFolder) {
+                folder = (DBPDataSourceFolder) container;
                 registry = folder.getDataSourceRegistry();
             } else {
                 registry = dsTpl.getRegistry();

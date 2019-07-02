@@ -38,18 +38,23 @@ public class ExasolForeignKeyManager
     protected ExasolTableForeignKey createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context,
         ExasolTable parent, Object copyFrom, Map<String, Object> options) throws DBException {
+
+        final ExasolTableForeignKey foreignKey = new ExasolTableForeignKey(
+            parent,
+            null,
+            true,
+            "FK"
+        );
+        foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+
         return new UITask<ExasolTableForeignKey>() {
             @Override
             protected ExasolTableForeignKey runTask() {
-                ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog("Create Foreign Key", parent);
+                ExasolCreateForeignKeyDialog editPage = new ExasolCreateForeignKeyDialog("Create Foreign Key", foreignKey);
 
                 if (!editPage.edit()) {
                     return null;
                 }
-
-                final ExasolTableForeignKey foreignKey = new ExasolTableForeignKey(
-                    parent, (ExasolTableUniqueKey) editPage.getUniqueConstraint(), editPage.isEnabled(), editPage.getName()
-                );
 
                 List<ExasolTableKeyColumn> columns = new ArrayList<ExasolTableKeyColumn>();
                 int cnt = 0;
@@ -62,7 +67,9 @@ public class ExasolForeignKeyManager
                     }
                 }
 
-                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+                foreignKey.setName(editPage.getName());
+                foreignKey.setReferencedConstraint((ExasolTableUniqueKey)editPage.getUniqueConstraint());
+                foreignKey.setEnabled(editPage.isEnabled());
                 foreignKey.setColumns(columns);
 
                 return foreignKey;

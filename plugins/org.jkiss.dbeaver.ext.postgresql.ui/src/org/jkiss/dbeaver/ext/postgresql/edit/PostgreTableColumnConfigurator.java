@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,9 +26,9 @@ import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 /**
  * Postgre table column manager
  */
-public class PostgreTableColumnConfigurator implements DBEObjectConfigurator<PostgreTableBase, PostgreTableColumn> {
+public class PostgreTableColumnConfigurator implements DBEObjectConfigurator<PostgreTableColumn> {
     @Override
-    public PostgreTableColumn configureObject(DBRProgressMonitor monitor, PostgreTableBase table, PostgreTableColumn column) {
+    public PostgreTableColumn configureObject(DBRProgressMonitor monitor, Object table, PostgreTableColumn column) {
         return new UITask<PostgreTableColumn>() {
             @Override
             protected PostgreTableColumn runTask() {
