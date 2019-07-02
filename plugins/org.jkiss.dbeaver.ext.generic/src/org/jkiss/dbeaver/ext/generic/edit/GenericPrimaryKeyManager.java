@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -32,7 +33,7 @@ import java.util.Map;
 /**
  * Generic constraint manager
  */
-public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimaryKey, GenericTable> {
+public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimaryKey, GenericTableBase> {
 
     @Nullable
     @Override
@@ -53,7 +54,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
 
     @Override
     protected GenericPrimaryKey createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final GenericTableBase parent,
         Object from, Map<String, Object> options)
     {
         return new GenericPrimaryKey(
@@ -65,7 +66,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
     }
 
     @Override
-    protected boolean isLegacyConstraintsSyntax(GenericTable owner) {
+    protected boolean isLegacyConstraintsSyntax(GenericTableBase owner) {
         return GenericUtils.isLegacySQLDialect(owner);
     }
 }

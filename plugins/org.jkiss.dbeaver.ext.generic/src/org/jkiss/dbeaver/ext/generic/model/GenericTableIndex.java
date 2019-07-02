@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * GenericTable
  */
-public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, GenericTable>
+public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, GenericTableBase>
 {
     private boolean nonUnique;
     private String qualifier;
@@ -39,7 +39,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
     private List<GenericTableIndexColumn> columns;
 
     public GenericTableIndex(
-        GenericTable table,
+        GenericTableBase table,
         boolean nonUnique,
         String qualifier,
         long cardinality,

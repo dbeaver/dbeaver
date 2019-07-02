@@ -37,14 +37,14 @@ import java.util.List;
 /**
  * GenericTableForeignKey
  */
-public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, DBSEntityReferrer> {
+public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase, DBSEntityReferrer> {
     private static final Log log = Log.getLog(GenericTableForeignKey.class);
 
     private DBSForeignKeyDeferability deferability;
     private List<GenericTableForeignKeyColumnTable> columns;
 
     public GenericTableForeignKey(
-        GenericTable table,
+        GenericTableBase table,
         String name,
         @Nullable String remarks,
         DBSEntityReferrer referencedKey,

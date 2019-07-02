@@ -18,10 +18,8 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 
@@ -51,12 +49,12 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
 
     ForeignKeysCache getForeignKeysCache();
 
-    Collection<? extends GenericTable> getViews(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException;
     Collection<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
 
-    Collection<? extends GenericTable> getTables(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericTableBase> getTables(DBRProgressMonitor monitor) throws DBException;
 
-    GenericTable getTable(DBRProgressMonitor monitor, String name) throws DBException;
+    GenericTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException;
 
     Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 

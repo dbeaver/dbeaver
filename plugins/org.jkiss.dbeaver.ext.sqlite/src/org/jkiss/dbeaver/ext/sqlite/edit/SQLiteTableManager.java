@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -33,7 +34,7 @@ import java.util.Map;
 /**
  * SQLite table manager
  */
-public class SQLiteTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTable> {
+public class SQLiteTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTableBase> {
 
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
@@ -48,7 +49,7 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GenericTable object, String newName) throws DBException {
+    public void renameObject(DBECommandContext commandContext, GenericTableBase object, String newName) throws DBException {
         if (object.isView()) {
             throw new DBException("View rename is not supported");
         }

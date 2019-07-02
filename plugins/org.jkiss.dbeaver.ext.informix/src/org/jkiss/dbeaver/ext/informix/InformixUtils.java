@@ -19,11 +19,11 @@
 
 package org.jkiss.dbeaver.ext.informix;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -86,7 +86,7 @@ public class InformixUtils {
 	}
 
 	public static String getViewSource(DBRProgressMonitor monitor,
-			GenericTable view) throws DBException {
+									   GenericTableBase view) throws DBException {
 		String sqlView = String.format("select v.viewtext "
 				+ "from informix.sysviews v "
 				+ "join systables s on s.tabid = v.tabid "
@@ -98,7 +98,7 @@ public class InformixUtils {
 
 	// Triggers, Sequences?
 	public static String getTriggerDDL(DBRProgressMonitor monitor,
-			GenericTable table) throws DBException {
+									   GenericTableBase table) throws DBException {
 		String sqlTrigger = String
 				.format("select tb.data " + "from systables ta "
 						+ "join systriggers tr on tr.tabid = ta.tabid "

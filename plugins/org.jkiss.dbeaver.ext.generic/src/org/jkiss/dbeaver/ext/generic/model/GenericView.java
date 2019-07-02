@@ -23,20 +23,21 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
 /**
- * Generic table
+ * Generic view
  */
-public class GenericTable extends GenericTableBase
+public class GenericView extends GenericTableBase implements DBSView
 {
-    private static final Log log = Log.getLog(GenericTable.class);
+    private static final Log log = Log.getLog(GenericView.class);
 
     private String ddl;
 
-    public GenericTable(
+    public GenericView(
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
@@ -46,8 +47,9 @@ public class GenericTable extends GenericTableBase
     }
 
     @Override
-    public boolean isView() {
-        return false;
+    public boolean isView()
+    {
+        return true;
     }
 
     public String getDDL() {
@@ -61,11 +63,7 @@ public class GenericTable extends GenericTableBase
             ddl = null;
         }
         if (ddl == null) {
-            if (!isPersisted()) {
-                ddl = "";
-            } else {
-                ddl = getDataSource().getMetaModel().getTableDDL(monitor, this, options);
-            }
+            ddl = isPersisted() ? getDataSource().getMetaModel().getViewDDL(monitor, this, options) : "";
         }
         return ddl;
     }

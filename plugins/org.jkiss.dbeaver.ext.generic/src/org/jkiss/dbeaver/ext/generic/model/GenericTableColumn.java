@@ -33,7 +33,7 @@ import java.util.Collection;
 /**
  * Generic table column
  */
-public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn, DBPNamedObject2, JDBCColumnKeyType, DBPOrderedObject
+public class GenericTableColumn extends JDBCTableColumn<GenericTableBase> implements DBSTableColumn, DBPNamedObject2, JDBCColumnKeyType, DBPOrderedObject
 {
     private int radix;
     private String remarks;
@@ -41,13 +41,13 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     private long charLength;
     private boolean autoIncrement;
 
-    public GenericTableColumn(GenericTable table)
+    public GenericTableColumn(GenericTableBase table)
     {
         super(table, false);
     }
 
     public GenericTableColumn(
-        GenericTable table,
+        GenericTableBase table,
         String columnName,
         String typeName,
         int valueType,

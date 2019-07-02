@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -44,7 +44,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
 {
     private final GenericDataSource dataSource;
 
-    public GenericStructureAssistant(GenericDataSource dataSource)
+    GenericStructureAssistant(GenericDataSource dataSource)
     {
         this.dataSource = dataSource;
     }
@@ -161,7 +161,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    protected GenericStructContainer findContainer(DBRProgressMonitor monitor, GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName) throws DBException
+    private GenericStructContainer findContainer(DBRProgressMonitor monitor, GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName) throws DBException
     {
         GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
         if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
@@ -177,7 +177,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
 
     private abstract class ObjectReference extends AbstractObjectReference {
 
-        protected ObjectReference(GenericStructContainer container, String name, String description, Class<?> objectClass, DBSObjectType type)
+        ObjectReference(GenericStructContainer container, String name, String description, Class<?> objectClass, DBSObjectType type)
         {
             super(name, container, description, objectClass, type);
         }
@@ -199,7 +199,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         @Override
         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
         {
-            GenericTable table = getContainer().getTable(monitor, getName());
+            GenericTableBase table = getContainer().getTable(monitor, getName());
             if (table == null) {
                 throw new DBException("Can't find table '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
             }

@@ -33,7 +33,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
 {
     private List<GenericTableConstraintColumn> columns;
 
-    public GenericPrimaryKey(GenericTable table, String name, @Nullable String remarks, DBSEntityConstraintType constraintType, boolean persisted)
+    public GenericPrimaryKey(GenericTableBase table, String name, @Nullable String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
     }

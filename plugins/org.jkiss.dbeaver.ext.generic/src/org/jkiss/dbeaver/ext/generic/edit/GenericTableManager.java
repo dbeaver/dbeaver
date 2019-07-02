@@ -48,7 +48,7 @@ import java.util.Map;
 /**
  * Generic table manager
  */
-public class GenericTableManager extends SQLTableManager<GenericTable, GenericStructContainer> {
+public class GenericTableManager extends SQLTableManager<GenericTableBase, GenericStructContainer> {
 
     private static final Class<?>[] CHILD_TYPES = {
         GenericTableColumn.class,
@@ -59,7 +59,7 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, GenericTable> getObjectsCache(GenericTable object)
+    public DBSObjectCache<? extends DBSObject, GenericTableBase> getObjectsCache(GenericTableBase object)
     {
         return object.getContainer().getTableCache();
     }
@@ -72,7 +72,7 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
     }
 
     @Override
-    protected GenericTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericStructContainer parent, Object copyFrom, Map<String, Object> options)
+    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericStructContainer parent, Object copyFrom, Map<String, Object> options)
     {
         boolean isView = false;
         Object navContainer = options.get(DBEObjectMaker.OPTION_CONTAINER);
@@ -113,7 +113,7 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<GenericTable, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<GenericTableBase, PropertyHandler> command, Map<String, Object> options) {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction(
                     "Comment table",

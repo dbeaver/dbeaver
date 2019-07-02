@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteObjectType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -35,7 +36,7 @@ public class SQLiteUtils {
     private static final Log log = Log.getLog(SQLiteUtils.class);
 
 
-    public static String readMasterDefinition(DBRProgressMonitor monitor, DBSObject sourceObject, SQLiteObjectType objectType, String sourceObjectName, GenericTable table) {
+    public static String readMasterDefinition(DBRProgressMonitor monitor, DBSObject sourceObject, SQLiteObjectType objectType, String sourceObjectName, GenericTableBase table) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Load PostgreSQL description")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT sql FROM sqlite_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "") + "\n" +

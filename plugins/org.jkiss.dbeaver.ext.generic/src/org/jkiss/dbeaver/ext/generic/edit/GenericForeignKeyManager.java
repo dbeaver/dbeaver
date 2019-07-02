@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -33,7 +34,7 @@ import java.util.Map;
 /**
  * Generic foreign manager
  */
-public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableForeignKey, GenericTable> {
+public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableForeignKey, GenericTableBase> {
 
     @Nullable
     @Override
@@ -53,7 +54,7 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
-    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final GenericTable table, Object from, Map<String, Object> options) {
+    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final GenericTableBase table, Object from, Map<String, Object> options) {
         GenericTableForeignKey foreignKey = new GenericTableForeignKey(
             table,
             null,
@@ -68,7 +69,7 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
-    protected boolean isLegacyForeignKeySyntax(GenericTable owner) {
+    protected boolean isLegacyForeignKeySyntax(GenericTableBase owner) {
         return GenericUtils.isLegacySQLDialect(owner);
     }
 }

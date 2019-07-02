@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -28,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 */
 public class SQLServerGenericIndex extends GenericTableIndex {
 
-    public SQLServerGenericIndex(GenericTable table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
+    public SQLServerGenericIndex(GenericTableBase table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
         super(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
     }
 

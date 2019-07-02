@@ -100,13 +100,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<GenericTable> getViews(DBRProgressMonitor monitor) throws DBException {
-        Collection<GenericTable> tables = getTables(monitor);
+    public Collection<GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
+        Collection<GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
-            List<GenericTable> filtered = new ArrayList<>();
-            for (GenericTable table : tables) {
-                if (table.isView()) {
-                    filtered.add(table);
+            List<GenericView> filtered = new ArrayList<>();
+            for (GenericTableBase table : tables) {
+                if (table instanceof GenericView) {
+                    filtered.add((GenericView)table);
                 }
             }
             return filtered;
@@ -116,12 +116,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
     @Override
     public Collection<GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
-        Collection<GenericTable> tables = getTables(monitor);
+        Collection<GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<GenericTable> filtered = new ArrayList<>();
-            for (GenericTable table : tables) {
+            for (GenericTableBase table : tables) {
                 if (table.isPhysicalTable()) {
-                    filtered.add(table);
+                    filtered.add((GenericTable) table);
                 }
             }
             return filtered;
@@ -130,14 +130,14 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
+    public Collection<GenericTableBase> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public GenericTable getTable(DBRProgressMonitor monitor, String name)
+    public GenericTableBase getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return tableCache.getObject(monitor, this, name);
@@ -171,10 +171,10 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                     newIndexCache = new ArrayList<>();
                     indexCache.clearCache();
                     // Load indexes for all tables and return copy of them
-                    Collection<GenericTable> tables = getTables(monitor);
+                    Collection<GenericTableBase> tables = getTables(monitor);
                     monitor.beginTask("Cache indexes from tables", tables.size());
                     try {
-                        for (GenericTable table : tables) {
+                        for (GenericTableBase table : tables) {
                             if (monitor.isCanceled()) {
                                 return;
                             }
@@ -369,7 +369,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     @Override
     public Collection<? extends GenericTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
         List<GenericTrigger> tableTriggers = new ArrayList<>();
-        for (GenericTable table : getTables(monitor)) {
+        for (GenericTableBase table : getTables(monitor)) {
             Collection<? extends GenericTrigger> tt = table.getTriggers(monitor);
             if (!CommonUtils.isEmpty(tt)) {
                 tableTriggers.addAll(tt);
