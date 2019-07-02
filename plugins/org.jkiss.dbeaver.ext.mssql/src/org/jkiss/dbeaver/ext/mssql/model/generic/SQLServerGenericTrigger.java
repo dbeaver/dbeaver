@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -28,7 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 */
 public class SQLServerGenericTrigger extends GenericTrigger implements DBPQualifiedObject {
 
-    public SQLServerGenericTrigger(GenericStructContainer container, GenericTable table, String name, String description) {
+    public SQLServerGenericTrigger(GenericStructContainer container, GenericTableBase table, String name, String description) {
         super(container, table, name, description);
     }
 

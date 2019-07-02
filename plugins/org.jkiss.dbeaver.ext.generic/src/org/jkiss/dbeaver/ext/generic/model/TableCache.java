@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Generic tables cache implementation
  */
-public class TableCache extends JDBCStructLookupCache<GenericStructContainer, GenericTable, GenericTableColumn> {
+public class TableCache extends JDBCStructLookupCache<GenericStructContainer, GenericTableBase, GenericTableColumn> {
 
     private static final Log log = Log.getLog(TableCache.class);
 
@@ -72,7 +72,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         this.dataSource = dataSource;
         this.tableObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE);
         this.columnObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE_COLUMN);
-        setListOrderComparator(DBUtils.<GenericTable>nameComparator());
+        setListOrderComparator(DBUtils.<GenericTableBase>nameComparator());
     }
 
     public GenericDataSource getDataSource()
@@ -82,13 +82,13 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable object, @Nullable String objectName) throws SQLException {
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase object, @Nullable String objectName) throws SQLException {
         return dataSource.getMetaModel().prepareTableLoadStatement(session, owner, object, objectName);
     }
 
     @Nullable
     @Override
-    protected GenericTable fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
+    protected GenericTableBase fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
@@ -106,7 +106,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
             // Bad table type. Just skip it
             return null;
         }
-        GenericTable table = getDataSource().getMetaModel().createTableImpl(
+        GenericTableBase table = getDataSource().getMetaModel().createTableImpl(
             owner,
             tableName,
             tableType,
@@ -120,7 +120,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable forTable)
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable)
         throws SQLException
     {
         return session.getMetaData().getColumns(
@@ -134,7 +134,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
     }
 
     @Override
-    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTable table, @NotNull JDBCResultSet dbResult)
+    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTableBase table, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.COLUMN_NAME);

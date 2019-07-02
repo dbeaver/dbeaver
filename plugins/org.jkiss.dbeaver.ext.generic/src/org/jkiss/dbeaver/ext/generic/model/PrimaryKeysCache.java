@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -40,7 +39,7 @@ import java.util.Locale;
 /**
  * Index cache implementation
  */
-class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericPrimaryKey, GenericTableConstraintColumn> {
+class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericPrimaryKey, GenericTableConstraintColumn> {
 
     private final GenericMetaObject pkObject;
 
@@ -48,7 +47,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     {
         super(
             tableCache,
-            GenericTable.class,
+            GenericTableBase.class,
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_PRIMARY_KEY, JDBCConstants.TABLE_NAME),
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_PRIMARY_KEY, JDBCConstants.PK_NAME));
         pkObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_PRIMARY_KEY);
@@ -56,7 +55,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
         throws SQLException
     {
         try {
@@ -83,7 +82,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Nullable
     @Override
-    protected GenericPrimaryKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String pkName, JDBCResultSet dbResult)
+    protected GenericPrimaryKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String pkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         return new GenericPrimaryKey(
@@ -98,7 +97,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     @Override
     protected GenericTableConstraintColumn[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericPrimaryKey object, JDBCResultSet dbResult)
+        GenericTableBase parent, GenericPrimaryKey object, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);

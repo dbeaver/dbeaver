@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -31,7 +32,7 @@ import java.util.Map;
 /**
  * Generic index manager
  */
-public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, GenericTable> {
+public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, GenericTableBase> {
 
     @Nullable
     @Override
@@ -47,7 +48,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
 
     @Override
     protected GenericTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final GenericTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final GenericTableBase parent,
         Object from, Map<String, Object> options)
     {
         return parent.getDataSource().getMetaModel().createIndexImpl(

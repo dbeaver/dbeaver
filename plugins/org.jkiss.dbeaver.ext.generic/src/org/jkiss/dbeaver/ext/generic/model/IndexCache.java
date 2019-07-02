@@ -41,7 +41,7 @@ import java.util.Locale;
 /**
  * Index cache implementation
  */
-class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericTableIndex, GenericTableIndexColumn> {
+class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericTableIndex, GenericTableIndexColumn> {
 
     private final GenericMetaObject indexObject;
 
@@ -49,7 +49,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     {
         super(
             tableCache,
-            GenericTable.class,
+            GenericTableBase.class,
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.TABLE_NAME),
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_INDEX, JDBCConstants.INDEX_NAME));
         indexObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_INDEX);
@@ -57,7 +57,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
         throws SQLException
     {
         try {
@@ -80,7 +80,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
     @Nullable
     @Override
-    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String indexName, JDBCResultSet dbResult)
+    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String indexName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = GenericUtils.safeGetBoolean(indexObject, dbResult, JDBCConstants.NON_UNIQUE);
@@ -128,7 +128,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     @Override
     protected GenericTableIndexColumn[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericTableIndex object, JDBCResultSet dbResult)
+        GenericTableBase parent, GenericTableIndex object, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         int ordinalPosition = GenericUtils.safeGetInt(indexObject, dbResult, JDBCConstants.ORDINAL_POSITION);

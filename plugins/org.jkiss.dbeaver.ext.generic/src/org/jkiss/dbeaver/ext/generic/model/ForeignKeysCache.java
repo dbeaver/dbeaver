@@ -44,7 +44,7 @@ import java.util.*;
 /**
 * Foreign key cache
 */
-class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericTableForeignKey, GenericTableForeignKeyColumnTable> {
+class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericTableForeignKey, GenericTableForeignKeyColumnTable> {
 
     private final Map<String, GenericPrimaryKey> pkMap = new HashMap<>();
     private final GenericMetaObject foreignKeyObject;
@@ -52,8 +52,8 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     ForeignKeysCache(TableCache tableCache)
     {
         super(
-            tableCache, 
-            GenericTable.class,
+            tableCache,
+            GenericTableBase.class,
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_FOREIGN_KEY, JDBCConstants.FKTABLE_NAME),
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_FOREIGN_KEY, JDBCConstants.FK_NAME));
         foreignKeyObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
@@ -68,7 +68,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
         throws SQLException
     {
         return session.getMetaData().getImportedKeys(
@@ -82,7 +82,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Nullable
     @Override
-    protected GenericTableForeignKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String fkName, JDBCResultSet dbResult)
+    protected GenericTableForeignKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String fkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
@@ -112,7 +112,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return null;
         }
         String pkTableFullName = DBUtils.getSimpleQualifiedName(pkTableCatalog, pkTableSchema, pkTableName);
-        GenericTable pkTable = parent.getDataSource().findTable(session.getProgressMonitor(), pkTableCatalog, pkTableSchema, pkTableName);
+        GenericTableBase pkTable = parent.getDataSource().findTable(session.getProgressMonitor(), pkTableCatalog, pkTableSchema, pkTableName);
         if (pkTable == null) {
             // Try to use FK catalog/schema
             pkTable = parent.getDataSource().findTable(session.getProgressMonitor(), fkTableCatalog, fkTableSchema, pkTableName);
@@ -191,7 +191,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     @Override
     protected GenericTableForeignKeyColumnTable[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericTableForeignKey foreignKey, JDBCResultSet dbResult)
+        GenericTableBase parent, GenericTableForeignKey foreignKey, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);

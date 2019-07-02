@@ -21,7 +21,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTrigger;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTriggerType;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,7 +37,6 @@ import org.osgi.framework.Version;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,7 +70,7 @@ public class FireBirdUtils {
         }
     }
 
-    public static String getViewSource(DBRProgressMonitor monitor, GenericTable view)
+    public static String getViewSource(DBRProgressMonitor monitor, GenericTableBase view)
         throws DBException
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, view, "Load view source code")) {
@@ -154,7 +156,7 @@ public class FireBirdUtils {
         }
     }
 
-    public static String getViewSourceWithHeader(DBRProgressMonitor monitor, GenericTable view, String source) throws DBException {
+    public static String getViewSourceWithHeader(DBRProgressMonitor monitor, GenericTableBase view, String source) throws DBException {
         Version version = getFireBirdServerVersion(view.getDataSource());
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE ");

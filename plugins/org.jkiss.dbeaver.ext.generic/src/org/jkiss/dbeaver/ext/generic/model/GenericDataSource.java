@@ -340,7 +340,7 @@ public class GenericDataSource extends JDBCDataSource
 
 
     @Override
-    public Collection<GenericTable> getViews(DBRProgressMonitor monitor) throws DBException {
+    public Collection<GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getViews(monitor);
     }
 
@@ -350,13 +350,13 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
+    public Collection<GenericTableBase> getTables(DBRProgressMonitor monitor)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getTables(monitor);
     }
 
     @Override
-    public GenericTable getTable(DBRProgressMonitor monitor, String name)
+    public GenericTableBase getTable(DBRProgressMonitor monitor, String name)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getTable(monitor, name);
     }
@@ -559,7 +559,7 @@ public class GenericDataSource extends JDBCDataSource
         return super.createQueryTransformer(type);
     }
 
-    GenericTable findTable(@NotNull DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
+    GenericTableBase findTable(@NotNull DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
         throws DBException {
         GenericObjectContainer container = null;
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(catalogs)) {
