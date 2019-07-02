@@ -105,7 +105,6 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_show, OracleMessages.edit_create_checkbox_content_group_show_discription, false, 1);
             useDBAViewsCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use,  OracleMessages.edit_create_checkbox_content_group_use_discription, false, 1);
             useSysSchemaCheckbox = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_sys_schema,  OracleMessages.edit_create_checkbox_content_group_use_sys_schema_description, false, 1);
-            useSimpleConstraints = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
         }
 
         {
@@ -116,6 +115,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             useOptimizerHint = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
+
+            useSimpleConstraints = UIUtils.createCheckbox(contentGroup, OracleMessages.edit_create_checkbox_content_group_use_simple_constraints,  OracleMessages.edit_create_checkbox_content_group_use_simple_constraints_description, false, 1);
         }
 
         setControl(cfgGroup);
