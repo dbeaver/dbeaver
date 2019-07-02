@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -49,16 +50,17 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
     }
 
     @Override
-    protected OracleTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleTableBase parent, Object copyFrom, Map<String, Object> options)
+    protected OracleTableTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
+        OracleTableBase table = (OracleTableBase) container;
         return new UITask<OracleTableTrigger>() {
             @Override
             protected OracleTableTrigger runTask() {
-                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TRIGGER);
+                EntityEditPage editPage = new EntityEditPage(table.getDataSource(), DBSEntityType.TRIGGER);
                 if (!editPage.edit()) {
                     return null;
                 }
-                OracleTableTrigger newTrigger = new OracleTableTrigger(parent, editPage.getEntityName());
+                OracleTableTrigger newTrigger = new OracleTableTrigger(table, editPage.getEntityName());
                 newTrigger.setObjectDefinitionText("TRIGGER " + editPage.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
                     "BEGIN\n" + //$NON-NLS-1$
                     "END;"); //$NON-NLS-1$

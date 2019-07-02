@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -109,16 +110,18 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final MySQLTableBase parent, Object copyFrom, Map<String, Object> options)
+    protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        MySQLTableColumn column = new MySQLTableColumn(parent);
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
-        column.setName(getNewColumnName(monitor, context, parent));
+        MySQLTable table = (MySQLTable) container;
+
+        MySQLTableColumn column = new MySQLTableColumn(table);
+        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar"); //$NON-NLS-1$
+        column.setName(getNewColumnName(monitor, context, table));
         final String typeName = columnType == null ? "integer" : columnType.getName().toLowerCase();
         column.setTypeName(typeName); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
-        column.setOrdinalPosition(parent.getCachedAttributes().size() + 1);
+        column.setOrdinalPosition(table.getCachedAttributes().size() + 1);
         column.setFullTypeName(DBUtils.getFullTypeName(column));
         return column;
     }

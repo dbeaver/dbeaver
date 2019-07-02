@@ -87,10 +87,10 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     // ------
 
     @Override
-    protected ExasolTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, ExasolTableBase parent,
+    protected ExasolTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
                                                      Object copyFrom, Map<String, Object> options) {
-        ExasolTableColumn column = new ExasolTableColumn(parent);
-        column.setName(getNewColumnName(monitor, context, parent));
+        ExasolTableColumn column = new ExasolTableColumn((ExasolTableBase) container);
+        column.setName(getNewColumnName(monitor, context, (ExasolTableBase) container));
         return column;
     }
     
@@ -201,8 +201,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     	final ExasolTableColumn exasolColumn = command.getObject();
     	
     	// build nullability string
-    	String nullability = "";
-		nullability = exasolColumn.isRequired() ? "NOT NULL" : "NULL";
+    	String nullability = exasolColumn.isRequired() ? "NOT NULL" : "NULL";
     		
         final String addSQL = DBUtils.getQuotedIdentifier(exasolColumn) + " " + exasolColumn.getFormatType()
             + " " + (exasolColumn.getDefaultValue() == null ? "" : " DEFAULT " + exasolColumn.getDefaultValue())
@@ -233,7 +232,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     			"Drop Distribution Key",
     			String.format(
     					DROP_DIST_KEY, 
-    					((ExasolTable) exasolColumn.getParentObject()).getFullyQualifiedName(DBPEvaluationContext.DDL)
+    					exasolColumn.getParentObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
     					)
     			);
     }
@@ -241,7 +240,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     private SQLDatabasePersistAction generateCreateDist(Collection<ExasolTableColumn> distKey)
     {
     	ExasolTable table = null;
-    	Collection<String> names = new ArrayList<String>();
+    	Collection<String> names = new ArrayList<>();
     	
     	for(ExasolTableColumn c: distKey)
     	{

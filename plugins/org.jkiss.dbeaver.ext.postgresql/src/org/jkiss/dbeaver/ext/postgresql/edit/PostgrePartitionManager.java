@@ -18,21 +18,35 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 /**
- * Postgre table manager
+ * PostgrePartitionManager
  */
 public class PostgrePartitionManager extends PostgreTableManager {
 
     private static final Log log = Log.getLog(PostgrePartitionManager.class);
-    
+
+    protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+        PostgreTable owner = (PostgreTable)container;
+        final PostgreTablePartition table = new PostgreTablePartition(owner.getSchema());
+        try {
+            setTableName(monitor, owner.getSchema(), table);
+        } catch (DBException e) {
+            // Never be here
+            log.error(e);
+        }
+
+        return table;
+    }
+
     private String getParentTable(PostgreTablePartition partition)  {
         
         List<PostgreTableBase> superTables;
@@ -78,7 +92,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
 
     @Override
     public boolean canCreateObject(Object container) {
-        return false;
+        return container instanceof PostgreTable;
     }
 
     @Override

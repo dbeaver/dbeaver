@@ -37,10 +37,11 @@ public class ExasolForeignKeyManager
     @Override
     protected ExasolTableForeignKey createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context,
-        ExasolTable parent, Object copyFrom, Map<String, Object> options) throws DBException {
+        Object container, Object copyFrom, Map<String, Object> options) throws DBException {
 
+        ExasolTable table = (ExasolTable) container;
         final ExasolTableForeignKey foreignKey = new ExasolTableForeignKey(
-            parent,
+            table,
             null,
             true,
             "FK"
@@ -60,7 +61,7 @@ public class ExasolForeignKeyManager
                 int cnt = 0;
                 for (ExasolCreateForeignKeyDialog.FKColumnInfo column : editPage.getColumns()) {
                     try {
-                        columns.add(new ExasolTableKeyColumn(foreignKey, parent.getAttribute(monitor, column.getOwnColumn().getName()), ++cnt));
+                        columns.add(new ExasolTableKeyColumn(foreignKey, table.getAttribute(monitor, column.getOwnColumn().getName()), ++cnt));
                     } catch (DBException e) {
                         log.error("Could not get Attribute Information from Table");
                         return null;

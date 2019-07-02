@@ -58,11 +58,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom, Map<String, Object> options)
+    protected OracleTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        OracleTable table = new OracleTable(parent, "");
+        OracleSchema schema = (OracleSchema) container;
+
+        OracleTable table = new OracleTable(schema, "");
         try {
-            setTableName(monitor, parent, table);
+            setTableName(monitor, schema, table);
         } catch (DBException e) {
             log.error(e);
         }

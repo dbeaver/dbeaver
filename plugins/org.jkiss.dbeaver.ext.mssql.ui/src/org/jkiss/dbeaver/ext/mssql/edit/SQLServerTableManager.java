@@ -48,11 +48,12 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     };
 
     @Override
-    protected SQLServerTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, SQLServerSchema parent, Object copyFrom, Map<String, Object> options)
+    protected SQLServerTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        SQLServerTable table = new SQLServerTable(parent);
+        SQLServerSchema schema = (SQLServerSchema) container;
+        SQLServerTable table = new SQLServerTable(schema);
         try {
-            setTableName(monitor, parent, table);
+            setTableName(monitor, schema, table);
         } catch (DBException e) {
             log.error(e);
         }

@@ -74,10 +74,10 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
     // ------
 
     @Override
-    public DB2TableUniqueKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2Table table,
+    public DB2TableUniqueKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object table,
                                                   Object from, Map<String, Object> options)
     {
-        DB2TableUniqueKey constraint = new DB2TableUniqueKey(table, DBSEntityConstraintType.UNIQUE_KEY);
+        DB2TableUniqueKey constraint = new DB2TableUniqueKey((DB2Table) table, DBSEntityConstraintType.UNIQUE_KEY);
 
         return new UITask<DB2TableUniqueKey>() {
             @Override

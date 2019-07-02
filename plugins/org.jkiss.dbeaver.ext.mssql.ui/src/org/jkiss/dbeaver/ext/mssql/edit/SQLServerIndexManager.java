@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndexColumn;
+import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -51,11 +48,13 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
 
     @Override
     protected SQLServerTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTableBase parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
+        SQLServerTable table = (SQLServerTable) container;
+
         final SQLServerTableIndex index = new SQLServerTableIndex(
-            parent,
+            table,
             true,
             false,
             null,
@@ -77,7 +76,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
                 index.setIndexType(editPage.getIndexType());
                 index.setDescription(editPage.getDescription());
                 StringBuilder idxName = new StringBuilder(64);
-                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
+                idxName.append(CommonUtils.escapeIdentifier(table.getName()));
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     if (colIndex == 1) {

@@ -54,9 +54,10 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
-    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final GenericTableBase table, Object from, Map<String, Object> options) {
+    protected GenericTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options) {
+        GenericTableBase tableBase = (GenericTableBase)container;
         GenericTableForeignKey foreignKey = new GenericTableForeignKey(
-            table,
+            tableBase,
             null,
             null,
             null,

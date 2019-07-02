@@ -86,12 +86,12 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public DB2Table createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2Schema db2Schema,
+    public DB2Table createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object db2Schema,
                                          Object copyFrom, Map<String, Object> options)
     {
-        DB2Table table = new DB2Table(db2Schema, NEW_TABLE_NAME);
+        DB2Table table = new DB2Table((DB2Schema) db2Schema, NEW_TABLE_NAME);
         try {
-            setTableName(monitor, db2Schema, table);
+            setTableName(monitor, (DB2Schema) db2Schema, table);
         } catch (DBException e) {
             log.error(e);
         }

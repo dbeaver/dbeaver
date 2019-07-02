@@ -72,8 +72,10 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
     }
 
     @Override
-    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericStructContainer parent, Object copyFrom, Map<String, Object> options)
+    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
+        GenericStructContainer structContainer = (GenericStructContainer) container;
+
         boolean isView = false;
         Object navContainer = options.get(DBEObjectMaker.OPTION_CONTAINER);
         if (navContainer instanceof DBNDatabaseFolder) {
@@ -84,11 +86,11 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
         }
         String tableName = "";
         try {
-            tableName = getNewChildName(monitor, parent, isView ? BASE_VIEW_NAME : BASE_TABLE_NAME);
+            tableName = getNewChildName(monitor, structContainer, isView ? BASE_VIEW_NAME : BASE_TABLE_NAME);
         } catch (DBException e) {
             log.error(e);
         }
-        return parent.getDataSource().getMetaModel().createTableImpl(parent, tableName,
+        return structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
             isView ? GenericConstants.TABLE_TYPE_VIEW : GenericConstants.TABLE_TYPE_TABLE,
             null);
     }
