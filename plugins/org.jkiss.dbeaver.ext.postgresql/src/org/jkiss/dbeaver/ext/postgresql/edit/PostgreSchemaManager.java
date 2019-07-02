@@ -54,9 +54,9 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected PostgreSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreDatabase parent, Object copyFrom, Map<String, Object> options)
+    protected PostgreSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new PostgreSchema(parent, "NewSchema", (PostgreRole) null);
+        return new PostgreSchema((PostgreDatabase) container, "NewSchema", (PostgreRole) null);
     }
 
     @Override

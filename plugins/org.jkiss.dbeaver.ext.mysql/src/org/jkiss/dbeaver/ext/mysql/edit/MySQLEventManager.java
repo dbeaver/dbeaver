@@ -29,8 +29,8 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
 
     @Nullable
     @Override
-    protected MySQLEvent createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom, Map<String, Object> options) {
-        return new MySQLEvent(parent, "NewEvent");
+    protected MySQLEvent createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
+        return new MySQLEvent((MySQLCatalog) container, "NewEvent");
     }
 
     @Override

@@ -63,11 +63,11 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom, Map<String, Object> options)
+    protected MySQLView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        MySQLView newView = new MySQLView(parent);
+        MySQLView newView = new MySQLView((MySQLCatalog) container);
         try {
-            newView.setName(getNewChildName(monitor, parent, "new_view"));
+            newView.setName(getNewChildName(monitor, (MySQLCatalog) container, "new_view"));
         } catch (DBException e) {
             // Never be here
             log.error(e);

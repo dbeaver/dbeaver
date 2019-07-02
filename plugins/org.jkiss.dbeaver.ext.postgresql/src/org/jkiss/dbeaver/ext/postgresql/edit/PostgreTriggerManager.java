@@ -56,9 +56,9 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     }
 
     @Override
-    protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreTableReal parent, Object copyFrom, Map<String, Object> options) throws DBException
+    protected PostgreTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
     {
-        return new PostgreTrigger(monitor, parent);
+        return new PostgreTrigger(monitor, (PostgreTableReal) container);
     }
 
 

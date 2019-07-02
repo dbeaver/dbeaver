@@ -52,9 +52,9 @@ public class MySQLDatabaseManager extends SQLObjectEditor<MySQLCatalog, MySQLDat
     }
 
     @Override
-    protected MySQLCatalog createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLDataSource parent, Object copyFrom, Map<String, Object> options)
+    protected MySQLCatalog createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new MySQLCatalog(parent, null);
+        return new MySQLCatalog((MySQLDataSource) container, null);
     }
 
     @Override

@@ -47,11 +47,12 @@ public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTab
 
     @Override
     protected SQLServerTableUniqueKey createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
+        SQLServerTable table = (SQLServerTable) container;
         final SQLServerTableUniqueKey primaryKey = new SQLServerTableUniqueKey(
-            parent,
+            table,
             "PK",
             null,
             DBSEntityConstraintType.INDEX,

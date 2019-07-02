@@ -54,11 +54,12 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
 
     @Override
     protected GenericPrimaryKey createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final GenericTableBase parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
+        GenericTableBase tableBase = (GenericTableBase)container;
         return new GenericPrimaryKey(
-            parent,
+            tableBase,
             null,
             null,
             DBSEntityConstraintType.PRIMARY_KEY,

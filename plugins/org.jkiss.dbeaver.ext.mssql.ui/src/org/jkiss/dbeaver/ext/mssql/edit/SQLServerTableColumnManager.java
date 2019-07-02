@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerObjectClass;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
+import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -90,12 +87,14 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, SQLServerTableBase parent, Object copyFrom, Map<String, Object> options)
+    protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
+        SQLServerTable table = (SQLServerTable) container;
 
-        final SQLServerTableColumn column = new SQLServerTableColumn(parent);
-        column.setName(getNewColumnName(monitor, context, parent));
+        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar"); //$NON-NLS-1$
+
+        final SQLServerTableColumn column = new SQLServerTableColumn(table);
+        column.setName(getNewColumnName(monitor, context, table));
         column.setDataType((SQLServerDataType) columnType);
         column.setTypeName(columnType == null ? "varchar" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);

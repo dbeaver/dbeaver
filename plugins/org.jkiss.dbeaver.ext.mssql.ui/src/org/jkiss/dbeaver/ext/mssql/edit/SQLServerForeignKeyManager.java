@@ -45,10 +45,10 @@ public class SQLServerForeignKeyManager extends SQLForeignKeyManager<SQLServerTa
     }
 
     @Override
-    protected SQLServerTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable table, Object from, Map<String, Object> options)
+    protected SQLServerTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object table, Object from, Map<String, Object> options)
     {
         final SQLServerTableForeignKey foreignKey = new SQLServerTableForeignKey(
-            table,
+            (SQLServerTable) table,
             null,
             null,
             null,

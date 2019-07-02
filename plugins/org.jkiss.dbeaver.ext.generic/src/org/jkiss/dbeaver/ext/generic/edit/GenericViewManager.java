@@ -68,11 +68,12 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericStructContainer parent, Object copyFrom, Map<String, Object> options)
+    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
         String tableName = "NewView";
 
-        GenericTableBase viewImpl = parent.getDataSource().getMetaModel().createTableImpl(parent, tableName,
+        GenericStructContainer structContainer = (GenericStructContainer) container;
+        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
                 GenericConstants.TABLE_TYPE_VIEW,
                 null);
         if (viewImpl instanceof GenericView) {

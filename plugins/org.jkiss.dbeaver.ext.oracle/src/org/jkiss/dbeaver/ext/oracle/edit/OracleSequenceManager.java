@@ -48,9 +48,10 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
 
     @Override
     protected OracleSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                                  final OracleSchema schema,
+                                                  final Object container,
                                                   Object copyFrom, Map<String, Object> options)
     {
+        OracleSchema schema = (OracleSchema) container;
         return new UITask<OracleSequence>() {
             @Override
             protected OracleSequence runTask() {

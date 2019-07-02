@@ -73,9 +73,10 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
     }
 
     @Override
-    protected DB2Index createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2TableBase table, Object from, Map<String, Object> options) {
+    protected DB2Index createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options) {
+        DB2TableBase table = (DB2TableBase) container;
         DB2Index index = new DB2Index(
-            table,
+            (DB2TableBase) table,
             "INDEX",
             DBSIndexType.UNKNOWN,
             DB2UniqueRule.U);

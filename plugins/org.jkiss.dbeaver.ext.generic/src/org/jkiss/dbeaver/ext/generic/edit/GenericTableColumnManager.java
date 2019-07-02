@@ -54,28 +54,29 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    protected GenericTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericTableBase parent, Object copyFrom, Map<String, Object> options) throws DBException {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
+    protected GenericTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        GenericTableBase tableBase = (GenericTableBase) container;
+        DBSDataType columnType = findBestDataType(tableBase.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
 
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
-        GenericTableColumn column = parent.getDataSource().getMetaModel().createTableColumnImpl(
-                monitor,
-                parent,
-                getNewColumnName(monitor, context, parent),
-                columnType == null ? "INTEGER" : columnType.getName(),
-                columnType == null ? Types.INTEGER : columnType.getTypeID(),
-                columnType == null ? Types.INTEGER : columnType.getTypeID(),
-                -1,
-                columnSize,
-                columnSize,
-                null,
-                null,
-                10,
-                false,
-                null,
-                null,
-                false,
-                false
+        GenericTableColumn column = tableBase.getDataSource().getMetaModel().createTableColumnImpl(
+            monitor,
+            tableBase,
+            getNewColumnName(monitor, context, tableBase),
+            columnType == null ? "INTEGER" : columnType.getName(),
+            columnType == null ? Types.INTEGER : columnType.getTypeID(),
+            columnType == null ? Types.INTEGER : columnType.getTypeID(),
+            -1,
+            columnSize,
+            columnSize,
+            null,
+            null,
+            10,
+            false,
+            null,
+            null,
+            false,
+            false
         );
         column.setPersisted(false);
         return column;

@@ -45,8 +45,10 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
     }
 
     @Override
-    protected OracleTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleTableBase table, Object from, Map<String, Object> options)
+    protected OracleTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options)
     {
+        OracleTableBase table = (OracleTableBase) container;
+
         final OracleTableForeignKey foreignKey = new OracleTableForeignKey(
             table,
             null,

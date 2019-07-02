@@ -55,38 +55,41 @@ public class ExasolPrimaryKeyManager
 
 	@Override
 	protected ExasolTableUniqueKey createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context,
-        ExasolTable parent, Object copyFrom, Map<String, Object> options) throws DBException
+		DBRProgressMonitor monitor, DBECommandContext context,
+		Object container, Object copyFrom, Map<String, Object> options) throws DBException
 	{
+		final ExasolTableUniqueKey constraint = new ExasolTableUniqueKey(
+			(ExasolTable) container,
+			DBSEntityConstraintType.PRIMARY_KEY,
+			true,
+			"CONSTRAINT"
+		);
+
 		return new UITask<ExasolTableUniqueKey>() {
 			@Override
 			protected ExasolTableUniqueKey runTask()
 			{
 				EditConstraintPage editPage = new EditConstraintPage(
-						ExasolMessages.edit_exasol_constraint_manager_dialog_title, 
-						parent, 
-						new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY },
-						true);
+					ExasolMessages.edit_exasol_constraint_manager_dialog_title,
+					constraint,
+					new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY });
 				if (!editPage.edit()) {
 					return null;
 				}
-				
-				final ExasolTableUniqueKey constraint = new ExasolTableUniqueKey(
-						parent, 
-						editPage.getConstraintType(), 
-						editPage.isEnableConstraint(), 
-						editPage.getConstraintName()
-						);
-				
+
+				constraint.setConstraintType(editPage.getConstraintType());
+				constraint.setEnabled(editPage.isEnableConstraint());
+				constraint.setName(editPage.getConstraintName());
+
 				List<ExasolTableKeyColumn> constColumns = new ArrayList<ExasolTableKeyColumn>();
 				int ordinalPosition = 0;
 				for(DBSEntityAttribute tableColumn  : editPage.getSelectedAttributes())
 				{
 					ExasolTableKeyColumn col;
 					try {
-						col = new ExasolTableKeyColumn(constraint, parent.getAttribute(monitor, tableColumn.getName()), ++ordinalPosition);
+						col = new ExasolTableKeyColumn(constraint, constraint.getTable().getAttribute(monitor, tableColumn.getName()), ++ordinalPosition);
 					} catch (DBException e) {
-						log.error("Could not find column " + tableColumn.getName() + " in table " + parent.getFullyQualifiedName(DBPEvaluationContext.DDL));
+						log.error("Could not find column " + tableColumn.getName() + " in table " + constraint.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL));
 						return null;
 					}
 					constColumns.add(col);

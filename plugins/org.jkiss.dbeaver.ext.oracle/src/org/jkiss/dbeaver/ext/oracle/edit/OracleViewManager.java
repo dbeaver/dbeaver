@@ -67,9 +67,9 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     }
 
     @Override
-    protected OracleView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom, Map<String, Object> options)
+    protected OracleView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        OracleView newView = new OracleView(parent, "NEW_VIEW"); //$NON-NLS-1$
+        OracleView newView = new OracleView((OracleSchema) container, "NEW_VIEW"); //$NON-NLS-1$
         newView.setViewText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT");
         return newView;
     }

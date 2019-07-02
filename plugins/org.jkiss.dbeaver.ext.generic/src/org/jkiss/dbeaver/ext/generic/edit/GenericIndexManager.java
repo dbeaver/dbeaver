@@ -48,11 +48,12 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
 
     @Override
     protected GenericTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final GenericTableBase parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
-        return parent.getDataSource().getMetaModel().createIndexImpl(
-            parent,
+        GenericTableBase tableBase = (GenericTableBase) container;
+        return tableBase.getDataSource().getMetaModel().createIndexImpl(
+            tableBase,
             true,
             null,
             0,

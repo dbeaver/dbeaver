@@ -47,11 +47,11 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
 
     @Override
     protected MySQLTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
         return new MySQLTableIndex(
-            parent,
+            (MySQLTable) container,
             false,
             null,
             DBSIndexType.OTHER,

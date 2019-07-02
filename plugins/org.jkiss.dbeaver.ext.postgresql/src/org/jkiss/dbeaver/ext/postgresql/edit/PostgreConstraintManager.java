@@ -56,10 +56,10 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
 
     @Override
     protected PostgreTableConstraintBase createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
-        return new PostgreTableConstraint(parent, "NewConstraint", DBSEntityConstraintType.UNIQUE_KEY);
+        return new PostgreTableConstraint((PostgreTableBase) container, "NewConstraint", DBSEntityConstraintType.UNIQUE_KEY);
     }
 
     @Override

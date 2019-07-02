@@ -45,6 +45,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         implements
         DBEObjectEditor<OBJECT_TYPE>,
         DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> {
+
     public static final String PATTERN_ITEM_INDEX = "%INDEX%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_TABLE = "%TABLE%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%"; //$NON-NLS-1$
@@ -77,7 +78,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public final OBJECT_TYPE createNewObject(DBRProgressMonitor monitor, @NotNull DBECommandContext commandContext, Object container, @Nullable Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         OBJECT_TYPE newObject;
         try {
-            newObject = createDatabaseObject(monitor, commandContext, (CONTAINER_TYPE) container, copyFrom, options);
+            newObject = createDatabaseObject(monitor, commandContext, container, copyFrom, options);
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + container.getClass().getSimpleName());
         }
@@ -112,11 +113,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     protected abstract OBJECT_TYPE createDatabaseObject(
-            DBRProgressMonitor monitor,
-            DBECommandContext context,
-            CONTAINER_TYPE parent,
-            Object copyFrom,
-            Map<String, Object> options) throws DBException;
+        DBRProgressMonitor monitor,
+        DBECommandContext context,
+        Object container,
+        Object copyFrom,
+        Map<String, Object> options) throws DBException;
 
     //////////////////////////////////////////////////
     // Actions

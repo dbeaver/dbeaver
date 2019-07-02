@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -40,19 +41,14 @@ public class ExasolPriorityGroupDialog extends BaseDialog {
     private int weight;
     private String comment = "";
 
-    
-    public ExasolPriorityGroupDialog(Shell parentShell, ExasolDataSource datasource)
-    {
-        super(parentShell,ExasolMessages.dialog_create_priority_group,null);
+    public ExasolPriorityGroupDialog(Shell parentShell, ExasolPriorityGroup group) {
+        super(parentShell, ExasolMessages.dialog_create_priority_group, null);
     }
-    
-    
 
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(Composite parent) {
         final Composite composite = super.createDialogArea(parent);
-        
+
         final Composite group = new Composite(composite, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
@@ -60,55 +56,49 @@ public class ExasolPriorityGroupDialog extends BaseDialog {
         gd.verticalIndent = 0;
         gd.horizontalIndent = 0;
         group.setLayoutData(gd);
-        group.setLayout(new GridLayout(2, true));  
+        group.setLayout(new GridLayout(2, true));
         group.setLayout(new GridLayout(2, false));
         final Text nameText = UIUtils.createLabelText(group, ExasolMessages.dialog_priority_group_name, "");
-        final Text weightText = UIUtils.createLabelText(group,ExasolMessages.dialog_priority_group_weight, "");
+        final Text weightText = UIUtils.createLabelText(group, ExasolMessages.dialog_priority_group_weight, "");
         weightText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
-        final Text commentText = UIUtils.createLabelText(group,ExasolMessages.dialog_priority_group_description, "");
-        
+        final Text commentText = UIUtils.createLabelText(group, ExasolMessages.dialog_priority_group_description, "");
+
         ModifyListener mod = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
                 name = nameText.getText();
-                weight =  Integer.parseInt(weightText.getText());
+                weight = Integer.parseInt(weightText.getText());
                 comment = commentText.getText();
                 //enable/disable OK button   
-                if (  name.isEmpty() | weight == -1 )
-                {
+                if (name.isEmpty() | weight == -1) {
                     getButton(IDialogConstants.OK_ID).setEnabled(false);
                 } else {
                     getButton(IDialogConstants.OK_ID).setEnabled(true);
                 }
             }
         };
-        
+
         nameText.addModifyListener(mod);
         commentText.addModifyListener(mod);
         return composite;
     }
-    
-    public String getName()
-    {
+
+    public String getName() {
         return name;
     }
 
-    
-    public int getWeight()
-    {
-    	return weight;
+
+    public int getWeight() {
+        return weight;
     }
 
-    public String getComment()
-    {
+    public String getComment() {
         return comment;
     }
 
-    
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }
