@@ -20,9 +20,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,7 +33,7 @@ import java.util.Map;
 /**
  * Generic view
  */
-public class GenericView extends GenericTableBase implements DBSView
+public class GenericView extends GenericTableBase implements DBSObjectWithScript, DBSView
 {
     private static final Log log = Log.getLog(GenericView.class);
 
@@ -66,6 +68,11 @@ public class GenericView extends GenericTableBase implements DBSView
             ddl = isPersisted() ? getDataSource().getMetaModel().getViewDDL(monitor, this, options) : "";
         }
         return ddl;
+    }
+
+    @Override
+    public void setObjectDefinitionText(String source) {
+        this.ddl = source;
     }
 
 }
