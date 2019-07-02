@@ -256,7 +256,8 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     if (event.getOptions() != null) {
                         Object containerNode = event.getOptions().get(DBEObjectMaker.OPTION_CONTAINER);
                         if (containerNode instanceof DBNDatabaseNode) {
-                            parentNode = (DBNDatabaseNode) containerNode;
+                            // Do not use container node as it can be invalid (it can be grand-parent node or something)
+                            //parentNode = (DBNDatabaseNode) containerNode;
                         }
                     }
                     if (parentNode == null) {
