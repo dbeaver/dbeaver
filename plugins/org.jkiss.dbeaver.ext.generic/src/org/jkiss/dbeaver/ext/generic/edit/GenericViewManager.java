@@ -72,9 +72,13 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     {
         String tableName = "NewView";
 
-        return parent.getDataSource().getMetaModel().createTableImpl(parent, tableName,
+        GenericTableBase viewImpl = parent.getDataSource().getMetaModel().createTableImpl(parent, tableName,
                 GenericConstants.TABLE_TYPE_VIEW,
                 null);
+        if (viewImpl instanceof GenericView) {
+            ((GenericView) viewImpl).setObjectDefinitionText("CREATE VIEW " + tableName + " AS SELECT 1 as A;\n");
+        }
+        return viewImpl;
     }
 
     @Override
