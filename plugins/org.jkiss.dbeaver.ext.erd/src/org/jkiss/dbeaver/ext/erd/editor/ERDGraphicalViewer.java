@@ -337,7 +337,9 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         private final DBSEntity table;
         public ToolEntryTable(DBSEntity table)
         {
-            super(table.getName(), table.getDescription(), DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE), null);
+            super(table.getName(), table.getDescription(),
+                DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE),
+                DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE));
             this.setUserModificationPermission(PERMISSION_NO_MODIFICATION);
             setDescription(DBUtils.getObjectFullName(table, DBPEvaluationContext.UI));
             this.table = table;
