@@ -95,6 +95,10 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
         return !nonUnique;
     }
 
+    public void setUnique(boolean unique) {
+        this.nonUnique = !unique;
+    }
+
     @Override
     public Object getLazyReference(Object propertyId)
     {

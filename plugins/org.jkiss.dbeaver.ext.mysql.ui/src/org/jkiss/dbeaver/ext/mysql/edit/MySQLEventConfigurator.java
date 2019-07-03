@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEvent;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,12 +27,12 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 /**
  * MySQLEventConfigurator
  */
-public class MySQLEventConfigurator implements DBEObjectConfigurator<MySQLCatalog, MySQLEvent> {
+public class MySQLEventConfigurator implements DBEObjectConfigurator<MySQLEvent> {
 
     @Override
-    public MySQLEvent configureObject(DBRProgressMonitor monitor, MySQLCatalog parent, MySQLEvent event) {
+    public MySQLEvent configureObject(DBRProgressMonitor monitor, Object parent, MySQLEvent event) {
         return UITask.run(() -> {
-            EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.EVENT);
+            EntityEditPage editPage = new EntityEditPage(event.getDataSource(), DBSEntityType.EVENT);
             if (!editPage.edit()) {
                 return null;
             }

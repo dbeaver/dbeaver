@@ -191,6 +191,10 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
         return uniqueRule;
     }
 
+    public void setUniqueRule(DB2UniqueRule uniqueRule) {
+        this.uniqueRule = uniqueRule;
+    }
+
     @Property(viewable = false, editable = false, order = 10)
     public Boolean getMadeUnique()
     {

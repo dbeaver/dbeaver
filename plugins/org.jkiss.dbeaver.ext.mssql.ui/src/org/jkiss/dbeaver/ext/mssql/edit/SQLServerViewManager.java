@@ -58,11 +58,11 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     }
 
     @Override
-    protected SQLServerView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, SQLServerSchema parent, Object copyFrom, Map<String, Object> options)
+    protected SQLServerView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        SQLServerView newView = new SQLServerView(parent);
+        SQLServerView newView = new SQLServerView((SQLServerSchema) container);
         try {
-            newView.setName(getNewChildName(monitor, parent, "new_view"));
+            newView.setName(getNewChildName(monitor, (SQLServerSchema) container, "new_view"));
         } catch (DBException e) {
             // Never be here
             log.error(e);

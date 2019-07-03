@@ -241,7 +241,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                 }
             }
             if (tableBase instanceof PostgreTablePartition && !alter) {
-                ddl.append(((PostgreTablePartition) tableBase).getExpr());                
+                ddl.append(((PostgreTablePartition) tableBase).getPartitionExpression());                
             }
         }
 

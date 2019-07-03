@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -29,14 +28,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * Postgre database configurator
  */
-public class PostgreDatabaseConfigurator implements DBEObjectConfigurator<PostgreDataSource, PostgreDatabase> {
+public class PostgreDatabaseConfigurator implements DBEObjectConfigurator<PostgreDatabase> {
 
     @Override
-    public PostgreDatabase configureObject(DBRProgressMonitor monitor, PostgreDataSource dataSource, PostgreDatabase database) {
+    public PostgreDatabase configureObject(DBRProgressMonitor monitor, Object dataSource, PostgreDatabase database) {
         return new UITask<PostgreDatabase>() {
             @Override
             protected PostgreDatabase runTask() {
-                PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), dataSource);
+                PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(UIUtils.getActiveWorkbenchShell(), database.getDataSource());
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }

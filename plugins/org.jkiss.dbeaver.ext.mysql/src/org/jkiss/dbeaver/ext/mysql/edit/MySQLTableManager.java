@@ -63,20 +63,21 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected MySQLTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, MySQLCatalog parent, Object copyFrom, Map<String, Object> options) throws DBException
+    protected MySQLTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
     {
         final MySQLTable table;
+        MySQLCatalog catalog = (MySQLCatalog) container;
         if (copyFrom instanceof DBSEntity) {
-            table = new MySQLTable(monitor, parent, (DBSEntity)copyFrom);
-            table.setName(getNewChildName(monitor, parent, ((DBSEntity) copyFrom).getName()));
+            table = new MySQLTable(monitor, catalog, (DBSEntity)copyFrom);
+            table.setName(getNewChildName(monitor, catalog, ((DBSEntity) copyFrom).getName()));
         } else if (copyFrom == null) {
-            table = new MySQLTable(parent);
-            setTableName(monitor, parent, table);
+            table = new MySQLTable(catalog);
+            setTableName(monitor, catalog, table);
 
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
-            additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
-            additionalInfo.setCharset(parent.getAdditionalInfo(monitor).getDefaultCharset());
-            additionalInfo.setCollation(parent.getAdditionalInfo(monitor).getDefaultCollation());
+            additionalInfo.setEngine(catalog.getDataSource().getDefaultEngine());
+            additionalInfo.setCharset(catalog.getAdditionalInfo(monitor).getDefaultCharset());
+            additionalInfo.setCollation(catalog.getAdditionalInfo(monitor).getDefaultCollation());
         } else {
             throw new DBException("Can't create MySQL table from '" + copyFrom + "'");
         }

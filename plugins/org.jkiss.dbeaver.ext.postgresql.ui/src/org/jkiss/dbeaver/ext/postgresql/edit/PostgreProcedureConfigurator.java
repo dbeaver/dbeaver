@@ -22,7 +22,10 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,16 +41,16 @@ import java.util.List;
 /**
  * Postgre procedure configurator
  */
-public class PostgreProcedureConfigurator implements DBEObjectConfigurator<PostgreSchema, PostgreProcedure> {
+public class PostgreProcedureConfigurator implements DBEObjectConfigurator<PostgreProcedure> {
 
     protected static final Log log = Log.getLog(PostgreProcedureConfigurator.class);
 
     @Override
-    public PostgreProcedure configureObject(DBRProgressMonitor monitor, PostgreSchema parent, PostgreProcedure newProcedure) {
+    public PostgreProcedure configureObject(DBRProgressMonitor monitor, Object parent, PostgreProcedure newProcedure) {
         return new UITask<PostgreProcedure>() {
             @Override
             protected PostgreProcedure runTask() {
-                CreateFunctionPage editPage = new CreateFunctionPage(parent, monitor);
+                CreateFunctionPage editPage = new CreateFunctionPage(monitor, newProcedure);
                 if (!editPage.edit()) {
                     return null;
                 }
@@ -74,13 +77,13 @@ public class PostgreProcedureConfigurator implements DBEObjectConfigurator<Postg
     }
 
     private static class CreateFunctionPage extends CreateProcedurePage {
-        private final PostgreSchema parent;
+        private final PostgreProcedure parent;
         private final DBRProgressMonitor monitor;
         private PostgreLanguage language;
         private PostgreDataType returnType;
         private Combo returnTypeCombo;
 
-        public CreateFunctionPage(PostgreSchema parent, DBRProgressMonitor monitor) {
+        public CreateFunctionPage(DBRProgressMonitor monitor, PostgreProcedure parent) {
             super(parent);
             this.parent = parent;
             this.monitor = monitor;

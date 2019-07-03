@@ -58,12 +58,14 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleTableBase parent, Object copyFrom, Map<String, Object> options)
+    protected OracleTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
+        OracleTableBase table = (OracleTableBase) container;
 
-        final OracleTableColumn column = new OracleTableColumn(parent);
-        column.setName(getNewColumnName(monitor, context, parent));
+        DBSDataType columnType = findBestDataType(table.getDataSource(), "varchar2"); //$NON-NLS-1$
+
+        final OracleTableColumn column = new OracleTableColumn(table);
+        column.setName(getNewColumnName(monitor, context, table));
         column.setDataType((OracleDataType) columnType);
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);

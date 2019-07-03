@@ -41,117 +41,113 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 public class ExasolPriorityGroupManager extends SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource> implements DBEObjectRenamer<ExasolPriorityGroup> {
 
-	@Override
-	public long getMakerOptions(DBPDataSource dataSource) {
-		return FEATURE_SAVE_IMMEDIATELY;
-	}
-
-	@Override
-	public DBSObjectCache<ExasolDataSource, ExasolPriorityGroup> getObjectsCache(ExasolPriorityGroup object) {
-		return object.getDataSource().getPriorityGroupCache();
-	}
-
-	@Override
-	protected ExasolPriorityGroup createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                                       ExasolDataSource parent, Object copyFrom, Map<String, Object> options) throws DBException {
-		return new UITask<ExasolPriorityGroup>() {
-			@Override
-			protected ExasolPriorityGroup runTask()
-			{
-				ExasolPriorityGroupDialog dialog = new ExasolPriorityGroupDialog(UIUtils.getActiveWorkbenchShell(), parent);
-				if (dialog.open() != IDialogConstants.OK_ID)
-				{
-					return null;
-				}
-				ExasolPriorityGroup group = new ExasolPriorityGroup(parent, dialog.getName(), dialog.getComment(), dialog.getWeight());
-				return group;
-			}
-		}.execute();
-	}
-
-	@Override
-	protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectCreateCommand command,
-			Map<String, Object> options) {
-		final ExasolPriorityGroup group = command.getObject();
-		
-		String script = String.format("CREATE PRIORITY GROUP %s WITH WEIGHT = %d", DBUtils.getQuotedIdentifier(group), group.getWeight());
-		
-		actions.add(new SQLDatabasePersistAction(ExasolMessages.manager_priority_create, script));
-		
-		if (! group.getDescription().isEmpty())
-		{
-			actions.add(getCommentCommand(group) );		
-		}
-	}
-	
-    private SQLDatabasePersistAction getCommentCommand(ExasolPriorityGroup group)
-    {
-    	return new SQLDatabasePersistAction(
-    			ExasolMessages.manager_priority_group_comment,
-                	String.format("COMMENT ON PRIORITY GROUP %s is '%s'",
-    	                DBUtils.getQuotedIdentifier(group),
-    	                ExasolUtils.quoteString(group.getDescription())
-    	            )                
-                );
+    @Override
+    public long getMakerOptions(DBPDataSource dataSource) {
+        return FEATURE_SAVE_IMMEDIATELY;
     }
-    
+
+    @Override
+    public DBSObjectCache<ExasolDataSource, ExasolPriorityGroup> getObjectsCache(ExasolPriorityGroup object) {
+        return object.getDataSource().getPriorityGroupCache();
+    }
+
+    @Override
+    protected ExasolPriorityGroup createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
+                                                       Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        ExasolPriorityGroup group = new ExasolPriorityGroup((ExasolDataSource) container, "PG", null, 0);
+        return new UITask<ExasolPriorityGroup>() {
+            @Override
+            protected ExasolPriorityGroup runTask() {
+                ExasolPriorityGroupDialog dialog = new ExasolPriorityGroupDialog(UIUtils.getActiveWorkbenchShell(), group);
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                group.setName(dialog.getName());
+                group.setDescription(dialog.getComment());
+                group.setWeight(dialog.getWeight());
+                return group;
+            }
+        }.execute();
+    }
+
+    @Override
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectCreateCommand command,
+                                          Map<String, Object> options) {
+        final ExasolPriorityGroup group = command.getObject();
+
+        String script = String.format("CREATE PRIORITY GROUP %s WITH WEIGHT = %d", DBUtils.getQuotedIdentifier(group), group.getWeight());
+
+        actions.add(new SQLDatabasePersistAction(ExasolMessages.manager_priority_create, script));
+
+        if (!group.getDescription().isEmpty()) {
+            actions.add(getCommentCommand(group));
+        }
+    }
+
+    private SQLDatabasePersistAction getCommentCommand(ExasolPriorityGroup group) {
+        return new SQLDatabasePersistAction(
+            ExasolMessages.manager_priority_group_comment,
+            String.format("COMMENT ON PRIORITY GROUP %s is '%s'",
+                DBUtils.getQuotedIdentifier(group),
+                ExasolUtils.quoteString(group.getDescription())
+            )
+        );
+    }
+
     @Override
     protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
-    		SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectChangeCommand command,
-    		Map<String, Object> options) throws DBException {
-    	ExasolPriorityGroup group = command.getObject();
-    	
-    	Map<Object, Object> com = command.getProperties();
-    	
-        if (com.containsKey("description"))
-        {
+                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectChangeCommand command,
+                                          Map<String, Object> options) throws DBException {
+        ExasolPriorityGroup group = command.getObject();
+
+        Map<Object, Object> com = command.getProperties();
+
+        if (com.containsKey("description")) {
             actionList.add(
-                    getCommentCommand(group)
-                    );
+                getCommentCommand(group)
+            );
         }
-        
-        if (com.containsKey("weight"))
-        {
-        	String script = String.format("ALTER PRIORITY GROUP %s SET WEIGHT = %d",DBUtils.getQuotedIdentifier(group),group.getWeight());
-        	actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_priority_alter, script));
+
+        if (com.containsKey("weight")) {
+            String script = String.format("ALTER PRIORITY GROUP %s SET WEIGHT = %d", DBUtils.getQuotedIdentifier(group), group.getWeight());
+            actionList.add(new SQLDatabasePersistAction(ExasolMessages.manager_priority_alter, script));
         }
     }
 
 
-	@Override
-	protected void addObjectDeleteActions(List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectDeleteCommand command,
-			Map<String, Object> options) {
-		
-		ExasolPriorityGroup group = command.getObject();
-		
-		String script = String.format("DROP PRIORITY GROUP %s",DBUtils.getQuotedIdentifier(group));
-		
-		actions.add(new SQLDatabasePersistAction(ExasolMessages.manager_priority_drop, script));
-	}
+    @Override
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions,
+                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectDeleteCommand command,
+                                          Map<String, Object> options) {
 
-	@Override
-	public void renameObject(DBECommandContext commandContext, ExasolPriorityGroup object, String newName)
-			throws DBException {
+        ExasolPriorityGroup group = command.getObject();
+
+        String script = String.format("DROP PRIORITY GROUP %s", DBUtils.getQuotedIdentifier(group));
+
+        actions.add(new SQLDatabasePersistAction(ExasolMessages.manager_priority_drop, script));
+    }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, ExasolPriorityGroup object, String newName)
+        throws DBException {
         processObjectRename(commandContext, object, newName);
-	}
-	
-	@Override
-	protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-			SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectRenameCommand command,
-			Map<String, Object> options) {
-		// TODO Auto-generated method stub
-		ExasolPriorityGroup group = command.getObject();
-		
-		String script = String.format(
-				"RENAME PRIORITY GROUP %s to %s",
-				DBUtils.getQuotedIdentifier(group.getDataSource(),command.getOldName()),
-				DBUtils.getQuotedIdentifier(group.getDataSource(),command.getNewName())
-				);
-		actions.add(new SQLDatabasePersistAction(ExasolMessages.manager_priority_rename,script));
-	}
+    }
 
-	
-	
+    @Override
+    protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
+                                          SQLObjectEditor<ExasolPriorityGroup, ExasolDataSource>.ObjectRenameCommand command,
+                                          Map<String, Object> options) {
+        // TODO Auto-generated method stub
+        ExasolPriorityGroup group = command.getObject();
+
+        String script = String.format(
+            "RENAME PRIORITY GROUP %s to %s",
+            DBUtils.getQuotedIdentifier(group.getDataSource(), command.getOldName()),
+            DBUtils.getQuotedIdentifier(group.getDataSource(), command.getNewName())
+        );
+        actions.add(new SQLDatabasePersistAction(ExasolMessages.manager_priority_rename, script));
+    }
+
+
 }

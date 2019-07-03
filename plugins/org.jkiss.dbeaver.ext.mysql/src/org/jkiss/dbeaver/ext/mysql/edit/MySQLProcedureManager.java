@@ -65,9 +65,9 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     }
 
     @Override
-    protected MySQLProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLCatalog parent, Object copyFrom, Map<String, Object> options)
+    protected MySQLProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new MySQLProcedure(parent);
+        return new MySQLProcedure((MySQLCatalog) container);
     }
 
     @Override

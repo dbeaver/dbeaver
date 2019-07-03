@@ -45,14 +45,22 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
     }
 
     @Override
-    protected OracleTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleTableBase table, Object from, Map<String, Object> options)
+    protected OracleTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options)
     {
+        OracleTableBase table = (OracleTableBase) container;
+
+        final OracleTableForeignKey foreignKey = new OracleTableForeignKey(
+            table,
+            null,
+            null,
+            null,
+            DBSForeignKeyModifyRule.NO_ACTION);
         return new UITask<OracleTableForeignKey>() {
             @Override
             protected OracleTableForeignKey runTask() {
                 EditForeignKeyPage editPage = new EditForeignKeyPage(
                     OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
-                    table,
+                    foreignKey,
                     new DBSForeignKeyModifyRule[] {
                         DBSForeignKeyModifyRule.NO_ACTION,
                         DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
@@ -62,13 +70,9 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
                     return null;
                 }
 
-                final OracleTableForeignKey foreignKey = new OracleTableForeignKey(
-                    table,
-                    null,
-                    null,
-                    (OracleTableConstraint) editPage.getUniqueConstraint(),
-                    editPage.getOnDeleteRule());
+                foreignKey.setReferencedConstraint((OracleTableConstraint)editPage.getUniqueConstraint());
                 foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+                foreignKey.setDeleteRule(editPage.getOnDeleteRule());
                 int colIndex = 1;
                 for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(

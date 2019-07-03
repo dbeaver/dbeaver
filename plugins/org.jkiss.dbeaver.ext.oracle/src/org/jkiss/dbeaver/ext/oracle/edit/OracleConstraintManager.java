@@ -52,15 +52,17 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
 
     @Override
     protected OracleTableConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final OracleTableBase parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
+        OracleTableBase table = (OracleTableBase) container;
+
         return new UITask<OracleTableConstraint>() {
             @Override
             protected OracleTableConstraint runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     OracleMessages.edit_oracle_constraint_manager_dialog_title,
-                    parent,
+                    table,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
                         DBSEntityConstraintType.UNIQUE_KEY },
@@ -71,7 +73,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
                 }
 
                 final OracleTableConstraint constraint = new OracleTableConstraint(
-                    parent,
+                    table,
                     editPage.getConstraintName(),
                     editPage.getConstraintType(),
                     null,

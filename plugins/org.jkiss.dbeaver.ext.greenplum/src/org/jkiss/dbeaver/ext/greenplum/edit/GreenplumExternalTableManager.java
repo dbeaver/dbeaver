@@ -43,11 +43,11 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
     @Override
     protected GreenplumExternalTable createDatabaseObject(DBRProgressMonitor monitor,
                                                           DBECommandContext context,
-                                                          PostgreSchema parent,
+                                                          Object container,
                                                           Object copyFrom, Map<String, Object> options) {
-        GreenplumExternalTable externalTable = new GreenplumExternalTable(parent);
+        GreenplumExternalTable externalTable = new GreenplumExternalTable((PostgreSchema) container);
         try {
-            setTableName(monitor, parent, externalTable);
+            setTableName(monitor, (PostgreSchema) container, externalTable);
         } catch (DBException e) {
             log.error(e);
         }
@@ -73,7 +73,7 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
     @Nullable
     @Override
     public DBSObjectCache<PostgreSchema, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
-        return ((GreenplumSchema)object.getContainer()).getTableCache();
+        return object.getContainer().getTableCache();
     }
 
     @Override

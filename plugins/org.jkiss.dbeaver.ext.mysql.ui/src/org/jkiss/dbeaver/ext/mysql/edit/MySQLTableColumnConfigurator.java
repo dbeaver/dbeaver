@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,9 +26,9 @@ import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 /**
  * MySQL table column manager
  */
-public class MySQLTableColumnConfigurator implements DBEObjectConfigurator<MySQLTableBase, MySQLTableColumn> {
+public class MySQLTableColumnConfigurator implements DBEObjectConfigurator<MySQLTableColumn> {
     @Override
-    public MySQLTableColumn configureObject(DBRProgressMonitor monitor, MySQLTableBase table, MySQLTableColumn column) {
+    public MySQLTableColumn configureObject(DBRProgressMonitor monitor, Object table, MySQLTableColumn column) {
         return UITask.run(() -> {
             AttributeEditPage page = new AttributeEditPage(null, column);
             if (!page.edit()) {

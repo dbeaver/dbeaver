@@ -83,7 +83,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
     }
 
     private DBSForeignKeyModifyRule[] supportedModifyRules;
-    private DBSTable ownTable;
+    private DBSTableForeignKey foreignKey;
     private DBSTable curRefTable;
     private List<DBSEntityConstraint> curConstraints;
     private DBNDatabaseNode ownerTableNode;
@@ -102,12 +102,12 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
     public EditForeignKeyPage(
         String title,
-        DBSTable table,
+        DBSTableForeignKey foreignKey,
         DBSForeignKeyModifyRule[] supportedModifyRules)
     {
         super(title);
-        this.ownTable = table;
-        this.ownerTableNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(ownTable);
+        this.foreignKey = foreignKey;
+        this.ownerTableNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(foreignKey.getParentObject());
         this.supportedModifyRules = supportedModifyRules;
 
         if (ownerTableNode != null) {
@@ -124,7 +124,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         {
             final Composite tableGroup = UIUtils.createPlaceholder(panel, 2, 5);
             tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createLabelText(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_table, ownTable.getFullyQualifiedName(DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
+            UIUtils.createLabelText(tableGroup, EditorsMessages.dialog_struct_edit_fk_label_table, foreignKey.getParentObject().getFullyQualifiedName(DBPEvaluationContext.UI), SWT.READ_ONLY | SWT.BORDER);
 
             if (ownerTableNode != null) {
                 try {
@@ -261,8 +261,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 }
             };
 
-            boolean isSchema = (ownTable.getParentObject() instanceof DBSSchema);
-            DBPDataSourceInfo dsInfo = ownTable.getDataSource().getInfo();
+            boolean isSchema = (foreignKey.getParentObject().getParentObject() instanceof DBSSchema);
+            DBPDataSourceInfo dsInfo = foreignKey.getDataSource().getInfo();
 
             UIUtils.createControlLabel(tableGroup, isSchema ? dsInfo.getSchemaTerm() : dsInfo.getCatalogTerm());
             final CSmartCombo<DBNDatabaseNode> schemaCombo = new CSmartCombo<>(tableGroup, SWT.BORDER, labelProvider);
@@ -272,7 +272,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             for (DBNNode node : schemaContainerNode.getChildren(new VoidProgressMonitor())) {
                 if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSObjectContainer) {
                     schemaCombo.addItem((DBNDatabaseNode) node);
-                    if (((DBNDatabaseNode) node).getObject() == ownTable.getParentObject()) {
+                    if (((DBNDatabaseNode) node).getObject() == foreignKey.getParentObject().getParentObject()) {
                         selectedNode = (DBNDatabaseNode) node;
                     }
                 }
@@ -353,7 +353,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 UIUtils.runInProgressService(monitor -> {
                     try {
                         // Cache own table columns
-                        ownTable.getAttributes(monitor);
+                        foreignKey.getParentObject().getAttributes(monitor);
 
                         // Cache ref table columns
                         refTable.getAttributes(monitor);
@@ -427,13 +427,13 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                 for (DBSEntityAttributeRef pkColumn : ((DBSEntityReferrer)curConstraint).getAttributeReferences(new VoidProgressMonitor())) {
                     FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getAttribute());
                     // Try to find matched column in own table
-                    Collection<? extends DBSEntityAttribute> tmpColumns = ownTable.getAttributes(new VoidProgressMonitor());
+                    Collection<? extends DBSEntityAttribute> tmpColumns = foreignKey.getParentObject().getAttributes(new VoidProgressMonitor());
                     ownColumns = tmpColumns == null ?
                         Collections.<DBSTableColumn>emptyList() :
-                        new ArrayList<>(getValidAttributes(ownTable));
+                        new ArrayList<>(getValidAttributes(foreignKey.getParentObject()));
                     if (!CommonUtils.isEmpty(ownColumns)) {
                         for (DBSEntityAttribute ownColumn : ownColumns) {
-                            if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && ownTable != pkColumn.getAttribute().getParentObject()) {
+                            if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && foreignKey.getParentObject() != pkColumn.getAttribute().getParentObject()) {
                                 fkColumnInfo.ownColumn = ownColumn;
                                 break;
                             }
@@ -511,7 +511,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         private final TableEditor tableEditor;
         private final Table columnsTable;
 
-        public ColumnsMouseListener(TableEditor tableEditor, Table columnsTable)
+        ColumnsMouseListener(TableEditor tableEditor, Table columnsTable)
         {
             this.tableEditor = tableEditor;
             this.columnsTable = columnsTable;

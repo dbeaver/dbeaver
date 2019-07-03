@@ -46,11 +46,11 @@ public class GreenplumTableManager extends PostgreTableManager {
     @Override
     protected GreenplumTable createDatabaseObject(DBRProgressMonitor monitor,
                                                   DBECommandContext context,
-                                                  PostgreSchema parent,
+                                                  Object container,
                                                   Object copyFrom, Map<String, Object> options) {
-        GreenplumTable greenplumTable = new GreenplumTable(parent);
+        GreenplumTable greenplumTable = new GreenplumTable((PostgreSchema) container);
         try {
-            setTableName(monitor, parent, greenplumTable);
+            setTableName(monitor, (PostgreSchema) container, greenplumTable);
         } catch (DBException e) {
             log.error(e);
         }

@@ -80,11 +80,13 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     @NotNull
     Color getDefaultForeground();
 
-    boolean applyChanges(@Nullable DBRProgressMonitor monitor);
+    boolean applyChanges(@Nullable DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings);
 
     void rejectChanges();
 
-    List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor);
+    ResultSetSaveReport generateChangesReport();
+
+    List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings);
     
     void showDistinctFilter(DBDAttributeBinding curAttribute);
 

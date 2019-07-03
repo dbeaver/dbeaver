@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
@@ -40,19 +39,19 @@ import java.util.Arrays;
 /**
  * MySQL index configurator
  */
-public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableBase, MySQLTableIndex> {
+public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableIndex> {
 
 
     @Override
-    public MySQLTableIndex configureObject(DBRProgressMonitor monitor, MySQLTableBase parent, MySQLTableIndex index) {
+    public MySQLTableIndex configureObject(DBRProgressMonitor monitor, Object parent, MySQLTableIndex index) {
         return UITask.run(() -> {
-            MyEditIndexPage editPage = new MyEditIndexPage(parent);
+            MyEditIndexPage editPage = new MyEditIndexPage(index);
             if (!editPage.edit()) {
                 return null;
             }
 
             StringBuilder idxName = new StringBuilder(64);
-            idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
+            idxName.append(CommonUtils.escapeIdentifier(index.getParentObject().getName()));
             int colIndex = 1;
             for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                 if (colIndex == 1) {
@@ -85,8 +84,8 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableB
 
         private int lengthColumnIndex;
 
-        public MyEditIndexPage(MySQLTableBase parent) {
-            super(MySQLMessages.edit_index_manager_title, parent,
+        public MyEditIndexPage(MySQLTableIndex index) {
+            super(MySQLMessages.edit_index_manager_title, index,
                 Arrays.asList(MySQLConstants.INDEX_TYPE_BTREE,
                     MySQLConstants.INDEX_TYPE_FULLTEXT,
                     MySQLConstants.INDEX_TYPE_HASH,

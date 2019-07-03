@@ -56,7 +56,7 @@ public class VerticaProjectionColumnManager extends SQLTableColumnManager<Vertic
     }
 
     @Override
-    protected VerticaProjectionColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, VerticaProjection parent, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected VerticaProjectionColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
         return null;
     }
 

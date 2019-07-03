@@ -29,17 +29,17 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 /**
  * Postgre constraint configurator
  */
-public class PostgreConstraintConfigurator implements DBEObjectConfigurator<PostgreTableBase, PostgreTableConstraint> {
+public class PostgreConstraintConfigurator implements DBEObjectConfigurator<PostgreTableConstraint> {
 
 
     @Override
-    public PostgreTableConstraint configureObject(DBRProgressMonitor monitor, PostgreTableBase parent, PostgreTableConstraint constraint) {
+    public PostgreTableConstraint configureObject(DBRProgressMonitor monitor, Object parent, PostgreTableConstraint constraint) {
         return new UITask<PostgreTableConstraint>() {
             @Override
             protected PostgreTableConstraint runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     PostgreMessages.edit_constraint_page_add_constraint,
-                    parent,
+                    constraint,
                     new DBSEntityConstraintType[] {
                         DBSEntityConstraintType.PRIMARY_KEY,
                         DBSEntityConstraintType.UNIQUE_KEY,

@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
@@ -37,6 +34,9 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
+import java.util.Map;
 
 public class ExasolViewManager
         extends SQLObjectEditor<ExasolView, ExasolSchema> implements DBEObjectRenamer<ExasolView> {
@@ -70,10 +70,10 @@ public class ExasolViewManager
 
     @Override
     protected ExasolView createDatabaseObject(DBRProgressMonitor monitor,
-                                              DBECommandContext context, ExasolSchema parent, Object copyFrom, Map<String, Object> options)
+                                              DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
             throws DBException
     {
-        ExasolView newView = new ExasolView(parent);
+        ExasolView newView = new ExasolView((ExasolSchema) container);
         newView.setName("new_view");
         return newView;
     }
@@ -89,7 +89,7 @@ public class ExasolViewManager
     protected void addObjectDeleteActions(List<DBEPersistAction> actions,
                                           ObjectDeleteCommand command, Map<String, Object> options)
     {
-        ExasolView view = (ExasolView) command.getObject();
+        ExasolView view = command.getObject();
         actions.add(
                 new SQLDatabasePersistAction("Drop view", "DROP VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))
                 );
@@ -126,6 +126,7 @@ public class ExasolViewManager
             			 );
             }
         } catch (DBCException e) {
+            log.error(e);
         }
     }
 

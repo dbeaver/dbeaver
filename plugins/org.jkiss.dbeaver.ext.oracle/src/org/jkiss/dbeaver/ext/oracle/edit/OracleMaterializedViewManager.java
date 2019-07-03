@@ -69,9 +69,9 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     }
 
     @Override
-    protected OracleMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom, Map<String, Object> options)
+    protected OracleMaterializedView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        OracleMaterializedView newView = new OracleMaterializedView(parent, "NewView"); //$NON-NLS-1$
+        OracleMaterializedView newView = new OracleMaterializedView((OracleSchema) container, "NewView"); //$NON-NLS-1$
         newView.setObjectDefinitionText("SELECT 1 FROM DUAL");
         return newView;
     }

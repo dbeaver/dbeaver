@@ -23,7 +23,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKeyColumn;
@@ -31,6 +30,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
@@ -38,17 +38,17 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 /**
  * Postgre index configurator
  */
-public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<PostgreTableBase, PostgreTableForeignKey> {
+public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<PostgreTableForeignKey> {
 
 
     @Override
-    public PostgreTableForeignKey configureObject(DBRProgressMonitor monitor, PostgreTableBase table, PostgreTableForeignKey foreignKey) {
+    public PostgreTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, PostgreTableForeignKey foreignKey) {
         return new UITask<PostgreTableForeignKey>() {
             @Override
             protected PostgreTableForeignKey runTask() {
                 EditPGForeignKeyPage editPage = new EditPGForeignKeyPage(
                     PostgreMessages.postgre_foreign_key_manager_header_edit_foreign_key,
-                    table);
+                    foreignKey);
                 if (!editPage.edit()) {
                     return null;
                 }
@@ -78,8 +78,8 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
         private boolean isDeferrable;
         private boolean isDeferred;
 
-        public EditPGForeignKeyPage(String title, DBSTable table) {
-            super(title, table, new DBSForeignKeyModifyRule[] {
+        public EditPGForeignKeyPage(String title, DBSTableForeignKey foreignKey) {
+            super(title, foreignKey, new DBSForeignKeyModifyRule[] {
                 DBSForeignKeyModifyRule.NO_ACTION,
                 DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
                 DBSForeignKeyModifyRule.SET_NULL,

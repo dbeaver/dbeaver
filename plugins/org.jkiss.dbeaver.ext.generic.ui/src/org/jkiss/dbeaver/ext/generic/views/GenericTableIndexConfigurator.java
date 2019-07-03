@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
@@ -35,23 +34,23 @@ import java.util.Collections;
 /**
  * Generic table index configurator
  */
-public class GenericTableIndexConfigurator implements DBEObjectConfigurator<GenericTable, GenericTableIndex> {
+public class GenericTableIndexConfigurator implements DBEObjectConfigurator<GenericTableIndex> {
 
     @Override
-    public GenericTableIndex configureObject(DBRProgressMonitor monitor, GenericTable table, GenericTableIndex index) {
+    public GenericTableIndex configureObject(DBRProgressMonitor monitor, Object table, GenericTableIndex index) {
         return new UITask<GenericTableIndex>() {
             @Override
             protected GenericTableIndex runTask() {
                 EditIndexPage editPage = new EditIndexPage(
                     "Create index",
-                    table,
+                    index,
                     Collections.singletonList(DBSIndexType.OTHER));
                 if (!editPage.edit()) {
                     return null;
                 }
                 index.setIndexType(editPage.getIndexType());
                 StringBuilder idxName = new StringBuilder(64);
-                idxName.append(CommonUtils.escapeIdentifier(table.getName()));
+                idxName.append(CommonUtils.escapeIdentifier(index.getTable().getName()));
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
                     if (colIndex == 1) {
