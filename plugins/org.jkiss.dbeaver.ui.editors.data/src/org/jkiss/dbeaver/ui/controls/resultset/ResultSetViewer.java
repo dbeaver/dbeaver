@@ -2414,7 +2414,7 @@ public class ResultSetViewer extends Viewer
 
 
     @Nullable
-    private DBPDataSource getDataSource() {
+    public DBPDataSource getDataSource() {
         return getDataContainer() == null ? null : getDataContainer().getDataSource();
     }
 
@@ -3362,8 +3362,17 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor)
-    {
+    public ResultSetSaveReport generateChangesReport(@NotNull ResultSetSaveSettings settings) {
+        try {
+            return createDataPersister(false).generateReport();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Report error", "Error generating changes report", e);
+            return new ResultSetSaveReport();
+        }
+    }
+
+    @Override
+    public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor) {
         try {
             ResultSetPersister persister = createDataPersister(false);
             persister.applyChanges(monitor, true, null);

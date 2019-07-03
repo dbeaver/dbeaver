@@ -30,6 +30,12 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
  */
 public interface UIServiceSQL {
 
+    /**
+     * Shows SQL preview dialog
+     *
+     * @param showSaveButton shows Save button
+     * @return IDialogConstants.*_ID
+     */
     int openSQLViewer(@Nullable DBCExecutionContext context, String title, @Nullable DBPImage image, String text, boolean showSaveButton);
 
     /**
