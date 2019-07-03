@@ -26,13 +26,17 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DetailsViewDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class SavePreviewDialog extends DetailsViewDialog {
 
@@ -65,7 +69,7 @@ class SavePreviewDialog extends DetailsViewDialog {
 
         String changesReport = "";
 
-        ResultSetSaveReport saveReport = viewer.generateChangesReport(new ResultSetSaveSettings());
+        ResultSetSaveReport saveReport = viewer.generateChangesReport();
         if (saveReport.getInserts() > 0) changesReport = appendReportLine(changesReport, saveReport.getInserts(), "rows(s) added");
         if (saveReport.getUpdates() > 0) changesReport = appendReportLine(changesReport, saveReport.getUpdates(), "rows(s) changed");
         if (saveReport.getDeletes() > 0) changesReport = appendReportLine(changesReport, saveReport.getDeletes(), "rows(s) deleted");
@@ -123,27 +127,52 @@ class SavePreviewDialog extends DetailsViewDialog {
         ((GridLayout)parent.getLayout()).makeColumnsEqualWidth = false;
 
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.PROCEED_LABEL, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
     @Override
     protected Control createDetailsContents(Composite composite) {
-        Composite previewFrame = new Composite(composite, SWT.BORDER);
+        Composite group = new Composite(composite, SWT.NONE );
+        group.setLayout(new GridLayout(1, true));
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite previewFrame = new Composite(group, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 250;
         previewFrame.setLayoutData(gd);
         previewFrame.setLayout(new FillLayout());
+
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
             try {
+                final List<DBEPersistAction> sqlScript = new ArrayList<>();
+                UIUtils.runInProgressService(monitor -> {
+                    List<DBEPersistAction> script = viewer.generateChangesScript(monitor);
+                    if (script != null) {
+                        sqlScript.addAll(script);
+                    }
+                });
+
+                String scriptText = "";
+                if (!sqlScript.isEmpty()) {
+                    scriptText = SQLUtils.generateScript(
+                        viewer.getDataSource(),
+                        sqlScript.toArray(new DBEPersistAction[0]),
+                        false);
+                    scriptText =
+                        SQLUtils.generateCommentLine(
+                            viewer.getDataSource(),
+                            "Auto-generated SQL script. Actual values for binary/complex data types may differ - what you see is the default string representation of values.") +
+                            scriptText;
+                }
+
                 sqlPanel = serviceSQL.createSQLPanel(
                     viewer.getSite(),
                     previewFrame,
                     viewer,
                     UINavigatorMessages.editors_entity_dialog_preview_title,
                     true,
-                    "");
-            } catch (DBException e) {
+                    scriptText);
+            } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
             }
 

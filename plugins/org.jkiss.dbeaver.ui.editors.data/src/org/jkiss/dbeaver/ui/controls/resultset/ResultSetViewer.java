@@ -3362,7 +3362,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public ResultSetSaveReport generateChangesReport(@NotNull ResultSetSaveSettings settings) {
+    public ResultSetSaveReport generateChangesReport() {
         try {
             return createDataPersister(false).generateReport();
         } catch (DBException e) {
