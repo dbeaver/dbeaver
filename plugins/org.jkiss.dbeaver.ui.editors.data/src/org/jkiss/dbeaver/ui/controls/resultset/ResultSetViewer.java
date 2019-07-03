@@ -2203,6 +2203,12 @@ public class ResultSetViewer extends Viewer
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_COPY));
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ROW_DELETE));
                     }
+                    if (!isReadOnly()) {
+                        editMenu.add(new Separator());
+                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_APPLY_CHANGES));
+                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_REJECT_CHANGES));
+                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_GENERATE_SCRIPT));
+                    }
 
                     manager.add(editMenu);
                 }

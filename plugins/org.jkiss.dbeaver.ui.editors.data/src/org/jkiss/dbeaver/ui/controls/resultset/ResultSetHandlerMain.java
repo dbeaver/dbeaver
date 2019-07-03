@@ -49,28 +49,22 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -267,12 +261,13 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_APPLY_CHANGES:
-                if (rsv.generateChangesReport().getDeletes() > 0) {
+                /*ResultSetSaveReport saveReport = rsv.generateChangesReport();
+                if (saveReport.isHasReferences() && saveReport.getDeletes() > 0) {
                     SavePreviewDialog spd = new SavePreviewDialog(rsv, true);
                     if (spd.open() == IDialogConstants.OK_ID) {
                         rsv.applyChanges(null, spd.getSaveSettings());
                     }
-                } else {
+                } else */{
                     rsv.applyChanges(null, new ResultSetSaveSettings());
                 }
                 break;
@@ -280,7 +275,10 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 rsv.rejectChanges();
                 break;
             case CMD_GENERATE_SCRIPT: {
-                showPreviewScript(rsv, false);
+                ResultSetSaveSettings saveSettings = showPreviewScript(rsv);
+                if (saveSettings != null) {
+                    rsv.applyChanges(null, saveSettings);
+                }
                 break;
             }
             case CMD_COPY_COLUMN_NAMES: {
@@ -502,7 +500,12 @@ public class ResultSetHandlerMain extends AbstractHandler {
         return null;
     }
 
-    private boolean showPreviewScript(ResultSetViewer rsv, boolean showSave) {
+    private ResultSetSaveSettings showPreviewScript(ResultSetViewer rsv) {
+        SaveScriptDialog scriptDialog = new SaveScriptDialog(rsv);
+        if (scriptDialog.open() == IDialogConstants.OK_ID) {
+            return scriptDialog.getSaveSettings();
+        }
+/*
         try {
             final List<DBEPersistAction> sqlScript = new ArrayList<>();
             try {
@@ -540,7 +543,8 @@ public class ResultSetHandlerMain extends AbstractHandler {
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Script generation", "Can't generate changes script", e.getTargetException());
         }
-        return false;
+*/
+        return null;
     }
 
     private FontDescriptor createFontDescriptor(FontData[] initialFontData, int fFontSizeOffset) {

@@ -18,43 +18,39 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.DetailsViewDialog;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class SavePreviewDialog extends DetailsViewDialog {
+class SaveScriptDialog extends BaseDialog {
 
-    private static final String DIALOG_ID = "DBeaver.RSV.SavePreviewDialog";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.RSV.SaveScriptDialog";//$NON-NLS-1$
 
     private ResultSetViewer viewer;
-    private boolean showHideButton;
     private Object sqlPanel;
     private ResultSetSaveSettings saveSettings;
 
-    public SavePreviewDialog(ResultSetViewer viewer, boolean showHideButton) {
+    public SaveScriptDialog(ResultSetViewer viewer) {
         super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
 
         this.viewer = viewer;
-        this.showHideButton = showHideButton;
 
         this.saveSettings = new ResultSetSaveSettings();
     }
@@ -69,16 +65,16 @@ class SavePreviewDialog extends DetailsViewDialog {
     }
 
     @Override
-    protected void createMessageArea(Composite composite) {
-
-        Composite messageGroup = UIUtils.createComposite(composite, 1);
+    protected Composite createDialogArea(Composite parent) {
+        Composite messageGroup = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.minimumWidth = 400;
         messageGroup.setLayoutData(gd);
 
+        ResultSetSaveReport saveReport = viewer.generateChangesReport();
+/*
         String changesReport = "";
 
-        ResultSetSaveReport saveReport = viewer.generateChangesReport();
         if (saveReport.getInserts() > 0)
             changesReport = appendReportLine(changesReport, saveReport.getInserts(), "rows(s) added");
         if (saveReport.getUpdates() > 0)
@@ -94,30 +90,69 @@ class SavePreviewDialog extends DetailsViewDialog {
             msgText.setText("You are about to save your changes into the database.\n" +
                 changesReport + ".\nAre you sure you want to proceed?");
         }
+*/
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        if (serviceSQL != null) {
+            Composite sqlContainer = new Composite(messageGroup, SWT.NONE);
+            gd = new GridData(GridData.FILL_BOTH);
+            sqlContainer.setLayout(new FillLayout());
+            gd.widthHint = 500;
+            gd.heightHint = 400;
+            sqlContainer.setLayoutData(gd);
+            try {
+                sqlPanel = serviceSQL.createSQLPanel(
+                    viewer.getSite(),
+                    sqlContainer,
+                    viewer,
+                    UINavigatorMessages.editors_entity_dialog_preview_title,
+                    true,
+                    "");
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
+            }
+        }
+        populateSQL();
 
-        //UIUtils.createHorizontalLine(messageGroup);
-
-        if (saveReport.getDeletes() > 0) {
-            Composite settingsComposite = UIUtils.createComposite(messageGroup, showHideButton ? 2 : 1);
+        if (saveReport.isHasReferences() && saveReport.getDeletes() > 0) {
+            Composite settingsComposite = UIUtils.createComposite(messageGroup, 2);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             settingsComposite.setLayoutData(gd);
 
             Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Delete cascade",
                 "Delete rows from all tables referencing this table by foreign keys", false, 1);
-            if (showHideButton) UIUtils.createEmptyLabel(settingsComposite, 1, 1);
-
             Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Deep cascade",
                 "Delete cascade recursively (deep references)", false, 1);
 
-            if (showHideButton) {
-                Button hideDialogButton = UIUtils.createCheckbox(settingsComposite, "Do not show again",
-                    "Do not show this dialog next time (you can re-enable this option in preferences/confirmations)", false, 1);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-                gd.grabExcessHorizontalSpace = true;
-                hideDialogButton.setLayoutData(gd);
-            }
+            deleteCascadeCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (deleteCascadeCheck.getSelection()) {
+                        saveSettings.setDeleteCascade(true);
+                    } else {
+                        saveSettings.setDeleteCascade(false);
+                        saveSettings.setDeepCascade(false);
+                        deleteDeepCascadeCheck.setSelection(false);
+                    }
+                    populateSQL();
+                }
+            });
+            deleteDeepCascadeCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (deleteDeepCascadeCheck.getSelection()) {
+                        saveSettings.setDeleteCascade(true);
+                        saveSettings.setDeepCascade(true);
+                        deleteCascadeCheck.setSelection(true);
+                    } else {
+                        saveSettings.setDeepCascade(false);
+                    }
+                    populateSQL();
+                }
+            });
         }
+
+        return messageGroup;
     }
 
     private static String appendReportLine(String report, int count, String info) {
@@ -133,8 +168,8 @@ class SavePreviewDialog extends DetailsViewDialog {
     protected void createButtonsForButtonBar(Composite parent) {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        createDetailsButton(parent);
-        ((GridData) detailsButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
+        Button persistButton = createButton(parent, IDialogConstants.OK_ID, "Persist", false);
+        ((GridData) persistButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
 
         Label spacer = new Label(parent, SWT.NONE);
         GridData gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
@@ -144,38 +179,8 @@ class SavePreviewDialog extends DetailsViewDialog {
         ((GridLayout) parent.getLayout()).numColumns++;
         ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
 
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.PROCEED_LABEL, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-    }
-
-    @Override
-    protected Control createDetailsContents(Composite composite) {
-        Composite group = new Composite(composite, SWT.NONE);
-        group.setLayout(new GridLayout(1, true));
-        group.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Composite previewFrame = new Composite(group, SWT.BORDER);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 250;
-        previewFrame.setLayoutData(gd);
-        previewFrame.setLayout(new FillLayout());
-
-        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-        if (serviceSQL != null) {
-            try {
-                sqlPanel = serviceSQL.createSQLPanel(
-                    viewer.getSite(),
-                    previewFrame,
-                    viewer,
-                    UINavigatorMessages.editors_entity_dialog_preview_title,
-                    true,
-                    "");
-            } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
-            }
-        }
-        populateSQL();
-
-        return previewFrame;
+        createButton(parent, IDialogConstants.DETAILS_ID, "Copy", false);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CLOSE_LABEL, true);
     }
 
     private void populateSQL() {

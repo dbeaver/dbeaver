@@ -23,6 +23,7 @@ public class ResultSetSaveReport {
     private int inserts;
     private int updates;
     private int deletes;
+    private boolean hasReferences;
 
     public int getInserts() {
         return inserts;
@@ -46,5 +47,13 @@ public class ResultSetSaveReport {
 
     public void setDeletes(int deletes) {
         this.deletes = deletes;
+    }
+
+    public boolean isHasReferences() {
+        return hasReferences;
+    }
+
+    public void setHasReferences(boolean hasReferences) {
+        this.hasReferences = hasReferences;
     }
 }
