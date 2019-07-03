@@ -267,7 +267,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_APPLY_CHANGES:
-                if (rsv.getDrsv.generateChangesReport().getDeletes() > 0) {
+                if (rsv.generateChangesReport().getDeletes() > 0) {
                     SavePreviewDialog spd = new SavePreviewDialog(rsv, true);
                     if (spd.open() == IDialogConstants.OK_ID) {
                         rsv.applyChanges(null, spd.getSaveSettings());
