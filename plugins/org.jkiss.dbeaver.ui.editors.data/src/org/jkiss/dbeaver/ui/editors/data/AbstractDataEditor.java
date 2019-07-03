@@ -198,7 +198,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     public void doSave(IProgressMonitor monitor)
     {
         if (resultSetView != null && resultSetView.isDirty()) {
-            if (!resultSetView.applyChanges(RuntimeUtils.makeMonitor(monitor))) {
+            if (!resultSetView.applyChanges(RuntimeUtils.makeMonitor(monitor), new ResultSetSaveSettings())) {
                 monitor.setCanceled(true);
             }
         }
