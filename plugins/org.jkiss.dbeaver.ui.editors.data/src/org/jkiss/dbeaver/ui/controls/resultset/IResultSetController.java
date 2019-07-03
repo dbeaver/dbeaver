@@ -84,7 +84,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void rejectChanges();
 
-    ResultSetSaveReport generateChangesReport(@NotNull ResultSetSaveSettings settings);
+    ResultSetSaveReport generateChangesReport();
 
     List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor);
     
