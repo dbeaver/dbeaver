@@ -160,7 +160,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
         Shell activeShell = HandlerUtil.getActiveShell(event);
         String actionId = event.getCommand().getId();
         IResultSetPresentation presentation = rsv.getActivePresentation();
-        DBPDataSource dataSource = rsv.getDataContainer().getDataSource();
+        DBPDataSource dataSource = rsv.getDataSource();
         switch (actionId) {
             case IWorkbenchCommandConstants.FILE_REFRESH:
                 rsv.refreshData(null);
@@ -267,48 +267,20 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_APPLY_CHANGES:
-                rsv.applyChanges(null);
+                if (rsv.getDrsv.generateChangesReport().getDeletes() > 0) {
+                    SavePreviewDialog spd = new SavePreviewDialog(rsv, true);
+                    if (spd.open() == IDialogConstants.OK_ID) {
+                        rsv.applyChanges(null, spd.getSaveSettings());
+                    }
+                } else {
+                    rsv.applyChanges(null, new ResultSetSaveSettings());
+                }
                 break;
             case CMD_REJECT_CHANGES:
                 rsv.rejectChanges();
                 break;
             case CMD_GENERATE_SCRIPT: {
-                try {
-                    final List<DBEPersistAction> sqlScript = new ArrayList<>();
-                    try {
-                        UIUtils.runInProgressService(monitor -> {
-                            List<DBEPersistAction> script = rsv.generateChangesScript(monitor);
-                            if (script != null) {
-                                sqlScript.addAll(script);
-                            }
-                        });
-                    } catch (InterruptedException e) {
-                        // ignore
-                    }
-                    if (!sqlScript.isEmpty()) {
-                        String scriptText = SQLUtils.generateScript(
-                            rsv.getDataContainer() == null ? null : dataSource,
-                            sqlScript.toArray(new DBEPersistAction[0]),
-                            false);
-                        scriptText =
-                            SQLUtils.generateCommentLine(
-                                rsv.getExecutionContext() == null ? null : rsv.getExecutionContext().getDataSource(),
-                                "Actual parameter values may differ, what you see is a default string representation of values") +
-                            scriptText;
-                        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-                        if (serviceSQL != null) {
-                            serviceSQL.openSQLViewer(
-                                rsv.getExecutionContext(),
-                                UINavigatorMessages.editors_entity_dialog_preview_title,
-                                UIIcon.SQL_PREVIEW,
-                                scriptText,
-                                false);
-                        }
-                    }
-
-                } catch (InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("Script generation", "Can't generate changes script", e.getTargetException());
-                }
+                showPreviewScript(rsv, false);
                 break;
             }
             case CMD_COPY_COLUMN_NAMES: {
@@ -528,6 +500,47 @@ public class ResultSetHandlerMain extends AbstractHandler {
 
 
         return null;
+    }
+
+    private boolean showPreviewScript(ResultSetViewer rsv, boolean showSave) {
+        try {
+            final List<DBEPersistAction> sqlScript = new ArrayList<>();
+            try {
+                UIUtils.runInProgressService(monitor -> {
+                    List<DBEPersistAction> script = rsv.generateChangesScript(monitor, new ResultSetSaveSettings());
+                    if (script != null) {
+                        sqlScript.addAll(script);
+                    }
+                });
+            } catch (InterruptedException e) {
+                // ignore
+            }
+            if (!sqlScript.isEmpty()) {
+                String scriptText = SQLUtils.generateScript(
+                    rsv.getDataSource(),
+                    sqlScript.toArray(new DBEPersistAction[0]),
+                    false);
+                scriptText =
+                    SQLUtils.generateCommentLine(
+                        rsv.getExecutionContext() == null ? null : rsv.getExecutionContext().getDataSource(),
+                        "Auto-generated SQL script. Actual values for binary/complex data types may differ - what you see is the default string representation of values.") +
+                    scriptText;
+                UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+                if (serviceSQL != null) {
+                    int resID = serviceSQL.openSQLViewer(
+                        rsv.getExecutionContext(),
+                        UINavigatorMessages.editors_entity_dialog_preview_title,
+                        UIIcon.SQL_PREVIEW,
+                        scriptText,
+                        showSave);
+                    return resID == IDialogConstants.OK_ID;
+                }
+            }
+
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Script generation", "Can't generate changes script", e.getTargetException());
+        }
+        return false;
     }
 
     private FontDescriptor createFontDescriptor(FontData[] initialFontData, int fFontSizeOffset) {

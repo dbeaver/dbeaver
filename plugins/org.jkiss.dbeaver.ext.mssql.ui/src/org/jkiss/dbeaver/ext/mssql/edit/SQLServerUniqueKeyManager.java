@@ -47,26 +47,29 @@ public class SQLServerUniqueKeyManager extends SQLConstraintManager<SQLServerTab
 
     @Override
     protected SQLServerTableUniqueKey createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
+        SQLServerTable table = (SQLServerTable) container;
+        final SQLServerTableUniqueKey primaryKey = new SQLServerTableUniqueKey(
+            table,
+            "PK",
+            null,
+            DBSEntityConstraintType.INDEX,
+            null,
+            false);
+
         return new UITask<SQLServerTableUniqueKey>() {
             @Override
             protected SQLServerTableUniqueKey runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create constraint",
-                    parent,
+                    primaryKey,
                     new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
                 if (!editPage.edit()) {
                     return null;
                 }
-                final SQLServerTableUniqueKey primaryKey = new SQLServerTableUniqueKey(
-                    parent,
-                    editPage.getConstraintName(),
-                    null,
-                    editPage.getConstraintType(),
-                    null,
-                    false);
+                primaryKey.setConstraintType(editPage.getConstraintType());
                 primaryKey.setName(editPage.getConstraintName());
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {

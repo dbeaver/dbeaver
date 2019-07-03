@@ -65,7 +65,7 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     }
 
     @Override
-    protected OBJECT_TYPE createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, CONTAINER_TYPE owner,
+    protected OBJECT_TYPE createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object owner,
                                                Object copyFrom, Map<String, Object> options)
     {
         return null;

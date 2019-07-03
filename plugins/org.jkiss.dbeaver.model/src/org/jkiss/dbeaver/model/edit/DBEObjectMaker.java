@@ -70,17 +70,17 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * Additionally implementation could add initial command(s) to this manager.
      * This function can be invoked only once per one manager.
      *
-     * @param monitor
+     * @param monitor progress monitor
      * @param commandContext command context
-     * @param parent parent object
+     * @param container parent object
      * @param copyFrom template for new object (usually result of "paste" operation)
-     * @param options
+     * @param options options
      * @return null if no additional actions should be performed
      */
     OBJECT_TYPE createNewObject(
         DBRProgressMonitor monitor,
         DBECommandContext commandContext,
-        CONTAINER_TYPE parent,
+        Object container,
         Object copyFrom,
         Map<String, Object> options) throws DBException;
 

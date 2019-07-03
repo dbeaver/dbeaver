@@ -66,7 +66,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     }
 
     @Override
-    protected DB2Schema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final DB2DataSource parent,
+    protected DB2Schema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container,
                                              Object copyFrom, Map<String, Object> options)
     {
         return new UITask<DB2Schema>() {
@@ -80,7 +80,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
                 if (schemaName.length() == 0) {
                     return null;
                 }
-                return new DB2Schema(parent, schemaName);
+                return new DB2Schema((DB2DataSource) container, schemaName);
             }
         }.execute();
     }

@@ -66,9 +66,9 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    protected PostgreProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreSchema parent, Object copyFrom, Map<String, Object> options)
+    protected PostgreProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new PostgreProcedure(parent);
+        return new PostgreProcedure((PostgreSchema) container);
     }
 
     @Override

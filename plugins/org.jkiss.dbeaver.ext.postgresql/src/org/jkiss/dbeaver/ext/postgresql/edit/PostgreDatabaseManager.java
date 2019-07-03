@@ -64,8 +64,8 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected PostgreDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreDataSource parent, Object copyFrom, Map<String, Object> options) throws DBException {
-        return new PostgreDatabase(monitor, parent, "NewDatabase", null, null, null, null);
+    protected PostgreDatabase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        return new PostgreDatabase(monitor, (PostgreDataSource) container, "NewDatabase", null, null, null, null);
     }
 
     @Override

@@ -51,18 +51,20 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected OraclePackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleSchema parent, Object copyFrom, Map<String, Object> options)
+    protected OraclePackage createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
+        OracleSchema schema = (OracleSchema) container;
+
         return new UITask<OraclePackage>() {
             @Override
             protected OraclePackage runTask() {
-                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.PACKAGE);
+                EntityEditPage editPage = new EntityEditPage(schema.getDataSource(), DBSEntityType.PACKAGE);
                 if (!editPage.edit()) {
                     return null;
                 }
                 String packName = editPage.getEntityName();
                 OraclePackage oraclePackage = new OraclePackage(
-                    parent,
+                    schema,
                     packName);
                 oraclePackage.setObjectDefinitionText(
                     "CREATE OR REPLACE PACKAGE " + packName + "\n" +

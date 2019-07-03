@@ -59,8 +59,8 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
 
     @Override
     protected ExasolScript createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                                ExasolSchema parent, Object copyFrom, Map<String, Object> options) throws DBException {
-        ExasolScript newScript =  new ExasolScript(parent);
+                                                Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        ExasolScript newScript =  new ExasolScript((ExasolSchema) container);
         newScript.setName("new_script");
         newScript.setObjectDefinitionText("CREATE OR REPLACE LUA SCRIPT new_script () RETURNS TABLE AS");
         return newScript;

@@ -67,16 +67,16 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected OracleSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleDataSource parent, Object copyFrom, Map<String, Object> options)
+    protected OracleSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
         return new UITask<OracleSchema>() {
             @Override
             protected OracleSchema runTask() {
-                NewUserDialog dialog = new NewUserDialog(UIUtils.getActiveWorkbenchShell(), parent);
+                NewUserDialog dialog = new NewUserDialog(UIUtils.getActiveWorkbenchShell(), (OracleDataSource) container);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                OracleSchema newSchema = new OracleSchema(parent, -1, dialog.getUser().getName());
+                OracleSchema newSchema = new OracleSchema((OracleDataSource) container, -1, dialog.getUser().getName());
                 newSchema.setUser(dialog.getUser());
 
                 return newSchema;
@@ -117,7 +117,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
         private Text nameText;
         private Text passwordText;
 
-        public NewUserDialog(Shell parentShell, OracleDataSource dataSource)
+        NewUserDialog(Shell parentShell, OracleDataSource dataSource)
         {
             super(parentShell);
             this.user = new OracleUser(dataSource);

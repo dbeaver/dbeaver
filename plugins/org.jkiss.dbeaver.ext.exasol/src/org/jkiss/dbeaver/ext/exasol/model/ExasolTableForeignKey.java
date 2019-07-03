@@ -72,7 +72,6 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
 
         enabled = JDBCUtils.safeGetBoolean(dbResult, "CONSTRAINT_ENABLED");
         referencedKey = null;
-
     }
 
     public ExasolTableForeignKey(ExasolTable exasolTable, ExasolTableUniqueKey referencedKey, Boolean enabled, String name) {
@@ -159,6 +158,10 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable> impl
 			}
     	}
         return referencedKey;
+    }
+
+    public void setReferencedConstraint(ExasolTableUniqueKey referencedKey) {
+        this.referencedKey = referencedKey;
     }
 
     @Property(viewable = true, editable = true, updatable = true)

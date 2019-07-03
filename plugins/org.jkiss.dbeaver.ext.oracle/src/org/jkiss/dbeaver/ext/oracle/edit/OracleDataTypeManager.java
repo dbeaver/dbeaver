@@ -51,17 +51,19 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final OracleSchema parent, Object copyFrom, Map<String, Object> options)
+    protected OracleDataType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
+        OracleSchema schema = (OracleSchema) container;
+
         return new UITask<OracleDataType>() {
             @Override
             protected OracleDataType runTask() {
-                EntityEditPage editPage = new EntityEditPage(parent.getDataSource(), DBSEntityType.TYPE);
+                EntityEditPage editPage = new EntityEditPage(schema.getDataSource(), DBSEntityType.TYPE);
                 if (!editPage.edit()) {
                     return null;
                 }
                 OracleDataType dataType = new OracleDataType(
-                    parent,
+                    schema,
                     editPage.getEntityName(),
                     false);
                 dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$

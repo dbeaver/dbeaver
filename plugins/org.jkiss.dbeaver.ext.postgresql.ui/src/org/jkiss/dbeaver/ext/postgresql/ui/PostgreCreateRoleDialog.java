@@ -35,15 +35,15 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
  */
 public class PostgreCreateRoleDialog extends BaseDialog
 {
-    private final PostgreDatabase database;
+    private final PostgreRole role;
 
     private String name;
     private String password;
     private boolean isUser = true;
 
-    public PostgreCreateRoleDialog(Shell parentShell, PostgreDatabase database) {
+    public PostgreCreateRoleDialog(Shell parentShell, PostgreRole role) {
         super(parentShell, PostgreMessages.dialog_create_role_title, null);
-        this.database = database;
+        this.role = role;
     }
 
     @Override
@@ -59,9 +59,7 @@ public class PostgreCreateRoleDialog extends BaseDialog
         });
 
         final Text passwordText = UIUtils.createLabelText(groupGeneral, PostgreMessages.dialog_create_role_label_user_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
-        passwordText.addModifyListener(e -> {
-            password = passwordText.getText();
-        });
+        passwordText.addModifyListener(e -> password = passwordText.getText());
 
         Button isUserCheck = UIUtils.createCheckbox(groupGeneral, PostgreMessages.dialog_create_role_label_user_role, null, true, 2);
         isUserCheck.addSelectionListener(new SelectionAdapter() {

@@ -54,8 +54,9 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    protected PostgreTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final PostgreTableBase table, Object from, Map<String, Object> options)
+    protected PostgreTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options)
     {
+        PostgreTableBase table = (PostgreTableBase) container;
         final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
             table,
             null,

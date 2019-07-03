@@ -75,9 +75,10 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
 
     @Override
     protected DB2Sequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                               final DB2Schema schema,
+                                               final Object container,
                                                Object copyFrom, Map<String, Object> options)
     {
+        DB2Schema schema = (DB2Schema) container;
         return new UITask<DB2Sequence>() {
             @Override
             protected DB2Sequence runTask() {

@@ -28,15 +28,15 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 /**
  * MySQL index configurator
  */
-public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLTableBase, MySQLTableForeignKey> {
+public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLTableForeignKey> {
 
 
     @Override
-    public MySQLTableForeignKey configureObject(DBRProgressMonitor monitor, MySQLTableBase table, MySQLTableForeignKey foreignKey) {
+    public MySQLTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, MySQLTableForeignKey foreignKey) {
         return UITask.run(() -> {
             EditForeignKeyPage editPage = new EditForeignKeyPage(
                 MySQLMessages.edit_foreign_key_manager_title,
-                table,
+                foreignKey,
                 new DBSForeignKeyModifyRule[] {
                     DBSForeignKeyModifyRule.NO_ACTION,
                     DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,

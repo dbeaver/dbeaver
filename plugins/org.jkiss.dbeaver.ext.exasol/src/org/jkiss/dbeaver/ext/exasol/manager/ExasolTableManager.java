@@ -77,11 +77,11 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // ------
 
     @Override
-    public ExasolTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, ExasolSchema exasolSchema,
+    public ExasolTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object exasolSchema,
                                             Object copyFrom, Map<String, Object> options) {
-        ExasolTable table = new ExasolTable(exasolSchema, NEW_TABLE_NAME);
+        ExasolTable table = new ExasolTable((ExasolSchema) exasolSchema, NEW_TABLE_NAME);
         try {
-            setTableName(monitor, exasolSchema, table);
+            setTableName(monitor, (ExasolSchema) exasolSchema, table);
         } catch (DBException e) {
             log.error(e);
         }

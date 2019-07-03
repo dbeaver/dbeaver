@@ -174,6 +174,19 @@ class ResultSetPersister {
         return true;
     }
 
+    public ResultSetSaveReport generateReport() {
+        ResultSetSaveReport report = new ResultSetSaveReport();
+        report.setDeletes(deletedRows.size());
+        report.setInserts(addedRows.size());
+        int changedRows = 0;
+        for (ResultSetRow row : this.rowIdentifiers.keySet()) {
+            if (row.changes != null) changedRows++;
+        }
+        report.setUpdates(changedRows);
+
+        return report;
+    }
+
     public List<DBEPersistAction> getScript() {
         return script;
     }

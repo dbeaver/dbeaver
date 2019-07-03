@@ -96,7 +96,11 @@ public class ExasolPriorityGroup implements DBPRefreshableObject, DBPNamedObject
 		return comment;
 	}
 
-    @Property(viewable = true, editable= false, updatable=false, order = 40)
+	public void setDescription(String comment) {
+		this.comment = comment;
+	}
+
+	@Property(viewable = true, editable= false, updatable=false, order = 40)
 	public BigDecimal getGroupId()
 	{
 		return groupId;

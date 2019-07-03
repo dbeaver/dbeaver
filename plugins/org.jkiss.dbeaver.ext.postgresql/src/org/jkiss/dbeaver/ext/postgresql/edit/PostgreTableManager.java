@@ -64,11 +64,12 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected PostgreTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom, Map<String, Object> options)
+    protected PostgreTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        final PostgreTableBase table = parent.getDataSource().getServerType().createNewRelation(parent, PostgreClass.RelKind.r);
+        PostgreSchema schema = (PostgreSchema)container;
+        final PostgreTableBase table = schema.getDataSource().getServerType().createNewRelation(schema, PostgreClass.RelKind.r);
         try {
-            setTableName(monitor, parent, table);
+            setTableName(monitor, schema, table);
         } catch (DBException e) {
             // Never be here
             log.error(e);

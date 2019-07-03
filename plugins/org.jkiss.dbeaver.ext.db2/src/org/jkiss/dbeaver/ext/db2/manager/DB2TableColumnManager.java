@@ -86,11 +86,11 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // ------
 
     @Override
-    protected DB2TableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, DB2TableBase parent,
+    protected DB2TableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container,
                                                   Object copyFrom, Map<String, Object> options)
     {
-        DB2TableColumn column = new DB2TableColumn(parent);
-        column.setName(getNewColumnName(monitor, context, parent));
+        DB2TableColumn column = new DB2TableColumn((DB2TableBase) container);
+        column.setName(getNewColumnName(monitor, context, (DB2TableBase) container));
         return column;
     }
 

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.generic.views;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
@@ -31,17 +30,17 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 /**
  * Generic table primary key configurator
  */
-public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator<GenericTable, GenericPrimaryKey> {
+public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator<GenericPrimaryKey> {
 
 
     @Override
-    public GenericPrimaryKey configureObject(DBRProgressMonitor monitor, GenericTable table, GenericPrimaryKey primaryKey) {
+    public GenericPrimaryKey configureObject(DBRProgressMonitor monitor, Object table, GenericPrimaryKey primaryKey) {
         return new UITask<GenericPrimaryKey>() {
             @Override
             protected GenericPrimaryKey runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create unique constraint",
-                    table,
+                    primaryKey,
                     new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
                 if (!editPage.edit()) {
                     return null;

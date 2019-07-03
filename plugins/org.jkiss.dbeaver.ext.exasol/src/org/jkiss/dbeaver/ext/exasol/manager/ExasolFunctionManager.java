@@ -59,8 +59,8 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
 
     @Override
     protected ExasolFunction createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-                                                  ExasolSchema parent, Object copyFrom, Map<String, Object> options) throws DBException {
-        ExasolFunction newScript =  new ExasolFunction(parent);
+                                                  Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+        ExasolFunction newScript =  new ExasolFunction((ExasolSchema) container);
         newScript.setName("new_script");
         newScript.setObjectDefinitionText("FUNCTION new_script ()RETURNS INTEGER");
         return newScript;

@@ -358,6 +358,7 @@ public class ResultSetViewer extends Viewer
         return container;
     }
 
+    @NotNull
     @Override
     public IResultSetDecorator getDecorator() {
         return decorator;
@@ -1956,12 +1957,12 @@ public class ResultSetViewer extends Viewer
     @Override
     public void doSave(IProgressMonitor monitor)
     {
-        applyChanges(RuntimeUtils.makeMonitor(monitor));
+        doSave(RuntimeUtils.makeMonitor(monitor));
     }
 
     public void doSave(DBRProgressMonitor monitor)
     {
-        applyChanges(monitor);
+        applyChanges(monitor, new ResultSetSaveSettings());
     }
 
     @Override
@@ -2414,7 +2415,7 @@ public class ResultSetViewer extends Viewer
 
 
     @Nullable
-    private DBPDataSource getDataSource() {
+    public DBPDataSource getDataSource() {
         return getDataContainer() == null ? null : getDataContainer().getDataSource();
     }
 
@@ -2937,7 +2938,7 @@ public class ResultSetViewer extends Viewer
                     return false;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    applyChanges(null, success -> {
+                    saveChanges(null, new ResultSetSaveSettings(), success -> {
                         if (success) {
                             UIUtils.asyncExec(() -> refreshData(null));
                         }
@@ -3310,9 +3311,9 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public boolean applyChanges(@Nullable DBRProgressMonitor monitor)
+    public boolean applyChanges(@Nullable DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings)
     {
-        return applyChanges(monitor, null);
+        return saveChanges(monitor, settings, null);
     }
 
     /**
@@ -3320,7 +3321,7 @@ public class ResultSetViewer extends Viewer
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
-    private boolean applyChanges(@Nullable final DBRProgressMonitor monitor, @Nullable final ResultSetPersister.DataUpdateListener listener)
+    private boolean saveChanges(@Nullable final DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings, @Nullable final ResultSetPersister.DataUpdateListener listener)
     {
         UIUtils.syncExec(() -> getActivePresentation().applyChanges());
         try {
@@ -3362,8 +3363,17 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor)
-    {
+    public ResultSetSaveReport generateChangesReport() {
+        try {
+            return createDataPersister(false).generateReport();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Report error", "Error generating changes report", e);
+            return new ResultSetSaveReport();
+        }
+    }
+
+    @Override
+    public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings) {
         try {
             ResultSetPersister persister = createDataPersister(false);
             persister.applyChanges(monitor, true, null);

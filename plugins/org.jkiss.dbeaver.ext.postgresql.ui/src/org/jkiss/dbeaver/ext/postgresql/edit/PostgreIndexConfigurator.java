@@ -20,12 +20,12 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndexColumn;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
@@ -35,24 +35,24 @@ import java.util.Collections;
 /**
  * Postgre index configurator
  */
-public class PostgreIndexConfigurator implements DBEObjectConfigurator<PostgreTableBase, PostgreIndex> {
+public class PostgreIndexConfigurator implements DBEObjectConfigurator<PostgreIndex> {
 
 
     @Override
-    public PostgreIndex configureObject(DBRProgressMonitor monitor, PostgreTableBase parent, PostgreIndex index) {
+    public PostgreIndex configureObject(DBRProgressMonitor monitor, Object parent, PostgreIndex index) {
         return new UITask<PostgreIndex>() {
             @Override
             protected PostgreIndex runTask() {
                 EditIndexPage editPage = new EditIndexPage(
                     "Edit index",
-                    parent,
+                    index,
                     Collections.singletonList(DBSIndexType.OTHER));
                 if (!editPage.edit()) {
                     return null;
                 }
 
                 StringBuilder idxName = new StringBuilder(64);
-                idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
+                idxName.append(CommonUtils.escapeIdentifier(((DBSTable)parent).getName()));
                 index.setName(idxName.toString());
                 index.setIndexType(editPage.getIndexType());
                 index.setUnique(editPage.isUnique());

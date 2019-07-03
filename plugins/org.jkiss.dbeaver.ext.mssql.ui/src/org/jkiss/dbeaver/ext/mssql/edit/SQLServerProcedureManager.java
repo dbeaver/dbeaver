@@ -69,15 +69,15 @@ public class SQLServerProcedureManager extends SQLObjectEditor<SQLServerProcedur
     }
 
     @Override
-    protected SQLServerProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerSchema parent, Object copyFrom, Map<String, Object> options) {
+    protected SQLServerProcedure createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) {
+        SQLServerProcedure newProcedure = new SQLServerProcedure((SQLServerSchema) container);
         return new UITask<SQLServerProcedure>() {
             @Override
             protected SQLServerProcedure runTask() {
-                CreateProcedurePage editPage = new CreateProcedurePage(parent);
+                CreateProcedurePage editPage = new CreateProcedurePage(newProcedure);
                 if (!editPage.edit()) {
                     return null;
                 }
-                SQLServerProcedure newProcedure = new SQLServerProcedure(parent);
                 newProcedure.setProcedureType(editPage.getProcedureType());
                 newProcedure.setName(editPage.getProcedureName());
                 return newProcedure;

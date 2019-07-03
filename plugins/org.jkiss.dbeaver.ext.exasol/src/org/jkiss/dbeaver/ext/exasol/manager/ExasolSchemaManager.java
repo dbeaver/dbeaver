@@ -17,10 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.dbeaver.DBException;
@@ -43,160 +39,145 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
 
 public class ExasolSchemaManager
-        extends SQLObjectEditor<ExasolSchema, ExasolDataSource> implements DBEObjectRenamer<ExasolSchema> 
-{
-    
-    
+    extends SQLObjectEditor<ExasolSchema, ExasolDataSource> implements DBEObjectRenamer<ExasolSchema> {
+
+
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
-    {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
-    
+
     @Override
     public DBSObjectCache<? extends DBSObject, ExasolSchema> getObjectsCache(
-            ExasolSchema object)
-    {
+        ExasolSchema object) {
         ExasolDataSource source = (ExasolDataSource) object.getDataSource();
         return source.getSchemaCache();
     }
-    
-    
+
+
     @Override
-    protected ExasolSchema createDatabaseObject(DBRProgressMonitor monitor,
-                                                DBECommandContext context, ExasolDataSource parent, Object copyFrom, Map<String, Object> options)
-            throws DBException
+    protected ExasolSchema createDatabaseObject(
+        DBRProgressMonitor monitor,
+        DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new UITask<ExasolSchema>(){
+        return new UITask<ExasolSchema>() {
             @Override
-            protected ExasolSchema runTask()
-            {
-                ExasolCreateSchemaDialog dialog = new ExasolCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), parent);
+            protected ExasolSchema runTask() {
+                ExasolCreateSchemaDialog dialog = new ExasolCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), (ExasolDataSource) container);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                return new ExasolSchema(parent, dialog.getName(), dialog.getOwner().getName());
+                return new ExasolSchema((ExasolDataSource) container, dialog.getName(), dialog.getOwner().getName());
             }
         }.execute();
     }
-    
-    private void changeLimit(List<DBEPersistAction> actions, ExasolSchema schema, BigDecimal limit)
-    {
-    	String script = String.format("ALTER SCHEMA %s SET RAW_SIZE_LIMIT = %d",DBUtils.getQuotedIdentifier(schema),limit.longValue());
-    	actions.add(
-    			new SQLDatabasePersistAction(ExasolMessages.manager_schema_raw_limit, script)
-    			);
+
+    private void changeLimit(List<DBEPersistAction> actions, ExasolSchema schema, BigDecimal limit) {
+        String script = String.format("ALTER SCHEMA %s SET RAW_SIZE_LIMIT = %d", DBUtils.getQuotedIdentifier(schema), limit.longValue());
+        actions.add(
+            new SQLDatabasePersistAction(ExasolMessages.manager_schema_raw_limit, script)
+        );
     }
-    
-    private void changeOwner(List<DBEPersistAction> actions, ExasolSchema schema , String owner)
-    {
+
+    private void changeOwner(List<DBEPersistAction> actions, ExasolSchema schema, String owner) {
         String script = "ALTER SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " CHANGE OWNER  " + owner;
         actions.add(
-                new SQLDatabasePersistAction(ExasolMessages.manager_schema_owner, script)
-                );
-        
+            new SQLDatabasePersistAction(ExasolMessages.manager_schema_owner, script)
+        );
+
     }
-    
-    
+
+
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final ExasolSchema schema = command.getObject();
-        
+
         String script = "CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema);
-        
+
         actions.add(
-                new SQLDatabasePersistAction(ExasolMessages.manager_schema_create, script)
-                );
+            new SQLDatabasePersistAction(ExasolMessages.manager_schema_create, script)
+        );
         String owner = schema.getOwner();
-        if (owner != null)
-        {
+        if (owner != null) {
             changeOwner(actions, schema, owner);
         }
-        
-        if (schema.getRawObjectSizeLimit() != null)
-        {
-        	changeLimit(actions, schema, schema.getRawObjectSizeLimit());
+
+        if (schema.getRawObjectSizeLimit() != null) {
+            changeLimit(actions, schema, schema.getRawObjectSizeLimit());
         }
     }
-    
+
     @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
         int result = new UITask<Integer>() {
             protected Integer runTask() {
                 ConfirmationDialog dialog = new ConfirmationDialog(
-                        UIUtils.getActiveWorkbenchShell(),
-                        ExasolMessages.dialog_schema_drop_title,
-                        null,
-                        ExasolMessages.dialog_schema_drop_message,
-                        MessageDialog.CONFIRM,
-                        new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL },
-                        0,
-                        ExasolMessages.dialog_general_continue,
-                        false);
+                    UIUtils.getActiveWorkbenchShell(),
+                    ExasolMessages.dialog_schema_drop_title,
+                    null,
+                    ExasolMessages.dialog_schema_drop_message,
+                    MessageDialog.CONFIRM,
+                    new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL},
+                    0,
+                    ExasolMessages.dialog_general_continue,
+                    false);
                 return dialog.open();
             }
         }.execute();
-        if (result != IDialogConstants.YES_ID) 
-        {
+        if (result != IDialogConstants.YES_ID) {
             throw new IllegalStateException("User abort");
         }
-        
+
         actions.add(
             new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
         );
     }
-    
+
     @Override
     protected void addObjectRenameActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-                                          ObjectRenameCommand command, Map<String, Object> options)
-    {
+                                          ObjectRenameCommand command, Map<String, Object> options) {
         ExasolSchema obj = command.getObject();
         actions.add(
-                new SQLDatabasePersistAction(
-                    "Rename Schema",
-                    "RENAME SCHEMA " +  DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
-                        DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
-            );
+            new SQLDatabasePersistAction(
+                "Rename Schema",
+                "RENAME SCHEMA " + DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getOldName()) + " to " +
+                    DBUtils.getQuotedIdentifier(obj.getDataSource(), command.getNewName()))
+        );
     }
-    
+
     @Override
-    public void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    public void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         ExasolSchema schema = command.getObject();
-        
-        if (command.getProperties().size() >= 1 ) 
-        {
-            if (command.getProperties().containsKey("description"))
-            {
-                String script = "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " IS '" +  ExasolUtils.quoteString(schema.getDescription()) + "'";
+
+        if (command.getProperties().size() >= 1) {
+            if (command.getProperties().containsKey("description")) {
+                String script = "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) + " IS '" + ExasolUtils.quoteString(schema.getDescription()) + "'";
                 actionList.add(
-                        new SQLDatabasePersistAction("Change comment on Schema", script)
-                        );
+                    new SQLDatabasePersistAction("Change comment on Schema", script)
+                );
             }
-            if (command.getProperties().containsKey("owner"))
-            {
+            if (command.getProperties().containsKey("owner")) {
                 changeOwner(actionList, schema, schema.getOwner());
             }
-            
-            if (command.getProperties().containsKey("rawObjectSizeLimit"))
-            {
-            	changeLimit(actionList, schema, schema.getRawObjectSizeLimit());
+
+            if (command.getProperties().containsKey("rawObjectSizeLimit")) {
+                changeLimit(actionList, schema, schema.getRawObjectSizeLimit());
             }
-            
+
         }
     }
 
     @Override
     public void renameObject(DBECommandContext commandContext,
-            ExasolSchema object, String newName) throws DBException
-    {
+                             ExasolSchema object, String newName) throws DBException {
         processObjectRename(commandContext, object, newName);
     }
-    
-    
-    
+
+
 }

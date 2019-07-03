@@ -48,9 +48,10 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
     }
 
     @Override
-    protected MySQLTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent, Object copyFrom, Map<String, Object> options)
+    protected MySQLTrigger createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
     {
-        return new MySQLTrigger(parent.getContainer(), parent, "NewTrigger");
+        MySQLTable table = (MySQLTable) container;
+        return new MySQLTrigger(table.getContainer(), table, "NewTrigger");
     }
 
     protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger, boolean create) {

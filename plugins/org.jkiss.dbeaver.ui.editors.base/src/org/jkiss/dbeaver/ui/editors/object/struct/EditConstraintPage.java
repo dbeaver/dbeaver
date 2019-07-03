@@ -24,11 +24,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -51,7 +47,7 @@ import java.util.Map;
  */
 public class EditConstraintPage extends AttributesSelectorPage {
 
-    private DBSEntity entity;
+    private DBSEntityConstraint entityConstraint;
     private String constraintName;
     private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
@@ -67,11 +63,11 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
     public EditConstraintPage(
         String title,
-        DBSEntity entity,
+        DBSEntityConstraint constraint,
         DBSEntityConstraintType[] constraintTypes)
     {
-        super(title, entity);
-        this.entity = entity;
+        super(title, constraint.getParentObject());
+        this.entityConstraint = constraint;
         this.constraintTypes = constraintTypes;
         Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
     }

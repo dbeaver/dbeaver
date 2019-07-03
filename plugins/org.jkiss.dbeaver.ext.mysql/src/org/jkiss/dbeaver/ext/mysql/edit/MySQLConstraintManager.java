@@ -43,11 +43,11 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
 
     @Override
     protected MySQLTableConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final MySQLTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
         return new MySQLTableConstraint(
-            parent,
+            (MySQLTable) container,
             "NewConstraint",
             null,
             DBSEntityConstraintType.PRIMARY_KEY,

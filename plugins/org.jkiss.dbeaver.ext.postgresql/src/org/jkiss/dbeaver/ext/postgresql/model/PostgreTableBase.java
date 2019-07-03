@@ -50,7 +50,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private long oid;
     private long ownerId;
     private String description;
-	private boolean isPartition;
+	protected boolean isPartition;
 	private boolean hasPartitions;
 	private String part_key;
     private Object acl;

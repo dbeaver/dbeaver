@@ -62,19 +62,19 @@ public class ExasolConnectionManager
     
     @Override
     protected ExasolConnection createDatabaseObject(DBRProgressMonitor monitor,
-                                                    DBECommandContext context, ExasolDataSource parent, Object copyFrom, Map<String, Object> options)
+                                                    DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
             throws DBException
     {
         return new UITask<ExasolConnection>() {
             @Override
             protected ExasolConnection runTask()
             {
-                ExasolConnectionDialog dialog = new ExasolConnectionDialog(UIUtils.getActiveWorkbenchShell(), parent);
+                ExasolConnectionDialog dialog = new ExasolConnectionDialog(UIUtils.getActiveWorkbenchShell(), (ExasolDataSource) container);
                 if (dialog.open() != IDialogConstants.OK_ID)
                 {
                     return null;
                 }
-                ExasolConnection con = new ExasolConnection(parent, dialog.getName(), dialog.getUrl(), dialog.getComment(), dialog.getUrl(), dialog.getPassword());
+                ExasolConnection con = new ExasolConnection((ExasolDataSource) container, dialog.getName(), dialog.getUrl(), dialog.getComment(), dialog.getUrl(), dialog.getPassword());
                 return con;
             }
         }.execute();

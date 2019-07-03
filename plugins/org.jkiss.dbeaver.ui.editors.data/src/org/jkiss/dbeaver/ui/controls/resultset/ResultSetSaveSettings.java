@@ -1,6 +1,5 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017-2017 Karl Griesser (fullref@gmail.com)
  * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,20 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.ui;
+package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
+/**
+ * Save settings
+ */
+public class ResultSetSaveSettings {
+    private boolean deleteCascade;
+    private boolean deepCascae;
 
-public class ExasolCreateForeignKeyDialog extends EditForeignKeyPage {
-    public ExasolCreateForeignKeyDialog(String title, ExasolTableForeignKey foreignKey) {
-        super(title, foreignKey, new DBSForeignKeyModifyRule[0]);
+    public boolean isDeleteCascade() {
+        return deleteCascade;
     }
 
-    @Override
-    protected boolean supportsCustomName() {
-        return true;
+    public void setDeleteCascade(boolean deleteCascade) {
+        this.deleteCascade = deleteCascade;
     }
 
+    public boolean isDeepCascae() {
+        return deepCascae;
+    }
+
+    public void setDeepCascae(boolean deepCascae) {
+        this.deepCascae = deepCascae;
+    }
 }

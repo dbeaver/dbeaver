@@ -1,6 +1,5 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017-2017 Karl Griesser (fullref@gmail.com)
  * Copyright (C) 2010-2019 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,20 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.exasol.ui;
+package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.ext.exasol.model.ExasolTableForeignKey;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
+/**
+ * Save report
+ */
+public class ResultSetSaveReport {
+    private int inserts;
+    private int updates;
+    private int deletes;
 
-public class ExasolCreateForeignKeyDialog extends EditForeignKeyPage {
-    public ExasolCreateForeignKeyDialog(String title, ExasolTableForeignKey foreignKey) {
-        super(title, foreignKey, new DBSForeignKeyModifyRule[0]);
+    public int getInserts() {
+        return inserts;
     }
 
-    @Override
-    protected boolean supportsCustomName() {
-        return true;
+    public void setInserts(int inserts) {
+        this.inserts = inserts;
     }
 
+    public int getUpdates() {
+        return updates;
+    }
+
+    public void setUpdates(int updates) {
+        this.updates = updates;
+    }
+
+    public int getDeletes() {
+        return deletes;
+    }
+
+    public void setDeletes(int deletes) {
+        this.deletes = deletes;
+    }
 }

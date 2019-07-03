@@ -55,15 +55,16 @@ public class SQLServerCheckConstraintManager extends SQLObjectEditor<SQLServerTa
 
     @Override
     protected SQLServerTableCheckConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
         Object from, Map<String, Object> options)
     {
+        SQLServerTableCheckConstraint constraint = new SQLServerTableCheckConstraint((SQLServerTable) container, null);
         return new UITask<SQLServerTableCheckConstraint>() {
             @Override
             protected SQLServerTableCheckConstraint runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create CHECK constraint",
-                    parent,
+                    constraint,
                     new DBSEntityConstraintType[] {DBSEntityConstraintType.CHECK} );
                 if (!editPage.edit()) {
                     return null;

@@ -152,6 +152,10 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         return referencedKey;
     }
 
+    public void setReferencedConstraint(DB2TableUniqueKey referencedKey) {
+        this.referencedKey = referencedKey;
+    }
+
     @Property(viewable = true, editable = true)
     public DB2DeleteUpdateRule getDb2DeleteRule()
     {

@@ -65,11 +65,12 @@ public class PostgreViewManager extends PostgreTableManagerBase implements DBEOb
     }
 
     @Override
-    protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, PostgreSchema parent, Object copyFrom, Map<String, Object> options)
+    protected PostgreViewBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
     {
-        PostgreView newView = new PostgreView(parent);
+        PostgreSchema schema = (PostgreSchema) container;
+        PostgreView newView = new PostgreView(schema);
         try {
-            newView.setName(getNewChildName(monitor, parent, "new_view"));
+            newView.setName(getNewChildName(monitor, schema, "new_view"));
         } catch (DBException e) {
             // Never be here
             log.error(e);

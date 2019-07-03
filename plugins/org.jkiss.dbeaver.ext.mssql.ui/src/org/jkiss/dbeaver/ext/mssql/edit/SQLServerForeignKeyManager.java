@@ -45,14 +45,23 @@ public class SQLServerForeignKeyManager extends SQLForeignKeyManager<SQLServerTa
     }
 
     @Override
-    protected SQLServerTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final SQLServerTable table, Object from, Map<String, Object> options)
+    protected SQLServerTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object table, Object from, Map<String, Object> options)
     {
+        final SQLServerTableForeignKey foreignKey = new SQLServerTableForeignKey(
+            (SQLServerTable) table,
+            null,
+            null,
+            null,
+            DBSForeignKeyModifyRule.NO_ACTION,
+            DBSForeignKeyModifyRule.NO_ACTION,
+            false);
+
         return new UITask<SQLServerTableForeignKey>() {
             @Override
             protected SQLServerTableForeignKey runTask() {
                 EditForeignKeyPage editPage = new EditForeignKeyPage(
                     "Create foreign key",
-                    table,
+                    foreignKey,
                     new DBSForeignKeyModifyRule[] {
                         DBSForeignKeyModifyRule.NO_ACTION,
                         DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
@@ -62,15 +71,10 @@ public class SQLServerForeignKeyManager extends SQLForeignKeyManager<SQLServerTa
                     return null;
                 }
 
-                final SQLServerTableForeignKey foreignKey = new SQLServerTableForeignKey(
-                    table,
-                    null,
-                    null,
-                    editPage.getUniqueConstraint(),
-                    editPage.getOnDeleteRule(),
-                    editPage.getOnUpdateRule(),
-                    false);
+                foreignKey.setReferencedKey(editPage.getUniqueConstraint());
                 foreignKey.setName(getNewConstraintName(monitor, foreignKey));
+                foreignKey.setDeleteRule(editPage.getOnDeleteRule());
+                foreignKey.setUpdateRule(editPage.getOnUpdateRule());
                 int colIndex = 1;
                 for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(

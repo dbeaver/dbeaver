@@ -53,7 +53,7 @@
                             <icon if="object.system" icon="#schema_system"/>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                                 <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.columns.node.tip" visibleIf="!object.isPartition()">
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
@@ -84,11 +84,11 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="%tree.partitions.node.tip" virtual="true" visibleIf="object.dataSource.serverType.supportsPartitions()">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="%tree.partitions.node.tip" virtual="true" visibleIf="object.dataSource.serverType.supportsPartitions() &amp;&amp; !object.isPartition()">
                                         <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition" virtual="true" recursive="../..">
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true" visibleIf="object.hasSubClasses()">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true" visibleIf="object.hasSubClasses() &amp;&amp; !object.isPartition()">
                                         <items label="%tree.tablechildren.node.name" path="subTables" property="subTables" icon="#table" virtual="true" recursive="../.." >
                                         </items>
                                     </folder>
@@ -435,9 +435,9 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgrePartitionManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgrePartitionManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyManager" objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
