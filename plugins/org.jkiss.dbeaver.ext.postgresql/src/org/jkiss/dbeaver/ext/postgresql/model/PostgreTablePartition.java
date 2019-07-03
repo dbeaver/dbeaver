@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import java.sql.ResultSet;
 import java.util.Map;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
 
 public class PostgreTablePartition extends PostgreTable
@@ -32,84 +32,40 @@ public class PostgreTablePartition extends PostgreTable
 	
 	public static final String CAT_PARTITIONING = "Partitioning";
 	
-	private String expr;
+	private String partitionExpression;
+	private PostgreTable partitionOf;
 
-	public PostgreTablePartition(PostgreSchema catalog) {
+	public PostgreTablePartition(PostgreSchema catalog, PostgreTable partitionOf) {
 		super(catalog);
+		this.partitionExpression = "FOR VALUES ";
+		this.isPartition = true;
+		this.setName("newpartition");
+		this.partitionOf = partitionOf;
 	}
 
 	public PostgreTablePartition(PostgreSchema catalog, ResultSet dbResult) {
 		super(catalog, dbResult);
-		this.expr = JDBCUtils.safeGetString(dbResult, "partition_expr");
+		this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
 	}
 	
-	@Property(category = CAT_PARTITIONING, editable = false, viewable = true, order = 90)
-    public String getExpr() {
-        return expr;
+	@Property(viewable = true, editable = true, updatable = true, order = 60)
+	@Nullable
+    public String getPartitionExpression() {
+        return partitionExpression;
     }
+    
+    public void setPartitionExpression(String expr) {
+        this.partitionExpression = expr;
+    }
+
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
-	
-	
-	
-    /*	
-	 public PostgreTablePartition(PostgreSchema container, DBSEntity source, boolean persisted) {
-		super(container, source, persisted);
-	}
 
-	@Property(category = CAT_PARTITIONING, editable = false, viewable = true, order = 50)
-     public String getPartKeys() {
-	        return "this.oid";
-	    }
-
-	
-
-    private final PostgreTableBase partitionTable;
-    private int sequenceNum;
-//select * from  pg_partitioned_table where partrelid = ? 
-    public PostgreTablePartition(
-        @NotNull PostgreTableBase table,
-        @NotNull PostgreTableBase partitionTable,
-        int sequenceNum,
-        boolean persisted)
-    {
-        super(table,
-            table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "->" + partitionTable.getFullyQualifiedName(DBPEvaluationContext.DDL),
-            DBSEntityConstraintType.INHERITANCE);
-        this.setPersisted(persisted);
-        this.partitionTable = partitionTable;
-        this.sequenceNum = sequenceNum;
+    public PostgreTable getPartitionOf() {
+        return partitionOf;
     }
-
-    @Nullable
-    @Override
-    public DBSEntityConstraint getReferencedConstraint() {
-        return this;
-    }
-
-    @Override
-    @Property(viewable = true)
-    public PostgreTableBase getAssociatedEntity() {
-        return this.partitionTable;
-    }
-
-    @Property(viewable = true)
-    public int getSequenceNum() {
-        return sequenceNum;
-    }
-
-    @Nullable
-    @Override
-    public List<PostgreTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Override
-    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {
-
-    }
-    */
+    
 }

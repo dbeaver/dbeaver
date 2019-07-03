@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -33,17 +34,16 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 public class PostgrePartitionManager extends PostgreTableManager {
 
     private static final Log log = Log.getLog(PostgrePartitionManager.class);
-
+    
+    private static final Class<?>[] CHILD_TYPES_PART = {
+            PostgreTableConstraint.class,
+            PostgreTableForeignKey.class,
+            PostgreIndex.class
+        };
+    
     protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
         PostgreTable owner = (PostgreTable)container;
-        final PostgreTablePartition table = new PostgreTablePartition(owner.getSchema());
-        try {
-            setTableName(monitor, owner.getSchema(), table);
-        } catch (DBException e) {
-            // Never be here
-            log.error(e);
-        }
-
+        final PostgreTablePartition table = new PostgreTablePartition(owner.getSchema(),owner);
         return table;
     }
 
@@ -57,10 +57,12 @@ public class PostgrePartitionManager extends PostgreTableManager {
             return "";
         }
         
-        if (superTables == null || superTables.size() != 1) {
+        if (superTables == null && partition.getPartitionOf() != null) {
+            return partition.getPartitionOf().getSchema().getName() + "." + partition.getPartitionOf().getName();            
+        } else if (superTables == null || superTables.size() > 1) {
             log.error("Unable to get parent");
             return "";
-        }
+        } 
         
         //       final String tableName = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
         //table.getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(table);
@@ -87,7 +89,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
 
     @Override
     public boolean canEditObject(PostgreTableBase object) {
-        return false;
+        return object instanceof PostgreTablePartition;
     }
 
     @Override
@@ -97,7 +99,15 @@ public class PostgrePartitionManager extends PostgreTableManager {
 
     @Override
     public boolean canDeleteObject(PostgreTableBase object) {
-        return false;
+        return true;
     }
+    
+    @NotNull
+    @Override
+    public Class<?>[] getChildTypes()
+    {
+        return CHILD_TYPES_PART;
+    }
+
 
 }
