@@ -3345,7 +3345,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             };
-            return persister.applyChanges(monitor, false, applyListener);
+            return persister.applyChanges(monitor, false, settings, applyListener);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
             return false;
@@ -3382,7 +3382,7 @@ public class ResultSetViewer extends Viewer
     public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings) {
         try {
             ResultSetPersister persister = createDataPersister(false);
-            persister.applyChanges(monitor, true, null);
+            persister.applyChanges(monitor, true, settings, null);
             return persister.getScript();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);
