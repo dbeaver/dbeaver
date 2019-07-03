@@ -45,17 +45,23 @@ class SavePreviewDialog extends DetailsViewDialog {
     private ResultSetViewer viewer;
     private boolean showHideButton;
     private Object sqlPanel;
+    private ResultSetSaveSettings saveSettings;
 
     public SavePreviewDialog(ResultSetViewer viewer, boolean showHideButton) {
         super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
 
         this.viewer = viewer;
         this.showHideButton = showHideButton;
+
+        this.saveSettings = new ResultSetSaveSettings();
+    }
+
+    public ResultSetSaveSettings getSaveSettings() {
+        return saveSettings;
     }
 
     @Override
-    protected IDialogSettings getDialogBoundsSettings()
-    {
+    protected IDialogSettings getDialogBoundsSettings() {
         return null;//UIUtils.getDialogSettings(DIALOG_ID);
     }
 
@@ -70,9 +76,12 @@ class SavePreviewDialog extends DetailsViewDialog {
         String changesReport = "";
 
         ResultSetSaveReport saveReport = viewer.generateChangesReport();
-        if (saveReport.getInserts() > 0) changesReport = appendReportLine(changesReport, saveReport.getInserts(), "rows(s) added");
-        if (saveReport.getUpdates() > 0) changesReport = appendReportLine(changesReport, saveReport.getUpdates(), "rows(s) changed");
-        if (saveReport.getDeletes() > 0) changesReport = appendReportLine(changesReport, saveReport.getDeletes(), "rows(s) deleted");
+        if (saveReport.getInserts() > 0)
+            changesReport = appendReportLine(changesReport, saveReport.getInserts(), "rows(s) added");
+        if (saveReport.getUpdates() > 0)
+            changesReport = appendReportLine(changesReport, saveReport.getUpdates(), "rows(s) changed");
+        if (saveReport.getDeletes() > 0)
+            changesReport = appendReportLine(changesReport, saveReport.getDeletes(), "rows(s) deleted");
 
         UIUtils.createInfoLabel(messageGroup, "You are about to save your changes into the database.\n" +
             changesReport + ".\nAre you sure you want to proceed?");
@@ -116,15 +125,15 @@ class SavePreviewDialog extends DetailsViewDialog {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         createDetailsButton(parent);
-        ((GridData)detailsButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
+        ((GridData) detailsButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
 
         Label spacer = new Label(parent, SWT.NONE);
         GridData gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
         gd.minimumWidth = 50;
         spacer.setLayoutData(gd);
 
-        ((GridLayout)parent.getLayout()).numColumns++;
-        ((GridLayout)parent.getLayout()).makeColumnsEqualWidth = false;
+        ((GridLayout) parent.getLayout()).numColumns++;
+        ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
 
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.PROCEED_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
@@ -132,7 +141,7 @@ class SavePreviewDialog extends DetailsViewDialog {
 
     @Override
     protected Control createDetailsContents(Composite composite) {
-        Composite group = new Composite(composite, SWT.NONE );
+        Composite group = new Composite(composite, SWT.NONE);
         group.setLayout(new GridLayout(1, true));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         Composite previewFrame = new Composite(group, SWT.BORDER);
@@ -144,40 +153,51 @@ class SavePreviewDialog extends DetailsViewDialog {
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
             try {
-                final List<DBEPersistAction> sqlScript = new ArrayList<>();
-                UIUtils.runInProgressService(monitor -> {
-                    List<DBEPersistAction> script = viewer.generateChangesScript(monitor);
-                    if (script != null) {
-                        sqlScript.addAll(script);
-                    }
-                });
-
-                String scriptText = "";
-                if (!sqlScript.isEmpty()) {
-                    scriptText = SQLUtils.generateScript(
-                        viewer.getDataSource(),
-                        sqlScript.toArray(new DBEPersistAction[0]),
-                        false);
-                    scriptText =
-                        SQLUtils.generateCommentLine(
-                            viewer.getDataSource(),
-                            "Auto-generated SQL script. Actual values for binary/complex data types may differ - what you see is the default string representation of values.") +
-                            scriptText;
-                }
-
                 sqlPanel = serviceSQL.createSQLPanel(
                     viewer.getSite(),
                     previewFrame,
                     viewer,
                     UINavigatorMessages.editors_entity_dialog_preview_title,
                     true,
-                    scriptText);
+                    "");
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
             }
-
         }
+        populateSQL();
+
         return previewFrame;
+    }
+
+    private void populateSQL() {
+        try {
+            final List<DBEPersistAction> sqlScript = new ArrayList<>();
+            UIUtils.runInProgressService(monitor -> {
+                List<DBEPersistAction> script = viewer.generateChangesScript(monitor, saveSettings);
+                if (script != null) {
+                    sqlScript.addAll(script);
+                }
+            });
+
+            String scriptText = "";
+            if (!sqlScript.isEmpty()) {
+                scriptText = SQLUtils.generateScript(
+                    viewer.getDataSource(),
+                    sqlScript.toArray(new DBEPersistAction[0]),
+                    false);
+                scriptText =
+                    SQLUtils.generateCommentLine(
+                        viewer.getDataSource(),
+                        "Auto-generated SQL script. Actual values for binary/complex data types may differ - what you see is the default string representation of values.") +
+                        scriptText;
+                UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+                if (serviceSQL != null) {
+                    serviceSQL.setSQLPanelText(sqlPanel, scriptText);
+                }
+            }
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Can't generalte SQL script", "Error generating SQL script from changes", e);
+        }
     }
 
 }

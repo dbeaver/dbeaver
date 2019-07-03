@@ -267,13 +267,13 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 break;
             }
             case CMD_APPLY_CHANGES:
-                if (rsv.generateChangesReport().getDeletes() > 0) {
+                if (rsv.getDrsv.generateChangesReport().getDeletes() > 0) {
                     SavePreviewDialog spd = new SavePreviewDialog(rsv, true);
                     if (spd.open() == IDialogConstants.OK_ID) {
-                        rsv.applyChanges(null);
+                        rsv.applyChanges(null, spd.getSaveSettings());
                     }
                 } else {
-                    rsv.applyChanges(null);
+                    rsv.applyChanges(null, new ResultSetSaveSettings());
                 }
                 break;
             case CMD_REJECT_CHANGES:
@@ -507,7 +507,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
             final List<DBEPersistAction> sqlScript = new ArrayList<>();
             try {
                 UIUtils.runInProgressService(monitor -> {
-                    List<DBEPersistAction> script = rsv.generateChangesScript(monitor);
+                    List<DBEPersistAction> script = rsv.generateChangesScript(monitor, new ResultSetSaveSettings());
                     if (script != null) {
                         sqlScript.addAll(script);
                     }
