@@ -99,7 +99,11 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
         final OracleView view = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
         if (!hasComment || command.getProperties().size() > 1) {
-            actions.add(new SQLDatabasePersistAction("Create view", view.getViewText()));
+            String viewText = view.getViewText().trim();
+            while (viewText.endsWith(";")) {
+                viewText = viewText.substring(0, viewText.length() - 1);
+            }
+            actions.add(new SQLDatabasePersistAction("Create view", viewText));
         }
         if (hasComment) {
             actions.add(new SQLDatabasePersistAction(
