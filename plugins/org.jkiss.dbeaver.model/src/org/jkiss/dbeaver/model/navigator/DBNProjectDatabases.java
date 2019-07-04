@@ -122,7 +122,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public String getNodeDescription()
     {
-        return ((DBNProject)getParentNode()).getProject().getName() + ModelMessages.model_navigator__connections;
+        return getParentNode().getProject().getName() + ModelMessages.model_navigator__connections;
+    }
+
+    public DBNProject getParentNode() {
+        return (DBNProject) super.getParentNode();
     }
 
     @Override
@@ -161,7 +165,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 childNodes.add(dataSource);
             }
             sortNodes(childNodes);
-            this.children = childNodes.toArray(new DBNNode[childNodes.size()]);
+            this.children = childNodes.toArray(new DBNNode[0]);
         }
         return children;
     }
