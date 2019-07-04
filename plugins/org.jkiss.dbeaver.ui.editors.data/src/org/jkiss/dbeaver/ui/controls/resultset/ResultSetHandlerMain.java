@@ -260,17 +260,28 @@ public class ResultSetHandlerMain extends AbstractHandler {
                 rsv.updatePanelsContent(false);
                 break;
             }
-            case CMD_APPLY_CHANGES:
-                /*ResultSetSaveReport saveReport = rsv.generateChangesReport();
-                if (saveReport.isHasReferences() && saveReport.getDeletes() > 0) {
-                    SavePreviewDialog spd = new SavePreviewDialog(rsv, true);
-                    if (spd.open() == IDialogConstants.OK_ID) {
-                        rsv.applyChanges(null, spd.getSaveSettings());
-                    }
-                } else */{
-                    rsv.applyChanges(null, new ResultSetSaveSettings());
+            case CMD_APPLY_CHANGES: {
+                if (dataSource == null) {
+                    return null;
                 }
+                ResultSetSaveSettings saveSettings = new ResultSetSaveSettings();
+
+                if (dataSource.getContainer().getConnectionConfiguration().getConnectionType().isConfirmDataChange()) {
+                    ResultSetSaveReport saveReport = rsv.generateChangesReport();
+                    {
+                        SavePreviewDialog spd = new SavePreviewDialog(
+                            rsv,
+                            saveReport.isHasReferences() && saveReport.getDeletes() > 0);
+                        if (spd.open() != IDialogConstants.OK_ID) {
+                            return null;
+                        }
+                        saveSettings = spd.getSaveSettings();
+                    }
+                }
+                rsv.applyChanges(null, saveSettings);
+
                 break;
+            }
             case CMD_REJECT_CHANGES:
                 rsv.rejectChanges();
                 break;

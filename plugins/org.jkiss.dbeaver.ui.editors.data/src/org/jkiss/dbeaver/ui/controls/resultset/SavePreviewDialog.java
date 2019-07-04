@@ -18,13 +18,10 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -46,15 +43,15 @@ class SavePreviewDialog extends DetailsViewDialog {
     private static final String DIALOG_ID = "DBeaver.RSV.SavePreviewDialog";//$NON-NLS-1$
 
     private ResultSetViewer viewer;
-    private boolean showHideButton;
+    private boolean showCascadeSettings;
     private Object sqlPanel;
     private ResultSetSaveSettings saveSettings;
 
-    public SavePreviewDialog(ResultSetViewer viewer, boolean showHideButton) {
+    public SavePreviewDialog(ResultSetViewer viewer, boolean showCascadeSettings) {
         super(viewer.getControl().getShell(), "Preview changes", UIIcon.SQL_SCRIPT);
 
         this.viewer = viewer;
-        this.showHideButton = showHideButton;
+        this.showCascadeSettings = showCascadeSettings;
 
         this.saveSettings = new ResultSetSaveSettings();
     }
@@ -91,33 +88,38 @@ class SavePreviewDialog extends DetailsViewDialog {
             Label imgLabel = new Label(msgComposite, SWT.NONE);
             imgLabel.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
             Label msgText = new Label(msgComposite, SWT.NONE);
-            msgText.setText("You are about to save your changes into the database.\n" +
+            msgText.setText("You are about to save your changes into the database (" + viewer.getDataSource().getContainer().getName() + ").\n" +
                 changesReport + ".\nAre you sure you want to proceed?");
         }
 
         //UIUtils.createHorizontalLine(messageGroup);
+        if (showCascadeSettings) {
+            boolean useDeleteCascade = saveReport.isHasReferences() && saveReport.getDeletes() > 0;
+            SaveScriptDialog.createDeleteCascadeControls(messageGroup, saveSettings, useDeleteCascade, this::populateSQL);
+        }
 
+
+            /*
         if (saveReport.getDeletes() > 0) {
-            Composite settingsComposite = UIUtils.createComposite(messageGroup, showHideButton ? 2 : 1);
+            Composite settingsComposite = UIUtils.createComposite(messageGroup, showCascadeSettings ? 2 : 1);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             settingsComposite.setLayoutData(gd);
 
             Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Delete cascade",
                 "Delete rows from all tables referencing this table by foreign keys", false, 1);
-            if (showHideButton) UIUtils.createEmptyLabel(settingsComposite, 1, 1);
-
+            if (showCascadeSettings) UIUtils.createEmptyLabel(settingsComposite, 1, 1);
             Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Deep cascade",
                 "Delete cascade recursively (deep references)", false, 1);
 
-            if (showHideButton) {
+            if (showCascadeSettings) {
                 Button hideDialogButton = UIUtils.createCheckbox(settingsComposite, "Do not show again",
                     "Do not show this dialog next time (you can re-enable this option in preferences/confirmations)", false, 1);
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
                 gd.grabExcessHorizontalSpace = true;
                 hideDialogButton.setLayoutData(gd);
             }
-        }
+        }*/
     }
 
     private static String appendReportLine(String report, int count, String info) {
@@ -144,7 +146,7 @@ class SavePreviewDialog extends DetailsViewDialog {
         ((GridLayout) parent.getLayout()).numColumns++;
         ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
 
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.PROCEED_LABEL, true);
+        createButton(parent, IDialogConstants.OK_ID, UINavigatorMessages.dialog_filter_save_button, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 

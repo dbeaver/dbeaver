@@ -75,25 +75,7 @@ class SaveScriptDialog extends BaseDialog {
         messageGroup.setLayoutData(gd);
 
         ResultSetSaveReport saveReport = viewer.generateChangesReport();
-/*
-        String changesReport = "";
 
-        if (saveReport.getInserts() > 0)
-            changesReport = appendReportLine(changesReport, saveReport.getInserts(), "rows(s) added");
-        if (saveReport.getUpdates() > 0)
-            changesReport = appendReportLine(changesReport, saveReport.getUpdates(), "rows(s) changed");
-        if (saveReport.getDeletes() > 0)
-            changesReport = appendReportLine(changesReport, saveReport.getDeletes(), "rows(s) deleted");
-
-        {
-            Composite msgComposite = UIUtils.createComposite(messageGroup, 2);
-            Label imgLabel = new Label(msgComposite, SWT.NONE);
-            imgLabel.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-            Label msgText = new Label(msgComposite, SWT.NONE);
-            msgText.setText("You are about to save your changes into the database.\n" +
-                changesReport + ".\nAre you sure you want to proceed?");
-        }
-*/
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
             Composite sqlContainer = new Composite(messageGroup, SWT.NONE);
@@ -117,51 +99,59 @@ class SaveScriptDialog extends BaseDialog {
         populateSQL();
 
         boolean useDeleteCascade = saveReport.isHasReferences() && saveReport.getDeletes() > 0;
-        {
-            Composite settingsComposite = UIUtils.createComposite(messageGroup, 2);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            settingsComposite.setLayoutData(gd);
-
-            Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Delete cascade",
-                "Delete rows from all tables referencing this table by foreign keys", false, 1);
-            Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Deep cascade",
-                "Delete cascade recursively (deep references)", false, 1);
-
-            if (!useDeleteCascade) {
-                deleteCascadeCheck.setEnabled(false);
-                deleteDeepCascadeCheck.setEnabled(false);
-            } else {
-                deleteCascadeCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (deleteCascadeCheck.getSelection()) {
-                            saveSettings.setDeleteCascade(true);
-                        } else {
-                            saveSettings.setDeleteCascade(false);
-                            saveSettings.setDeepCascade(false);
-                            deleteDeepCascadeCheck.setSelection(false);
-                        }
-                        populateSQL();
-                    }
-                });
-                deleteDeepCascadeCheck.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (deleteDeepCascadeCheck.getSelection()) {
-                            saveSettings.setDeleteCascade(true);
-                            saveSettings.setDeepCascade(true);
-                            deleteCascadeCheck.setSelection(true);
-                        } else {
-                            saveSettings.setDeepCascade(false);
-                        }
-                        populateSQL();
-                    }
-                });
-            }
-        }
+        createDeleteCascadeControls(messageGroup, saveSettings, useDeleteCascade, this::populateSQL);
 
         return messageGroup;
+    }
+
+    public static void createDeleteCascadeControls(
+        Composite messageGroup,
+        ResultSetSaveSettings settings,
+        boolean enableControls,
+        Runnable settingsRefreshHandler)
+    {
+        GridData gd;
+        Composite settingsComposite = UIUtils.createComposite(messageGroup, 2);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        settingsComposite.setLayoutData(gd);
+
+        Button deleteCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Delete cascade",
+            "Delete rows from all tables referencing this table by foreign keys", false, 1);
+        Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Deep cascade",
+            "Delete cascade recursively (deep references)", false, 1);
+
+        if (!enableControls) {
+            deleteCascadeCheck.setEnabled(false);
+            deleteDeepCascadeCheck.setEnabled(false);
+        } else {
+            deleteCascadeCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (deleteCascadeCheck.getSelection()) {
+                        settings.setDeleteCascade(true);
+                    } else {
+                        settings.setDeleteCascade(false);
+                        settings.setDeepCascade(false);
+                        deleteDeepCascadeCheck.setSelection(false);
+                    }
+                    settingsRefreshHandler.run();
+                }
+            });
+            deleteDeepCascadeCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (deleteDeepCascadeCheck.getSelection()) {
+                        settings.setDeleteCascade(true);
+                        settings.setDeepCascade(true);
+                        deleteCascadeCheck.setSelection(true);
+                    } else {
+                        settings.setDeepCascade(false);
+                    }
+                    settingsRefreshHandler.run();
+                }
+            });
+        }
     }
 
     private static String appendReportLine(String report, int count, String info) {
