@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema.ExtensionCache;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -91,6 +92,8 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
     public final ForeignServerCache foreignServerCache = new ForeignServerCache();
     public final LanguageCache languageCache = new LanguageCache();
     public final EncodingCache encodingCache = new EncodingCache();
+    public final ExtensionCache extensionCache = new ExtensionCache();
+    public final AvailableExtensionCache availableExtensionCache = new AvailableExtensionCache();
     public final CollationCache collationCache = new CollationCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
     public final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
@@ -414,7 +417,20 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         checkInstanceConnection(monitor);
         return encodingCache.getAllObjects(monitor, this);
     }
-
+    
+    @Association
+    public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
+        throws DBException {
+        return extensionCache.getAllObjects(monitor, this);
+    }
+    
+    @Association
+    public Collection<PostgreAvailableExtension> getAvailableExtensions(DBRProgressMonitor monitor)
+        throws DBException {
+        return availableExtensionCache.getAllObjects(monitor, this);
+    }
+    
+    
     @Association
     public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor)
         throws DBException {
@@ -1014,6 +1030,65 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         protected PostgreTablespace fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
             return new PostgreTablespace(owner, dbResult);
+        }
+    }
+    
+ class AvailableExtensionCache extends JDBCObjectCache<PostgreDatabase, PostgreAvailableExtension> {
+        
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                  "SELECT name,default_version,installed_version,comment FROM pg_catalog.pg_available_extensions ORDER BY name"  
+            );
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreAvailableExtension fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException {
+            return new PostgreAvailableExtension(owner, dbResult);
+        }
+    }
+    
+    class ExtensionCache extends JDBCObjectCache<PostgreDatabase, PostgreExtension> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                  "SELECT \n" + 
+                  " e.oid,\n" + 
+                  " a.rolname oname,\n" + 
+                  " cfg.tbls,\n" + 
+                  " e.* \n" + 
+                  "FROM \n" + 
+                  " pg_catalog.pg_extension e \n" + 
+                  " join pg_authid a on a.oid = e.extowner\n" + 
+                  " join pg_namespace n on n.oid =e.extnamespace\n" + 
+                  " left join  (\n" + 
+                  "         select\n" + 
+                  "            ARRAY_AGG(ns.nspname || '.' ||  cls.relname) tbls, oid_ext\n" + 
+                  "          from\n" + 
+                  "            (\n" + 
+                  "            select\n" + 
+                  "                unnest(e1.extconfig) oid , e1.oid oid_ext\n" + 
+                  "            from\n" + 
+                  "                pg_catalog.pg_extension e1 ) c \n" + 
+                  "                join    pg_class cls on cls.oid = c.oid \n" + 
+                  "                join pg_namespace ns on ns.oid = cls.relnamespace\n" + 
+                  "            group by oid_ext        \n" + 
+                  "         ) cfg on cfg.oid_ext = e.oid\n" + 
+                  "ORDER BY e.oid"  
+            );
+           // dbStat.setLong(1, PostgreSchema.this.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreExtension fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException {
+            return new PostgreExtension(owner, dbResult);
         }
     }
 

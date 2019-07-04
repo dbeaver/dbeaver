@@ -20,15 +20,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -37,17 +38,29 @@ import java.util.Map;
 public class PostgreExtension implements PostgreObject, PostgreScriptObject {
 
     private static final Log log = Log.getLog(PostgreExtension.class);
+    
+    private PostgreDatabase database;
 
-    private PostgreSchema schema;
     private long oid;
     private String name;
+    private String owner;
+    private String tables;
+    private String conditions;
+    private boolean relocatable;
     private String version;
     private Map<Long, String> tableConditions;
+    
+    public PostgreExtension(PostgreDatabase database)
+        {
+            this.database = database;
+            this.owner = "postgres";
+        }
 
-    public PostgreExtension(PostgreSchema schema, ResultSet dbResult)
+
+    public PostgreExtension(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
-        this.schema = schema;
+        this.database = database;
         this.loadInfo(dbResult);
     }
 
@@ -57,36 +70,50 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "extname");
         this.version = JDBCUtils.safeGetString(dbResult, "extversion");
-        try {
-            Long[] extTableIDs = JDBCUtils.safeGetArray(dbResult, "extconfig");
-            String[] extTableConditions = JDBCUtils.safeGetArray(dbResult, "extcondition");
-            if (extTableIDs != null && extTableConditions != null) {
-                if (extTableIDs.length != extTableConditions.length) {
-                    log.error("extconfig.length <> extcondition.length");
-                } else {
-                    tableConditions = new LinkedHashMap<>();
-                    for (int i = 0; i < extTableIDs.length; i++) {
-                        tableConditions.put(extTableIDs[i], extTableConditions[i]);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error(e);
-        }
+        this.owner = JDBCUtils.safeGetString(dbResult, "oname");
+        this.tables = JDBCUtils.safeGetString(dbResult, "tbls");
+        this.relocatable = JDBCUtils.safeGetBoolean(dbResult, "extrelocatable");
+        this.conditions = JDBCUtils.safeGetString(dbResult, "extcondition");
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true,editable = true, order = 1)
     public String getName()
     {
         return name;
     }
+    
+    public void setName(String name) {
+        this.name = name;        
+    }
 
     @NotNull
-    @Property(viewable = true, order = 2)
-    public PostgreSchema getSchema() {
-        return schema;
+    @Property(viewable = true, order = 5)
+    public String getTables() {
+        return tables;
+    }
+    
+    @NotNull
+    @Property(viewable = true, order = 6)
+    public String getConditions() {
+        return conditions;
+    }
+    
+    @NotNull
+    @Property(viewable = true,editable = true,updatable = true, order = 4, listProvider = SchemaListProvider.class)
+    public String getSchema() {
+        return owner;
+    }
+    
+    public void setSchema(String schema) {
+        this.owner = schema;        
+    }
+    
+    @NotNull
+    @Property(viewable = true, order = 3)
+    public boolean getRelocatable() {
+        return relocatable;
     }
 
     @Override
@@ -94,7 +121,7 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
         return oid;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, order = 2)
     public String getVersion() {
         return version;
     }
@@ -117,13 +144,13 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
     @Override
     public DBSObject getParentObject()
     {
-        return schema;
+        return database;
     }
 
     @NotNull
     @Override
     public PostgreDataSource getDataSource() {
-        return schema.getDataSource();
+        return database.getDataSource();
     }
 
     @Override
@@ -134,7 +161,7 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
     @NotNull
     @Override
     public PostgreDatabase getDatabase() {
-        return schema.getDatabase();
+        return database;
     }
 
     @Override
@@ -143,12 +170,31 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
             "-- Extension: " + getName() + "\n\n" +
             "-- DROP EXTENSION " + getName() + ";\n\n" +
             "CREATE EXTENSION " + getName() + "\n\t" +
-            "SCHEMA " + DBUtils.getQuotedIdentifier(getSchema()) + "\n\t" +
+            "SCHEMA \"" + getSchema() + "\"\n\t" +
             "VERSION " + version;
     }
 
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
 
+    }
+    
+    public static class SchemaListProvider implements IPropertyValueListProvider<PostgreExtension> {
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        @Override
+        public Object[] getPossibleValues(PostgreExtension object)
+        {
+            try {
+                Collection<PostgreSchema> schemas = object.getDatabase().getSchemas(new VoidProgressMonitor());
+                return schemas.toArray(new Object[schemas.size()]);
+            } catch (DBException e) {
+                log.error(e);
+                return new Object[0];
+            }
+        }
     }
 }

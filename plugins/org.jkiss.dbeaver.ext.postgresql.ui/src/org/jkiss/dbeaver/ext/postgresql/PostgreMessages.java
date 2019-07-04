@@ -122,6 +122,11 @@ public class PostgreMessages extends NLS {
 	public static String dialog_create_schema_owner;
 	public static String dialog_create_schema_title;
 	
+	   /* dialog create extension */
+    public static String dialog_create_extension_name;
+    public static String dialog_create_extension_schema;
+    public static String dialog_create_extension_title;
+	
 	/* PostgresSSLConfigurator */
 	public static String dialog_connection_network_postgres_ssl_certificates;
 	public static String dialog_connection_network_postgres_ssl_certificates_root;
