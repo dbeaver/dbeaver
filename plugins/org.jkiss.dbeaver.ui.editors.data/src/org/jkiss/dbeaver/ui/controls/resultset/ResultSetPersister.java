@@ -47,8 +47,8 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 /**
-* Result set data updater
-*/
+ * Result set data updater
+ */
 class ResultSetPersister {
 
     private static final Log log = Log.getLog(ResultSetPersister.class);
@@ -106,8 +106,7 @@ class ResultSetPersister {
 
     private final List<DBEPersistAction> script = new ArrayList<>();
 
-    ResultSetPersister(@NotNull ResultSetViewer viewer)
-    {
+    ResultSetPersister(@NotNull ResultSetViewer viewer) {
         this.viewer = viewer;
         this.model = viewer.getModel();
         this.columns = model.getAttributes();
@@ -134,15 +133,16 @@ class ResultSetPersister {
         }
         return new ArrayList<>(attrs);
     }
+
     /**
      * Applies changes.
-     * @param monitor progress monitor
+     *
+     * @param monitor  progress monitor
      * @param settings
      * @param listener value listener
      */
     boolean applyChanges(@Nullable DBRProgressMonitor monitor, boolean generateScript, ResultSetSaveSettings settings, @Nullable DataUpdateListener listener)
-        throws DBException
-    {
+        throws DBException {
         if (hasDeletes()) {
             prepareDeleteStatements(monitor, settings.isDeleteCascade(), settings.isDeepCascade());
         }
@@ -227,8 +227,7 @@ class ResultSetPersister {
     }
 
     private void prepareDeleteStatements(DBRProgressMonitor monitor, boolean deleteCascade, boolean deepCascade)
-        throws DBException
-    {
+        throws DBException {
         // Make delete statements
         DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
         if (rowIdentifier == null) {
@@ -252,7 +251,8 @@ class ResultSetPersister {
         if (supportsRI && deleteCascade) {
             try {
                 List<DataStatementInfo> cascadeStats = prepareDeleteCascade(monitor, rowIdentifier, deleteStatements, deepCascade);
-                deleteStatements.addAll(0, cascadeStats);
+                deleteStatements.clear();
+                deleteStatements.addAll(cascadeStats);
             } catch (DBException e) {
                 log.debug(e);
             }
@@ -265,19 +265,21 @@ class ResultSetPersister {
         DBSEntity entity = rowIdentifier.getEntity();
         Collection<? extends DBSEntityAssociation> references = entity.getReferences(monitor);
         if (references != null) {
-            for (DBSEntityAssociation ref : references) {
-                if (ref instanceof DBSTableForeignKey && ((DBSTableForeignKey) ref).getDeleteRule() == DBSForeignKeyModifyRule.CASCADE) {
-                    // It is already delete cascade - just ignore it
-                    continue;
-                }
-                DBSEntity refEntity = ref.getParentObject();
-                if (ref instanceof DBSEntityReferrer) {
-                    List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) ref).getAttributeReferences(monitor);
-                    if (attrRefs != null) {
+            // Now iterate over all statements and make cascade delete for each
+            for (DataStatementInfo stat : statements) {
 
-                        List<DataStatementInfo> cascadeStats = new ArrayList<>();
-                        // Now iterate over all statements and make cascade delete for each
-                        for (DataStatementInfo stat : statements) {
+                List<DataStatementInfo> cascadeStats = new ArrayList<>();
+
+                for (DBSEntityAssociation ref : references) {
+                    if (ref instanceof DBSTableForeignKey && ((DBSTableForeignKey) ref).getDeleteRule() == DBSForeignKeyModifyRule.CASCADE) {
+                        // It is already delete cascade - just ignore it
+                        continue;
+                    }
+                    DBSEntity refEntity = ref.getParentObject();
+                    if (ref instanceof DBSEntityReferrer) {
+                        List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) ref).getAttributeReferences(monitor);
+                        if (attrRefs != null) {
+
                             List<DBDAttributeValue> refKeyValues = new ArrayList<>();
 
                             for (DBSEntityAttributeRef attrRef : attrRefs) {
@@ -305,17 +307,17 @@ class ResultSetPersister {
 */
                             }
                         }
-                        result.addAll(cascadeStats);
                     }
                 }
+                result.addAll(cascadeStats);
+                result.add(stat);
             }
         }
         return result;
     }
 
     private void prepareInsertStatements(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         // Make insert statements
         final DBSEntity table = viewer.getModel().getSingleSource();
         if (table == null) {
@@ -337,8 +339,7 @@ class ResultSetPersister {
     }
 
     private void prepareUpdateStatements(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         // Make statements
         for (ResultSetRow row : this.rowIdentifiers.keySet()) {
             if (row.changes == null) continue;
@@ -378,8 +379,7 @@ class ResultSetPersister {
     }
 
     private boolean execute(@Nullable DBRProgressMonitor monitor, boolean generateScript, @Nullable final DataUpdateListener listener)
-        throws DBException
-    {
+        throws DBException {
         DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
         if (executionContext == null) {
             throw new DBCException("No execution context");
@@ -394,8 +394,7 @@ class ResultSetPersister {
         }
     }
 
-    public void rejectChanges()
-    {
+    public void rejectChanges() {
         collectChanges();
         for (ResultSetRow row : changedRows) {
             if (row.changes != null) {
@@ -427,8 +426,7 @@ class ResultSetPersister {
 
     // Reflect data changes in viewer
     // Changes affects only rows which statements executed successfully
-    private boolean reflectChanges()
-    {
+    private boolean reflectChanges() {
         boolean rowsChanged = false;
         for (ResultSetRow row : changedRows) {
             for (DataStatementInfo stat : updateStatements) {
@@ -461,8 +459,7 @@ class ResultSetPersister {
         return rowsChanged;
     }
 
-    private void reflectKeysUpdate(DataStatementInfo stat)
-    {
+    private void reflectKeysUpdate(DataStatementInfo stat) {
         // Update keys
         if (!stat.updatedCells.isEmpty()) {
             for (Map.Entry<Integer, Object> entry : stat.updatedCells.entrySet()) {
@@ -485,10 +482,9 @@ class ResultSetPersister {
     }
 
     @NotNull
-    private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException
-    {
+    private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException {
         if (entity instanceof DBSDataManipulator) {
-            return (DBSDataManipulator)entity;
+            return (DBSDataManipulator) entity;
         } else {
             throw new DBCException("Entity " + entity.getName() + " doesn't support data manipulation");
         }
@@ -502,8 +498,7 @@ class ResultSetPersister {
         private DBCSavepoint savepoint;
         private Throwable error;
 
-        protected DataUpdaterJob(boolean generateScript, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext)
-        {
+        protected DataUpdaterJob(boolean generateScript, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext) {
             super(ResultSetMessages.controls_resultset_viewer_job_update, executionContext);
             this.generateScript = generateScript;
             this.listener = listener;
@@ -514,16 +509,14 @@ class ResultSetPersister {
         }
 
         @Override
-        protected IStatus run(DBRProgressMonitor monitor)
-        {
+        protected IStatus run(DBRProgressMonitor monitor) {
             model.setUpdateInProgress(true);
             updateStats = new DBCStatistics();
             insertStats = new DBCStatistics();
             deleteStats = new DBCStatistics();
             try {
                 error = executeStatements(monitor);
-            }
-            finally {
+            } finally {
                 model.setUpdateInProgress(false);
             }
 
@@ -563,8 +556,7 @@ class ResultSetPersister {
             return Status.OK_STATUS;
         }
 
-        private Throwable executeStatements(DBRProgressMonitor monitor)
-        {
+        private Throwable executeStatements(DBRProgressMonitor monitor) {
             try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, ResultSetMessages.controls_resultset_viewer_job_update)) {
                 monitor.beginTask(
                     ResultSetMessages.controls_resultset_viewer_monitor_aply_changes,
@@ -613,8 +605,7 @@ class ResultSetPersister {
                         try (DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
                             session,
                             DBDAttributeValue.getAttributes(statement.keyAttributes),
-                            new ExecutionSource(dataContainer)))
-                        {
+                            new ExecutionSource(dataContainer))) {
                             batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                             if (generateScript) {
                                 batch.generatePersistActions(session, script);
@@ -637,8 +628,7 @@ class ResultSetPersister {
                             session,
                             DBDAttributeValue.getAttributes(statement.keyAttributes),
                             statement.needKeys() ? new KeyDataReceiver(statement) : null,
-                            new ExecutionSource(dataContainer)))
-                        {
+                            new ExecutionSource(dataContainer))) {
                             batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                             if (generateScript) {
                                 batch.generatePersistActions(session, script);
@@ -662,8 +652,7 @@ class ResultSetPersister {
                             DBDAttributeValue.getAttributes(statement.updateAttributes),
                             DBDAttributeValue.getAttributes(statement.keyAttributes),
                             null,
-                            new ExecutionSource(dataContainer)))
-                        {
+                            new ExecutionSource(dataContainer))) {
                             // Make single array of values
                             Object[] attributes = new Object[statement.updateAttributes.size() + statement.keyAttributes.size()];
                             for (int i = 0; i < statement.updateAttributes.size(); i++) {
@@ -701,13 +690,11 @@ class ResultSetPersister {
             }
         }
 
-        private void processStatementChanges(DataStatementInfo statement)
-        {
+        private void processStatementChanges(DataStatementInfo statement) {
             statement.executed = true;
         }
 
-        private void processStatementError(DataStatementInfo statement, DBCSession session)
-        {
+        private void processStatementError(DataStatementInfo statement, DBCSession session) {
             statement.executed = false;
             if (!generateScript) {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
@@ -726,13 +713,12 @@ class ResultSetPersister {
     }
 
     /**
-    * Key data receiver
-    */
+     * Key data receiver
+     */
     class KeyDataReceiver implements DBDDataReceiver {
         DataStatementInfo statement;
 
-        KeyDataReceiver(DataStatementInfo statement)
-        {
+        KeyDataReceiver(DataStatementInfo statement) {
             this.statement = statement;
         }
 
@@ -743,8 +729,7 @@ class ResultSetPersister {
 
         @Override
         public void fetchRow(DBCSession session, DBCResultSet resultSet)
-            throws DBCException
-        {
+            throws DBCException {
             DBCResultSetMetaData rsMeta = resultSet.getMeta();
             List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
             for (int i = 0; i < keyAttributes.size(); i++) {
@@ -796,14 +781,13 @@ class ResultSetPersister {
         }
 
         @Override
-        public void close()
-        {
+        public void close() {
         }
     }
 
     /**
-    * Data statement
-    */
+     * Data statement
+     */
     static class DataStatementInfo {
         @NotNull
         final DBSManipulationType type;
@@ -816,14 +800,13 @@ class ResultSetPersister {
         boolean executed = false;
         final Map<Integer, Object> updatedCells = new HashMap<>();
 
-        DataStatementInfo(@NotNull DBSManipulationType type, @NotNull ResultSetRow row, @NotNull DBSEntity entity)
-        {
+        DataStatementInfo(@NotNull DBSManipulationType type, @NotNull ResultSetRow row, @NotNull DBSEntity entity) {
             this.type = type;
             this.row = row;
             this.entity = entity;
         }
-        boolean needKeys()
-        {
+
+        boolean needKeys() {
             for (DBDAttributeValue col : keyAttributes) {
                 if (col.getAttribute().isAutoGenerated() && DBUtils.isNullValue(col.getValue())) {
                     return true;
@@ -836,6 +819,7 @@ class ResultSetPersister {
     class RowDataReceiver implements DBDDataReceiver {
         private final DBDAttributeBinding[] curAttributes;
         private Object[] rowValues;
+
         RowDataReceiver(DBDAttributeBinding[] curAttributes) {
             this.curAttributes = curAttributes;
         }
@@ -847,8 +831,7 @@ class ResultSetPersister {
 
         @Override
         public void fetchRow(DBCSession session, DBCResultSet resultSet)
-            throws DBCException
-        {
+            throws DBCException {
             DBCResultSetMetaData rsMeta = resultSet.getMeta();
             // Compare attributes with existing model attributes
             List<DBCAttributeMetaData> attributes = rsMeta.getAttributes();
@@ -879,8 +862,7 @@ class ResultSetPersister {
         }
 
         @Override
-        public void close()
-        {
+        public void close() {
         }
     }
 
