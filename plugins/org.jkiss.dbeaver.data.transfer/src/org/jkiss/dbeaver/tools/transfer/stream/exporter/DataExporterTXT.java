@@ -42,6 +42,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     private static final String PROP_MAX_COLUMN_LENGTH = "maxColumnLength";
     private static final String PROP_SHOW_NULLS = "showNulls";
     private static final String PROP_DELIM_LEADING = "delimLeading";
+    private static final String PROP_DELIM_HEADER = "delimHeader";
     private static final String PROP_DELIM_TRAILING = "delimTrailing";
 
     private List<DBDAttributeBinding> columns;
@@ -49,7 +50,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     private int maxColumnSize = 100;
     private int minColumnSize = 3;
     private boolean showNulls;
-    private boolean delimLeading, delimTrailing;
+    private boolean delimLeading, delimHeader, delimTrailing;
 
     private int[] colWidths;
 
@@ -60,6 +61,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
         this.maxColumnSize = CommonUtils.toInt(properties.get(PROP_MAX_COLUMN_LENGTH), 100);
         this.showNulls = CommonUtils.getBoolean(properties.get(PROP_SHOW_NULLS), false);
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
+        this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
         this.delimTrailing = CommonUtils.getBoolean(properties.get(PROP_DELIM_TRAILING), true);
     }
 
@@ -117,17 +119,19 @@ public class DataExporterTXT extends StreamExporterAbstract {
         if (delimTrailing) txt.append("|");
         txt.append("\n");
 
-        // Print divider
-        // Print header
-        if (delimLeading) txt.append("|");
-        for (int i = 0; i < columns.size(); i++) {
-            if (i > 0) txt.append("|");
-            for (int k = colWidths[i]; k > 0; k--) {
-                txt.append("-");
+        if (delimHeader) {
+            // Print divider
+            // Print header
+            if (delimLeading) txt.append("|");
+            for (int i = 0; i < columns.size(); i++) {
+                if (i > 0) txt.append("|");
+                for (int k = colWidths[i]; k > 0; k--) {
+                    txt.append("-");
+                }
             }
+            if (delimTrailing) txt.append("|");
+            txt.append("\n");
         }
-        if (delimTrailing) txt.append("|");
-        txt.append("\n");
         getWriter().print(txt);
     }
 
