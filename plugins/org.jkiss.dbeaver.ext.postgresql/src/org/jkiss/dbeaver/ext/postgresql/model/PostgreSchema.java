@@ -439,9 +439,30 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
             throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT e.oid,e.* FROM pg_catalog.pg_extension e " +
-                    "\nWHERE e.extnamespace=?" +
-                    "\nORDER BY e.oid"
+                    "SELECT \n" + 
+                    " e.oid,\n" + 
+                    " a.rolname oname,\n" + 
+                    " cfg.tbls,\n" + 
+                    " e.* \n" + 
+                    "FROM \n" + 
+                    " pg_catalog.pg_extension e \n" + 
+                    " join pg_authid a on a.oid = e.extowner\n" + 
+                    " join pg_namespace n on n.oid =e.extnamespace\n" + 
+                    " left join  (\n" + 
+                    "         select\n" + 
+                    "            ARRAY_AGG(ns.nspname || '.' ||  cls.relname) tbls, oid_ext\n" + 
+                    "          from\n" + 
+                    "            (\n" + 
+                    "            select\n" + 
+                    "                unnest(e1.extconfig) oid , e1.oid oid_ext\n" + 
+                    "            from\n" + 
+                    "                pg_catalog.pg_extension e1 ) c \n" + 
+                    "                join    pg_class cls on cls.oid = c.oid \n" + 
+                    "                join pg_namespace ns on ns.oid = cls.relnamespace\n" + 
+                    "            group by oid_ext        \n" + 
+                    "         ) cfg on cfg.oid_ext = e.oid\n" + 
+                    "\nWHERE e.extnamespace=?\n" +
+                    "ORDER BY e.oid"  
             );
             dbStat.setLong(1, PostgreSchema.this.getObjectId());
             return dbStat;
@@ -450,7 +471,8 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         @Override
         protected PostgreExtension fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException {
-            return new PostgreExtension(owner, dbResult);
+            //return new PostgreExtension(owner, dbResult);
+            return null;
         }
     }
 
