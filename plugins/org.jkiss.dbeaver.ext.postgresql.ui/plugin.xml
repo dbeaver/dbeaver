@@ -114,6 +114,10 @@
         <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
         </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreExtensionConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
+        </configurator>
+        
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
@@ -212,6 +216,24 @@
                     label="Disable trigger"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger" if="object.enabledState != 'D'"/>
+            </tool>            
+            <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolExtensionUninstall"
+                    description="Uninstall extension"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolExtensionUninstall"
+                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
+                    label="Uninstall"
+                    singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolExtensionUninstall"
+                    description="Uninstall extension"
+                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolExtensionUninstall"
+                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
+                    label="Uninstall"
+                    singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreAvailableExtension" if="object.isInstalled()"/>
             </tool>
               <tool
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTriggerEnable"
