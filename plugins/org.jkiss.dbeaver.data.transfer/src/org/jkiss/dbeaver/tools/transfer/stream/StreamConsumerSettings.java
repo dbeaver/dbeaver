@@ -42,7 +42,8 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public enum LobEncoding {
         BASE64,
         HEX,
-        BINARY
+        BINARY,
+        NATIVE
     }
 
     public static final String PROP_EXTRACT_IMAGES = "extractImages";

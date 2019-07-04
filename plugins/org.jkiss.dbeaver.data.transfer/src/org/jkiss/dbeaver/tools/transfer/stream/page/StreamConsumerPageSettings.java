@@ -45,6 +45,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     private static final int LOB_ENCODING_BASE64 = 0;
     private static final int LOB_ENCODING_HEX = 1;
     private static final int LOB_ENCODING_BINARY = 2;
+    private static final int LOB_ENCODING_NATIVE = 3;
 
     private PropertyTreeViewer propsEditor;
     private Combo lobExtractType;
@@ -153,7 +154,8 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                 lobEncodingCombo.setItems(
                     "Base64", //$NON-NLS-1$
                     "Hex", //$NON-NLS-1$
-                    "Binary"); //$NON-NLS-1$
+                    "Binary", //$NON-NLS-1$
+                    "Native"); //$NON-NLS-1$
                 lobEncodingCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -161,6 +163,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                             case LOB_ENCODING_BASE64: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.BASE64); break;
                             case LOB_ENCODING_HEX: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.HEX); break;
                             case LOB_ENCODING_BINARY: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.BINARY); break;
+                            case LOB_ENCODING_NATIVE: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.NATIVE); break;
                         }
                     }
                 });
@@ -228,6 +231,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
             case BASE64: lobEncodingCombo.select(LOB_ENCODING_BASE64); break;
             case HEX: lobEncodingCombo.select(LOB_ENCODING_HEX); break;
             case BINARY: lobEncodingCombo.select(LOB_ENCODING_BINARY); break;
+            case NATIVE: lobEncodingCombo.select(LOB_ENCODING_NATIVE); break;
         }
 
         updatePageCompletion();
