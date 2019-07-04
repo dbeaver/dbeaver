@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
@@ -31,19 +32,16 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.service.prefs.BackingStoreException;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * ResourceHandlerDescriptor
  */
-public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBPResourceHandlerDescriptor
-{
+public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBPResourceHandlerDescriptor {
     private static final Log log = Log.getLog(ResourceHandlerDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
@@ -58,9 +56,9 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
     private List<ObjectType> resourceTypes = new ArrayList<>();
     private List<String> roots = new ArrayList<>();
     private String defaultRoot;
+    private final Map<String, String> projectRoots = new HashMap<>();
 
-    public ResourceHandlerDescriptor(IConfigurationElement config)
-    {
+    public ResourceHandlerDescriptor(IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
@@ -99,8 +97,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         }
     }
 
-    void dispose()
-    {
+    void dispose() {
         this.handler = null;
         this.handlerType = null;
     }
@@ -125,8 +122,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         return icon;
     }
 
-    public synchronized DBPResourceHandler getHandler()
-    {
+    public synchronized DBPResourceHandler getHandler() {
         if (handler == null) {
             Class<? extends DBPResourceHandler> clazz = handlerType.getObjectClass(DBPResourceHandler.class);
             if (clazz == null) {
@@ -141,8 +137,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         return handler;
     }
 
-    public boolean canHandle(IResource resource)
-    {
+    public boolean canHandle(IResource resource) {
         if (!contentTypes.isEmpty() && resource instanceof IFile) {
             try {
                 IContentDescription contentDescription = ((IFile) resource).getContentDescription();
@@ -178,29 +173,49 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         return false;
     }
 
-    public Collection<IContentType> getContentTypes()
-    {
+    public Collection<IContentType> getContentTypes() {
         return contentTypes;
     }
 
-    public Collection<ObjectType> getResourceTypes()
-    {
+    public Collection<ObjectType> getResourceTypes() {
         return resourceTypes;
     }
 
-    public String getDefaultRoot(IProject project)
-    {
+    public String getDefaultRoot(IProject project) {
+        synchronized (projectRoots) {
+            String root = projectRoots.get(project.getName());
+            if (root != null) {
+                return root;
+            }
+        }
         try {
-            IEclipsePreferences resourceHandlers = RuntimeUtils.getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
-            return resourceHandlers.get(id, defaultRoot);
+            IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+            String root = resourceHandlers.get(id, defaultRoot);
+            synchronized (projectRoots) {
+                projectRoots.put(project.getName(), root);
+            }
+            return root;
         } catch (Exception e) {
             log.error("Can't obtain resource handler preferences", e);
             return null;
         }
     }
 
-    public List<String> getRoots()
-    {
+    @Override
+    public void setDefaultRoot(IProject project, String rootPath) {
+        IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+        resourceHandlers.put(getId(), rootPath);
+        synchronized (projectRoots) {
+            projectRoots.put(project.getName(), rootPath);
+        }
+        try {
+            resourceHandlers.flush();
+        } catch (BackingStoreException e) {
+            log.error(e);
+        }
+    }
+
+    public List<String> getRoots() {
         return roots;
     }
 
@@ -208,4 +223,14 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
     public String toString() {
         return id;
     }
+
+    private static IEclipsePreferences getResourceHandlerPreferences(IProject project, String node) {
+        IEclipsePreferences projectSettings = getProjectPreferences(project);
+        return (IEclipsePreferences) projectSettings.node(node);
+    }
+
+    private static synchronized IEclipsePreferences getProjectPreferences(IProject project) {
+        return new ProjectScope(project).getNode("org.jkiss.dbeaver.project.resources");
+    }
+
 }
