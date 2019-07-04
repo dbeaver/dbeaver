@@ -54,9 +54,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
 import org.jkiss.dbeaver.model.text.TextUtils;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ICommentsSupport;
+import org.jkiss.dbeaver.ui.IErrorVisualizer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.BaseTextEditorCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -66,13 +70,11 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLVariableRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.model.sql.parser.SQLWordDetector;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -1226,7 +1228,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                 // Use regex
                 String query = document.get(queryOffset, queryLength);
 
-                Matcher matcher = SQLVariableRule.VARIABLE_PATTERN.matcher(query);
+                Matcher matcher = SQLQueryParameter.getVariablePattern().matcher(query);
                 int position = 0;
                 while (matcher.find(position)) {
                     {
