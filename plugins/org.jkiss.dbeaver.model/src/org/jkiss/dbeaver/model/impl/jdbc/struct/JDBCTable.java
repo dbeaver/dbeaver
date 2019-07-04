@@ -349,7 +349,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     hasKey = true;
                     query.append(getAttributeName(attribute));
                 }
-                query.append(")\nVALUES ("); //$NON-NLS-1$
+                query.append(")\n\tVALUES ("); //$NON-NLS-1$
                 hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
@@ -426,7 +426,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                query.append("\nSET "); //$NON-NLS-1$ //$NON-NLS-2$
+                query.append("\n\tSET "); //$NON-NLS-1$ //$NON-NLS-2$
 
                 boolean hasKey = false;
                 for (int i = 0; i < updateAttributes.length; i++) {
@@ -445,7 +445,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                 }
                 if (keyAttributes.length > 0) {
-                    query.append("\nWHERE "); //$NON-NLS-1$
+                    query.append("\n\tWHERE "); //$NON-NLS-1$
                     hasKey = false;
                     for (int i = 0; i < keyAttributes.length; i++) {
                         DBSAttributeBase attribute = keyAttributes[i];
@@ -504,7 +504,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     query.append(' ').append(tableAlias);
                 }
                 if (keyAttributes.length > 0) {
-                    query.append("\nWHERE "); //$NON-NLS-1$ //$NON-NLS-2$
+                    query.append("\n\tWHERE "); //$NON-NLS-1$ //$NON-NLS-2$
                     boolean hasKey = false;
                     for (int i = 0; i < keyAttributes.length; i++) {
                         if (hasKey) query.append(" AND "); //$NON-NLS-1$
