@@ -20,16 +20,13 @@ import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
-
-import java.util.regex.Pattern;
+import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 
 /**
 * SQL variable rule.
 * ${varName}
 */
 public class SQLVariableRule implements IRule {
-
-    public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{[a-z0-9_]+\\}", Pattern.CASE_INSENSITIVE);
 
     private final IToken parameterToken;
 
@@ -42,7 +39,18 @@ public class SQLVariableRule implements IRule {
     {
         int c = scanner.read();
         if (c == '$') {
+            int prefixLength = 0;
             c = scanner.read();
+            if (SQLQueryParameter.supportsJasperSyntax()) {
+                if (c == 'P') {
+                    c = scanner.read();
+                    prefixLength++;
+                    if (c == '!') {
+                        c = scanner.read();
+                        prefixLength++;
+                    }
+                }
+            }
             if (c == '{') {
                 int varLength = 0;
                 for (;;) {
@@ -57,7 +65,7 @@ public class SQLVariableRule implements IRule {
                 }
                 scanner.unread();
 
-                for (int i = varLength - 1; i >= 0; i--) {
+                for (int i = varLength - 1 + prefixLength; i >= 0; i--) {
                     scanner.unread();
                 }
             }
@@ -67,4 +75,5 @@ public class SQLVariableRule implements IRule {
 
         return Token.UNDEFINED;
     }
+
 }

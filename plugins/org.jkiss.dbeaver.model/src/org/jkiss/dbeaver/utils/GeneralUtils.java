@@ -397,14 +397,6 @@ public class GeneralUtils {
     }
 
     @NotNull
-    public static String stripVariablePattern(String pattern) {
-        if (isVariablePattern(pattern)) {
-            return pattern.substring(2, pattern.length() - 1);
-        }
-        return pattern;
-    }
-
-    @NotNull
     public static String generateVariablesLegend(@NotNull String[][] vars) {
         StringBuilder text = new StringBuilder();
         for (String[] var : vars) {
