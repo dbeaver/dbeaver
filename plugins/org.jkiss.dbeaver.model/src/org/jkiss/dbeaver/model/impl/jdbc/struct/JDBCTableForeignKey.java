@@ -74,10 +74,13 @@ public abstract class JDBCTableForeignKey<
                     this.referencedKey = (PRIMARY_KEY) srcRefConstraint;
                 } else {
                     // Try to find table with the same name as referenced constraint owner
-                    DBSObject refTable = table.getContainer().getChild(monitor, refEntity.getName());
-                    if (refTable instanceof DBSEntity && referencedKey instanceof DBSEntityReferrer) {
-                        List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer)referencedKey);
-                        this.referencedKey = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
+                    DBSObject tableContainer = table.getContainer();
+                    if (tableContainer instanceof DBSObjectContainer) {
+                        DBSObject refTable = ((DBSObjectContainer)tableContainer).getChild(monitor, refEntity.getName());
+                        if (refTable instanceof DBSEntity && referencedKey instanceof DBSEntityReferrer) {
+                            List<DBSEntityAttribute> refAttrs = DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) referencedKey);
+                            this.referencedKey = (PRIMARY_KEY) DBUtils.findEntityConstraint(monitor, (DBSEntity) refTable, refAttrs);
+                        }
                     }
                 }
             }

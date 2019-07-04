@@ -45,7 +45,7 @@ import org.jkiss.utils.ArrayUtils;
 /**
  * JDBC abstract table implementation
  */
-public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObjectContainer>
+public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObject>
     extends AbstractTable<DATASOURCE, CONTAINER>
     implements DBSDataManipulator, DBPSaveableObject
 {
@@ -538,7 +538,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     // Truncate
 
     @Override
-    public DBCStatistics truncateData(DBCSession session, DBCExecutionSource source) throws DBCException {
+    public DBCStatistics truncateData(@NotNull DBCSession session, @NotNull DBCExecutionSource source) throws DBCException {
         if (!isTruncateSupported()) {
             try (ExecuteBatch batch = deleteData(session, new DBSAttributeBase[0], source)) {
                 batch.add(new Object[0]);

@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 /**
@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
  */
 public abstract class AbstractTable<
     DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSObjectContainer>
+    CONTAINER extends DBSObject>
     implements DBSTable
 {
     private CONTAINER container;
