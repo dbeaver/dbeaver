@@ -378,6 +378,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.toString(connectionType.getDescription()));
                 xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, connectionType.isAutocommit());
                 xml.addAttribute(RegistryConstants.ATTR_CONFIRM_EXECUTE, connectionType.isConfirmExecute());
+                xml.addAttribute(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE, connectionType.isConfirmDataChange());
                 xml.endElement();
             }
             xml.endElement();
@@ -441,7 +442,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     atts.getValue(RegistryConstants.ATTR_COLOR),
                     atts.getValue(RegistryConstants.ATTR_DESCRIPTION),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT)),
-                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE)));
+                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE)),
+                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE)));
                 connectionTypes.put(connectionType.getId(), connectionType);
             }
         }
