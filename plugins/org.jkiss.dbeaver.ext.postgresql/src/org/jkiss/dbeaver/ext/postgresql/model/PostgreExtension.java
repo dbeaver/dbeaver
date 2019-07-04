@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -50,12 +51,10 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
     private String version;
     private Map<Long, String> tableConditions;
     
-    public PostgreExtension(PostgreDatabase database)
-        {
-            this.database = database;
-            this.owner = "postgres";
-        }
-
+    public PostgreExtension(PostgreDatabase database) {
+        this.database = database;
+        this.owner = PostgreConstants.PUBLIC_SCHEMA_NAME;
+    }
 
     public PostgreExtension(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
@@ -70,7 +69,7 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "extname");
         this.version = JDBCUtils.safeGetString(dbResult, "extversion");
-        this.owner = JDBCUtils.safeGetString(dbResult, "oname");
+        this.owner = JDBCUtils.safeGetString(dbResult, "schema_name");
         this.tables = JDBCUtils.safeGetString(dbResult, "tbls");
         this.relocatable = JDBCUtils.safeGetBoolean(dbResult, "extrelocatable");
         this.conditions = JDBCUtils.safeGetString(dbResult, "extcondition");
