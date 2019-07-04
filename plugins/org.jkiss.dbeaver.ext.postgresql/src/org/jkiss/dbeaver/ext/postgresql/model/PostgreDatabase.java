@@ -1060,7 +1060,8 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
                   "SELECT \n" + 
                   " e.oid,\n" + 
                   " a.rolname oname,\n" + 
-                  " cfg.tbls,\n" + 
+                  " cfg.tbls,\n" +
+                  "  n.nspname as schema_name,\n" +
                   " e.* \n" + 
                   "FROM \n" + 
                   " pg_catalog.pg_extension e \n" + 
