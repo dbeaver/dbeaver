@@ -88,13 +88,11 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject {
         this.name = name;        
     }
 
-    @NotNull
     @Property(viewable = true, order = 5)
     public String getTables() {
         return tables;
     }
     
-    @NotNull
     @Property(viewable = true, order = 6)
     public String getConditions() {
         return conditions;

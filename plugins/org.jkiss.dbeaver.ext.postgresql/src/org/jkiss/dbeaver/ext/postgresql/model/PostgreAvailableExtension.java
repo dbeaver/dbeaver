@@ -74,7 +74,7 @@ public class PostgreAvailableExtension implements PostgreObject{
 
      @Override
     public boolean isPersisted() {
-        return false;
+        return true;
     }
 
     @Override
