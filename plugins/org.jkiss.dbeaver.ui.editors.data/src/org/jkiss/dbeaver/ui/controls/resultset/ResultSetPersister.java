@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,10 +33,10 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -136,13 +137,14 @@ class ResultSetPersister {
     /**
      * Applies changes.
      * @param monitor progress monitor
+     * @param settings
      * @param listener value listener
      */
-    boolean applyChanges(@Nullable DBRProgressMonitor monitor, boolean generateScript, @Nullable DataUpdateListener listener)
+    boolean applyChanges(@Nullable DBRProgressMonitor monitor, boolean generateScript, ResultSetSaveSettings settings, @Nullable DataUpdateListener listener)
         throws DBException
     {
         if (hasDeletes()) {
-            prepareDeleteStatements(monitor);
+            prepareDeleteStatements(monitor, settings.isDeleteCascade(), settings.isDeepCascade());
         }
         if (hasInserts()) {
             prepareInsertStatements(monitor);
@@ -184,6 +186,9 @@ class ResultSetPersister {
         }
         report.setUpdates(changedRows);
 
+        DBPDataSource dataSource = viewer.getDataSource();
+        report.setHasReferences(dataSource != null && dataSource.getInfo().supportsReferentialIntegrity());
+
         return report;
     }
 
@@ -221,7 +226,7 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareDeleteStatements(DBRProgressMonitor monitor)
+    private void prepareDeleteStatements(DBRProgressMonitor monitor, boolean deleteCascade, boolean deepCascade)
         throws DBException
     {
         // Make delete statements
@@ -229,6 +234,9 @@ class ResultSetPersister {
         if (rowIdentifier == null) {
             throw new DBCException("Internal error: can't find entity identifier, delete is not possible");
         }
+        DBSDataManipulator dataManipulator = getDataManipulator(rowIdentifier.getEntity());
+        boolean supportsRI = dataManipulator.getDataSource().getInfo().supportsReferentialIntegrity();
+
         for (ResultSetRow row : deletedRows) {
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, row, rowIdentifier.getEntity());
             List<DBDAttributeBinding> keyColumns = rowIdentifier.getAttributes();
@@ -240,6 +248,69 @@ class ResultSetPersister {
             }
             deleteStatements.add(statement);
         }
+
+        if (supportsRI && deleteCascade) {
+            try {
+                List<DataStatementInfo> cascadeStats = prepareDeleteCascade(monitor, rowIdentifier, deleteStatements, deepCascade);
+                deleteStatements.addAll(0, cascadeStats);
+            } catch (DBException e) {
+                log.debug(e);
+            }
+        }
+    }
+
+    private List<DataStatementInfo> prepareDeleteCascade(DBRProgressMonitor monitor, DBDRowIdentifier rowIdentifier, List<DataStatementInfo> statements, boolean deepCascade) throws DBException {
+        List<DataStatementInfo> result = new ArrayList<>();
+
+        DBSEntity entity = rowIdentifier.getEntity();
+        Collection<? extends DBSEntityAssociation> references = entity.getReferences(monitor);
+        if (references != null) {
+            for (DBSEntityAssociation ref : references) {
+                if (ref instanceof DBSTableForeignKey && ((DBSTableForeignKey) ref).getDeleteRule() == DBSForeignKeyModifyRule.CASCADE) {
+                    // It is already delete cascade - just ignore it
+                    continue;
+                }
+                DBSEntity refEntity = ref.getParentObject();
+                if (ref instanceof DBSEntityReferrer) {
+                    List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) ref).getAttributeReferences(monitor);
+                    if (attrRefs != null) {
+
+                        List<DataStatementInfo> cascadeStats = new ArrayList<>();
+                        // Now iterate over all statements and make cascade delete for each
+                        for (DataStatementInfo stat : statements) {
+                            List<DBDAttributeValue> refKeyValues = new ArrayList<>();
+
+                            for (DBSEntityAttributeRef attrRef : attrRefs) {
+                                DBSEntityAttribute attribute = attrRef.getAttribute();
+                                if (attribute != null) {
+                                    DBDAttributeValue value = DBDAttributeValue.getAttributeValue(stat.keyAttributes, attribute);
+                                    if (value == null) {
+                                        log.debug("Can't find attribute value for '" + attribute.getName() + "' recursive delete");
+                                    } else {
+                                        refKeyValues.add(value);
+                                    }
+                                }
+                            }
+
+                            if (refKeyValues.size() > 0) {
+                                // We have a key. Let's delete
+                                DataStatementInfo cascadeStat = new DataStatementInfo(DBSManipulationType.DELETE, stat.row, refEntity);
+                                cascadeStat.keyAttributes.addAll(refKeyValues);
+                                cascadeStats.add(cascadeStat);
+/*
+                                System.out.println("DELETE! " + entity.getName());
+                                for (DBDAttributeValue kv : refKeyValues) {
+                                    System.out.println("\tATTR: " + DBUtils.getObjectFullName(kv.getAttribute(), DBPEvaluationContext.UI) + "=" + kv.getValue());
+                                }
+*/
+                            }
+                        }
+                        result.addAll(cascadeStats);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private void prepareInsertStatements(DBRProgressMonitor monitor)
@@ -404,8 +475,8 @@ class ResultSetPersister {
 
     @Nullable
     public DBDRowIdentifier getDefaultRowIdentifier() {
-        for (int i = 0; i < columns.length; i++) {
-            DBDRowIdentifier rowIdentifier = columns[0].getRowIdentifier();
+        for (DBDAttributeBinding column : columns) {
+            DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
             if (rowIdentifier != null) {
                 return rowIdentifier;
             }
@@ -660,15 +731,13 @@ class ResultSetPersister {
     class KeyDataReceiver implements DBDDataReceiver {
         DataStatementInfo statement;
 
-        public KeyDataReceiver(DataStatementInfo statement)
+        KeyDataReceiver(DataStatementInfo statement)
         {
             this.statement = statement;
         }
 
         @Override
-        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows)
-            throws DBCException
-        {
+        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) {
 
         }
 
@@ -722,9 +791,7 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchEnd(DBCSession session, DBCResultSet resultSet)
-            throws DBCException
-        {
+        public void fetchEnd(DBCSession session, DBCResultSet resultSet) {
 
         }
 
@@ -769,14 +836,12 @@ class ResultSetPersister {
     class RowDataReceiver implements DBDDataReceiver {
         private final DBDAttributeBinding[] curAttributes;
         private Object[] rowValues;
-        public RowDataReceiver(DBDAttributeBinding[] curAttributes) {
+        RowDataReceiver(DBDAttributeBinding[] curAttributes) {
             this.curAttributes = curAttributes;
         }
 
         @Override
-        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows)
-            throws DBCException
-        {
+        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) {
 
         }
 
@@ -809,9 +874,7 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchEnd(DBCSession session, DBCResultSet resultSet)
-            throws DBCException
-        {
+        public void fetchEnd(DBCSession session, DBCResultSet resultSet) {
 
         }
 
@@ -827,7 +890,7 @@ class ResultSetPersister {
         private DBDRowIdentifier rowIdentifier;
         private List<ResultSetRow> rows;
 
-        public RowRefreshJob(DBCExecutionContext context, DBSDataContainer dataContainer, DBDRowIdentifier rowIdentifier, List<ResultSetRow> rows) {
+        RowRefreshJob(DBCExecutionContext context, DBSDataContainer dataContainer, DBDRowIdentifier rowIdentifier, List<ResultSetRow> rows) {
             super("Refresh rows", context);
             this.dataContainer = dataContainer;
             this.rowIdentifier = rowIdentifier;

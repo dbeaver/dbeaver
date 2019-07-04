@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -70,6 +71,15 @@ public class DBDAttributeValue {
             values[i] = attrValues.get(i).value;
         }
         return values;
+    }
+
+    public static DBDAttributeValue getAttributeValue(List<DBDAttributeValue> valueList, DBSEntityAttribute attribute) {
+        for (DBDAttributeValue value : valueList) {
+            if (CommonUtils.equalObjects(value.attribute.getName(), attribute.getName())) {
+                return value;
+            }
+        }
+        return null;
     }
 
     @Override

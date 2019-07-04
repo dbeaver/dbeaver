@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
  */
 public class ResultSetSaveSettings {
     private boolean deleteCascade;
-    private boolean deepCascae;
+    private boolean deepCascade;
 
     public boolean isDeleteCascade() {
         return deleteCascade;
@@ -31,11 +31,11 @@ public class ResultSetSaveSettings {
         this.deleteCascade = deleteCascade;
     }
 
-    public boolean isDeepCascae() {
-        return deepCascae;
+    public boolean isDeepCascade() {
+        return deepCascade;
     }
 
-    public void setDeepCascae(boolean deepCascae) {
-        this.deepCascae = deepCascae;
+    public void setDeepCascade(boolean deepCascade) {
+        this.deepCascade = deepCascade;
     }
 }
