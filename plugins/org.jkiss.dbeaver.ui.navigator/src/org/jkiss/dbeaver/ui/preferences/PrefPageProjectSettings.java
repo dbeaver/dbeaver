@@ -22,7 +22,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
@@ -39,17 +38,15 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
-import org.osgi.service.prefs.BackingStoreException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,8 +54,7 @@ import java.util.ArrayList;
 /**
  * PrefPageConnectionTypes
  */
-public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.projectSettings"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(PrefPageProjectSettings.class);
@@ -68,13 +64,11 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
     private TableEditor handlerTableEditor;
 
     @Override
-    public void init(IWorkbench workbench)
-    {
+    public void init(IWorkbench workbench) {
     }
 
     @Override
-    protected Control createContents(final Composite parent)
-    {
+    protected Control createContents(final Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
@@ -96,8 +90,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
             handlerTableEditor.grabVertical = true;
             resourceTable.addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseUp(MouseEvent e)
-                {
+                public void mouseUp(MouseEvent e) {
                     disposeOldEditor();
 
                     final TableItem item = resourceTable.getItem(new Point(0, e.y));
@@ -162,15 +155,13 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
         return composite;
     }
 
-    private void disposeOldEditor()
-    {
+    private void disposeOldEditor() {
         Control oldEditor = handlerTableEditor.getEditor();
         if (oldEditor != null) oldEditor.dispose();
     }
 
     @Override
-    protected void performDefaults()
-    {
+    protected void performDefaults() {
         resourceTable.removeAll();
         for (DBPResourceHandlerDescriptor descriptor : DBWorkbench.getPlatform().getProjectManager().getResourceHandlerDescriptors()) {
             if (!descriptor.isManagable()) {
@@ -195,9 +186,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
     }
 
     @Override
-    public boolean performOk()
-    {
-        IEclipsePreferences resourceHandlers = RuntimeUtils.getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
+    public boolean performOk() {
         java.util.List<IResource> refreshedResources = new ArrayList<>();
 
         // Save roots
@@ -214,8 +203,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
                 if (newResource != null) {
                     refreshedResources.add(newResource);
                 }
-
-                resourceHandlers.put(descriptor.getId(), rootPath);
+                descriptor.setDefaultRoot(project, rootPath);
             }
         }
         if (!refreshedResources.isEmpty()) {
@@ -224,24 +212,16 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
             }
         }
 
-        try {
-            resourceHandlers.flush();
-        } catch (BackingStoreException e) {
-            log.error(e);
-        }
-
         return super.performOk();
     }
 
     @Override
-    public IAdaptable getElement()
-    {
+    public IAdaptable getElement() {
         return project;
     }
 
     @Override
-    public void setElement(IAdaptable element)
-    {
+    public void setElement(IAdaptable element) {
         if (element instanceof IProject) {
             this.project = (IProject) element;
         } else {

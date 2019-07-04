@@ -36,4 +36,6 @@ public interface DBPResourceHandlerDescriptor {
     boolean isManagable();
 
     String getDefaultRoot(IProject project);
+
+    void setDefaultRoot(IProject project, String rootPath);
 }
