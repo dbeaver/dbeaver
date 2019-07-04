@@ -34,7 +34,9 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -264,6 +266,10 @@ class ResultSetPersister {
         Collection<? extends DBSEntityAssociation> references = entity.getReferences(monitor);
         if (references != null) {
             for (DBSEntityAssociation ref : references) {
+                if (ref instanceof DBSTableForeignKey && ((DBSTableForeignKey) ref).getDeleteRule() == DBSForeignKeyModifyRule.CASCADE) {
+                    // It is already delete cascade - just ignore it
+                    continue;
+                }
                 DBSEntity refEntity = ref.getParentObject();
                 if (ref instanceof DBSEntityReferrer) {
                     List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) ref).getAttributeReferences(monitor);
@@ -298,9 +304,8 @@ class ResultSetPersister {
                                 }
 */
                             }
-
-                            result.addAll(cascadeStats);
                         }
+                        result.addAll(cascadeStats);
                     }
                 }
             }

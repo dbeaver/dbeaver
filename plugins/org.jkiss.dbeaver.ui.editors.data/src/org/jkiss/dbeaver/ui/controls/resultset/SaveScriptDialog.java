@@ -35,8 +35,11 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 class SaveScriptDialog extends BaseDialog {
@@ -113,7 +116,8 @@ class SaveScriptDialog extends BaseDialog {
         }
         populateSQL();
 
-        if (saveReport.isHasReferences() && saveReport.getDeletes() > 0) {
+        boolean useDeleteCascade = saveReport.isHasReferences() && saveReport.getDeletes() > 0;
+        {
             Composite settingsComposite = UIUtils.createComposite(messageGroup, 2);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
@@ -124,32 +128,37 @@ class SaveScriptDialog extends BaseDialog {
             Button deleteDeepCascadeCheck = UIUtils.createCheckbox(settingsComposite, "Deep cascade",
                 "Delete cascade recursively (deep references)", false, 1);
 
-            deleteCascadeCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (deleteCascadeCheck.getSelection()) {
-                        saveSettings.setDeleteCascade(true);
-                    } else {
-                        saveSettings.setDeleteCascade(false);
-                        saveSettings.setDeepCascade(false);
-                        deleteDeepCascadeCheck.setSelection(false);
+            if (!useDeleteCascade) {
+                deleteCascadeCheck.setEnabled(false);
+                deleteDeepCascadeCheck.setEnabled(false);
+            } else {
+                deleteCascadeCheck.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (deleteCascadeCheck.getSelection()) {
+                            saveSettings.setDeleteCascade(true);
+                        } else {
+                            saveSettings.setDeleteCascade(false);
+                            saveSettings.setDeepCascade(false);
+                            deleteDeepCascadeCheck.setSelection(false);
+                        }
+                        populateSQL();
                     }
-                    populateSQL();
-                }
-            });
-            deleteDeepCascadeCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (deleteDeepCascadeCheck.getSelection()) {
-                        saveSettings.setDeleteCascade(true);
-                        saveSettings.setDeepCascade(true);
-                        deleteCascadeCheck.setSelection(true);
-                    } else {
-                        saveSettings.setDeepCascade(false);
+                });
+                deleteDeepCascadeCheck.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (deleteDeepCascadeCheck.getSelection()) {
+                            saveSettings.setDeleteCascade(true);
+                            saveSettings.setDeepCascade(true);
+                            deleteCascadeCheck.setSelection(true);
+                        } else {
+                            saveSettings.setDeepCascade(false);
+                        }
+                        populateSQL();
                     }
-                    populateSQL();
-                }
-            });
+                });
+            }
         }
 
         return messageGroup;
@@ -202,7 +211,7 @@ class SaveScriptDialog extends BaseDialog {
                 scriptText =
                     SQLUtils.generateCommentLine(
                         viewer.getDataSource(),
-                        "Auto-generated SQL script. Actual values for binary/complex data types may differ - what you see is the default string representation of values.") +
+                        "Auto-generated SQL script #" + new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN).format(new Date())) +
                         scriptText;
                 UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                 if (serviceSQL != null) {
