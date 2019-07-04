@@ -60,7 +60,7 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     @Override
     public IPersistableElement getPersistable() {
-        return this;
+        return node.isDisposed() ? null : this;
     }
 
     @Override
@@ -85,6 +85,9 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
     @Override
     public void saveState(IMemento memento)
     {
+        if (node.isDisposed()) {
+            return;
+        }
         NodeEditorInputFactory.saveState(memento, this);
     }
 
