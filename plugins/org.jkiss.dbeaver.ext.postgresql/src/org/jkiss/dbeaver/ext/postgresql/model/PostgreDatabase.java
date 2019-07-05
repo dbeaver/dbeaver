@@ -1099,7 +1099,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource>
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreSchema object, @Nullable String objectName) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT n.oid,n.*,d.description FROM pg_catalog.pg_namespace n\n" +
-                "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid\n");
+                "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid AND d.objsubid=0\n");
             DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if ((catalogFilters != null && !catalogFilters.isNotApplicable()) || object != null || objectName != null) {
                 if (object != null || objectName != null) {
