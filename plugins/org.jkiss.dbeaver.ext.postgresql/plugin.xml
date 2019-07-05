@@ -214,11 +214,9 @@
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces" visibleIf="object.dataSource.serverType.supportsTablespaces()">
                             <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace"/>
                         </folder>
-<!--
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAvailableExtension" label="%tree.avalextensions.node.name" icon="#extensions" description="%tree.extensions.node.tip" visibleIf="object.dataSource.serverType.supportsExtensions()">
                                 <items label="%tree.avalextension.node.name" path="extension" property="availableExtensions" icon="#extension"/>
                         </folder>       
--->
                     </folder>
 
                 </items>
