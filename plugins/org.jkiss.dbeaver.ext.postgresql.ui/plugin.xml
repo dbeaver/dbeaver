@@ -224,15 +224,6 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="Uninstall"
                     singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
-            </tool>
-            <tool
-                    class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolExtensionUninstall"
-                    description="Uninstall extension"
-                    id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolExtensionUninstall"
-                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
-                    label="Uninstall"
-                    singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreAvailableExtension" if="object.isInstalled()"/>
             </tool>
               <tool
