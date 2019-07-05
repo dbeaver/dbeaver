@@ -6,7 +6,6 @@
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
         <!-- DB2 i -->
-
         <datasource
                 class="org.jkiss.dbeaver.ext.db2.i.DB2IDataSourceProvider"
                 description="%datasource.db2_i.description"
@@ -47,6 +46,10 @@
             </drivers>
 
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="db2iseries" class="org.jkiss.dbeaver.ext.db2.i.model.DB2IMetaModel" driverClass="com.ibm.as400.access.AS400JDBCDriver"/>
     </extension>
 
 </plugin>
