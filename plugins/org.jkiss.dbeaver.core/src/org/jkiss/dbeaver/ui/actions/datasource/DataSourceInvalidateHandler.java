@@ -112,14 +112,11 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
 //                            error);
                         final DBPDataSourceContainer container = dataSource.getContainer();
                         final Throwable dialogError = error;
-                        final Integer result = new UITask<Integer>() {
-                            @Override
-                            protected Integer runTask() {
+                        final Integer result = UITask.run(() -> {
                                 ConnectionLostDialog clDialog = new ConnectionLostDialog(null, container, dialogError, "Disconnect");
                                 return clDialog.open();
-                            }
-                        }.execute();
-                        if (result == IDialogConstants.STOP_ID) {
+                        });
+                        if (result == null || result == IDialogConstants.STOP_ID) {
                             // Disconnect - to notify UI and reflect model changes
                             new DisconnectJob(container).schedule();
                         } else if (result == IDialogConstants.RETRY_ID) {
