@@ -129,6 +129,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_extension_column_name;
     public static String dialog_create_extension_column_version;
     public static String dialog_create_extension_column_description;
+    public static String dialog_create_extension_database;
 	
 	/* PostgresSSLConfigurator */
 	public static String dialog_connection_network_postgres_ssl_certificates;
