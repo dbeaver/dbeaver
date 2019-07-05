@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,6 +70,11 @@ public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, P
     protected void addObjectDeleteActions(List<DBEPersistAction> actions,
             SQLObjectEditor<PostgreExtension, PostgreDatabase>.ObjectDeleteCommand command,
             Map<String, Object> options) {
+        
+        
+        actions.add(
+                new SQLDatabasePersistAction("Drop extension", "DROP EXTENSION " + command.getObject().getName() + " CASCADE") //$NON-NLS-2$
+            );
     }
 
     @Override
@@ -78,7 +84,7 @@ public class PostgreExtensionManager extends SQLObjectEditor<PostgreExtension, P
 
     @Override
     public boolean canDeleteObject(PostgreExtension object) {
-        return false;
+        return true;
     }
 
     @Override

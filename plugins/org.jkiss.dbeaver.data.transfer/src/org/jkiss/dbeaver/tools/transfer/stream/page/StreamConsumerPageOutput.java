@@ -253,9 +253,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard);
-        splitFilesCheckbox.setEnabled(!clipboard && !singleFile);
-        maximumFileSizeLabel.setEnabled(!clipboard && !singleFile && splitFilesCheckbox.getSelection());
-        maximumFileSizeText.setEnabled(!clipboard && !singleFile && splitFilesCheckbox.getSelection());
+        splitFilesCheckbox.setEnabled(!clipboard);
+        maximumFileSizeLabel.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
+        maximumFileSizeText.setEnabled(!clipboard && splitFilesCheckbox.getSelection());
         encodingCombo.setEnabled(!isBinary && !clipboard);
         encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         showFolderCheckbox.setEnabled(!clipboard);
