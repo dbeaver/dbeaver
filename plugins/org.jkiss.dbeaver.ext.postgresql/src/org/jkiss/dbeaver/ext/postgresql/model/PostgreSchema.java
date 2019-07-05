@@ -515,7 +515,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 sql.append(",pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr,  pg_catalog.pg_get_partkeydef(c.oid) as partition_key ");
             }
             sql.append("\nFROM pg_catalog.pg_class c\n")
-                .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n")
+                .append("LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_class'::regclass\n")
                 .append("WHERE c.relnamespace=? AND c.relkind not in ('i','c')")
                 .append(object == null && objectName == null ? "" : " AND relname=?");
             final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
@@ -605,7 +605,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                     "\nFROM pg_catalog.pg_constraint c" +
                     "\nINNER JOIN pg_catalog.pg_class t ON t.oid=c.conrelid" +
                     "\nLEFT OUTER JOIN pg_catalog.pg_class rt ON rt.oid=c.confrelid" +
-                    "\nLEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0 AND d.classoid='pg_constraint'::regclass" +
                     "\nWHERE ");
             if (forParent == null) {
                 sql.append("t.relnamespace=?");

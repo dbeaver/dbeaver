@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -179,8 +180,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
     private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
         private final Map<String, String> esSchemaMap = new HashMap<>();
 
+        @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(JDBCSession session, PostgreDatabase database, PostgreSchema object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, PostgreSchema object, String objectName) throws SQLException {
             // 1. Read all external schemas info
             esSchemaMap.clear();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -201,7 +203,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
         }
 
         @Override
-        protected PostgreSchema fetchObject(JDBCSession session, PostgreDatabase owner, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "nspname");
             String esOptions = esSchemaMap.get(name);
             if (esOptions != null) {
