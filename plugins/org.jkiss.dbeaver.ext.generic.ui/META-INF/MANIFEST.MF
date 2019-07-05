@@ -4,15 +4,24 @@ Bundle-Name: DBeaver Generic UI Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.generic.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20190408
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.jface.text,
- org.eclipse.ui.views,
- org.eclipse.ui.workbench,
- org.eclipse.ui.workbench.texteditor,
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.core.expressions,
+ org.eclipse.core.filesystem,
+ org.eclipse.ui,
  org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.data.transfer,
+ org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.ui.navigator,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.workbench.texteditor
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
