@@ -85,7 +85,7 @@ public class PostgreCreateExtensionDialog extends BaseDialog
         gd.horizontalIndent = 0;
         group.setLayoutData(gd);
 
-        final Text databaseText = UIUtils.createLabelText(group, "Database", newextension.getDatabase().getName(), SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+        final Text databaseText = UIUtils.createLabelText(group,PostgreMessages.dialog_create_extension_database, newextension.getDatabase().getName(), SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
         final Combo schemaCombo = UIUtils.createLabelCombo(group, PostgreMessages.dialog_create_extension_schema, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         final Label lblExtension = UIUtils.createLabel(group, PostgreMessages.dialog_create_extension_name);
         
@@ -155,8 +155,14 @@ public class PostgreCreateExtensionDialog extends BaseDialog
                 try {
                     allSchemas = new ArrayList<>(newextension.getDatabase().getSchemas(monitor));
                      UIUtils.syncExec(() -> {
+                        
                         for (PostgreSchema schema : allSchemas) {
                             schemaCombo.add(schema.getName());
+                        }
+                        int publicId = schemaCombo.indexOf("public");
+                        if (publicId > 0) {
+                            schemaCombo.select(publicId);
+                            schema = allSchemas.get(publicId);
                         }
                     });
                 } catch (DBException e) {
