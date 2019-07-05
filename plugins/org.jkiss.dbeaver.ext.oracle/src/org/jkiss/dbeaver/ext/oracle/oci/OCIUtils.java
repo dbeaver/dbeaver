@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.utils.WinRegistry;
+import org.jkiss.dbeaver.utils.WindowsRegistry;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
@@ -166,10 +166,10 @@ public class OCIUtils
         // find Oracle homes in Windows registry
         if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
             try {
-                List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
+                List<String> oracleKeys = WindowsRegistry.getInstance().readStringSubKeys(WindowsRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
                 if (oracleKeys != null) {
                     for (String oracleKey : oracleKeys) {
-                        Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
+                        Map<String, String> valuesMap = WindowsRegistry.getInstance().readStringValues(WindowsRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey);
                         if (valuesMap != null) {
                             for (String key : valuesMap.keySet()) {
                                 if (WIN_REG_ORA_HOME.equals(key)) {
@@ -194,12 +194,12 @@ public class OCIUtils
     public static String readWinRegistry(String oraHome, String name) {
         if (DBeaverCore.getInstance().getLocalSystem().isWindows()) {
             try {
-                List<String> oracleKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
+                List<String> oracleKeys = WindowsRegistry.getInstance().readStringSubKeys(WindowsRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE);
                 if (oracleKeys != null) {
                     for (String oracleKey : oracleKeys) {
-                        String home = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, WIN_REG_ORA_HOME);
+                        String home = WindowsRegistry.getInstance().readString(WindowsRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, WIN_REG_ORA_HOME);
                         if (oraHome.equals(home)) {
-                            String value = WinRegistry.readString(WinRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, name);
+                            String value = WindowsRegistry.getInstance().readString(WindowsRegistry.HKEY_LOCAL_MACHINE, WIN_REG_ORACLE + "\\" + oracleKey, name);
                             if (value != null) {
                                 return value;
                             }
