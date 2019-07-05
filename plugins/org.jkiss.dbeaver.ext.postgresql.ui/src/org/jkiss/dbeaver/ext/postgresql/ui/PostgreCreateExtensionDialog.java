@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -37,10 +38,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAvailableExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -57,6 +60,8 @@ import java.util.List;
  */
 public class PostgreCreateExtensionDialog extends BaseDialog
 {
+    private static final String DIALOG_ID = "DBeaver.PostgreCreateExtensionDialog";//$NON-NLS-1$
+
     private PostgreAvailableExtension extension;
     private final PostgreExtension newextension;
     private List<PostgreSchema> allSchemas;
@@ -67,7 +72,12 @@ public class PostgreCreateExtensionDialog extends BaseDialog
         super(parentShell, PostgreMessages.dialog_create_extension_title, null);
         this.newextension = extension;
     }
-    
+
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
+    }
+
     private void checkEnabled() {
             getButton(IDialogConstants.OK_ID).setEnabled(extension != null && schema != null); 
     }
@@ -159,10 +169,9 @@ public class PostgreCreateExtensionDialog extends BaseDialog
                         for (PostgreSchema schema : allSchemas) {
                             schemaCombo.add(schema.getName());
                         }
-                        int publicId = schemaCombo.indexOf("public");
-                        if (publicId > 0) {
-                            schemaCombo.select(publicId);
-                            schema = allSchemas.get(publicId);
+                        schema = DBUtils.findObject(allSchemas, PostgreConstants.PUBLIC_SCHEMA_NAME);
+                        if (schema != null) {
+                            schemaCombo.setText(schema.getName());
                         }
                     });
                 } catch (DBException e) {
