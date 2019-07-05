@@ -14,24 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.db2.zos.model;
+package org.jkiss.dbeaver.ext.db2.i;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
-public class DB2ZOSSQLDialect extends GenericSQLDialect {
+public class DB2IDataSourceProvider extends GenericDataSourceProvider {
 
-    public DB2ZOSSQLDialect() {
-        super("DB2 for z/OS");
+    public DB2IDataSourceProvider()
+    {
     }
 
-    @Override
-    public boolean supportsOrderByIndex() {
-        return false;
-    }
-
-    public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super.initDriverSettings(dataSource, metaData);
-    }
 }

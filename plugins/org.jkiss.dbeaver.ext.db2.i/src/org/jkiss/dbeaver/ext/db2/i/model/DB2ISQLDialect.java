@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.db2.zos.model;
+package org.jkiss.dbeaver.ext.db2.i.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
-public class DB2ZOSSQLDialect extends GenericSQLDialect {
+public class DB2ISQLDialect extends GenericSQLDialect {
 
-    public DB2ZOSSQLDialect() {
-        super("DB2 for z/OS");
+    public DB2ISQLDialect() {
+        super("IBM DB2 i");
     }
 
     @Override
