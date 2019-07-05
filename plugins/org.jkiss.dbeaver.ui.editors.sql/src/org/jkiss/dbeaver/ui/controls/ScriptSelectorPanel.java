@@ -97,6 +97,14 @@ public class ScriptSelectorPanel {
                 log.warn(e);
             }
         }
+        // Check that panel fits display (#6087)
+        Rectangle displayBounds = workbenchWindow.getShell().getDisplay().getBounds();
+        if (bounds.x + bounds.width > displayBounds.width) {
+            bounds.width = displayBounds.width - bounds.x;
+            if (bounds.width < 100) {
+                bounds.width = 100;
+            }
+        }
         popup.setBounds(bounds);
 
         Composite composite = new Composite(popup, SWT.NONE);
