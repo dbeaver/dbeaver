@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.db2.i.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -28,10 +27,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 
-import java.sql.Clob;
 import java.sql.SQLException;
-import java.util.Map;
 
 /**
  * DB2IMetaModel
@@ -50,56 +48,29 @@ public class DB2IMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
-        if (!sourceObject.isView()) {
-            return super.getTableDDL(monitor, sourceObject, options);
-        }
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DB2 z/OS view source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DB2 for i procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT STATEMENT FROM SYSIBM.SYSVIEWS\n" +
-                    "WHERE CREATOR = ? AND NAME = ?\n" +
-                    "WITH UR"))
+                "SELECT ROUTINE_DEFINITION FROM SYSROUTINES " +
+                    "WHERE ROUTINE_SCHEMA=? AND ROUTINE_NAME=?"))
             {
-                dbStat.setString(1, sourceObject.getSchema().getName());
+                dbStat.setString(1, sourceObject.getContainer().getName());
                 dbStat.setString(2, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        Clob ddlStmt = dbResult.getClob(1);
-                        try {
-                            String ddl = ddlStmt.getSubString(1, (int) ddlStmt.length());
-                            return normalizeDDL(ddl);
-                        } finally {
-                            try {
-                                ddlStmt.free();
-                            } catch (Throwable e) {
-                                log.debug("Error freeing CLOB: " + e.getMessage());
-                            }
+                    if (dbResult.nextRow()) {
+                        String definition = dbResult.getString(1);
+                        if (definition != null) {
+                            definition = SQLFormatUtils.formatSQL(dataSource, definition);
                         }
-                    } else {
-                        return "-- View definition not found in system catalog";
+                        return definition;
                     }
+                    return "-- DB2 i procedure definition not found";
                 }
             }
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
-    }
-
-    private String normalizeDDL(String ddl) {
-        int declStart = ddl.indexOf("(");
-        int declEnd = ddl.indexOf(") ENGINE");
-        if (declEnd == -1) {
-            declEnd = ddl.length() - 1;
-        }
-        return
-            ddl.substring(0, declStart) + "(\n" +
-            ddl.substring(declStart + 1, declEnd).replace(",", ",\n") + "\n" +
-            ddl.substring(declEnd);
-    }
-
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
-        return getTableDDL(monitor, sourceObject, options);
     }
 
 }
