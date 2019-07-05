@@ -19,8 +19,8 @@
                 <driver
                         id="db2_iseries"
                         label="DB2 iSeries/AS 400"
-                        icon="icons/db2_icon.png"
-                        iconBig="icons/db2_icon_big.png"
+                        icon="icons/db2_i_icon.png"
+                        iconBig="icons/db2_i_icon_big.png"
                         category="DB2"
                         class="com.ibm.as400.access.AS400JDBCDriver"
                         sampleURL="jdbc:as400://{host};[libraries={database};]"
