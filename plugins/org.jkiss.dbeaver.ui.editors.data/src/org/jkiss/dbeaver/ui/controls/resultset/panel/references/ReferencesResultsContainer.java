@@ -16,12 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.references;
 
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 
 public class ReferencesResultsContainer implements IResultSetContainer {
@@ -29,10 +38,25 @@ public class ReferencesResultsContainer implements IResultSetContainer {
     private final IResultSetPresentation presentation;
     private DBSDataContainer dataContainer;
     private ResultSetViewer referencesViewer;
+    private final Composite mainComposite;
 
     public ReferencesResultsContainer(Composite parent, IResultSetPresentation presentation) {
         this.presentation = presentation;
-        this.referencesViewer = new ResultSetViewer(parent, presentation.getController().getSite(), this);
+
+        mainComposite = UIUtils.createComposite(parent, 1);
+
+        CSmartCombo<DBSEntityAssociation> fkCombo = new CSmartCombo<>(mainComposite, SWT.DROP_DOWN | SWT.READ_ONLY, new LabelProvider() {
+
+        });
+        fkCombo.addItem(null);
+        fkCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        {
+            Composite viewerContainer = new Composite(mainComposite, SWT.NONE);
+            viewerContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+            viewerContainer.setLayout(new FillLayout());
+            this.referencesViewer = new ResultSetViewer(viewerContainer, presentation.getController().getSite(), this);
+        }
     }
 
     public IResultSetPresentation getOwnerPresentation() {
@@ -74,4 +98,7 @@ public class ReferencesResultsContainer implements IResultSetContainer {
         return new ReferencesResultsDecorator(this);
     }
 
+    public Control getControl() {
+        return mainComposite;
+    }
 }

@@ -54,9 +54,7 @@ public class ReferencesPanel implements IResultSetPanel {
 
         this.resultsContainer = new ReferencesResultsContainer(parent, presentation);
 
-        IResultSetController refsViewer = this.resultsContainer.getResultSetController();
-
-        return refsViewer.getControl();
+        return this.resultsContainer.getControl();
     }
 
     @Override
