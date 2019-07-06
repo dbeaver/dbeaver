@@ -134,6 +134,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     private void applyEditorStyle() {
         BaseTextEditor textEditor = getTextEditor();
         if (textEditor != null && getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
+            StyledText textWidget = textEditor.getTextViewer().getTextWidget();
+            textWidget.setRedraw(false);
+
             boolean oldEditable = textEditor.getTextViewer().isEditable();
             if (!oldEditable) {
                 textEditor.getTextViewer().setEditable(true);
@@ -148,6 +151,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
                 if (!oldEditable) {
                     textEditor.getTextViewer().setEditable(false);
                 }
+                textWidget.setRedraw(true);
             }
         }
     }
