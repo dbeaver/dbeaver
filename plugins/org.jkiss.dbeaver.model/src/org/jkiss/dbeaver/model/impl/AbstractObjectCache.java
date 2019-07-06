@@ -161,6 +161,15 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     }
 
     /**
+     * Adds custom objects to cache after rea; cache data was read
+     * @param objectList object list which will be saved in the cache.
+     *  It can be modified by this functions
+     */
+    protected void addCustomObjects(List<OBJECT> objectList) {
+
+    }
+
+    /**
      * Merges new cache with existing.
      * If objects with the same name were already cached - leave them in cache
      * (because they might be referenced somewhere).

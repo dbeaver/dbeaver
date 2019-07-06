@@ -191,17 +191,20 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     public static JDBCCollection makeCollectionFromArray(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Array array) throws DBCException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        DBSDataType elementType = null;
-        if (column instanceof DBSTypedObjectEx) {
-            DBSDataType arrayType = ((DBSTypedObjectEx) column).getDataType();
-            if (arrayType != null) {
-                try {
-                    elementType = arrayType.getComponentType(monitor);
-                } catch (DBException e) {
-                    log.debug("Error getting array component type", e);
-                }
+        DBSDataType arrayType, elementType = null;
+        try {
+            if (column instanceof DBSTypedObjectEx) {
+                arrayType = ((DBSTypedObjectEx) column).getDataType();
+            } else {
+                arrayType = session.getDataSource().resolveDataType(session.getProgressMonitor(), column.getFullTypeName());
             }
+            if (arrayType != null) {
+                elementType = arrayType.getComponentType(monitor);
+            }
+        } catch (DBException e) {
+            log.debug("Error getting array component type", e);
         }
+
         if (elementType == null) {
             try {
                 if (array != null) {
@@ -216,7 +219,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         try {
             if (elementType == null) {
                 if (array == null) {
-                    return new JDBCCollection();
+                    throw new DBCException("Error resolving array element type: " + column.getFullTypeName());
                 }
                 try {
                     return makeCollectionFromResultSet(session, array, null);
