@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -96,7 +97,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     @Override
-    public void openNewContainer(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter newFilter) {
+    public void openNewContainer(DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter newFilter) {
 
     }
 

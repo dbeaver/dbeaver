@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -91,7 +92,7 @@ public class SQLResultsView extends ViewPart
         }
 
         @Override
-        public void openNewContainer(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter newFilter) {
+        public void openNewContainer(DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter newFilter) {
             DBWorkbench.getPlatformUI().showError("Data container", "Not supported");
         }
 

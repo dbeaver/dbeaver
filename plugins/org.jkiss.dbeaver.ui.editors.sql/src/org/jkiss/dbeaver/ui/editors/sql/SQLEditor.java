@@ -2701,7 +2701,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void openNewContainer(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter newFilter) {
+        public void openNewContainer(DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter newFilter) {
             UIUtils.syncExec(() -> {
                 QueryResultsContainer resultsProvider = queryProcessor.createResultsProvider(dataContainer);
                 resultsProvider.tabItem.getParent().setSelection(resultsProvider.tabItem);
