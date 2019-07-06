@@ -136,6 +136,8 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             }
         }
 
+        addCustomObjects(tmpObjectList);
+
         Comparator<OBJECT> comparator = getListOrderComparator();
         if (comparator != null) {
             tmpObjectList.sort(comparator);
