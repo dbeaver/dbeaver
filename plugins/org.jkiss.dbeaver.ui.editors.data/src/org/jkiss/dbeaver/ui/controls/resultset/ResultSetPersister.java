@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -142,7 +143,30 @@ class ResultSetPersister {
      * @param listener value listener
      */
     boolean applyChanges(@Nullable DBRProgressMonitor monitor, boolean generateScript, ResultSetSaveSettings settings, @Nullable DataUpdateListener listener)
-        throws DBException {
+        throws DBException
+    {
+        if (monitor == null) {
+            try {
+                UIUtils.runInProgressService(monitor1 -> {
+                    try {
+                        prepareStatements(monitor1, settings);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                throw new DBException("Error preparing update statements", e.getTargetException());
+            } catch (InterruptedException e) {
+                return false;
+            }
+        } else {
+            prepareStatements(monitor, settings);
+        }
+
+        return execute(monitor, generateScript, listener);
+    }
+
+    private void prepareStatements(@NotNull DBRProgressMonitor monitor, ResultSetSaveSettings settings) throws DBException {
         if (hasDeletes()) {
             prepareDeleteStatements(monitor, settings.isDeleteCascade(), settings.isDeepCascade());
         }
@@ -150,10 +174,9 @@ class ResultSetPersister {
             prepareInsertStatements(monitor);
         }
         prepareUpdateStatements(monitor);
-        return execute(monitor, generateScript, listener);
     }
 
-    public boolean refreshInsertedRows() throws DBCException {
+    boolean refreshInsertedRows() throws DBCException {
         if (!viewer.getModel().isSingleSource()) {
             return false;
         }
@@ -226,7 +249,7 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareDeleteStatements(DBRProgressMonitor monitor, boolean deleteCascade, boolean deepCascade)
+    private void prepareDeleteStatements(@NotNull DBRProgressMonitor monitor, boolean deleteCascade, boolean deepCascade)
         throws DBException {
         // Make delete statements
         DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
@@ -259,7 +282,7 @@ class ResultSetPersister {
         }
     }
 
-    private List<DataStatementInfo> prepareDeleteCascade(DBRProgressMonitor monitor, DBDRowIdentifier rowIdentifier, List<DataStatementInfo> statements, boolean deepCascade) throws DBException {
+    private List<DataStatementInfo> prepareDeleteCascade(@NotNull DBRProgressMonitor monitor, DBDRowIdentifier rowIdentifier, List<DataStatementInfo> statements, boolean deepCascade) throws DBException {
         List<DataStatementInfo> result = new ArrayList<>();
 
         DBSEntity entity = rowIdentifier.getEntity();
@@ -316,7 +339,7 @@ class ResultSetPersister {
         return result;
     }
 
-    private void prepareInsertStatements(DBRProgressMonitor monitor)
+    private void prepareInsertStatements(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         // Make insert statements
         final DBSEntity table = viewer.getModel().getSingleSource();
@@ -338,7 +361,7 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareUpdateStatements(DBRProgressMonitor monitor)
+    private void prepareUpdateStatements(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         // Make statements
         for (ResultSetRow row : this.rowIdentifiers.keySet()) {
