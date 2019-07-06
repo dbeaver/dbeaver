@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -513,9 +514,9 @@ public class ResultSetModel {
 
         {
             // Extract nested attributes from single top-level attribute
-            if (attributes.length == 1) {
+            if (attributes.length == 1 && attributes[0].getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
                 DBDAttributeBinding topAttr = attributes[0];
-                if (topAttr.getDataKind() == DBPDataKind.DOCUMENT || topAttr.getDataKind() == DBPDataKind.STRUCT) {
+                if (topAttr.getDataKind() == DBPDataKind.DOCUMENT) {
                     List<DBDAttributeBinding> nested = topAttr.getNestedBindings();
                     if (nested != null && !nested.isEmpty()) {
                         attributes = nested.toArray(new DBDAttributeBinding[0]);
