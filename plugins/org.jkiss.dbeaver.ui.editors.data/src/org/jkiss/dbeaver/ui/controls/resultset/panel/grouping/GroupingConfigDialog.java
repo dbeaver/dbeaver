@@ -44,7 +44,7 @@ class GroupingConfigDialog extends BaseDialog
 
     public GroupingConfigDialog(Shell parentShell, GroupingResultsContainer resultsContainer)
     {
-        super(parentShell, "Grouping configuration", UIIcon.PANEL_AGGREGATE);
+        super(parentShell, "Grouping configuration", null);
         this.resultsContainer = resultsContainer;
     }
 

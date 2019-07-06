@@ -32,7 +32,7 @@ public class AutoRefreshConfigDialog extends BaseDialog {
     private RefreshSettings refreshSettings;
 
     AutoRefreshConfigDialog(Shell parentShell, RefreshSettings settings) {
-        super(parentShell, "Auto-refresh configuration", UIIcon.RS_SCHED_START);
+        super(parentShell, "Auto-refresh configuration", UIIcon.CLOCK_START);
         this.refreshSettings = new RefreshSettings(settings);
     }
 

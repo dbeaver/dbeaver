@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.DBIcon;
 
 /**
@@ -51,14 +50,13 @@ public class UIIcon {
     public static final DBIcon PROGRESS8 = new DBIcon("progress8", "animation/progress_8.gif"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PROGRESS9 = new DBIcon("progress9", "animation/progress_9.gif"); //$NON-NLS-1$ //$NON-NLS-2$
 
-
     public static final DBIcon RS_REFRESH = new DBIcon("rs_refresh", "sql/resultset_refresh.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RS_GRID = new DBIcon("rs_mode_grid", "sql/grid.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RS_DETAILS = new DBIcon("rs_details", "sql/details.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RS_FORWARD = new DBIcon("rs_forward", "sql/forward.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RS_BACK = new DBIcon("rs_back", "sql/back.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon RS_SCHED_START = new DBIcon("rs_sched_start", "misc/clock_play.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon RS_SCHED_STOP = new DBIcon("rs_sched_stop", "misc/clock_stop.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CLOCK_START = new DBIcon("clock_start", "misc/clock_play.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CLOCK_STOP = new DBIcon("clock_stop", "misc/clock_stop.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TXN_COMMIT = new DBIcon("txn_commit_auto", "sql/commit.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TXN_ROLLBACK = new DBIcon("txn_commit_auto", "sql/rollback.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -204,9 +202,6 @@ public class UIIcon {
     public static final DBIcon AUTO_SAVE = new DBIcon("auto_save", "file/auto_save.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PANEL_CUSTOMIZE = new DBIcon("panel_customize", "sql/panel_customize.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon PANEL_VALUE = new DBIcon("panel_value", "sql/panel_value.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon PANEL_AGGREGATE = new DBIcon("panel_aggregate", "sql/panel_aggregate.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon PANEL_METADATA = new DBIcon("panel_metadata", "sql/panel_metadata.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PAGES = new DBIcon("pages", "misc/pages.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TEXTFIELD = new DBIcon("textfield", "misc/textfield.png"); //$NON-NLS-1$ //$NON-NLS-2$

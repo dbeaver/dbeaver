@@ -136,10 +136,10 @@ public class AutoRefreshControl {
     private void updateAutoRefreshToolbar() {
         if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
             if (isAutoRefreshEnabled()) {
-                autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_STOP));
+                autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_STOP));
                 autoRefreshButton.setToolTipText(UIMessages.sql_editor_resultset_filter_panel_btn_stop_refresh);
             } else {
-                autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_START));
+                autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_START));
                 autoRefreshButton.setToolTipText(UIMessages.sql_editor_resultset_filter_panel_btn_config_refresh);
             }
         }
