@@ -114,7 +114,7 @@
                 id="value-view"
                 label="%panel.value-view.label"
                 description="%panel.value-view.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_value.png"
+                icon="icons/panel_value.png"
                 default="true"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel">
             <supports type="columns"/>
@@ -123,7 +123,7 @@
                 id="column-aggregate"
                 label="%panel.column-aggregate.label"
                 description="%panel.column-aggregate.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_aggregate.png"
+                icon="icons/panel_aggregate.png"
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.aggregate.AggregateColumnsPanel">
             <supports type="columns"/>
@@ -132,7 +132,7 @@
                 id="results-metadata"
                 label="%panel.results-metadata.label"
                 description="%panel.results-metadata.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_metadata.png"
+                icon="icons/panel_metadata.png"
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.metadata.MetaDataPanel">
         </panel>
@@ -140,9 +140,17 @@
                 id="results-grouping"
                 label="%panel.results-grouping.label"
                 description="%panel.results-grouping.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_grouping.png"
+                icon="icons/panel_grouping.png"
                 default="false"
                 class="org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingPanel">
+        </panel>
+        <panel
+                id="results-references"
+                label="%panel.results-references.label"
+                description="%panel.results-references.description"
+                icon="icons/panel_references.png"
+                default="false"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.references.ReferencesPanel">
         </panel>
     </extension>
 
