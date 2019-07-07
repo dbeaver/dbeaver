@@ -256,7 +256,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
     private static int checkStyle(int style)
     {
-        int mask = SWT.BORDER | SWT.READ_ONLY | SWT.FLAT | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT;
+        int mask = SWT.BORDER | SWT.READ_ONLY | SWT.FLAT | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT | SWT.CHECK;
         return style & mask;
     }
 
@@ -505,6 +505,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
         if ((style & SWT.LEFT_TO_RIGHT) != 0) {
             listStyle |= SWT.LEFT_TO_RIGHT;
+        }
+        if ((style & SWT.CHECK) != 0) {
+            listStyle |= SWT.CHECK;
         }
         GridLayout gl = new GridLayout(1, true);
         gl.marginHeight = 0;

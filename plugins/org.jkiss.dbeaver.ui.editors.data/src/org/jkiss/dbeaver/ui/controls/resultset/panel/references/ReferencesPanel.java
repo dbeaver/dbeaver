@@ -18,12 +18,15 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.references;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListenerAdapter;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 
 /**
@@ -52,7 +55,23 @@ public class ReferencesPanel implements IResultSetPanel {
 
         loadSettings();
 
-        this.resultsContainer = new ReferencesResultsContainer(parent, presentation);
+        this.resultsContainer = new ReferencesResultsContainer(parent, presentation.getController());
+
+        // Data listener
+        ResultSetListenerAdapter dataListener = new ResultSetListenerAdapter() {
+            @Override
+            public void handleResultSetLoad() {
+                refresh(true);
+            }
+        };
+        presentation.getController().addListener(dataListener);
+        presentation.getControl().addDisposeListener(e -> presentation.getController().removeListener(dataListener));
+
+        if (presentation instanceof ISelectionProvider) {
+            ISelectionChangedListener selectionListener = event -> resultsContainer.refreshReferences();
+            ((ISelectionProvider) presentation).addSelectionChangedListener(selectionListener);
+            presentation.getControl().addDisposeListener(e -> ((ISelectionProvider) presentation).removeSelectionChangedListener(selectionListener));
+        }
 
         return this.resultsContainer.getControl();
     }
@@ -87,6 +106,7 @@ public class ReferencesPanel implements IResultSetPanel {
 
     @Override
     public void refresh(boolean force) {
+        resultsContainer.refreshReferences();
     }
 
     @Override
