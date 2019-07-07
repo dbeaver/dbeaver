@@ -301,7 +301,7 @@ public class ResultSetModel {
         if (depth == 0) {
             final int index = attribute.getOrdinalPosition();
             if (index >= row.values.length) {
-                log.debug("Bad attribute - index out of row values' bounds");
+                log.debug("Bad attribute '" + attribute.getName() + "' index: " + index + " is out of row values' bounds (" + row.values.length + ")");
                 return null;
             } else {
                 return row.values[index];
@@ -624,6 +624,11 @@ public class ResultSetModel {
         }
         if (!colorMapping.isEmpty()) {
             for (Map.Entry<DBDAttributeBinding, List<AttributeColorSettings>> entry : colorMapping.entrySet()) {
+                if (!ArrayUtils.contains(attributes, entry.getKey())) {
+                    // This may happen during FK navigation - attributes are already updated while colors mapping are still old
+                    continue;
+                }
+
                 for (ResultSetRow row : rows) {
                     for (AttributeColorSettings acs : entry.getValue()) {
                         Color background = null, foreground = null;

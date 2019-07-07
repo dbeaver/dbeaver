@@ -1603,6 +1603,15 @@ public class ResultSetViewer extends Viewer
         return curState != null ? curState.dataContainer : container.getDataContainer();
     }
 
+    public void setDataContainer(DBSDataContainer targetEntity, DBDDataFilter newFilter) {
+        // Workaround for script results
+        // In script mode history state isn't updated so we check for it here
+        if (curState == null) {
+            setNewState(targetEntity, model.getDataFilter());
+        }
+        runDataPump(targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
+    }
+
     ////////////////////////////////////////////////////////////
     // Grid/Record mode
 
@@ -2680,6 +2689,16 @@ public class ResultSetViewer extends Viewer
     public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
         throws DBException
     {
+        navigateReference(monitor, model, association, rows, newWindow);
+    }
+
+    /**
+     * Navigate reference
+     * @param bindingsModel       data bindings providing model. Can be a model from another results viewer.
+     */
+    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
+        throws DBException
+    {
         if (!confirmProceed()) {
             return;
         }
@@ -2719,7 +2738,7 @@ public class ResultSetViewer extends Viewer
         for (int i = 0; i < refAttrs.size(); i++) {
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
 
-            DBDAttributeBinding attrBinding = model.getAttributeBinding(refAttr.getAttribute());
+            DBDAttributeBinding attrBinding = bindingsModel.getAttributeBinding(refAttr.getAttribute());
             if (attrBinding == null) {
                 log.error("Can't find attribute binding for ref attribute '" + refAttr.getAttribute().getName() + "'");
             } else {
@@ -2757,13 +2776,7 @@ public class ResultSetViewer extends Viewer
         if (newWindow) {
             openResultsInNewWindow(monitor, targetEntity, newFilter);
         } else {
-            DBSDataContainer targetDataContainer = (DBSDataContainer) targetEntity;
-            // Workaround for script results
-            // In script mode history state isn't updated so we check for it here
-            if (curState == null) {
-                setNewState(targetDataContainer, model.getDataFilter());
-            }
-            runDataPump(targetDataContainer, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
+            setDataContainer((DBSDataContainer) targetEntity, newFilter);
         }
     }
 
@@ -2972,6 +2985,9 @@ public class ResultSetViewer extends Viewer
 
         // Pump data
         DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return;
+        }
         DBDDataFilter dataFilter = restoreDataFilter(dataContainer);
 
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
@@ -3309,7 +3325,7 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
-    private void clearData()
+    public void clearData()
     {
         this.model.clearData();
         this.curRow = null;
