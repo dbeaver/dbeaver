@@ -2393,10 +2393,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         public void cancelJob() {
             for (QueryResultsContainer rc : resultContainers) {
-                DataSourceJob dataReadJob = rc.viewer.getDataReadJob();
-                if (dataReadJob != null && !dataReadJob.isFinished()) {
-                    dataReadJob.cancel();
-                }
+                rc.viewer.cancelJobs();
             }
             final SQLQueryJob job = curJob;
             if (job != null) {
