@@ -97,11 +97,13 @@ public class PostgreAggregate implements PostgreObject {
         return schema;
     }
 
+    @NotNull
     @Override
     public PostgreDataSource getDataSource() {
         return schema.getDataSource();
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return schema.getDatabase();

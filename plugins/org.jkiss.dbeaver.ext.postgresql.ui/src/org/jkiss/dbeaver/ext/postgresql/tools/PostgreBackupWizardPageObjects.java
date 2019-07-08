@@ -27,10 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -144,10 +141,14 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                 activeCatalogs.add((PostgreSchema) object);
                 dataBase = ((PostgreSchema) object).getDatabase();
             } else if (object instanceof PostgreTableBase) {
-                PostgreSchema catalog = ((PostgreTableBase) object).getContainer();
-                dataBase = catalog.getDatabase();
-                activeCatalogs.add(catalog);
-                Set<PostgreTableBase> tables = checkedObjects.computeIfAbsent(catalog, k -> new HashSet<>());
+                PostgreTableContainer tableContainer = ((PostgreTableBase) object).getContainer();
+                if (!(tableContainer instanceof PostgreSchema)) {
+                    continue;
+                }
+                PostgreSchema schema = (PostgreSchema) tableContainer;
+                dataBase = schema.getDatabase();
+                activeCatalogs.add(schema);
+                Set<PostgreTableBase> tables = checkedObjects.computeIfAbsent(schema, k -> new HashSet<>());
                 tables.add((PostgreTableBase) object);
                 if (((PostgreTableBase) object).isView()) {
                     wizard.showViews = true;

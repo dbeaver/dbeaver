@@ -162,7 +162,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreTableColumn> getObjectsCache(PostgreTableColumn object)
     {
-        return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
+        return object.getParentObject().getContainer().getSchema().getTableCache().getChildrenCache(object.getParentObject());
     }
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)

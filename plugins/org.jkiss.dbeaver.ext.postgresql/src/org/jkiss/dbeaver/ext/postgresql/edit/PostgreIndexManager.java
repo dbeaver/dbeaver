@@ -43,9 +43,9 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreSchema, PostgreIndex> getObjectsCache(PostgreIndex object)
+    public DBSObjectCache<PostgreTableContainer, PostgreIndex> getObjectsCache(PostgreIndex object)
     {
-        return object.getTable().getContainer().indexCache;
+        return object.getTable().getContainer().getSchema().indexCache;
     }
 
     @Override

@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import java.sql.ResultSet;
+
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -82,11 +84,13 @@ public class PostgreAvailableExtension implements PostgreObject{
         return oid;
     }
 
+    @NotNull
     @Override
     public PostgreDataSource getDataSource() {
         return database.getDataSource();
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return database;

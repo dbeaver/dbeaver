@@ -54,16 +54,16 @@ public abstract class PostgreTableReal extends PostgreTableBase
     final TriggerCache triggerCache = new TriggerCache();
     final RuleCache ruleCache = new RuleCache();
 
-    protected PostgreTableReal(PostgreSchema catalog)
+    protected PostgreTableReal(PostgreTableContainer container)
     {
-        super(catalog);
+        super(container);
     }
 
     protected PostgreTableReal(
-        PostgreSchema catalog,
+        PostgreTableContainer container,
         ResultSet dbResult)
     {
-        super(catalog, dbResult);
+        super(container, dbResult);
 
         this.rowCountEstimate = JDBCUtils.safeGetLong(dbResult, "reltuples");
     }

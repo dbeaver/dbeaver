@@ -62,7 +62,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
 
     public PostgreIndex(DBRProgressMonitor monitor, PostgreTableBase parent, String indexName, ResultSet dbResult) throws DBException {
         super(
-            parent.getContainer(),
+            parent.getContainer().getSchema(),
             parent,
             indexName,
             DBSIndexType.UNKNOWN,
@@ -99,7 +99,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     }
 
     public PostgreIndex(PostgreTableBase parent, String name, DBSIndexType indexType, boolean unique) {
-        super(parent.getContainer(), parent, name, indexType, false);
+        super(parent.getContainer().getSchema(), parent, name, indexType, false);
         this.isUnique = unique;
     }
 
@@ -109,6 +109,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return getTable().getDatabase();

@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,7 +37,7 @@ public class RedshiftSchema extends PostgreSchema {
     }
 
     @Override
-    protected String getTableColumnsQueryExtraParameters(PostgreSchema owner, PostgreTableBase forTable) {
+    public String getTableColumnsQueryExtraParameters(PostgreTableContainer owner, PostgreTableBase forTable) {
         return ",format_encoding(a.attencodingtype::integer) AS \"encoding\"";
     }
 }

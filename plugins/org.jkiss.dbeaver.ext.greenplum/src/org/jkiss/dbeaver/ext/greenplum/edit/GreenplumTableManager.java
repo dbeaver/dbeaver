@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeign;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -86,8 +87,8 @@ public class GreenplumTableManager extends PostgreTableManager {
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreSchema, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
-        return object.getContainer().getTableCache();
+    public DBSObjectCache<PostgreTableContainer, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
+        return object.getContainer().getSchema().getTableCache();
     }
 
     @Override

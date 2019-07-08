@@ -17,15 +17,15 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import java.sql.ResultSet;
-import java.util.Map;
-
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+
+import java.sql.ResultSet;
+import java.util.Map;
 
 public class PostgreTablePartition extends PostgreTable
 {
@@ -35,16 +35,16 @@ public class PostgreTablePartition extends PostgreTable
 	private String partitionExpression;
 	private PostgreTable partitionOf;
 
-	public PostgreTablePartition(PostgreSchema catalog, PostgreTable partitionOf) {
-		super(catalog);
+	public PostgreTablePartition(PostgreTable container) {
+		super(container);
 		this.partitionExpression = "FOR VALUES ";
 		this.isPartition = true;
 		this.setName("newpartition");
-		this.partitionOf = partitionOf;
+		this.partitionOf = container;
 	}
 
-	public PostgreTablePartition(PostgreSchema catalog, ResultSet dbResult) {
-		super(catalog, dbResult);
+	public PostgreTablePartition(PostgreTableContainer container, ResultSet dbResult) {
+		super(container, dbResult);
 		this.partitionExpression = JDBCUtils.safeGetString(dbResult, "partition_expr");
 	}
 	

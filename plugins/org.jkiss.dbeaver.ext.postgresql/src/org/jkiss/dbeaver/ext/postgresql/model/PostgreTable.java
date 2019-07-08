@@ -46,7 +46,7 @@ import java.util.*;
 /**
  * PostgreTable
  */
-public abstract class PostgreTable extends PostgreTableReal implements DBDPseudoAttributeContainer
+public abstract class PostgreTable extends PostgreTableReal implements PostgreTableContainer, DBDPseudoAttributeContainer
 {
     private static final Log log = Log.getLog(PostgreTable.class);
 
@@ -59,16 +59,16 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     private List<PostgreTableInheritance> subTables;
     private boolean hasSubClasses;
 
-    public PostgreTable(PostgreSchema catalog)
+    public PostgreTable(PostgreTableContainer container)
     {
-        super(catalog);
+        super(container);
     }
 
     public PostgreTable(
-        PostgreSchema catalog,
+        PostgreTableContainer container,
         ResultSet dbResult)
     {
-        super(catalog, dbResult);
+        super(container, dbResult);
 
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
@@ -164,7 +164,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         // This is dummy implementation
         // Get references from this schema only
         final Collection<PostgreTableForeignKey> allForeignKeys =
-            getContainer().constraintCache.getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
+            getContainer().getSchema().constraintCache.getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
         for (PostgreTableForeignKey constraint : allForeignKeys) {
             if (constraint.getAssociatedEntity() == this) {
                 refs.add(constraint);

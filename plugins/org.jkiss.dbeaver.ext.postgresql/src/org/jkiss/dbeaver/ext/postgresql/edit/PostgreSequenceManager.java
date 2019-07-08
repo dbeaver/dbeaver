@@ -46,7 +46,7 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
 
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
-        return object.getContainer().tableCache;
+        return object.getContainer().getSchema().tableCache;
     }
 
     @Override
