@@ -483,7 +483,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         public void bundleChanged(BundleEvent event) {
             String message = null;
 
-            if (event.getType() == BundleEvent.STARTING) {
+            if (event.getType() == BundleEvent.STARTED) {
                 message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
             } else if (event.getType() == BundleEvent.STOPPING) {
                 message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
