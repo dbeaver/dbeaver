@@ -19,11 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.dnd.DND;
-import org.eclipse.swt.dnd.DropTarget;
-import org.eclipse.swt.dnd.DropTargetAdapter;
-import org.eclipse.swt.dnd.DropTargetEvent;
-import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -34,8 +30,8 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetDecorator;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDecoratorBase;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 import java.util.ArrayList;
@@ -44,7 +40,7 @@ import java.util.List;
 /**
  * Decorator for grouping panel
  */
-public class GroupingResultsDecorator implements IResultSetDecorator {
+public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
     private GroupingResultsContainer container;
 

@@ -42,4 +42,10 @@ public class ReferencesResultsDecorator extends QueryResultsDecorator {
 //        contributionManager.add(new ReferencesPanel.ClearGroupingAction(container));
     }
 
+    @Override
+    public Boolean getAutoRecordMode() {
+        ReferencesResultsContainer.ReferenceKey referenceKey = container.getActiveReferenceKey();
+        return referenceKey != null && !referenceKey.isReference;
+    }
+
 }

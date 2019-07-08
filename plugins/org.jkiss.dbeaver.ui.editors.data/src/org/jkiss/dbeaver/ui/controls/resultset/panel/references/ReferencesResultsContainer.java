@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -89,6 +90,10 @@ class ReferencesResultsContainer implements IResultSetContainer {
             viewerContainer.setLayout(new FillLayout());
             this.dataViewer = new ResultSetViewer(viewerContainer, parentController.getSite(), this);
         }
+    }
+
+    public ReferenceKey getActiveReferenceKey() {
+        return activeReferenceKey;
     }
 
     public IResultSetPresentation getOwnerPresentation() {
@@ -277,7 +282,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         }
     }
 
-    private static class ReferenceKey {
+    static class ReferenceKey {
         final boolean isReference;
         final DBSEntity refEntity;
         final DBSEntityAssociation refAssociation;
@@ -300,7 +305,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
             }
             ReferenceKey key = (ReferenceKey) element;
             return DBeaverIcons.getImage(
-                key.isReference ? DBIcon.TREE_REFERENCE : DBIcon.TREE_FOREIGN_KEY);
+                key.isReference ? UIIcon.ARROW_LEFT_ALL : UIIcon.ARROW_RIGHT_ALL);
         }
 
         @Override

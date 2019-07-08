@@ -14,29 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IContributionManager;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 /**
- * Decorator for query results
+ * ResultSet decorator.
  */
-public class QueryResultsDecorator extends ResultSetDecoratorBase {
-
+public abstract class ResultSetDecoratorBase implements IResultSetDecorator {
     @Override
     public long getDecoratorFeatures() {
-        return FEATURE_FILTERS | FEATURE_STATUS_BAR | FEATURE_PANELS | FEATURE_EDIT;
+        return 0;
     }
 
     @Override
-    public String getEmptyDataMessage() {
-        return ResultSetMessages.sql_editor_resultset_filter_panel_control_no_data;
+    public void fillContributions(IContributionManager contributionManager) {
+
     }
 
     @Override
-    public String getEmptyDataDescription() {
+    public void registerDragAndDrop(IResultSetPresentation presentation) {
+
+    }
+
+    @Override
+    public Boolean getAutoRecordMode() {
         return null;
     }
-
 }
