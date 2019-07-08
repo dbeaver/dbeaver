@@ -243,6 +243,18 @@ public class ResultSetUtils
         }
     }
 
+    public static DBSEntityAssociation getAssociationByAttribute(DBDAttributeBinding attr) throws DBException {
+        List<DBSEntityReferrer> referrers = attr.getReferrers();
+        if (referrers != null) {
+            for (final DBSEntityReferrer referrer : referrers) {
+                if (referrer instanceof DBSEntityAssociation) {
+                    return (DBSEntityAssociation) referrer;
+                }
+            }
+        }
+        throw new DBException("Association not found in attribute [" + attr.getName() + "]");
+    }
+
     private static DBSEntityConstraint getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBindingMeta[] bindings, boolean readMetaData)
         throws DBException
     {
