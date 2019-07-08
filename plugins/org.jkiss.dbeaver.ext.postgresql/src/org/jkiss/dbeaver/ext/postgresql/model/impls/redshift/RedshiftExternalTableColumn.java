@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 
@@ -45,6 +46,7 @@ public class RedshiftExternalTableColumn extends PostgreTableColumn
         setDefaultValue(defaultValue);
     }
 
+    @NotNull
     @Override
     public PostgreDataSource getDataSource() {
         return getTable().getDataSource();

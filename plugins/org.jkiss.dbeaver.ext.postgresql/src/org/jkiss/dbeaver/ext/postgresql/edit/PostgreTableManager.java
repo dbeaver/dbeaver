@@ -49,9 +49,9 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreSchema, PostgreTableBase> getObjectsCache(PostgreTableBase object)
+    public DBSObjectCache<PostgreTableContainer, PostgreTableBase> getObjectsCache(PostgreTableBase object)
     {
-        return object.getContainer().tableCache;
+        return object.getContainer().getSchema().tableCache;
     }
 
     @Override

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -70,11 +71,13 @@ public class PostgreDependency implements PostgreObject, DBPOverloadedObject, DB
         return true;
     }
 
+    @NotNull
     @Override
     public PostgreDataSource getDataSource() {
         return database.getDataSource();
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return database;

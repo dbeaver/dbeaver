@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -49,9 +46,9 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreSchema, PostgreTableConstraintBase> getObjectsCache(PostgreTableConstraintBase object)
+    public DBSObjectCache<PostgreTableContainer, PostgreTableConstraintBase> getObjectsCache(PostgreTableConstraintBase object)
     {
-        return object.getTable().getContainer().constraintCache;
+        return object.getTable().getContainer().getSchema().constraintCache;
     }
 
     @Override

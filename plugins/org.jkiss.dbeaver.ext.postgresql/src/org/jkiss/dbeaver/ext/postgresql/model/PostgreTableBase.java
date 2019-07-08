@@ -38,12 +38,14 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * PostgreTable base
+ * PostgreTableBase
  */
-public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject, PostgrePrivilegeOwner, DBPNamedObject2
+public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreTableContainer> implements PostgreClass, PostgreScriptObject, PostgrePrivilegeOwner, DBPNamedObject2
 {
     private static final Log log = Log.getLog(PostgreTableBase.class);
 
@@ -56,16 +58,16 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private Object acl;
     private String[] relOptions;
 
-    protected PostgreTableBase(PostgreSchema catalog)
+    protected PostgreTableBase(PostgreTableContainer container)
     {
-        super(catalog, false);
+        super(container, false);
     }
 
     protected PostgreTableBase(
-        PostgreSchema catalog,
+        PostgreTableContainer container,
         ResultSet dbResult)
     {
-        super(catalog, JDBCUtils.safeGetString(dbResult, "relname"), true);
+        super(container, JDBCUtils.safeGetString(dbResult, "relname"), true);
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "relowner");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
@@ -91,9 +93,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public JDBCStructCache<PostgreSchema, ? extends PostgreClass, ? extends PostgreAttribute> getCache()
+    public JDBCStructCache<PostgreTableContainer, ? extends PostgreClass, ? extends PostgreAttribute> getCache()
     {
-        return getContainer().getTableCache();
+        return getContainer().getSchema().getTableCache();
     }
 
     @NotNull
@@ -164,7 +166,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public Collection<? extends PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
+        return getContainer().getSchema().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
     public PostgreTableColumn getAttributeByPos(DBRProgressMonitor monitor, int position) throws DBException {
@@ -178,7 +180,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     public List<? extends PostgreTableColumn> getCachedAttributes()
     {
-        final DBSObjectCache<PostgreTableBase, PostgreTableColumn> childrenCache = getContainer().getTableCache().getChildrenCache(this);
+        final DBSObjectCache<PostgreTableBase, PostgreTableColumn> childrenCache = getContainer().getSchema().getTableCache().getChildrenCache(this);
         if (childrenCache != null) {
             return childrenCache.getCachedObjects();
         }
@@ -189,7 +191,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public PostgreTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
-        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().getSchema().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
@@ -222,9 +224,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().constraintCache.clearObjectCache(this);
-        getContainer().indexCache.clearObjectCache(this);
-        return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
+        getContainer().getSchema().constraintCache.clearObjectCache(this);
+        getContainer().getSchema().indexCache.clearObjectCache(this);
+        return getContainer().getSchema().getTableCache().refreshObject(monitor, getContainer().getSchema(), this);
     }
 
     @Override
@@ -262,7 +264,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         {
             try {
                 Collection<PostgreTablespace> tablespaces = object.getDatabase().getTablespaces(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[tablespaces.size()]);
+                return tablespaces.toArray(new Object[0]);
             } catch (DBException e) {
                 log.error(e);
                 return new Object[0];

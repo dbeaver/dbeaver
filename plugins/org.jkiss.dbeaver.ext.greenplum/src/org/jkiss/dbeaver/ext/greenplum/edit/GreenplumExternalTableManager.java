@@ -23,10 +23,10 @@ package org.jkiss.dbeaver.ext.greenplum.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable;
-import org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -72,8 +72,8 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
 
     @Nullable
     @Override
-    public DBSObjectCache<PostgreSchema, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
-        return object.getContainer().getTableCache();
+    public DBSObjectCache<PostgreTableContainer, PostgreTableBase> getObjectsCache(PostgreTableBase object) {
+        return object.getContainer().getSchema().getTableCache();
     }
 
     @Override

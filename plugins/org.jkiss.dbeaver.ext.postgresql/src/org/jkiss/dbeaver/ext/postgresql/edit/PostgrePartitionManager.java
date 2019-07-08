@@ -43,7 +43,7 @@ public class PostgrePartitionManager extends PostgreTableManager {
     
     protected PostgreTablePartition createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) {
         PostgreTable owner = (PostgreTable)container;
-        final PostgreTablePartition table = new PostgreTablePartition(owner.getSchema(),owner);
+        final PostgreTablePartition table = new PostgreTablePartition(owner);
         return table;
     }
 

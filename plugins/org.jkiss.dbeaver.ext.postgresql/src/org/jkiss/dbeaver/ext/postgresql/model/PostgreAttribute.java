@@ -79,6 +79,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         loadInfo(monitor, dbResult);
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return getTable().getDatabase();
