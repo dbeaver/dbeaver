@@ -2626,7 +2626,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityAssociation association, @Nullable DBDAttributeBinding attr, @NotNull List<ResultSetRow> rows, boolean newWindow)
+    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
         throws DBException
     {
         if (!confirmProceed()) {
@@ -2639,21 +2639,6 @@ public class ResultSetViewer extends Viewer
         if (getExecutionContext() == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);
         }
-        if (association == null) {
-            List<DBSEntityReferrer> referrers = attr.getReferrers();
-            if (referrers != null) {
-                for (final DBSEntityReferrer referrer : referrers) {
-                    if (referrer instanceof DBSEntityAssociation) {
-                        association = (DBSEntityAssociation) referrer;
-                        break;
-                    }
-                }
-            }
-            if (association == null) {
-                throw new DBException("Association not found in attribute [" + attr.getName() + "]");
-            }
-        }
-
         DBSEntityConstraint refConstraint = association.getReferencedConstraint();
         if (refConstraint == null) {
             throw new DBException("Broken association (referenced constraint missing)");
@@ -2684,7 +2669,7 @@ public class ResultSetViewer extends Viewer
         for (int i = 0; i < ownAttrs.size(); i++) {
             DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
-            DBDAttributeBinding ownBinding = model.getAttributeBinding(ownAttr.getAttribute());
+            DBDAttributeBinding ownBinding = bindingsModel.getAttributeBinding(ownAttr.getAttribute());
             if (ownBinding == null) {
                 DBWorkbench.getPlatformUI().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
                 return;
@@ -2697,21 +2682,18 @@ public class ResultSetViewer extends Viewer
             createFilterConstraint(rows, ownBinding, constraint);
         }
         // Save cur data filter in state
-        curState.filter = new DBDDataFilter(model.getDataFilter());
+        if (curState == null) {
+            setNewState((DBSDataContainer) targetEntity, model.getDataFilter());
+        }
+        curState.filter = new DBDDataFilter(bindingsModel.getDataFilter());
         navigateEntity(monitor, newWindow, targetEntity, constraints);
-    }
-
-    @Override
-    public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
-        throws DBException
-    {
-        navigateReference(monitor, model, association, rows, newWindow);
     }
 
     /**
      * Navigate reference
      * @param bindingsModel       data bindings providing model. Can be a model from another results viewer.
      */
+    @Override
     public void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetModel bindingsModel, @NotNull DBSEntityAssociation association, @NotNull List<ResultSetRow> rows, boolean newWindow)
         throws DBException
     {

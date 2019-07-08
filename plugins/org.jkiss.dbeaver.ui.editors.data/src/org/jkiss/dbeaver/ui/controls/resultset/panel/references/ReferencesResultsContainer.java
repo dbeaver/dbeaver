@@ -47,7 +47,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class ReferencesResultsContainer implements IResultSetContainer {
+class ReferencesResultsContainer implements IResultSetContainer {
 
     private static final Log log = Log.getLog(ReferencesResultsContainer.class);
 
@@ -64,7 +64,7 @@ public class ReferencesResultsContainer implements IResultSetContainer {
 
     private List<ResultSetRow> lastSelectedRows;
 
-    public ReferencesResultsContainer(Composite parent, IResultSetController parentController) {
+    ReferencesResultsContainer(Composite parent, IResultSetController parentController) {
         this.parentController = parentController;
 
         this.mainComposite = UIUtils.createComposite(parent, 1);
@@ -171,13 +171,28 @@ public class ReferencesResultsContainer implements IResultSetContainer {
                     try {
                         List<ReferenceKey> refs = new ArrayList<>();
                         for (DBSEntity entity : allEntities) {
+                            // Foreign keys
+                            Collection<? extends DBSEntityAssociation> associations = entity.getAssociations(monitor);
+                            if (associations != null) {
+                                for (DBSEntityAssociation assoc : associations) {
+                                    if (assoc instanceof DBSEntityReferrer) {
+                                        List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
+                                        if (!CommonUtils.isEmpty(attrs)) {
+                                            ReferenceKey referenceKey = new ReferenceKey(false, entity, assoc, attrs);
+                                            refs.add(referenceKey);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // References
                             Collection<? extends DBSEntityAssociation> references = entity.getReferences(monitor);
                             if (references != null) {
                                 for (DBSEntityAssociation assoc : references) {
                                     if (assoc instanceof DBSEntityReferrer) {
                                         List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) assoc).getAttributeReferences(monitor);
                                         if (!CommonUtils.isEmpty(attrs)) {
-                                            ReferenceKey referenceKey = new ReferenceKey(entity, assoc, attrs);
+                                            ReferenceKey referenceKey = new ReferenceKey(true, entity, assoc, attrs);
                                             refs.add(referenceKey);
                                         }
                                     }
@@ -241,12 +256,21 @@ public class ReferencesResultsContainer implements IResultSetContainer {
                 this.dataViewer.clearData();
                 this.dataViewer.showEmptyPresentation();
             } else {
-                this.dataViewer.navigateReference(
-                    new VoidProgressMonitor(),
-                    parentController.getModel(),
-                    activeReferenceKey.refAssociation,
-                    selectedRows,
-                    false);
+                if (activeReferenceKey.isReference) {
+                    this.dataViewer.navigateReference(
+                        new VoidProgressMonitor(),
+                        parentController.getModel(),
+                        activeReferenceKey.refAssociation,
+                        selectedRows,
+                        false);
+                } else {
+                    this.dataViewer.navigateAssociation(
+                        new VoidProgressMonitor(),
+                        parentController.getModel(),
+                        activeReferenceKey.refAssociation,
+                        selectedRows, false);
+
+                }
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Can't shwo references", "Error opening '" + dataContainer.getName() + "' references", e);
@@ -254,11 +278,13 @@ public class ReferencesResultsContainer implements IResultSetContainer {
     }
 
     private static class ReferenceKey {
-        DBSEntity refEntity;
-        DBSEntityAssociation refAssociation;
-        List<? extends DBSEntityAttributeRef> refAttributes;
+        final boolean isReference;
+        final DBSEntity refEntity;
+        final DBSEntityAssociation refAssociation;
+        final List<? extends DBSEntityAttributeRef> refAttributes;
 
-        ReferenceKey(DBSEntity refEntity, DBSEntityAssociation refAssociation, List<? extends DBSEntityAttributeRef> refAttributes) {
+        public ReferenceKey(boolean isReference, DBSEntity refEntity, DBSEntityAssociation refAssociation, List<? extends DBSEntityAttributeRef> refAttributes) {
+            this.isReference = isReference;
             this.refEntity = refEntity;
             this.refAssociation = refAssociation;
             this.refAttributes = refAttributes;
@@ -269,7 +295,12 @@ public class ReferencesResultsContainer implements IResultSetContainer {
 
         @Override
         public Image getImage(Object element) {
-            return DBeaverIcons.getImage(DBIcon.TREE_ASSOCIATION);
+            if (element == null) {
+                return DBeaverIcons.getImage(DBIcon.TREE_ASSOCIATION);
+            }
+            ReferenceKey key = (ReferenceKey) element;
+            return DBeaverIcons.getImage(
+                key.isReference ? DBIcon.TREE_REFERENCE : DBIcon.TREE_FOREIGN_KEY);
         }
 
         @Override

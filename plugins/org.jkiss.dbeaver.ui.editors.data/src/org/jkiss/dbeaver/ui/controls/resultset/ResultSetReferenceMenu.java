@@ -152,7 +152,7 @@ public class ResultSetReferenceMenu
                             @Override
                             protected IStatus run(DBRProgressMonitor monitor) {
                                 try {
-                                    viewer.navigateAssociation(new VoidProgressMonitor(), association, null, rows, openInNewWindow);
+                                    viewer.navigateAssociation(new VoidProgressMonitor(), viewer.getModel(), association, rows, openInNewWindow);
                                 } catch (DBException e) {
                                     return GeneralUtils.makeExceptionStatus(e);
                                 }
@@ -182,7 +182,12 @@ public class ResultSetReferenceMenu
                             @Override
                             protected IStatus run(DBRProgressMonitor monitor) {
                                 try {
-                                    viewer.navigateReference(new VoidProgressMonitor(), refAssociation, rows, openInNewWindow);
+                                    viewer.navigateReference(
+                                        new VoidProgressMonitor(),
+                                        viewer.getModel(),
+                                        refAssociation,
+                                        rows,
+                                        openInNewWindow);
                                 } catch (DBException e) {
                                     return GeneralUtils.makeExceptionStatus(e);
                                 }

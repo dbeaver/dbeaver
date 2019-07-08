@@ -382,7 +382,7 @@ public class ResultSetHandlerMain extends AbstractHandler {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
                             try {
-                                rsv.navigateAssociation(monitor, null, attr, rsv.getSelection().getSelectedRows(), false);
+                                rsv.navigateAssociation(monitor, rsv.getModel(), ResultSetUtils.getAssociationByAttribute(attr), rsv.getSelection().getSelectedRows(), false);
                             } catch (DBException e) {
                                 return GeneralUtils.makeExceptionStatus(e);
                             }
