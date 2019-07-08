@@ -1800,6 +1800,19 @@ public class UIUtils {
         display.update();
     }
 
+    public static void waitInUI(DBRCondition condition, long waitTime) {
+        syncExec(() -> {
+            long startTime = System.currentTimeMillis();
+            Display display = Display.getCurrent();
+            do  {
+                if (!display.readAndDispatch()) {
+                    RuntimeUtils.pause(100);
+                }
+            } while (!condition.isConditionMet() && (System.currentTimeMillis() - startTime) < waitTime);
+            display.update();
+        });
+    }
+
     public static void fixReadonlyTextBackground(Text textField) {
         // There is still no good workaround: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
         if (false) {
