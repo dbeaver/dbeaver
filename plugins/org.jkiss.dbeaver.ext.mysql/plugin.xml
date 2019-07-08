@@ -226,7 +226,7 @@
                     description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[1.5.5]" bundle="!drivers.mariadb"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[2.4.2]" bundle="!drivers.mariadb"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
             </drivers>
