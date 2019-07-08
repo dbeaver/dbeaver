@@ -24,11 +24,11 @@ import org.eclipse.jface.action.IContributionManager;
  */
 public interface IResultSetDecorator {
 
-    long FEATURE_NONE            = 0;
-    long FEATURE_FILTERS         = 1;
-    long FEATURE_STATUS_BAR      = 2;
-    long FEATURE_PANELS          = 4;
-    long FEATURE_EDIT            = 5;
+    long FEATURE_NONE               = 0;
+    long FEATURE_FILTERS            = 1;
+    long FEATURE_STATUS_BAR         = 2;
+    long FEATURE_PANELS             = 4;
+    long FEATURE_EDIT               = 8;
 
     long getDecoratorFeatures();
 
@@ -39,4 +39,6 @@ public interface IResultSetDecorator {
     void fillContributions(IContributionManager contributionManager);
 
     void registerDragAndDrop(IResultSetPresentation presentation);
+
+    Boolean getAutoRecordMode();
 }

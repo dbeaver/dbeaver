@@ -1928,8 +1928,20 @@ public class ResultSetViewer extends Viewer
 
         {
 
-            if (model.isMetadataChanged() && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
-                boolean newRecordMode = (rows.size() == 1);
+            Boolean autoRecordMode = getDecorator().getAutoRecordMode();
+            if (autoRecordMode != null ||
+                (model.isMetadataChanged() && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE)))
+            {
+                boolean newRecordMode;
+                if (autoRecordMode != null) {
+                    if (rows.size() == 1) {
+                        newRecordMode = autoRecordMode;
+                    } else {
+                        newRecordMode = false;
+                    }
+                } else {
+                    newRecordMode = (rows.size() == 1);
+                }
                 if (newRecordMode != recordMode) {
                     toggleMode();
                 }
