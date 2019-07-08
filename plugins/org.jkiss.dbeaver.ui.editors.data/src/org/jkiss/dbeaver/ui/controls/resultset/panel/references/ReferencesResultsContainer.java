@@ -72,14 +72,14 @@ public class ReferencesResultsContainer implements IResultSetContainer {
         Composite keySelectorPanel = UIUtils.createComposite(this.mainComposite, 2);
         keySelectorPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createControlLabel(keySelectorPanel, "Reference");
-        fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.CHECK, new RefKeyLabelProvider());
+        fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
         fkCombo.addItem(null);
         fkCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fkCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 activeReferenceKey = fkCombo.getSelectedItem();
-                refreshKeyValues();
+                refreshKeyValues(true);
             }
         });
 
@@ -134,7 +134,7 @@ public class ReferencesResultsContainer implements IResultSetContainer {
         if (newParentContainer != parentDataContainer) {
             refreshReferenceKeyList();
         } else if (dataContainer != null) {
-            refreshKeyValues();
+            refreshKeyValues(false);
         }
     }
 
@@ -214,14 +214,14 @@ public class ReferencesResultsContainer implements IResultSetContainer {
         }
 
         if (activeReferenceKey != null) {
-            refreshKeyValues();
+            refreshKeyValues(true);
         }
     }
 
     /**
      * Refresh data
      */
-    private void refreshKeyValues() {
+    private void refreshKeyValues(boolean force) {
         if (activeReferenceKey == null) {
             log.error("No active reference key");
             return;
@@ -233,7 +233,7 @@ public class ReferencesResultsContainer implements IResultSetContainer {
         dataContainer = (DBSDataContainer) activeReferenceKey.refEntity;
         try {
             List<ResultSetRow> selectedRows = parentController.getSelection().getSelectedRows();
-            if (CommonUtils.equalObjects(lastSelectedRows, selectedRows)) {
+            if (!force && CommonUtils.equalObjects(lastSelectedRows, selectedRows)) {
                 return;
             }
             lastSelectedRows = selectedRows;

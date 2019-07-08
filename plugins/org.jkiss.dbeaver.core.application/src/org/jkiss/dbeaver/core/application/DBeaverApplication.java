@@ -483,9 +483,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         public void bundleChanged(BundleEvent event) {
             String message = null;
 
-            if (event.getType() == BundleEvent.STARTED) {
+            if (event.getType() == BundleEvent.STARTING) {
                 message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-            } else if (event.getType() == BundleEvent.STOPPED) {
+            } else if (event.getType() == BundleEvent.STOPPING) {
                 message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
             }
             if (message != null) {
