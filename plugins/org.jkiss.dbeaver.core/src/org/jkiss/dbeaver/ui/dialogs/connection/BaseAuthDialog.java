@@ -23,7 +23,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +37,7 @@ public class BaseAuthDialog extends BaseDialog
 
     private boolean passwordOnly;
     private boolean showSavePassword;
-    private DBAAuthInfo authInfo = new DBAAuthInfo();
+    private DBPAuthInfo authInfo = new DBPAuthInfo();
 
     private Text usernameText;
     private Text passwordText;
@@ -55,7 +55,7 @@ public class BaseAuthDialog extends BaseDialog
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
-    public DBAAuthInfo getAuthInfo()
+    public DBPAuthInfo getAuthInfo()
     {
         return authInfo;
     }

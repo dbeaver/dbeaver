@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -228,7 +228,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     }
 
     @Nullable
-    protected DBAAuthInfo getAuthInfo(DBRProgressMonitor monitor) {
+    protected DBPAuthInfo getAuthInfo(DBRProgressMonitor monitor) {
         return null;
     }
 

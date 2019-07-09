@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.runtime.net;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -53,7 +53,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
                 String userName = store.getString(ModelPreferences.UI_PROXY_USER);
                 String userPassword = decryptPassword(store.getString(ModelPreferences.UI_PROXY_PASSWORD));
                 if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-                    DBAAuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
+                    DBPAuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
                     if (authInfo != null) {
                         userName = authInfo.getUserName();
                         userPassword = authInfo.getUserPassword();
@@ -81,7 +81,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
                             String userName = networkHandler.getUserName();
                             String userPassword = networkHandler.getPassword();
                             if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-                                DBAAuthInfo authInfo = readCredentialsInUI(getRequestingPrompt(), userName, userPassword);
+                                DBPAuthInfo authInfo = readCredentialsInUI(getRequestingPrompt(), userName, userPassword);
                                 if (authInfo != null) {
                                     userName = authInfo.getUserName();
                                     userPassword = authInfo.getUserPassword();
@@ -131,7 +131,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
         }
     }
 
-    private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
+    private DBPAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
         return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, userName, userPassword, false, true);
     }
 

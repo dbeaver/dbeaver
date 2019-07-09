@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -1373,7 +1373,7 @@ public class DataSourceDescriptor
         final String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
         final String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
 
-        DBAAuthInfo authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
+        DBPAuthInfo authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
         if (authInfo == null) {
             return false;
         }
