@@ -49,6 +49,7 @@ public class DBPConnectionConfiguration implements DBPObject
     private String userPassword;
     private String url;
     private String clientHomeId;
+
     @NotNull
     private final Map<String, String> properties;
     @NotNull

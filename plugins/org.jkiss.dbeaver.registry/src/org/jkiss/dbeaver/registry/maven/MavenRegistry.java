@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.PasswordEncrypter;
@@ -283,7 +283,7 @@ public class MavenRegistry
                                     xml.addAttribute("group", scope);
                                 }
                             }
-                            final DBAAuthInfo authInfo = repository.getAuthInfo();
+                            final DBPAuthInfo authInfo = repository.getAuthInfo();
                             if (!CommonUtils.isEmpty(authInfo.getUserName())) {
                                 xml.addAttribute("auth-user", authInfo.getUserName());
                                 if (!CommonUtils.isEmpty(authInfo.getUserPassword())) {

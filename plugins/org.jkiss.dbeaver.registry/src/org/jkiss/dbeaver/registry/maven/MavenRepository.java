@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -62,7 +62,7 @@ public class MavenRepository
     private int order;
     private boolean enabled = true;
     private String description;
-    private final DBAAuthInfo authInfo = new DBAAuthInfo();
+    private final DBPAuthInfo authInfo = new DBPAuthInfo();
 
     private Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
 
@@ -170,7 +170,7 @@ public class MavenRepository
     }
 
     @NotNull
-    public DBAAuthInfo getAuthInfo() {
+    public DBPAuthInfo getAuthInfo() {
         return authInfo;
     }
 

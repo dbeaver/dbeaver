@@ -15,18 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.ui;
-
-import org.eclipse.core.runtime.IStatus;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.access.DBAAuthInfo;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+package org.jkiss.dbeaver.model.connection;
 
 /**
- * User interface interactions
+ * Auth profile.
+ * May be anything cloud-specific.
  */
-public interface ErrorUtils {
-
+public class DBPConnectionProfile extends DBPConfigurationProfile {
 
 }
