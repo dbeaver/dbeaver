@@ -641,7 +641,7 @@ public class SQLQueryJob extends DataSourceJob
     private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
     {
         for (SQLQueryParameter param : parameters) {
-            String paramName = param.getTitle();
+            String paramName = param.getVarName();
             if (scriptContext.hasVariable(paramName)) {
                 Object varValue = scriptContext.getVariable(paramName);
                 String strValue = varValue == null ? null : varValue.toString();
@@ -674,9 +674,9 @@ public class SQLQueryJob extends DataSourceJob
         if (okPressed) {
             // Save values back to script context
             for (SQLQueryParameter param : parameters) {
-                if (param.isNamed() && scriptContext.hasVariable(param.getTitle())) {
+                if (param.isNamed() && scriptContext.hasVariable(param.getVarName())) {
                     String strValue = param.getValue();
-                    scriptContext.setVariable(param.getTitle(), strValue);
+                    scriptContext.setVariable(param.getVarName(), strValue);
                 }
             }
         }

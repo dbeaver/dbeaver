@@ -1205,16 +1205,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                         tokenOffset - queryOffset,
                         tokenLength);
 
-                    SQLQueryParameter previous = null;
-                    if (parameter.isNamed()) {
-                        for (int i = parameters.size(); i > 0; i--) {
-                            if (parameters.get(i - 1).getName().equals(paramName)) {
-                                previous = parameters.get(i - 1);
-                                break;
-                            }
-                        }
-                    }
-                    parameter.setPrevious(previous);
+                    parameter.setPrevious(getPreviousParameter(parameters, parameter));
                     parameters.add(parameter);
                 } catch (BadLocationException e) {
                     log.warn("Can't extract query parameter", e);
@@ -1251,7 +1242,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
                             if (parameters == null) {
                                 parameters = new ArrayList<>();
                             }
-
+                            param.setPrevious(getPreviousParameter(parameters, param));
                             parameters.add(param.getOrdinalPosition(), param);
                         }
                     }
@@ -1263,6 +1254,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements DBPContext
         }
 
         return parameters;
+    }
+
+    private static SQLQueryParameter getPreviousParameter(List<SQLQueryParameter> parameters, SQLQueryParameter parameter) {
+        String varName = parameter.getVarName();
+        if (parameter.isNamed()) {
+            for (int i = parameters.size(); i > 0; i--) {
+                if (parameters.get(i - 1).getVarName().equals(varName)) {
+                    return parameters.get(i - 1);
+                }
+            }
+        }
+        return null;
     }
 
     protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
