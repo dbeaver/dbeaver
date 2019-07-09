@@ -63,6 +63,7 @@ public class ExasolConstants {
     public static final ArrayList<String> stringSepModes = new ArrayList<String>();
     
     public static final ArrayList<String> rowSeperators = new ArrayList<String>();
+    public static final String TYPE_GEOMETRY = "GEOMETRY";
     
     static
     {
