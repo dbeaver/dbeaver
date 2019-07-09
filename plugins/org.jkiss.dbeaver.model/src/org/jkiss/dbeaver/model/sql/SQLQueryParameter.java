@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.regex.Pattern;
 
@@ -108,7 +107,7 @@ public class SQLQueryParameter {
         this.variableSet = variableSet;
     }
 
-    public String getTitle() {
+    public String getVarName() {
         String varName = stripVariablePattern(name);
         if (!varName.equals(name)) {
             return varName;
@@ -123,7 +122,7 @@ public class SQLQueryParameter {
 
     @Override
     public String toString() {
-        return getTitle() + "=" + value;
+        return getVarName() + "=" + value;
     }
 
     public static Pattern getVariablePattern() {

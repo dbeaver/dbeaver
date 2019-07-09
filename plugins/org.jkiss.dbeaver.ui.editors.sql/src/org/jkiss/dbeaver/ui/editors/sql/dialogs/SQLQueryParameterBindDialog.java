@@ -193,7 +193,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             item.setData(param);
             item.setImage(DBeaverIcons.getImage(DBIcon.TREE_ATTRIBUTE));
             item.setText(0, String.valueOf(param.getOrdinalPosition() + 1));
-            item.setText(1, param.getTitle());
+            item.setText(1, param.getVarName());
             item.setText(2, CommonUtils.notEmpty(param.getValue()));
         }
     }
