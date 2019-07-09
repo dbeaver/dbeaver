@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -63,54 +64,81 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private String tablePrefix;
     private Boolean hasPartitionKey;
     private ExasolTablePartitionColumnCache tablePartitionColumnCache = new ExasolTablePartitionColumnCache();
-    private static String readAdditionalInfo =         "SELECT " + 
-    		"	* " + 
-    		"FROM " + 
-    		"	( " + 
-    		"	SELECT " + 
-    		"		table_schema, " + 
-    		"		table_name, " + 
-    		"		table_owner, " + 
-    		"		table_has_distribution_key, %s" + 
-    		"		table_comment, " + 
-    		"		table_row_count, " + 
-    		"		delete_percentage, " + 
-    		"		o.created, " + 
-    		"		o.last_commit, " + 
-    		"		s.raw_object_size, " + 
-    		"		s.mem_object_size, " + 
-    		"		s.object_type " + 
-    		"	FROM " + 
-    		"		%s_OBJECTS o " + 
-    		"	INNER JOIN %s_TABLES T ON " + 
-    		"		o.object_id = t.table_object_id " + 
-    		"	INNER JOIN %s_OBJECT_SIZES s ON " + 
-    		"		o.object_id = s.object_id " + 
-    		"	WHERE " + 
-    		"		o.object_id = %s AND o.object_id = %s AND t.table_object_id = %s " + 
-    		"UNION ALL " + 
-    		"	SELECT " + 
-    		"		schema_name AS table_schema, " + 
-    		"		object_name AS table_name, " + 
-    		"		'SYS' AS table_owner, " + 
-    		"		FALSE AS table_has_distribution_key, false as table_has_partition_key," + 
-    		"		object_comment AS table_comment, " +
-    		"       -1 AS table_row_count," + 
-    		"		-1 AS delete_percentage, " + 
-    		"		CAST( NULL AS TIMESTAMP) AS created, " + 
-    		"		CAST( NULL AS TIMESTAMP) AS last_commit, " + 
-    		"		-1 AS raw_object_size, " + 
-    		"		-1 AS mem_object_size, " + 
-    		"		object_type " + 
-    		"	FROM " + 
-    		"		SYS.EXA_SYSCAT " + 
-    		"	WHERE " + 
-    		"		object_type = 'TABLE' " + 
-    		"		AND schema_name = '%s' " + 
-    		"		AND object_name = '%s' ) AS o " + 
-    		"ORDER BY " + 
-    		"	table_schema, " + 
-    		"	o.table_name";
+    
+    private static String readAdditionalTableInfo = "SELECT" + 
+            "    * " + 
+            "FROM" + 
+            "    (" + 
+            "    SELECT" + 
+            "        table_schema," + 
+            "        table_name," + 
+            "        table_owner," + 
+            "        table_has_distribution_key," + 
+            "        %s" + 
+            "        table_comment," + 
+            "        table_row_count," + 
+            "        delete_percentage," + 
+            "        o.created," + 
+            "        o.last_commit," + 
+            "        o.object_type" + 
+            "    FROM" + 
+            "        %s_OBJECTS o" + 
+            "    INNER JOIN %s_TABLES T ON" + 
+            "        o.object_id = t.table_object_id" + 
+            "    WHERE" + 
+            "        o.object_id = ?" + 
+            "        AND t.table_object_id = ? " + 
+            "UNION ALL" + 
+            "    SELECT" + 
+            "        schema_name AS table_schema," + 
+            "        object_name AS table_name," + 
+            "        'SYS' AS table_owner," + 
+            "        FALSE AS table_has_distribution_key," + 
+            "        FALSE AS table_has_partition_key," + 
+            "        object_comment AS table_comment," + 
+            "        -1 AS table_row_count," + 
+            "        -1 AS delete_percentage," + 
+            "        CAST( NULL AS TIMESTAMP) AS CREATED," + 
+            "        CAST( NULL AS TIMESTAMP) AS last_commit," + 
+            "        object_type" + 
+            "    FROM" + 
+            "        SYS.EXA_SYSCAT" + 
+            "    WHERE" + 
+            "        object_type = 'TABLE'" + 
+            "        AND schema_name = ?" + 
+            "        AND object_name = ? ) AS o " + 
+            "ORDER BY " + 
+            "    table_schema," + 
+            "    o.table_name" + 
+            "";
+    private static String readTableSize =         "SELECT " + 
+            "    * " + 
+            "FROM " + 
+            "    ( " + 
+            "    SELECT " + 
+            "        root_name, " + 
+            "        object_name, " + 
+            "        raw_object_size, " + 
+            "        mem_object_size " + 
+            "    FROM " + 
+            "        %s_OBJECT_SIZES  " + 
+            "    WHERE " + 
+            "        object_id = ? " + 
+            "UNION ALL " + 
+            "    SELECT " + 
+            "        schema_name AS root_name, " + 
+            "        object_name, " + 
+            "        -1 AS raw_object_size, " + 
+            "        -1 AS mem_object_size " + 
+            "    FROM " + 
+            "        SYS.EXA_SYSCAT " + 
+            "    WHERE " + 
+            "        object_type = 'TABLE' " + 
+            "        AND schema_name = ? " + 
+            "        AND object_name = ? ) AS o " + 
+            "ORDER BY " + 
+            "    root_name, " + 
+            "    object_name";
     
     
     public ExasolTable(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
@@ -128,38 +156,54 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private void read(DBRProgressMonitor monitor) throws DBCException
     {
     	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_table_details );
-    	try (JDBCStatement stmt = session.createStatement())
+    	
+        String sqlTableInfo = String.format(readAdditionalTableInfo,
+                getDataSource().ishasPriorityGroups() ? "table_has_partition_key,"  : "false as table_has_partition_key,",
+                tablePrefix,
+                tablePrefix
+                );
+        // two statements necessary as the exasol optimizer is very stupid from time to time
+        try (JDBCPreparedStatement stmt = session.prepareStatement(sqlTableInfo))
     	{
-    		String sql = String.format(readAdditionalInfo,
-    				getDataSource().ishasPriorityGroups() ? "table_has_partition_key,"  : "false as table_has_partition_key,",
-    				tablePrefix,
-    				tablePrefix,
-    				tablePrefix,
-    				this.getObjectId(),
-    				this.getObjectId(),
-    				this.getObjectId(),
-    				ExasolUtils.quoteString(this.getSchema().getName()),
-    				ExasolUtils.quoteString(this.getName())
-    				);
-    		
-    		try (JDBCResultSet dbResult = stmt.executeQuery(sql)) 
-    		{
-    			dbResult.next();
-				this.hasDistKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_DISTRIBUTION_KEY");
-				this.hasPartitionKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_PARTITION_KEY");
-				if (this.hasPartitionKey == null)
-					this.hasPartitionKey = false;
-    	        this.lastCommit = JDBCUtils.safeGetTimestamp(dbResult, "LAST_COMMIT");
-    	        this.sizeRaw = JDBCUtils.safeGetLong(dbResult, "RAW_OBJECT_SIZE");
-    	        this.sizeCompressed = JDBCUtils.safeGetLong(dbResult, "MEM_OBJECT_SIZE");
-    	        this.deletePercentage = JDBCUtils.safeGetFloat(dbResult, "DELETE_PERCENTAGE");
-    	        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED"); 
-    			this.tablecount = JDBCUtils.safeGetLong(dbResult, "TABLE_ROW_COUNT");
-    		}
-    		
-    	} catch (SQLException e) {
-    		throw new DBCException(e,getDataSource());
-		}
+            stmt.setBigDecimal(1, this.getObjectId());
+            stmt.setBigDecimal(2, this.getObjectId());
+            stmt.setString(3, this.getSchema().getName());
+            stmt.setString(4, this.getName());
+            try(JDBCResultSet dbResult = stmt.executeQuery())
+            {
+                dbResult.next();
+                this.hasDistKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_DISTRIBUTION_KEY");
+                this.hasPartitionKey = JDBCUtils.safeGetBoolean(dbResult, "TABLE_HAS_PARTITION_KEY");
+                if (this.hasPartitionKey == null)
+                    this.hasPartitionKey = false;
+                this.lastCommit = JDBCUtils.safeGetTimestamp(dbResult, "LAST_COMMIT");
+                this.deletePercentage = JDBCUtils.safeGetFloat(dbResult, "DELETE_PERCENTAGE");
+                this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED"); 
+                this.tablecount = JDBCUtils.safeGetLong(dbResult, "TABLE_ROW_COUNT");
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e,getDataSource());
+        }
+    	    
+        String sqlTableSize = String.format(readTableSize,
+                tablePrefix
+                );
+
+        try (JDBCPreparedStatement stmt = session.prepareStatement(sqlTableSize))
+        {
+            stmt.setBigDecimal(1, this.getObjectId());
+            stmt.setString(2, this.getSchema().getName());
+            stmt.setString(3, this.getName());
+            try(JDBCResultSet dbResult = stmt.executeQuery())
+            {
+                dbResult.next();
+                this.sizeRaw = JDBCUtils.safeGetLong(dbResult, "RAW_OBJECT_SIZE");
+                this.sizeCompressed = JDBCUtils.safeGetLong(dbResult, "MEM_OBJECT_SIZE");
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e,getDataSource());
+        }
+
         this.hasRead = true;
     	
     }
@@ -183,7 +227,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
         return hasDistKey;
     }
     
-    @Property(viewable = true, expensive = false,  updatable = true, order = 95)
+    @Property(viewable = true, expensive = false,  updatable = false, order = 95)
     public Boolean getHasPartitionKey(DBRProgressMonitor monitor) throws DBCException {
     	if (! hasRead)
     		read(monitor);
