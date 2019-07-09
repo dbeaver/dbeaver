@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -56,7 +57,10 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             }
         }
         if (!scripts.isEmpty()) {
-            SelectDataSourceDialog dialog = new SelectDataSourceDialog(activeShell, scripts.get(0).getProject(), null);
+            SelectDataSourceDialog dialog = new SelectDataSourceDialog(
+                activeShell,
+                DBWorkbench.getPlatform().getWorkspace().getProject(scripts.get(0).getProject()),
+                null);
             if (dialog.open() == IDialogConstants.CANCEL_ID) {
                 return null;
             }

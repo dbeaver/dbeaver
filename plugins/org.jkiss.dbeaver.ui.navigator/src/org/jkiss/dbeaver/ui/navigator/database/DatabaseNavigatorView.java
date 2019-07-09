@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -33,7 +33,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     public DatabaseNavigatorView()
     {
         super();
-        DBWorkbench.getPlatform().getProjectManager().addProjectListener(this);
+        DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
     }
 
     @Override
@@ -44,14 +44,14 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public DBNNode getRootNode()
     {
-        DBNProject projectNode = getModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
+        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
     @Override
     public void dispose()
     {
-        DBWorkbench.getPlatform().getProjectManager().removeProjectListener(this);
+        DBWorkbench.getPlatform().getWorkspace().removeProjectListener(this);
         super.dispose();
     }
 
@@ -63,7 +63,17 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     @Override
-    public void handleActiveProjectChange(IProject oldValue, IProject newValue)
+    public void handleProjectAdd(DBPProject project) {
+        // Ignore
+    }
+
+    @Override
+    public void handleProjectRemove(DBPProject project) {
+        // Ignore
+    }
+
+    @Override
+    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue)
     {
         UIUtils.asyncExec(() -> {
             getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));

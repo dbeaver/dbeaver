@@ -18,10 +18,7 @@
 package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.net.proxy.IProxyService;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
@@ -31,9 +28,9 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
@@ -44,7 +41,10 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
+import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
@@ -103,7 +103,6 @@ public class DBeaverCore implements DBPPlatform {
     private DBNModel navigatorModel;
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
-    private ProjectRegistry projectRegistry;
     private DBACertificateStorage certificateStorage;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
@@ -222,12 +221,6 @@ public class DBeaverCore implements DBPPlatform {
         this.certificateStorage = new DefaultCertificateStorage(
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
 
-        // Init project registry
-        this.projectRegistry = new ProjectRegistry(workspace.getEclipseWorkspace());
-
-        // Projects registry
-        initializeProjects();
-
         // Navigator model
         this.navigatorModel = new DBNModel(this, true);
         this.navigatorModel.initialize();
@@ -259,15 +252,6 @@ public class DBeaverCore implements DBPPlatform {
         }
     }
 
-    private void initializeProjects() {
-        final IProgressMonitor monitor = new NullProgressMonitor();
-        try {
-            projectRegistry.loadProjects(monitor);
-        } catch (DBException e) {
-            log.error("Error loading projects", e);
-        }
-    }
-
     public synchronized void dispose() {
         long startTime = System.currentTimeMillis();
         log.debug("Shutdown Core...");
@@ -289,13 +273,6 @@ public class DBeaverCore implements DBPPlatform {
         if (this.navigatorModel != null) {
             this.navigatorModel.dispose();
             //this.navigatorModel = null;
-        }
-
-        // Dispose project registry
-        // It will close all open connections
-        if (this.projectRegistry != null) {
-            this.projectRegistry.dispose();
-            this.projectRegistry = null;
         }
 
         if (this.qmLogWriter != null) {
@@ -343,12 +320,6 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public DBPResourceHandler getDefaultResourceHandler() {
         return DefaultResourceHandlerImpl.INSTANCE;
-    }
-
-    @NotNull
-    @Override
-    public DBPProjectManager getProjectManager() {
-        return getProjectRegistry();
     }
 
     @NotNull
@@ -500,14 +471,10 @@ public class DBeaverCore implements DBPPlatform {
         return application.getSecureStorage();
     }
 
-    public ProjectRegistry getProjectRegistry() {
-        return projectRegistry;
-    }
-
     @NotNull
     @Override
     public DBPExternalFileManager getExternalFileManager() {
-        return projectRegistry;
+        return workspace;
     }
 
     @NotNull
@@ -556,17 +523,6 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public boolean isShuttingDown() {
         return isClosing();
-    }
-
-    @NotNull
-    public List<IProject> getLiveProjects() {
-        List<IProject> result = new ArrayList<>();
-        for (IProject project : workspace.getEclipseWorkspace().getRoot().getProjects()) {
-            if (project.exists() && !project.isHidden()) {
-                result.add(project);
-            }
-        }
-        return result;
     }
 
     public static void writeWorkspaceInfo(File metadataFolder, Properties props) {

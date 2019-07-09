@@ -75,7 +75,7 @@ public class CreateConnectionDialog extends ActiveWizardDialog
 
     @Override
     public int open() {
-        if (DBWorkbench.getPlatform().getProjectManager().getActiveProject() == null) {
+        if (DBWorkbench.getPlatform().getWorkspace().getActiveProject() == null) {
             DBWorkbench.getPlatformUI().showError("No active project", "No active project, can't create new connection.\nActivate or create new project.");
             return IDialogConstants.CANCEL_ID;
         }

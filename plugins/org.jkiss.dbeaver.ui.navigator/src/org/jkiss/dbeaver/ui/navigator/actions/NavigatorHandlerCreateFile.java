@@ -22,10 +22,9 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -41,11 +40,10 @@ public class NavigatorHandlerCreateFile extends NavigatorHandlerObjectBase {
             if (!(element instanceof DBNResource)) {
                 return null;
             }
-            Shell activeShell = HandlerUtil.getActiveShell(event);
 
-            final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
+            DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
             IResource resource = ((DBNResource) element).getResource();
-            DBPResourceCreator handler = (DBPResourceCreator) projectRegistry.getResourceHandler(resource);
+            DBPResourceCreator handler = (DBPResourceCreator) workspace.getResourceHandler(resource);
             if (resource instanceof IFolder) {
                 try {
                     handler.createResource((IFolder) resource);

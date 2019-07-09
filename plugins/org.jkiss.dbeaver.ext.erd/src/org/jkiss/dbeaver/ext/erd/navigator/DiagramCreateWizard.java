@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.erd.navigator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -31,6 +30,7 @@ import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -69,7 +69,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
 			}
         }
         if (diagramFolder == null) {
-        	IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         	if (activeProject == null) {
 				errorMessage = "Can't create diagram without active project";
 			} else {
@@ -148,8 +148,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
         }
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
                 Collection<DBSEntity> tables = DiagramObjectCollector.collectTables(
                     monitor,

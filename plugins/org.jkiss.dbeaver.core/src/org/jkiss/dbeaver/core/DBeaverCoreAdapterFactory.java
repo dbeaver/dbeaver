@@ -37,12 +37,12 @@ public class DBeaverCoreAdapterFactory implements IAdapterFactory {
             if (dataSource != null) {
                 DBPDataSourceContainer container = dataSource.getContainer();
                 if (container != null) {
-                    return container.getRegistry().getProject();
+                    return container.getRegistry().getProject().getEclipseProject();
                 }
             }
         }
         // FIXME:AF: for now it looks like reasonable default
-        return DBeaverCore.getInstance().getProjectManager().getActiveProject();
+        return DBeaverCore.getInstance().getWorkspace().getActiveProject().getEclipseProject();
     };
 
     @Override

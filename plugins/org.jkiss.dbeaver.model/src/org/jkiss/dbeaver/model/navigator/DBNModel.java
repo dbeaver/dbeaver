@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -102,13 +103,6 @@ public class DBNModel implements IResourceChangeListener {
         this.root = new DBNRoot(this);
 
         if (global) {
-            // Add all existing projects to root node
-            for (IProject project : platform.getLiveProjects()) {
-                root.addProject(project, false);
-            }
-
-            platform.getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
-
             new EventProcessingJob().schedule();
         }
     }
@@ -270,9 +264,9 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
-    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull IProject project, @NotNull String path) throws DBException
+    public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull DBPProject project, @NotNull String path) throws DBException
     {
-        DBNProject projectNode = getRoot().getProject(project);
+        DBNProject projectNode = getRoot().getProjectNode(project);
         if (projectNode == null) {
             log.debug("Project node not found");
             return null;
@@ -301,7 +295,7 @@ public class DBNModel implements IResourceChangeListener {
         if (project == null) {
             return null;
         }
-        final DBNProject projectNode = getRoot().getProject(project);
+        final DBNProject projectNode = getRoot().getProjectNode(project);
         if (projectNode == null) {
             return null;
         }
@@ -510,7 +504,7 @@ public class DBNModel implements IResourceChangeListener {
             } else {
                 this.listeners.add(listener);
             }
-            this.listenersCopy = this.listeners.toArray(new INavigatorListener[this.listeners.size()]);
+            this.listenersCopy = this.listeners.toArray(new INavigatorListener[0]);
         }
     }
 
@@ -520,7 +514,7 @@ public class DBNModel implements IResourceChangeListener {
             if (!this.listeners.remove(listener)) {
                 log.warn("Listener " + listener + " wasn't registered in model");
             }
-            this.listenersCopy = this.listeners.toArray(new INavigatorListener[this.listeners.size()]);
+            this.listenersCopy = this.listeners.toArray(new INavigatorListener[0]);
         }
     }
 
@@ -544,18 +538,18 @@ public class DBNModel implements IResourceChangeListener {
     {
         if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
             IResourceDelta delta = event.getDelta();
-            //IResource resource = delta.getResource();
             for (IResourceDelta childDelta : delta.getAffectedChildren()) {
                 if (childDelta.getResource() instanceof IProject) {
                     IProject project = (IProject) childDelta.getResource();
-                    DBNProject projectNode = getRoot().getProject(project);
+                    DBNProject projectNode = getRoot().getProjectNode(project);
                     if (projectNode == null) {
                         if (childDelta.getKind() == IResourceDelta.ADDED) {
                             // New projectNode
-                            getRoot().addProject(project, true);
-
-                            if (platform.getProjectManager().getActiveProject() == null) {
-                                platform.getProjectManager().setActiveProject(project);
+                            DBPProject projectMeta = platform.getWorkspace().getProject(project);
+                            if (projectMeta == null) {
+                                log.error("Can't find project '" + project.getName() + "' metadata");
+                            } else {
+                                getRoot().addProject(projectMeta, true);
                             }
                         } else {
                             // Project not found - report an error
@@ -564,22 +558,16 @@ public class DBNModel implements IResourceChangeListener {
                     } else {
                         if (childDelta.getKind() == IResourceDelta.REMOVED) {
                             // Project deleted
-                            getRoot().removeProject(project);
-                            if (project == platform.getProjectManager().getActiveProject()) {
-                                platform.getProjectManager().setActiveProject(null);
+                            DBPProject projectMeta = platform.getWorkspace().getProject(project);
+                            if (projectMeta == null) {
+                                log.error("Can't find project '" + project.getName() + "' metadata");
+                            } else {
+                                getRoot().removeProject(projectMeta);
                             }
                         } else {
-                            if (childDelta.getFlags() == IResourceDelta.OPEN) {
-                                if (projectNode.getProject().isOpen()) {
-                                    projectNode.openProject();
-                                } else {
-                                    // Project was closed - do nothing.
-                                }
-                            } else {
-                                // Some resource changed within the projectNode
-                                // Let it handle this event itself
-                                projectNode.handleResourceChange(childDelta);
-                            }
+                            // Some resource changed within the projectNode
+                            // Let it handle this event itself
+                            projectNode.handleResourceChange(childDelta);
                         }
                     }
                 }
@@ -617,8 +605,8 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
-    public void ensureProjectLoaded(IProject project) {
-        DBNProject projectNode = getRoot().getProject(project);
+    public void ensureProjectLoaded(DBPProject project) {
+        DBNProject projectNode = getRoot().getProjectNode(project);
         if (projectNode != null) {
             projectNode.getDatabases();
         }
@@ -648,7 +636,7 @@ public class DBNModel implements IResourceChangeListener {
                     if (eventCache.isEmpty()) {
                         continue;
                     }
-                    realEvents = eventCache.toArray(new DBNEvent[eventCache.size()]);
+                    realEvents = eventCache.toArray(new DBNEvent[0]);
                     eventCache.clear();
                 }
 

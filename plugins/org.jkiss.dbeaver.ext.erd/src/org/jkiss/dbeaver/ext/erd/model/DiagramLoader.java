@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.ext.erd.part.*;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -158,8 +158,8 @@ public class DiagramLoader
     {
         List<DBPDataSourceContainer> containers = new ArrayList<>();
 
-        final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(resource.getProject());
-        if (dsRegistry == null) {
+        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(resource.getProject());
+        if (projectMeta == null) {
             return containers;
         }
         try (InputStream is = resource.getContents()) {
@@ -173,7 +173,7 @@ public class DiagramLoader
                     String dsId = dsElem.getAttribute(ATTR_ID);
                     if (!CommonUtils.isEmpty(dsId)) {
                         // Get connected datasource
-                        final DBPDataSourceContainer dataSourceContainer = dsRegistry.getDataSource(dsId);
+                        final DBPDataSourceContainer dataSourceContainer = projectMeta.getDataSourceRegistry().getDataSource(dsId);
                         if (dataSourceContainer != null) {
                             containers.add(dataSourceContainer);
                         }
@@ -192,8 +192,8 @@ public class DiagramLoader
         monitor.beginTask("Parse diagram", 1);
         final EntityDiagram diagram = diagramPart.getDiagram();
 
-        final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
-        if (dsRegistry == null) {
+        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(project);
+        if (projectMeta == null) {
             throw new DBException("Cannot find datasource registry for project '" + project.getName() + "'");
         }
 
@@ -225,7 +225,7 @@ public class DiagramLoader
                     continue;
                 }
                 // Get connected datasource
-                final DBPDataSourceContainer dataSourceContainer = dsRegistry.getDataSource(dsId);
+                final DBPDataSourceContainer dataSourceContainer = projectMeta.getDataSourceRegistry().getDataSource(dsId);
                 if (dataSourceContainer == null) {
                     log.warn("Datasource '" + dsId + "' not found");
                     continue;

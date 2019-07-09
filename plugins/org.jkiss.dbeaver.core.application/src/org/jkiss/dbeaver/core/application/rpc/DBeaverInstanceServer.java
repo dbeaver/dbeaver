@@ -86,7 +86,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         InstanceConnectionParameters instanceConParameters = new InstanceConnectionParameters();
         final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
-            DBWorkbench.getPlatform().getProjectManager().getActiveProject(),
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject(),
             connectionSpec,
             instanceConParameters,
             false,

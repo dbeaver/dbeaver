@@ -99,7 +99,7 @@ class DiagramCreateWizardPage extends WizardPage {
         gd.horizontalSpan = 2;
         contentLabel.setLayoutData(gd);
 
-        final DBNProject rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
+        final DBNProject rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         if (rootNode == null) {
             setControl(placeholder);
 			return;

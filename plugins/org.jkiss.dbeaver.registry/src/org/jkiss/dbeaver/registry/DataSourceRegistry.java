@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBASecureStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -82,7 +83,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private static PasswordEncrypter ENCRYPTOR = new SimpleStringEncrypter();
 
     private final DBPPlatform platform;
-    private final IProject project;
+    private final DBPProject project;
 
     private final Map<IFile, DataSourceOrigin> origins = new LinkedHashMap<>();
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
@@ -91,7 +92,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private volatile boolean saveInProgress = false;
 
-    public DataSourceRegistry(DBPPlatform platform, IProject project)
+    public DataSourceRegistry(DBPPlatform platform, DBPProject project)
     {
         this.platform = platform;
         this.project = project;
@@ -102,7 +103,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     /**
      * Create copy
      */
-    public DataSourceRegistry(DataSourceRegistry source, IProject project, boolean copyDataSources) {
+    public DataSourceRegistry(DataSourceRegistry source, DBPProject project, boolean copyDataSources) {
         this.platform = source.platform;
         this.project = project;
         if (copyDataSources) {
@@ -127,7 +128,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         // Do not save config on shutdown.
         // Some data source might be broken due to misconfiguration
         // and we don't want to lose their config just after restart
-//        if (getProject().isOpen()) {
+//        if (getProjectNode().isOpen()) {
 //            flushConfig();
 //        }
         // Dispose and clear all descriptors
@@ -166,7 +167,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     return origin;
                 }
             }
-            IFile defFile = project.getFile(CONFIG_FILE_NAME);
+            IFile defFile = project.getEclipseProject().getFile(CONFIG_FILE_NAME);
             DataSourceOrigin origin = new DataSourceOrigin(defFile, true);
             origins.put(defFile, origin);
             return origin;
@@ -294,7 +295,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     @Override
-    public DBPDataSourceRegistry createCopy(IProject project, boolean copyDataSources) {
+    public DBPDataSourceRegistry createCopy(DBPProject project, boolean copyDataSources) {
         return new DataSourceRegistry(this, project, copyDataSources);
     }
 
@@ -478,9 +479,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public static List<DBPDataSourceContainer> getAllDataSources() {
         List<DBPDataSourceContainer> result = new ArrayList<>();
-        for (IProject project : DBWorkbench.getPlatform().getLiveProjects()) {
+        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             if (project.isOpen()) {
-                DBPDataSourceRegistry registry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
+                DBPDataSourceRegistry registry = project.getDataSourceRegistry();
                 if (registry != null) {
                     result.addAll(registry.getDataSources());
                 }
@@ -499,7 +500,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         // Parse with SAX
         ParseResults parseResults = new ParseResults();
         try {
-            for (IResource res : project.members(IContainer.INCLUDE_HIDDEN)) {
+            for (IResource res : project.getEclipseProject().members(IContainer.INCLUDE_HIDDEN)) {
                 if (res instanceof IFile) {
                     IFile file = (IFile) res;
                     if (res.getName().startsWith(CONFIG_FILE_PREFIX) && res.getName().endsWith(CONFIG_FILE_EXT)) {
@@ -664,14 +665,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private void updateProjectNature() {
         try {
-            final IProjectDescription description = project.getDescription();
+            IProject eclipseProject = project.getEclipseProject();
+            final IProjectDescription description = eclipseProject.getDescription();
             if (description != null) {
                 String[] natureIds = description.getNatureIds();
                 if (dataSources.isEmpty()) {
                     // Remove nature
                     if (ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
                         description.setNatureIds(ArrayUtils.remove(String.class, natureIds, DBeaverNature.NATURE_ID));
-                        project.setDescription(description, new NullProgressMonitor());
+                        eclipseProject.setDescription(description, new NullProgressMonitor());
                     }
 
                 } else {
@@ -679,7 +681,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
                         description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
                         try {
-                            project.setDescription(description, new NullProgressMonitor());
+                            eclipseProject.setDescription(description, new NullProgressMonitor());
                         } catch (CoreException e) {
                             log.debug("Can't set project nature", e);
                         }
@@ -1004,7 +1006,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     @Override
-    public IProject getProject()
+    public DBPProject getProject()
     {
         return project;
     }

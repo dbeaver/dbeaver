@@ -25,16 +25,15 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -233,8 +232,8 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
         DataTransferSettings settings = getWizard().getSettings();
 
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-        final DBNNode rootNode = DBWorkbench.getPlatform().getLiveProjects().size() == 1 ?
-            navigatorModel.getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject()) : navigatorModel.getRoot();
+        final DBNNode rootNode = DBWorkbench.getPlatform().getWorkspace().getProjects().size() == 1 ?
+            navigatorModel.getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject()) : navigatorModel.getRoot();
         boolean chooseConsumer = settings.isConsumerOptional();
         DBNNode node = DBWorkbench.getPlatformUI().selectObject(
             UIUtils.getActiveWorkbenchShell(),
@@ -256,8 +255,8 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
         DataTransferSettings settings = getWizard().getSettings();
 
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-        final DBNNode rootNode = DBWorkbench.getPlatform().getLiveProjects().size() == 1 ?
-            navigatorModel.getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject()) : navigatorModel.getRoot();
+        final DBNNode rootNode = DBWorkbench.getPlatform().getWorkspace().getProjects().size() == 1 ?
+            navigatorModel.getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject()) : navigatorModel.getRoot();
         boolean chooseConsumer = settings.isConsumerOptional();
         DBNNode node = DBWorkbench.getPlatformUI().selectObject(
             UIUtils.getActiveWorkbenchShell(),

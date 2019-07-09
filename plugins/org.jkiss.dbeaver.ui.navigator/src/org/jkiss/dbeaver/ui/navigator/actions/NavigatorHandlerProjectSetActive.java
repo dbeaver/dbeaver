@@ -18,11 +18,11 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
@@ -45,10 +45,10 @@ public class NavigatorHandlerProjectSetActive extends NavigatorHandlerObjectBase
         return null;
     }
 
-    static void setActiveProject(IProject project) {
-        final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
-        if (projectRegistry.getActiveProject() != project) {
-            projectRegistry.setActiveProject(project);
+    static void setActiveProject(DBPProject project) {
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        if (workspace.getActiveProject() != project) {
+            workspace.setActiveProject(project);
 
             GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_ACTIVE_PROJECT);
         }

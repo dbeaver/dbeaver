@@ -106,7 +106,7 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
     }
 
     private void showResourceInNavigator(NavigatorViewBase activePart, IFile editorFile) {
-        DBNProject projectNode = activePart.getModel().getRoot().getProject(editorFile.getProject());
+        DBNProject projectNode = activePart.getModel().getRoot().getProjectNode(editorFile.getProject());
         if (projectNode != null) {
             DBNResource resource = projectNode.findResource(editorFile);
             if (resource != null) {

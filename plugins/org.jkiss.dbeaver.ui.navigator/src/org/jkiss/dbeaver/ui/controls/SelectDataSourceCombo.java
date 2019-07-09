@@ -16,16 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 
 import java.lang.reflect.InvocationTargetException;
@@ -60,8 +58,8 @@ public class SelectDataSourceCombo extends CSmartSelector<DBPDataSourceContainer
         onDataSourceChange(dataSource);
     }
 
-    protected IProject getActiveProject() {
-        return DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+    protected DBPProject getActiveProject() {
+        return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
     }
 
     protected void onDataSourceChange(DBPDataSourceContainer dataSource) {
@@ -87,12 +85,11 @@ public class SelectDataSourceCombo extends CSmartSelector<DBPDataSourceContainer
 
     public void addProjectDataSources() {
         addItem(null);
-        if (getActiveProject() == null) {
-            return;
-        }
-        DBPDataSourceRegistry registry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(getActiveProject());
-        for (DBPDataSourceContainer ds : registry.getDataSources()) {
-            addItem(ds);
+        DBPProject activeProject = getActiveProject();
+        if (activeProject != null) {
+            for (DBPDataSourceContainer ds : activeProject.getDataSourceRegistry().getDataSources()) {
+                addItem(ds);
+            }
         }
     }
 

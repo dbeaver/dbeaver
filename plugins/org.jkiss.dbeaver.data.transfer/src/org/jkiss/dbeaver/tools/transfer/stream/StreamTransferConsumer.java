@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -26,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -500,7 +500,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 case VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
                 case VARIABLE_PROJECT: {
-                    IProject project = DBUtils.getObjectOwnerProject(sourceObject);
+                    DBPProject project = DBUtils.getObjectOwnerProject(sourceObject);
                     return project == null ? "" : project.getName();
                 }
                 case VARIABLE_FILE:

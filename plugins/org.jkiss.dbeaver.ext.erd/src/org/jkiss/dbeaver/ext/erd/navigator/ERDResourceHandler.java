@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -56,9 +57,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
     private static final String ERD_EXT = "erd"; //$NON-NLS-1$
 
-    public static IFolder getDiagramsFolder(IProject project, boolean forceCreate) throws CoreException
+    public static IFolder getDiagramsFolder(DBPProject project, boolean forceCreate) throws CoreException
     {
-        return DBWorkbench.getPlatform().getProjectManager().getResourceDefaultRoot(project, ERDResourceHandler.class, forceCreate);
+        return DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(project, ERDResourceHandler.class, forceCreate);
     }
 
     @Override
@@ -129,7 +130,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     {
         if (folder == null) {
             try {
-                folder = getDiagramsFolder(DBWorkbench.getPlatform().getProjectManager().getActiveProject(), true);
+                folder = getDiagramsFolder(DBWorkbench.getPlatform().getWorkspace().getActiveProject(), true);
             } catch (CoreException e) {
                 throw new DBException("Can't obtain folder for diagram", e);
             }

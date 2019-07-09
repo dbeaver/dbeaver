@@ -37,9 +37,9 @@ public class GlobalPropertyTester extends PropertyTester {
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         switch (property) {
             case PROP_HAS_MULTI_PROJECTS:
-                return DBWorkbench.getPlatform().getLiveProjects().size() > 1;
+                return DBWorkbench.getPlatform().getWorkspace().getProjects().size() > 1;
             case PROP_HAS_ACTIVE_PROJECT:
-                return DBWorkbench.getPlatform().getProjectManager().getActiveProject() != null;
+                return DBWorkbench.getPlatform().getWorkspace().getActiveProject() != null;
             case PROP_STANDALONE:
                 return DBWorkbench.getPlatform().getApplication().isStandalone();
         }

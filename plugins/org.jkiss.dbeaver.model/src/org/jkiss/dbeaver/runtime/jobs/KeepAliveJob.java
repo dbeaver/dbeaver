@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.runtime.jobs;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -26,7 +25,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -59,13 +59,10 @@ public class KeepAliveJob extends AbstractJob
         if (platform.isShuttingDown()) {
             return Status.OK_STATUS;
         }
-        final DBPProjectManager projectRegistry = platform.getProjectManager();
-        if (projectRegistry == null) {
-            return Status.OK_STATUS;
-        }
-        for (IProject project : platform.getLiveProjects()) {
+        final DBPWorkspace workspace = platform.getWorkspace();
+        for (DBPProject project : workspace.getProjects()) {
             if (project.isOpen()) {
-                DBPDataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+                DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
                 if (dataSourceRegistry != null) {
                     for (DBPDataSourceContainer ds : dataSourceRegistry.getDataSources()) {
                         checkDataSourceAlive(ds);

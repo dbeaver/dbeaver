@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -29,6 +28,7 @@ import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -181,7 +181,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         return resourceTypes;
     }
 
-    public String getDefaultRoot(IProject project) {
+    public String getDefaultRoot(DBPProject project) {
         synchronized (projectRoots) {
             String root = projectRoots.get(project.getName());
             if (root != null) {
@@ -202,7 +202,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
     }
 
     @Override
-    public void setDefaultRoot(IProject project, String rootPath) {
+    public void setDefaultRoot(DBPProject project, String rootPath) {
         IEclipsePreferences resourceHandlers = getResourceHandlerPreferences(project, DBPResourceHandlerDescriptor.RESOURCE_ROOT_FOLDER_NODE);
         resourceHandlers.put(getId(), rootPath);
         synchronized (projectRoots) {
@@ -224,13 +224,13 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         return id;
     }
 
-    private static IEclipsePreferences getResourceHandlerPreferences(IProject project, String node) {
+    private static IEclipsePreferences getResourceHandlerPreferences(DBPProject project, String node) {
         IEclipsePreferences projectSettings = getProjectPreferences(project);
         return (IEclipsePreferences) projectSettings.node(node);
     }
 
-    private static synchronized IEclipsePreferences getProjectPreferences(IProject project) {
-        return new ProjectScope(project).getNode("org.jkiss.dbeaver.project.resources");
+    private static synchronized IEclipsePreferences getProjectPreferences(DBPProject project) {
+        return new ProjectScope(project.getEclipseProject()).getNode("org.jkiss.dbeaver.project.resources");
     }
 
 }

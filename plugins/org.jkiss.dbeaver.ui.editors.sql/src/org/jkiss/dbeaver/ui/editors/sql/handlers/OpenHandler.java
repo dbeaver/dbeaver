@@ -21,7 +21,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -39,27 +38,26 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.controls.ScriptSelectorPanel;
-import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,7 +66,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
     public static void openResource(IResource resource, IWorkbenchWindow window)
     {
         try {
-            DBPResourceHandler handler = DBWorkbench.getPlatform().getProjectManager().getResourceHandler(resource);
+            DBPResourceHandler handler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(resource);
             if (handler != null) {
                 handler.openResource(resource);
             }
@@ -111,9 +109,9 @@ public class OpenHandler extends AbstractDataSourceHandler {
         List<DBPDataSourceContainer> containers = getDataSourceContainers(event);
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
 
-        IProject project = !containers.isEmpty() ?
+        DBPProject project = !containers.isEmpty() ?
             containers.get(0).getRegistry().getProject() :
-            DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         checkProjectIsOpen(project);
         final DBPDataSourceContainer[] containerList = containers.toArray(new DBPDataSourceContainer[containers.size()]);
 
@@ -131,7 +129,9 @@ public class OpenHandler extends AbstractDataSourceHandler {
     }
 
     public static IFile openNewEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, ISelection selection) throws CoreException {
-        IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+        DBPProject project = dataSourceContainer != null ?
+            dataSourceContainer.getRegistry().getProject() :
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         checkProjectIsOpen(project);
         IFolder folder = getCurrentScriptFolder(selection);
         IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, dataSourceContainer);
@@ -177,11 +177,11 @@ public class OpenHandler extends AbstractDataSourceHandler {
     @Nullable
     private static DBPDataSourceContainer getCurrentConnection(ExecutionEvent event) throws InterruptedException {
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
-        DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
-        IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : projectRegistry.getActiveProject();
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        DBPProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : workspace.getActiveProject();
 
-        if (dataSourceContainer == null) {
-            final DBPDataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+        if (project != null) {
+            final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
             if (dataSourceRegistry == null) {
                 return null;
             }
@@ -252,7 +252,9 @@ public class OpenHandler extends AbstractDataSourceHandler {
     }
 
     public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) throws CoreException {
-        final IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+        final DBPProject project = dataSourceContainer != null ?
+            dataSourceContainer.getRegistry().getProject() :
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         checkProjectIsOpen(project);
         SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(project, dataSourceContainer);
         if (res != null) {
@@ -263,25 +265,11 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    public static void checkProjectIsOpen(final IProject project) throws CoreException {
+    public static void checkProjectIsOpen(final DBPProject project) throws CoreException {
         if (project == null) {
         	throw new CoreException(GeneralUtils.makeExceptionStatus(new IllegalStateException("No active project.")));
         }
-        if (!project.isOpen()) {
-            try {
-                UIUtils.runInProgressService(monitor -> {
-                    try {
-                        project.open(monitor.getNestedMonitor());
-                    } catch (CoreException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                throw (CoreException)e.getTargetException();
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        }
+        project.ensureOpen();
     }
 
     public static SQLEditor openSQLConsole(

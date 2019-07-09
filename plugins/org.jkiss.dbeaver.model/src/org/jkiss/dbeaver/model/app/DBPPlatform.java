@@ -60,12 +60,6 @@ public interface DBPPlatform
     OSDescriptor getLocalSystem();
 
     @NotNull
-    DBPProjectManager getProjectManager();
-
-    @NotNull
-    List<IProject> getLiveProjects();
-
-    @NotNull
     QMController getQueryManager();
 
     @NotNull

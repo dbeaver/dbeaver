@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.ui.navigator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
@@ -49,8 +50,8 @@ public class ResourcePropertyTester extends PropertyTester
             return false;
         }
         IResource resource = (IResource)receiver;
-        final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
-        DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        DBPResourceHandler handler = workspace.getResourceHandler(resource);
         if (handler == null) {
             return false;
         }
@@ -66,10 +67,12 @@ public class ResourcePropertyTester extends PropertyTester
                 return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0;
             case PROP_CAN_CREATE_LINK:
                 return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0 && !resource.isLinked(IResource.CHECK_ANCESTORS);
-            case PROP_CAN_SET_ACTIVE:
-                return resource instanceof IProject && resource != projectRegistry.getActiveProject();
+            case PROP_CAN_SET_ACTIVE: {
+                DBPProject activeProject = workspace.getActiveProject();
+                return resource instanceof IProject && (activeProject == null || resource != activeProject.getEclipseProject());
+            }
             case PROP_TYPE:
-                final DBPResourceHandler resourceHandler = DBWorkbench.getPlatform().getProjectManager().getResourceHandler(resource);
+                final DBPResourceHandler resourceHandler = DBWorkbench.getPlatform().getWorkspace().getResourceHandler(resource);
                 return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
         }
         return false;

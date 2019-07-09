@@ -40,7 +40,9 @@ import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -163,7 +165,8 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
     @Override
     protected void performDefaults() {
         resourceTable.removeAll();
-        for (DBPResourceHandlerDescriptor descriptor : DBWorkbench.getPlatform().getProjectManager().getResourceHandlerDescriptors()) {
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        for (DBPResourceHandlerDescriptor descriptor : workspace.getResourceHandlerDescriptors()) {
             if (!descriptor.isManagable()) {
                 continue;
             }
@@ -175,7 +178,8 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
             }
             item.setText(0, descriptor.getName());
 
-            String defaultRoot = project == null ? null : descriptor.getDefaultRoot(project);
+            DBPProject projectMeta = getProjectMeta();
+            String defaultRoot = projectMeta == null ? null : descriptor.getDefaultRoot(projectMeta);
             if (defaultRoot != null) {
                 item.setText(1, defaultRoot);
             }
@@ -185,16 +189,21 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
         super.performDefaults();
     }
 
+    private DBPProject getProjectMeta() {
+        return DBWorkbench.getPlatform().getWorkspace().getProject(this.project);
+    }
+
     @Override
     public boolean performOk() {
         java.util.List<IResource> refreshedResources = new ArrayList<>();
 
         // Save roots
+        DBPProject projectMeta = getProjectMeta();
         for (TableItem item : resourceTable.getItems()) {
             DBPResourceHandlerDescriptor descriptor = (DBPResourceHandlerDescriptor) item.getData();
             String rootPath = item.getText(1);
-            if (!CommonUtils.equalObjects(descriptor.getDefaultRoot(project), rootPath)) {
-                IResource oldResource = project.findMember(descriptor.getDefaultRoot(project));
+            if (!CommonUtils.equalObjects(descriptor.getDefaultRoot(projectMeta), rootPath)) {
+                IResource oldResource = project.findMember(descriptor.getDefaultRoot(projectMeta));
                 if (oldResource != null) {
                     refreshedResources.add(oldResource);
                 }
@@ -203,7 +212,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
                 if (newResource != null) {
                     refreshedResources.add(newResource);
                 }
-                descriptor.setDefaultRoot(project, rootPath);
+                descriptor.setDefaultRoot(projectMeta, rootPath);
             }
         }
         if (!refreshedResources.isEmpty()) {

@@ -41,7 +41,9 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -62,7 +64,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
             refreshProjects();
         }
 
-        DBWorkbench.getPlatform().getProjectManager().addProjectListener(this);
+        DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
     }
 
     private void refreshProjects() {
@@ -82,10 +84,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         // Remove project listener
         DBeaverCore core = DBeaverCore.getInstance();
         if (core != null) {
-            ProjectRegistry projectRegistry = core.getProjectRegistry();
-            if (projectRegistry != null) {
-                projectRegistry.removeProjectListener(this);
-            }
+            DBPWorkspace workspace = core.getWorkspace();
+            workspace.removeProjectListener(this);
         }
 
         super.dispose();
@@ -250,7 +250,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     }
 
     @Override
-    public void handleActiveProjectChange(IProject oldValue, IProject newValue) {
+    public void handleProjectAdd(DBPProject project) {
+
+    }
+
+    @Override
+    public void handleProjectRemove(DBPProject project) {
+
+    }
+
+    @Override
+    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue) {
         UIUtils.asyncExec(this::recomputeTitle);
     }
 
@@ -283,7 +293,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         }
 
         if (ps.getBoolean("SHOW_PERSPECTIVE_IN_TITLE")) {
-            IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             if (activeProject != null) {
                 sj.add(activeProject.getName()); //$NON-NLS-1$
             }

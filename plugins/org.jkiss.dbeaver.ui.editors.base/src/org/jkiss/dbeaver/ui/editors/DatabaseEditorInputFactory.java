@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -77,7 +77,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
             //. for some object. Connection must be instantiated.
             return null;
         }
-        final IProject project = dataSourceContainer.getRegistry().getProject();
+        final DBPProject project = dataSourceContainer.getRegistry().getProject();
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
         navigatorModel.ensureProjectLoaded(project);
 

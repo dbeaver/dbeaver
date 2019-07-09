@@ -16,21 +16,26 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
-import org.jkiss.dbeaver.model.runtime.*;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -768,14 +773,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return childrenClass;
     }
 
-    public IProject getOwnerProject() {
-        for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
-            if (node instanceof DBNProject) {
-                return ((DBNProject) node).getProject();
-            }
-        }
-        return null;
-    }
     ////////////////////////////////////////////////////////////////////////////////////
     // Reflection utils
 

@@ -27,6 +27,7 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -85,15 +86,11 @@ public class NavigatorAdapterFactory implements IAdapterFactory
                 return adapterType.cast(object);
             }
         } else if (IProject.class == adapterType) {
-            IProject project = null;
-            if (adaptableObject instanceof DBNResource) {
-                project = ((DBNResource) adaptableObject).getResource().getProject();
-            } else if (adaptableObject instanceof DBNDatabaseNode) {
-                project = ((DBNDatabaseNode) adaptableObject).getOwnerProject();
-            } else if (adaptableObject instanceof DBNProjectDatabases) {
-                project = ((DBNProjectDatabases) adaptableObject).getParentNode().getProject();
+            DBPProject project = null;
+            if (adaptableObject instanceof DBNNode) {
+                project = ((DBNNode) adaptableObject).getOwnerProject();
             }
-            return project == null ? null : adapterType.cast(project);
+            return project == null ? null : adapterType.cast(project.getEclipseProject());
         } else if (IResource.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof DBNResource) {
                 return ((DBNResource) adaptableObject).getAdapter(adapterType);

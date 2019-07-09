@@ -41,12 +41,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils.ResourceInfo;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -142,7 +143,11 @@ public class ScriptSelectorPanel {
                 popup.dispose();
                 IFile scriptFile;
                 try {
-                    scriptFile = SQLEditorUtils.createNewScript(rootFolder.getProject(), rootFolder, containers.length == 0 ? null : containers[0]);
+                    scriptFile = SQLEditorUtils.createNewScript(
+                        DBWorkbench.getPlatform().getWorkspace().getProject(rootFolder.getProject()),
+                        rootFolder,
+                        containers.length == 0 ?
+                            null : containers[0]);
                     OpenHandler.openResource(scriptFile, workbenchWindow);
                 } catch (CoreException ex) {
                     log.error(ex);

@@ -41,9 +41,9 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPResourceCreator;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -171,9 +171,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource) {
             createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_LOCAL_FOLDER));
         } else if (node instanceof DBNResource) {
-            final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
+            final DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
-            DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
+            DBPResourceHandler handler = workspace.getResourceHandler(resource);
             if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
                 createActions.add(makeCommandContributionItem(site, NavigatorCommands.CMD_CREATE_RESOURCE_FILE));
             }
@@ -345,7 +345,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             // Create local folder
             count++;
         } else if (node instanceof DBNResource) {
-            final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
+            final DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getWorkspace();
             IResource resource = ((DBNResource) node).getResource();
             DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
             if (handler instanceof DBPResourceCreator && (handler.getFeatures(resource) & DBPResourceCreator.FEATURE_CREATE_FILE) != 0) {
