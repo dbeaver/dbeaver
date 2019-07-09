@@ -219,7 +219,7 @@ public class GreenplumExternalTable extends PostgreTable {
             ddlBuilder.append("\n)\n");
         } else if (tableColumns.size() == 1) {
             PostgreTableColumn column = tableColumns.get(0);
-            ddlBuilder.append("\t" + column.getName() + " " + column.getTypeName() + "\n)\n");
+            ddlBuilder.append("\t").append(column.getName()).append(" ").append(column.getTypeName()).append("\n)\n");
         } else {
             ddlBuilder.append(tableColumns
                     .stream()
@@ -236,9 +236,9 @@ public class GreenplumExternalTable extends PostgreTable {
                     .map(location -> "\t'" + location + "'")
                     .collect(Collectors.joining(",\n")));
 
-            ddlBuilder.append("\n) " + determineExecutionLocation() + "\n");
+            ddlBuilder.append("\n) ").append(determineExecutionLocation()).append("\n");
         } else if (tableHasCommand()) {
-            ddlBuilder.append("EXECUTE '" + this.getCommand() + "' " + determineExecutionLocation() + "\n");
+            ddlBuilder.append("EXECUTE '").append(this.getCommand()).append("' ").append(determineExecutionLocation()).append("\n");
         }
 
         ddlBuilder.append("FORMAT '").append(this.getFormatType()).append("'");
@@ -248,7 +248,7 @@ public class GreenplumExternalTable extends PostgreTable {
         }
 
         if (this.getEncoding() != null && this.getEncoding().length() > 0) {
-            ddlBuilder.append("\nENCODING '" + this.getEncoding() + "'");
+            ddlBuilder.append("\nENCODING '").append(this.getEncoding()).append("'");
         }
 
         if (this.isLoggingErrors()) {

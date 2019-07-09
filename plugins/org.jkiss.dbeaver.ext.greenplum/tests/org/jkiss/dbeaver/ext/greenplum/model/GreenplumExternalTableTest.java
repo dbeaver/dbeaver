@@ -55,6 +55,7 @@ public class GreenplumExternalTableTest {
         Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
         Mockito.when(mockDatabase.getName()).thenReturn(exampleDatabaseName);
+        Mockito.when(mockSchema.getSchema()).thenReturn(mockSchema);
         Mockito.when(mockSchema.getName()).thenReturn(exampleSchemaName);
         Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
