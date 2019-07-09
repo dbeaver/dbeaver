@@ -593,5 +593,20 @@
         </dashboard>
 
     </extension>
+    <extension
+          point="org.jkiss.dbeaver.dataTypeProvider">
+       <provider
+             class="org.jkiss.dbeaver.ext.exasol.ExasolValueHandlerProvider"
+             description="Exasol data types provider"
+             id="org.jkiss.dbeaver.ext.exasol.ExasolValueHandlerProvider"
+             label="Exasol data types provider">
+
+            <datasource id="exasol"/>
+
+            <type name="DATE"/>
+            <type name="TIMESTAMP"/>
+            <type name="GEOMETRY"/>
+       </provider>
+    </extension>
 
 </plugin>

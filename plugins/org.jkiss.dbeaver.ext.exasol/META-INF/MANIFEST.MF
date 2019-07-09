@@ -18,5 +18,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ext.ui.locks
+ org.jkiss.dbeaver.ext.ui.locks,
+ org.jkiss.dbeaver.data.gis
 Bundle-ClassPath: .
