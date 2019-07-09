@@ -69,6 +69,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
 
     public static final String WORKSPACE_DIR_LEGACY = ".dbeaver"; //$NON-NLS-1$
     public static final String WORKSPACE_DIR_4 = ".dbeaver4"; //$NON-NLS-1$
+    public static final String WORKSPACE_DIR_6; //$NON-NLS-1$
+
+    public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
     public static final String WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_4;
     public static final String WORKSPACE_DIR_PREVIOUS[] = { WORKSPACE_DIR_LEGACY };
@@ -97,6 +100,28 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
         //System.setProperty(StandardConstants.ENV_FILE_ENCODING, GeneralUtils.UTF8_ENCODING);
+
+        String osName = (System.getProperty("os.name")).toUpperCase();
+        String workingDirectory;
+        if (osName.contains("WIN")) {
+            String appData = System.getenv("AppData");
+            if (appData == null) {
+                appData = System.getProperty("user.home");
+            }
+            workingDirectory = appData + "\\" + DBEAVER_DATA_DIR;
+        } else if (osName.contains("MAC")) {
+            workingDirectory = System.getProperty("user.home") + "/Library/" + DBEAVER_DATA_DIR;
+        } else {
+            // Linux
+            String dataHome = System.getProperty("XDG_DATA_HOME");
+            if (dataHome == null) {
+                dataHome = System.getProperty("user.home") + "/.local/share";
+            }
+            workingDirectory = dataHome + "/." + DBEAVER_DATA_DIR;
+        }
+
+        // Workspace dir
+        WORKSPACE_DIR_6 = workingDirectory + "/workspace6";
     }
 
     /**
