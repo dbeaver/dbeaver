@@ -17,12 +17,14 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IProject;
-
 /**
  * DBPProjectListener
  */
 public interface DBPProjectListener
 {
-    void handleActiveProjectChange(IProject oldValue, IProject newValue);
+    void handleProjectAdd(DBPProject project);
+
+    void handleProjectRemove(DBPProject project);
+
+    void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue);
 }

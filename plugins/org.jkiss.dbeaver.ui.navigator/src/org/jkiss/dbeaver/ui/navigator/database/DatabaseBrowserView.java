@@ -24,6 +24,7 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -62,7 +63,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
                 DBWorkbench.getPlatformUI().showError("Open database browser", "Can't find database navigator node", e);
             }
         }
-        DBNProject projectNode = getModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
+        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
@@ -96,7 +97,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     }
 
     public static String getSecondaryIdFromNode(DBNNode node) {
-        IProject project = null;
+        DBPProject project = null;
         for (DBNNode dn = node; dn != null; dn = dn.getParentNode()) {
             if (dn instanceof DBNProject) {
                 project = ((DBNProject) dn).getProject();
@@ -122,8 +123,12 @@ public class DatabaseBrowserView extends NavigatorViewBase {
             throw new DBException("Project '" + projectName + "' not found");
         }
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-        navigatorModel.ensureProjectLoaded(project);
-        DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), project, nodePath);
+        DBNNode node = null;
+        DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(project);
+        if (projectMeta != null) {
+            navigatorModel.ensureProjectLoaded(projectMeta);
+            node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), projectMeta, nodePath);
+        }
         if (node == null) {
             log.error("Node " + nodePath + " not found for browse view");
             node = new DBNEmptyNode();

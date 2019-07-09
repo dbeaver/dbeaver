@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
-import org.jkiss.dbeaver.model.app.DBPResourceHandler;
-import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -42,24 +39,15 @@ import java.util.List;
 public class DBNProject extends DBNResource {
     private static final Log log = Log.getLog(DBNProject.class);
 
-    public DBNProject(DBNNode parentNode, IProject project, DBPResourceHandler handler) {
-        super(parentNode, project, handler);
-        if (getModel().isGlobal()) {
-            getModel().getPlatform().getProjectManager().addProject(project);
-        }
+    private final DBPProject project;
+
+    public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
+        super(parentNode, project.getEclipseProject(), handler);
+        this.project = project;
     }
 
-    @Override
-    protected void dispose(boolean reflect) {
-        IProject project = getProject();
-        super.dispose(reflect);
-        if (getModel().isGlobal()) {
-            getModel().getPlatform().getProjectManager().removeProject(project);
-        }
-    }
-
-    public IProject getProject() {
-        return (IProject) getResource();
+    public DBPProject getProject() {
+        return project;
     }
 
     public DBNProjectDatabases getDatabases() {
@@ -78,8 +66,7 @@ public class DBNProject extends DBNResource {
     @Override
     public String getNodeDescription() {
         try {
-            final IProject project = getProject();
-            return project == null ? null : project.getDescription().getComment();
+            return project.getEclipseProject().getDescription().getComment();
         } catch (CoreException e) {
             log.debug(e);
             return null;
@@ -107,15 +94,15 @@ public class DBNProject extends DBNResource {
     @Override
     public boolean supportsRename() {
         // Do not rename active projects
-        return getModel().getPlatform().getProjectManager().getActiveProject() != getProject();
+        return project.getWorkspace().getActiveProject() != project;
     }
 
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
         try {
-            final IProjectDescription description = getProject().getDescription();
+            final IProjectDescription description = project.getEclipseProject().getDescription();
             description.setName(newName);
-            getProject().move(description, true, monitor.getNestedMonitor());
+            project.getEclipseProject().move(description, true, monitor.getNestedMonitor());
         } catch (CoreException e) {
             throw new DBException("Can't rename project", e);
         }
@@ -137,37 +124,22 @@ public class DBNProject extends DBNResource {
 
     @Override
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
-        IProject project = getProject();
         DBNModel model = getModel();
         if (model.isGlobal() && !project.isOpen()) {
-            try {
-                project.open(monitor.getNestedMonitor());
-                project.refreshLocal(IFile.DEPTH_ONE, monitor.getNestedMonitor());
-            } catch (CoreException e) {
-                throw new DBException("Can't open project '" + project.getName() + "'", e);
-            }
+            project.ensureOpen();
         }
         DBNNode[] children = super.readChildNodes(monitor);
 
-        DBPDataSourceRegistry dataSourceRegistry;
-        if (model.isGlobal()) {
-            dataSourceRegistry = model.getPlatform().getProjectManager().getDataSourceRegistry(project);
-        } else {
-            dataSourceRegistry = model.getPlatform().getProjectManager().getDefaultDataSourceRegistry();
-        }
-        if (dataSourceRegistry != null) {
-            children = ArrayUtils.insertArea(DBNNode.class, children, 0, new Object[]{
-                new DBNProjectDatabases(this, dataSourceRegistry)});
-        }
+        children = ArrayUtils.insertArea(DBNNode.class, children, 0, new Object[]{
+            new DBNProjectDatabases(this, project.getDataSourceRegistry())});
 
         return children;
     }
 
     @Override
     protected IResource[] addImplicitMembers(IResource[] members) {
-        DBPProjectManager projectManager = getModel().getPlatform().getProjectManager();
-        for (DBPResourceHandlerDescriptor rh : projectManager.getAllResourceHandlers()) {
-            IFolder rhDefaultRoot = projectManager.getResourceDefaultRoot(getProject(), rh, false);
+        for (DBPResourceHandlerDescriptor rh : project.getWorkspace().getAllResourceHandlers()) {
+            IFolder rhDefaultRoot = project.getWorkspace().getResourceDefaultRoot(getProject(), rh, false);
             if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
                 // Add as explicit member
                 members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
@@ -208,10 +180,4 @@ public class DBNProject extends DBNResource {
         }
     }
 
-    public void openProject() {
-        final DBNProjectDatabases databases = getDatabases();
-        if (databases != null) {
-            databases.getDataSourceRegistry().refreshConfig();
-        }
-    }
 }

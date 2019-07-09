@@ -57,6 +57,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DataSourceUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -244,11 +245,11 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Nullable
-    public IProject getProject()
+    public DBPProject getProject()
     {
         IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ?
-            DBWorkbench.getPlatform().getProjectManager().getActiveProject() : file.getProject();
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject() : DBWorkbench.getPlatform().getWorkspace().getProject(file.getProject());
     }
 
     @Nullable
@@ -435,7 +436,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private DBPDataSourceContainer getDataSourceFromContent() {
 
-        IProject project = getProject();
+        DBPProject project = getProject();
         IDocument document = getDocument();
 
         int totalLines = document.getNumberOfLines();

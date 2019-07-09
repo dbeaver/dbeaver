@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -36,7 +37,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
 
     private final DBPDataSourceContainer datasource;
-    private final IProject project;
+    private final DBPProject project;
 
     public DatabaseNavigatorSourceContainer(DBPDataSourceContainer descriptor) {
         this.datasource = descriptor;

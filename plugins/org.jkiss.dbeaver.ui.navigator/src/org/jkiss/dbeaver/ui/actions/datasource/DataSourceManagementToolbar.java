@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -308,9 +309,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     if (fileDataSource != null) {
                         return fileDataSource.getRegistry().getDataSources();
                     }
-                    final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(curFile.getProject());
-                    if (dsRegistry != null) {
-                        return dsRegistry.getDataSources();
+                    DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(curFile.getProject());
+                    if (projectMeta != null) {
+                        return projectMeta.getDataSourceRegistry().getDataSources();
                     }
                 }
             }
@@ -323,14 +324,14 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
-    private IProject getActiveProject() {
+    private DBPProject getActiveProject() {
         //Get project from active editor
         if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
             final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
             if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
                 final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
                 if (curFile != null) {
-                    return curFile.getProject();
+                    return DBWorkbench.getPlatform().getWorkspace().getProject(curFile.getProject());
                 }
             }
         }
@@ -338,7 +339,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (dataSourceContainer != null) {
             return dataSourceContainer.getRegistry().getProject();
         } else {
-            return DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+            return DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         }
     }
 
@@ -726,7 +727,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo = new SelectDataSourceCombo(comboGroup) {
 
             @Override
-            protected IProject getActiveProject() {
+            protected DBPProject getActiveProject() {
                 return DataSourceManagementToolbar.this.getActiveProject();
             }
 

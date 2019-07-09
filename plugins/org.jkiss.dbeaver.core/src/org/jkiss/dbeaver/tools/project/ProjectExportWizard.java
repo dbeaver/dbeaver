@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -127,7 +128,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             meta.startElement(ExportConstants.TAG_ARCHIVE);
             meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
 
-            exportData.initExport(DBWorkbench.getPlatform().getProjectManager(), meta, archiveStream);
+            exportData.initExport(DBWorkbench.getPlatform().getWorkspace(), meta, archiveStream);
 
             {
                 // Export source info
@@ -138,18 +139,18 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 meta.endElement();
             }
 
-            Map<IProject, Integer> resCountMap = new HashMap<>();
+            Map<DBPProject, Integer> resCountMap = new HashMap<>();
             monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info, exportData.getProjectsToExport().size());
-            for (IProject project : exportData.getProjectsToExport()) {
+            for (DBPProject project : exportData.getProjectsToExport()) {
                 // Add used drivers to export data
-                final DBPDataSourceRegistry dataSourceRegistry = exportData.projectRegistry.getDataSourceRegistry(project);
+                final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
                 if (dataSourceRegistry != null) {
                     for (DBPDataSourceContainer dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
                         exportData.usedDrivers.add(dataSourceDescriptor.getDriver());
                     }
                 }
 
-                resCountMap.put(project, getChildCount(exportData, project));
+                resCountMap.put(project, getChildCount(exportData, project.getEclipseProject()));
                 monitor.worked(1);
             }
             monitor.done();
@@ -168,10 +169,10 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             {
                 // Export projects
                 exportData.meta.startElement(ExportConstants.TAG_PROJECTS);
-                for (IProject project : exportData.getProjectsToExport()) {
+                for (DBPProject project : exportData.getProjectsToExport()) {
                     monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project, project.getName()), resCountMap.get(project));
                     try {
-                        exportProject(monitor, exportData, project);
+                        exportProject(monitor, exportData, project.getEclipseProject());
                     } finally {
                         monitor.done();
                     }
@@ -255,7 +256,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     private int getChildCount(ProjectExportData exportData, IResource resource) throws CoreException
     {
-        if (exportData.projectRegistry.getResourceHandler(resource) == null) {
+        if (exportData.workspace.getResourceHandler(resource) == null) {
             return 0;
         }
         int childCount = 1;

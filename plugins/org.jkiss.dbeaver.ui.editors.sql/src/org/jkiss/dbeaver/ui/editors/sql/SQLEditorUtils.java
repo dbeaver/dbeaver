@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -49,17 +49,17 @@ public class SQLEditorUtils {
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
-    public static IFolder getScriptsFolder(IProject project, boolean forceCreate) throws CoreException
+    public static IFolder getScriptsFolder(DBPProject project, boolean forceCreate) throws CoreException
     {
     	if (project == null) {
     		IStatus status = new Status(IStatus.ERROR, SQLEditorActivator.PLUGIN_ID, "No active project to locate Script Folder");
 			throw new CoreException(status);
 		}
-        return DBWorkbench.getPlatform().getProjectManager().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
+        return DBWorkbench.getPlatform().getWorkspace().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
     }
 
     @Nullable
-    public static ResourceInfo findRecentScript(IProject project, @Nullable DBPDataSourceContainer container) throws CoreException
+    public static ResourceInfo findRecentScript(DBPProject project, @Nullable DBPDataSourceContainer container) throws CoreException
     {
         List<ResourceInfo> scripts = new ArrayList<>();
         findScriptList(getScriptsFolder(project, false), container, scripts);
@@ -168,7 +168,7 @@ public class SQLEditorUtils {
         return hasScripts;
     }
 
-    public static IFile createNewScript(IProject project, @Nullable IFolder folder, @Nullable DBPDataSourceContainer dataSourceContainer) throws CoreException
+    public static IFile createNewScript(DBPProject project, @Nullable IFolder folder, @Nullable DBPDataSourceContainer dataSourceContainer) throws CoreException
     {
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
 

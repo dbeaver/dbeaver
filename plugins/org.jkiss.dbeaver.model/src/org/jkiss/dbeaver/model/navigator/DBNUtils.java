@@ -125,7 +125,7 @@ public class DBNUtils {
                 return activeContainer.getDefaultObject() == object;
             }
         } else if (element instanceof DBNProject) {
-            if (((DBNProject)element).getProject() == DBWorkbench.getPlatform().getProjectManager().getActiveProject()) {
+            if (((DBNProject)element).getProject() == DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
                 return true;
             }
         }
@@ -133,7 +133,7 @@ public class DBNUtils {
     }
 
     public static void refreshNavigatorResource(@NotNull IResource resource, Object source) {
-        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(resource.getProject());
+        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(resource.getProject());
         if (projectNode != null) {
             final DBNResource fileNode = projectNode.findResource(resource);
             if (fileNode != null) {

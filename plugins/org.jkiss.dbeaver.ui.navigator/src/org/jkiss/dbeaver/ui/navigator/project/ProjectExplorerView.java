@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.navigator.project;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -27,6 +26,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -54,13 +54,13 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     private ViewerColumnController columnController;
 
     public ProjectExplorerView() {
-        DBWorkbench.getPlatform().getProjectManager().addProjectListener(this);
+        DBWorkbench.getPlatform().getWorkspace().addProjectListener(this);
     }
 
     @Override
     public DBNNode getRootNode()
     {
-        DBNProject projectNode = getModel().getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject());
+        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode != null ? projectNode : getModel().getRoot();
     }
 
@@ -204,12 +204,22 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     @Override
     public void dispose()
     {
-        DBWorkbench.getPlatform().getProjectManager().removeProjectListener(this);
+        DBWorkbench.getPlatform().getWorkspace().removeProjectListener(this);
         super.dispose();
     }
 
     @Override
-    public void handleActiveProjectChange(IProject oldValue, IProject newValue)
+    public void handleProjectAdd(DBPProject project) {
+
+    }
+
+    @Override
+    public void handleProjectRemove(DBPProject project) {
+
+    }
+
+    @Override
+    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue)
     {
         UIUtils.asyncExec(() -> {
             getNavigatorTree().reloadTree(getRootNode());

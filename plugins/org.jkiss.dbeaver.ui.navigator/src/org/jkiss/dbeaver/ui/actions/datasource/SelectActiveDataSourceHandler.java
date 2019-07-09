@@ -30,6 +30,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -60,7 +61,7 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
     }
 
     public static void openDataSourceSelector(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSource) {
-        IProject activeProject = dataSource != null ? dataSource.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+        DBPProject activeProject = dataSource != null ? dataSource.getRegistry().getProject() : DBWorkbench.getPlatform().getWorkspace().getActiveProject();
 
         IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
         if (!(activeEditor instanceof IDataSourceContainerProviderEx)) {
@@ -123,9 +124,9 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
                     if (fileDataSource != null) {
                         return fileDataSource.getRegistry().getDataSources();
                     }
-                    final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(curFile.getProject());
-                    if (dsRegistry != null) {
-                        return dsRegistry.getDataSources();
+                    DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(curFile.getProject());
+                    if (projectMeta != null) {
+                        return projectMeta.getDataSourceRegistry().getDataSources();
                     }
                 }
             }

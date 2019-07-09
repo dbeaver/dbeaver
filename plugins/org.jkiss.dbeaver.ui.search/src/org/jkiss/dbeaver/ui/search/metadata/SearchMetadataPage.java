@@ -116,7 +116,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             //gd.heightHint = 300;
             sourceGroup.setLayoutData(gd);
             DBPPlatform platform = DBWorkbench.getPlatform();
-            final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProject(platform.getProjectManager().getActiveProject());
+            final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(platform.getWorkspace().getActiveProject());
             DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
             dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE);
             gd = new GridData(GridData.FILL_BOTH);

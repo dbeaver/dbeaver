@@ -33,6 +33,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -91,7 +92,7 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
         UIUtils.runInUI(workbenchWindow, generator);
         String sql = CommonUtils.notEmpty(generator.getResult());
 
-        IProject project = ds != null ? ds.getRegistry().getProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+        DBPProject project = ds != null ? ds.getRegistry().getProject() : DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         OpenHandler.checkProjectIsOpen(project);
         IFolder folder = OpenHandler.getCurrentScriptFolder(currentSelection);
         IFile scriptFile = SQLEditorUtils.createNewScript(project, folder, ds);

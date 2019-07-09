@@ -40,7 +40,7 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     @Override
     public int getFeatures(IResource resource)
     {
-        if (resource != DBWorkbench.getPlatform().getProjectManager().getActiveProject()) {
+        if (resource != DBWorkbench.getPlatform().getWorkspace().getActiveProject()) {
             return FEATURE_DELETE | FEATURE_RENAME;
         }
         return FEATURE_RENAME;
@@ -50,7 +50,10 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     @Override
     public DBNProject makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
-        return new DBNProject(parentNode, (IProject)resource, this);
+        return new DBNProject(
+            parentNode,
+            DBWorkbench.getPlatform().getWorkspace().getProject((IProject)resource),
+            this);
     }
 
     @Override

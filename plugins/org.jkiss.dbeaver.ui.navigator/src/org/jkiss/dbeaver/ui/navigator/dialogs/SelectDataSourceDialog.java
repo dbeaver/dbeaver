@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.navigator.dialogs;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
@@ -32,6 +31,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -52,7 +52,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     private static final String PARAM_SHOW_ALL_PROJECTS = "showAllProjects"; //$NON-NLS-1$
 
     @Nullable
-    private final IProject project;
+    private final DBPProject project;
     private DBPDataSourceContainer dataSource = null;
 
     private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
@@ -61,7 +61,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     private DBNProjectDatabases projectNode;
     private DBNNode rootNode;
 
-    public SelectDataSourceDialog(@NotNull Shell parentShell, @Nullable IProject project, DBPDataSourceContainer selection)
+    public SelectDataSourceDialog(@NotNull Shell parentShell, @Nullable DBPProject project, DBPDataSourceContainer selection)
     {
         super(parentShell, UINavigatorMessages.dialog_select_datasource_title);
         this.project = project;
@@ -87,7 +87,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot();
         projectNode = null;
         if (project != null) {
-            DBNProject projectBaseNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(project);
+            DBNProject projectBaseNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(project);
             if (projectBaseNode != null) {
                 projectNode = projectBaseNode.getDatabases();
             }

@@ -33,10 +33,9 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
 
 import java.util.Collections;
 import java.util.Map;
@@ -65,7 +64,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             if (objectFilter == null) {
                 objectFilter = new DBSObjectFilter();
             }
-            final DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(folder.getOwnerProject());
+            final DBPDataSourceRegistry dsRegistry = folder.getOwnerProject().getDataSourceRegistry();
             final boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
             String parentName = "?";
             if (folder.getValueObject() instanceof DBSObject) {

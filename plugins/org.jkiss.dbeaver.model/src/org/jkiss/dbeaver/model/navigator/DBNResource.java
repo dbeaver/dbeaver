@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -206,7 +204,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }
-            DBPResourceHandler resourceHandler = getModel().getPlatform().getProjectManager().getResourceHandler(resource);
+            DBPResourceHandler resourceHandler = getModel().getPlatform().getWorkspace().getResourceHandler(resource);
             if (resourceHandler == null) {
                 log.debug("Skip resource '" + resource.getName() + "'");
                 return null;
@@ -388,7 +386,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     }
 
     public void refreshResourceState(Object source) {
-        DBPResourceHandler newHandler = getModel().getPlatform().getProjectManager().getResourceHandler(resource);
+        DBPResourceHandler newHandler = getModel().getPlatform().getWorkspace().getResourceHandler(resource);
         if (newHandler != handler) {
             handler = newHandler;
         }

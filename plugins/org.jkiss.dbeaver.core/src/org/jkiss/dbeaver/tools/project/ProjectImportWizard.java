@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -345,7 +345,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         if (!CommonUtils.isEmpty(projectDescription)) {
             description.setComment(projectDescription);
         }
-        DBPProjectManager projectRegistry = DBWorkbench.getPlatform().getProjectManager();
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         project.create(description, 0, RuntimeUtils.getNestedMonitor(monitor));
 
         try {
@@ -374,9 +374,6 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 log.error(e1);
             }
             throw new DBException("Error importing project resources", e);
-        }
-        if (projectRegistry.getDataSourceRegistry(project) == null) {
-            projectRegistry.addProject(project);
         }
 
         return project;

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database.page;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.*;
@@ -30,7 +29,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -117,10 +120,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+                    DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
                     if (activeProject != null) {
                         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-                        final DBNProject rootNode = navigatorModel.getRoot().getProject(
+                        final DBNProject rootNode = navigatorModel.getRoot().getProjectNode(
                             activeProject);
                         DBNNode selectedNode = settings.getContainerNode();
                         if (selectedNode == null && !settings.getDataMappings().isEmpty()) {
@@ -622,11 +625,11 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     private void mapExistingTable(DatabaseMappingContainer mapping)
     {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (activeProject != null) {
             DBNNode rootNode = settings.getContainerNode();
             if (rootNode == null) {
-                rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(
+                rootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(
                     activeProject).getDatabases();
             }
             DBNNode selectedNode = rootNode;

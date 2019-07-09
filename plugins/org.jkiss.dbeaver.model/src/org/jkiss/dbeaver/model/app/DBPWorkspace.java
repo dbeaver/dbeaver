@@ -17,10 +17,15 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * DBPWorkspace
@@ -41,4 +46,29 @@ public interface DBPWorkspace
     @NotNull
     IWorkspace getEclipseWorkspace();
 
+    List<DBPProject> getProjects();
+
+    DBPProject getActiveProject();
+
+    void setActiveProject(DBPProject project);
+
+    DBPProject getProject(IProject project);
+
+    void addProjectListener(DBPProjectListener listener);
+
+    void removeProjectListener(DBPProjectListener listener);
+
+    DBPResourceHandlerDescriptor[] getResourceHandlerDescriptors();
+    DBPResourceHandlerDescriptor[] getAllResourceHandlers();
+    @Nullable
+    DBPResourceHandler getResourceHandler(IResource resource);
+    @Nullable
+    IFolder getResourceDefaultRoot(DBPProject project, DBPResourceHandlerDescriptor handler, boolean forceCreate);
+    @Nullable
+    IFolder getResourceDefaultRoot(DBPProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
+
+    @Nullable
+    DBPDataSourceRegistry getDefaultDataSourceRegistry();
+
+    void dispose();
 }

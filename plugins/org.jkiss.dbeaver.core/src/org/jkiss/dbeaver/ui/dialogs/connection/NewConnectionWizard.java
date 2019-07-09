@@ -22,6 +22,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.registry.*;
@@ -59,8 +60,8 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
-        return DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(
-            initialDriver == null ? pageDrivers.getConnectionProject() : DBWorkbench.getPlatform().getProjectManager().getActiveProject());
+        DBPProject project = initialDriver == null ? pageDrivers.getConnectionProject() : DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        return project == null ? null : project.getDataSourceRegistry();
     }
 
     List<DataSourceProviderDescriptor> getAvailableProvides()

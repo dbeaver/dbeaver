@@ -39,7 +39,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -162,8 +162,8 @@ public class EditorUtils {
                         log.error("Can't locate project '" + projectName + "' in workspace");
                         return null;
                     }
-                    DBPDataSourceRegistry dataSourceRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
-                    return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSource(dataSourceId);
+                    DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(project);
+                    return projectMeta == null ? null : projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
 
                 } else {
                     return null;
@@ -189,8 +189,8 @@ public class EditorUtils {
                         project = fileProject;
                     }
                 }
-                DBPDataSourceRegistry dataSourceRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
-                return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSource(dataSourceId);
+                DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(project);
+                return projectMeta == null ? null : projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
             } else {
                 // Try to extract from embedded comment
                 return null;

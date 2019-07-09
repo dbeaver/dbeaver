@@ -32,8 +32,8 @@ public class NavigatorHandlerProjectSelect extends NavigatorHandlerObjectBase {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProject(
-            DBWorkbench.getPlatform().getProjectManager().getActiveProject());
+        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         if (projectNode != null) {
             final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
             try {

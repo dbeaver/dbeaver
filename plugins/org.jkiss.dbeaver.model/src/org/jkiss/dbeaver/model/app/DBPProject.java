@@ -17,24 +17,33 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.jkiss.dbeaver.model.DBPImage;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.jkiss.code.NotNull;
+
+import java.io.File;
 
 /**
- * Resource handler info
+ * DBPWorkspace
  */
-public interface DBPResourceHandlerDescriptor {
+public interface DBPProject
+{
+    @NotNull
+    DBPWorkspace getWorkspace();
 
-    String RESOURCE_ROOT_FOLDER_NODE = "resourceRootFolder";
-
-    String getId();
-
+    @NotNull
     String getName();
 
-    DBPImage getIcon();
+    @NotNull
+    File getAbsolutePath();
 
-    boolean isManagable();
+    @NotNull
+    IProject getEclipseProject();
 
-    String getDefaultRoot(DBPProject project);
+    boolean isOpen();
 
-    void setDefaultRoot(DBPProject project, String rootPath);
+    void ensureOpen();
+
+    DBPDataSourceRegistry getDataSourceRegistry();
+
 }

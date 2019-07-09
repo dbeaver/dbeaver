@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.project;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -31,8 +30,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -88,19 +87,19 @@ class ProjectExportWizardPage extends WizardPage {
             outDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }
 
-        Set<IProject> projectList = new LinkedHashSet<>();
+        Set<DBPProject> projectList = new LinkedHashSet<>();
         final ISelection selection = UIUtils.getActiveWorkbenchWindow().getActivePage().getSelection();
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
             for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 IResource resource = RuntimeUtils.getObjectAdapter(element, IResource.class);
                 if (resource != null) {
-                    projectList.add(resource.getProject());
+                    projectList.add(DBWorkbench.getPlatform().getWorkspace().getProject(resource.getProject()));
                 }
             }
         }
         if (projectList.isEmpty()) {
-            IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
+            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             if (activeProject != null) {
     			projectList.add(activeProject);
 			}
@@ -121,7 +120,7 @@ class ProjectExportWizardPage extends WizardPage {
             }
         });
 
-        for (IProject project : DBWorkbench.getPlatform().getLiveProjects()) {
+        for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
             final TableItem item = new TableItem(projectsTable, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
             item.setText(project.getName());
@@ -211,18 +210,18 @@ class ProjectExportWizardPage extends WizardPage {
             fileNameText.getText());
     }
 
-    private List<IProject> getProjectsToExport()
+    private List<DBPProject> getProjectsToExport()
     {
-        List<IProject> result = new ArrayList<>();
+        List<DBPProject> result = new ArrayList<>();
         for (TableItem item : projectsTable.getItems()) {
             if (item.getChecked()) {
-                result.add((IProject) item.getData());
+                result.add((DBPProject) item.getData());
             }
         }
         return result;
     }
 
-    static String getArchiveFileName(List<IProject> projects)
+    static String getArchiveFileName(List<DBPProject> projects)
     {
         String archiveName = CoreMessages.dialog_project_export_wizard_start_archive_name_prefix;
         if (projects.size() == 1) {

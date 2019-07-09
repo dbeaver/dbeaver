@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -43,7 +42,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
     /**
      * Owner project.
      */
-    IProject getProject();
+    DBPProject getProject();
 
     @Nullable
     DBPDataSourceContainer getDataSource(String id);
@@ -80,7 +79,7 @@ public interface DBPDataSourceRegistry extends DBPObject {
 
     void removeFolder(DBPDataSourceFolder folder, boolean dropContents);
 
-    DBPDataSourceRegistry createCopy(IProject project, boolean copyDataSources);
+    DBPDataSourceRegistry createCopy(DBPProject project, boolean copyDataSources);
 
     @Nullable
     DBSObjectFilter getSavedFilter(String name);

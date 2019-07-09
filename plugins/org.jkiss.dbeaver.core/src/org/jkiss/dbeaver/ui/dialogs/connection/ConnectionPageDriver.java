@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -45,7 +46,7 @@ import java.util.List;
 class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChangedListener, IDoubleClickListener {
     private NewConnectionWizard wizard;
     private DriverDescriptor selectedDriver;
-    private IProject connectionProject;
+    private DBPProject connectionProject;
 
     ConnectionPageDriver(NewConnectionWizard wizard)
     {
@@ -69,7 +70,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
         setControl(placeholder);
 
-        final List<IProject> projects = DBeaverCore.getInstance().getLiveProjects();
+        final List<DBPProject> projects = DBeaverCore.getInstance().getWorkspace().getProjects();
         if (projects.size() == 1) {
             connectionProject = projects.get(0);
         } else if (projects.size() > 1) {
@@ -81,8 +82,8 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             final Combo projectCombo = new Combo(projectGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             projectCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            final IProject activeProject = DBWorkbench.getPlatform().getProjectManager().getActiveProject();
-            for (IProject project : projects) {
+            final DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+            for (DBPProject project : projects) {
                 projectCombo.add(project.getName());
             }
 
@@ -115,7 +116,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         return selectedDriver;
     }
 
-    public IProject getConnectionProject() {
+    public DBPProject getConnectionProject() {
         return connectionProject;
     }
 

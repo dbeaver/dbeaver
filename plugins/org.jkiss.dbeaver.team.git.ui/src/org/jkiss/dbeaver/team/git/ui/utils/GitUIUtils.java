@@ -55,7 +55,7 @@ public class GitUIUtils {
             } else if (e instanceof DBNNode) {
                 for (DBNNode n = (DBNNode) e; n != null; n = ((DBNNode) n).getParentNode()) {
                     if (n instanceof DBNProject) {
-                        return ((DBNProject) n).getProject();
+                        return ((DBNProject) n).getProject().getEclipseProject();
                     }
                 }
                 return null;
@@ -72,7 +72,7 @@ public class GitUIUtils {
         if (editorInput instanceof IDatabaseEditorInput) {
             DBNDatabaseNode node = ((IDatabaseEditorInput) editorInput).getNavigatorNode();
             if (node != null) {
-                return node.getOwnerProject();
+                return node.getOwnerProject().getEclipseProject();
             }
         } else {
             IFile input = EditorUtils.getFileFromInput(editorInput);

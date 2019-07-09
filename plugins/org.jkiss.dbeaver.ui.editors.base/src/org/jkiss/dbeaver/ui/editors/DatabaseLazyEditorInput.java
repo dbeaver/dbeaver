@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -50,13 +50,13 @@ import java.util.Collections;
 public class DatabaseLazyEditorInput implements IDatabaseEditorInput
 {
     private final DBPDataSourceContainer dataSource;
-    private final IProject project;
+    private final DBPProject project;
     private final String nodePath;
     private final String nodeName;
     private final String activePageId;
     private final String activeFolderId;
 
-    public DatabaseLazyEditorInput(DBPDataSourceContainer dataSource, IProject project, String nodePath, String nodeName, String activePageId, String activeFolderId) {
+    public DatabaseLazyEditorInput(DBPDataSourceContainer dataSource, DBPProject project, String nodePath, String nodeName, String activePageId, String activeFolderId) {
         this.dataSource = dataSource;
         this.project = project;
         this.nodePath = nodePath;

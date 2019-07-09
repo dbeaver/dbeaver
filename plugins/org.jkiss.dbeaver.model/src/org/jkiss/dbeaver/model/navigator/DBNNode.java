@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -237,6 +238,14 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return null;
     }
 
+    public DBPProject getOwnerProject() {
+        for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
+            if (node instanceof DBNProject) {
+                return ((DBNProject) node).getProject();
+            }
+        }
+        return null;
+    }
 
     static void sortNodes(List<? extends DBNNode> nodes) {
         Collections.sort(nodes, new Comparator<DBNNode>() {

@@ -124,7 +124,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler implements DBPRe
     @NotNull
     @Override
     public String getResourceNodeName(@NotNull IResource resource) {
-//        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
+//        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProjectNode()))) {
 //            return "SQL Scripts";
 //        } else {
             return super.getResourceNodeName(resource);

@@ -82,15 +82,10 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             return false;
         }
 
-        try {
-            for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
-                if (connectionInfo.isChecked()) {
-                    importConnection(connectionInfo);
-                }
+        for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
+            if (connectionInfo.isChecked()) {
+                importConnection(connectionInfo);
             }
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Import driver", null, e);
-            return false;
         }
 
         return true;
@@ -166,16 +161,14 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         return false;
     }
 
-    private void importConnection(ImportConnectionInfo connectionInfo) throws DBException
-    {
+    private void importConnection(ImportConnectionInfo connectionInfo) {
         try {
             adaptConnectionUrl(connectionInfo);
         } catch (DBException e) {
             UIUtils.showMessageBox(getShell(), "Extract URL parameters", e.getMessage(), SWT.ICON_WARNING);
         }
         final DBPDataSourceRegistry dataSourceRegistry =
-            DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(
-                DBWorkbench.getPlatform().getProjectManager().getActiveProject());
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject().getDataSourceRegistry();
 
         String name = connectionInfo.getAlias();
         for (int i = 0; ; i++) {

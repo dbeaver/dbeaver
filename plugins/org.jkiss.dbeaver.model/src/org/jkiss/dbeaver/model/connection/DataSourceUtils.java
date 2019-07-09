@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
-import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -58,7 +58,7 @@ public class DataSourceUtils {
     private static final Log log = Log.getLog(DataSourceUtils.class);
 
     public static DBPDataSourceContainer getDataSourceBySpec(
-        @NotNull IProject project,
+        @NotNull DBPProject project,
         @NotNull String connectionSpec,
         @Nullable GeneralUtils.IParameterHandler parameterHandler,
         boolean searchByParameters,
@@ -72,7 +72,7 @@ public class DataSourceUtils {
         DBPDataSourceFolder folder = null;
         String dsId = null, dsName = null;
 
-        DBPDataSourceRegistry dsRegistry = DBWorkbench.getPlatform().getProjectManager().getDataSourceRegistry(project);
+        DBPDataSourceRegistry dsRegistry = project == null ? null : project.getDataSourceRegistry();
         if (dsRegistry == null) {
             log.debug("No datasource registry for project '" + project.getName() + "'");
             return null;
