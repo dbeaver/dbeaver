@@ -57,6 +57,7 @@ public class GreenplumTableTest {
     @Before
     public void setUp() throws Exception {
         Mockito.when(mockSchema.getDatabase()).thenReturn(mockDatabase);
+        Mockito.when(mockSchema.getSchema()).thenReturn(mockSchema);
         Mockito.when(mockSchema.getDataSource()).thenReturn(mockDataSource);
         Mockito.when(mockSchema.getName()).thenReturn(exampleSchemaName);
         Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
@@ -124,7 +125,6 @@ public class GreenplumTableTest {
         Mockito.when(mockSchema.getTableCache()).thenReturn(mockTableCache);
 
         table = new GreenplumTable(mockSchema, mockResults);
-
         Mockito.when(mockTableCache.getChildren(mockMonitor, mockSchema, table))
                 .thenReturn(mockColumns);
 
