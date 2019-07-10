@@ -32,6 +32,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
+import java.nio.charset.Charset;
 
 /**
  * XML document
@@ -67,10 +68,10 @@ public class DBDDocumentXML implements DBDDocument {
     }
 
     @Override
-    public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, String encoding) throws DBException {
+    public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, Charset charset) throws DBException {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            Result output = new StreamResult(new OutputStreamWriter(stream, encoding));
+            Result output = new StreamResult(new OutputStreamWriter(stream, charset));
 
             transformer.transform(
                 new DOMSource(document),
@@ -81,13 +82,13 @@ public class DBDDocumentXML implements DBDDocument {
     }
 
     @Override
-    public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, String encoding) throws DBException {
+    public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, Charset charset) throws DBException {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             DOMResult output = new DOMResult();
 
             transformer.transform(
-                new StreamSource(new InputStreamReader(stream, encoding)),
+                new StreamSource(new InputStreamReader(stream, charset)),
                 output);
             document = (Document) output.getNode();
             modified = true;

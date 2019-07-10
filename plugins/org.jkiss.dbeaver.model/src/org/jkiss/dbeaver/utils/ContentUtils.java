@@ -38,6 +38,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Locale;
 
@@ -312,7 +314,7 @@ public class ContentUtils {
     public static String readFileToString(File file) throws IOException
     {
         try (InputStream fileStream = new FileInputStream(file)) {
-            UnicodeReader unicodeReader = new UnicodeReader(fileStream, GeneralUtils.UTF8_ENCODING);
+            UnicodeReader unicodeReader = new UnicodeReader(fileStream, StandardCharsets.UTF_8);
             StringBuilder result = new StringBuilder((int) file.length());
             char[] buffer = new char[4000];
             for (;;) {
@@ -326,7 +328,7 @@ public class ContentUtils {
         }
     }
 
-    public static String readToString(InputStream is, String charset) throws IOException
+    public static String readToString(InputStream is, Charset charset) throws IOException
     {
         return IOUtils.readToString(new UnicodeReader(is, charset));
     }

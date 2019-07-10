@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 /**
  * Document.
@@ -66,10 +67,10 @@ public interface DBDDocument extends DBDValue {
      *
      * @param monitor   progress monitor
      * @param stream    stream
-     * @param encoding  stream encoding
+     * @param charset  stream encoding
      * @throws DBException
      */
-    void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, @Nullable String encoding)
+    void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, @Nullable Charset charset)
         throws IOException, DBException;
 
     /**
@@ -77,10 +78,10 @@ public interface DBDDocument extends DBDValue {
      *
      * @param monitor   progress monitor
      * @param stream    stream
-     * @param encoding  stream encoding
+     * @param charset  stream encoding
      * @throws DBException
      */
-    void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, @Nullable String encoding)
+    void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, @Nullable Charset charset)
         throws IOException, DBException;
 
 }
